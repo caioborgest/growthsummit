@@ -45,7 +45,7 @@ Para garantir que a correção seja aplicada em seu ambiente local e de produç�
         ```
     *   Este script irá:
         1.  Instalar `react-helmet-async`
-        2.  Reinstalar todas as dependências (`npm install`)
+        2.  Reinstalar todas as dependências (`npm install --legacy-peer-deps`)
         3.  Verificar a compilação TypeScript (`tsc`)
         4.  Gerar o build de produção (`npm run build`)
 
