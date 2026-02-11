@@ -60,8 +60,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             }
 
             // Inserir no Supabase
-            const { error: supabaseError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
+            const { error: supabaseError } = await (supabase
+                .from('inscricoes_growth_experience_triunfo') as any)
                 .insert({
                     nome: formData.nome,
                     email: formData.email,

@@ -172,8 +172,8 @@ export async function updateInscricaoStatus(
             }
         }
 
-        const { error } = await supabase
-            .from('inscricoes_growth_experience_triunfo')
+        const { error } = await (supabase
+            .from('inscricoes_growth_experience_triunfo') as any)
             .update(updateData)
             .eq('id', inscricaoId);
 
@@ -198,8 +198,8 @@ export async function logPayment(data: {
     metadata?: any;
 }): Promise<void> {
     try {
-        const { error } = await supabase
-            .from('pagamentos_stripe')
+        const { error } = await (supabase
+            .from('pagamentos_stripe') as any)
             .insert({
                 inscricao_id: data.inscricaoId,
                 email: data.email,

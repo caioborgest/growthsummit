@@ -117,8 +117,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await supabase
-                .from('rodada_negocios_b2b')
+            const { error: supabaseError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;

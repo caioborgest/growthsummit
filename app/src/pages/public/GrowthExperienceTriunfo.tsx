@@ -5,7 +5,6 @@ import {
   Users,
   Clock,
   TrendingUp,
-  Award,
   Briefcase,
   Lightbulb,
   Target,
@@ -17,7 +16,6 @@ import {
   Handshake,
   Mic2,
   Coffee,
-  Star,
   UserPlus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
