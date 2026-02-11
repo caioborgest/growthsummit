@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Viewport otimizado para mobile -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+
+  <!-- Tema e cores -->
+  <meta name="theme-color" content="#21808D" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#21808D" media="(prefers-color-scheme: light)" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png" />
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-152x152.png" />
+
+  <!-- Apple PWA Config -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Growth Summit" />
+
+  <!-- Microsoft/Tiles -->
+  <meta name="msapplication-TileColor" content="#21808D" />
+  <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+  <meta name="msapplication-config" content="/browserconfig.xml" />
+
+  <!-- SEO Meta Tags -->
+  <title>Growth Summit 2026 - Gestão e Inovação</title>
+  <meta name="description"
+    content="A maior conferência de Growth, Marketing, Vendas e IA do Nordeste. 21-22 de maio de 2026 em Juazeiro do Norte, CE. Inscreva-se agora!" />
+  <meta name="keywords"
+    content="growth summit, marketing digital, vendas B2B, inteligência artificial, empreendedorismo, inovação, nordeste, juazeiro do norte" />
+  <meta name="author" content="Growth Summit" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://growthsummit.com.br" />
+  <meta property="og:title" content="Growth Summit 2026 - Gestão e Inovação" />
+  <meta property="og:description"
+    content="A maior conferência de Growth, Marketing, Vendas e IA do Nordeste. 21-22 de maio de 2026." />
+  <meta property="og:image" content="https://growthsummit.com.br/images/growthsummit-fundoclaro.png" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:locale" content="pt_BR" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://growthsummit.com.br" />
+  <meta property="twitter:title" content="Growth Summit 2026 - Gestão e Inovação" />
+  <meta property="twitter:description"
+    content="A maior conferência de Growth, Marketing, Vendas e IA do Nordeste. 21-22 de maio de 2026." />
+  <meta property="twitter:image" content="https://growthsummit.com.br/images/growthsummit-fundoclaro.png" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://growthsummit.com.br" />
+
+  <!-- Preconnect para performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Preconnect para Supabase será feito pelo SDK automaticamente -->
+
+  <!-- Splash Screen para iOS -->
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" />
+  <link rel="apple-touch-startup-image" href="/images/growthsummit-fundoclaro.png"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+
+  <!-- Format detection -->
+  <meta name="format-detection" content="telephone=yes" />
+  <meta name="format-detection" content="address=no" />
+  <meta name="format-detection" content="email=no" />
+
+  <!-- Mobile browser optimizations -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="MobileOptimized" content="width" />
+
+  <!-- Prevent text size adjustment on orientation change -->
+  <meta name="x5-orientation" content="portrait" />
+  <meta name="screen-orientation" content="portrait" />
+  <meta name="x5-fullscreen" content="true" />
+  <meta name="x5-page-mode" content="app" />
+
+  <!-- UC Browser -->
+  <meta name="full-screen" content="yes" />
+  <meta name="browsermode" content="application" />
+  <meta name="nightmode" content="disable" />
+  <meta name="layoutmode" content="fitscreen" />
+  <meta name="wap-font-scale" content="no" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <noscript>
+    <div
+      style="padding: 20px; text-align: center; background: #0A0A0A; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+      <h1 style="margin-bottom: 20px;">Growth Summit 2026</h1>
+      <p>Este site requer JavaScript para funcionar corretamente.</p>
+      <p>Por favor, habilite o JavaScript no seu navegador.</p>
+    </div>
+  </noscript>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

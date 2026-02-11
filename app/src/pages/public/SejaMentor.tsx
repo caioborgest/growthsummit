@@ -1,0 +1,272 @@
+import { useState } from 'react';
+import { Users, Star, Calendar, Award, CheckCircle, ArrowRight, Clock, MapPin, Lightbulb, TrendingUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+
+export function SejaMentor() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: '',
+    expertise: '',
+    linkedin: '',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success('Inscrição enviada! Entraremos em contato em breve.');
+  };
+
+  const benefits = [
+    {
+      icon: Users,
+      title: 'Networking Premium',
+      description: 'Conecte-se com outros líderes e especialistas da região.',
+    },
+    {
+      icon: Star,
+      title: 'Reconhecimento',
+      description: 'Seu perfil destacado nos materiais oficiais do evento.',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Gerar Oportunidades',
+      description: 'Aumente sua visibilidade e gere leads qualificados.',
+    },
+    {
+      icon: Lightbulb,
+      title: 'Impacto Real',
+      description: 'Contribua para o desenvolvimento de novos negócios.',
+    },
+  ];
+
+  const requirements = [
+    'Mínimo 5 anos de experiência na sua área de atuação',
+    'Disponibilidade para realizar até 5 mentorias durante o evento',
+    'Experiência comprovada em gestão, empreendedorismo ou tecnologia',
+    'Desejo genuíno de compartilhar conhecimento e ajudar outros',
+    'Presença no evento nos dias 21 e 22 de maio de 2026',
+  ];
+
+  return (
+    <div className="bg-dark min-h-screen pt-24 pb-16">
+      {/* Hero */}
+      <section className="relative py-16 lg:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center max-w-3xl mx-auto">
+            <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30">
+              <Users className="h-3 w-3 mr-1" />
+              Seja um Mentor
+            </Badge>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              Compartilhe seu <span className="text-teal-400">Conhecimento</span>
+            </h1>
+            <p className="text-xl text-gray-400">
+              Junte-se ao time de mentores do Growth Summit 2026 e ajude a transformar 
+              negócios e carreiras no maior evento de Growth do Nordeste.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits */}
+      <section className="py-16 bg-dark-200/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Por que ser Mentor?
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Ser mentor no Growth Summit é uma oportunidade única de impactar 
+              empreendedores e profissionais em crescimento.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {benefits.map((benefit, i) => (
+              <Card key={i} className="bg-dark-200 border-dark-300">
+                <CardContent className="p-6 text-center">
+                  <div className="w-14 h-14 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
+                    <benefit.icon className="h-7 w-7 text-teal-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{benefit.title}</h3>
+                  <p className="text-gray-400 text-sm">{benefit.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-orange-500/10 text-orange-400 border-orange-500/30">
+              <Calendar className="h-3 w-3 mr-1" />
+              Como Funciona
+            </Badge>
+            <h2 className="text-3xl font-bold text-white">
+              O Processo de Mentoria
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { step: '01', title: 'Inscrição', desc: 'Preencha o formulário de candidatura' },
+              { step: '02', title: 'Seleção', desc: 'Avaliaremos seu perfil e experiência' },
+              { step: '03', title: 'Match', desc: 'Conectamos você com participantes' },
+              { step: '04', title: 'Mentoria', desc: 'Realize sessões de 25 minutos no evento' },
+            ].map((item, i) => (
+              <div key={i} className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold text-xl">{item.step}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid lg:grid-cols-2 gap-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Requirements */}
+        <div>
+          <h2 className="text-3xl font-bold text-white mb-6">
+            Requisitos
+          </h2>
+          <div className="space-y-4">
+            {requirements.map((req, i) => (
+              <div key={i} className="flex items-start">
+                <CheckCircle className="h-5 w-5 text-teal-400 mr-3 mt-0.5 flex-shrink-0" />
+                <p className="text-gray-300">{req}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 p-6 bg-teal-500/10 rounded-xl border border-teal-500/30">
+            <h3 className="text-lg font-semibold text-white mb-2 flex items-center">
+              <Award className="h-5 w-5 mr-2 text-teal-400" />
+              Certificado de Participação
+            </h3>
+            <p className="text-gray-400 text-sm">
+              Todos os mentores recebem certificado de participação e destaque 
+              especial nos materiais de comunicação do evento.
+            </p>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div>
+          <Card className="bg-dark-200 border-dark-300">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Candidate-se como Mentor
+              </h2>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label className="text-gray-300">Nome Completo *</Label>
+                  <Input
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="bg-dark-100 border-dark-300 text-white mt-1"
+                    placeholder="Seu nome"
+                  />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Email *</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="bg-dark-100 border-dark-300 text-white mt-1"
+                      placeholder="seu@email.com"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Telefone *</Label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="bg-dark-100 border-dark-300 text-white mt-1"
+                      placeholder="(88) 99999-9999"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-300">Empresa *</Label>
+                    <Input
+                      required
+                      value={formData.company}
+                      onChange={(e) => setFormData({...formData, company: e.target.value})}
+                      className="bg-dark-100 border-dark-300 text-white mt-1"
+                      placeholder="Onde trabalha"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-gray-300">Cargo *</Label>
+                    <Input
+                      required
+                      value={formData.position}
+                      onChange={(e) => setFormData({...formData, position: e.target.value})}
+                      className="bg-dark-100 border-dark-300 text-white mt-1"
+                      placeholder="Seu cargo"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-gray-300">Áreas de Especialidade *</Label>
+                  <Input
+                    required
+                    value={formData.expertise}
+                    onChange={(e) => setFormData({...formData, expertise: e.target.value})}
+                    className="bg-dark-100 border-dark-300 text-white mt-1"
+                    placeholder="Ex: Growth, Marketing, Vendas, Produto..."
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-300">LinkedIn</Label>
+                  <Input
+                    value={formData.linkedin}
+                    onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
+                    className="bg-dark-100 border-dark-300 text-white mt-1"
+                    placeholder="linkedin.com/in/seuperfil"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-teal-500 hover:bg-teal-600 text-white py-6"
+                >
+                  Enviar Candidatura
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+
+                <p className="text-gray-500 text-xs text-center">
+                  Nossa equipe analisará sua candidatura e entrará em contato em até 5 dias úteis.
+                </p>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

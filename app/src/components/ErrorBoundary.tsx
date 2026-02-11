@@ -1,0 +1,153 @@
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
+import { logger } from '@/lib/logger';
+
+interface Props {
+    children: ReactNode;
+    fallback?: ReactNode;
+    onError?: (error: Error, errorInfo: ErrorInfo) => void;
+}
+
+interface State {
+    hasError: boolean;
+    error?: Error;
+    errorInfo?: ErrorInfo;
+}
+
+/**
+ * Error Boundary Component
+ * 
+ * Captura erros em qualquer componente filho e exibe uma UI de fallback
+ * ao invés de crashar toda a aplicação.
+ */
+export class ErrorBoundary extends Component<Props, State> {
+    public state: State = {
+        hasError: false
+    };
+
+    public static getDerivedStateFromError(error: Error): State {
+        // Atualiza o state para que a próxima renderização mostre a UI de fallback
+        return { hasError: true, error };
+    }
+
+    public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        // Log do erro
+        logger.error('ErrorBoundary capturou um erro:', error, {
+            componentStack: errorInfo.componentStack
+        });
+
+        // Atualiza o state com informações do erro
+        this.setState({
+            error,
+            errorInfo
+        });
+
+        // Callback customizado se fornecido
+        if (this.props.onError) {
+            this.props.onError(error, errorInfo);
+        }
+    }
+
+    private handleReset = () => {
+        this.setState({
+            hasError: false,
+            error: undefined,
+            errorInfo: undefined
+        });
+    };
+
+    private handleReload = () => {
+        window.location.reload();
+    };
+
+    public render() {
+        if (this.state.hasError) {
+            // Se um fallback customizado foi fornecido, use-o
+            if (this.props.fallback) {
+                return this.props.fallback;
+            }
+
+            // UI de fallback padrão
+            return (
+                <div className="min-h-screen bg-dark flex items-center justify-center p-4">
+                    <div className="bg-dark-lighter rounded-lg p-8 max-w-md w-full">
+                        <div className="text-center mb-6">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/10 rounded-full mb-4">
+                                <svg
+                                    className="w-8 h-8 text-red-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                    />
+                                </svg>
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-2">
+                                Algo deu errado
+                            </h2>
+                            <p className="text-gray-400 mb-6">
+                                Desculpe, ocorreu um erro inesperado. Por favor, tente recarregar a página.
+                            </p>
+                        </div>
+
+                        {/* Detalhes do erro (apenas em desenvolvimento) */}
+                        {import.meta.env.DEV && this.state.error && (
+                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                <p className="text-sm font-mono text-red-400 mb-2">
+                                    {this.state.error.toString()}
+                                </p>
+                                {this.state.errorInfo && (
+                                    <details className="text-xs text-gray-500">
+                                        <summary className="cursor-pointer hover:text-gray-400">
+                                            Stack trace
+                                        </summary>
+                                        <pre className="mt-2 overflow-auto max-h-40">
+                                            {this.state.errorInfo.componentStack}
+                                        </pre>
+                                    </details>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={this.handleReset}
+                                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                            >
+                                Tentar Novamente
+                            </button>
+                            <button
+                                onClick={this.handleReload}
+                                className="flex-1 bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                            >
+                                Recarregar Página
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+/**
+ * Hook para usar Error Boundary de forma funcional
+ */
+export function withErrorBoundary<P extends object>(
+    Component: React.ComponentType<P>,
+    fallback?: ReactNode
+) {
+    return function WithErrorBoundaryWrapper(props: P) {
+        return (
+            <ErrorBoundary fallback={fallback}>
+                <Component {...props} />
+            </ErrorBoundary>
+        );
+    };
+}
