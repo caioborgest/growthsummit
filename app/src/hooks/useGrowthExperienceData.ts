@@ -115,8 +115,8 @@ export function useInscricoesTriunfo() {
 
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
-            const { error: updateError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
+            const { error: updateError } = await (supabase
+                .from('inscricoes_growth_experience_triunfo') as any)
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
@@ -131,8 +131,8 @@ export function useInscricoesTriunfo() {
 
     const deleteInscricao = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
+            const { error: deleteError } = await (supabase
+                .from('inscricoes_growth_experience_triunfo') as any)
                 .delete()
                 .eq('id', id);
 
@@ -202,8 +202,8 @@ export function useStartupsArenaPitch() {
             if (feedback !== undefined) updateData.feedback = feedback;
             if (status !== 'pendente') updateData.avaliado_at = new Date().toISOString();
 
-            const { error: updateError } = await supabase
-                .from('startups_arena_pitch')
+            const { error: updateError } = await (supabase
+                .from('startups_arena_pitch') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -218,8 +218,8 @@ export function useStartupsArenaPitch() {
 
     const deleteStartup = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('startups_arena_pitch')
+            const { error: deleteError } = await (supabase
+                .from('startups_arena_pitch') as any)
                 .delete()
                 .eq('id', id);
 
@@ -284,8 +284,8 @@ export function useEmpresasB2B() {
                 updateData.aprovado_at = new Date().toISOString();
             }
 
-            const { error: updateError } = await supabase
-                .from('rodada_negocios_b2b')
+            const { error: updateError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -300,8 +300,8 @@ export function useEmpresasB2B() {
 
     const deleteEmpresa = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('rodada_negocios_b2b')
+            const { error: deleteError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
                 .delete()
                 .eq('id', id);
 

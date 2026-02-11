@@ -172,8 +172,8 @@ export async function updateInscricaoStatus(
             }
         }
 
-        const { error } = await supabase
-            .from('inscricoes_growth_experience_triunfo')
+        const { error } = await (supabase
+            .from('inscricoes_growth_experience_triunfo') as any)
             .update(updateData)
             .eq('id', inscricaoId);
 
@@ -198,22 +198,20 @@ export async function logPayment(data: {
     metadata?: any;
 }): Promise<void> {
     try {
-        const { error } = await supabase
-            .from('pagamentos_stripe')
-            .insert([
-                {
-                    inscricao_id: data.inscricaoId,
-                    email: data.email,
-                    valor: data.valor,
-                    moeda: 'BRL',
-                    stripe_payment_intent_id: data.stripePaymentIntentId,
-                    stripe_session_id: data.stripeSessionId,
-                    stripe_customer_id: data.stripeCustomerId,
-                    status: data.status,
-                    metadata: data.metadata,
-                    created_at: new Date().toISOString(),
-                },
-            ]);
+        const { error } = await (supabase
+            .from('pagamentos_stripe') as any)
+            .insert({
+                inscricao_id: data.inscricaoId,
+                email: data.email,
+                valor: data.valor,
+                moeda: 'BRL',
+                stripe_payment_intent_id: data.stripePaymentIntentId,
+                stripe_session_id: data.stripeSessionId,
+                stripe_customer_id: data.stripeCustomerId,
+                status: data.status,
+                metadata: data.metadata,
+                created_at: new Date().toISOString(),
+            });
 
         if (error) throw error;
     } catch (error: any) {
