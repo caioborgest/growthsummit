@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "growth-summit-2026",
+  "rootDirectory": "app",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
