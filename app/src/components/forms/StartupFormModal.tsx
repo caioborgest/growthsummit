@@ -100,9 +100,15 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             };
 
             // Inserir no Supabase
+<<<<<<< HEAD
             const { error: supabaseError } = await supabase
                 .from('startups_arena_pitch')
                 .insert([dataToInsert] as any);
+=======
+            const { error: supabaseError } = await (supabase
+                .from('startups_arena_pitch') as any)
+                .insert(dataToInsert);
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
 
             if (supabaseError) throw supabaseError;
 

@@ -5,6 +5,11 @@ import {
   Users,
   Clock,
   TrendingUp,
+<<<<<<< HEAD
+=======
+  Briefcase,
+  Lightbulb,
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
   Target,
   Handshake,
   Lightbulb,
@@ -17,6 +22,10 @@ import {
   CheckCircle,
   ArrowRight,
   Coffee,
+<<<<<<< HEAD
+=======
+  UserPlus
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

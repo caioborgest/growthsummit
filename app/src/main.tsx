@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <ProjectProvider>
           <App />
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               style: {

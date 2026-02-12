@@ -115,9 +115,15 @@ export function useInscricoesTriunfo() {
 
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
+<<<<<<< HEAD
             const { error: updateError } = await supabase
                 .from('inscricoes_growth_experience_triunfo')
                 .update({ status, updated_at: new Date().toISOString() } as any)
+=======
+            const { error: updateError } = await (supabase
+                .from('inscricoes_growth_experience_triunfo') as any)
+                .update({ status, updated_at: new Date().toISOString() })
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
                 .eq('id', id);
 
             if (updateError) throw updateError;
@@ -131,8 +137,8 @@ export function useInscricoesTriunfo() {
 
     const deleteInscricao = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
+            const { error: deleteError } = await (supabase
+                .from('inscricoes_growth_experience_triunfo') as any)
                 .delete()
                 .eq('id', id);
 
@@ -202,9 +208,15 @@ export function useStartupsArenaPitch() {
             if (feedback !== undefined) updateData.feedback = feedback;
             if (status !== 'pendente') updateData.avaliado_at = new Date().toISOString();
 
+<<<<<<< HEAD
             const { error: updateError } = await supabase
                 .from('startups_arena_pitch')
                 .update(updateData as any)
+=======
+            const { error: updateError } = await (supabase
+                .from('startups_arena_pitch') as any)
+                .update(updateData)
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
                 .eq('id', id);
 
             if (updateError) throw updateError;
@@ -218,8 +230,8 @@ export function useStartupsArenaPitch() {
 
     const deleteStartup = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('startups_arena_pitch')
+            const { error: deleteError } = await (supabase
+                .from('startups_arena_pitch') as any)
                 .delete()
                 .eq('id', id);
 
@@ -284,9 +296,15 @@ export function useEmpresasB2B() {
                 updateData.aprovado_at = new Date().toISOString();
             }
 
+<<<<<<< HEAD
             const { error: updateError } = await supabase
                 .from('rodada_negocios_b2b')
                 .update(updateData as any)
+=======
+            const { error: updateError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
+                .update(updateData)
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
                 .eq('id', id);
 
             if (updateError) throw updateError;
@@ -300,8 +318,8 @@ export function useEmpresasB2B() {
 
     const deleteEmpresa = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('rodada_negocios_b2b')
+            const { error: deleteError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
                 .delete()
                 .eq('id', id);
 

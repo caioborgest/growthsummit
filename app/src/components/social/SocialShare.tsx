@@ -14,7 +14,6 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
 
     const shareUrl = encodeURIComponent(url);
     const shareTitle = encodeURIComponent(title);
-    const shareDescription = encodeURIComponent(description);
 
     const handleShare = (platform: string) => {
         // Analytics tracking

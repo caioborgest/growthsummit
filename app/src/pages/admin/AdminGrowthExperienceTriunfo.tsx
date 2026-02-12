@@ -4,6 +4,12 @@ import {
     Rocket,
     Handshake,
     DollarSign,
+<<<<<<< HEAD
+=======
+    Clock,
+    CheckCircle,
+    XCircle,
+>>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
     Download,
     Search,
     Filter,

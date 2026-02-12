@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Star, Calendar, Award, CheckCircle, ArrowRight, Clock, MapPin, Lightbulb, TrendingUp } from 'lucide-react';
+import { Users, Star, Calendar, Award, CheckCircle, ArrowRight, Lightbulb, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -69,7 +69,7 @@ export function SejaMentor() {
               Compartilhe seu <span className="text-teal-400">Conhecimento</span>
             </h1>
             <p className="text-xl text-gray-400">
-              Junte-se ao time de mentores do Growth Summit 2026 e ajude a transformar 
+              Junte-se ao time de mentores do Growth Summit 2026 e ajude a transformar
               negócios e carreiras no maior evento de Growth do Nordeste.
             </p>
           </div>
@@ -84,7 +84,7 @@ export function SejaMentor() {
               Por que ser Mentor?
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Ser mentor no Growth Summit é uma oportunidade única de impactar 
+              Ser mentor no Growth Summit é uma oportunidade única de impactar
               empreendedores e profissionais em crescimento.
             </p>
           </div>
@@ -158,7 +158,7 @@ export function SejaMentor() {
               Certificado de Participação
             </h3>
             <p className="text-gray-400 text-sm">
-              Todos os mentores recebem certificado de participação e destaque 
+              Todos os mentores recebem certificado de participação e destaque
               especial nos materiais de comunicação do evento.
             </p>
           </div>
@@ -171,14 +171,14 @@ export function SejaMentor() {
               <h2 className="text-2xl font-bold text-white mb-6">
                 Candidate-se como Mentor
               </h2>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label className="text-gray-300">Nome Completo *</Label>
                   <Input
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white mt-1"
                     placeholder="Seu nome"
                   />
@@ -191,7 +191,7 @@ export function SejaMentor() {
                       type="email"
                       required
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white mt-1"
                       placeholder="seu@email.com"
                     />
@@ -200,7 +200,7 @@ export function SejaMentor() {
                     <Label className="text-gray-300">Telefone *</Label>
                     <Input
                       value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white mt-1"
                       placeholder="(88) 99999-9999"
                     />
@@ -213,7 +213,7 @@ export function SejaMentor() {
                     <Input
                       required
                       value={formData.company}
-                      onChange={(e) => setFormData({...formData, company: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white mt-1"
                       placeholder="Onde trabalha"
                     />
@@ -223,7 +223,7 @@ export function SejaMentor() {
                     <Input
                       required
                       value={formData.position}
-                      onChange={(e) => setFormData({...formData, position: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white mt-1"
                       placeholder="Seu cargo"
                     />
@@ -235,7 +235,7 @@ export function SejaMentor() {
                   <Input
                     required
                     value={formData.expertise}
-                    onChange={(e) => setFormData({...formData, expertise: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, expertise: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white mt-1"
                     placeholder="Ex: Growth, Marketing, Vendas, Produto..."
                   />
@@ -245,14 +245,14 @@ export function SejaMentor() {
                   <Label className="text-gray-300">LinkedIn</Label>
                   <Input
                     value={formData.linkedin}
-                    onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white mt-1"
                     placeholder="linkedin.com/in/seuperfil"
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-teal-500 hover:bg-teal-600 text-white py-6"
                 >
                   Enviar Candidatura

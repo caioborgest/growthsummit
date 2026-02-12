@@ -1,8 +1,7 @@
-import { MapPin, Plane, Car, Hotel, Bus, Train, Navigation, Clock, Phone, ExternalLink } from 'lucide-react';
+import { MapPin, Plane, Car, Hotel, Bus, Navigation, Clock, Phone, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { eventInfo } from '@/data/eventData';
 
 export function LocalViagem() {
   return (
@@ -34,10 +33,10 @@ export function LocalViagem() {
                 Boulevard Hotel & Convention
               </h2>
               <p className="text-gray-400 mb-6 text-lg">
-                O maior centro de convenções da região do Cariri, com estrutura completa 
+                O maior centro de convenções da região do Cariri, com estrutura completa
                 para receber mais de 1.500 participantes em grande estilo e conforto.
               </p>
-              
+
               <div className="space-y-4 mb-8">
                 <div className="flex items-start">
                   <MapPin className="h-5 w-5 text-teal-400 mr-3 mt-1 flex-shrink-0" />
@@ -71,7 +70,7 @@ export function LocalViagem() {
                 </a>
               </Button>
             </div>
-            
+
             <div className="relative">
               <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/20 to-orange-500/20 border border-dark-300">
                 <img
@@ -109,7 +108,7 @@ export function LocalViagem() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-400 mb-4">
-                  Aeroporto Regional Orlando Bezerra de Menezes (JDO) recebe voos de 
+                  Aeroporto Regional Orlando Bezerra de Menezes (JDO) recebe voos de
                   Fortaleza, Recife e outras capitais.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-400">
@@ -139,7 +138,7 @@ export function LocalViagem() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-400 mb-4">
-                  Rodoviária de Juazeiro do Norte com linhas de todas as regiões do 
+                  Rodoviária de Juazeiro do Norte com linhas de todas as regiões do
                   Nordeste e principais capitais brasileiras.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-400">
@@ -169,7 +168,7 @@ export function LocalViagem() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-400 mb-4">
-                  Acesso fácil pela BR-116 e CE-060. Estacionamento disponível 
+                  Acesso fácil pela BR-116 e CE-060. Estacionamento disponível
                   no hotel e proximidades.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-400">
@@ -240,7 +239,7 @@ export function LocalViagem() {
                   )}
                   <h3 className="text-xl font-semibold text-white mb-2">{hotel.name}</h3>
                   <p className="text-gray-400 text-sm mb-4">{hotel.type}</p>
-                  
+
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-gray-300 text-sm">
                       <MapPin className="h-4 w-4 mr-2 text-teal-400" />
