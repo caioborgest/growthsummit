@@ -74,7 +74,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         status: 'pendente',
                         created_at: new Date().toISOString(),
                     },
-                ]);
+                ] as any);
 
             if (supabaseError) throw supabaseError;
 

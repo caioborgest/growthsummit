@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import {
-    Calendar,
     Users,
     Rocket,
     Handshake,
     DollarSign,
-    TrendingUp,
-    Clock,
-    CheckCircle,
-    XCircle,
     Download,
     Search,
-    Filter
+    Filter,
+    CheckCircle,
+    Clock,
+    XCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -229,8 +227,8 @@ export function AdminGrowthExperienceTriunfo() {
             <div className="flex gap-2 border-b border-dark-300">
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'inscricoes'
-                            ? 'text-orange-400 border-b-2 border-orange-400'
-                            : 'text-gray-400 hover:text-white'
+                        ? 'text-orange-400 border-b-2 border-orange-400'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('inscricoes')}
                 >
@@ -238,8 +236,8 @@ export function AdminGrowthExperienceTriunfo() {
                 </button>
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'startups'
-                            ? 'text-teal-400 border-b-2 border-teal-400'
-                            : 'text-gray-400 hover:text-white'
+                        ? 'text-teal-400 border-b-2 border-teal-400'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('startups')}
                 >
@@ -247,8 +245,8 @@ export function AdminGrowthExperienceTriunfo() {
                 </button>
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'b2b'
-                            ? 'text-orange-400 border-b-2 border-orange-400'
-                            : 'text-gray-400 hover:text-white'
+                        ? 'text-orange-400 border-b-2 border-orange-400'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('b2b')}
                 >

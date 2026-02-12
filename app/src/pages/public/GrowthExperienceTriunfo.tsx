@@ -5,20 +5,18 @@ import {
   Users,
   Clock,
   TrendingUp,
-  Award,
-  Briefcase,
-  Lightbulb,
   Target,
+  Handshake,
+  Lightbulb,
+  Briefcase,
   Rocket,
-  CheckCircle,
-  ArrowRight,
+  Mic2,
   Building2,
   GraduationCap,
-  Handshake,
-  Mic2,
+  UserPlus,
+  CheckCircle,
+  ArrowRight,
   Coffee,
-  Star,
-  UserPlus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

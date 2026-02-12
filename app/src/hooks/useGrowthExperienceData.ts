@@ -117,7 +117,7 @@ export function useInscricoesTriunfo() {
         try {
             const { error: updateError } = await supabase
                 .from('inscricoes_growth_experience_triunfo')
-                .update({ status, updated_at: new Date().toISOString() })
+                .update({ status, updated_at: new Date().toISOString() } as any)
                 .eq('id', id);
 
             if (updateError) throw updateError;
@@ -204,7 +204,7 @@ export function useStartupsArenaPitch() {
 
             const { error: updateError } = await supabase
                 .from('startups_arena_pitch')
-                .update(updateData)
+                .update(updateData as any)
                 .eq('id', id);
 
             if (updateError) throw updateError;
@@ -286,7 +286,7 @@ export function useEmpresasB2B() {
 
             const { error: updateError } = await supabase
                 .from('rodada_negocios_b2b')
-                .update(updateData)
+                .update(updateData as any)
                 .eq('id', id);
 
             if (updateError) throw updateError;

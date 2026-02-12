@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Loader2, CheckCircle, Upload, Rocket } from 'lucide-react';
+import { X, Loader2, CheckCircle, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 
@@ -102,7 +102,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             // Inserir no Supabase
             const { error: supabaseError } = await supabase
                 .from('startups_arena_pitch')
-                .insert([dataToInsert]);
+                .insert([dataToInsert] as any);
 
             if (supabaseError) throw supabaseError;
 

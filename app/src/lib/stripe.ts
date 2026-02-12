@@ -174,7 +174,7 @@ export async function updateInscricaoStatus(
 
         const { error } = await supabase
             .from('inscricoes_growth_experience_triunfo')
-            .update(updateData)
+            .update(updateData as any)
             .eq('id', inscricaoId);
 
         if (error) throw error;
@@ -212,7 +212,7 @@ export async function logPayment(data: {
                     status: data.status,
                     metadata: data.metadata,
                     created_at: new Date().toISOString(),
-                },
+                } as any,
             ]);
 
         if (error) throw error;
