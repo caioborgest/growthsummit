@@ -5,11 +5,6 @@ import {
   Users,
   Clock,
   TrendingUp,
-<<<<<<< HEAD
-=======
-  Briefcase,
-  Lightbulb,
->>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
   Target,
   Handshake,
   Lightbulb,
@@ -22,10 +17,6 @@ import {
   CheckCircle,
   ArrowRight,
   Coffee,
-<<<<<<< HEAD
-=======
-  UserPlus
->>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,7 +27,6 @@ import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { SocialShare } from '@/components/social/SocialShare';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getStandImage, getPalestranteImage, placeholderStand, placeholderPalestrante, getStorageUrl } from '@/lib/storage';
-
 
 
 const palestrantes = [
@@ -798,73 +788,14 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      {/* Compartilhamento Social */}
-      <section className="py-20 lg:py-28 bg-dark-200/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Social Share */}
+      <section className="py-12 border-t border-dark-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-gray-400 mb-6">Compartilhe este evento:</p>
           <SocialShare
             url={pageUrl}
-            title="Growth Experience Triunfo-PE 2026 - A Maior Exposição de Negócios do Sertão do Pajeú"
-            description="09/04/2026 - Capacitação, networking e oportunidades para PMEs. Palestras com Leandro Batista e Vanylton Matias. Inscrições abertas!"
+            title="Growth Experience Triunfo-PE 2026 - A Maior Exposição de Negócios do Sertão"
           />
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="py-20 lg:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-teal-500/10" />
-
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mx-auto mb-8">
-            <Rocket className="h-10 w-10 text-white" />
-          </div>
-
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Não Perca Esta Oportunidade
-          </h2>
-          <p className="text-xl text-gray-400 mb-8">
-            Inscreva-se gratuitamente para o turno diurno ou garanta seu ingresso
-            para as palestras noturnas exclusivas
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <Button
-              size="lg"
-              className="bg-teal-500 hover:bg-teal-600 text-white px-8"
-              onClick={() => setModalAberto('cursos')}
-            >
-              <GraduationCap className="h-5 w-5 mr-2" />
-              Inscrição Gratuita (Diurno)
-            </Button>
-            <Button
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-8"
-              onClick={() => setModalAberto('palestra')}
-            >
-              <Mic2 className="h-5 w-5 mr-2" />
-              Ingresso Noturno - R$ 179,99
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-teal-500 text-teal-400 hover:bg-teal-500/10"
-              onClick={() => setModalAberto('mentor')}
-            >
-              <UserPlus className="h-5 w-5 mr-2" />
-              Seja Mentor 1:1
-            </Button>
-          </div>
-
-          <div className="glass-card p-6 max-w-2xl mx-auto">
-            <p className="text-gray-300 mb-4">
-              <strong className="text-white">Data:</strong> 09 de Abril de 2026 (quinta-feira)
-            </p>
-            <p className="text-gray-300 mb-4">
-              <strong className="text-white">Local:</strong> Espaço Parque, Triunfo-PE
-            </p>
-            <p className="text-gray-300">
-              <strong className="text-white">Patrocínio:</strong> SEBRAE
-            </p>
-          </div>
         </div>
       </section>
     </div>

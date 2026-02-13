@@ -60,23 +60,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             }
 
             // Inserir no Supabase
-<<<<<<< HEAD
-            const { error: supabaseError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
-                .insert([
-                    {
-                        nome: formData.nome,
-                        email: formData.email,
-                        telefone: formData.telefone,
-                        empresa: formData.empresa || null,
-                        tipo_inscricao: tipo,
-                        evento: eventoNome,
-                        valor: tipo === 'palestra' ? 179.99 : 0,
-                        status: 'pendente',
-                        created_at: new Date().toISOString(),
-                    },
-                ] as any);
-=======
             const { error: supabaseError } = await (supabase
                 .from('inscricoes_growth_experience_triunfo') as any)
                 .insert({
@@ -90,7 +73,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     status: 'pendente',
                     created_at: new Date().toISOString(),
                 });
->>>>>>> 0f4274e708f4383df4e22169da1de23cef6eb300
 
             if (supabaseError) throw supabaseError;
 
