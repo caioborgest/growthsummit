@@ -68,7 +68,7 @@ export function Footer() {
                 placeholder="Seu melhor email"
                 className="bg-dark-100 border-dark-300 text-white placeholder:text-gray-500 flex-1"
               />
-              <Button className="bg-teal-500 hover:bg-teal-600 text-white whitespace-nowrap">
+              <Button className="bg-brand-yellow hover:bg-brand-yellow/90 text-dark-100 font-bold whitespace-nowrap">
                 Inscrever
               </Button>
             </div>
@@ -82,12 +82,12 @@ export function Footer() {
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">GS</span>
+              <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
+                <span className="text-dark-100 font-bold text-lg">GS</span>
               </div>
               <div>
                 <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
-                <span className="text-teal-400 text-xs block">2026</span>
+                <span className="text-brand-yellow text-xs block font-bold">2026</span>
               </div>
             </Link>
             <p className="text-gray-400 text-sm mb-6 max-w-xs">
@@ -126,7 +126,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-teal-400 text-sm transition-colors"
+                    className="text-gray-400 hover:text-brand-yellow text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -142,7 +142,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-teal-400 text-sm transition-colors"
+                    className="text-gray-400 hover:text-brand-yellow text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -199,7 +199,7 @@ export function Footer() {
                 <a
                   key={social.name}
                   href={social.href}
-                  className="text-gray-400 hover:text-teal-400 transition-colors"
+                  className="text-gray-400 hover:text-brand-yellow transition-colors"
                   aria-label={social.name}
                 >
                   <social.icon className="h-5 w-5" />

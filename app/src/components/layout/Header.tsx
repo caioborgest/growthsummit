@@ -60,20 +60,20 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-dark/95 backdrop-blur-xl border-b border-dark-300'
-          : 'bg-transparent'
+        ? 'bg-dark/95 backdrop-blur-xl border-b border-dark-300'
+        : 'bg-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">GS</span>
+            <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
+              <span className="text-dark-100 font-bold text-lg">GS</span>
             </div>
             <div className="hidden sm:block">
               <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
-              <span className="text-teal-400 text-xs block">2026</span>
+              <span className="text-brand-yellow text-xs block font-bold">2026</span>
             </div>
           </Link>
 
@@ -84,8 +84,8 @@ export function Header() {
                 key={link.name}
                 to={link.href}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(link.href)
-                    ? 'text-teal-400 bg-teal-500/10'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  ? 'text-brand-yellow bg-brand-yellow/10'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
                   }`}
               >
                 {link.name}
@@ -106,7 +106,7 @@ export function Header() {
                   <DropdownMenuItem key={link.name} asChild>
                     <Link
                       to={link.href}
-                      className="text-gray-300 hover:text-white hover:bg-teal-500/10 cursor-pointer"
+                      className="text-gray-300 hover:text-white hover:bg-brand-yellow/10 cursor-pointer"
                     >
                       {link.name}
                     </Link>
@@ -156,7 +156,7 @@ export function Header() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-teal-500 hover:bg-teal-600 text-white"
+                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-dark-100 font-bold"
                   asChild
                 >
                   <Link to="/inscricoes">Inscrever-se</Link>
@@ -184,8 +184,8 @@ export function Header() {
                 key={link.name}
                 to={link.href}
                 className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all ${isActive(link.href)
-                    ? 'text-teal-400 bg-teal-500/10'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  ? 'text-brand-yellow bg-brand-yellow/10'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
                   }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -222,7 +222,7 @@ export function Header() {
                   >
                     <Link to="/login">Entrar</Link>
                   </Button>
-                  <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white" asChild>
+                  <Button className="w-full bg-brand-yellow hover:bg-brand-yellow/90 text-dark-100 font-bold" asChild>
                     <Link to="/inscricoes">Inscrever-se</Link>
                   </Button>
                 </>

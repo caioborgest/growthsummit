@@ -67,8 +67,8 @@ export function AdminGrowthExperienceTriunfo() {
                 {/* Total de Inscrições */}
                 <Card className="glass-card p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <Users className="h-8 w-8 text-orange-400" />
-                        <Badge className="bg-orange-500/20 text-orange-400">
+                        <Users className="h-8 w-8 text-brand-yellow" />
+                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
                             {stats.inscricoesPendentes} pendentes
                         </Badge>
                     </div>
@@ -77,7 +77,7 @@ export function AdminGrowthExperienceTriunfo() {
                     </p>
                     <p className="text-gray-400 text-sm">Total de Inscrições</p>
                     <div className="mt-3 flex gap-2 text-xs">
-                        <span className="text-teal-400">{stats.inscricoesPagas} pagas</span>
+                        <span className="text-brand-blue">{stats.inscricoesPagas} pagas</span>
                         <span className="text-gray-500">•</span>
                         <span className="text-yellow-400">{stats.inscricoesPendentes} pendentes</span>
                     </div>
@@ -86,8 +86,8 @@ export function AdminGrowthExperienceTriunfo() {
                 {/* Startups */}
                 <Card className="glass-card p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <Rocket className="h-8 w-8 text-teal-400" />
-                        <Badge className="bg-teal-500/20 text-teal-400">
+                        <Rocket className="h-8 w-8 text-brand-blue" />
+                        <Badge className="bg-brand-blue/20 text-brand-blue">
                             Arena Pitch
                         </Badge>
                     </div>
@@ -105,8 +105,8 @@ export function AdminGrowthExperienceTriunfo() {
                 {/* Empresas B2B */}
                 <Card className="glass-card p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <Handshake className="h-8 w-8 text-orange-400" />
-                        <Badge className="bg-orange-500/20 text-orange-400">
+                        <Handshake className="h-8 w-8 text-brand-yellow" />
+                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
                             Rodada B2B
                         </Badge>
                     </div>
@@ -122,10 +122,10 @@ export function AdminGrowthExperienceTriunfo() {
                 </Card>
 
                 {/* Receita */}
-                <Card className="glass-card p-6">
+                <Card className="glass-card p-6 border-brand-yellow/20">
                     <div className="flex items-center justify-between mb-2">
-                        <DollarSign className="h-8 w-8 text-green-400" />
-                        <Badge className="bg-green-500/20 text-green-400">
+                        <DollarSign className="h-8 w-8 text-brand-yellow" />
+                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
                             Receita
                         </Badge>
                     </div>
@@ -198,14 +198,14 @@ export function AdminGrowthExperienceTriunfo() {
                     <h3 className="text-lg font-semibold text-white mb-4">Ações Rápidas</h3>
                     <div className="space-y-2">
                         <Button
-                            className="w-full bg-teal-500 hover:bg-teal-600 text-white justify-start"
+                            className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white justify-start"
                             onClick={() => setActiveTab('startups')}
                         >
                             <Rocket className="h-4 w-4 mr-2" />
                             Avaliar Startups ({stats.startupsPendentes})
                         </Button>
                         <Button
-                            className="w-full bg-orange-500 hover:bg-orange-600 text-white justify-start"
+                            className="w-full bg-brand-yellow hover:bg-brand-yellow/80 text-dark-100 justify-start"
                             onClick={() => setActiveTab('b2b')}
                         >
                             <Handshake className="h-4 w-4 mr-2" />
@@ -227,7 +227,7 @@ export function AdminGrowthExperienceTriunfo() {
             <div className="flex gap-2 border-b border-dark-300">
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'inscricoes'
-                        ? 'text-orange-400 border-b-2 border-orange-400'
+                        ? 'text-brand-yellow border-b-2 border-brand-yellow'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('inscricoes')}
@@ -236,7 +236,7 @@ export function AdminGrowthExperienceTriunfo() {
                 </button>
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'startups'
-                        ? 'text-teal-400 border-b-2 border-teal-400'
+                        ? 'text-brand-blue border-b-2 border-brand-blue'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('startups')}
@@ -245,7 +245,7 @@ export function AdminGrowthExperienceTriunfo() {
                 </button>
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'b2b'
-                        ? 'text-orange-400 border-b-2 border-orange-400'
+                        ? 'text-brand-yellow border-b-2 border-brand-yellow'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('b2b')}
@@ -288,10 +288,10 @@ export function AdminGrowthExperienceTriunfo() {
                             Use os painéis específicos para gerenciar:
                         </p>
                         <div className="flex flex-wrap gap-2 justify-center">
-                            <Badge className="bg-teal-500/20 text-teal-400">
+                            <Badge className="bg-brand-blue/20 text-brand-blue">
                                 Admin Arena Pitch
                             </Badge>
-                            <Badge className="bg-orange-500/20 text-orange-400">
+                            <Badge className="bg-brand-yellow/20 text-brand-yellow">
                                 Admin Rodada B2B
                             </Badge>
                         </div>
