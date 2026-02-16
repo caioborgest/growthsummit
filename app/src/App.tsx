@@ -35,6 +35,7 @@ import { AdminCheckIn } from './pages/admin/AdminCheckIn';
 import { AdminComunicacao } from './pages/admin/AdminComunicacao';
 import { AdminRelatorios } from './pages/admin/AdminRelatorios';
 import { AdminProgramacao } from './pages/admin/AdminProgramacao';
+import { AdminSecurity } from './pages/admin/AdminSecurity';
 import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
 
 // 404 Not Found Component
@@ -63,7 +64,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-yellow"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div>
       </div>
     );
   }
@@ -174,6 +175,7 @@ function AppRoutes() {
         <Route path="comunicacao" element={<AdminComunicacao />} />
         <Route path="relatorios" element={<AdminRelatorios />} />
         <Route path="programacao" element={<AdminProgramacao />} />
+        <Route path="seguranca" element={<AdminSecurity />} />
       </Route>
 
       {/* 404 - Catch all undefined routes */}

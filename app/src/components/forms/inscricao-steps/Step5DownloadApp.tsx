@@ -1,0 +1,144 @@
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon } from 'lucide-react';
+import QRCode from 'react-qr-code';
+
+interface Step5DownloadAppProps {
+    onContinuar: () => void;
+}
+
+export function Step5DownloadApp({ onContinuar }: Step5DownloadAppProps) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="text-center">
+                <Smartphone className="h-16 w-16 text-brand-orange-coral mx-auto mb-4 animate-bounce" />
+                <h3 className="text-3xl font-bold text-white mb-3">
+                    Passo Fundamental: Baixe o App
+                </h3>
+                <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                    Para acessar sua inscrição, ver a programação e fazer networking, você precisa ter o app instalado.
+                </p>
+            </div>
+
+            {/* Grid de Benefícios */}
+            <div className="grid md:grid-cols-3 gap-4 mb-4">
+                {[
+                    {
+                        icon: Zap,
+                        title: 'Acesso Offline',
+                        desc: 'Sua credencial sem internet'
+                    },
+                    {
+                        icon: Shield,
+                        title: '100% Seguro',
+                        desc: 'Seus dados protegidos'
+                    },
+                    {
+                        icon: Smartphone,
+                        title: 'Notificações',
+                        desc: 'Lembretes das palestras'
+                    }
+                ].map((item, index) => (
+                    <Card key={index} className="p-4 bg-dark-200/50 border-white/5 flex flex-col items-center text-center">
+                        <div className="w-10 h-10 rounded-full bg-brand-orange-coral/10 flex items-center justify-center mb-2">
+                            <item.icon className="h-5 w-5 text-brand-orange-coral" />
+                        </div>
+                        <h5 className="font-bold text-white text-sm">{item.title}</h5>
+                        <p className="text-xs text-gray-500">{item.desc}</p>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Instruções de Instalação */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {/* iOS */}
+                <Card className={`p-6 bg-dark-200/50 border-white/10 relative overflow-hidden ${isIOS ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                    {isIOS && (
+                        <Badge className="absolute top-2 right-2 bg-brand-orange-coral text-white text-[10px]">
+                            SEU DISPOSITIVO
+                        </Badge>
+                    )}
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                            <Share2 className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white">iPhone / iPad</h4>
+                            <p className="text-xs text-gray-400">Instalação via Safari</p>
+                        </div>
+                    </div>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-1">
+                        <li>Abra no <strong>Safari</strong></li>
+                        <li>Toque em <span className="text-blue-400 font-bold">Compartilhar</span></li>
+                        <li>Role e escolha <span className="text-white font-bold">"Adicionar à Tela de Início"</span></li>
+                        <li>Confirme com <span className="text-white font-bold">"Adicionar"</span></li>
+                    </ol>
+                </Card>
+
+                {/* Android */}
+                <Card className={`p-6 bg-dark-200/50 border-white/10 relative overflow-hidden ${isAndroid ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                    {isAndroid && (
+                        <Badge className="absolute top-2 right-2 bg-brand-orange-coral text-white text-[10px]">
+                            SEU DISPOSITIVO
+                        </Badge>
+                    )}
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-white">
+                            <Chrome className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white">Android</h4>
+                            <p className="text-xs text-gray-400">Instalação via Chrome</p>
+                        </div>
+                    </div>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-1">
+                        <li>Abra no <strong>Chrome</strong></li>
+                        <li>Toque no <span className="text-green-400 font-bold">Menu (⋮)</span></li>
+                        <li>Escolha <span className="text-white font-bold">"Instalar aplicativo"</span></li>
+                        <li>Confirme com <span className="text-white font-bold">"Instalar"</span></li>
+                    </ol>
+                </Card>
+            </div>
+
+            {/* QR Code para Desktop */}
+            <div className="hidden md:flex justify-center my-6">
+                <Card className="p-4 bg-white rounded-xl shadow-lg flex items-center gap-6">
+                    <QRCode
+                        value="https://growthsummit.com.br/app" // Substituir pela URL real
+                        size={100}
+                        level="H"
+                    />
+                    <div className="text-left">
+                        <p className="text-black font-bold mb-1 flex items-center gap-2">
+                            <QrIcon className="h-4 w-4" />
+                            Escaneie para baixar
+                        </p>
+                        <p className="text-xs text-gray-600 max-w-[150px]">
+                            Aponte a câmera do seu celular para instalar o app agora
+                        </p>
+                    </div>
+                </Card>
+            </div>
+
+            {/* Botão de Confirmação */}
+            <div className="sticky bottom-0 bg-dark-100 pt-4 border-t border-white/10">
+                <Button
+                    size="lg"
+                    onClick={onContinuar}
+                    className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
+                >
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Já instalei o App, continuar
+                </Button>
+                <p className="text-center text-xs text-gray-500 mt-3">
+                    Ao continuar, você confirma que instalou o aplicativo para acessar sua credencial.
+                </p>
+            </div>
+        </div>
+    );
+}

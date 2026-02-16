@@ -390,3 +390,6 @@ export function SecurityDashboard() {
         </div>
     );
 }
+
+// Export com nome esperado pelo App.tsx
+export const AdminSecurity = SecurityDashboard;

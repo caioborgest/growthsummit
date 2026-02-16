@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Target,
   Handshake,
-  Lightbulb,
   Briefcase,
   Rocket,
   Mic2,
@@ -15,8 +14,6 @@ import {
   GraduationCap,
   UserPlus,
   CheckCircle,
-  ArrowRight,
-  Coffee,
   Menu,
   X,
   Camera,
@@ -44,6 +41,11 @@ import { getStandImage, getPalestranteImage, placeholderPalestrante, getStorageU
 import { ProgramacaoTabs } from '@/components/growth-experience/ProgramacaoTabs';
 import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
+import { PalestranteDestacado } from '@/components/growth-experience/PalestranteDestacado';
+import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
+import { AppDownloadSection } from '@/components/app/AppDownloadSection';
+import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
+import { ProgramacaoCompleta } from '@/components/growth-experience/ProgramacaoCompleta';
 
 // Dados do evento
 const palestrantes = [
@@ -496,13 +498,14 @@ function InnerHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-orange-coral to-brand-blue flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">GE</span>
-            </div>
-            <div>
-              <span className="text-white font-bold text-lg leading-tight block">Growth Experience</span>
-              <span className="text-brand-orange-coral text-xs block">Triunfo-PE 2026</span>
-            </div>
+            <img
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
+              alt="Growth Experience"
+              className="h-14 w-auto"
+              onError={(e) => {
+                e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png';
+              }}
+            />
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-6">
@@ -547,11 +550,15 @@ function InnerFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-2">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-orange-coral to-brand-blue flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">GE</span>
-              </div>
-              <span className="text-white font-bold text-xl">Growth Experience Triunfo</span>
+            <div className="mb-6">
+              <img
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png"
+                alt="Growth Experience"
+                className="h-12 w-auto"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
+                }}
+              />
             </div>
             <p className="text-gray-400 max-w-sm mb-6">
               A maior exposição de negócios do Sertão do Pajeú. Transformando empresas locais através de conhecimento prático e conexões reais.
@@ -603,7 +610,8 @@ function InnerFooter() {
 
 // Main Component
 export function GrowthExperienceTriunfo() {
-  const [modalAberto, setModalAberto] = useState<'palestra' | 'mentor' | 'cursos' | 'startup' | 'b2b' | null>(null);
+  const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
+  const [modalAberto, setModalAberto] = useState<'mentor' | 'startup' | 'b2b' | null>(null);
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://growthsummit.com.br/growth-experience-triunfo';
   const backgroundImage = getStorageUrl('caretas-triunfo', 'caretas-triunfo.png');
 
@@ -619,9 +627,10 @@ export function GrowthExperienceTriunfo() {
       <InnerHeader />
 
       {/* Modais */}
-      <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={() => setModalAberto(null)} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
+      <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
+      {/* Modais Específicos */}
       <InscricaoModal isOpen={modalAberto === 'mentor'} onClose={() => setModalAberto(null)} tipo="mentor" eventoNome="Growth Experience Triunfo-PE 2026" />
-      <InscricaoModal isOpen={modalAberto === 'cursos'} onClose={() => setModalAberto(null)} tipo="cursos" eventoNome="Growth Experience Triunfo-PE 2026" />
+      {/* Cursos e Palestras agora usam o MultiStep acima */}
       <StartupFormModal isOpen={modalAberto === 'startup'} onClose={() => setModalAberto(null)} />
       <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
 
@@ -632,12 +641,12 @@ export function GrowthExperienceTriunfo() {
           <img
             src={backgroundImage}
             alt="Growth Experience Triunfo"
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-85"
             onError={(e) => {
               e.currentTarget.src = 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2070&auto=format&fit=crop';
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/80 via-dark/90 to-dark" />
+          <div className="absolute inset-0 bg-gradient-to-b from-dark/40 via-dark/60 to-dark/90" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -684,7 +693,7 @@ export function GrowthExperienceTriunfo() {
               <Button
                 size="lg"
                 className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-12 py-8 text-xl rounded-2xl shadow-2xl shadow-brand-orange-coral/30 hover:scale-105 transition-all group"
-                onClick={() => setModalAberto('cursos')}
+                onClick={() => setModalInscricaoAberto(true)}
               >
                 <Rocket className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
                 Inscrição Gratuita
@@ -831,7 +840,7 @@ export function GrowthExperienceTriunfo() {
             <Button
               size="lg"
               className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-10 py-7 text-lg rounded-xl shadow-lg"
-              onClick={() => setModalAberto('palestra')}
+              onClick={() => setModalInscricaoAberto(true)}
             >
               <Mic2 className="h-5 w-5 mr-3" />
               Garantir Ingresso - R$ 179,99
@@ -843,30 +852,8 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      {/* Programação */}
-      <section id="programacao" className="py-24 bg-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30">
-              Programação Completa
-            </Badge>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Um Dia Inteiro de Transformação
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Escolha sua trilha e aproveite ao máximo cada momento do evento
-            </p>
-          </div>
-
-          <ProgramacaoTabs
-            programacaoManha={programacao.manha}
-            programacaoTarde={programacao.tarde}
-            programacaoNoturna={programacaoNoturna}
-            circuitoExperiencias={circuitoExperiencias}
-            momentosAncora={momentosAncora}
-          />
-        </div>
-      </section>
+      {/* Programação Completa */}
+      <ProgramacaoCompleta onInscrever={() => setModalInscricaoAberto(true)} />
 
       {/* Seções de Inscrição */}
       <div id="inscricoes">
@@ -888,7 +875,7 @@ export function GrowthExperienceTriunfo() {
           horario="8h30 - 17h30"
           capacidade="Vagas limitadas por sala (20-80 pessoas)"
           destaque
-          onInscrever={() => setModalAberto('cursos')}
+          onInscrever={() => setModalInscricaoAberto(true)}
           imagemUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
         />
 
@@ -1046,7 +1033,7 @@ export function GrowthExperienceTriunfo() {
             <Button
               size="lg"
               className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-12 py-8 text-xl rounded-2xl shadow-2xl shadow-brand-orange-coral/30 hover:scale-105 transition-all"
-              onClick={() => setModalAberto('cursos')}
+              onClick={() => setModalInscricaoAberto(true)}
             >
               <Rocket className="h-6 w-6 mr-3" />
               Fazer Inscrição Gratuita
@@ -1055,7 +1042,7 @@ export function GrowthExperienceTriunfo() {
               size="lg"
               variant="outline"
               className="border-2 border-white/30 text-white hover:bg-white/10 px-12 py-8 text-xl rounded-2xl backdrop-blur-sm hover:scale-105 transition-all"
-              onClick={() => setModalAberto('palestra')}
+              onClick={() => setModalInscricaoAberto(true)}
             >
               <Mic2 className="h-6 w-6 mr-3" />
               Palestras Noturnas - R$ 179,99
@@ -1079,6 +1066,65 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
+      {/* Palestrantes Destacados da Noite */}
+      <section id="palestrantes" className="py-24 bg-gradient-to-b from-dark via-dark-100 to-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 text-sm px-6 py-2">
+              <Star className="h-4 w-4 mr-2" />
+              Palestrantes Destaque
+            </Badge>
+            <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6">
+              Palestras Noturnas
+              <span className="block text-brand-orange-coral mt-2">Exclusivas</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+              Conheça os palestrantes que vão transformar sua visão de negócios com experiências reais de sucesso
+            </p>
+          </div>
+
+          {/* Palestrantes */}
+          <div className="space-y-12">
+            {palestrantes.map((palestrante, index) => (
+              <PalestranteDestacado
+                key={index}
+                nome={palestrante.nome}
+                cargo={palestrante.cargo}
+                descricao={palestrante.descricao}
+                tema={palestrante.tema}
+                horario={palestrante.horario}
+                foto={getPalestranteImage(palestrante.nome)}
+                onInscrever={() => setModalAberto('palestra')}
+              />
+            ))}
+          </div>
+
+          {/* CTA Final */}
+          <div className="mt-16 text-center">
+            <div className="glass-card p-8 max-w-2xl mx-auto border-brand-orange-coral/30">
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Garanta Sua Vaga nas Palestras Noturnas
+              </h3>
+              <p className="text-gray-400 mb-6">
+                Apenas R$ 179,99 para acesso às duas palestras exclusivas + networking
+              </p>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
+                onClick={() => setModalAberto('palestra')}
+              >
+                <Mic2 className="h-5 w-5 mr-2" />
+                Fazer Inscrição Agora
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* App Download Section */}
+      <AppDownloadSection />
+
       {/* Social Share */}
       <section className="py-12 bg-dark-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1094,6 +1140,9 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       <InnerFooter />
+
+      {/* WhatsApp Button - Proposta para Stand */}
+      <WhatsAppButton />
     </div>
   );
 }

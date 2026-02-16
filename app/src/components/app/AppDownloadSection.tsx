@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Smartphone, Zap, Shield, Apple } from 'lucide-react';
+import { Download, Smartphone, Zap, Shield, Share2, Chrome, Calendar, Users, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -15,12 +15,10 @@ export function AppDownloadSection() {
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
-        // Detectar se já está instalado
         if (window.matchMedia('(display-mode: standalone)').matches) {
             setIsInstalled(true);
         }
 
-        // Capturar evento de instalação
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -28,28 +26,19 @@ export function AppDownloadSection() {
         };
 
         window.addEventListener('beforeinstallprompt', handler);
-
-        // Detectar quando foi instalado
         window.addEventListener('appinstalled', () => {
             setIsInstalled(true);
             setIsInstallable(false);
         });
 
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handler);
-        };
+        return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     const handleInstallPWA = async () => {
         if (!deferredPrompt) return;
-
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-
-        if (outcome === 'accepted') {
-            console.log('PWA instalado com sucesso');
-        }
-
+        if (outcome === 'accepted') console.log('PWA instalado');
         setDeferredPrompt(null);
         setIsInstallable(false);
     };
@@ -58,204 +47,215 @@ export function AppDownloadSection() {
     const isAndroid = /Android/.test(navigator.userAgent);
 
     return (
-        <section className="py-24 bg-gradient-to-br from-brand-orange-coral/10 via-dark to-dark">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                    <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30">
-                        App Nativo
-                    </Badge>
-                    <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                        Baixe o App Growth Experience
+        <section className="relative py-24 overflow-hidden bg-gradient-to-b from-dark via-dark-100 to-dark">
+            <div className="absolute inset-0 opacity-5" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(255, 112, 67, 0.4) 1px, transparent 1px)',
+                backgroundSize: '40px 40px'
+            }} />
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header Compacto */}
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl lg:text-6xl font-bold text-white mb-4">
+                        Baixe o App
+                        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient mt-2">
+                            Growth Experience
+                        </span>
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                        Acesse todas as funcionalidades do evento direto do seu celular
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                        Acesse direto da tela inicial. Sem precisar de loja!
                     </p>
                 </div>
 
-                {isInstalled && (
-                    <div className="mb-8 max-w-2xl mx-auto">
-                        <Card className="glass-card p-6 border-green-500/30 bg-green-500/10">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                                    <Shield className="h-6 w-6 text-green-500" />
+                <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+                    {/* Mockup Premium do App */}
+                    <div className="relative">
+                        <div className="relative mx-auto max-w-[280px]">
+                            {/* Phone Frame */}
+                            <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-[3rem] p-3 shadow-2xl">
+                                {/* Notch */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-7 bg-black rounded-b-3xl z-10" />
+
+                                {/* Screen */}
+                                <div className="relative bg-dark rounded-[2.5rem] overflow-hidden aspect-[9/19.5]">
+                                    {/* Status Bar */}
+                                    <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/50 to-transparent z-10 flex items-center justify-between px-6 pt-2">
+                                        <span className="text-white text-xs font-semibold">9:41</span>
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-4 h-3 border border-white/80 rounded-sm" />
+                                            <div className="w-1 h-3 bg-white/80 rounded-sm" />
+                                        </div>
+                                    </div>
+
+                                    {/* App Content - DESIGN PREMIUM */}
+                                    <div className="relative h-full bg-gradient-to-br from-[#0A0E14] via-[#1a1f2e] to-[#0A0E14] p-5 pt-16">
+                                        {/* Header com Logo */}
+                                        <div className="mb-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense flex items-center justify-center shadow-lg shadow-brand-orange-coral/50">
+                                                    <span className="text-white font-black text-xl">GE</span>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-white font-bold text-sm leading-tight">Growth Experience</h3>
+                                                    <p className="text-brand-orange-coral text-xs font-semibold">Triunfo-PE</p>
+                                                </div>
+                                            </div>
+                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange-coral/20 border border-brand-orange-coral/40">
+                                                <Calendar className="h-3 w-3 text-brand-orange-coral" />
+                                                <span className="text-brand-orange-coral text-[10px] font-bold">09 ABR 2026</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Stats Cards */}
+                                        <div className="grid grid-cols-3 gap-2 mb-6">
+                                            <div className="bg-gradient-to-br from-brand-orange-coral/10 to-transparent border border-brand-orange-coral/20 rounded-xl p-3 text-center">
+                                                <Users className="h-4 w-4 text-brand-orange-coral mx-auto mb-1" />
+                                                <p className="text-white text-xs font-bold">500+</p>
+                                                <p className="text-gray-400 text-[8px]">Pessoas</p>
+                                            </div>
+                                            <div className="bg-gradient-to-br from-brand-orange-coral/10 to-transparent border border-brand-orange-coral/20 rounded-xl p-3 text-center">
+                                                <Calendar className="h-4 w-4 text-brand-orange-coral mx-auto mb-1" />
+                                                <p className="text-white text-xs font-bold">12h</p>
+                                                <p className="text-gray-400 text-[8px]">Conteúdo</p>
+                                            </div>
+                                            <div className="bg-gradient-to-br from-brand-orange-coral/10 to-transparent border border-brand-orange-coral/20 rounded-xl p-3 text-center">
+                                                <Zap className="h-4 w-4 text-brand-orange-coral mx-auto mb-1" />
+                                                <p className="text-white text-xs font-bold">20+</p>
+                                                <p className="text-gray-400 text-[8px]">Atividades</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Próximo Evento Card */}
+                                        <div className="bg-gradient-to-br from-brand-orange-coral/15 via-brand-orange-gradient/10 to-transparent border border-brand-orange-coral/30 rounded-2xl p-4 shadow-lg mb-6">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Bell className="h-3 w-3 text-brand-orange-coral" />
+                                                <span className="text-brand-orange-coral text-[9px] font-bold uppercase">Próximo</span>
+                                            </div>
+                                            <h4 className="text-white text-sm font-bold mb-1 leading-tight">Palestra: Crescimento Exponencial</h4>
+                                            <p className="text-gray-300 text-[10px] mb-3">Leandro Batista • Fitness Exclusive</p>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center">
+                                                        <span className="text-white text-[10px] font-bold">19:00</span>
+                                                    </div>
+                                                    <span className="text-gray-400 text-[9px]">50 min</span>
+                                                </div>
+                                                <Badge className="bg-green-500/20 text-green-500 border-green-500/40 text-[8px] px-2 py-0.5">
+                                                    Confirmado
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        {/* Quick Actions */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-xl p-3 text-left hover:border-brand-orange-coral/30 transition-all">
+                                                <Smartphone className="h-4 w-4 text-brand-orange-coral mb-2" />
+                                                <p className="text-white text-[10px] font-bold">Minha Agenda</p>
+                                            </button>
+                                            <button className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-xl p-3 text-left hover:border-brand-orange-coral/30 transition-all">
+                                                <Users className="h-4 w-4 text-brand-orange-coral mb-2" />
+                                                <p className="text-white text-[10px] font-bold">Networking</p>
+                                            </button>
+                                        </div>
+
+                                        {/* Floating Download */}
+                                        <div className="absolute bottom-5 right-5 w-11 h-11 rounded-xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center shadow-xl shadow-brand-orange-coral/60 animate-bounce">
+                                            <Download className="h-5 w-5 text-white" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Glow Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-orange-coral/30 to-brand-orange-intense/20 rounded-[3rem] blur-3xl -z-10 animate-pulse" />
+                        </div>
+                    </div>
+
+                    {/* Installation Guide - COMPACTO */}
+                    <div className="space-y-4">
+                        {/* iOS */}
+                        <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isIOS ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                                    <Share2 className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold">App Instalado!</h4>
-                                    <p className="text-sm text-gray-300">
-                                        O Growth Experience já está instalado no seu dispositivo
-                                    </p>
+                                    <h3 className="text-lg font-bold text-white">iPhone / iPad</h3>
+                                    <p className="text-xs text-gray-400">Safari → Compartilhar → Adicionar</p>
                                 </div>
                             </div>
+                            {isIOS && (
+                                <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs">
+                                    Ver Instruções
+                                </Button>
+                            )}
                         </Card>
-                    </div>
-                )}
 
-                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
-                    {/* iOS */}
-                    <Card className={`glass-card p-8 border-white/10 text-center ${isIOS ? 'ring-2 ring-brand-orange-coral' : ''}`}>
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mx-auto mb-6">
-                            <Apple className="w-12 h-12 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-4">iOS / iPhone</h3>
-                        <p className="text-gray-400 mb-6">
-                            {isIOS
-                                ? 'Detectamos que você está usando iOS'
-                                : 'Disponível para iPhone e iPad'}
-                        </p>
-
-                        {isIOS ? (
-                            <div className="bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-lg p-4 text-left">
-                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <Download className="h-4 w-4" />
-                                    Como instalar no iOS:
-                                </h4>
-                                <ol className="text-sm text-gray-300 space-y-2">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-brand-orange-coral font-bold">1.</span>
-                                        <span>Toque no botão de compartilhar (ícone de quadrado com seta)</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-brand-orange-coral font-bold">2.</span>
-                                        <span>Role para baixo e toque em "Adicionar à Tela de Início"</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-brand-orange-coral font-bold">3.</span>
-                                        <span>Toque em "Adicionar" no canto superior direito</span>
-                                    </li>
-                                </ol>
+                        {/* Android */}
+                        <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isAndroid ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
+                                    <Chrome className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Android</h3>
+                                    <p className="text-xs text-gray-400">Chrome → Menu → Instalar app</p>
+                                </div>
                             </div>
-                        ) : (
-                            <Button
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                                onClick={() => window.open('https://apps.apple.com', '_blank')}
-                            >
-                                <Download className="h-5 w-5 mr-2" />
-                                Ver na App Store
-                            </Button>
-                        )}
-                    </Card>
-
-                    {/* Android */}
-                    <Card className={`glass-card p-8 border-white/10 text-center ${isAndroid ? 'ring-2 ring-brand-orange-coral' : ''}`}>
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.523 15.341c-.759 0-1.375-.616-1.375-1.375s.616-1.375 1.375-1.375 1.375.616 1.375 1.375-.616 1.375-1.375 1.375zm-11.046 0c-.759 0-1.375-.616-1.375-1.375s.616-1.375 1.375-1.375 1.375.616 1.375 1.375-.616 1.375-1.375 1.375zM12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 21.75c-5.385 0-9.75-4.365-9.75-9.75S6.615 2.25 12 2.25s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-4">Android</h3>
-                        <p className="text-gray-400 mb-6">
-                            {isAndroid
-                                ? 'Detectamos que você está usando Android'
-                                : 'Disponível para dispositivos Android'}
-                        </p>
-
-                        {isAndroid && isInstallable ? (
-                            <Button
-                                className="w-full bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold"
-                                onClick={handleInstallPWA}
-                            >
-                                <Download className="h-5 w-5 mr-2" />
-                                Instalar App Agora
-                            </Button>
-                        ) : (
-                            <Button
-                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
-                                onClick={() => window.open('https://play.google.com', '_blank')}
-                            >
-                                <Download className="h-5 w-5 mr-2" />
-                                Ver na Google Play
-                            </Button>
-                        )}
-                    </Card>
-                </div>
-
-                {/* PWA Install - Desktop/Outros */}
-                {!isIOS && !isAndroid && isInstallable && (
-                    <div className="max-w-2xl mx-auto mb-12">
-                        <Card className="glass-card p-8 border-brand-orange-coral/30 bg-brand-orange-coral/5">
-                            <div className="text-center">
-                                <h4 className="text-2xl font-bold text-white mb-4">
-                                    Instale como Aplicativo
-                                </h4>
-                                <p className="text-gray-300 mb-6">
-                                    Você pode instalar o Growth Experience como um aplicativo no seu computador
-                                </p>
+                            {isAndroid && isInstallable && (
                                 <Button
-                                    size="lg"
-                                    className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold"
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:shadow-lg text-white text-xs font-bold"
                                     onClick={handleInstallPWA}
                                 >
-                                    <Download className="h-5 w-5 mr-2" />
-                                    Instalar Aplicativo
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Instalar Agora
                                 </Button>
-                            </div>
+                            )}
                         </Card>
-                    </div>
-                )}
 
-                {/* Recursos PWA */}
-                <div className="mt-12">
-                    <Card className="glass-card p-6 border-brand-orange-coral/20 max-w-3xl mx-auto">
-                        <h4 className="text-white font-bold mb-4 text-center text-lg">
-                            Recursos do Aplicativo
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 rounded-full bg-brand-orange-coral/20 flex items-center justify-center mb-3">
-                                    <Smartphone className="h-6 w-6 text-brand-orange-coral" />
+                        {/* Desktop */}
+                        {!isIOS && !isAndroid && isInstallable && (
+                            <Card className="glass-card p-6 border-brand-orange-coral/30 bg-brand-orange-coral/5">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-gradient flex items-center justify-center">
+                                        <Download className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-white mb-1">Desktop</h3>
+                                        <Button
+                                            size="sm"
+                                            className="bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:shadow-lg text-white text-xs font-bold"
+                                            onClick={handleInstallPWA}
+                                        >
+                                            Instalar App
+                                        </Button>
+                                    </div>
                                 </div>
-                                <h5 className="text-white font-semibold mb-1">Funciona Offline</h5>
-                                <p className="text-sm text-gray-400">
-                                    Acesse informações mesmo sem internet
-                                </p>
+                            </Card>
+                        )}
+
+                        {/* Recursos - COMPACTO */}
+                        <div className="grid grid-cols-3 gap-3 pt-4">
+                            <div className="text-center">
+                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
+                                    <Smartphone className="h-5 w-5 text-brand-orange-coral" />
+                                </div>
+                                <p className="text-white text-xs font-semibold">Offline</p>
                             </div>
-
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 rounded-full bg-brand-orange-coral/20 flex items-center justify-center mb-3">
-                                    <Zap className="h-6 w-6 text-brand-orange-coral" />
+                            <div className="text-center">
+                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
+                                    <Zap className="h-5 w-5 text-brand-orange-coral" />
                                 </div>
-                                <h5 className="text-white font-semibold mb-1">Rápido e Leve</h5>
-                                <p className="text-sm text-gray-400">
-                                    Carregamento instantâneo e baixo consumo
-                                </p>
+                                <p className="text-white text-xs font-semibold">Rápido</p>
                             </div>
-
-                            <div className="flex flex-col items-center text-center">
-                                <div className="w-12 h-12 rounded-full bg-brand-orange-coral/20 flex items-center justify-center mb-3">
-                                    <Shield className="h-6 w-6 text-brand-orange-coral" />
+                            <div className="text-center">
+                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
+                                    <Shield className="h-5 w-5 text-brand-orange-coral" />
                                 </div>
-                                <h5 className="text-white font-semibold mb-1">Seguro</h5>
-                                <p className="text-sm text-gray-400">
-                                    Criptografia e proteção de dados
-                                </p>
+                                <p className="text-white text-xs font-semibold">Seguro</p>
                             </div>
                         </div>
-                    </Card>
-                </div>
-
-                {/* Funcionalidades do App */}
-                <div className="mt-12 max-w-4xl mx-auto">
-                    <h3 className="text-2xl font-bold text-white text-center mb-8">
-                        O que você pode fazer no app:
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {[
-                            'Acessar sua agenda personalizada',
-                            'Receber notificações em tempo real',
-                            'Fazer networking com outros participantes',
-                            'Acessar materiais e apresentações',
-                            'Participar de mentorias e workshops',
-                            'Avaliar palestras e atividades',
-                            'Consultar mapa do evento',
-                            'Acessar certificados digitais'
-                        ].map((feature, index) => (
-                            <div key={index} className="flex items-center gap-3 text-gray-300">
-                                <div className="w-6 h-6 rounded-full bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-brand-orange-coral text-sm">✓</span>
-                                </div>
-                                <span>{feature}</span>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </div>
