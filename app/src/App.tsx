@@ -35,8 +35,26 @@ import { AdminCheckIn } from './pages/admin/AdminCheckIn';
 import { AdminComunicacao } from './pages/admin/AdminComunicacao';
 import { AdminRelatorios } from './pages/admin/AdminRelatorios';
 import { AdminProgramacao } from './pages/admin/AdminProgramacao';
-import { AdminGrowthExperienceTriunfo } from './pages/admin/AdminGrowthExperienceTriunfo';
 import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
+
+// 404 Not Found Component
+function NotFound() {
+  return (
+    <div className="min-h-screen bg-dark flex items-center justify-center px-4">
+      <div className="text-center">
+        <h1 className="text-9xl font-bold text-brand-orange-coral mb-4">404</h1>
+        <h2 className="text-3xl font-bold text-white mb-4">Página não encontrada</h2>
+        <p className="text-gray-400 mb-8">A página que você está procurando não existe.</p>
+        <a
+          href="/"
+          className="inline-block bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-8 py-3 rounded-lg transition-colors"
+        >
+          Voltar para Home
+        </a>
+      </div>
+    </div>
+  );
+}
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
@@ -156,8 +174,10 @@ function AppRoutes() {
         <Route path="comunicacao" element={<AdminComunicacao />} />
         <Route path="relatorios" element={<AdminRelatorios />} />
         <Route path="programacao" element={<AdminProgramacao />} />
-        <Route path="growth-experience-triunfo" element={<AdminGrowthExperienceTriunfo />} />
       </Route>
+
+      {/* 404 - Catch all undefined routes */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

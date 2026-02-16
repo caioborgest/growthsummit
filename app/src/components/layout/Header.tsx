@@ -24,7 +24,6 @@ const moreLinks = [
   { name: 'Startups', href: '/startups' },
   { name: 'Seja Patrocinador', href: '/seja-patrocinador' },
   { name: 'Growth Experience', href: '/growth-experience' },
-  { name: 'Growth Experience Triunfo-PE', href: '/growth-experience-triunfo' },
   { name: 'FAQ', href: '/faq' },
   { name: 'Contato', href: '/contato' },
 ];

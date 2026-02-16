@@ -44,7 +44,7 @@ export async function createStripeCheckoutSession(
                 evento_nome: params.eventoNome,
                 tipo_inscricao: params.tipoInscricao,
                 success_url: `${window.location.origin}/pagamento/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${window.location.origin}/growth-experience-triunfo?canceled=true`,
+                cancel_url: `${window.location.origin}/?canceled=true`,
             }),
         });
 

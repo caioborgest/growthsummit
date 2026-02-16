@@ -22,20 +22,20 @@ export function getStorageUrl(bucket: string, path: string): string {
  * URLs das imagens dos stands do Growth Experience Triunfo-PE
  */
 export const standImages = {
-    diamante: getStorageUrl('event-images', 'stands/stand-diamante.jpg'),
-    ouro: getStorageUrl('event-images', 'stands/stand-ouro.jpg'),
-    prataPlus: getStorageUrl('event-images', 'stands/stand-prata-plus.jpg'),
-    prata: getStorageUrl('event-images', 'stands/stand-prata.jpg'),
-    bronze: getStorageUrl('event-images', 'stands/stand-bronze.jpg'),
+    diamante: getStorageUrl('event-images', 'stands/stand-diamante.png'),
+    ouro: getStorageUrl('event-images', 'stands/stand-ouro.png'),
+    prataPlus: getStorageUrl('event-images', 'stands/stand-prataplus.png'),
+    prata: getStorageUrl('event-images', 'stands/stand-prata.png'),
+    bronze: getStorageUrl('event-images', 'stands/stand-bronze.png'),
 };
 
 /**
  * URLs das imagens dos palestrantes
  */
 export const palestrantesImages = {
-    leandroBatista: getStorageUrl('event-images', 'palestrantes/leandro-batista.jpg'),
-    vanyltonMatias: getStorageUrl('event-images', 'palestrantes/vanylton-matias.jpg'),
-    palestrantesJuntos: getStorageUrl('event-images', 'palestrantes/palestrantes-juntos.jpg'),
+    leandroBatista: getStorageUrl('event-images', 'palestrantes/leandro-batista.png'),
+    vanyltonMatias: getStorageUrl('event-images', 'palestrantes/vanylton-matias.png'),
+    palestrantesJuntos: getStorageUrl('event-images', 'palestrantes/palestrantes-juntos.png'),
 };
 
 /**

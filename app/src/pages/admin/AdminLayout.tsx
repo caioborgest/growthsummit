@@ -49,7 +49,6 @@ const sidebarItems: SidebarItem[] = [
   { id: 'rodada-negocios', name: 'Rodada B2B', icon: Handshake, path: '/admin/rodada-negocios' },
   { id: 'startups', name: 'Startups', icon: Rocket, path: '/admin/startups' },
   { id: 'patrocinadores', name: 'Patrocinadores', icon: Gem, path: '/admin/patrocinadores' },
-  { id: 'growth-experience-triunfo', name: 'Growth Experience Triunfo', icon: Calendar, path: '/admin/growth-experience-triunfo' },
   { id: 'financeiro', name: 'Financeiro', icon: DollarSign, path: '/admin/financeiro' },
   { id: 'check-in', name: 'Check-in', icon: QrCode, path: '/admin/check-in' },
   { id: 'comunicacao', name: 'Comunicação', icon: Mail, path: '/admin/comunicacao' },
@@ -161,8 +160,8 @@ export function AdminLayout() {
               key={item.id}
               to={item.path}
               className={`flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all ${isActive(item.path)
-                  ? 'bg-teal-500 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-dark-300'
+                ? 'bg-teal-500 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-dark-300'
                 }`}
             >
               <div className="flex items-center">

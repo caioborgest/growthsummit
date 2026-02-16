@@ -25,7 +25,6 @@ const footerLinks = {
     { name: 'Rodada B2B', href: '/rodada-negocios' },
     { name: 'Startups', href: '/startups' },
     { name: 'Growth Experience', href: '/growth-experience' },
-    { name: 'Growth Experience Triunfo-PE', href: '/growth-experience-triunfo' },
   ],
   parcerias: [
     { name: 'Seja Patrocinador', href: '/seja-patrocinador' },

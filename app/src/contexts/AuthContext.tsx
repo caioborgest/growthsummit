@@ -1,103 +1,453 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  loginWithOTP: (email: string) => Promise<void>;
+  verifyOTP: (email: string, token: string) => Promise<void>;
+  logout: () => Promise<void>;
   hasRole: (roles: string[]) => boolean;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  enable2FA: () => Promise<{ qrCode: string; secret: string }>;
+  verify2FA: (token: string) => Promise<boolean>;
+  disable2FA: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
-const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@growthsummit.com.br',
-    name: 'Administrador',
-    role: 'admin',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-    createdAt: '2024-01-01',
-  },
-  {
-    id: '2',
-    email: 'participante@email.com',
-    name: 'João Silva',
-    phone: '(88) 99999-9999',
-    role: 'participant',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '3',
-    email: 'mentor@email.com',
-    name: 'Dr. Fernando Lima',
-    role: 'mentor',
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop',
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '4',
-    email: 'empresa@email.com',
-    name: 'Empresa ABC',
-    role: 'company',
-    createdAt: '2024-01-20',
-  },
-  {
-    id: '5',
-    email: 'startup@email.com',
-    name: 'TechStart Brasil',
-    role: 'startup',
-    avatar: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=100&h=100&fit=crop',
-    createdAt: '2024-01-25',
-  },
-  {
-    id: '6',
-    email: 'patrocinador@email.com',
-    name: 'TechCorp Brasil',
-    role: 'sponsor',
-    createdAt: '2024-01-30',
-  },
-];
+// Constantes de segurança
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutos
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos de inatividade
+const LAST_ACTIVITY_KEY = 'growth_summit_last_activity';
+const LOGIN_ATTEMPTS_KEY = 'growth_summit_login_attempts';
+const LOCKOUT_UNTIL_KEY = 'growth_summit_lockout_until';
+
+// Rate Limiting para login
+class RateLimiter {
+  private attempts: Map<string, number[]> = new Map();
+
+  isRateLimited(email: string): boolean {
+    const now = Date.now();
+    const attempts = this.attempts.get(email) || [];
+
+    // Filtrar tentativas dos últimos 15 minutos
+    const recentAttempts = attempts.filter(time => now - time < LOCKOUT_DURATION);
+
+    if (recentAttempts.length >= MAX_LOGIN_ATTEMPTS) {
+      const lockoutUntil = recentAttempts[0] + LOCKOUT_DURATION;
+      localStorage.setItem(LOCKOUT_UNTIL_KEY, lockoutUntil.toString());
+      return true;
+    }
+
+    return false;
+  }
+
+  recordAttempt(email: string): void {
+    const now = Date.now();
+    const attempts = this.attempts.get(email) || [];
+    attempts.push(now);
+    this.attempts.set(email, attempts);
+
+    // Salvar no localStorage também
+    const currentAttempts = parseInt(localStorage.getItem(LOGIN_ATTEMPTS_KEY) || '0');
+    localStorage.setItem(LOGIN_ATTEMPTS_KEY, (currentAttempts + 1).toString());
+  }
+
+  clearAttempts(email: string): void {
+    this.attempts.delete(email);
+    localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
+    localStorage.removeItem(LOCKOUT_UNTIL_KEY);
+  }
+
+  getRemainingLockoutTime(): number {
+    const lockoutUntil = localStorage.getItem(LOCKOUT_UNTIL_KEY);
+    if (!lockoutUntil) return 0;
+
+    const remaining = parseInt(lockoutUntil) - Date.now();
+    return remaining > 0 ? remaining : 0;
+  }
+}
+
+const rateLimiter = new RateLimiter();
+
+// Converter SupabaseUser para User
+function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: any): User {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+    role: metadata?.role || supabaseUser.user_metadata?.role || 'participant',
+    avatar: metadata?.avatar || supabaseUser.user_metadata?.avatar || undefined,
+    phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
+    createdAt: supabaseUser.created_at,
+    twoFactorEnabled: metadata?.two_factor_enabled || false,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Verificar sessão ao carregar
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // Verificar sessão existente
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          logger.error('Erro ao obter sessão:', error);
+          return;
+        }
+
+        if (currentSession?.user) {
+          // Buscar metadados do usuário do banco
+          const { data: userData } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          setSession(currentSession);
+          setUser(mapSupabaseUserToUser(currentSession.user, userData));
+          localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
+          // Log de auditoria
+          await logAuditEvent('session_restored', currentSession.user.id);
+        }
+      } catch (error) {
+        logger.error('Erro ao inicializar autenticação:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listener para mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      logger.info('Auth state changed:', event);
+
+      if (currentSession?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single();
+
+        setSession(currentSession);
+        setUser(mapSupabaseUserToUser(currentSession.user, userData));
+
+        // Log de auditoria
+        await logAuditEvent(event, currentSession.user.id);
+      } else {
+        setSession(null);
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Monitorar atividade do usuário
+  useEffect(() => {
+    if (!user) return;
+
+    const updateActivity = () => {
+      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+    };
+
+    // Eventos que indicam atividade
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      window.addEventListener(event, updateActivity);
+    });
+
+    // Verificar timeout periodicamente
+    const intervalId = setInterval(async () => {
+      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      if (lastActivity) {
+        const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
+        if (timeSinceLastActivity > SESSION_TIMEOUT) {
+          await logout();
+          alert('Sua sessão expirou por inatividade. Por favor, faça login novamente.');
+        }
+      }
+    }, 60000); // Verificar a cada minuto
+
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+      clearInterval(intervalId);
+    };
+  }, [user]);
+
+  // Login com email e senha
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser && password === '123456') {
-      setUser(foundUser);
-    } else {
-      throw new Error('Credenciais inválidas');
+
+    try {
+      // Verificar rate limiting
+      if (rateLimiter.isRateLimited(email)) {
+        const remainingTime = Math.ceil(rateLimiter.getRemainingLockoutTime() / 60000);
+        throw new Error(`Muitas tentativas de login. Tente novamente em ${remainingTime} minutos.`);
+      }
+
+      // Tentar login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        rateLimiter.recordAttempt(email);
+
+        // Log de auditoria - tentativa falha
+        await logAuditEvent('login_failed', undefined, { email, error: error.message });
+
+        throw error;
+      }
+
+      if (data.user) {
+        // Limpar tentativas de login
+        rateLimiter.clearAttempts(email);
+
+        // Buscar dados do usuário
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        // Verificar se 2FA está habilitado
+        if (userData?.two_factor_enabled) {
+          // Redirecionar para verificação 2FA
+          setSession(data.session);
+          setUser({ ...mapSupabaseUserToUser(data.user, userData), requires2FA: true });
+          return;
+        }
+
+        setSession(data.session);
+        setUser(mapSupabaseUserToUser(data.user, userData));
+        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
+        // Log de auditoria - sucesso
+        await logAuditEvent('login_success', data.user.id);
+      }
+    } catch (error: any) {
+      logger.error('Erro no login:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
+  // Login com OTP (Magic Link)
+  const loginWithOTP = useCallback(async (email: string) => {
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Log de auditoria
+      await logAuditEvent('otp_sent', undefined, { email });
+
+      logger.info('OTP enviado para:', email);
+    } catch (error: any) {
+      logger.error('Erro ao enviar OTP:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  // Verificar OTP
+  const verifyOTP = useCallback(async (email: string, token: string) => {
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        setSession(data.session);
+        setUser(mapSupabaseUserToUser(data.user, userData));
+        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
+        // Log de auditoria
+        await logAuditEvent('otp_verified', data.user.id);
+      }
+    } catch (error: any) {
+      logger.error('Erro ao verificar OTP:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Logout
+  const logout = useCallback(async () => {
+    try {
+      // Log de auditoria
+      if (user) {
+        await logAuditEvent('logout', user.id);
+      }
+
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      setUser(null);
+      setSession(null);
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+    } catch (error: any) {
+      logger.error('Erro no logout:', error);
+      throw error;
+    }
+  }, [user]);
+
+  // Verificar role
   const hasRole = useCallback((roles: string[]) => {
     if (!user) return false;
     return roles.includes(user.role);
   }, [user]);
 
+  // Atualizar perfil
+  const updateProfile = useCallback(async (data: Partial<User>) => {
+    if (!user) throw new Error('Usuário não autenticado');
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUser({ ...user, ...data });
+
+      // Log de auditoria
+      await logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
+    } catch (error: any) {
+      logger.error('Erro ao atualizar perfil:', error);
+      throw error;
+    }
+  }, [user]);
+
+  // Habilitar 2FA
+  const enable2FA = useCallback(async (): Promise<{ qrCode: string; secret: string }> => {
+    if (!user) throw new Error('Usuário não autenticado');
+
+    try {
+      // Gerar secret para 2FA
+      const { data, error } = await supabase.rpc('generate_2fa_secret', {
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+
+      // Log de auditoria
+      await logAuditEvent('2fa_enabled', user.id);
+
+      return data;
+    } catch (error: any) {
+      logger.error('Erro ao habilitar 2FA:', error);
+      throw error;
+    }
+  }, [user]);
+
+  // Verificar código 2FA
+  const verify2FA = useCallback(async (token: string): Promise<boolean> => {
+    if (!user) throw new Error('Usuário não autenticado');
+
+    try {
+      const { data, error } = await supabase.rpc('verify_2fa_token', {
+        user_id: user.id,
+        token,
+      });
+
+      if (error) throw error;
+
+      if (data) {
+        setUser({ ...user, requires2FA: false });
+
+        // Log de auditoria
+        await logAuditEvent('2fa_verified', user.id);
+      }
+
+      return data;
+    } catch (error: any) {
+      logger.error('Erro ao verificar 2FA:', error);
+      return false;
+    }
+  }, [user]);
+
+  // Desabilitar 2FA
+  const disable2FA = useCallback(async () => {
+    if (!user) throw new Error('Usuário não autenticado');
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ two_factor_enabled: false, two_factor_secret: null })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUser({ ...user, twoFactorEnabled: false });
+
+      // Log de auditoria
+      await logAuditEvent('2fa_disabled', user.id);
+    } catch (error: any) {
+      logger.error('Erro ao desabilitar 2FA:', error);
+      throw error;
+    }
+  }, [user]);
+
   return (
     <AuthContext.Provider value={{
       user,
-      isAuthenticated: !!user,
+      session,
+      isAuthenticated: !!user && !user.requires2FA,
       isLoading,
       login,
+      loginWithOTP,
+      verifyOTP,
       logout,
       hasRole,
+      updateProfile,
+      enable2FA,
+      verify2FA,
+      disable2FA,
     }}>
       {children}
     </AuthContext.Provider>
@@ -110,4 +460,31 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+// Helper para log de auditoria
+async function logAuditEvent(event: string, userId?: string, metadata?: any) {
+  try {
+    await supabase.from('audit_logs').insert({
+      event,
+      user_id: userId,
+      metadata,
+      ip_address: await getClientIP(),
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Erro ao registrar log de auditoria:', error);
+  }
+}
+
+// Helper para obter IP do cliente
+async function getClientIP(): Promise<string> {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch {
+    return 'unknown';
+  }
 }

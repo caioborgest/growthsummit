@@ -48,45 +48,51 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Custom Growth Summit Colors - Revamped
+        // Growth Experience Brand Colors - Paleta Oficial
         brand: {
-          blue: '#162636',
-          yellow: '#f1bb14',
-          gray: '#5e5e5e',
-          light: '#eeeeee',
-          white: '#ffffff',
+          // Cores Primárias
+          'orange-coral': '#ff7043',      // Laranja Coral - Cor principal da marca
+          'orange-gradient': '#ff8549',   // Laranja Gradiente - Para degradês
+          'orange-intense': '#ff4035',    // Laranja Intenso - Destaques e CTAs
+
+          // Cores Neutras
+          'gray-light': '#E6E6E6',        // Cinza Claro - "EXPERIENCE" e elementos suaves
+          'gray-medium': '#999999',       // Cinza Médio - Texto secundário
+          'gray-dark': '#333333',         // Cinza Escuro - Versão alternativa "EXPERIENCE"
+          'black': '#0c0e12',             // Preto - Fundos escuros e texto principal
+          'white': '#FFFFFF',             // Branco - Fundo e contraste
         },
-        // Aliases for compatibility with old code
+        // Aliases for compatibility with existing code
         teal: {
-          DEFAULT: '#162636',
-          50: '#f0f5f9',
-          100: '#e1ebf2',
-          200: '#c3d7e5',
-          300: '#a5c3d8',
-          400: '#162636',
-          500: '#162636',
-          600: '#12202d',
-          700: '#0e1a24',
-          800: '#0a141b',
-          900: '#060a0d',
+          DEFAULT: '#ff7043',
+          50: '#fff5f2',
+          100: '#ffe9e3',
+          200: '#ffd3c7',
+          300: '#ffbdab',
+          400: '#ffa78f',
+          500: '#ff7043',
+          600: '#ff5a27',
+          700: '#e64420',
+          800: '#b3341a',
+          900: '#802413',
         },
         orange: {
-          DEFAULT: '#f1bb14',
-          50: '#fef8e3',
-          100: '#fdf1b8',
-          200: '#fce37d',
-          300: '#fad542',
-          400: '#f1bb14',
-          500: '#f1bb14',
-          600: '#d1a311',
-          700: '#b18a0e',
-          800: '#91710b',
-          900: '#715808',
+          DEFAULT: '#ff4035',
+          50: '#fff2f1',
+          100: '#ffe5e3',
+          200: '#ffcbc7',
+          300: '#ffb1ab',
+          400: '#ff978f',
+          500: '#ff4035',
+          600: '#ff2a1d',
+          700: '#e61f14',
+          800: '#b31810',
+          900: '#80110b',
         },
         dark: {
-          DEFAULT: '#0A0A0A',
-          100: '#162636', // Using Brand Blue as dark-100
-          200: '#141414',
+          DEFAULT: '#0c0e12',
+          100: '#1F2937',
+          200: '#1a1c20',
           300: '#2A2A2A',
           400: '#3A3A3A',
         },
@@ -104,24 +110,27 @@ module.exports = {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        glow: "0 0 20px rgba(33, 128, 141, 0.5)",
-        "glow-orange": "0 0 20px rgba(254, 76, 56, 0.5)",
+        glow: "0 0 20px rgba(255, 112, 67, 0.5)",           // Laranja Coral
+        "glow-orange": "0 0 20px rgba(255, 64, 53, 0.5)",  // Laranja Intenso
+        "glow-gradient": "0 0 30px rgba(255, 133, 73, 0.4)", // Laranja Gradiente
         subtle: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",
         medium: "0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)",
         heavy: "0 10px 40px rgba(0,0,0,0.16)",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Montserrat', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['Montserrat', 'sans-serif'],
+        body: ['Montserrat', 'sans-serif'],
       },
       fontSize: {
-        'display': ['3rem', { lineHeight: '1.2', fontWeight: '700' }],
-        'display-sm': ['2.25rem', { lineHeight: '1.2', fontWeight: '700' }],
-        'heading': ['1.875rem', { lineHeight: '1.3', fontWeight: '600' }],
-        'heading-sm': ['1.5rem', { lineHeight: '1.4', fontWeight: '600' }],
-        'body-lg': ['1.125rem', { lineHeight: '1.6' }],
-        'body': ['1rem', { lineHeight: '1.6' }],
-        'body-sm': ['0.875rem', { lineHeight: '1.5' }],
-        'caption': ['0.75rem', { lineHeight: '1.4' }],
+        'display': ['3rem', { lineHeight: '1.2', fontWeight: '800' }],
+        'display-sm': ['2.25rem', { lineHeight: '1.2', fontWeight: '800' }],
+        'heading': ['1.875rem', { lineHeight: '1.3', fontWeight: '700' }],
+        'heading-sm': ['1.5rem', { lineHeight: '1.4', fontWeight: '700' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body': ['1rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400' }],
       },
       keyframes: {
         "accordion-down": {
@@ -145,8 +154,8 @@ module.exports = {
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(33, 128, 141, 0.3)" },
-          "50%": { boxShadow: "0 0 30px rgba(33, 128, 141, 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px rgba(255, 112, 67, 0.3)" },
+          "50%": { boxShadow: "0 0 30px rgba(255, 112, 67, 0.6)" },
         },
         "slide-in-right": {
           from: { transform: "translateX(100%)" },
@@ -170,7 +179,7 @@ module.exports = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'hero-gradient': 'linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #0A0A0A 100%)',
+        'hero-gradient': 'linear-gradient(135deg, #0c0e12 0%, #1F2937 50%, #0c0e12 100%)',
       },
     },
   },
