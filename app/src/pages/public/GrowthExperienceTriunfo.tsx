@@ -1,32 +1,21 @@
 import { useState } from 'react';
 import {
   MapPin,
-  Calendar,
-  Users,
-  Clock,
   TrendingUp,
-  Target,
   Handshake,
-  Briefcase,
-  Rocket,
-  Mic2,
   Building2,
   GraduationCap,
   UserPlus,
   CheckCircle,
   Menu,
   X,
-  Camera,
-  DollarSign,
-  Zap,
-  ShoppingBag,
-  Bot,
-  Megaphone,
-  FileText,
+  Mic2,
   Award,
   Star,
   Phone,
   Mail,
+  Zap,
+  Rocket
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -37,15 +26,16 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { SocialShare } from '@/components/social/SocialShare';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getStandImage, getPalestranteImage, placeholderPalestrante, getStorageUrl } from '@/lib/storage';
-import { ProgramacaoTabs } from '@/components/growth-experience/ProgramacaoTabs';
+import { getStandImage, getPalestranteImage } from '@/lib/storage';
 import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
-import { PalestranteDestacado } from '@/components/growth-experience/PalestranteDestacado';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { ProgramacaoCompleta } from '@/components/growth-experience/ProgramacaoCompleta';
+import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
+import { StatsSection } from '@/components/growth-experience/StatsSection';
+import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
 
 // Dados do evento
 const palestrantes = [
@@ -135,359 +125,6 @@ const cotas = [
     vagas: 4
   }
 ];
-
-const programacao = {
-  manha: {
-    bloco1: {
-      horario: "08:30-10:00",
-      titulo: "Bloco 1 - Fundamentos do Crescimento",
-      salao: {
-        capacidade: 80,
-        titulo: "Mapa de Crescimento para MPEs do Sertão do Pajeú",
-        tipo: "Palestra de Abertura",
-        topicos: [
-          "Principais desafios: gestão, vendas e caixa",
-          "Oportunidades locais e tendências PE",
-          "Como organizar prioridades com poucos recursos"
-        ]
-      },
-      salas: [
-        {
-          numero: 1,
-          capacidade: 20,
-          titulo: "Gestão simples de caixa, estoque e preço",
-          tipo: "Oficina de Gestão",
-          topicos: [
-            "Fluxo de caixa em planilha/app simples",
-            "Definição de preço que gera lucro",
-            "Erros comuns em estoque"
-          ]
-        },
-        {
-          numero: 2,
-          capacidade: 20,
-          titulo: "Posicionamento e ofertas para virar referência",
-          tipo: "Workshop de Marketing",
-          topicos: [
-            "Definir nicho e proposta de valor",
-            "Construção de ofertas (combo, recorrência)",
-            "Casos práticos do interior"
-          ]
-        },
-        {
-          numero: 3,
-          capacidade: 20,
-          titulo: "Atendimento que vende: roteiro de abordagem",
-          tipo: "Oficina de Vendas",
-          topicos: [
-            "Passos de uma conversa de vendas eficaz",
-            "Como perguntar sem ser invasivo",
-            "Técnicas simples de fechamento"
-          ]
-        }
-      ]
-    },
-    circulacao1: {
-      horario: "10:00-10:15",
-      atividade: "Café + Networking + Visita aos Stands"
-    },
-    bloco2: {
-      horario: "10:15-11:45",
-      titulo: "Bloco 2 - Digital e WhatsApp",
-      salao: {
-        capacidade: 80,
-        titulo: "Como usar o digital e WhatsApp para vender mais",
-        tipo: "Palestra + Painel",
-        topicos: [
-          "Funil simples: atração → conversa → fechamento",
-          "Painel com 2 empresários locais",
-          "Estratégias práticas que funcionam"
-        ]
-      },
-      salas: [
-        {
-          numero: 1,
-          capacidade: 20,
-          titulo: "Listas de transmissão e status que geram venda",
-          tipo: "Oficina WhatsApp",
-          topicos: [
-            "Organizar listas (clientes, leads, VIP)",
-            "Modelos de mensagens para ofertas",
-            "Como não ser spam e vender todo dia"
-          ]
-        },
-        {
-          numero: 2,
-          capacidade: 20,
-          titulo: "Instagram e Reels para negócios locais",
-          tipo: "Workshop Redes Sociais",
-          topicos: [
-            "Conteúdo que traz clientes para a porta",
-            "Rotina semanal em 30 min/dia",
-            "Como medir resultado (alcance, directs)"
-          ]
-        },
-        {
-          numero: 3,
-          capacidade: 20,
-          titulo: "Primeiros passos com IA no pequeno negócio",
-          tipo: "Oficina IA Aplicada",
-          topicos: [
-            "IA no dia a dia das MPEs",
-            "Criar posts, textos e respostas",
-            "Demonstração com prompts prontos"
-          ]
-        }
-      ]
-    },
-    encerramento: {
-      horario: "11:45-12:00",
-      atividade: "Recado geral + Chamada para trilhas da tarde"
-    }
-  },
-  tarde: {
-    bloco3: {
-      horario: "14:00-15:30",
-      titulo: "Bloco 3 - Planejamento Estratégico",
-      salao: {
-        capacidade: 80,
-        titulo: "Do improviso ao plano: estratégia para 12 meses",
-        tipo: "Palestra Estratégica",
-        topicos: [
-          "Por que MPE quebra por falta de planejamento",
-          "Definindo metas: faturamento, margem, clientes",
-          "Como tirar 3 prioridades claras"
-        ]
-      },
-      salas: [
-        {
-          numero: 1,
-          capacidade: 20,
-          titulo: "Plano de ação em uma página",
-          tipo: "Oficina de Planejamento",
-          topicos: [
-            "Canvas simples: metas, ações, prazos",
-            "Como revisar o plano todo mês",
-            "Cada participante sai com 1 plano pronto"
-          ]
-        },
-        {
-          numero: 2,
-          capacidade: 20,
-          titulo: "Vendendo para empresas e prefeituras",
-          tipo: "Workshop B2B/B2G",
-          topicos: [
-            "Diferença entre B2C e B2B",
-            "Como abordar grandes clientes",
-            "Proposta simples e profissional"
-          ]
-        },
-        {
-          numero: 3,
-          capacidade: 20,
-          titulo: "Automatizando tarefas chatas com IA",
-          tipo: "Oficina IA Produtividade",
-          topicos: [
-            "IA para contratos, planilhas, roteiros",
-            "IA como assistente para dono de MPE",
-            "Checklist de tarefas automatizáveis"
-          ]
-        }
-      ]
-    },
-    circulacao2: {
-      horario: "15:30-15:45",
-      atividade: "Networking orientado + Conexões de negócio"
-    },
-    bloco4: {
-      horario: "15:45-17:15",
-      titulo: "Bloco 4 - Casos Reais de Sucesso",
-      salao: {
-        capacidade: 80,
-        titulo: "Histórias de crescimento no Sertão",
-        tipo: "Talk Show",
-        topicos: [
-          "3 empresários da região (comércio, serviços, agro)",
-          "Perguntas guiadas sobre gestão e tecnologia",
-          "Espaço para perguntas da plateia"
-        ]
-      },
-      salas: [
-        {
-          numero: 1,
-          capacidade: 20,
-          titulo: "Do primeiro contato ao pós-venda",
-          tipo: "Oficina Experiência do Cliente",
-          topicos: [
-            "Jornada do cliente em negócios locais",
-            "Como pedir indicação sem ser chato",
-            "Ferramentas de pesquisa de satisfação"
-          ]
-        },
-        {
-          numero: 2,
-          capacidade: 20,
-          titulo: "Organizando finanças para acessar crédito",
-          tipo: "Workshop Finanças",
-          topicos: [
-            "Separar dinheiro da empresa e família",
-            "Preparação para crédito (documentos)",
-            "Quando faz sentido pegar crédito"
-          ]
-        },
-        {
-          numero: 3,
-          capacidade: 20,
-          titulo: "Transformando problemas em oportunidades",
-          tipo: "Oficina Inovação",
-          topicos: [
-            "Mapeamento de dores locais",
-            "Brainstorm de soluções e novos produtos",
-            "Como testar uma ideia gastando pouco"
-          ]
-        }
-      ]
-    },
-    encerramento: {
-      horario: "17:15-17:30",
-      atividade: "Síntese dos aprendizados + Chamado à ação"
-    }
-  }
-};
-
-const programacaoNoturna = [
-  { horario: "19:00-19:50", atividade: "Palestra: Leandro Batista (Fitness Exclusive)" },
-  { horario: "20:00-20:20", atividade: "Premiação Arena Pitch" },
-  { horario: "20:30-21:00", atividade: "Break + Networking" },
-  { horario: "21:10-22:30", atividade: "Palestra: Vanylton Matias (Grupo Núcleo)" },
-  { horario: "22:30-23:00", atividade: "Encerramento + Agradecimentos" }
-];
-
-const circuitoExperiencias = [
-  {
-    icon: Briefcase,
-    nome: "Espaço SEBRAE",
-    subtitulo: "Consultório de Negócios",
-    parceiro: "SEBRAE",
-    formato: "2 mesas paralelas, atendimentos de 15 min",
-    capacidade: "32 pessoas/hora",
-    totalDia: "~250 atendimentos/dia",
-    temas: ["MEI e formalização", "Gestão e marketing", "Vendas e crédito", "Orientações rápidas"],
-    cor: "blue"
-  },
-  {
-    icon: GraduationCap,
-    nome: "Espaço SENAC",
-    subtitulo: "Carreira e Profissão",
-    parceiro: "SENAC",
-    formato: "Atendimento 1:1 + minioficinas a cada 30 min",
-    capacidade: "20-25 pessoas/hora",
-    totalDia: "~160-200 participações/dia",
-    temas: ["Escolha de cursos e trilhas", "Profissões em alta", "Posicionamento no mercado", "Itinerários formativos"],
-    cor: "purple"
-  },
-  {
-    icon: DollarSign,
-    nome: "Espaço SICOOB",
-    subtitulo: "Dinheiro e Cooperativismo",
-    parceiro: "SICOOB",
-    formato: "Balcão de orientação + minitalks de 15 min",
-    capacidade: "10-15 atendimentos/hora + 20 nas talks",
-    totalDia: "~200-250 participações/dia",
-    temas: ["Conta PJ", "Crédito consciente", "Cooperativismo financeiro", "Educação financeira"],
-    cor: "green"
-  },
-  {
-    icon: Megaphone,
-    nome: "Diagnóstico Marketing Digital",
-    subtitulo: "Consultoria Express",
-    parceiro: "Growth Summit",
-    formato: "3 consultores, atendimentos de 10 min",
-    capacidade: "18 atendimentos/hora",
-    totalDia: "~140-150 atendimentos/dia",
-    temas: ["Análise Instagram", "Google Meu Negócio", "WhatsApp Business", "Checklist 3 ações/7 dias"],
-    cor: "orange"
-  },
-  {
-    icon: Target,
-    nome: "Clínica de Vendas",
-    subtitulo: "Atendimento 1:1",
-    parceiro: "Growth Summit",
-    formato: "2 consultores, sessões de 10-15 min",
-    capacidade: "16-20 atendimentos/hora",
-    totalDia: "~120-150 participações/dia",
-    temas: ["Script de abordagem", "Objeções", "Fechamento", "Pós-venda"],
-    cor: "red"
-  },
-  {
-    icon: FileText,
-    nome: "Orientação Emprego",
-    subtitulo: "Currículo e Entrevista",
-    parceiro: "SENAC + Parceiros",
-    formato: "2 mesas: currículo + entrevista, 10 min cada",
-    capacidade: "12 atendimentos/hora",
-    totalDia: "~90-100 participações/dia",
-    temas: ["Análise de currículo", "Dicas de entrevista", "Postura profissional", "Recolocação"],
-    cor: "indigo"
-  },
-  {
-    icon: Camera,
-    nome: "Totem Instagramável",
-    subtitulo: "Growth Experience",
-    parceiro: "Growth Summit",
-    formato: "Cenário + ring light + staff",
-    capacidade: "40-50 fotos/hora",
-    totalDia: "~300-400 participações/dia",
-    temas: ["Fotos profissionais", "QR para redes sociais", "Grupo exclusivo", "Download de materiais"],
-    cor: "pink"
-  },
-  {
-    icon: ShoppingBag,
-    nome: "Degustações Locais",
-    subtitulo: "Produtos do Sertão",
-    parceiro: "Produtores Locais",
-    formato: "3 mesas temáticas rotativas",
-    capacidade: "180-240 pessoas/hora",
-    totalDia: "~800-1.000 participações/dia",
-    temas: ["Alimentos regionais", "Bebidas artesanais", "Artesanato local", "QR das marcas"],
-    cor: "yellow"
-  },
-  {
-    icon: Bot,
-    nome: "IA na Prática para MPE",
-    subtitulo: "Demos ao Vivo",
-    parceiro: "Growth Summit",
-    formato: "Mini-demos de 10 min, grupos de 10-15, a cada 20 min",
-    capacidade: "30-45 pessoas/hora",
-    totalDia: "~250-300 participações/dia",
-    temas: ["Criar posts", "Resposta a clientes", "Descrição de produtos", "Script de cobrança"],
-    cor: "cyan"
-  },
-  {
-    icon: Award,
-    nome: "Arena de Pitches",
-    subtitulo: "Histórias de Negócio",
-    parceiro: "SEBRAE + SENAC",
-    formato: "Histórias de 5 min, rodadas a cada 30 min",
-    capacidade: "30-50 pessoas por rodada",
-    totalDia: "~250-400 participações (8-10 rodadas)",
-    temas: ["Cases de sucesso", "Pitches de startups", "Histórias inspiradoras", "Networking aberto"],
-    cor: "amber"
-  }
-];
-
-const momentosAncora = {
-  manha: [
-    { horario: "9h00", atividade: "Abertura oficial + convite para o circuito", local: "Palco Central" },
-    { horario: "10h30", atividade: "Minipalestra: Educação Financeira", local: "Espaço SICOOB" },
-    { horario: "11h00", atividade: "Histórias de Negócio", local: "Arena de Pitches" }
-  ],
-  tarde: [
-    { horario: "14h15", atividade: "Tira-dúvidas de MEI", local: "Espaço SEBRAE" },
-    { horario: "15h30", atividade: "Talk: Profissões em alta no Sertão do Pajeú", local: "Espaço SENAC" },
-    { horario: "16h30", atividade: "Sessão especial: IA + Vendas na prática", local: "Espaço IA + Clínica" }
-  ]
-};
 
 // Header Component
 function InnerHeader() {
@@ -611,9 +248,8 @@ function InnerFooter() {
 // Main Component
 export function GrowthExperienceTriunfo() {
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
-  const [modalAberto, setModalAberto] = useState<'mentor' | 'startup' | 'b2b' | null>(null);
+  const [modalAberto, setModalAberto] = useState<'mentor' | 'startup' | 'b2b' | 'palestra' | null>(null);
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://growthsummit.com.br/growth-experience-triunfo';
-  const backgroundImage = getStorageUrl('caretas-triunfo', 'caretas-triunfo.png');
 
   return (
     <div className="bg-dark min-h-screen">
@@ -630,94 +266,16 @@ export function GrowthExperienceTriunfo() {
       <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
       {/* Modais Específicos */}
       <InscricaoModal isOpen={modalAberto === 'mentor'} onClose={() => setModalAberto(null)} tipo="mentor" eventoNome="Growth Experience Triunfo-PE 2026" />
+      <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={() => setModalAberto(null)} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
       {/* Cursos e Palestras agora usam o MultiStep acima */}
       <StartupFormModal isOpen={modalAberto === 'startup'} onClose={() => setModalAberto(null)} />
       <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={backgroundImage}
-            alt="Growth Experience Triunfo"
-            className="w-full h-full object-cover opacity-85"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2070&auto=format&fit=crop';
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/40 via-dark/60 to-dark/90" />
-        </div>
+      {/* Hero Section Refinada */}
+      <HeroSectionRefined onCTAClick={() => setModalInscricaoAberto(true)} />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center max-w-5xl mx-auto">
-            <Badge className="mb-6 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 text-lg px-8 py-3 animate-pulse">
-              PATROCÍNIO: SEBRAE
-            </Badge>
-
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight">
-              Growth Experience
-              <span className="block text-brand-orange-coral mt-2 bg-gradient-to-r from-brand-orange-coral to-yellow-500 bg-clip-text text-transparent">
-                Triunfo-PE 2026
-              </span>
-            </h1>
-
-            <p className="text-2xl sm:text-3xl lg:text-4xl text-gray-300 mb-12 font-light italic">
-              "A Maior Exposição de Negócios do Sertão do Pajeú"
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
-              <Card className="glass-card p-6 border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all">
-                <Calendar className="h-8 w-8 text-brand-orange-coral mx-auto mb-3" />
-                <p className="text-white font-bold text-lg">09 de Abril</p>
-                <p className="text-gray-400 text-sm">2026</p>
-              </Card>
-              <Card className="glass-card p-6 border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all">
-                <MapPin className="h-8 w-8 text-brand-orange-coral mx-auto mb-3" />
-                <p className="text-white font-bold text-lg">Espaço Parque</p>
-                <p className="text-gray-400 text-sm">Triunfo-PE</p>
-              </Card>
-              <Card className="glass-card p-6 border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all">
-                <Users className="h-8 w-8 text-brand-orange-coral mx-auto mb-3" />
-                <p className="text-white font-bold text-lg">2.000+</p>
-                <p className="text-gray-400 text-sm">participantes</p>
-              </Card>
-              <Card className="glass-card p-6 border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all">
-                <Clock className="h-8 w-8 text-brand-orange-coral mx-auto mb-3" />
-                <p className="text-white font-bold text-lg">08:00-23:00</p>
-                <p className="text-gray-400 text-sm">horário</p>
-              </Card>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                size="lg"
-                className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-12 py-8 text-xl rounded-2xl shadow-2xl shadow-brand-orange-coral/30 hover:scale-105 transition-all group"
-                onClick={() => setModalInscricaoAberto(true)}
-              >
-                <Rocket className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
-                Inscrição Gratuita
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-white/30 text-white hover:bg-white/10 px-12 py-8 text-xl rounded-2xl backdrop-blur-sm hover:scale-105 transition-all"
-                onClick={() => (window.location.href = '#patrocinios')}
-              >
-                <Building2 className="h-6 w-6 mr-3" />
-                Seja Expositor
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-brand-orange-coral rounded-full flex items-start justify-center p-2">
-            <div className="w-1 h-2 bg-brand-orange-coral rounded-full" />
-          </div>
-        </div>
-      </section>
+      {/* Stats Section Refinada */}
+      <StatsSection />
 
       {/* Sobre o Evento */}
       <section id="sobre" className="py-24 bg-dark-100">
@@ -807,32 +365,16 @@ export function GrowthExperienceTriunfo() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
             {palestrantes.map((p, i) => (
-              <Card key={i} className="glass-card p-10 border-white/5 hover:border-brand-orange-coral/30 transition-all group">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-brand-blue group-hover:border-brand-orange-coral transition-colors shadow-xl">
-                    <img
-                      src={getPalestranteImage(p.nome)}
-                      alt={p.nome}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.src = placeholderPalestrante; }}
-                    />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{p.nome}</h3>
-                  <p className="text-brand-orange-coral font-semibold mb-3">{p.cargo}</p>
-                  <p className="text-gray-400 text-sm italic mb-6">"{p.descricao}"</p>
-
-                  <div className="w-full pt-6 border-t border-white/5">
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                      <Clock className="h-4 w-4 text-brand-orange-coral" />
-                      <p className="text-gray-400 text-sm">{p.horario}</p>
-                    </div>
-                    <p className="text-xs text-brand-orange-coral uppercase tracking-widest mb-2 font-bold">
-                      Talk Masterclass:
-                    </p>
-                    <p className="text-white font-medium leading-relaxed">{p.tema}</p>
-                  </div>
-                </div>
-              </Card>
+              <PalestranteCardRefined
+                key={i}
+                nome={p.nome}
+                cargo={p.cargo}
+                descricao={p.descricao}
+                tema={p.tema}
+                horario={p.horario}
+                foto={getPalestranteImage(p.nome)}
+                destaque={true}
+              />
             ))}
           </div>
 
@@ -1066,61 +608,7 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      {/* Palestrantes Destacados da Noite */}
-      <section id="palestrantes" className="py-24 bg-gradient-to-b from-dark via-dark-100 to-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 text-sm px-6 py-2">
-              <Star className="h-4 w-4 mr-2" />
-              Palestrantes Destaque
-            </Badge>
-            <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6">
-              Palestras Noturnas
-              <span className="block text-brand-orange-coral mt-2">Exclusivas</span>
-            </h2>
-            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-              Conheça os palestrantes que vão transformar sua visão de negócios com experiências reais de sucesso
-            </p>
-          </div>
 
-          {/* Palestrantes */}
-          <div className="space-y-12">
-            {palestrantes.map((palestrante, index) => (
-              <PalestranteDestacado
-                key={index}
-                nome={palestrante.nome}
-                cargo={palestrante.cargo}
-                descricao={palestrante.descricao}
-                tema={palestrante.tema}
-                horario={palestrante.horario}
-                foto={getPalestranteImage(palestrante.nome)}
-                onInscrever={() => setModalAberto('palestra')}
-              />
-            ))}
-          </div>
-
-          {/* CTA Final */}
-          <div className="mt-16 text-center">
-            <div className="glass-card p-8 max-w-2xl mx-auto border-brand-orange-coral/30">
-              <h3 className="text-2xl font-bold text-white mb-4">
-                Garanta Sua Vaga nas Palestras Noturnas
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Apenas R$ 179,99 para acesso às duas palestras exclusivas + networking
-              </p>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
-                onClick={() => setModalAberto('palestra')}
-              >
-                <Mic2 className="h-5 w-5 mr-2" />
-                Fazer Inscrição Agora
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* App Download Section */}
       <AppDownloadSection />

@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Growth Summit 2026',
         short_name: 'Growth Summit',
@@ -19,16 +19,26 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: '/icons/maskable-icon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -54,8 +64,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    strictPort: true,
+    port: 5174,
+    strictPort: false,
     // Forçar HTTPS em desenvolvimento (opcional)
     // https: true,
     headers: {
@@ -72,7 +82,7 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",
-        "upgrade-insecure-requests"
+        // "upgrade-insecure-requests"
       ].join('; '),
 
       // Strict Transport Security (HSTS)
@@ -131,7 +141,7 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",
-        "upgrade-insecure-requests"
+        // "upgrade-insecure-requests"
       ].join('; '),
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       'X-Frame-Options': 'DENY',

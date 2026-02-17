@@ -15,6 +15,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         cargo: '',
         email: '',
         telefone: '',
+        senha: '',
+        confirmarSenha: '',
 
         // Empresa
         nome_empresa: '',
@@ -82,10 +84,20 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         try {
             // Validação básica
             if (!formData.nome_representante || !formData.cargo || !formData.email ||
-                !formData.telefone || !formData.nome_empresa || !formData.setor ||
+                !formData.telefone || !formData.senha || !formData.confirmarSenha ||
+                !formData.nome_empresa || !formData.setor ||
                 !formData.porte || !formData.descricao_empresa || !formData.produtos_servicos ||
                 !formData.tipo_interesse || !formData.areas_interesse || !formData.descricao_objetivos) {
                 throw new Error('Por favor, preencha todos os campos obrigatórios');
+            }
+
+            // Validação de senhas
+            if (formData.senha !== formData.confirmarSenha) {
+                throw new Error('As senhas não coincidem');
+            }
+
+            if (formData.senha.length < 6) {
+                throw new Error('A senha deve ter pelo menos 6 caracteres');
             }
 
             // Validação de email
@@ -94,8 +106,33 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 throw new Error('Por favor, insira um email válido');
             }
 
+            // 1. Criar usuário no Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.senha,
+                options: {
+                    data: {
+                        name: formData.nome_representante,
+                        phone: formData.telefone,
+                        role: 'b2b'
+                    }
+                }
+            });
+
+            if (authError) {
+                if (authError.message.includes('already registered')) {
+                    throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
+                }
+                throw new Error(authError.message);
+            }
+
+            if (!authData.user) {
+                throw new Error('Erro ao criar usuário');
+            }
+
             // Preparar dados para inserção
             const dataToInsert = {
+                user_id: authData.user.id,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,
                 email: formData.email,
@@ -141,6 +178,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     cargo: '',
                     email: '',
                     telefone: '',
+                    senha: '',
+                    confirmarSenha: '',
                     nome_empresa: '',
                     cnpj: '',
                     setor: '',
@@ -266,9 +305,6 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Telefone/WhatsApp *
-                                        </label>
                                         <input
                                             type="tel"
                                             name="telefone"
@@ -277,6 +313,34 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                                             placeholder="(00) 00000-0000"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Senha *
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="senha"
+                                            value={formData.senha}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                            placeholder="Crie uma senha segura"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Confirmar Senha *
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="confirmarSenha"
+                                            value={formData.confirmarSenha}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                                            placeholder="Confirme sua senha"
                                         />
                                     </div>
                                 </div>

@@ -18,6 +18,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         email: '',
         telefone: '',
         empresa: '',
+        senha: '',
+        confirmarSenha: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -49,8 +51,17 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
         try {
             // Validação básica
-            if (!formData.nome || !formData.email || !formData.telefone) {
+            if (!formData.nome || !formData.email || !formData.telefone || !formData.senha || !formData.confirmarSenha) {
                 throw new Error('Por favor, preencha todos os campos obrigatórios');
+            }
+
+            // Validação de senhas
+            if (formData.senha !== formData.confirmarSenha) {
+                throw new Error('As senhas não coincidem');
+            }
+
+            if (formData.senha.length < 6) {
+                throw new Error('A senha deve ter pelo menos 6 caracteres');
             }
 
             // Validação de email
@@ -59,10 +70,38 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 throw new Error('Por favor, insira um email válido');
             }
 
+            // 1. Criar usuário no Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.senha,
+                options: {
+                    data: {
+                        name: formData.nome,
+                        phone: formData.telefone,
+                        role: tipo === 'mentor' ? 'mentor' : 'participante'
+                    }
+                }
+            });
+
+            if (authError) {
+                // Se o usuário já existe, tentamos prosseguir apenas com o insert (assumindo que ele pode estar logado ou apenas quer inscrever)
+                // Mas para consistência de segurança, o ideal seria pedir login.
+                // Vou lançar o erro por enquanto para evitar duplicidade ou inconsistência.
+                if (authError.message.includes('already registered')) {
+                    throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
+                }
+                throw new Error(authError.message);
+            }
+
+            if (!authData.user) {
+                throw new Error('Erro ao criar usuário');
+            }
+
             // Inserir no Supabase
             const { error: supabaseError } = await (supabase
                 .from('inscricoes_growth_experience_triunfo') as any)
                 .insert({
+                    user_id: authData.user.id, // Adicionando vínculo com usuário
                     nome: formData.nome,
                     email: formData.email,
                     telefone: formData.telefone,
@@ -103,7 +142,14 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             // Resetar formulário após 3 segundos
             setTimeout(() => {
-                setFormData({ nome: '', email: '', telefone: '', empresa: '' });
+                setFormData({
+                    nome: '',
+                    email: '',
+                    telefone: '',
+                    empresa: '',
+                    senha: '',
+                    confirmarSenha: ''
+                });
                 setIsSuccess(false);
                 onClose();
             }, 3000);
@@ -230,6 +276,38 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                                     placeholder="Nome da sua empresa"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="senha" className="block text-sm font-medium text-gray-300 mb-2">
+                                    Senha *
+                                </label>
+                                <input
+                                    type="password"
+                                    id="senha"
+                                    name="senha"
+                                    value={formData.senha}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                    placeholder="Crie uma senha segura"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-300 mb-2">
+                                    Confirmar Senha *
+                                </label>
+                                <input
+                                    type="password"
+                                    id="confirmarSenha"
+                                    name="confirmarSenha"
+                                    value={formData.confirmarSenha}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                    placeholder="Confirme sua senha"
                                 />
                             </div>
 
