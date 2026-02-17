@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle, X } from 'lucide-react';
-import { cursosDisponiveis, palestrasNoturnas } from '@/data/programacao';
-import { DadosInscricao } from './inscricao-steps/types';
+import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
 import { Step3Confirmacao } from './inscricao-steps/Step3Confirmacao';

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle } from 'lucide-react';
-import { DadosInscricao } from './types';
+import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
 
@@ -71,9 +70,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // 3. Sucesso - continuar para próxima etapa
             onConfirmar(authData.user.id, inscricaoData.id);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Erro ao confirmar inscrição:', err);
-            setError(err.message || 'Erro ao processar inscrição. Tente novamente.');
+            const errorMessage = err instanceof Error ? err.message : 'Erro ao processar inscrição. Tente novamente.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
