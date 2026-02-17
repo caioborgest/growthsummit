@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, X } from 'lucide-react';
 import { cursosDisponiveis, palestrasNoturnas } from '@/data/programacao';
+import { DadosInscricao } from './inscricao-steps/types';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
 import { Step3Confirmacao } from './inscricao-steps/Step3Confirmacao';
@@ -14,24 +15,6 @@ import { Step6Conclusao } from './inscricao-steps/Step6Conclusao';
 interface InscricaoMultiStepModalProps {
     isOpen: boolean;
     onClose: () => void;
-}
-
-export interface DadosInscricao {
-    // Etapa 1
-    cursosSelecionados: string[];
-
-    // Etapa 2
-    nome: string;
-    email: string;
-    telefone: string;
-    senha: string;
-
-    // Etapa 4
-    comprarPalestras: boolean;
-
-    // Controle
-    userId?: string;
-    inscricaoId?: string;
 }
 
 export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepModalProps) {

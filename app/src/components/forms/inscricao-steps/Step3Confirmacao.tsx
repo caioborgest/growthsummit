@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle } from 'lucide-react';
-import { DadosInscricao } from '../InscricaoMultiStepModal';
+import { DadosInscricao } from './types';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
 

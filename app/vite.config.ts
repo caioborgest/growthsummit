@@ -37,8 +37,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
+        enabled: false, // Desativado para evitar erros de Service Worker em desenvolvimento
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -66,13 +65,11 @@ export default defineConfig({
   server: {
     port: 5174,
     strictPort: false,
-    // Forçar HTTPS em desenvolvimento (opcional)
-    // https: true,
     headers: {
-      // Content Security Policy
       'Content-Security-Policy': [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com",
+        "worker-src 'self' blob:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai data:",
         "img-src 'self' data: https: blob:",
@@ -81,39 +78,20 @@ export default defineConfig({
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
-        "frame-ancestors 'none'",
-        // "upgrade-insecure-requests"
+        "frame-ancestors 'none'"
       ].join('; '),
-
-      // Strict Transport Security (HSTS)
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-
-      // Prevenir clickjacking
       'X-Frame-Options': 'DENY',
-
-      // Prevenir MIME sniffing
       'X-Content-Type-Options': 'nosniff',
-
-      // XSS Protection
       'X-XSS-Protection': '1; mode=block',
-
-      // Referrer Policy
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-
-      // Permissions Policy
       'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     }
   },
   build: {
     outDir: 'dist',
-    sourcemap: false, // Desabilitar sourcemaps em produção por segurança
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remover console.logs em produção
-        drop_debugger: true
-      }
-    },
+    sourcemap: false,
+    minify: 'esbuild', // Alterado de terser para esbuild (mais rápido e nativo)
     rollupOptions: {
       output: {
         manualChunks: {
@@ -128,10 +106,10 @@ export default defineConfig({
     port: 4173,
     strictPort: true,
     headers: {
-      // Mesmos headers de segurança para preview
       'Content-Security-Policy': [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com",
+        "worker-src 'self' blob:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai data:",
         "img-src 'self' data: https: blob:",
@@ -140,8 +118,7 @@ export default defineConfig({
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
-        "frame-ancestors 'none'",
-        // "upgrade-insecure-requests"
+        "frame-ancestors 'none'"
       ].join('; '),
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
       'X-Frame-Options': 'DENY',
@@ -152,3 +129,4 @@ export default defineConfig({
     }
   }
 });
+

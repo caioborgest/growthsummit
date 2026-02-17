@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle } from 'lucide-react';
-import { DadosInscricao } from '../InscricaoMultiStepModal';
+import { DadosInscricao } from './types';
 
 interface Step2DadosPessoaisProps {
     dados: DadosInscricao;

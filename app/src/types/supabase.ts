@@ -1,5 +1,5 @@
-// Tipos gerados a partir do schema do Supabase
-// Você pode gerar automaticamente com: supabase gen types typescript --project-id "your-project-id" --schema public > src/types/supabase.ts
+// Tipos gerados manualmente - schema simplificado
+// Para gerar automaticamente: npx supabase login && npx supabase gen types typescript --project-id "zczfutmymobgypbbamme" --schema public > src/types/supabase.ts
 
 export type Json =
   | string
@@ -22,6 +22,8 @@ export interface Database {
           avatar: string | null;
           email_verified: boolean;
           phone_verified: boolean;
+          two_factor_enabled?: boolean;
+          two_factor_secret?: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -34,6 +36,8 @@ export interface Database {
           avatar?: string | null;
           email_verified?: boolean;
           phone_verified?: boolean;
+          two_factor_enabled?: boolean;
+          two_factor_secret?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -46,6 +50,8 @@ export interface Database {
           avatar?: string | null;
           email_verified?: boolean;
           phone_verified?: boolean;
+          two_factor_enabled?: boolean;
+          two_factor_secret?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -243,7 +249,58 @@ export interface Database {
           updated_at?: string;
         };
       };
-      // ... outras tabelas seguem o mesmo padrão
+      // Tabelas adicionais referenciadas no código (adicionar conforme necessário)
+      inscricoes_growth_experience_triunfo: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      inscricoes_growth_experience: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      pagamentos_stripe: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      audit_logs: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      security_suspicious_logins: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      security_user_activity: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      active_sessions: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      login_attempts: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      startups_arena_pitch: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
+      // Outras tabelas do schema
+      [key: string]: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
     };
     Views: {
       [_ in never]: never;

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Home, Smartphone, Mail } from 'lucide-react';
-import { DadosInscricao } from '../InscricaoMultiStepModal';
+import { DadosInscricao } from './types';
 
 interface Step6ConclusaoProps {
     dados: DadosInscricao;
