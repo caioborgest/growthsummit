@@ -116,7 +116,21 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             case 5:
                 return (
                     <Step5DownloadApp
-                        onContinuar={nextStep}
+                        onContinuar={async () => {
+                            if (dados.inscricaoId) {
+                                try {
+                                    const { supabase } = await import('@/lib/supabase');
+                                    await supabase
+                                        .from('inscricoes_growth_experience')
+                                        .update({ app_instalado: true })
+                                        .eq('id', dados.inscricaoId);
+                                    updateDados({ appInstalado: true });
+                                } catch (err) {
+                                    console.error('Erro ao marcar app como instalado:', err);
+                                }
+                            }
+                            nextStep();
+                        }}
                     />
                 );
             case 6:

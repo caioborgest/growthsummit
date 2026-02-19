@@ -94,12 +94,12 @@ export function useInscricoesTriunfo() {
         try {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
-                .from('inscricoes_growth_experience_triunfo')
+                .from('inscricoes_growth_experience')
                 .select('*')
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
-            setData(inscricoes || []);
+            setData(inscricoes as any || []);
             setError(null);
         } catch (err: any) {
             setError(err.message);
@@ -116,7 +116,7 @@ export function useInscricoesTriunfo() {
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
             const { error: updateError } = await (supabase
-                .from('inscricoes_growth_experience_triunfo') as any)
+                .from('inscricoes_growth_experience') as any)
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
@@ -132,7 +132,7 @@ export function useInscricoesTriunfo() {
     const deleteInscricao = async (id: string) => {
         try {
             const { error: deleteError } = await (supabase
-                .from('inscricoes_growth_experience_triunfo') as any)
+                .from('inscricoes_growth_experience') as any)
                 .delete()
                 .eq('id', id);
 

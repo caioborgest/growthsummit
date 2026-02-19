@@ -173,7 +173,7 @@ export async function updateInscricaoStatus(
         }
 
         const { error } = await (supabase
-            .from('inscricoes_growth_experience_triunfo') as any)
+            .from('inscricoes_growth_experience') as any)
             .update(updateData)
             .eq('id', inscricaoId);
 
