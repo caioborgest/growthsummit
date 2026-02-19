@@ -22,7 +22,19 @@ interface BulkInviteResult {
   errors: string[];
 }
 
-serve(async (req) => {
+interface WhatsAppGroupMember {
+  id: string;
+  group_id: string;
+  phone_number: string;
+  name?: string;
+  email?: string;
+  status: 'pending' | 'invited' | 'invite_sent' | 'joined' | 'left' | 'removed' | 'declined';
+  invited_at?: string;
+  joined_at?: string;
+  user_id?: string;
+}
+
+serve(async (req: Request) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -126,7 +138,7 @@ serve(async (req) => {
 
     // Verificar rate limiting (máximo 100 convites por execução)
     const maxInvitesPerRun = 100;
-    const membersToProcess = members.slice(0, maxInvitesPerRun);
+    const membersToProcess = (members as WhatsAppGroupMember[]).slice(0, maxInvitesPerRun);
 
     const result: BulkInviteResult = {
       total: members.length,
@@ -141,7 +153,7 @@ serve(async (req) => {
 
     for (const batch of batches) {
       // Processar batch em paralelo
-      const batchPromises = batch.map(async (member) => {
+      const batchPromises = batch.map(async (member: WhatsAppGroupMember) => {
         try {
           // Verificar se já está no grupo
           if (member.status === 'joined') {
@@ -200,9 +212,10 @@ serve(async (req) => {
 
             return { success: false, error: sendResult.message };
           }
-        } catch (err: any) {
-          result.errors.push(`Member ${member.id}: ${err.message}`);
-          return { success: false, error: err.message };
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          result.errors.push(`Member ${member.id}: ${errorMessage}`);
+          return { success: false, error: errorMessage };
         }
       });
 
