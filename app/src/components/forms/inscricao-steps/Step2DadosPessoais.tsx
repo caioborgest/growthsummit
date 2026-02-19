@@ -92,7 +92,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             </div>
 
             {/* Formulário */}
-            <Card className="glass-card p-8 border-white/10">
+            <Card className="glass-card p-4 sm:p-8 border-white/10">
                 <div className="space-y-6">
                     {/* Nome Completo */}
                     <div>

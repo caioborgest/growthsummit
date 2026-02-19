@@ -1,5 +1,7 @@
 // Tipos de atividades
-export type TipoAtividade = 'curso' | 'mentoria' | 'palestra' | 'networking' | 'startup' | 'b2b';
+export const TiposAtividade = ['curso', 'mentoria', 'palestra', 'networking', 'startup', 'b2b'] as const;
+export type TipoAtividade = typeof TiposAtividade[number];
+export const TipoAtividade = TiposAtividade; // Runtime value with the same name as the type
 
 export interface AtividadeProgramacao {
     id: string;
@@ -179,12 +181,24 @@ export const programacaoNoturna: AtividadeProgramacao[] = [
         tags: ['Crescimento', 'Estratégia', 'Expansão', 'Gestão']
     },
     {
+        id: 'premiacao-arena-pitch',
+        tipo: 'startup',
+        titulo: 'Premiação Arena Pitch',
+        descricao: 'Anúncio e entrega da premiação para as startups vencedoras da Arena Pitch.',
+        local: 'Palco Principal',
+        horario_inicio: '20:00',
+        horario_fim: '20:20',
+        gratuito: false,
+        valor: 179.99,
+        tags: ['Startup', 'Pitch', 'Premiação']
+    },
+    {
         id: 'networking-noturno',
         tipo: 'networking',
-        titulo: 'Networking Premium',
+        titulo: 'Networking Premium + Coffee',
         descricao: 'Coffee break e networking exclusivo com palestrantes e empresários de destaque.',
         local: 'Área VIP',
-        horario_inicio: '20:00',
+        horario_inicio: '20:20',
         horario_fim: '21:00',
         gratuito: false,
         valor: 179.99,
@@ -194,7 +208,7 @@ export const programacaoNoturna: AtividadeProgramacao[] = [
         id: 'palestra-vanylton-matias',
         tipo: 'palestra',
         titulo: 'Inovação Corporativa: Como Empresas se Mantêm Competitivos em Tempos de Transformação',
-        descricao: 'Cases de sucesso em inovação e transformação digital. Como o Grupo Núcleo se reinventou e se tornou referência nacional em gestão e inovação.',
+        descricao: 'Cases de sucesso em inovação e transformation digital. Como o Grupo Núcleo se reinventou e se tornou referência nacional em gestão e inovação.',
         palestrante: 'Vanylton Matias',
         empresa: 'CEO, Grupo Núcleo',
         local: 'Palco Principal',
@@ -203,6 +217,18 @@ export const programacaoNoturna: AtividadeProgramacao[] = [
         gratuito: false,
         valor: 179.99,
         tags: ['Inovação', 'Transformação', 'Digital', 'Gestão']
+    },
+    {
+        id: 'encerramento-evento',
+        tipo: 'networking',
+        titulo: 'Encerramento e Sorteios',
+        descricao: 'Encerramento oficial do evento com sorteios exclusivos para os participantes da noite.',
+        local: 'Palco Principal',
+        horario_inicio: '22:30',
+        horario_fim: '23:00',
+        gratuito: false,
+        valor: 179.99,
+        tags: ['Encerramento', 'Sorteios']
     }
 ];
 

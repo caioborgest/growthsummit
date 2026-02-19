@@ -1,0 +1,423 @@
+import { useState } from 'react';
+import { X, Loader2, CheckCircle, Linkedin, Target, Camera, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
+import { Badge } from '@/components/ui/badge';
+
+interface MentorFormModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const ESPECIALIDADES = [
+    'Gestão Empresarial',
+    'Marketing Digital',
+    'Vendas & Growth',
+    'Finanças',
+    'Tecnologia & IA',
+    'Recursos Humanos',
+    'Inovação',
+    'Operações & Processos',
+    'Coaching & Liderança',
+    'E-commerce'
+];
+
+export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        telefone: '',
+        empresa: '',
+        cargo: '',
+        bio: '',
+        linkedin: '',
+        especialidades: [] as string[],
+        senha: '',
+        confirmarSenha: '',
+        foto: null as File | null,
+        fotoPreview: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState('');
+
+    if (!isOpen) return null;
+
+    const toggleEspecialidade = (esp: string) => {
+        setFormData(prev => ({
+            ...prev,
+            especialidades: prev.especialidades.includes(esp)
+                ? prev.especialidades.filter(e => e !== esp)
+                : [...prev.especialidades, esp]
+        }));
+    };
+
+    const nextStep = () => setStep(prev => prev + 1);
+    const prevStep = () => setStep(prev => prev - 1);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
+        let fotoUrl = '';
+
+        try {
+            if (formData.senha !== formData.confirmarSenha) {
+                throw new Error('As senhas não coincidem');
+            }
+
+            // 0. Upload Foto if exists
+            if (formData.foto) {
+                const file = formData.foto;
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `mentores/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('event-images')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('event-images')
+                    .getPublicUrl(filePath);
+
+                fotoUrl = urlData.publicUrl;
+            }
+
+            // 0. Verificar se já existe uma sessão ativa
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            let user = existingSession?.user;
+            let authError = null;
+
+            if (!user) {
+                // 1. Auth SignUp
+                const { data: authData, error: sError } = await supabase.auth.signUp({
+                    email: formData.email,
+                    password: formData.senha,
+                    options: {
+                        data: {
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            role: 'mentor'
+                        }
+                    }
+                });
+                user = authData?.user || null;
+                authError = sError;
+            }
+
+            if (authError) {
+                if (authError.message.includes('already registered')) {
+                    throw new Error('Este email já está cadastrado. Por favor, use outro email ou faça login.');
+                }
+                throw authError;
+            }
+
+            if (!user) throw new Error('Falha ao identificar usuário');
+
+            // 2. Salvar inscrição no banco
+            const { error: dbError } = await (supabase
+                .from('mentores_growth_experience') as any)
+                .insert({
+                    user_id: user!.id,
+                    nome: formData.nome,
+                    email: formData.email,
+                    telefone: formData.telefone,
+                    empresa: formData.empresa,
+                    especialidades: formData.especialidades,
+                    bio: formData.bio,
+                    linkedin_url: formData.linkedin,
+                    foto_url: fotoUrl,
+                    status: 'pendente'
+                });
+
+            if (dbError) throw dbError;
+
+            setIsSuccess(true);
+            setTimeout(() => {
+                onClose();
+                setIsSuccess(false);
+                setStep(1);
+                setFormData({
+                    nome: '', email: '', telefone: '', empresa: '', cargo: '',
+                    bio: '', linkedin: '', especialidades: [], senha: '', confirmarSenha: '',
+                    foto: null, fotoPreview: ''
+                });
+            }, 5000);
+
+        } catch (err: unknown) {
+            console.error('Erro ao confirmar inscrição:', err);
+            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
+
+            const error = err as Error;
+            if (error.message?.includes('rate limit exceeded')) {
+                errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            setError(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+            <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
+                {/* Progress Bar */}
+                {!isSuccess && (
+                    <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
+                        <div
+                            className="h-full bg-brand-orange-coral transition-all duration-500"
+                            style={{ width: `${(step / 3) * 100}%` }}
+                        />
+                    </div>
+                )}
+
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors z-10"
+                >
+                    <X className="h-6 w-6" />
+                </button>
+
+                <div className="p-8">
+                    {isSuccess ? (
+                        <div className="text-center py-12">
+                            <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="h-10 w-10 text-green-400" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-white mb-4">Candidatura Enviada!</h2>
+                            <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+                                Obrigado por se candidatar para ser mentor no Growth Experience.<br />
+                                Nossa equipe analisará seu perfil e entrará em contato via email ou WhatsApp em até 48 horas.
+                            </p>
+                            <Button onClick={onClose} className="bg-brand-orange-coral text-white px-8">
+                                Voltar ao Evento
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="mb-8">
+                                <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
+                                    Módulo Mentor
+                                </Badge>
+                                <h2 className="text-3xl font-bold text-white mb-2">Seja um Mentor</h2>
+                                <p className="text-gray-400">Compartilhe conhecimento e impulsione negócios locais.</p>
+                            </div>
+
+                            <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">
+                                {step === 1 && (
+                                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                        {/* Foto de Perfil */}
+                                        <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                                            <div className="relative group">
+                                                <div className="w-24 h-24 rounded-full bg-dark-200 border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden transition-all group-hover:border-brand-orange-coral/50">
+                                                    {formData.fotoPreview ? (
+                                                        <img src={formData.fotoPreview} className="w-full h-full object-cover" alt="Preview" />
+                                                    ) : (
+                                                        <User className="h-10 w-10 text-gray-500" />
+                                                    )}
+                                                </div>
+                                                <label className="absolute bottom-0 right-0 p-2 bg-brand-orange-coral rounded-full cursor-pointer shadow-lg hover:bg-brand-orange-intense transition-colors">
+                                                    <Camera className="h-4 w-4 text-white" />
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) {
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    foto: file,
+                                                                    fotoPreview: URL.createObjectURL(file)
+                                                                });
+                                                            }
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-medium text-white">Foto de Identificação</p>
+                                                <p className="text-xs text-gray-500">Clique na câmera para enviar sua foto profissionais</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Nome Completo</label>
+                                                <input
+                                                    required
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.nome}
+                                                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                                    placeholder="Como quer ser chamado"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Email Profissional</label>
+                                                <input
+                                                    required
+                                                    type="email"
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.email}
+                                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                                    placeholder="seu@email.com"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">WhatsApp</label>
+                                                <input
+                                                    required
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.telefone}
+                                                    onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                                                    placeholder="(00) 00000-0000"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Empresa / Instituição</label>
+                                                <input
+                                                    required
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.empresa}
+                                                    onChange={e => setFormData({ ...formData, empresa: e.target.value })}
+                                                    placeholder="Onde você atua hoje"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Crie uma Senha</label>
+                                                <input
+                                                    required
+                                                    type="password"
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.senha}
+                                                    onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                                                    placeholder="Mínimo 6 caracteres"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Confirme a Senha</label>
+                                                <input
+                                                    required
+                                                    type="password"
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.confirmarSenha}
+                                                    onChange={e => setFormData({ ...formData, confirmarSenha: e.target.value })}
+                                                    placeholder="Repita a senha"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {step === 2 && (
+                                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                        <div className="space-y-3">
+                                            <label className="text-sm font-medium text-gray-300">Suas Especialidades (Selecione até 3)</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {ESPECIALIDADES.map(esp => (
+                                                    <button
+                                                        key={esp}
+                                                        type="button"
+                                                        onClick={() => toggleEspecialidade(esp)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${formData.especialidades.includes(esp)
+                                                            ? 'bg-brand-orange-coral text-white border-brand-orange-coral'
+                                                            : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
+                                                            }`}
+                                                    >
+                                                        {esp}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-300">Breve Bio / Experiência Profissional</label>
+                                            <textarea
+                                                required
+                                                rows={4}
+                                                className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none resize-none"
+                                                value={formData.bio}
+                                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                                placeholder="Conte-nos um pouco sobre sua trajetória e como você pode ajudar outros empreendedores..."
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {step === 3 && (
+                                    <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                                                <Linkedin className="h-4 w-4 text-blue-400" /> URL do LinkedIn
+                                            </label>
+                                            <input
+                                                required
+                                                type="url"
+                                                className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                value={formData.linkedin}
+                                                onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                                                placeholder="https://linkedin.com/in/seu-perfil"
+                                            />
+                                        </div>
+
+                                        <div className="bg-brand-orange-coral/10 p-6 rounded-2xl border border-brand-orange-coral/20">
+                                            <h4 className="text-brand-orange-coral font-bold mb-2 flex items-center gap-2">
+                                                <Target className="h-5 w-5" /> Compromisso
+                                            </h4>
+                                            <p className="text-sm text-gray-300 leading-relaxed">
+                                                Ao se candidatar, você concorda em disponibilizar pelo menos 1h30 (3 sessões de 30min) durante o evento para as mentorias 1:1. Em troca, você receberá acesso VIP, kit oficial e destaque como mentor oficial.
+                                            </p>
+                                        </div>
+
+                                        {error && (
+                                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                                                {error}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-4 pt-4">
+                                    {step > 1 && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={prevStep}
+                                            className="flex-1 border-white/10 text-gray-400 hover:bg-white/5"
+                                        >
+                                            Voltar
+                                        </Button>
+                                    )}
+                                    <Button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl"
+                                    >
+                                        {isSubmitting ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : step === 3 ? (
+                                            'Finalizar Candidatura'
+                                        ) : (
+                                            'Próximo Passo'
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

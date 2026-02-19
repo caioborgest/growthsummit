@@ -79,7 +79,7 @@ export function PalestranteCardRefined({
                     </p>
 
                     {/* Tema da palestra */}
-                    <div className="glass-card p-4 border-brand-orange-coral/20 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="glass-card p-4 border-brand-orange-coral/20 mb-4 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
                         <p className="text-xs text-brand-orange-coral font-semibold mb-1 uppercase tracking-wider">
                             Tema da Palestra
                         </p>
@@ -92,7 +92,7 @@ export function PalestranteCardRefined({
                     <Button
                         variant="outline"
                         size="sm"
-                        className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+                        className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 transform translate-y-0 lg:translate-y-2 lg:group-hover:translate-y-0"
                     >
                         Ver Mais Detalhes
                         <ArrowRight className="ml-2 h-4 w-4" />

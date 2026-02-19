@@ -106,33 +106,42 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 throw new Error('Por favor, insira um email válido');
             }
 
-            // 1. Criar usuário no Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.senha,
-                options: {
-                    data: {
-                        name: formData.nome_representante,
-                        phone: formData.telefone,
-                        role: 'b2b'
+            // 0. Verificar se já existe uma sessão ativa
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            let user = existingSession?.user;
+            let authError = null;
+
+            if (!user) {
+                // 1. Criar usuário no Supabase Auth se não houver sessão
+                const { data: authData, error: sError } = await supabase.auth.signUp({
+                    email: formData.email,
+                    password: formData.senha,
+                    options: {
+                        data: {
+                            name: formData.nome_representante,
+                            phone: formData.telefone,
+                            role: 'b2b'
+                        }
                     }
-                }
-            });
+                });
+                user = authData?.user || null;
+                authError = sError;
+            }
 
             if (authError) {
                 if (authError.message.includes('already registered')) {
                     throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
                 }
-                throw new Error(authError.message);
+                throw authError;
             }
 
-            if (!authData.user) {
-                throw new Error('Erro ao criar usuário');
+            if (!user) {
+                throw new Error('Erro ao identificar usuário para inscrição');
             }
 
             // Preparar dados para inserção
             const dataToInsert = {
-                user_id: authData.user.id,
+                user_id: user.id,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,
                 email: formData.email,
@@ -197,8 +206,19 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 setIsSuccess(false);
                 onClose();
             }, 3000);
-        } catch (err: any) {
-            setError(err.message || 'Erro ao enviar inscrição. Tente novamente.');
+        } catch (err: unknown) {
+            console.error('Erro na inscrição B2B:', err);
+            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
+
+            if (err instanceof Error) {
+                if (err.message.includes('rate limit exceeded')) {
+                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
+                } else {
+                    errorMessage = err.message;
+                }
+            }
+
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

@@ -67,8 +67,8 @@ export function AdminGrowthExperienceTriunfo() {
                 {/* Total de Inscrições */}
                 <Card className="glass-card p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <Users className="h-8 w-8 text-brand-yellow" />
-                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
+                        <Users className="h-8 w-8 text-brand-orange-coral" />
+                        <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral">
                             {stats.inscricoesPendentes} pendentes
                         </Badge>
                     </div>
@@ -79,7 +79,7 @@ export function AdminGrowthExperienceTriunfo() {
                     <div className="mt-3 flex gap-2 text-xs">
                         <span className="text-brand-blue">{stats.inscricoesPagas} pagas</span>
                         <span className="text-gray-500">•</span>
-                        <span className="text-yellow-400">{stats.inscricoesPendentes} pendentes</span>
+                        <span className="text-orange-400">{stats.inscricoesPendentes} pendentes</span>
                     </div>
                 </Card>
 
@@ -98,15 +98,15 @@ export function AdminGrowthExperienceTriunfo() {
                     <div className="mt-3 flex gap-2 text-xs">
                         <span className="text-green-400">{stats.startupsAprovadas} aprovadas</span>
                         <span className="text-gray-500">•</span>
-                        <span className="text-yellow-400">{stats.startupsPendentes} pendentes</span>
+                        <span className="text-orange-400">{stats.startupsPendentes} pendentes</span>
                     </div>
                 </Card>
 
                 {/* Empresas B2B */}
                 <Card className="glass-card p-6">
                     <div className="flex items-center justify-between mb-2">
-                        <Handshake className="h-8 w-8 text-brand-yellow" />
-                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
+                        <Handshake className="h-8 w-8 text-brand-orange-coral" />
+                        <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral">
                             Rodada B2B
                         </Badge>
                     </div>
@@ -117,15 +117,15 @@ export function AdminGrowthExperienceTriunfo() {
                     <div className="mt-3 flex gap-2 text-xs">
                         <span className="text-green-400">{stats.empresasAprovadas} aprovadas</span>
                         <span className="text-gray-500">•</span>
-                        <span className="text-yellow-400">{stats.empresasPendentes} pendentes</span>
+                        <span className="text-orange-400">{stats.empresasPendentes} pendentes</span>
                     </div>
                 </Card>
 
                 {/* Receita */}
-                <Card className="glass-card p-6 border-brand-yellow/20">
+                <Card className="glass-card p-6 border-brand-orange-coral/20">
                     <div className="flex items-center justify-between mb-2">
-                        <DollarSign className="h-8 w-8 text-brand-yellow" />
-                        <Badge className="bg-brand-yellow/20 text-brand-yellow">
+                        <DollarSign className="h-8 w-8 text-brand-orange-coral" />
+                        <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral">
                             Receita
                         </Badge>
                     </div>
@@ -134,7 +134,7 @@ export function AdminGrowthExperienceTriunfo() {
                     </p>
                     <p className="text-gray-400 text-sm">Receita Confirmada</p>
                     <div className="mt-3 flex gap-2 text-xs">
-                        <span className="text-yellow-400">
+                        <span className="text-orange-400">
                             R$ {stats.receitaPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} pendente
                         </span>
                     </div>
@@ -205,7 +205,7 @@ export function AdminGrowthExperienceTriunfo() {
                             Avaliar Startups ({stats.startupsPendentes})
                         </Button>
                         <Button
-                            className="w-full bg-brand-yellow hover:bg-brand-yellow/80 text-dark-100 justify-start"
+                            className="w-full bg-brand-orange-coral hover:bg-brand-orange-coral/80 text-dark-100 justify-start"
                             onClick={() => setActiveTab('b2b')}
                         >
                             <Handshake className="h-4 w-4 mr-2" />
@@ -227,7 +227,7 @@ export function AdminGrowthExperienceTriunfo() {
             <div className="flex gap-2 border-b border-dark-300">
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'inscricoes'
-                        ? 'text-brand-yellow border-b-2 border-brand-yellow'
+                        ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('inscricoes')}
@@ -245,7 +245,7 @@ export function AdminGrowthExperienceTriunfo() {
                 </button>
                 <button
                     className={`px-4 py-2 font-medium transition-colors ${activeTab === 'b2b'
-                        ? 'text-brand-yellow border-b-2 border-brand-yellow'
+                        ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     onClick={() => setActiveTab('b2b')}

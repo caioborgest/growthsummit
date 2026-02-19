@@ -130,13 +130,10 @@ export function InscricaoSection({
                         {/* CTA */}
                         <Button
                             size="lg"
-                            className={`${destaque
-                                    ? 'bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100'
-                                    : 'bg-brand-blue hover:bg-brand-blue/90 text-white'
-                                } font-bold px-10 py-7 text-lg rounded-xl shadow-lg group`}
+                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-7 text-lg rounded-xl shadow-glow-orange hover:shadow-glow hover:scale-[1.02] transition-all duration-300 h-auto group"
                             onClick={onInscrever}
                         >
-                            {gratuito ? 'Inscrever-se Gratuitamente' : 'Garantir Meu Ingresso'}
+                            {gratuito ? 'INSCREVER-SE GRATUITAMENTE' : 'GARANTIR MEU INGRESSO'}
                             <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </div>

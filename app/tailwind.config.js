@@ -61,6 +61,7 @@ module.exports = {
           'gray-dark': '#333333',         // Cinza Escuro - Versão alternativa "EXPERIENCE"
           'black': '#0c0e12',             // Preto - Fundos escuros e texto principal
           'white': '#FFFFFF',             // Branco - Fundo e contraste
+          'blue': '#1e3a8a',              // Azul - Para compatibilidade e contraste
         },
         // Aliases for compatibility with existing code
         teal: {

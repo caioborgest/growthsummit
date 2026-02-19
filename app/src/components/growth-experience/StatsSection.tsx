@@ -91,39 +91,39 @@ export function StatsSection() {
     const stats = [
         {
             icon: Users,
-            value: 500,
+            value: 2000,
             label: 'Participantes',
             suffix: '+'
         },
         {
             icon: Building2,
-            value: 50,
-            label: 'Empresas',
-            suffix: '+'
-        },
-        {
-            icon: Handshake,
-            value: 30,
-            label: 'Expositores',
+            value: 25,
+            label: 'Empresas Expositoras',
             suffix: '+'
         },
         {
             icon: Target,
             value: 20,
-            label: 'Mentorias',
+            label: 'Workshops e Cursos',
             suffix: '+'
         },
         {
+            icon: Handshake,
+            value: 10,
+            label: 'Milhões em Negócios',
+            suffix: 'M+'
+        },
+        {
             icon: TrendingUp,
-            value: 15,
-            label: 'Palestras',
+            value: 10,
+            label: 'Experiências Únicas',
             suffix: '+'
         },
         {
             icon: Award,
-            value: 10,
-            label: 'Palestrantes',
-            suffix: '+'
+            value: 2000,
+            label: 'Prêmios Arena Pitch',
+            suffix: 'R$+'
         }
     ];
 

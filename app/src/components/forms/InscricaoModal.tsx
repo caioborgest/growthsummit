@@ -32,7 +32,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             case 'palestra':
                 return 'Inscrição Palestra Noturna';
             case 'mentor':
-                return 'Inscrição Mentor 1:1';
+                return 'Inscrição Mentorado 1:1';
+
             case 'cursos':
                 return 'Inscrição Cursos e Treinamentos';
             default:
@@ -70,61 +71,79 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 throw new Error('Por favor, insira um email válido');
             }
 
-            // 1. Criar usuário no Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.senha,
-                options: {
-                    data: {
-                        name: formData.nome,
-                        phone: formData.telefone,
-                        role: tipo === 'mentor' ? 'mentor' : 'participante'
+            // 0. Verificar se já existe uma sessão ativa
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            let user = existingSession?.user;
+            let authError = null;
+
+            if (!user) {
+                // 1. Criar usuário no Supabase Auth se não houver sessão
+                const { data: authData, error: sError } = await supabase.auth.signUp({
+                    email: formData.email,
+                    password: formData.senha,
+                    options: {
+                        data: {
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            role: (tipo === 'mentor') ? 'mentor' : 'participante'
+                        }
                     }
-                }
-            });
+                });
+                user = authData?.user || null;
+                authError = sError;
+            }
 
             if (authError) {
-                // Se o usuário já existe, tentamos prosseguir apenas com o insert (assumindo que ele pode estar logado ou apenas quer inscrever)
-                // Mas para consistência de segurança, o ideal seria pedir login.
-                // Vou lançar o erro por enquanto para evitar duplicidade ou inconsistência.
                 if (authError.message.includes('already registered')) {
                     throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
                 }
-                throw new Error(authError.message);
+                throw authError;
             }
 
-            if (!authData.user) {
-                throw new Error('Erro ao criar usuário');
+            if (!user) {
+                throw new Error('Erro ao identificar usuário para inscrição');
             }
 
-            // Inserir no Supabase
-            const { error: supabaseError } = await (supabase
-                .from('inscricoes_growth_experience_triunfo') as any)
-                .insert({
-                    user_id: authData.user.id, // Adicionando vínculo com usuário
+            // 2. Inserir no Supabase dependendo do tipo
+            let supabaseQuery;
+
+            if (tipo === 'mentor') {
+                supabaseQuery = supabase.from('mentorias_agendadas').insert({
+                    mentorado_id: user.id,
+                    nome_mentorado: formData.nome,
+                    email_mentorado: formData.email,
+                    telefone_mentorado: formData.telefone,
+                    status: 'pendente'
+                });
+            } else {
+                supabaseQuery = supabase.from('inscricoes_growth_experience').insert({
+                    user_id: user.id,
                     nome: formData.nome,
                     email: formData.email,
                     telefone: formData.telefone,
                     empresa: formData.empresa || null,
                     tipo_inscricao: tipo,
                     evento: eventoNome,
-                    valor: tipo === 'palestra' ? 179.99 : 0,
-                    status: 'pendente',
-                    created_at: new Date().toISOString(),
+                    valor_pago: tipo === 'palestra' ? 179.99 : 0,
+                    status_pagamento: tipo === 'palestra' ? 'pendente' : 'pago',
+                    status: 'ativo'
                 });
+            }
 
+            const { error: supabaseError } = await supabaseQuery;
             if (supabaseError) throw supabaseError;
 
-            // Analytics tracking
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'inscricao_enviada', {
+            // Analytics
+            const win = window as unknown as { gtag?: (event: string, action: string, params: Record<string, unknown>) => void };
+            if (win.gtag) {
+                win.gtag('event', 'inscricao_enviada', {
                     event_category: 'Growth Experience Triunfo',
                     event_label: tipo,
                     value: tipo === 'palestra' ? 179.99 : 0,
                 });
             }
 
-            // Se for palestra, redirecionar para WhatsApp para pagamento
+            // Redirecionamento WhatsApp para palestra
             if (tipo === 'palestra') {
                 const mensagem = encodeURIComponent(
                     `Olá! Gostaria de finalizar minha inscrição para a Palestra Noturna do Growth Experience Triunfo-PE.\n\n` +
@@ -133,14 +152,11 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     `Telefone: ${formData.telefone}\n` +
                     `Valor: R$ 179,99`
                 );
-
-                // Abrir WhatsApp em nova aba
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
             }
 
             setIsSuccess(true);
 
-            // Resetar formulário após 3 segundos
             setTimeout(() => {
                 setFormData({
                     nome: '',
@@ -153,8 +169,19 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 setIsSuccess(false);
                 onClose();
             }, 3000);
-        } catch (err: any) {
-            setError(err.message || 'Erro ao enviar inscrição. Tente novamente.');
+
+        } catch (err: unknown) {
+            console.error('Erro ao enviar inscrição:', err);
+            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
+
+            if (err instanceof Error) {
+                if (err.message.includes('rate limit exceeded')) {
+                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
+                } else {
+                    errorMessage = err.message;
+                }
+            }
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

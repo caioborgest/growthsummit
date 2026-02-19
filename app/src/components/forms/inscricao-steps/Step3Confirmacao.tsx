@@ -25,54 +25,78 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
         setError('');
 
         try {
-            // 1. Criar usuário no Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: dados.email,
-                password: dados.senha,
-                options: {
-                    data: {
-                        name: dados.nome,
-                        phone: dados.telefone,
-                        role: 'participant'
-                    }
-                }
-            });
+            // 0. Verificar se já existe uma sessão ativa
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            let userId = existingSession?.user?.id;
+            let authError = null;
 
-            if (authError) {
-                throw new Error(authError.message);
+            if (!userId) {
+                // 1. Criar usuário no Supabase Auth se não houver sessão
+                const { data: authData, error: sError } = await supabase.auth.signUp({
+                    email: dados.email,
+                    password: dados.senha,
+                    options: {
+                        data: {
+                            name: dados.nome,
+                            phone: dados.telefone,
+                            role: 'participante'
+                        }
+                    }
+                });
+                userId = authData?.user?.id;
+                authError = sError;
             }
 
-            if (!authData.user) {
-                throw new Error('Erro ao criar usuário');
+            if (authError) {
+                // Se já existe, prosseguimos
+                if (!authError.message.includes('already registered')) {
+                    throw authError;
+                }
+            }
+
+            // Precisamos do ID do usuário.
+            if (!userId && !authError?.message.includes('already registered')) {
+                throw new Error('Erro ao identificar usuário para inscrição');
             }
 
             // 2. Salvar inscrição no banco
             const { data: inscricaoData, error: inscricaoError } = await supabase
                 .from('inscricoes_growth_experience')
                 .insert({
-                    user_id: authData.user.id,
+                    user_id: userId,
                     nome: dados.nome,
                     email: dados.email,
                     telefone: dados.telefone,
                     cursos_selecionados: dados.cursosSelecionados,
                     palestras_noturnas: false,
                     valor_pago: 0,
-                    status_pagamento: 'pendente',
+                    status_pagamento: 'pago',
+                    status: 'ativo',
                     app_instalado: false
                 })
-                .select()
-                .single();
+                .select();
 
             if (inscricaoError) {
                 throw new Error(inscricaoError.message);
             }
 
+            const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
+
             // 3. Sucesso - continuar para próxima etapa
-            onConfirmar(authData.user.id, inscricaoData.id);
+            onConfirmar(userId || '', finalInscricaoId || '');
 
         } catch (err: unknown) {
             console.error('Erro ao confirmar inscrição:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Erro ao processar inscrição. Tente novamente.';
+            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
+
+            if (err instanceof Error) {
+                if (err.message.includes('rate limit exceeded')) {
+                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
+                } else {
+                    errorMessage = err.message;
+                }
+            }
+
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -134,7 +158,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         <BookOpen className="h-5 w-5 text-brand-orange-coral" />
                     </div>
                     <h4 className="font-bold text-white text-lg">
-                        Cursos Selecionados ({cursosSelecionados.length})
+                        Atividade Selecionada
                     </h4>
                 </div>
 
@@ -181,7 +205,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-brand-orange-coral mt-0.5">•</span>
-                                <span>Seus cursos serão reservados automaticamente</span>
+                                <span>Sua atividade será reservada automaticamente</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="text-brand-orange-coral mt-0.5">•</span>

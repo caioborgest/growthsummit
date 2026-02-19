@@ -95,10 +95,12 @@ function AppRoutes() {
         <Route path="startups" element={<Startups />} />
         <Route path="seja-patrocinador" element={<Patrocinio />} />
         <Route path="growth-experience" element={<GrowthExperience />} />
-        <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
         <Route path="faq" element={<FAQ />} />
         <Route path="contato" element={<Contato />} />
       </Route>
+
+      {/* Dedicated Page for Triunfo (No Global Layout) */}
+      <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
 
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />

@@ -159,10 +159,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             <div key={step} className="flex items-center flex-1">
                                 <div
                                     className={`w-full h-2 rounded-full transition-all ${step < currentStep
-                                            ? 'bg-green-500'
-                                            : step === currentStep
-                                                ? 'bg-brand-orange-coral'
-                                                : 'bg-gray-700'
+                                        ? 'bg-green-500'
+                                        : step === currentStep
+                                            ? 'bg-brand-orange-coral'
+                                            : 'bg-gray-700'
                                         }`}
                                 />
                             </div>
@@ -170,7 +170,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
 
                     {/* Step Indicators */}
-                    <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center justify-between mt-4 px-2">
                         {[
                             'Cursos',
                             'Dados',
@@ -183,28 +183,28 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             return (
                                 <div
                                     key={step}
-                                    className="flex flex-col items-center gap-2"
+                                    className="flex flex-col items-center gap-2 flex-1 min-w-0"
                                 >
                                     <div
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${step < currentStep
-                                                ? 'bg-green-500 text-white'
-                                                : step === currentStep
-                                                    ? 'bg-brand-orange-coral text-white'
-                                                    : 'bg-gray-700 text-gray-400'
+                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all text-sm sm:text-base ${step < currentStep
+                                            ? 'bg-green-500 text-white'
+                                            : step === currentStep
+                                                ? 'bg-brand-orange-coral text-white'
+                                                : 'bg-gray-700 text-gray-400'
                                             }`}
                                     >
                                         {step < currentStep ? (
-                                            <CheckCircle className="h-5 w-5" />
+                                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                                         ) : (
                                             step
                                         )}
                                     </div>
                                     <span
-                                        className={`text-xs font-semibold ${step === currentStep
-                                                ? 'text-brand-orange-coral'
-                                                : step < currentStep
-                                                    ? 'text-green-500'
-                                                    : 'text-gray-500'
+                                        className={`text-[10px] sm:text-xs font-semibold truncate w-full text-center hidden xs:block ${step === currentStep
+                                            ? 'text-brand-orange-coral'
+                                            : step < currentStep
+                                                ? 'text-green-500'
+                                                : 'text-gray-500'
                                             }`}
                                     >
                                         {label}

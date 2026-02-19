@@ -1,18 +1,21 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  TrendingUp, 
-  Megaphone, 
-  Handshake, 
-  Brain, 
+import {
+  ArrowRight,
+  Calendar,
+  MapPin,
+  Users,
+  TrendingUp,
+  Megaphone,
+  Handshake,
+  Brain,
   Star,
   ChevronLeft,
   ChevronRight,
-  Check
+  Check,
+  Rocket,
+  Zap,
+  Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,11 +27,11 @@ function CountdownTimer() {
 
   useEffect(() => {
     const targetDate = new Date('2026-05-21T09:00:00-03:00');
-    
+
     const calculateTimeLeft = () => {
       const now = new Date();
       const difference = targetDate.getTime() - now.getTime();
-      
+
       if (difference > 0) {
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -80,7 +83,7 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
           const steps = 60;
           const increment = value / steps;
           let current = 0;
-          
+
           const timer = setInterval(() => {
             current += increment;
             if (current >= value) {
@@ -132,7 +135,7 @@ function TestimonialsCarousel() {
   return (
     <div className="relative">
       <div className="overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${current * 100}%)` }}
         >
@@ -165,7 +168,7 @@ function TestimonialsCarousel() {
           ))}
         </div>
       </div>
-      
+
       <button
         onClick={prev}
         className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 p-2 rounded-full bg-dark-200 border border-dark-300 text-gray-400 hover:text-white hover:border-teal-500 transition-all"
@@ -184,9 +187,8 @@ function TestimonialsCarousel() {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              i === current ? 'bg-teal-500 w-6' : 'bg-dark-300'
-            }`}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? 'bg-teal-500 w-6' : 'bg-dark-300'
+              }`}
           />
         ))}
       </div>
@@ -203,30 +205,30 @@ export function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30 px-4 py-1">
             21-22 de maio de 2026 · Juazeiro do Norte, CE
           </Badge>
-          
+
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Growth Summit 2026
             <span className="block text-teal-400">Gestão e Inovação</span>
           </h1>
-          
+
           <p className="text-xl sm:text-2xl text-gray-400 mb-8 max-w-3xl mx-auto">
             {eventInfo.tagline}
           </p>
-          
+
           {/* Countdown */}
           <div className="flex justify-center mb-10">
             <CountdownTimer />
           </div>
-          
+
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg animate-glow-pulse"
               asChild
             >
@@ -235,16 +237,16 @@ export function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-dark-300 text-gray-300 hover:text-white hover:border-teal-500 px-8 py-6 text-lg"
               asChild
             >
               <Link to="/programacao">Ver programação</Link>
             </Button>
           </div>
-          
+
           {/* Quick Info */}
           <div className="flex flex-wrap justify-center gap-6 mt-12 text-gray-400">
             <div className="flex items-center">
@@ -295,6 +297,122 @@ export function Home() {
         </div>
       </section>
 
+      {/* Growth Experience Triunfo Exclusive Section */}
+      <section className="py-24 relative overflow-hidden">
+        {/* Background Decorativo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-orange-coral/20 via-dark to-brand-blue/10" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-orange-coral/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-brand-blue/10 rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Imagem/Visual */}
+            <div className="order-2 lg:order-1 relative">
+              <div className="relative z-10 rounded-3xl overflow-hidden border border-white/10 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+                <img
+                  src="https://images.unsplash.com/photo-1511578334221-d3023916020e?q=80&w=2069&auto=format&fit=crop"
+                  alt="Growth Experience Triunfo"
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
+
+                {/* Overlay Info */}
+                <div className="absolute bottom-8 left-8 right-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-brand-orange-coral flex items-center justify-center">
+                      <MapPin className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">Triunfo - Pernambuco</p>
+                      <p className="text-brand-orange-coral text-sm font-semibold">09 de Abril, 2026</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Element 1 */}
+              <div className="absolute -top-6 -left-6 z-20 glass-card p-4 border-brand-orange-coral/30 animate-float">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
+                    <Rocket className="h-5 w-5 text-brand-orange-coral" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">Arena Pitch</p>
+                    <p className="text-gray-400 text-xs">R$ 5k em Prêmios</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Element 2 */}
+              <div className="absolute bottom-12 -right-6 z-20 glass-card p-4 border-brand-blue/30 animate-float" style={{ animationDelay: '1s' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-brand-blue/20 flex items-center justify-center">
+                    <Zap className="h-5 w-5 text-brand-blue" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">Rodada B2B</p>
+                    <p className="text-gray-400 text-xs">Networking Direto</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="order-1 lg:order-2 space-y-8">
+              <div>
+                <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+                  PRÓXIMO EVENTO REGIONAL
+                </Badge>
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                  Growth Experience<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient">
+                    Triunfo-PE 2026
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-400">
+                  A Maior Exposição de Negócios do Sertão do Pajeú. Uma edição épica focada em impulsionar o ecossistema regional.
+                </p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-6">
+                {[
+                  { icon: Award, title: 'Arena Pitch', desc: 'Premiação para Startups' },
+                  { icon: Users, title: 'Mentorias 1:1', desc: 'Acesso aos melhores CEOs' },
+                  { icon: Handshake, title: 'Rodada B2B', desc: 'Conexões Estratégicas' },
+                  { icon: TrendingUp, title: 'Expo Negócios', desc: 'Visibilidade para PMEs' }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange-coral transition-colors">
+                      <item.icon className="h-5 w-5 text-brand-orange-coral" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold">{item.title}</h4>
+                      <p className="text-sm text-gray-400">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-6">
+                <Button
+                  size="lg"
+                  className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 h-14 text-lg font-bold shadow-lg shadow-brand-orange-coral/20 group"
+                  asChild
+                >
+                  <Link to="/growth-experience-triunfo">
+                    Quero Garantir minha Vaga
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </Button>
+                <p className="text-sm text-gray-500 mt-4">
+                  * Vagas limitadas para mentorias e Arena Pitch.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -308,17 +426,17 @@ export function Home() {
               </h2>
               <div className="space-y-4 text-gray-400">
                 <p>
-                  O Growth Summit 2026 é um evento de dois dias focado em gestão, inovação e 
-                  crescimento de negócios. Reunimos os melhores especialistas em Growth Marketing, 
+                  O Growth Summit 2026 é um evento de dois dias focado em gestão, inovação e
+                  crescimento de negócios. Reunimos os melhores especialistas em Growth Marketing,
                   Vendas B2B, Inteligência Artificial e Liderança.
                 </p>
                 <p>
-                  Com palestras inspiradoras, workshops práticos, mentorias individuais e 
-                  rodadas de negócios B2B, o evento oferece uma experiência completa para 
+                  Com palestras inspiradoras, workshops práticos, mentorias individuais e
+                  rodadas de negócios B2B, o evento oferece uma experiência completa para
                   quem quer acelerar o crescimento da sua empresa.
                 </p>
               </div>
-              
+
               <ul className="mt-8 space-y-3">
                 {[
                   'Palestras com especialistas renomados',
@@ -333,12 +451,12 @@ export function Home() {
                   </li>
                 ))}
               </ul>
-              
+
               <Button className="mt-8 bg-teal-500 hover:bg-teal-600 text-white" asChild>
                 <Link to="/sobre">Conheça mais</Link>
               </Button>
             </div>
-            
+
             <div className="relative">
               <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/20 to-orange-500/20 border border-dark-300">
                 <img
@@ -370,16 +488,15 @@ export function Home() {
               Conteúdo especializado para cada etapa do seu negócio, desde aquisição até gestão
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tracks.map((track) => (
               <div
                 key={track.id}
                 className="group glass-card p-6 hover:border-teal-500/50 transition-all duration-300 hover:-translate-y-1"
               >
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
-                  track.color === 'teal' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'
-                }`}>
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${track.color === 'teal' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'
+                  }`}>
                   <TrackIcon name={track.icon} />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">{track.name}</h3>
@@ -387,9 +504,8 @@ export function Home() {
                 <ul className="space-y-2">
                   {track.topics.map((topic, i) => (
                     <li key={i} className="flex items-center text-sm text-gray-500">
-                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${
-                        track.color === 'teal' ? 'bg-teal-400' : 'bg-orange-400'
-                      }`} />
+                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${track.color === 'teal' ? 'bg-teal-400' : 'bg-orange-400'
+                        }`} />
                       {topic}
                     </li>
                   ))}
@@ -419,7 +535,7 @@ export function Home() {
               </Link>
             </Button>
           </div>
-          
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {speakers.slice(0, 6).map((speaker) => (
               <div
@@ -461,14 +577,13 @@ export function Home() {
               Do acesso básico à experiência VIP premium, temos a opção ideal para você
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {ticketTypes.map((ticket) => (
               <div
                 key={ticket.id}
-                className={`relative glass-card p-8 ${
-                  ticket.popular ? 'border-teal-500/50 scale-105' : ''
-                }`}
+                className={`relative glass-card p-8 ${ticket.popular ? 'border-teal-500/50 scale-105' : ''
+                  }`}
               >
                 {ticket.popular && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-500 text-white">
@@ -480,10 +595,10 @@ export function Home() {
                     Apenas {ticket.limit} vagas
                   </Badge>
                 )}
-                
+
                 <h3 className="text-xl font-semibold text-white mb-2">{ticket.name}</h3>
                 <p className="text-gray-400 text-sm mb-4">{ticket.description}</p>
-                
+
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-white">
                     R$ {ticket.price.toLocaleString()}
@@ -494,7 +609,7 @@ export function Home() {
                     </span>
                   )}
                 </div>
-                
+
                 <ul className="space-y-3 mb-8">
                   {ticket.features.map((feature, i) => (
                     <li key={i} className="flex items-start text-sm text-gray-300">
@@ -503,13 +618,12 @@ export function Home() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <Button
-                  className={`w-full ${
-                    ticket.popular
-                      ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                      : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
-                  }`}
+                  className={`w-full ${ticket.popular
+                    ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                    : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
+                    }`}
                   asChild
                 >
                   <Link to="/inscricoes">Escolher este</Link>
@@ -531,7 +645,7 @@ export function Home() {
               O que dizem sobre nós
             </h2>
           </div>
-          
+
           <TestimonialsCarousel />
         </div>
       </section>
@@ -540,19 +654,19 @@ export function Home() {
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-orange-500/10" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-teal-500/5 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
             Pronto para acelerar seu <span className="text-teal-400">crescimento</span>?
           </h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Junte-se a mais de 700 profissionais em busca de crescimento. 
+            Junte-se a mais de 700 profissionais em busca de crescimento.
             Garanta sua vaga agora com preço especial de lançamento.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg animate-glow-pulse"
               asChild
             >
@@ -561,9 +675,9 @@ export function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-dark-300 text-gray-300 hover:text-white hover:border-teal-500 px-8 py-6 text-lg"
               asChild
             >

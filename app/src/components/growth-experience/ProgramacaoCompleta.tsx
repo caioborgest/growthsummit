@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState } from 'react'; // Module Refresh Force
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, MapPin, Users, CheckCircle, Search, Filter, BookOpen } from 'lucide-react';
-import { programacaoCompleta, TipoAtividade } from '@/data/programacao';
+import { Clock, MapPin, Users, Search, BookOpen } from 'lucide-react';
+import { programacaoCompleta } from '@/data/programacao';
+import type { TipoAtividade } from '@/data/programacao';
 import { Input } from '@/components/ui/input';
 
 interface ProgramacaoCompletaProps {
-    onInscrever: () => void;
+    onInscrever: (tipo: TipoAtividade | 'todos') => void;
 }
 
 export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
@@ -55,7 +56,7 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                 </div>
 
                 {/* Filtros e Busca */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 bg-dark-200/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm sticky top-20 z-10 shadow-xl">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 bg-dark-200/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm sticky top-[80px] md:top-[80px] z-[40] shadow-xl transition-all duration-300">
                     <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide">
                         {tipos.map((tipo) => (
                             <Button
@@ -64,8 +65,8 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                                 size="sm"
                                 onClick={() => setFiltroTipo(tipo.id)}
                                 className={`rounded-full whitespace-nowrap transition-all ${filtroTipo === tipo.id
-                                        ? 'bg-brand-orange-coral text-white hover:bg-brand-orange-intense'
-                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                    ? 'bg-brand-orange-coral text-white hover:bg-brand-orange-intense'
+                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 {tipo.label}
@@ -96,17 +97,17 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                             >
                                 {/* Faixa de Tipo */}
                                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${atividade.tipo === 'palestra' ? 'bg-brand-orange-coral' :
-                                        atividade.tipo === 'curso' ? 'bg-blue-500' :
-                                            atividade.tipo === 'mentoria' ? 'bg-purple-500' :
-                                                'bg-gray-500'
+                                    atividade.tipo === 'curso' ? 'bg-blue-500' :
+                                        atividade.tipo === 'mentoria' ? 'bg-purple-500' :
+                                            'bg-gray-500'
                                     }`} />
 
                                 <div className="p-6 pl-8">
                                     <div className="flex justify-between items-start mb-4">
                                         <Badge variant="outline" className={`border-white/10 text-xs uppercase tracking-wider ${atividade.tipo === 'palestra' ? 'text-brand-orange-coral bg-brand-orange-coral/10' :
-                                                atividade.tipo === 'curso' ? 'text-blue-400 bg-blue-500/10' :
-                                                    atividade.tipo === 'mentoria' ? 'text-purple-400 bg-purple-500/10' :
-                                                        'text-gray-400 bg-gray-500/10'
+                                            atividade.tipo === 'curso' ? 'text-blue-400 bg-blue-500/10' :
+                                                atividade.tipo === 'mentoria' ? 'text-purple-400 bg-purple-500/10' :
+                                                    'text-gray-400 bg-gray-500/10'
                                             }`}>
                                             {atividade.tipo}
                                         </Badge>
@@ -146,12 +147,14 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                                         )}
                                     </div>
 
-                                    <Button
-                                        className="w-full bg-white/5 hover:bg-brand-orange-coral hover:text-white border border-white/10 hover:border-brand-orange-coral transition-all group-hover:bg-brand-orange-coral group-hover:text-white"
-                                        onClick={onInscrever}
-                                    >
-                                        Inscrever-se
-                                    </Button>
+                                    {atividade.tipo !== 'networking' && (
+                                        <Button
+                                            className="w-full bg-white/5 hover:bg-brand-orange-coral hover:text-white border border-white/10 hover:border-brand-orange-coral transition-all group-hover:bg-brand-orange-coral group-hover:text-white"
+                                            onClick={() => onInscrever(atividade.tipo)}
+                                        >
+                                            {atividade.tipo === 'palestra' ? 'Garantir Ingresso' : 'Inscrever-se'}
+                                        </Button>
+                                    )}
                                 </div>
                             </Card>
                         ))
@@ -173,7 +176,7 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                 <div className="mt-16 text-center">
                     <Button
                         size="lg"
-                        onClick={onInscrever}
+                        onClick={() => onInscrever('todos')}
                         className="bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold text-lg px-8 py-6 rounded-full shadow-lg shadow-brand-orange-coral/30 animate-pulse hover:animate-none transform hover:scale-105 transition-all"
                     >
                         QUERO PARTICIPAR DE TUDO

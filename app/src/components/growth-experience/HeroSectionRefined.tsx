@@ -17,7 +17,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     // Contador regressivo
     useEffect(() => {
-        const eventDate = new Date('2026-03-28T19:00:00');
+        const eventDate = new Date('2026-04-09T08:00:00');
 
         const updateCountdown = () => {
             const now = new Date().getTime();
@@ -40,8 +40,14 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Background com gradiente animado */}
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-black via-dark-100 to-brand-black">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0">
+                <img
+                    src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                    alt="Caretas de Triunfo"
+                    className="w-full h-full object-cover object-center scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-black/95 via-dark-100/90 to-brand-black/95" />
                 <div
                     className="absolute inset-0 opacity-30"
                     style={{
@@ -78,7 +84,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
                     {/* Título principal */}
                     <h1
-                        className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
+                        className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
                         style={{ animationDelay: '0.2s' }}
                     >
                         <span className="block mb-2">Growth Experience</span>
@@ -105,19 +111,19 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">28 de Março, 2026</span>
+                            <span className="font-semibold">09 de Abril, 2026</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Clock className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">19:00 - 23:00</span>
+                            <span className="font-semibold">08:00 - 23:00</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <MapPin className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">Triunfo, Pernambuco</span>
+                            <span className="font-semibold">Espaço Parque, Triunfo-PE</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">500+ Participantes</span>
+                            <span className="font-semibold">2.000+ Participantes</span>
                         </div>
                     </div>
 
@@ -126,7 +132,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                         className="max-w-2xl mx-auto mb-12 animate-fade-in-up"
                         style={{ animationDelay: '0.5s' }}
                     >
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             {[
                                 { label: 'Dias', value: timeLeft.dias },
                                 { label: 'Horas', value: timeLeft.horas },

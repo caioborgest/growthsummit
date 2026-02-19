@@ -17,16 +17,13 @@ export function Step1SelecionarCursos({
 }: Step1SelecionarCursosProps) {
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
 
-    const toggleCurso = (cursoId: string) => {
-        setSelecionados(prev =>
-            prev.includes(cursoId)
-                ? prev.filter(id => id !== cursoId)
-                : [...prev, cursoId]
-        );
+    const selectCurso = (cursoId: string) => {
+        // Apenas 1 seleção permitida
+        setSelecionados([cursoId]);
     };
 
     const handleContinuar = () => {
-        if (selecionados.length > 0) {
+        if (selecionados.length === 1) {
             onContinuar(selecionados);
         }
     };
@@ -36,15 +33,15 @@ export function Step1SelecionarCursos({
             {/* Header */}
             <div className="text-center">
                 <h3 className="text-3xl font-bold text-white mb-3">
-                    Escolha seus Cursos
+                    Escolha sua Atividade
                 </h3>
                 <p className="text-gray-400 text-lg">
-                    Selecione pelo menos 1 curso para participar (todos são gratuitos!)
+                    Selecione 1 curso ou workshop para participar (vagas limitadas!)
                 </p>
                 {selecionados.length > 0 && (
                     <Badge className="mt-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/40 px-4 py-2">
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        {selecionados.length} curso{selecionados.length !== 1 ? 's' : ''} selecionado{selecionados.length !== 1 ? 's' : ''}
+                        Atividade selecionada com sucesso
                     </Badge>
                 )}
             </div>
@@ -58,19 +55,19 @@ export function Step1SelecionarCursos({
                         <Card
                             key={curso.id}
                             className={`p-6 cursor-pointer transition-all duration-300 ${isSelected
-                                    ? 'border-brand-orange-coral bg-brand-orange-coral/10 ring-2 ring-brand-orange-coral/50'
-                                    : 'border-white/10 hover:border-brand-orange-coral/30 bg-dark-200/50'
+                                ? 'border-brand-orange-coral bg-brand-orange-coral/10 ring-2 ring-brand-orange-coral/50'
+                                : 'border-white/10 hover:border-brand-orange-coral/30 bg-dark-200/50'
                                 }`}
-                            onClick={() => toggleCurso(curso.id)}
+                            onClick={() => selectCurso(curso.id)}
                         >
                             <div className="flex items-start gap-4">
-                                {/* Checkbox */}
+                                {/* Radio UI (Simulado com Checkbox redondo ou apenas o card) */}
                                 <div className="pt-1">
-                                    <Checkbox
-                                        checked={isSelected}
-                                        onCheckedChange={() => toggleCurso(curso.id)}
-                                        className="border-brand-orange-coral data-[state=checked]:bg-brand-orange-coral"
-                                    />
+                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
+                                        ? 'border-brand-orange-coral bg-brand-orange-coral'
+                                        : 'border-white/20'}`}>
+                                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white animate-in zoom-in-50" />}
+                                    </div>
                                 </div>
 
                                 {/* Conteúdo */}
@@ -160,13 +157,13 @@ export function Step1SelecionarCursos({
                     className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {selecionados.length === 0
-                        ? 'Selecione pelo menos 1 curso'
-                        : `Continuar com ${selecionados.length} curso${selecionados.length !== 1 ? 's' : ''}`}
+                        ? 'Selecione uma atividade'
+                        : 'Continuar com esta seleção'}
                 </Button>
 
                 {selecionados.length === 0 && (
                     <p className="text-center text-sm text-gray-500 mt-3">
-                        Você precisa selecionar pelo menos 1 curso para prosseguir
+                        Você precisa selecionar 1 atividade para prosseguir
                     </p>
                 )}
             </div>

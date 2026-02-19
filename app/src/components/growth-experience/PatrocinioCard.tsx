@@ -68,7 +68,7 @@ export function PatrocinioCard({
     const cores = getNivelCor(nome);
 
     return (
-        <Card className={`glass-card p-8 border-2 ${cores.border} hover:scale-105 transition-all duration-300 ${destaque ? 'ring-2 ring-brand-orange-coral ring-offset-2 ring-offset-dark' : ''} relative overflow-hidden group`}>
+        <Card className={`glass-card p-6 sm:p-8 border-2 ${cores.border} hover:scale-105 transition-all duration-300 ${destaque ? 'ring-2 ring-brand-orange-coral ring-offset-2 ring-offset-dark' : ''} relative overflow-hidden group`}>
             {/* Efeito de brilho no hover */}
             <div className={`absolute inset-0 bg-gradient-to-br ${cores.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
