@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, Landmark } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
@@ -72,7 +73,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     valor_pago: 0,
                     status_pagamento: 'pago',
                     status: 'ativo',
-                    app_instalado: false
+                    app_instalado: false,
+                    indicacao_tipo: dados.indicacaoTipo,
+                    indicacao_nome: dados.indicacaoNome,
+                    codigo_social: dados.codigo
                 })
                 .select();
 
@@ -117,36 +121,71 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             {/* Dados Pessoais */}
             <Card className="glass-card p-6 border-white/10">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
-                        <User className="h-5 w-5 text-brand-orange-coral" />
+                <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
+                            <User className="h-5 w-5 text-brand-orange-coral" />
+                        </div>
+                        <h4 className="font-bold text-white text-lg">Dados Pessoais</h4>
                     </div>
-                    <h4 className="font-bold text-white text-lg">Dados Pessoais</h4>
+                    {dados.indicacaoTipo && dados.indicacaoTipo !== 'nenhum' && (
+                        <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
+                            {dados.indicacaoTipo === 'prefeitura' ? 'Parceria Prefeitura' : 'Parceria Político'}
+                        </Badge>
+                    )}
                 </div>
 
-                <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                        <User className="h-4 w-4 text-gray-400 mt-1" />
-                        <div>
-                            <p className="text-xs text-gray-500">Nome</p>
-                            <p className="text-white font-semibold">{dados.nome}</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                            <User className="h-4 w-4 text-gray-400 mt-1" />
+                            <div>
+                                <p className="text-xs text-gray-500">Nome</p>
+                                <p className="text-white font-semibold">{dados.nome}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <Mail className="h-4 w-4 text-gray-400 mt-1" />
+                            <div>
+                                <p className="text-xs text-gray-500">Email</p>
+                                <p className="text-white font-semibold">{dados.email}</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                        <Mail className="h-4 w-4 text-gray-400 mt-1" />
-                        <div>
-                            <p className="text-xs text-gray-500">Email</p>
-                            <p className="text-white font-semibold">{dados.email}</p>
+                    <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                            <Phone className="h-4 w-4 text-gray-400 mt-1" />
+                            <div>
+                                <p className="text-xs text-gray-500">Telefone</p>
+                                <p className="text-white font-semibold">{dados.telefone}</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-start gap-3">
-                        <Phone className="h-4 w-4 text-gray-400 mt-1" />
-                        <div>
-                            <p className="text-xs text-gray-500">Telefone</p>
-                            <p className="text-white font-semibold">{dados.telefone}</p>
-                        </div>
+                        {dados.indicacaoNome && (
+                            <div className="flex items-start gap-3">
+                                {dados.indicacaoTipo === 'prefeitura' ? (
+                                    <Landmark className="h-4 w-4 text-gray-400 mt-1" />
+                                ) : (
+                                    <Award className="h-4 w-4 text-gray-400 mt-1" />
+                                )}
+                                <div>
+                                    <p className="text-xs text-gray-500">
+                                        {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
+                                    </p>
+                                    <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
+                                    {dados.descontoSocial && dados.descontoSocial > 0 && (
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <Badge className="bg-green-500/20 text-green-500 border-green-500/30 text-[10px] px-1.5 py-0">
+                                                -{dados.descontoSocial}% OFF
+                                            </Badge>
+                                            <span className="text-[10px] text-gray-400">Desconto aplicado</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Card>

@@ -5,11 +5,12 @@ import { CheckCircle, Star, Calendar, Clock, ArrowRight, X } from 'lucide-react'
 import { palestrasNoturnas } from '@/data/programacao';
 
 interface Step4OfertaPalestrasProps {
+    dados: DadosInscricao;
     onComprar: () => void;
     onPular: () => void;
 }
 
-export function Step4OfertaPalestras({ onComprar, onPular }: Step4OfertaPalestrasProps) {
+export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaPalestrasProps) {
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -80,7 +81,7 @@ export function Step4OfertaPalestras({ onComprar, onPular }: Step4OfertaPalestra
                             {[
                                 'Acesso às 2 palestras magnas',
                                 'Coffee Break & Networking Premium',
-                                'Lugar reservado nas primeiras filas',
+                                'Lugar reservado',
                                 'Certificado de participação especial (4h)',
                                 'Kit exclusivo do evento'
                             ].map((item, index) => (
@@ -94,11 +95,28 @@ export function Step4OfertaPalestras({ onComprar, onPular }: Step4OfertaPalestra
 
                     <div className="flex flex-col items-center md:items-end gap-4 min-w-[200px]">
                         <div className="text-center md:text-right">
-                            <p className="text-sm text-gray-500 line-through">de R$ 299,90</p>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-sm text-brand-orange-coral font-bold">R$</span>
-                                <span className="text-4xl font-black text-white">179,99</span>
-                            </div>
+                            {dados.descontoSocial && dados.descontoSocial > 0 ? (
+                                <>
+                                    <Badge className="mb-2 bg-green-500/20 text-green-500 border-green-500/30">
+                                        -{dados.descontoSocial}% Parceria {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Político'}
+                                    </Badge>
+                                    <p className="text-sm text-gray-500 line-through">de R$ 179,99</p>
+                                    <div className="flex items-baseline gap-1 justify-center md:justify-end">
+                                        <span className="text-sm text-brand-orange-coral font-bold">R$</span>
+                                        <span className="text-4xl font-black text-white">
+                                            {(179.99 * (1 - dados.descontoSocial / 100)).toFixed(2).replace('.', ',')}
+                                        </span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-sm text-gray-500 line-through">de R$ 299,90</p>
+                                    <div className="flex items-baseline gap-1 justify-center md:justify-end">
+                                        <span className="text-sm text-brand-orange-coral font-bold">R$</span>
+                                        <span className="text-4xl font-black text-white">179,99</span>
+                                    </div>
+                                </>
+                            )}
                             <p className="text-xs text-green-500 font-semibold">em até 12x no cartão</p>
                         </div>
 
@@ -107,7 +125,7 @@ export function Step4OfertaPalestras({ onComprar, onPular }: Step4OfertaPalestra
                             onClick={onComprar}
                             className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg transform hover:scale-105 transition-all"
                         >
-                            GARANTIR MINHA VAGA
+                            {dados.descontoSocial === 100 ? 'GARANTIR VAGA GRATUITA' : 'GARANTIR MINHA VAGA'}
                             <ArrowRight className="h-5 w-5 ml-2" />
                         </Button>
 

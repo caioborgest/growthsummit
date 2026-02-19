@@ -3,8 +3,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle, Award, Key, Loader2 } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
+import { supabase } from '@/lib/supabase';
+
+const CIDADES_PAJEU = [
+    'SERRA TALHADA',
+    'AFOGADOS DA INGAZEIRA',
+    'SÃO JOSÉ DO EGITO',
+    'TRIUNFO',
+    'TABIRA',
+    'FLORES',
+    'CARNAÍBA',
+    'ITAPETIM',
+    'BREJINHO',
+    'SANTA CRUZ DA BAIXA VERDE',
+    'IGUARACI',
+    'SANTA TEREZINHA',
+    'TUPARETAMA',
+    'QUIXABA',
+    'SOLIDÃO'
+].sort();
 
 interface Step2DadosPessoaisProps {
     dados: DadosInscricao;
@@ -17,10 +43,15 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [email, setEmail] = useState(dados.email);
     const [telefone, setTelefone] = useState(dados.telefone);
     const [senha, setSenha] = useState(dados.senha);
-    const [confirmSenha, setConfirmSenha] = useState('');
+    const [indicacaoTipo, setIndicacaoTipo] = useState<'prefeitura' | 'politico' | 'nenhum'>(dados.indicacaoTipo || 'nenhum');
+    const [indicacaoNome, setIndicacaoNome] = useState(dados.indicacaoNome || '');
+    const [codigo, setCodigo] = useState(dados.codigo || '');
+    const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
     const [showSenha, setShowSenha] = useState(false);
     const [showConfirmSenha, setShowConfirmSenha] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [validating, setValidating] = useState(false);
+    const [desconto, setDesconto] = useState(dados.descontoSocial || 0);
 
     const formatTelefone = (value: string) => {
         const numbers = value.replace(/\D/g, '');
@@ -37,10 +68,10 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         return re.test(email);
     };
 
-    const handleContinuar = () => {
+    const handleContinuar = async () => {
         const newErrors: Record<string, string> = {};
 
-        // Validações
+        // Validações Básicas
         if (!nome.trim()) {
             newErrors.nome = 'Nome é obrigatório';
         } else if (nome.trim().length < 3) {
@@ -71,11 +102,52 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             newErrors.confirmSenha = 'As senhas não coincidem';
         }
 
+        // Validação de Código (se houver indicação)
+        if (indicacaoTipo !== 'nenhum') {
+            if (!indicacaoNome) {
+                newErrors.indicacaoNome = 'Identificação é obrigatória';
+            }
+            if (!codigo.trim()) {
+                newErrors.codigo = 'O código da parceria é obrigatório';
+            } else {
+                setValidating(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('cupons_parceria_social')
+                        .select('*')
+                        .eq('codigo', codigo.trim().toUpperCase())
+                        .eq('indicacao_tipo', indicacaoTipo)
+                        .eq('ativo', true)
+                        .single();
+
+                    if (error || !data) {
+                        newErrors.codigo = 'Código inválido para esta categoria';
+                    } else {
+                        setDesconto(data.porcentagem_desconto);
+                    }
+                } catch (validationError) {
+                    console.error('Erro na validação pública:', validationError);
+                    newErrors.codigo = 'Erro ao validar código';
+                } finally {
+                    setValidating(false);
+                }
+            }
+        }
+
         setErrors(newErrors);
 
         // Se não houver erros, continuar
         if (Object.keys(newErrors).length === 0) {
-            onContinuar({ nome, email, telefone, senha });
+            onContinuar({
+                nome,
+                email,
+                telefone,
+                senha,
+                indicacaoTipo,
+                indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
+                codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
+                descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0
+            });
         }
     };
 
@@ -247,6 +319,110 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             </p>
                         )}
                     </div>
+
+                    {/* Indicação Social/Política */}
+                    <div className="pt-4 border-t border-white/5 space-y-4">
+                        <Label className="text-white flex items-center gap-2 text-base">
+                            <Award className="h-5 w-5 text-brand-orange-coral" />
+                            Programa de Inscrição Social
+                        </Label>
+                        <p className="text-xs text-gray-400">
+                            Sua inscrição faz parte de uma parceria com alguma Prefeitura ou Liderança Política da região?
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { id: 'prefeitura', label: 'Prefeitura' },
+                                { id: 'politico', label: 'Político' },
+                                { id: 'nenhum', label: 'Nenhum/Outro' }
+                            ].map((tipo) => (
+                                <button
+                                    key={tipo.id}
+                                    type="button"
+                                    onClick={() => setIndicacaoTipo(tipo.id as 'prefeitura' | 'politico' | 'nenhum')}
+                                    className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${indicacaoTipo === tipo.id
+                                        ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white'
+                                        : 'bg-dark-200 border-white/5 text-gray-400 hover:border-white/10'
+                                        }`}
+                                >
+                                    {tipo.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <Label htmlFor="indicacaoNome" className="text-white mb-2 block text-sm">
+                                    {indicacaoTipo === 'prefeitura' ? 'Qual Prefeitura?' : 'Qual Deputado ou Vereador?'}
+                                </Label>
+
+                                {indicacaoTipo === 'prefeitura' ? (
+                                    <Select
+                                        value={indicacaoNome}
+                                        onValueChange={setIndicacaoNome}
+                                    >
+                                        <SelectTrigger className="w-full bg-dark-200 border-white/10 text-white h-11">
+                                            <SelectValue placeholder="Selecione a cidade" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-dark-100 border-white/10 text-white">
+                                            {CIDADES_PAJEU.map((cidade) => (
+                                                <SelectItem key={cidade} value={cidade} className="focus:bg-brand-orange-coral/20 focus:text-white">
+                                                    {cidade}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        id="indicacaoNome"
+                                        type="text"
+                                        value={indicacaoNome}
+                                        onChange={(e) => {
+                                            setIndicacaoNome(e.target.value);
+                                            if (errors.indicacaoNome) setErrors({ ...errors, indicacaoNome: '' });
+                                        }}
+                                        placeholder="Ex: Deputado Fulano de Tal"
+                                        className={`bg-dark-200 border-white/10 text-white ${errors.indicacaoNome ? 'border-red-500' : ''}`}
+                                    />
+                                )}
+                                {errors.indicacaoNome && (
+                                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                        <AlertCircle className="h-3 w-3" />
+                                        {errors.indicacaoNome}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-400">
+                                <Label htmlFor="codigo" className="text-white mb-2 block text-sm flex items-center gap-2">
+                                    <Key className="h-4 w-4 text-brand-orange-coral" />
+                                    Código da Parceria
+                                </Label>
+                                <Input
+                                    id="codigo"
+                                    type="text"
+                                    value={codigo}
+                                    onChange={(e) => {
+                                        setCodigo(e.target.value);
+                                        if (errors.codigo) setErrors({ ...errors, codigo: '' });
+                                    }}
+                                    placeholder="INSIRA O CÓDIGO AQUI"
+                                    className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest ${errors.codigo ? 'border-red-500' : ''}`}
+                                />
+                                {errors.codigo && (
+                                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                        <AlertCircle className="h-3 w-3" />
+                                        {errors.codigo}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-gray-500 mt-2">
+                                    Este código é fornecido pela sua Prefeitura ou Liderança Política parceira do evento.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </Card>
 
@@ -256,6 +432,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     variant="outline"
                     size="lg"
                     onClick={onVoltar}
+                    disabled={validating}
                     className="flex-1 border-white/20 text-white hover:bg-white/10"
                 >
                     Voltar
@@ -263,9 +440,17 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 <Button
                     size="lg"
                     onClick={handleContinuar}
+                    disabled={validating}
                     className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
                 >
-                    Continuar
+                    {validating ? (
+                        <>
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                            Validando...
+                        </>
+                    ) : (
+                        'Continuar'
+                    )}
                 </Button>
             </div>
         </div>

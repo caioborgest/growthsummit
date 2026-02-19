@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, ArrowRight, Clock, Users, Award, DollarSign } from 'lucide-react';
+import { SectionShare } from '../social/SectionShare';
 
 interface InscricaoSectionProps {
     id: string;
@@ -62,6 +63,9 @@ export function InscricaoSection({
                                     Gratuito
                                 </Badge>
                             )}
+                            <div className="ml-auto">
+                                <SectionShare sectionId={id} title={titulo} />
+                            </div>
                         </div>
 
                         <h2 className="text-4xl font-bold text-white mb-3">{titulo}</h2>

@@ -39,10 +39,12 @@ import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
+import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
 import { ProgramacaoCompleta } from '@/components/growth-experience/ProgramacaoCompleta';
 import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
 import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
+import { SectionShare } from '@/components/social/SectionShare';
 
 // Dados do evento
 const palestrantes = [
@@ -133,10 +135,6 @@ const cotas = [
   }
 ];
 
-
-
-
-
 // Header Component
 function InnerHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -181,7 +179,7 @@ function InnerHeader() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-dark-100/95 backdrop-blur-md border-b border-white/10 px-4 py-8 space-y-6 animate-fade-in">
+        <div className="lg:hidden bg-dark-100/95 backdrop-blur-md border-b border-white/10 px-4 py-8 space-y-6 animate-fade-in-up">
           <a href="#sobre" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
             Sobre
             <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
@@ -260,7 +258,7 @@ function InnerFooter() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-brand-orange-coral" />
-                contato@growthsummit.com.br
+                contato@growthsummit.site
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-brand-orange-coral" />
@@ -282,7 +280,7 @@ function InnerFooter() {
 export function GrowthExperienceTriunfo() {
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://growthsummit.com.br/growth-experience-triunfo';
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
 
   return (
     <div className="bg-dark min-h-screen pt-20 flex flex-col">
@@ -297,10 +295,8 @@ export function GrowthExperienceTriunfo() {
 
       {/* Modais */}
       <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
-      {/* Modais Específicos */}
       <MentoriaMultiStepModal isOpen={modalAberto === 'mentor'} onClose={() => setModalAberto(null)} />
       <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={() => setModalAberto(null)} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
-      {/* Cursos e Palestras agora usam o MultiStep acima */}
       <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={() => setModalAberto(null)} />
       <StartupFormModal isOpen={modalAberto === 'startup'} onClose={() => setModalAberto(null)} />
       <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
@@ -314,7 +310,6 @@ export function GrowthExperienceTriunfo() {
 
       {/* Sobre o Evento */}
       <section id="sobre" className="py-24 bg-dark-100 relative overflow-hidden">
-        {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-orange-coral/20 blur-[120px] rounded-full" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-orange-coral/10 blur-[120px] rounded-full" />
@@ -379,19 +374,18 @@ export function GrowthExperienceTriunfo() {
 
       {/* Palestrantes */}
       <section id="palestrantes" className="py-24 bg-dark-200 relative overflow-hidden">
-        {/* Decorative Grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-              KEYNOTES
-            </Badge>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Protagonistas do <span className="text-gradient">Sucesso</span></h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Aprenda com quem está transformando o mercado nacional e escalando negócios reais.
-            </p>
+          <div className="flex items-center justify-between mb-16 animate-fade-in-up">
+            <div className="text-left">
+              <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+                KEYNOTES
+              </Badge>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Protagonistas do <span className="text-gradient">Sucesso</span></h2>
+            </div>
+            <SectionShare sectionId="palestrantes" title="Palestras Magnas - Growth Experience" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto mb-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -418,10 +412,6 @@ export function GrowthExperienceTriunfo() {
               <Mic2 className="h-6 w-6 mr-3" />
               Garantir Ingresso VIP
             </Button>
-            <p className="text-gray-400 mt-6 text-sm flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-brand-orange-coral" />
-              Acesso exclusivo às palestras noturnas + premiação + networking de alto nível
-            </p>
           </div>
         </div>
       </section>
@@ -438,12 +428,15 @@ export function GrowthExperienceTriunfo() {
       <section className="py-24 bg-dark-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-orange-coral/5 to-transparent pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div id="premio-empresa" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 mb-6 backdrop-blur-sm">
-                <Trophy className="h-5 w-5 animate-pulse" />
-                <span className="text-xs font-black uppercase tracking-[0.2em]">Premiação Exclusiva</span>
+              <div className="flex items-center justify-between mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 backdrop-blur-sm">
+                  <Trophy className="h-5 w-5 animate-pulse" />
+                  <span className="text-xs font-black uppercase tracking-[0.2em]">Premiação Exclusiva</span>
+                </div>
+                <SectionShare sectionId="premio-empresa" title="Prêmio Empresa Incentivadora - Growth Experience" />
               </div>
               <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
                 Sua Empresa merece ser <span className="text-gradient underline decoration-brand-orange-coral/30 underline-offset-8">Homenageada?</span>
@@ -486,21 +479,13 @@ export function GrowthExperienceTriunfo() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent" />
               </div>
-              <div className="absolute -bottom-8 -right-8 glass-card p-8 border-brand-orange-coral/30 max-w-xs shadow-glow-orange animate-float">
-                <blockquote className="text-white font-bold text-xl italic leading-tight mb-4">
-                  "Investir no time é o melhor ROI que uma empresa pode ter."
-                </blockquote>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-orange-coral flex items-center justify-center">
-                    <Rocket className="h-4 w-4 text-white" />
-                  </div>
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Growth Summit 2026</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Seção de Inscrição Social */}
+      <SocialRegistrationSection onInscrever={() => setModalInscricaoAberto(true)} />
 
       {/* Seções de Inscrição */}
       <div id="inscricoes">
@@ -509,19 +494,13 @@ export function GrowthExperienceTriunfo() {
           icon={GraduationCap}
           titulo="Cursos e Workshops Gratuitos"
           subtitulo="Acesso ilimitado a todas as trilhas diurnas"
-          descricao="Participe de workshops práticos e oficinas mão na massa com especialistas. Escolha entre gestão, marketing, vendas e IA aplicada ao seu negócio."
+          descricao="Participe de workshops práticos e oficinas mão na massa com especialistas."
           beneficios={[
-            "Acesso a todos os workshops e oficinas (manhã e tarde)",
+            "Acesso a todos os workshops e oficinas",
             "Certificado de participação digital",
-            "Material didático exclusivo para download",
-            "Networking com outros empreendedores",
-            "Acesso ao circuito de experiências",
-            "Coffee break incluso"
+            "Material didático exclusivo"
           ]}
           gratuito
-          horario="8h30 - 17h30"
-          capacidade="Vagas limitadas por sala (20-80 pessoas)"
-          destaque
           onInscrever={() => setModalInscricaoAberto(true)}
           imagemUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
         />
@@ -531,153 +510,60 @@ export function GrowthExperienceTriunfo() {
           icon={Target}
           titulo="Solicitar Mentoria Individual"
           subtitulo="30 minutos exclusivos com especialistas"
-          descricao="Sessões personalizadas com mentores especializados em gestão, growth, marketing, vendas, financeiro, coaching, RH e IA. Receba um diagnóstico completo e um plano de ação de 30 dias."
+          descricao="Sessões personalizadas com mentores especializados."
           beneficios={[
             "Sessão individual de 30 minutos",
-            "Diagnóstico personalizado do seu negócio",
-            "Plano de ação de 30 dias com mentor",
-            "Networking de alto nível",
-            "Acesso prioritário a consultorias futuras"
+            "Diagnóstico personalizado",
+            "Plano de ação de 30 dias"
           ]}
           gratuito
-          vagasLimitadas
-          horario="14:00 - 15:30"
-          capacidade="15 mentorias simultâneas (agendamento prévio)"
           onInscrever={() => setModalAberto('mentor')}
           imagemUrl="https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=2071&auto=format&fit=crop"
         />
       </div>
 
-      {/* Seção Especial: Seja um Mentor */}
-      <section className="py-24 bg-gradient-to-r from-brand-orange-coral/20 to-brand-blue/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="glass-card p-12 border-white/20 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange-coral/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
-              <div>
-                <Badge className="mb-4 bg-brand-orange-coral text-white">CHAMADA PARA MENTORES</Badge>
-                <h2 className="text-4xl font-bold text-white mb-6">Seja um Mentor do Growth Experience</h2>
-                <p className="text-xl text-gray-300 mb-8">
-                  Sua experiência pode ser a chave para o sucesso de outro empreendedor. Compartilhe seu conhecimento e ajude a transformar o ecossistema local.
-                </p>
-                <ul className="space-y-4 mb-10">
-                  <li className="flex items-center gap-3 text-gray-200">
-                    <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                    <span>Reconhecimento como especialista</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-200">
-                    <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                    <span>Networking VIP com palestrantes e speakers</span>
-                  </li>
-                  <li className="flex items-center gap-3 text-gray-200">
-                    <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                    <span>Selo oficial de Mentor Growth Experience</span>
-                  </li>
-                </ul>
-                <Button
-                  size="lg"
-                  className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-bold px-10 py-7 text-lg rounded-xl shadow-lg"
-                  onClick={() => setModalAberto('mentor-cadastro')}
-                >
-                  <UserPlus className="h-5 w-5 mr-3" />
-                  Quero ser Mentor
-                </Button>
-              </div>
-              <div className="hidden lg:block">
-                <img
-                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
-                  alt="Mentoria"
-                  className="rounded-2xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Ecossistema e Negócios: Arena Pitch e B2B */}
+      {/* Ecossistema e Negócios */}
       <section className="py-24 bg-dark relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-brand-orange-coral/5 blur-[120px] pointer-events-none" />
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
-              Ecossistema <span className="text-gradient">&</span> Negócios
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Oportunidades exclusivas para startups e empresas estabelecidas que buscam o próximo nível.
-            </p>
-          </div>
-
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Arena Pitch Card */}
-            <Card className="glass-card p-10 border-orange-500/30 hover:bg-orange-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Rocket className="h-32 w-32 text-orange-400 -rotate-12" />
+            <Card className="glass-card p-10 border-orange-500/30 hover:bg-orange-500/10 transition-all group relative overflow-hidden animate-fade-in-up">
+              <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                  <Rocket className="h-8 w-8 text-orange-400" />
+                </div>
+                <SectionShare sectionId="arena-pitch" title="Arena Pitch - Growth Experience" />
               </div>
-
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-lg shadow-orange-500/20">
-                <Rocket className="h-8 w-8 text-orange-400" />
-              </div>
-              <h3 className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+              <h3 id="arena-pitch" className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
                 Arena Pitch
                 <Badge className="bg-orange-500 text-white border-none animate-pulse">LIVE</Badge>
               </h3>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed relative z-10">
-                Apresente sua startup para uma banca de tubarões e concorra a prêmios em dinheiro e mentorias. Oportunidade perfeita para startups em estágio de validação e tração.
+              <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+                Apresente sua startup para uma banca de tubarões.
               </p>
-              <div className="p-6 bg-orange-500/10 rounded-2xl mb-8 border border-orange-500/20 backdrop-blur-sm">
-                <p className="text-orange-400 font-black mb-4 uppercase text-xs tracking-[0.2em]">Premiação 2026:</p>
-                <ul className="space-y-4">
-                  {[
-                    { label: '1º Lugar:', value: 'R$ 2.000 + 3m Mentoria', color: 'text-white font-bold' },
-                    { label: '2º Lugar:', value: 'R$ 1.500', color: 'text-white/80' },
-                    { label: '3º Lugar:', value: 'R$ 700', color: 'text-white/70' }
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center justify-between border-b border-orange-500/10 pb-2">
-                      <span className="text-orange-100/50">{item.label}</span>
-                      <span className={item.color}>{item.value}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
               <Button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-2xl shadow-xl shadow-orange-500/20 hover:scale-[1.02] transition-all h-auto"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-2xl h-auto"
                 onClick={() => setModalAberto('startup')}
               >
                 CANDIDATAR MINHA STARTUP
               </Button>
             </Card>
 
-            {/* B2B Card */}
-            <Card className="glass-card p-10 border-teal-500/30 hover:bg-teal-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Handshake className="h-32 w-32 text-teal-400 rotate-12" />
+            <Card className="glass-card p-10 border-teal-500/30 hover:bg-teal-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                  <Handshake className="h-8 w-8 text-teal-400" />
+                </div>
+                <SectionShare sectionId="rodada-negocios" title="Rodada de Negócios B2B - Growth Experience" />
               </div>
-
-              <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-lg shadow-teal-500/20">
-                <Handshake className="h-8 w-8 text-teal-400" />
-              </div>
-              <h3 className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+              <h3 id="rodada-negocios" className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
                 Rodada de Negócios B2B
                 <Badge className="bg-teal-500 text-white border-none">PREMIUM</Badge>
               </h3>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed relative z-10">
-                Conectamos grandes empresas âncoras da região com fornecedores qualificados. Gere leads reais e feche parcerias estratégicas durante o evento.
+              <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+                Conectamos grandes empresas com fornecedores qualificados.
               </p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="p-6 bg-teal-500/10 rounded-2xl border border-teal-500/20 backdrop-blur-sm group-hover:bg-teal-500/20 transition-colors">
-                  <p className="text-teal-400 font-black text-3xl mb-1">40+</p>
-                  <p className="text-white/70 text-xs font-bold uppercase">Empresas Participantes</p>
-                </div>
-                <div className="p-6 bg-teal-500/10 rounded-2xl border border-teal-500/20 backdrop-blur-sm group-hover:bg-teal-500/20 transition-colors">
-                  <p className="text-teal-400 font-black text-3xl mb-1">R$ 500k+</p>
-                  <p className="text-white/70 text-xs font-bold uppercase">Volume de Negócios</p>
-                </div>
-              </div>
               <Button
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-8 rounded-2xl shadow-xl shadow-teal-500/20 hover:scale-[1.02] transition-all h-auto"
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-8 rounded-2xl h-auto"
                 onClick={() => setModalAberto('b2b')}
               >
                 QUERO PARTICIPAR DA RODADA
@@ -689,31 +575,17 @@ export function GrowthExperienceTriunfo() {
 
       {/* Patrocínios */}
       <section id="patrocinios" className="py-24 bg-dark-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-              OPORTUNIDADES DE EXPOSIÇÃO
-            </Badge>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
-              Sua Marca em <span className="text-gradient">Destaque</span>
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
-              Posicione sua marca na frente de mais de 2.000 empreendedores e gestores do Sertão do Pajeú. Gere leads qualificados e feche negócios reais.
-            </p>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2 text-gray-300">
-                <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                <span>Stands personalizados</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-300">
-                <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                <span>Ingressos inclusos</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-300">
-                <CheckCircle className="h-5 w-5 text-brand-orange-coral" />
-                <span>Relatórios de ROI</span>
-              </div>
+        <div id="expositores" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-16 animate-fade-in-up">
+            <div className="text-left">
+              <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+                OPORTUNIDADES DE EXPOSIÇÃO
+              </Badge>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white">
+                Sua Marca em <span className="text-gradient">Destaque</span>
+              </h2>
             </div>
+            <SectionShare sectionId="expositores" title="Seja um Expositor - Growth Experience" />
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -728,108 +600,46 @@ export function GrowthExperienceTriunfo() {
                 destaque={cota.destaque}
                 imagemUrl={getStandImage(cota.nome)}
                 onContato={() => {
-                  window.location.href = 'mailto:contato@growthsummit.com.br?subject=Interesse em Cota ' + cota.nome;
+                  window.location.href = 'mailto:contato@growthsummit.site?subject=Interesse em Cota ' + cota.nome;
                 }}
               />
             ))}
-          </div>
-
-          <div className="text-center">
-            <Card className="glass-card p-8 max-w-2xl mx-auto border-brand-orange-coral/30">
-              <h3 className="text-2xl font-bold text-white mb-4">
-                Quer uma proposta personalizada?
-              </h3>
-              <p className="text-gray-300 mb-6">
-                Entre em contato conosco para discutir oportunidades customizadas de patrocínio e exposição.
-              </p>
-              <Button
-                size="lg"
-                className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold"
-                onClick={() => window.location.href = 'mailto:contato@growthsummit.com.br?subject=Proposta de Patrocínio Personalizada'}
-              >
-                <Mail className="h-5 w-5 mr-2" />
-                Solicitar Proposta Comercial
-              </Button>
-            </Card>
           </div>
         </div>
       </section>
 
       {/* CTA Final */}
       <section className="py-24 bg-dark relative overflow-hidden">
-        {/* Animated Background Mesh */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-20 bg-hero-gradient blur-[80px] animate-pulse" />
-          <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-brand-orange-coral/10 blur-[100px] rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-brand-orange-coral/5 blur-[100px] rounded-full" />
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 animate-fade-in-up">
-          <div className="w-24 h-24 bg-brand-orange-coral/20 rounded-3xl flex items-center justify-center mx-auto mb-8 rotate-12 shadow-glow-orange border border-brand-orange-coral/30">
-            <Star className="h-12 w-12 text-brand-orange-coral animate-pulse" />
-          </div>
-
-          <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white mb-6">
             Pronto para <span className="text-gradient">Transformar</span> seu Negócio?
           </h2>
-          <p className="text-xl sm:text-2xl text-gray-300 mb-12 leading-relaxed max-w-2xl mx-auto">
-            Não perca a oportunidade de participar do maior evento de negócios do Sertão do Pajeú.
-            As vagas são limitadas!
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
-            <Button
-              size="lg"
-              className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300 h-auto group"
-              onClick={() => setModalInscricaoAberto(true)}
-            >
-              <Rocket className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
-              INSCREVA-SE GRÁTIS
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-white/20 text-white hover:bg-white/10 px-12 py-8 text-xl rounded-2xl backdrop-blur-md hover:scale-105 transition-all h-auto"
-              onClick={() => setModalInscricaoAberto(true)}
-            >
-              <Mic2 className="h-6 w-6 mr-3" />
-              NIGHT EXPERIENCE
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-8 text-gray-400 text-sm font-bold uppercase tracking-widest">
-            {[
-              'Inscrição segura', 'Confirmação imediata', 'Suporte dedicado'
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-brand-orange-coral" />
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
+          <Button
+            size="lg"
+            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange h-auto"
+            onClick={() => setModalInscricaoAberto(true)}
+          >
+            INSCREVA-SE AGORA
+          </Button>
         </div>
       </section>
 
-
-      {/* App Download Section */}
       <AppDownloadSection />
 
-      {/* Social Share */}
       <section className="py-12 bg-dark-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-gray-400 mb-4">Compartilhe com sua rede:</p>
+            <p className="text-gray-400 mb-4">Compartilhe este evento:</p>
             <SocialShare
               url={pageUrl}
               title="Growth Experience Triunfo-PE 2026"
-              description="A Maior Exposição de Negócios do Sertão do Pajeú - 09/04/2026"
+              description="A Maior Exposição de Negócios do Sertão do Pajeú"
             />
           </div>
         </div>
       </section>
-      <InnerFooter />
 
-      {/* WhatsApp Button - Proposta para Stand */}
+      <InnerFooter />
       <WhatsAppButton />
     </div>
   );

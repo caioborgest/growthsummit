@@ -6,6 +6,7 @@ import { Clock, MapPin, Users, Search, BookOpen } from 'lucide-react';
 import { programacaoCompleta } from '@/data/programacao';
 import type { TipoAtividade } from '@/data/programacao';
 import { Input } from '@/components/ui/input';
+import { SectionShare } from '../social/SectionShare';
 
 interface ProgramacaoCompletaProps {
     onInscrever: (tipo: TipoAtividade | 'todos') => void;

@@ -4,9 +4,7 @@ import {
   Phone,
   MapPin,
   Instagram,
-  Linkedin,
-  Youtube,
-  Twitter
+  Linkedin
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -41,10 +39,8 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: '#' },
-  { name: 'LinkedIn', icon: Linkedin, href: '#' },
-  { name: 'YouTube', icon: Youtube, href: '#' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/growthsummit2026' },
+  { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/caioborgesgrowth/' },
 ];
 
 export function Footer() {
@@ -98,18 +94,20 @@ export function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <a
-                href="mailto:contato@growthsummit.com.br"
+                href="mailto:contato@growthsummit.site"
                 className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
               >
                 <Mail className="h-4 w-4 mr-2" />
-                contato@growthsummit.com.br
+                contato@growthsummit.site
               </a>
               <a
-                href="tel:+5588999999999"
+                href="https://wa.me/5588988432310"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
               >
                 <Phone className="h-4 w-4 mr-2" />
-                (88) 99999-9999
+                (88) 98843-2310
               </a>
               <div className="flex items-start text-gray-400 text-sm">
                 <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />

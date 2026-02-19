@@ -103,6 +103,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             case 4:
                 return (
                     <Step4OfertaPalestras
+                        dados={dados}
                         onComprar={() => {
                             updateDados({ comprarPalestras: true });
                             nextStep();

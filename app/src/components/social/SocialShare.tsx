@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Facebook, Twitter, Linkedin, Share2, Check, Copy } from 'lucide-react';
+import { Linkedin, Share2, Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 
@@ -28,12 +28,6 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
         let shareLink = '';
 
         switch (platform) {
-            case 'facebook':
-                shareLink = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
-                break;
-            case 'twitter':
-                shareLink = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`;
-                break;
             case 'linkedin':
                 shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`;
                 break;
@@ -75,25 +69,6 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
             </div>
 
             <div className="flex flex-wrap gap-3">
-                {/* Facebook */}
-                <Button
-                    onClick={() => handleShare('facebook')}
-                    className="flex-1 min-w-[120px] bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
-                    size="sm"
-                >
-                    <Facebook className="h-4 w-4 mr-2" />
-                    Facebook
-                </Button>
-
-                {/* Twitter */}
-                <Button
-                    onClick={() => handleShare('twitter')}
-                    className="flex-1 min-w-[120px] bg-[#1DA1F2] hover:bg-[#1DA1F2]/90 text-white"
-                    size="sm"
-                >
-                    <Twitter className="h-4 w-4 mr-2" />
-                    Twitter
-                </Button>
 
                 {/* LinkedIn */}
                 <Button

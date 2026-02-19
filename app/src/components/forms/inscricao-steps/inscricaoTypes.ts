@@ -9,6 +9,10 @@ export interface DadosInscricao {
     email: string;
     telefone: string;
     senha: string;
+    indicacaoTipo?: 'prefeitura' | 'politico' | 'nenhum';
+    indicacaoNome?: string;
+    codigo?: string;
+    descontoSocial?: number;
 
     // Etapa 4
     comprarPalestras: boolean;
