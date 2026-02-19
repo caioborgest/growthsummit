@@ -6,6 +6,7 @@ import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, 
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
+import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
@@ -86,7 +87,19 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
 
-            // 3. Sucesso - continuar para próxima etapa
+            // 3. Auto-convite para grupos WhatsApp (após inscrição confirmada)
+            try {
+                await autoInviteOnRegistration(
+                    finalInscricaoId || '',
+                    'growth-experience-triunfo', // project_id
+                    'standard' // user_type - pode ser dinâmico baseado no tipo de inscrição
+                );
+            } catch (inviteError) {
+                // Não bloquear o fluxo se o convite falhar
+                console.log('Auto-convite não enviado (não crítico):', inviteError);
+            }
+
+            // 4. Sucesso - continuar para próxima etapa
             onConfirmar(userId || '', finalInscricaoId || '');
 
         } catch (err: unknown) {

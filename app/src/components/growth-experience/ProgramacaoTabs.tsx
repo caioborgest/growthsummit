@@ -217,6 +217,14 @@ export function ProgramacaoTabs({
 
             {/* Tab Content */}
             <div className="min-h-[600px]">
+                {/* Nota sobre alteração de programação */}
+                <div className="mb-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                    <p className="text-yellow-200 text-sm text-center">
+                        <strong>Programação Diária pode ser alterada</strong> conforme necessidade da organização e parceiros. 
+                        Você receberá atualizações no aplicativo e grupo do WhatsApp.
+                    </p>
+                </div>
+
                 {activeTab === 'diurna' && (
                     <div className="space-y-12">
                         {/* Manhã */}

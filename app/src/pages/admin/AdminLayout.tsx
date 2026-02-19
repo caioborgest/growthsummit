@@ -18,7 +18,8 @@ import {
   Bell,
   FolderOpen,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  MessageCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,7 @@ const sidebarItems: SidebarItem[] = [
   { id: 'patrocinadores', name: 'Patrocinadores', icon: Gem, path: '/admin/patrocinadores' },
   { id: 'financeiro', name: 'Financeiro', icon: DollarSign, path: '/admin/financeiro' },
   { id: 'check-in', name: 'Check-in', icon: QrCode, path: '/admin/check-in' },
+  { id: 'whatsapp-groups', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp-groups' },
   { id: 'comunicacao', name: 'Comunicação', icon: Mail, path: '/admin/comunicacao' },
   { id: 'relatorios', name: 'Relatórios', icon: BarChart3, path: '/admin/relatorios' },
 ];

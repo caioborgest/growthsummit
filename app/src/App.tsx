@@ -36,6 +36,7 @@ import { AdminComunicacao } from './pages/admin/AdminComunicacao';
 import { AdminRelatorios } from './pages/admin/AdminRelatorios';
 import { AdminProgramacao } from './pages/admin/AdminProgramacao';
 import { AdminSecurity } from './pages/admin/AdminSecurity';
+import { AdminWhatsAppGroups } from './pages/admin/AdminWhatsAppGroups';
 import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
 
 // 404 Not Found Component
@@ -174,6 +175,7 @@ function AppRoutes() {
         <Route path="patrocinadores" element={<AdminPatrocinadores />} />
         <Route path="financeiro" element={<AdminFinanceiro />} />
         <Route path="check-in" element={<AdminCheckIn />} />
+        <Route path="whatsapp-groups" element={<AdminWhatsAppGroups />} />
         <Route path="comunicacao" element={<AdminComunicacao />} />
         <Route path="relatorios" element={<AdminRelatorios />} />
         <Route path="programacao" element={<AdminProgramacao />} />
