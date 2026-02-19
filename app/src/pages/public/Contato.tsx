@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  Mail,
+  Phone,
+  MapPin,
   Send,
   Instagram,
   Linkedin,
-  Youtube,
-  Twitter,
   MessageCircle,
   Clock
 } from 'lucide-react';
@@ -20,34 +18,32 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "contato@growthsummit.com.br",
-    href: "mailto:contato@growthsummit.com.br"
+    value: "contato@growthsummit.site",
+    href: "mailto:contato@growthsummit.site"
   },
   {
     icon: Phone,
-    title: "Telefone",
-    value: "(88) 99999-9999",
-    href: "tel:+5588999999999"
+    title: "WhatsApp",
+    value: "(88) 98843-2310",
+    href: "https://wa.me/5588988432310"
   },
   {
     icon: MapPin,
-    title: "Endereço",
-    value: "Boulevard Hotel, Juazeiro do Norte - CE",
+    title: "Localização",
+    value: "Sertão do Pajeú, PE",
     href: "#"
   },
   {
     icon: Clock,
-    title: "Horário",
+    title: "Atendimento",
     value: "Seg-Sex: 9h às 18h",
     href: "#"
   },
 ];
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: '#' },
-  { name: 'LinkedIn', icon: Linkedin, href: '#' },
-  { name: 'YouTube', icon: Youtube, href: '#' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/growthsummit2026' },
+  { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/caioborgesgrowth/' },
 ];
 
 const departments = [
@@ -80,7 +76,7 @@ export function Contato() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -126,7 +122,7 @@ export function Contato() {
               <h2 className="text-2xl font-bold text-white mb-6">
                 Envie uma mensagem
               </h2>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>
@@ -156,7 +152,7 @@ export function Contato() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -188,7 +184,7 @@ export function Contato() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
                     Mensagem
@@ -201,9 +197,9 @@ export function Contato() {
                     required
                   />
                 </div>
-                
-                <Button 
-                  type="submit" 
+
+                <Button
+                  type="submit"
                   size="lg"
                   className="w-full bg-teal-500 hover:bg-teal-600 text-white"
                 >
@@ -212,7 +208,7 @@ export function Contato() {
                 </Button>
               </form>
             </div>
-            
+
             {/* Social & Chat */}
             <div className="space-y-8">
               <div className="glass-card p-8">
@@ -220,10 +216,10 @@ export function Contato() {
                   Redes sociais
                 </h2>
                 <p className="text-gray-400 mb-6">
-                  Siga-nos nas redes sociais para ficar por dentro das novidades, 
+                  Siga-nos nas redes sociais para ficar por dentro das novidades,
                   bastidores e conteúdos exclusivos.
                 </p>
-                
+
                 <div className="flex space-x-4">
                   {socialLinks.map((social) => (
                     <a
@@ -237,52 +233,34 @@ export function Contato() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="glass-card p-8">
                 <h2 className="text-2xl font-bold text-white mb-6">
                   Chat ao vivo
                 </h2>
                 <p className="text-gray-400 mb-6">
-                  Precisa de ajuda imediata? Nosso time de suporte está online 
+                  Precisa de ajuda imediata? Nosso time de suporte está online
                   para responder suas dúvidas em tempo real.
                 </p>
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   className="w-full border-teal-500 text-teal-400 hover:bg-teal-500/10"
                 >
                   <MessageCircle className="h-5 w-5 mr-2" />
                   Iniciar chat
                 </Button>
               </div>
-              
+
               <div className="glass-card p-8">
                 <h2 className="text-xl font-bold text-white mb-4">
                   Emails específicos
                 </h2>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Inscrições</span>
-                    <a href="mailto:inscricoes@growthsummit.com.br" className="text-teal-400 hover:underline text-sm">
-                      inscricoes@
-                    </a>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Patrocínio</span>
-                    <a href="mailto:parcerias@growthsummit.com.br" className="text-teal-400 hover:underline text-sm">
-                      parcerias@
-                    </a>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Palestrantes</span>
-                    <a href="mailto:palestrantes@growthsummit.com.br" className="text-teal-400 hover:underline text-sm">
-                      palestrantes@
-                    </a>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Imprensa</span>
-                    <a href="mailto:imprensa@growthsummit.com.br" className="text-teal-400 hover:underline text-sm">
-                      imprensa@
+                    <span className="text-gray-400">Geral</span>
+                    <a href="mailto:contato@growthsummit.site" className="text-teal-400 hover:underline text-sm">
+                      contato@
                     </a>
                   </div>
                 </div>

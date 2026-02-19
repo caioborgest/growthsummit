@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  QrCode, 
-  User, 
-  Calendar, 
-  Users, 
+import {
+  QrCode,
+  User,
+  Calendar,
+  Users,
   MessageCircle,
   FileText,
   Star,
@@ -66,43 +66,43 @@ export function DashboardParticipante() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 bg-dark-200 mb-8">
-            <TabsTrigger 
-              value="ingresso" 
+            <TabsTrigger
+              value="ingresso"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <QrCode className="h-4 w-4 mr-2" />
               Ingresso
             </TabsTrigger>
-            <TabsTrigger 
-              value="dados" 
+            <TabsTrigger
+              value="dados"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <User className="h-4 w-4 mr-2" />
               Meus Dados
             </TabsTrigger>
-            <TabsTrigger 
-              value="agenda" 
+            <TabsTrigger
+              value="agenda"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <Calendar className="h-4 w-4 mr-2" />
               Agenda
             </TabsTrigger>
-            <TabsTrigger 
-              value="mentorias" 
+            <TabsTrigger
+              value="mentorias"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <Users className="h-4 w-4 mr-2" />
               Mentorias
             </TabsTrigger>
-            <TabsTrigger 
-              value="documentos" 
+            <TabsTrigger
+              value="documentos"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <FileText className="h-4 w-4 mr-2" />
               Documentos
             </TabsTrigger>
-            <TabsTrigger 
-              value="suporte" 
+            <TabsTrigger
+              value="suporte"
               className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
             >
               <HelpCircle className="h-4 w-4 mr-2" />
@@ -122,7 +122,7 @@ export function DashboardParticipante() {
                 </div>
                 <p className="text-gray-400 mb-2">Número do ingresso</p>
                 <p className="text-2xl font-bold text-teal-400 mb-6">#GS2026-00387</p>
-                
+
                 <div className="flex justify-center space-x-3">
                   <Button variant="outline" size="sm" className="border-dark-300">
                     <Download className="h-4 w-4 mr-2" />
@@ -138,7 +138,7 @@ export function DashboardParticipante() {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="space-y-6">
                 <div className="glass-card p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">Informações do Ingresso</h3>
@@ -157,7 +157,7 @@ export function DashboardParticipante() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="glass-card p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">Próximos Passos</h3>
                   <ul className="space-y-3">
@@ -192,7 +192,7 @@ export function DashboardParticipante() {
                   Editar
                 </Button>
               </div>
-              
+
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Nome</label>
@@ -204,7 +204,7 @@ export function DashboardParticipante() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Telefone</label>
-                  <p className="text-white">(88) 99999-9999</p>
+                  <p className="text-white">(88) 98843-2310</p>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Empresa</label>
@@ -329,7 +329,7 @@ export function DashboardParticipante() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="glass-card p-6">
                 <h2 className="text-xl font-bold text-white mb-6">Perguntas Frequentes</h2>
                 <div className="space-y-3">

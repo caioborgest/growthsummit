@@ -202,7 +202,7 @@ export function SejaMentor() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white mt-1"
-                      placeholder="(88) 99999-9999"
+                      placeholder="(88) 98843-2310"
                     />
                   </div>
                 </div>

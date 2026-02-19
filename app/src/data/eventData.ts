@@ -236,7 +236,7 @@ export const faqs = [
   },
   {
     question: "Como me torno um patrocinador?",
-    answer: "Temos cotas de patrocínio de R$ 10k a R$ 60k. Entre em contato pelo formulário de patrocínio ou envie email para parcerias@growthsummit.com.br",
+    answer: "Temos cotas de patrocínio de R$ 10k a R$ 60k. Entre em contato pelo formulário de patrocínio ou envie email para contato@growthsummit.site",
   },
 ];
 

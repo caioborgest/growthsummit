@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { 
+import {
   Gem,
   FileCheck,
   Calendar,
@@ -85,9 +85,9 @@ export function DashboardSponsor() {
                 <h1 className="text-2xl font-bold text-white">{sponsorData?.companyName || 'TechCorp Brasil'}</h1>
                 <p className="text-yellow-400 flex items-center">
                   <Star className="h-4 w-4 mr-1 fill-yellow-400" />
-                  Patrocinador {sponsorData?.level === 'diamond' ? 'Diamante' : 
-                              sponsorData?.level === 'gold' ? 'Ouro' : 
-                              sponsorData?.level === 'silver' ? 'Prata' : 'Bronze'}
+                  Patrocinador {sponsorData?.level === 'diamond' ? 'Diamante' :
+                    sponsorData?.level === 'gold' ? 'Ouro' :
+                      sponsorData?.level === 'silver' ? 'Prata' : 'Bronze'}
                 </p>
               </div>
             </div>
@@ -137,36 +137,36 @@ export function DashboardSponsor() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-dark-200 mb-8">
-            <TabsTrigger 
-              value="overview" 
+            <TabsTrigger
+              value="overview"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
             >
               <Gem className="h-4 w-4 mr-2" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger 
-              value="deliverables" 
+            <TabsTrigger
+              value="deliverables"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
             >
               <FileCheck className="h-4 w-4 mr-2" />
               Entregáveis
             </TabsTrigger>
-            <TabsTrigger 
-              value="programacao" 
+            <TabsTrigger
+              value="programacao"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
             >
               <Calendar className="h-4 w-4 mr-2" />
               Programação
             </TabsTrigger>
-            <TabsTrigger 
-              value="materiais" 
+            <TabsTrigger
+              value="materiais"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
             >
               <Download className="h-4 w-4 mr-2" />
               Materiais
             </TabsTrigger>
-            <TabsTrigger 
-              value="contato" 
+            <TabsTrigger
+              value="contato"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
@@ -254,7 +254,7 @@ export function DashboardSponsor() {
                   <div>
                     <p className="text-gray-400 text-sm mb-1">Data de Fechamento</p>
                     <p className="text-lg text-white">
-                      {sponsorData?.createdAt 
+                      {sponsorData?.createdAt
                         ? new Date(sponsorData.createdAt).toLocaleDateString('pt-BR')
                         : '10/01/2026'}
                     </p>
@@ -304,8 +304,8 @@ export function DashboardSponsor() {
                       </div>
                       <div className="flex space-x-2">
                         {deliverable.status === 'pending' && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="bg-yellow-500 hover:bg-yellow-600 text-white"
                             onClick={() => toast.success('Upload iniciado')}
                           >
@@ -347,7 +347,7 @@ export function DashboardSponsor() {
                       <p className="text-white font-semibold">Palestra: Growth na Prática</p>
                       <p className="text-gray-400 text-sm">Palco Principal - 20 minutos</p>
                     </div>
-                    
+
                     <div className="p-4 bg-dark-100 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <Badge className="bg-blue-500/20 text-blue-400">Montagem</Badge>
@@ -478,8 +478,8 @@ export function DashboardSponsor() {
                       { name: 'Resultados Anteriores', url: '#' },
                       { name: 'Fotos do Evento', url: '#' },
                     ].map((link, i) => (
-                      <a 
-                        key={i} 
+                      <a
+                        key={i}
                         href={link.url}
                         className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
                       >
@@ -504,17 +504,17 @@ export function DashboardSponsor() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-gray-400 text-sm">Responsável pelo Patrocínio</p>
-                      <p className="text-white font-medium">Ana Paula Ferreira</p>
-                      <p className="text-gray-400 text-sm">ana.patrocinio@growthsummit.com.br</p>
-                      <p className="text-gray-400 text-sm">(88) 99999-8888</p>
+                      <p className="text-white font-medium">Caio Borges</p>
+                      <p className="text-gray-400 text-sm">contato@growthsummit.site</p>
+                      <p className="text-gray-400 text-sm">(88) 98843-2310</p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-sm">Suporte Técnico</p>
-                      <p className="text-white font-medium">suporte@growthsummit.com.br</p>
+                      <p className="text-white font-medium">contato@growthsummit.site</p>
                     </div>
                     <div>
                       <p className="text-gray-400 text-sm">WhatsApp</p>
-                      <p className="text-white font-medium">(88) 99999-7777</p>
+                      <p className="text-white font-medium">(88) 98843-2310</p>
                     </div>
                   </div>
                 </CardContent>
@@ -528,21 +528,21 @@ export function DashboardSponsor() {
                   <form className="space-y-4">
                     <div>
                       <label className="block text-sm text-gray-400 mb-2">Assunto</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
                         placeholder="Sobre o que é sua sugestão?"
                       />
                     </div>
                     <div>
                       <label className="block text-sm text-gray-400 mb-2">Mensagem</label>
-                      <textarea 
+                      <textarea
                         rows={4}
                         className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
                         placeholder="Descreva sua sugestão ou dúvida..."
                       />
                     </div>
-                    <Button 
+                    <Button
                       className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
                       onClick={() => toast.success('Mensagem enviada com sucesso!')}
                     >

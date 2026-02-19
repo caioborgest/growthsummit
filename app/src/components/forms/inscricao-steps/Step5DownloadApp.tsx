@@ -109,7 +109,7 @@ export function Step5DownloadApp({ onContinuar }: Step5DownloadAppProps) {
             <div className="hidden md:flex justify-center my-6">
                 <Card className="p-4 bg-white rounded-xl shadow-lg flex items-center gap-6">
                     <QRCode
-                        value="https://growthsummit.com.br/app" // Substituir pela URL real
+                        value="https://www.growthsummit.site"
                         size={100}
                         level="H"
                     />

@@ -1,7 +1,7 @@
-import { 
-  Crown, 
-  Coffee, 
-  Users, 
+import {
+  Crown,
+  Coffee,
+  Users,
   Video,
   Gift,
   MessageCircle,
@@ -60,7 +60,7 @@ export function GrowthExperience() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30">
@@ -72,7 +72,7 @@ export function GrowthExperience() {
             <p className="text-xl text-gray-400 mb-8">
               Uma experiência premium de imersão em growth para líderes de alto impacto
             </p>
-            
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <div className="glass-card px-6 py-3">
                 <span className="text-gray-400 text-sm">Investimento</span>
@@ -102,7 +102,7 @@ export function GrowthExperience() {
               Tudo que está incluído
             </h2>
           </div>
-          
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((benefit, i) => (
               <div key={i} className="glass-card p-6">
@@ -129,11 +129,11 @@ export function GrowthExperience() {
                 Uma experiência exclusiva
               </h2>
               <p className="text-gray-400 mb-8">
-                O Growth Experience inclui acesso VIP a todas as atividades do evento, 
-                além de momentos exclusivos projetados para maximizar seu aprendizado 
+                O Growth Experience inclui acesso VIP a todas as atividades do evento,
+                além de momentos exclusivos projetados para maximizar seu aprendizado
                 e networking.
               </p>
-              
+
               <ul className="space-y-4">
                 <li className="flex items-center text-gray-300">
                   <Check className="h-5 w-5 mr-3 text-orange-400 flex-shrink-0" />
@@ -157,7 +157,7 @@ export function GrowthExperience() {
                 </li>
               </ul>
             </div>
-            
+
             <div className="glass-card p-8">
               <h3 className="text-xl font-semibold text-white mb-6">
                 Agenda VIP - Dia 1
@@ -186,7 +186,7 @@ export function GrowthExperience() {
               Growth Experience vs Outros Passes
             </h2>
           </div>
-          
+
           <div className="glass-card overflow-hidden">
             <table className="w-full">
               <thead>
@@ -224,40 +224,40 @@ export function GrowthExperience() {
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-teal-500/10" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mx-auto mb-8">
             <Crown className="h-10 w-10 text-white" />
           </div>
-          
+
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             Garanta sua vaga VIP
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Apenas 30 vagas disponíveis. Não perca essa oportunidade única de 
+            Apenas 30 vagas disponíveis. Não perca essa oportunidade única de
             imersão em growth com os melhores do mercado.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-orange-500 hover:bg-orange-600 text-white px-8"
             >
               <Crown className="h-5 w-5 mr-2" />
               Quero ser VIP
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-dark-300 text-gray-300 hover:text-white"
             >
               <ArrowRight className="h-5 w-5 mr-2" />
               Falar com consultor
             </Button>
           </div>
-          
+
           <p className="text-gray-500 text-sm mt-6">
-            Dúvidas? Ligue para (88) 99999-9999 ou envie email para vip@growthsummit.com.br
+            Dúvidas? Ligue para (88) 98843-2310 ou envie email para contato@growthsummit.site
           </p>
         </div>
       </section>

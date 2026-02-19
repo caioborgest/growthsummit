@@ -1,7 +1,7 @@
-import { 
-  Gem, 
-  TrendingUp, 
-  Users, 
+import {
+  Gem,
+  TrendingUp,
+  Users,
   Eye,
   Check,
   ArrowRight,
@@ -98,7 +98,7 @@ export function Patrocinio() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -149,7 +149,7 @@ export function Patrocinio() {
               Benefícios exclusivos
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {benefits.map((benefit, i) => (
               <div key={i} className="glass-card p-8 text-center">
@@ -175,7 +175,7 @@ export function Patrocinio() {
               Escolha sua cota
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {sponsorshipLevels.map((level) => (
               <div
@@ -185,14 +185,14 @@ export function Patrocinio() {
                 <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${level.color} flex items-center justify-center mb-4`}>
                   <level.icon className="h-6 w-6 text-white" />
                 </div>
-                
+
                 <h3 className="text-xl font-bold text-white mb-1">{level.name}</h3>
                 <p className="text-2xl font-bold text-teal-400 mb-4">{level.price}</p>
-                
+
                 <p className="text-gray-500 text-sm mb-4">
                   {level.slots} {level.slots === 1 ? 'vaga' : 'vagas'} disponíveis
                 </p>
-                
+
                 <ul className="space-y-2 mb-6">
                   {level.features.map((feature, i) => (
                     <li key={i} className="flex items-start text-sm text-gray-300">
@@ -201,7 +201,7 @@ export function Patrocinio() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <Button
                   variant="outline"
                   className="w-full border-dark-300 text-gray-300 hover:text-white hover:border-teal-500"
@@ -217,29 +217,29 @@ export function Patrocinio() {
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-orange-500/10" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             Vamos conversar?
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Entre em contato para receber nosso media kit completo e 
+            Entre em contato para receber nosso media kit completo e
             montar uma proposta personalizada para sua empresa.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-teal-500 hover:bg-teal-600 text-white"
             >
               <ArrowRight className="h-5 w-5 mr-2" />
               Solicitar proposta
             </Button>
-            <a 
-              href="mailto:parcerias@growthsummit.com.br"
+            <a
+              href="mailto:contato@growthsummit.site"
               className="text-gray-400 hover:text-teal-400 transition-colors"
             >
-              parcerias@growthsummit.com.br
+              contato@growthsummit.site
             </a>
           </div>
         </div>

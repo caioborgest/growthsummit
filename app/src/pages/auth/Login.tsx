@@ -20,7 +20,7 @@ export function Login() {
     try {
       await login(email, password);
       // Redirect based on role
-      if (email === 'admin@growthsummit.com.br') {
+      if (email === 'admin@growthsummit.site') {
         navigate('/admin');
       } else if (email === 'mentor@email.com') {
         navigate('/mentor-area');
@@ -31,7 +31,7 @@ export function Login() {
       } else {
         navigate('/minha-area');
       }
-    } catch (err) {
+    } catch {
       setError('Email ou senha inválidos');
     }
   };
@@ -155,7 +155,7 @@ export function Login() {
           <p className="text-gray-400 text-sm text-center mb-2">Credenciais de demonstração:</p>
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
             <div className="bg-dark-100 p-2 rounded">
-              <span className="text-teal-400">Admin:</span> admin@growthsummit.com.br
+              <span className="text-teal-400">Admin:</span> admin@growthsummit.site
             </div>
             <div className="bg-dark-100 p-2 rounded">
               <span className="text-teal-400">Senha:</span> 123456
