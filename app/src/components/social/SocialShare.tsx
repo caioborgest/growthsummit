@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Linkedin, Share2, Check, Copy } from 'lucide-react';
+import { Linkedin, Share2, Check, Copy, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 
@@ -33,6 +33,9 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 break;
             case 'whatsapp':
                 shareLink = `https://wa.me/?text=${shareTitle}%20${shareUrl}`;
+                break;
+            case 'instagram':
+                shareLink = `https://www.instagram.com/growthsummit2026`;
                 break;
             default:
                 return;
@@ -78,6 +81,16 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 >
                     <Linkedin className="h-4 w-4 mr-2" />
                     LinkedIn
+                </Button>
+
+                {/* Instagram */}
+                <Button
+                    onClick={() => handleShare('instagram')}
+                    className="flex-1 min-w-[120px] bg-gradient-to-tr from-[#FFB700] via-[#FF006B] to-[#D300C5] hover:opacity-90 text-white border-0"
+                    size="sm"
+                >
+                    <Instagram className="h-4 w-4 mr-2" />
+                    Instagram
                 </Button>
 
                 {/* WhatsApp */}

@@ -1,4 +1,4 @@
-import { Trophy, Award, Landmark, Users, ArrowRight, CheckCircle } from 'lucide-react';
+import { Trophy, Award, Landmark, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -73,35 +73,84 @@ export function SocialRegistrationSection({ onInscrever }: SocialRegistrationSec
                     </div>
 
                     <div className="relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                        <div className="absolute -inset-4 bg-brand-orange-coral/20 blur-2xl rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
-                            <img
-                                src="https://images.unsplash.com/photo-1577416416829-d4434f47ef05?q=80&w=1974&auto=format&fit=crop"
-                                className="w-full aspect-[4/5] object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                                alt="Encontro de Lideranças"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/20 to-transparent" />
-
-                            <div className="absolute bottom-8 left-8 right-8">
-                                <div className="glass-card p-6 border-brand-orange-coral/30">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="flex -space-x-3">
-                                            {[1, 2, 3, 4].map(i => (
-                                                <div key={i} className="w-10 h-10 rounded-full border-2 border-brand-orange-coral bg-dark overflow-hidden">
-                                                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Líder" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <p className="text-white font-bold">+12 Prefeituras Confirmadas</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-brand-orange-coral font-black text-sm uppercase tracking-widest">
-                                        <span className="relative flex h-3 w-3">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange-coral opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-orange-coral"></span>
-                                        </span>
-                                        Evento Noturno • Cerimônia de Premiação
-                                    </div>
+                        <div className="grid gap-6">
+                            {/* Ranking Prefeituras */}
+                            <Card className="bg-white/5 border-white/10 overflow-hidden shadow-2xl backdrop-blur-sm">
+                                <div className="p-4 bg-brand-orange-coral/10 border-b border-brand-orange-coral/20 flex items-center justify-between">
+                                    <h4 className="text-white font-bold flex items-center gap-2">
+                                        <Landmark className="h-4 w-4 text-brand-orange-coral" />
+                                        Ranking das Prefeituras
+                                    </h4>
+                                    <Badge className="bg-brand-orange-coral text-white text-[10px]">INSCRIÇÕES</Badge>
                                 </div>
+                                <div className="p-2">
+                                    {[
+                                        { rank: 1, name: 'Triunfo', stats: '242', coupon: '100%' },
+                                        { rank: 2, name: 'Serra Talhada', stats: '187', coupon: '75%' },
+                                        { rank: 3, name: 'Afogados da Ingazeira', stats: '154', coupon: '50%' },
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors rounded-lg group">
+                                            <div className="flex items-center gap-4">
+                                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-brand-orange-coral text-white' : 'bg-white/10 text-gray-400'}`}>
+                                                    {item.rank}
+                                                </span>
+                                                <span className="text-white font-medium group-hover:text-brand-orange-coral transition-colors">{item.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Badge variant="outline" className="border-brand-orange-coral/30 text-brand-orange-coral font-bold text-[10px]">
+                                                    {item.coupon} OFF
+                                                </Badge>
+                                                <span className="text-white font-black w-8 text-right">{item.stats}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+
+                            {/* Ranking Político */}
+                            <Card className="bg-white/5 border-white/10 overflow-hidden shadow-2xl backdrop-blur-sm">
+                                <div className="p-4 bg-brand-blue/10 border-b border-brand-blue/20 flex items-center justify-between">
+                                    <h4 className="text-white font-bold flex items-center gap-2">
+                                        <Trophy className="h-4 w-4 text-brand-blue" />
+                                        Lideranças Engajadas
+                                    </h4>
+                                    <Badge className="bg-brand-blue text-white text-[10px]">PONTOS</Badge>
+                                </div>
+                                <div className="p-2">
+                                    {[
+                                        { rank: 1, name: 'Deputado A', location: 'Triunfo', stats: '940' },
+                                        { rank: 2, name: 'Vereador B', location: 'Serra Talhada', stats: '820' },
+                                        { rank: 3, name: 'Liderança C', location: 'Região', stats: '750' },
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors rounded-lg group">
+                                            <div className="flex items-center gap-4">
+                                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-brand-blue text-white' : 'bg-white/10 text-gray-400'}`}>
+                                                    {item.rank}
+                                                </span>
+                                                <div>
+                                                    <p className="text-white font-medium group-hover:text-brand-blue transition-colors leading-none">{item.name}</p>
+                                                    <p className="text-[10px] text-gray-500 mt-1">{item.location}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-1.5 w-16 bg-white/5 rounded-full overflow-hidden hidden sm:block">
+                                                    <div
+                                                        className="h-full bg-brand-blue"
+                                                        style={{ width: `${(parseInt(item.stats) / 1000) * 100}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-white font-black w-8 text-right">{item.stats}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-500 flex items-center justify-center gap-2">
+                                    <CheckCircle className="h-3 w-3 text-brand-orange-coral" />
+                                    Atualizado em tempo real • Cerimônia Noturna
+                                </p>
                             </div>
                         </div>
                     </div>

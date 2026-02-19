@@ -45,6 +45,7 @@ import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRe
 import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
 import { SectionShare } from '@/components/social/SectionShare';
+import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
 
 // Dados do evento
 const palestrantes = [
@@ -302,6 +303,8 @@ export function GrowthExperienceTriunfo() {
       <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
       <EmpresaIncentivadoraModal isOpen={modalAberto === 'empresa'} onClose={() => setModalAberto(null)} />
 
+      <LotePromocionalPopUp />
+
       {/* Hero Section Refinada */}
       <HeroSectionRefined onCTAClick={() => setModalInscricaoAberto(true)} />
 
@@ -352,7 +355,7 @@ export function GrowthExperienceTriunfo() {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-brand-orange-coral/20 blur-2xl rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <img
-                  src="https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2070&auto=format&fit=crop"
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
                   className="rounded-2xl shadow-2xl border border-white/10 relative z-10 w-full hover:scale-[1.02] transition-transform duration-500"
                   alt="Evento de Negócios"
                 />

@@ -310,7 +310,7 @@ export function Home() {
             <div className="order-2 lg:order-1 relative">
               <div className="relative z-10 rounded-3xl overflow-hidden border border-white/10 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
                 <img
-                  src="https://images.unsplash.com/photo-1511578334221-d3023916020e?q=80&w=2069&auto=format&fit=crop"
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
                   alt="Growth Experience Triunfo"
                   className="w-full h-[500px] object-cover"
                 />

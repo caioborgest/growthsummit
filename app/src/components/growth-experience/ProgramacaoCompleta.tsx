@@ -6,7 +6,6 @@ import { Clock, MapPin, Users, Search, BookOpen } from 'lucide-react';
 import { programacaoCompleta } from '@/data/programacao';
 import type { TipoAtividade } from '@/data/programacao';
 import { Input } from '@/components/ui/input';
-import { SectionShare } from '../social/SectionShare';
 
 interface ProgramacaoCompletaProps {
     onInscrever: (tipo: TipoAtividade | 'todos') => void;
@@ -51,9 +50,17 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                             Conhecimento e Conexões
                         </span>
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                    <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-4">
                         Explore nossa grade de atividades e monte sua agenda personalizada. Cursos, mentorias e palestras para impulsionar seu negócio.
                     </p>
+                    <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 px-3 py-1">
+                            ☀️ Programação Diurna: Gratuita
+                        </Badge>
+                        <Badge variant="outline" className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 px-3 py-1">
+                            🌙 Palestras Noturnas: Pago (Vagas Limitadas)
+                        </Badge>
+                    </div>
                 </div>
 
                 {/* Filtros e Busca */}
@@ -182,8 +189,9 @@ export function ProgramacaoCompleta({ onInscrever }: ProgramacaoCompletaProps) {
                     >
                         QUERO PARTICIPAR DE TUDO
                     </Button>
-                    <p className="text-sm text-gray-500 mt-4">
-                        Vagas limitadas para todas as atividades. Garanta a sua agora!
+                    <p className="text-sm text-gray-500 mt-4 leading-relaxed">
+                        Vagas limitadas para todas as atividades. Garanta a sua agora!<br />
+                        <span className="opacity-60 italic text-[11px]">Programação pode ser atualizada conforme decisão da gestão e parceiros.</span>
                     </p>
                 </div>
             </div>
