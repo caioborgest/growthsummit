@@ -134,8 +134,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             if (supabaseError) throw supabaseError;
 
             // Analytics
-            const win = window as unknown as { gtag?: (event: string, action: string, params: Record<string, unknown>) => void };
-            if (win.gtag) {
+            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            if (typeof window !== 'undefined' && win.gtag) {
                 win.gtag('event', 'inscricao_enviada', {
                     event_category: 'Growth Experience Triunfo',
                     event_label: tipo,

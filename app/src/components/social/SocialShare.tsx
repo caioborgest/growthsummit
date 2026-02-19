@@ -17,8 +17,9 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
 
     const handleShare = (platform: string) => {
         // Analytics tracking
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'share', {
+        const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+        if (typeof window !== 'undefined' && win.gtag) {
+            win.gtag('event', 'share', {
                 event_category: 'Social Share',
                 event_label: platform,
                 value: url,
@@ -50,8 +51,9 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
             setCopied(true);
 
             // Analytics tracking
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'copy_link', {
+            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            if (typeof window !== 'undefined' && win.gtag) {
+                win.gtag('event', 'copy_link', {
                     event_category: 'Social Share',
                     event_label: 'Copy Link',
                     value: url,

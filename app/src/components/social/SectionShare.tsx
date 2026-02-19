@@ -25,8 +25,9 @@ export function SectionShare({ sectionId, title }: SectionShareProps) {
             setTimeout(() => setCopied(false), 2000);
 
             // Analytics
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'share_section', {
+            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            if (typeof window !== 'undefined' && win.gtag) {
+                win.gtag('event', 'share_section', {
                     section: sectionId,
                     method: 'copy_link'
                 });
@@ -41,8 +42,9 @@ export function SectionShare({ sectionId, title }: SectionShareProps) {
         window.open(`https://wa.me/?text=${text}`, '_blank');
 
         // Analytics
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-            (window as any).gtag('event', 'share_section', {
+        const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+        if (typeof window !== 'undefined' && win.gtag) {
+            win.gtag('event', 'share_section', {
                 section: sectionId,
                 method: 'whatsapp'
             });

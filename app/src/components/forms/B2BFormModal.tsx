@@ -124,7 +124,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user || null;
+                user = authData?.user ?? undefined;
                 authError = sError;
             }
 
@@ -163,15 +163,16 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await (supabase
-                .from('rodada_negocios_b2b') as any)
+            const { error: supabaseError } = await supabase
+                .from('rodada_negocios_b2b')
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;
 
             // Analytics tracking
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'b2b_inscricao', {
+            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            if (typeof window !== 'undefined' && win.gtag) {
+                win.gtag('event', 'b2b_inscricao', {
                     event_category: 'Rodada de Negócios',
                     event_label: formData.setor,
                     value: formData.faturamento_anual || 0,
@@ -232,8 +233,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-            <div className="glass-card max-w-3xl w-full p-6 my-8 relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="glass-card max-w-xl w-full p-6 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
                 {/* Close Button */}
                 <button
                     onClick={onClose}

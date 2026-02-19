@@ -105,7 +105,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user || null;
+                user = authData?.user ?? undefined;
                 authError = sError;
             }
 
@@ -119,8 +119,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             if (!user) throw new Error('Falha ao identificar usuário');
 
             // 2. Salvar inscrição no banco
-            const { error: dbError } = await (supabase
-                .from('mentores_growth_experience') as any)
+            const { error: dbError } = await supabase
+                .from('mentores_growth_experience')
                 .insert({
                     user_id: user!.id,
                     nome: formData.nome,
@@ -167,7 +167,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
+            <div className="glass-card max-w-xl w-full max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
                 {/* Progress Bar */}
                 {!isSuccess && (
                     <div className="absolute top-0 left-0 w-full h-1 bg-white/5">

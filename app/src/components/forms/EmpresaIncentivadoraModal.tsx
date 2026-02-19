@@ -11,7 +11,6 @@ interface EmpresaIncentivadoraModalProps {
 }
 
 export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivadoraModalProps) {
-    const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -34,6 +33,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
 
         try {
             // Salvar no banco de dados
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert({
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
@@ -50,7 +50,6 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
-                setStep(1);
                 setFormData({
                     nomeResponsavel: '',
                     email: '',
@@ -61,8 +60,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 });
             }, 5000);
 
-        } catch (err: any) {
-            setError(err.message || 'Erro ao processar inscrição');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);
         }
@@ -70,7 +69,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border-brand-orange-coral/20">
+            <div className="glass-card max-w-xl w-full max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border-brand-orange-coral/20">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors z-10"

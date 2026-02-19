@@ -37,7 +37,10 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: false, // Desativado para evitar erros de Service Worker em desenvolvimento
+        enabled: false,
+        type: 'module',
+        navigateFallback: 'index.html',
+        suppressWarnings: true,
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],

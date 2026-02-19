@@ -121,8 +121,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
-                                    await supabase
-                                        .from('inscricoes_growth_experience')
+                                    await (supabase
+                                        .from('inscricoes_growth_experience') as any)
                                         .update({ app_instalado: true })
                                         .eq('id', dados.inscricaoId);
                                     updateDados({ appInstalado: true });
@@ -151,7 +151,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10">
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-dark-100 border-white/10 p-0">
                 {/* Header com Progresso */}
                 <div className="sticky top-0 bg-dark-100 pb-6 border-b border-white/10 mb-6 z-10">
                     <div className="flex items-center justify-between mb-4">

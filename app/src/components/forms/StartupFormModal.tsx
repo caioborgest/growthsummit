@@ -109,7 +109,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user || null;
+                user = authData?.user ?? undefined;
                 authError = sError;
             }
 
@@ -145,15 +145,16 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await (supabase
-                .from('startups_arena_pitch') as any)
+            const { error: supabaseError } = await supabase
+                .from('startups_arena_pitch')
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;
 
             // Analytics tracking
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'startup_inscricao', {
+            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            if (typeof window !== 'undefined' && win.gtag) {
+                win.gtag('event', 'startup_inscricao', {
                     event_category: 'Arena Pitch',
                     event_label: formData.setor,
                     value: formData.investimento_buscado || 0,
@@ -211,8 +212,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-            <div className="glass-card max-w-3xl w-full p-6 my-8 relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="glass-card max-w-xl w-full p-6 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
