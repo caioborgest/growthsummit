@@ -44,11 +44,13 @@ const getTableName = (projectId: string, entity: string) => {
 };
 
 // Helper to map CamelCase back to snake_case for Supabase
-const mapToSnakeCase = (obj: any) => {
-  const result: any = {};
+const mapToSnakeCase = (obj: Record<string, unknown>) => {
+  const result: Record<string, unknown> = {};
   for (const key in obj) {
-    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-    result[snakeKey] = obj[key];
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      result[snakeKey] = obj[key];
+    }
   }
   return result;
 };
@@ -79,64 +81,64 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
 
       // Basic mapping from snake_case to CamelCase if needed
       // This is a simple heuristic, might need refinement for complex types
-      const mappedData = (supabaseData || []).map((item: any) => {
-        const mappedItem: any = { ...item };
+      const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => {
+        const mappedItem: Record<string, unknown> = { ...item };
         // Map common fields
-        if (item.project_id) mappedItem.projectId = item.project_id;
-        if (item.user_id) mappedItem.userId = item.user_id;
-        if (item.ticket_type) mappedItem.ticketType = item.ticket_type;
-        if (item.ticket_number) mappedItem.ticketNumber = item.ticket_number;
-        if (item.qr_code) mappedItem.qrCode = item.qr_code;
-        if (item.created_at) mappedItem.createdAt = item.created_at;
-        if (item.updated_at) mappedItem.updatedAt = item.updated_at;
-        if (item.payment_method) mappedItem.paymentMethod = item.payment_method;
-        if (item.payment_status) mappedItem.paymentStatus = item.payment_status;
-        if (item.payment_date) mappedItem.paymentDate = item.payment_date;
-        if (item.checked_in) mappedItem.checkedIn = item.checked_in;
+        if (item['project_id']) mappedItem['projectId'] = item['project_id'];
+        if (item['user_id']) mappedItem['userId'] = item['user_id'];
+        if (item['ticket_type']) mappedItem['ticketType'] = item['ticket_type'];
+        if (item['ticket_number']) mappedItem['ticketNumber'] = item['ticket_number'];
+        if (item['qr_code']) mappedItem['qrCode'] = item['qr_code'];
+        if (item['created_at']) mappedItem['createdAt'] = item['created_at'];
+        if (item['updated_at']) mappedItem['updatedAt'] = item['updated_at'];
+        if (item['payment_method']) mappedItem['paymentMethod'] = item['payment_method'];
+        if (item['payment_status']) mappedItem['paymentStatus'] = item['payment_status'];
+        if (item['payment_date']) mappedItem['paymentDate'] = item['payment_date'];
+        if (item['checked_in']) mappedItem['checkedIn'] = item['checked_in'];
 
         // Specific for Triunfo Registrations
-        if (item.palestras_noturnas !== undefined) mappedItem.palestrasNoturnas = item.palestras_noturnas;
-        if (item.cursos_selecionados) mappedItem.cursosSelecionados = item.cursos_selecionados;
-        if (item.valor_pago) mappedItem.valorPago = item.valor_pago;
+        if (item['palestras_noturnas'] !== undefined) mappedItem['palestrasNoturnas'] = item['palestras_noturnas'];
+        if (item['cursos_selecionados']) mappedItem['cursosSelecionados'] = item['cursos_selecionados'];
+        if (item['valor_pago']) mappedItem['valorPago'] = item['valor_pago'];
 
         // Specific for Startup
-        if (item.nome_startup) mappedItem.name = item.nome_startup;
-        if (item.descricao_startup) mappedItem.description = item.descricao_startup;
-        if (item.nome_fundador) mappedItem.foundingTeam = [{ name: item.nome_fundador, role: 'Founder' }];
+        if (item['nome_startup']) mappedItem['name'] = item['nome_startup'];
+        if (item['descricao_startup']) mappedItem['description'] = item['descricao_startup'];
+        if (item['nome_fundador']) mappedItem['foundingTeam'] = [{ name: item['nome_fundador'] as string, role: 'Founder' }];
 
         // Specific for B2B/Company
-        if (item.nome_empresa) mappedItem.name = item.nome_empresa;
-        if (item.nome_representante) mappedItem.contactName = item.nome_representante;
-        if (item.logo_url) mappedItem.logoUrl = item.logo_url;
-        if (item.tipo_interesse) mappedItem.tipoInteresse = item.tipo_interesse;
-        if (item.areas_interesse) mappedItem.areasInteresse = item.areas_interesse;
+        if (item['nome_empresa']) mappedItem['name'] = item['nome_empresa'];
+        if (item['nome_representante']) mappedItem['contactName'] = item['nome_representante'];
+        if (item['logo_url']) mappedItem['logoUrl'] = item['logo_url'];
+        if (item['tipo_interesse']) mappedItem['tipoInteresse'] = item['tipo_interesse'];
+        if (item['areas_interesse']) mappedItem['areasInteresse'] = item['areas_interesse'];
 
         // Specific for Matchmaking
-        if (item.from_company_id) mappedItem.fromCompanyId = item.from_company_id;
-        if (item.to_company_id) mappedItem.toCompanyId = item.to_company_id;
-        if (item.company_a_id) mappedItem.companyAId = item.company_a_id;
-        if (item.company_b_id) mappedItem.companyBId = item.company_b_id;
-        if (item.match_id) mappedItem.matchId = item.match_id;
-        if (item.scheduled_at) mappedItem.scheduledAt = item.scheduled_at;
-        if (item.duration_minutes) mappedItem.durationMinutes = item.duration_minutes;
-        if (item.table_number) mappedItem.tableNumber = item.table_number;
+        if (item['from_company_id']) mappedItem['fromCompanyId'] = item['from_company_id'];
+        if (item['to_company_id']) mappedItem['toCompanyId'] = item['to_company_id'];
+        if (item['company_a_id']) mappedItem['companyAId'] = item['company_a_id'];
+        if (item['company_b_id']) mappedItem['companyBId'] = item['company_b_id'];
+        if (item['match_id']) mappedItem['matchId'] = item['match_id'];
+        if (item['scheduled_at']) mappedItem['scheduledAt'] = item['scheduled_at'];
+        if (item['duration_minutes']) mappedItem['durationMinutes'] = item['duration_minutes'];
+        if (item['table_number']) mappedItem['tableNumber'] = item['table_number'];
 
         // B2B Specific Name Mapping
-        if (item.company_anchor_name) mappedItem.companyAnchorName = item.company_anchor_name;
-        if (item.company_vendor_name) mappedItem.companyVendorName = item.company_vendor_name;
-        if (item.interest_level) mappedItem.interestLevel = item.interest_level;
-        if (item.follow_up !== undefined) mappedItem.followUp = item.follow_up;
+        if (item['company_anchor_name']) mappedItem['companyAnchorName'] = item['company_anchor_name'];
+        if (item['company_vendor_name']) mappedItem['companyVendorName'] = item['company_vendor_name'];
+        if (item['interest_level']) mappedItem['interestLevel'] = item['interest_level'];
+        if (item['follow_up'] !== undefined) mappedItem['followUp'] = item['follow_up'];
 
         // Mentoring Specific Mapping
-        if (item.mentor_name) mappedItem.mentorName = item.mentor_name;
-        if (item.mentee_name) mappedItem.menteeName = item.mentee_name;
-        if (item.three_steps) mappedItem.threeSteps = item.three_steps;
-        if (item.mentor_id) mappedItem.mentorId = item.mentor_id;
-        if (item.mentee_id) mappedItem.menteeId = item.mentee_id;
-        if (item.years_experience) mappedItem.yearsExperience = item.years_experience;
-        if (item.max_mentories) mappedItem.maxMentories = item.max_mentories;
+        if (item['mentor_name']) mappedItem['mentorName'] = item['mentor_name'];
+        if (item['mentee_name']) mappedItem['menteeName'] = item['mentee_name'];
+        if (item['three_steps']) mappedItem['threeSteps'] = item['three_steps'];
+        if (item['mentor_id']) mappedItem['mentorId'] = item['mentor_id'];
+        if (item['mentee_id']) mappedItem['menteeId'] = item['mentee_id'];
+        if (item['years_experience']) mappedItem['yearsExperience'] = item['years_experience'];
+        if (item['max_mentories']) mappedItem['maxMentories'] = item['max_mentories'];
 
-        return mappedItem as T;
+        return mappedItem as unknown as T;
       });
 
       setData(mappedData);
@@ -157,13 +159,13 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     try {
       const tableName = getTableName(projectId, entityName);
 
-      // Map CamelCase back to snake_case for Supabase
-      const dataToInsert = mapToSnakeCase(item);
+      // mapToSnakeCase returned type might need to be cast to matching table insert type
+      const dataToInsert = mapToSnakeCase(item as Record<string, unknown>);
       dataToInsert.project_id = projectId;
 
       const { data: inserted, error } = await supabase
-        .from(tableName)
-        .insert(dataToInsert)
+        .from(tableName as any)
+        .insert(dataToInsert as any)
         .select()
         .single();
 
@@ -183,11 +185,11 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId!, entityName);
-      const dataToUpdate = mapToSnakeCase(updates);
+      const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
 
       const { error } = await supabase
-        .from(tableName)
-        .update(dataToUpdate)
+        .from(tableName as any)
+        .update(dataToUpdate as any)
         .eq('id', id);
 
       if (error) throw error;
@@ -205,7 +207,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     try {
       const tableName = getTableName(projectId!, entityName);
       const { error } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .delete()
         .eq('id', id);
 
@@ -258,15 +260,15 @@ export function useProjects() {
 
       if (error) throw error;
 
-      const mappedData = (supabaseData || []).map((item: any) => ({
+      const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => ({
         ...item,
-        startDate: item.start_date,
-        endDate: item.end_date,
-        shortDescription: item.short_description,
-        primaryColor: item.primary_color,
-        secondaryColor: item.secondary_color,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at,
+        startDate: item['start_date'] as string,
+        endDate: item['end_date'] as string,
+        shortDescription: item['short_description'] as string,
+        primaryColor: item['primary_color'] as string,
+        secondaryColor: item['secondary_color'] as string,
+        createdAt: item['created_at'] as string,
+        updatedAt: item['updated_at'] as string,
       }));
 
       setData(mappedData as Project[]);
@@ -289,9 +291,9 @@ export function useProjects() {
           short_description: item.shortDescription,
           primary_color: item.primaryColor,
           secondary_color: item.secondaryColor,
-        } as any) as any)
+        } as any)
         .select()
-        .single();
+        .single());
 
       if (error) throw error;
       await fetchData();
@@ -410,13 +412,13 @@ export function useLeads() {
 }
 
 export function useB2BSwipes() {
-  return useData<any>([], 'b2b_swipes');
+  return useData<B2BSwipe>([], 'b2b_swipes');
 }
 
 export function useB2BMatches() {
-  return useData<any>([], 'b2b_matches');
+  return useData<B2BMatch>([], 'b2b_matches');
 }
 
 export function useB2BAppointmentsTriunfo() {
-  return useData<any>([], 'b2b_appointments');
+  return useData<B2BAppointmentTriunfo>([], 'b2b_appointments');
 }

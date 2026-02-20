@@ -180,31 +180,34 @@ function InnerHeader() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-dark-100/95 backdrop-blur-md border-b border-white/10 px-4 py-8 space-y-6 animate-fade-in-up">
-          <a href="#sobre" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-            Sobre
-            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-          </a>
-          <a href="#programacao" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-            Programação
-            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-          </a>
-          <a href="#palestrantes" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-            Palestrantes
-            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-          </a>
-          <a href="#inscricoes" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-            Inscrições
-            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-          </a>
-          <a href="#patrocinios" className="block text-lg font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-4 py-2 hover:bg-white/5 rounded-xl flex items-center justify-between group" onClick={() => setIsMobileMenuOpen(false)}>
-            Seja Expositor
-            <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-          </a>
-          <div className="pt-4 px-4">
-            <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-14 text-lg font-bold rounded-xl" asChild>
-              <Link to="/login">Entrar</Link>
+        <div className="lg:hidden bg-dark-100/98 backdrop-blur-xl border-b border-white/10 px-4 py-8 space-y-4 animate-fade-in-up fixed inset-x-0 top-20 bottom-0 overflow-y-auto z-40">
+          <nav className="space-y-2">
+            {[
+              { label: 'Sobre', href: '#sobre' },
+              { label: 'Mentores', href: '#mentores' },
+              { label: 'Programação', href: '#programacao' },
+              { label: 'Palestrantes', href: '#palestrantes' },
+              { label: 'Inscrições', href: '#inscricoes' },
+              { label: 'Seja Expositor', href: '#patrocinios' }
+            ].map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="block text-xl font-bold text-gray-300 hover:text-brand-orange-coral transition-colors px-6 py-4 hover:bg-white/5 rounded-2xl flex items-center justify-between group"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+                <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+              </a>
+            ))}
+          </nav>
+          <div className="pt-6 px-4 space-y-4">
+            <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-16 text-xl font-black rounded-2xl" asChild>
+              <Link to="/login">Entrar na Área do Aluno</Link>
             </Button>
+            <div className="text-center">
+              <p className="text-gray-500 text-sm">Growth Experience Triunfo 2026</p>
+            </div>
           </div>
         </div>
       )}
@@ -269,8 +272,8 @@ function InnerFooter() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-white/5 text-center text-gray-500 text-xs sm:text-sm">
-          <p className="break-words px-4">© 2026 Growth Experience Triunfo-PE. Realização: Growth Summit. Patrocínio: SEBRAE.</p>
+        <div className="pt-8 border-t border-white/5 text-center text-gray-500 text-[10px] sm:text-sm">
+          <p className="break-words px-2 sm:px-4">© 2026 Growth Experience Triunfo-PE. Realização: <span className="text-white font-bold">Growth Summit</span>. Patrocínio: <span className="text-white font-bold">SEBRAE</span>.</p>
         </div>
       </div>
     </footer>
@@ -281,7 +284,10 @@ function InnerFooter() {
 export function GrowthExperienceTriunfo() {
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
+  const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
+
+  const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
 
   return (
     <div className="bg-dark min-h-screen pt-20 flex flex-col">
@@ -324,7 +330,7 @@ export function GrowthExperienceTriunfo() {
               <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
                 O EVENTO
               </Badge>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
                 Acelere seu Crescimento com quem <span className="text-gradient">faz na prática</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
@@ -375,18 +381,103 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
+      {/* Mentores do Evento */}
+      <section id="mentores" className="py-24 bg-dark-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[30%] h-[30%] bg-brand-orange-coral/5 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16 animate-fade-in-up">
+            <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+              CONSELHORES ESTRATÉGICOS
+            </Badge>
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">
+              Mentores <span className="text-gradient">Confirmados</span>
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Especialistas prontos para diagnosticar seu negócio e acelerar seus resultados.
+            </p>
+          </div>
+
+          {!mentorsLoading && approvedMentors.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 animate-fade-in-up">
+              {approvedMentors.map((mentor) => (
+                <div key={mentor.id} className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2">
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
+                    <img
+                      src={mentor.photo || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
+                      alt={mentor.name}
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-white group-hover:text-brand-orange-coral transition-colors">
+                      {mentor.name}
+                    </h3>
+                    <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest lines-clamp-1">
+                      {mentor.position} @ {mentor.company}
+                    </p>
+                    <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
+                      {mentor.bio}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {(mentor.specialties || []).slice(0, 2).map((spec, sIdx) => (
+                      <Badge key={sIdx} variant="outline" className="bg-white/5 border-white/10 text-[10px] sm:text-[9px] uppercase tracking-wider text-gray-400">
+                        {spec}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Glow Hover */}
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity bg-brand-orange-gradient pointer-events-none" />
+                </div>
+              ))}
+            </div>
+          ) : mentorsLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div>
+            </div>
+          ) : (
+            <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl mb-16">
+              <Sparkles className="h-10 w-10 text-gray-700 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">Novos mentores estão sendo aprovados...</p>
+              <Button
+                variant="link"
+                className="text-brand-orange-coral mt-4 font-bold"
+                onClick={() => setModalAberto('mentor-cadastro')}
+              >
+                Quero ser um mentor confirmadado
+              </Button>
+            </div>
+          )}
+
+          <div className="text-center animate-fade-in-up">
+            <Button
+              size="lg"
+              className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white border border-brand-orange-coral/30 font-black px-12 py-8 text-lg rounded-2xl transition-all duration-300 h-auto"
+              onClick={() => setModalAberto('mentor-cadastro')}
+            >
+              Candidatar-se como Mentor
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Palestrantes */}
       <section id="palestrantes" className="py-24 bg-dark-200 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex items-center justify-between mb-16 animate-fade-in-up">
-            <div className="text-left">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-16 animate-fade-in-up gap-6 text-center md:text-left">
+            <div>
               <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
                 KEYNOTES
               </Badge>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Protagonistas do <span className="text-gradient">Sucesso</span></h2>
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4 leading-tight">Protagonistas do <span className="text-gradient">Sucesso</span></h2>
             </div>
             <SectionShare sectionId="palestrantes" title="Palestras Magnas - Growth Experience" />
           </div>
@@ -437,7 +528,7 @@ export function GrowthExperienceTriunfo() {
                 </div>
                 <SectionShare sectionId="premio-empresa" title="Prêmio Empresa Incentivadora - Growth Experience" />
               </div>
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
                 Sua Empresa merece ser <span className="text-gradient underline decoration-brand-orange-coral/30 underline-offset-8">Homenageada?</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
@@ -460,7 +551,7 @@ export function GrowthExperienceTriunfo() {
 
               <Button
                 size="lg"
-                className="bg-white text-dark font-black px-10 py-7 rounded-2xl shadow-xl hover:bg-brand-orange-coral hover:text-white transition-all duration-300 h-auto group"
+                className="w-full sm:w-auto bg-white text-dark font-black px-10 py-7 rounded-2xl shadow-xl hover:bg-brand-orange-coral hover:text-white transition-all duration-300 h-auto group"
                 onClick={() => setModalAberto('empresa')}
               >
                 Inscrever minha Equipe
@@ -618,12 +709,12 @@ export function GrowthExperienceTriunfo() {
       {/* CTA Final */}
       <section className="py-24 bg-dark relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white mb-6">
+          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black text-white mb-6">
             Pronto para <span className="text-gradient">Transformar</span> seu Negócio?
           </h2>
           <Button
             size="lg"
-            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange h-auto"
+            className="w-full sm:w-auto bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange h-auto"
             onClick={() => setModalInscricaoAberto(true)}
           >
             INSCREVA-SE AGORA

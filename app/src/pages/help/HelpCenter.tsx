@@ -20,14 +20,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { usabilityGuide, RoleGuide } from '@/data/usabilityGuide';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function HelpCenter() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [selectedRole, setSelectedRole] = useState<RoleGuide | null>(null);
     const [selectedModule, setSelectedModule] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredGuides = usabilityGuide.filter(guide =>
+    const guidesToShow = usabilityGuide.filter(guide => {
+        if (guide.role === 'admin') return user?.role === 'admin';
+        return true;
+    });
+
+    const filteredGuides = guidesToShow.filter(guide =>
         guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         guide.modules.some(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
@@ -38,6 +45,7 @@ export function HelpCenter() {
         mentor: Zap,
         company: Building2,
         startup: Rocket,
+        sponsor: Gem
     };
 
     if (selectedRole) {
@@ -79,8 +87,8 @@ export function HelpCenter() {
                                 key={module.id}
                                 onClick={() => setSelectedModule(module.id)}
                                 className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center justify-between group ${selectedModule === module.id || (!selectedModule && selectedRole.modules[0].id === module.id)
-                                        ? 'bg-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.3)]'
-                                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                    ? 'bg-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.3)]'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                     }`}
                             >
                                 <span className="font-semibold">{module.name}</span>
@@ -126,18 +134,20 @@ export function HelpCenter() {
                                                 {step.description}
                                             </p>
 
-                                            {/* Placeholder de Imagem/Dica */}
-                                            <div className="bg-dark-200/50 border border-white/5 rounded-2xl p-6 mt-4 flex items-start gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                                                    <Info className="w-5 h-5 text-teal-400" />
+                                            {/* Dica Dinâmica */}
+                                            {step.tip && (
+                                                <div className="bg-brand-orange-coral/5 border border-brand-orange-coral/20 rounded-2xl p-6 mt-4 flex items-start gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0">
+                                                        <Info className="w-5 h-5 text-brand-orange-coral" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-brand-orange-coral uppercase tracking-wider mb-1">Dica Extra</p>
+                                                        <p className="text-sm text-gray-300">
+                                                            {step.tip}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-teal-400 uppercase tracking-wider mb-1">Dica de Especialista</p>
-                                                    <p className="text-sm text-gray-300">
-                                                        Certifique-se de estar com a última versão do navegador para uma experiência otimizada neste módulo.
-                                                    </p>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -219,8 +229,8 @@ export function HelpCenter() {
                                     >
                                         <CardContent className="p-8">
                                             <div className={`w-14 h-14 rounded-2xl mb-6 flex items-center justify-center transition-all group-hover:scale-110 shadow-lg ${guide.role === 'admin'
-                                                    ? 'bg-red-500/20 text-red-400'
-                                                    : 'bg-brand-orange-coral/20 text-brand-orange-coral'
+                                                ? 'bg-red-500/20 text-red-400'
+                                                : 'bg-brand-orange-coral/20 text-brand-orange-coral'
                                                 }`}>
                                                 <Icon className="w-8 h-8" />
                                             </div>

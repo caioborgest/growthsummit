@@ -68,9 +68,9 @@ export function InscricaoSection({
                             </div>
                         </div>
 
-                        <h2 className="text-4xl font-bold text-white mb-3">{titulo}</h2>
-                        <p className="text-xl text-brand-orange-coral mb-6 font-medium">{subtitulo}</p>
-                        <p className="text-lg text-gray-300 mb-8 leading-relaxed">{descricao}</p>
+                        <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3">{titulo}</h2>
+                        <p className="text-lg sm:text-xl text-brand-orange-coral mb-6 font-medium">{subtitulo}</p>
+                        <p className="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed">{descricao}</p>
 
                         {/* Informações Adicionais */}
                         <div className="flex flex-wrap gap-4 mb-8">
@@ -134,7 +134,7 @@ export function InscricaoSection({
                         {/* CTA */}
                         <Button
                             size="lg"
-                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-7 text-lg rounded-xl shadow-glow-orange hover:shadow-glow hover:scale-[1.02] transition-all duration-300 h-auto group"
+                            className="w-full sm:w-auto bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-7 text-lg rounded-xl shadow-glow-orange hover:shadow-glow hover:scale-[1.02] transition-all duration-300 h-auto group"
                             onClick={onInscrever}
                         >
                             {gratuito ? 'INSCREVER-SE GRATUITAMENTE' : 'GARANTIR MEU INGRESSO'}

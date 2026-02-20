@@ -1,7 +1,7 @@
 export interface GuideStep {
     title: string;
     description: string;
-    image?: string;
+    tip?: string;
 }
 
 export interface ModuleGuide {
@@ -21,47 +21,43 @@ export const usabilityGuide: RoleGuide[] = [
     {
         role: 'admin',
         title: 'Guia do Administrador (Super Admin)',
-        description: 'Manual completo para gestão da plataforma Growth Summit.',
+        description: 'Manual mestre para controle total da plataforma, gestão de projetos e auditoria financeira.',
         modules: [
             {
                 id: 'projetos',
                 name: 'Gestão de Projetos',
                 steps: [
                     {
-                        title: 'Visualizar Projetos',
-                        description: 'No menu lateral, clique em "Projetos" para ver todas as edições do evento (Summit, GE Triunfo, etc.).'
+                        title: 'Modo Multi-Evento',
+                        description: 'A plataforma suporta múltiplos eventos simultâneos. Use o seletor no topo da sidebar para alternar entre Summit e Growth Experience.',
+                        tip: 'As métricas do dashboard são filtradas automaticamente pelo projeto selecionado.'
                     },
                     {
-                        title: 'Selecionar Projeto Ativo',
-                        description: 'Para gerenciar os dados de um evento específico, você deve selecioná-lo no seletor do topo da barra lateral. Todas as métricas e listas mudarão para o contexto do projeto escolhido.'
-                    },
-                    {
-                        title: 'Configurações de Metas',
-                        description: 'Ao editar um projeto, defina o número máximo de inscritos, mentores e preços dos ingressos. Isso alimentará as barras de progresso do seu Dashboard.'
+                        title: 'Configurações de Ingressos',
+                        description: 'Em Projetos > Editar, você define os lotes e preços individuais para Standard, Pro e VIP.',
+                        tip: 'Certifique-se de definir um limite de inscrições para evitar overbooking.'
                     }
                 ]
             },
             {
-                id: 'b2b-admin',
-                name: 'Rodada de Negócios (B2B)',
+                id: 'financeiro-admin',
+                name: 'Gestão Financeira',
                 steps: [
                     {
-                        title: 'Gerar Agenda Automática',
-                        description: 'Quando houver matches (likes mútuos) entre empresas, use o botão "Gerar Agenda Automática" na aba de Matches. O sistema criará horários de 15 minutos para cada par.'
-                    },
-                    {
-                        title: 'Gestão de Mesas',
-                        description: 'Você pode monitorar quais empresas estão em qual mesa e o nível de interesse gerado em cada reunião.'
+                        title: 'Acompanhamento de Receita',
+                        description: 'Acesse o módulo Financeiro para visualizar faturamento bruto, descontos aplicados e ticket médio por categoria.',
+                        tip: 'Os dados são sincronizados em tempo real com os gateways de pagamento (Stripe/Pagarme).'
                     }
                 ]
             },
             {
-                id: 'comunicacao-automatica',
-                name: 'Automação WhatsApp',
+                id: 'comunicacao',
+                name: 'Automações e WhatsApp',
                 steps: [
                     {
-                        title: 'Configurar Grupos',
-                        description: 'Vá em "Grupos WhatsApp" para configurar os links de convite. Você pode ativar o "Auto-convite" para que o usuário receba o link assim que a inscrição for paga.'
+                        title: 'Grupos Automáticos',
+                        description: 'Configure links de grupos para cada tipo de ingresso. O sistema convida o participante via WhatsApp assim que o pagamento é confirmado.',
+                        tip: 'Mantenha o recurso de "Auto-convite" ativado para aumentar a taxa de engajamento.'
                     }
                 ]
             }
@@ -70,33 +66,27 @@ export const usabilityGuide: RoleGuide[] = [
     {
         role: 'participant',
         title: 'Guia do Participante',
-        description: 'Como aproveitar ao máximo o evento e sua área logada.',
+        description: 'Tudo o que você precisa para aproveitar palestras, networking e garantir seu certificado.',
         modules: [
             {
-                id: 'ingresso',
-                name: 'Ingresso e Check-in',
+                id: 'ingresso-pwa',
+                name: 'Seu Ingresso Digital',
                 steps: [
                     {
-                        title: 'Meu Ingresso',
-                        description: 'No Dashboard, você encontrará seu QR Code. Ele é essencial para o check-in rápido na entrada do evento.'
-                    },
-                    {
-                        title: 'PWA / App Móvel',
-                        description: 'Instale a plataforma como aplicativo no seu celular (PWA) para receber notificações em tempo real e acessar sua agenda offline.'
+                        title: 'Check-in via QR Code',
+                        description: 'Seu QR Code está disponível na tela inicial. Apresente-o na entrada para validação instantânea.',
+                        tip: 'Instale o PWA no seu celular para acessar o ingresso mesmo sem internet estável.'
                     }
                 ]
             },
             {
-                id: 'agenda-pessoal',
-                name: 'Agenda e Mentorias',
+                id: 'networking-area',
+                name: 'Networking e Mentoria',
                 steps: [
                     {
-                        title: 'Reservar Lugar',
-                        description: 'Na aba "Programação", adicione as palestras que deseja assistir à sua agenda pessoal.'
-                    },
-                    {
-                        title: 'Agendar Mentoria',
-                        description: 'Se o seu ingresso permitir, escolha um mentor disponível e agende um horário 1:1 de 25 minutos.'
+                        title: 'Agendando Especialistas',
+                        description: 'Se o seu ingresso incluir mentorias, acesse a aba "Mentorias" e escolha um horário disponível com os especialistas.',
+                        tip: 'Prepare suas perguntas com antecedência, cada sessão dura precisamente 25 minutos.'
                     }
                 ]
             }
@@ -105,29 +95,27 @@ export const usabilityGuide: RoleGuide[] = [
     {
         role: 'mentor',
         title: 'Guia do Mentor',
-        description: 'Manual para gestão de sessões de mentoria estratégica.',
+        description: 'Instruções para guiar participantes e registrar resultados práticos das sessões.',
         modules: [
             {
-                id: 'perfil-mentor',
-                name: 'Perfil e Visibilidade',
+                id: 'gestao-agenda',
+                name: 'Sua Agenda de Mentor',
                 steps: [
                     {
-                        title: 'Dados Bio e Foto',
-                        description: 'Mantenha sua bio atualizada. Ela é o principal critério que os participantes usam para escolher você.'
-                    },
-                    {
-                        title: 'Disponibilidade',
-                        description: 'Defina os blocos de horários em que você estará disponível durante o evento.'
+                        title: 'Aceitando Mentorias',
+                        description: 'Veja todos os participantes que solicitaram seu tempo. Você pode ver o perfil e o desafio da startup antes da reunião.',
+                        tip: 'Mude seu status para "Indisponível" se precisar de pausas durante o evento.'
                     }
                 ]
             },
             {
-                id: 'sessao-mentoria',
-                name: 'Durante a Mentoria',
+                id: 'feedback-entrega',
+                name: 'Os 3 Passos Práticos',
                 steps: [
                     {
-                        title: 'Os 3 Passos (Output)',
-                        description: 'Ao final de cada sessão, é obrigatório preencher 3 passos práticos para o mentorado. Isso garante que a mentoria gere resultados imediatos.'
+                        title: 'Registro de Output',
+                        description: 'Ao final da mentoria, você deve registrar 3 ações claras para o mentorado executar.',
+                        tip: 'Este conteúdo será enviado automaticamente para o email do participante como um Plano de Ação.'
                     }
                 ]
             }
@@ -136,19 +124,39 @@ export const usabilityGuide: RoleGuide[] = [
     {
         role: 'company',
         title: 'Guia B2B / Empresa',
-        description: 'Manual para matchmaking e geração de negócios.',
+        description: 'Manual estratégico para a Rodada de Negócios e Matchmaking.',
         modules: [
             {
-                id: 'matchmaking',
-                name: 'Discovery (Swiping)',
+                id: 'b2b-discovery',
+                name: 'Rodada de Negócios',
                 steps: [
                     {
-                        title: 'Dar Like',
-                        description: 'Navegue pelas empresas participantes e dê "Like" naquelas que fazem sentido para seu negócio. Se elas derem Like de volta, um Match é criado.'
+                        title: 'Discovery e Swiping',
+                        description: 'Utilize a ferramenta de Discovery para ver empresas parceiras. Dê "Like" para solicitar uma reunião.',
+                        tip: 'Quanto mais completo seu perfil B2B, maiores as chances de receber "Likes" de volta.'
                     },
                     {
-                        title: 'Reuniões Agendadas',
-                        description: 'Verifique sua agenda de reuniões de 15 minutos. Esteja no local (mesa designada) pontualmente.'
+                        title: 'Gestão de Reuniões',
+                        description: 'Quando houver um Match, o sistema agenda automaticamente uma mesa e horário para a negociação.',
+                        tip: 'Cada reunião tem 15 minutos. Foco total em proposta de valor e próximos passos.'
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        role: 'startup',
+        title: 'Guia da Startup',
+        description: 'Como brilhar na Arena Pitch e conectar-se com investidores.',
+        modules: [
+            {
+                id: 'pitch-arena',
+                name: 'Arena Pitch',
+                steps: [
+                    {
+                        title: 'Preparação do Pitch',
+                        description: 'Verifique seu horário de apresentação na aba "Arena Pitch". O tempo é rigorosamente controlado.',
+                        tip: 'Investidores terão acesso ao seu deck de slides através da plataforma durante a fala.'
                     }
                 ]
             }

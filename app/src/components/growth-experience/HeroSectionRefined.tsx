@@ -84,7 +84,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
                     {/* Título principal */}
                     <h1
-                        className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
+                        className="text-3xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
                         style={{ animationDelay: '0.2s' }}
                     >
                         <span className="block mb-2">Growth Experience</span>

@@ -146,6 +146,7 @@ export interface Company {
 
 export interface B2BSwipe {
   id: string;
+  projectId: string;
   fromCompanyId: string;
   toCompanyId: string;
   status: 'like' | 'dislike';
@@ -154,6 +155,7 @@ export interface B2BSwipe {
 
 export interface B2BMatch {
   id: string;
+  projectId: string;
   companyAId: string;
   companyBId: string;
   status: 'pending_schedule' | 'scheduled' | 'cancelled';
