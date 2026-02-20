@@ -30,42 +30,41 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
-            let authError = null;
 
+            // 1. Tentar criar usuário apenas se não estiver logado
             if (!userId) {
-                // 1. Criar usuário no Supabase Auth se não houver sessão
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: dados.email,
-                    password: dados.senha,
-                    options: {
-                        data: {
-                            name: dados.nome,
-                            phone: dados.telefone,
-                            role: 'participante'
+                try {
+                    const { data: authData, error: sError } = await supabase.auth.signUp({
+                        email: dados.email,
+                        password: dados.senha,
+                        options: {
+                            data: {
+                                name: dados.nome,
+                                phone: dados.telefone,
+                                role: 'participante'
+                            }
                         }
-                    }
-                });
-                userId = authData?.user?.id;
-                authError = sError;
-            }
+                    });
 
-            if (authError) {
-                // Se já existe, prosseguimos
-                if (!authError.message.includes('already registered')) {
-                    throw authError;
+                    if (sError) {
+                        // Se já existe, não é um erro fatal para a inscrição
+                        if (!sError.message.includes('already registered')) {
+                            throw sError;
+                        }
+                        console.log('Usuário já registrado, prosseguindo com inscrição por email.');
+                    } else {
+                        userId = authData?.user?.id;
+                    }
+                } catch (signUpErr) {
+                    console.error('Erro no signUp (não fatal se já existir):', signUpErr);
                 }
             }
 
-            // Precisamos do ID do usuário.
-            if (!userId && !authError?.message.includes('already registered')) {
-                throw new Error('Erro ao identificar usuário para inscrição');
-            }
-
-            // 2. Salvar inscrição no banco
-            const { data: inscricaoData, error: inscricaoError } = await supabase
-                .from('inscricoes_growth_experience')
+            // 2. Salvar inscrição no banco (user_id opcional se já existir conta)
+            const { data: inscricaoData, error: inscricaoError } = await (supabase
+                .from('inscricoes_growth_experience') as any)
                 .insert({
-                    user_id: userId,
+                    user_id: userId || null,
                     nome: dados.nome,
                     email: dados.email,
                     telefone: dados.telefone,
@@ -87,35 +86,22 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
 
-            // 3. Auto-convite para grupos WhatsApp (após inscrição confirmada)
-            try {
-                await autoInviteOnRegistration(
-                    finalInscricaoId || '',
-                    'growth-experience-triunfo', // project_id
-                    'standard' // user_type - pode ser dinâmico baseado no tipo de inscrição
-                );
-            } catch (inviteError) {
-                // Não bloquear o fluxo se o convite falhar
-                console.log('Auto-convite não enviado (não crítico):', inviteError);
+            // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
+            if (finalInscricaoId) {
+                autoInviteOnRegistration(
+                    finalInscricaoId,
+                    'growth-experience-triunfo',
+                    'standard'
+                ).catch(e => console.warn('Invite fail:', e));
             }
 
-            // 4. Sucesso - continuar para próxima etapa
+            // 4. Sucesso - Finalizar loading antes de avisar o componente pai
+            setLoading(false);
             onConfirmar(userId || '', finalInscricaoId || '');
 
-        } catch (err: unknown) {
-            console.error('Erro ao confirmar inscrição:', err);
-            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
-
-            if (err instanceof Error) {
-                if (err.message.includes('rate limit exceeded')) {
-                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
-                } else {
-                    errorMessage = err.message;
-                }
-            }
-
-            setError(errorMessage);
-        } finally {
+        } catch (err: any) {
+            console.error('Erro crítico na inscrição:', err);
+            setError(err.message || 'Erro ao processar inscrição. Tente novamente.');
             setLoading(false);
         }
     };

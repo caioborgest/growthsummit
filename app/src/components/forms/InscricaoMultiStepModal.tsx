@@ -151,75 +151,73 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-dark-100 border-white/10 p-0">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl">
                 {/* Header com Progresso */}
-                <div className="sticky top-0 bg-dark-100 pb-6 border-b border-white/10 mb-6 z-10">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold text-white">
-                            Inscrição Growth Experience
-                        </h2>
+                <div className="bg-dark-100/50 backdrop-blur-md pb-6 pt-8 px-8 border-b border-white/5 z-20 shadow-lg">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                                Inscrição <span className="text-brand-orange-coral">GE Triunfo</span>
+                            </h2>
+                            <p className="text-gray-500 text-sm mt-1">Growth Experience • Workshop & Training</p>
+                        </div>
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleClose}
-                            className="text-gray-400 hover:text-white"
+                            className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full h-10 w-10 transition-all"
                         >
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="flex items-center gap-2">
-                        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-                            <div key={step} className="flex items-center flex-1">
-                                <div
-                                    className={`w-full h-2 rounded-full transition-all ${step < currentStep
-                                        ? 'bg-green-500'
-                                        : step === currentStep
-                                            ? 'bg-brand-orange-coral'
-                                            : 'bg-gray-700'
-                                        }`}
-                                />
-                            </div>
-                        ))}
-                    </div>
+                    {/* Step Indicators Compactos e Elegantes */}
+                    <div className="flex items-center justify-between relative px-2">
+                        {/* Linha de fundo conectora */}
+                        <div className="absolute top-5 left-8 right-8 h-[2px] bg-white/5 -z-10" />
+                        {/* Linha de progresso ativa */}
+                        <div
+                            className="absolute top-5 left-8 h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
+                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
+                        />
 
-                    {/* Step Indicators */}
-                    <div className="flex items-center justify-between mt-4 px-2">
                         {[
                             'Cursos',
                             'Dados',
                             'Confirmar',
-                            'Palestras',
+                            'Upgrade',
                             'App',
-                            'Concluído'
+                            'OK'
                         ].map((label, index) => {
                             const step = index + 1;
+                            const isActive = step === currentStep;
+                            const isCompleted = step < currentStep;
+
                             return (
                                 <div
                                     key={step}
-                                    className="flex flex-col items-center gap-2 flex-1 min-w-0"
+                                    className="flex flex-col items-center gap-3 relative"
                                 >
                                     <div
-                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all text-sm sm:text-base ${step < currentStep
-                                            ? 'bg-green-500 text-white'
-                                            : step === currentStep
-                                                ? 'bg-brand-orange-coral text-white'
-                                                : 'bg-gray-700 text-gray-400'
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
+                                                ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                                                : isActive
+                                                    ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.4)] scale-110'
+                                                    : 'bg-dark-200 border-white/10 text-gray-500'
                                             }`}
                                     >
-                                        {step < currentStep ? (
-                                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        {isCompleted ? (
+                                            <CheckCircle className="h-5 w-5" />
                                         ) : (
-                                            step
+                                            <span className="text-sm">{step}</span>
                                         )}
                                     </div>
                                     <span
-                                        className={`text-[10px] sm:text-xs font-semibold truncate w-full text-center hidden xs:block ${step === currentStep
-                                            ? 'text-brand-orange-coral'
-                                            : step < currentStep
-                                                ? 'text-green-500'
-                                                : 'text-gray-500'
+                                        className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive
+                                                ? 'text-brand-orange-coral'
+                                                : isCompleted
+                                                    ? 'text-green-500'
+                                                    : 'text-gray-600'
                                             }`}
                                     >
                                         {label}
@@ -230,8 +228,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="px-2">
+                {/* Content com Scrollbar Customizada */}
+                <div className="px-8 py-8 overflow-y-auto max-h-[calc(90vh-200px)] custom-scrollbar">
                     {renderStep()}
                 </div>
             </DialogContent>

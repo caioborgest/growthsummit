@@ -31,141 +31,125 @@ export function Step1SelecionarCursos({
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="text-center">
-                <h3 className="text-3xl font-bold text-white mb-3">
-                    Escolha sua Atividade
+            <div className="text-left mb-8">
+                <h3 className="text-3xl font-black text-white leading-none mb-4">
+                    Atividades <span className="text-brand-orange-coral">Disponíveis</span>
                 </h3>
-                <p className="text-gray-400 text-lg">
-                    Selecione 1 curso ou workshop para participar (vagas limitadas!)
+                <p className="text-gray-400 text-lg max-w-xl">
+                    Selecione uma trilha de conhecimento para personalizar sua jornada no evento.
                 </p>
                 {selecionados.length > 0 && (
-                    <Badge className="mt-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/40 px-4 py-2">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Atividade selecionada com sucesso
-                    </Badge>
+                    <div className="mt-4 flex animate-fade-in">
+                        <Badge className="bg-green-500/10 text-green-400 border-green-500/30 px-3 py-1 text-xs uppercase tracking-widest font-bold">
+                            <CheckCircle className="h-3 w-3 mr-2" />
+                            Pronto para prosseguir
+                        </Badge>
+                    </div>
                 )}
             </div>
 
             {/* Lista de Cursos */}
-            <div className="grid gap-4 max-h-[500px] overflow-y-auto pr-2">
+            <div className="grid gap-4 pr-2">
                 {cursosDisponiveis.map((curso) => {
                     const isSelected = selecionados.includes(curso.id);
 
                     return (
-                        <Card
+                        <div
                             key={curso.id}
-                            className={`p-6 cursor-pointer transition-all duration-300 ${isSelected
-                                ? 'border-brand-orange-coral bg-brand-orange-coral/10 ring-2 ring-brand-orange-coral/50'
-                                : 'border-white/10 hover:border-brand-orange-coral/30 bg-dark-200/50'
+                            className={`relative group p-6 rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
+                                ? 'border-brand-orange-coral bg-brand-orange-coral/5 shadow-[0_10px_30px_rgba(255,112,67,0.15)] ring-1 ring-brand-orange-coral/20'
+                                : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60'
                                 }`}
                             onClick={() => selectCurso(curso.id)}
                         >
-                            <div className="flex items-start gap-4">
-                                {/* Radio UI (Simulado com Checkbox redondo ou apenas o card) */}
-                                <div className="pt-1">
-                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected
+                            {/* Efeito de Gradiente no Background para o Ativo */}
+                            {isSelected && (
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/10 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
+                            )}
+
+                            <div className="flex items-start gap-6 relative z-10">
+                                {/* Radio Circle Customizado */}
+                                <div className="pt-1 select-none">
+                                    <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
                                         ? 'border-brand-orange-coral bg-brand-orange-coral'
-                                        : 'border-white/20'}`}>
-                                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white animate-in zoom-in-50" />}
+                                        : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
+                                        {isSelected && (
+                                            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Conteúdo */}
+                                {/* Conteúdo do Card */}
                                 <div className="flex-1 min-w-0">
-                                    {/* Título e Nível */}
-                                    <div className="flex items-start justify-between gap-4 mb-2">
-                                        <h4 className="text-lg font-bold text-white leading-tight">
+                                    {/* Badge de Nível e Título */}
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                                        <h4 className="text-xl font-bold text-white tracking-tight group-hover:text-brand-orange-coral/90 transition-colors">
                                             {curso.titulo}
                                         </h4>
                                         {curso.nivel && (
-                                            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/40 flex-shrink-0">
+                                            <Badge className={`px-2 py-0 text-[10px] uppercase font-black tracking-tighter ${curso.nivel === 'Iniciante' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                                    curso.nivel === 'Intermediário' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                        'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                                }`}>
                                                 {curso.nivel}
                                             </Badge>
                                         )}
                                     </div>
 
-                                    {/* Descrição */}
-                                    <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                                    {/* Descrição Compacta */}
+                                    <p className="text-gray-400 text-sm mb-5 leading-relaxed line-clamp-2">
                                         {curso.descricao}
                                     </p>
 
-                                    {/* Palestrante */}
-                                    {curso.palestrante && (
-                                        <div className="mb-3">
-                                            <p className="text-sm font-semibold text-brand-orange-coral">
-                                                {curso.palestrante}
-                                                {curso.empresa && (
-                                                    <span className="text-gray-500 font-normal"> • {curso.empresa}</span>
-                                                )}
-                                            </p>
-                                        </div>
-                                    )}
+                                    {/* Meta Info (Palestrante, Hora, Local) */}
+                                    <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-xs font-semibold">
+                                        {curso.palestrante && (
+                                            <div className="flex items-center gap-2 group-hover:text-white transition-colors">
+                                                <div className="w-6 h-6 rounded-full bg-brand-orange-coral/10 flex items-center justify-center">
+                                                    <Users className="h-3 w-3 text-brand-orange-coral" />
+                                                </div>
+                                                <span className="text-gray-300">{curso.palestrante}</span>
+                                            </div>
+                                        )}
 
-                                    {/* Info */}
-                                    <div className="flex flex-wrap items-center gap-4 text-sm">
                                         <div className="flex items-center gap-2 text-brand-orange-coral">
-                                            <Clock className="h-4 w-4" />
-                                            <span className="font-semibold">
+                                            <Clock className="h-3.5 w-3.5" />
+                                            <span>
                                                 {curso.horario_inicio} - {curso.horario_fim}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <MapPin className="h-4 w-4" />
+                                        <div className="flex items-center gap-2 text-gray-500">
+                                            <MapPin className="h-3.5 w-3.5" />
                                             <span>{curso.local}</span>
                                         </div>
-
-                                        {curso.vagas && (
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <Users className="h-4 w-4" />
-                                                <span>{curso.vagas} vagas</span>
-                                            </div>
-                                        )}
-
-                                        <Badge className="bg-green-500/20 text-green-500 border-green-500/40">
-                                            GRATUITO
-                                        </Badge>
                                     </div>
-
-                                    {/* Tags */}
-                                    {curso.tags && curso.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mt-3">
-                                            {curso.tags.map((tag, index) => (
-                                                <Badge
-                                                    key={index}
-                                                    variant="outline"
-                                                    className="text-xs border-white/20 text-gray-400"
-                                                >
-                                                    {tag}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
-                        </Card>
+                        </div>
                     );
                 })}
             </div>
 
-            {/* Footer com Botão */}
-            <div className="sticky bottom-0 bg-dark-100 pt-6 border-t border-white/10">
+            {/* Sticky Action Footer */}
+            <div className="mt-8 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
                 <Button
                     size="lg"
                     disabled={selecionados.length === 0}
                     onClick={handleContinuar}
-                    className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full h-14 rounded-2xl font-black text-lg tracking-tight transition-all duration-300 shadow-2xl ${selecionados.length === 0
+                            ? 'bg-dark-400 text-gray-600 border border-white/5'
+                            : 'bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white shadow-[0_10px_30px_rgba(255,112,67,0.3)] hover:scale-[1.02]'
+                        }`}
                 >
                     {selecionados.length === 0
-                        ? 'Selecione uma atividade'
-                        : 'Continuar com esta seleção'}
+                        ? 'Selecione uma trilha'
+                        : 'Confirmar Escolha'}
                 </Button>
 
-                {selecionados.length === 0 && (
-                    <p className="text-center text-sm text-gray-500 mt-3">
-                        Você precisa selecionar 1 atividade para prosseguir
-                    </p>
-                )}
+                <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-bold">
+                    Passo 1 de 6 • Escolha Obrigatória
+                </p>
             </div>
         </div>
     );
