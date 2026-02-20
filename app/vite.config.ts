@@ -44,6 +44,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [
