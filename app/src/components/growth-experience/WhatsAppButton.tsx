@@ -8,7 +8,7 @@ export function WhatsAppButton() {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-50 group"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group"
             aria-label="Fale conosco no WhatsApp"
         >
             <div className="relative">
@@ -16,12 +16,12 @@ export function WhatsAppButton() {
                 <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75" />
 
                 {/* Button */}
-                <div className="relative bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
-                    <MessageCircle className="h-6 w-6" />
+                <div className="relative bg-green-500 hover:bg-green-600 text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                    <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
 
-                {/* Tooltip */}
-                <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                {/* Tooltip - Hidden on Mobile */}
+                <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden sm:block">
                     <div className="bg-dark-100 text-white text-sm px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
                         <p className="font-semibold text-brand-orange-coral">Quero atendimento personalizado</p>
                         <p className="text-xs text-gray-400">Clique para falar agora</p>
