@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { 
-  Users, 
-  DollarSign, 
-  Calendar, 
+import {
+  Users,
+  DollarSign,
+  Calendar,
   Handshake,
   Rocket,
   Gem,
@@ -23,12 +23,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProject } from '@/contexts/ProjectContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-  useRegistrations, 
-  useMentors, 
-  useMentoringSessions, 
-  useB2BMeetings, 
-  useStartups, 
+import {
+  useRegistrations,
+  useMentors,
+  useMentoringSessions,
+  useB2BMeetings,
+  useStartups,
   useSponsors,
   useTransactions,
   useCheckIns
@@ -67,7 +67,7 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
         <span>{progress}%</span>
       </div>
       <div className="w-full bg-dark-300 rounded-full h-2">
-        <div 
+        <div
           className={`bg-${color}-500 h-2 rounded-full transition-all`}
           style={{ width: `${Math.min(progress, 100)}%` }}
         />
@@ -78,7 +78,7 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
 
 const quickActions = [
   { name: 'Aprovar Mentor', icon: CheckCircle, color: 'green', path: '/admin/mentores' },
-  { name: 'Exportar Inscritos', icon: Download, color: 'blue', action: () => {} },
+  { name: 'Exportar Inscritos', icon: Download, color: 'blue', action: () => { } },
   { name: 'Enviar Email', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
   { name: 'Ver Check-ins', icon: QrCode, color: 'teal', path: '/admin/check-in' },
   { name: 'Matching B2B', icon: Users2, color: 'orange', path: '/admin/rodada-negocios' },
@@ -108,29 +108,37 @@ export function AdminDashboard() {
       .filter(t => t.type === 'income' && t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
 
+    // Dynamic targets from project settings or defaults
+    const targets = {
+      registrations: selectedProject?.settings?.maxRegistrations || 1500,
+      revenue: selectedProject?.settings?.ticketPrices?.vip * 10 || 616000, // Heuristic for revenue target if not explicit
+      mentorias: selectedProject?.settings?.maxMentors ? selectedProject.settings.maxMentors * 5 : 100,
+      b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,
+    };
+
     setStats({
-      registrations: { 
-        value: registrations.length, 
-        target: 1500, 
-        progress: Math.round((registrations.length / 1500) * 100) 
+      registrations: {
+        value: registrations.length,
+        target: targets.registrations,
+        progress: Math.round((registrations.length / targets.registrations) * 100)
       },
-      revenue: { 
-        value: totalRevenue, 
-        target: 616000, 
-        progress: Math.round((totalRevenue / 616000) * 100) 
+      revenue: {
+        value: totalRevenue,
+        target: targets.revenue,
+        progress: Math.round((totalRevenue / targets.revenue) * 100)
       },
-      mentorias: { 
-        value: sessions.length, 
-        target: 100, 
-        progress: Math.round((sessions.length / 100) * 100) 
+      mentorias: {
+        value: sessions.length,
+        target: targets.mentorias,
+        progress: Math.round((sessions.length / targets.mentorias) * 100)
       },
-      b2b: { 
-        value: b2bMeetings.length, 
-        target: 120, 
-        progress: Math.round((b2bMeetings.length / 120) * 100) 
+      b2b: {
+        value: b2bMeetings.length,
+        target: targets.b2b,
+        progress: Math.round((b2bMeetings.length / targets.b2b) * 100)
       },
     });
-  }, [registrations, transactions, sessions, b2bMeetings]);
+  }, [registrations, transactions, sessions, b2bMeetings, selectedProject]);
 
   const pendingMentors = filterMentors((m: Mentor) => m.status === 'pending');
   const pendingStartups = filterStartups((s: Startup) => s.status === 'pending');
@@ -156,7 +164,7 @@ export function AdminDashboard() {
               Selecione um Projeto
             </h2>
             <p className="text-[#94A3B8] mb-6">
-              Para visualizar o dashboard e gerenciar os dados, você precisa selecionar um projeto primeiro. 
+              Para visualizar o dashboard e gerenciar os dados, você precisa selecionar um projeto primeiro.
               Escolha um projeto no menu lateral ou crie um novo.
             </p>
             <div className="flex gap-3 justify-center">
@@ -310,9 +318,8 @@ export function AdminDashboard() {
           <div className="space-y-4">
             {recentActivity.map((activity, i) => (
               <div key={i} className="flex items-start">
-                <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${
-                  activity.type === 'success' ? 'bg-green-400' : 'bg-blue-400'
-                }`} />
+                <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${activity.type === 'success' ? 'bg-green-400' : 'bg-blue-400'
+                  }`} />
                 <div className="flex-1">
                   <p className="text-white text-sm">{activity.action}</p>
                   <p className="text-gray-400 text-xs">{activity.detail}</p>
@@ -331,7 +338,7 @@ export function AdminDashboard() {
               {pendingMentors.length + pendingStartups.length}
             </Badge>
           </div>
-          
+
           <div className="space-y-4">
             {pendingMentors.slice(0, 2).map((mentor) => (
               <div key={mentor.id} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
@@ -354,7 +361,7 @@ export function AdminDashboard() {
                 </div>
               </div>
             ))}
-            
+
             {pendingStartups.slice(0, 2).map((startup) => (
               <div key={startup.id} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
                 <div className="flex items-center">
@@ -394,8 +401,8 @@ export function AdminDashboard() {
               <div className="flex items-center justify-between mb-3">
                 <Badge className={
                   session.status === 'scheduled' ? 'bg-blue-500/20 text-blue-400' :
-                  session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                  'bg-red-500/20 text-red-400'
+                    session.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                      'bg-red-500/20 text-red-400'
                 }>
                   {session.status === 'scheduled' && <Clock className="h-3 w-3 mr-1" />}
                   {session.status}

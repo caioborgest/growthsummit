@@ -92,6 +92,10 @@ export function DashboardParticipante() {
               <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30 px-3 py-1">
                 {myRegistration?.palestrasNoturnas ? 'Passe Completo' : 'Inscrição Básica'}
               </Badge>
+              <Button variant="ghost" size="sm" className="text-teal-400 hover:text-teal-300" onClick={() => navigate('/guia')}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Acessar Manual
+              </Button>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

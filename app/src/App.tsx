@@ -37,6 +37,7 @@ import { AdminRelatorios } from './pages/admin/AdminRelatorios';
 import { AdminProgramacao } from './pages/admin/AdminProgramacao';
 import { AdminSecurity } from './pages/admin/AdminSecurity';
 import { AdminWhatsAppGroups } from './pages/admin/AdminWhatsAppGroups';
+import { HelpCenter } from './pages/help/HelpCenter';
 import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
 
 // 404 Not Found Component
@@ -98,6 +99,7 @@ function AppRoutes() {
         <Route path="growth-experience" element={<GrowthExperience />} />
         <Route path="faq" element={<FAQ />} />
         <Route path="contato" element={<Contato />} />
+        <Route path="guia" element={<HelpCenter />} />
       </Route>
 
       {/* Dedicated Page for Triunfo (No Global Layout) */}

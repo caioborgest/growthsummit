@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCompanies, useB2BMeetings, useB2BMatches, useB2BSwipes } from '@/hooks/useData';
+import { useCompanies, useB2BMeetings, useB2BMatches } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -34,7 +34,6 @@ export function AdminB2B() {
   const { data: companies } = useCompanies();
   const { data: meetings, update } = useB2BMeetings();
   const { data: matches, refetch: refetchMatches } = useB2BMatches();
-  const { data: swipes } = useB2BSwipes();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'meetings' | 'companies' | 'matches'>('meetings');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -55,6 +54,13 @@ export function AdminB2B() {
       setIsGenerating(false);
     }
   };
+
+  const filteredMeetings = meetings.filter(meeting => {
+    return (
+      meeting.companyAnchorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      meeting.companyVendorName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const filteredMatches = matches.filter(match => {
     const companyA = companies.find(c => c.id === match.companyAId);
@@ -87,8 +93,8 @@ export function AdminB2B() {
         <button
           onClick={() => setActiveTab('meetings')}
           className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'meetings'
-              ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
             }`}
         >
           Reuniões
@@ -96,8 +102,8 @@ export function AdminB2B() {
         <button
           onClick={() => setActiveTab('companies')}
           className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'companies'
-              ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
             }`}
         >
           Empresas
@@ -105,8 +111,8 @@ export function AdminB2B() {
         <button
           onClick={() => setActiveTab('matches')}
           className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'matches'
-              ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
             }`}
         >
           Matches ({matches.length})

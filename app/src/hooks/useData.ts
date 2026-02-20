@@ -30,8 +30,9 @@ const getTableName = (projectId: string, entity: string) => {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
       case 'companies': return 'rodada_negocios_b2b';
-      case 'mentors': return 'mentores_growth_experience';
-      case 'sessions': return 'mentorias_agendadas';
+      case 'mentoring_sessions': return 'mentorias_agendadas';
+      case 'sessions': return 'programacao_evento';
+      case 'b2b_meetings': return 'b2b_appointments_triunfo';
       case 'b2b_swipes': return 'b2b_swipes';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_appointments': return 'b2b_appointments_triunfo';
@@ -40,6 +41,16 @@ const getTableName = (projectId: string, entity: string) => {
   }
   // Default to summit tables
   return entity;
+};
+
+// Helper to map CamelCase back to snake_case for Supabase
+const mapToSnakeCase = (obj: any) => {
+  const result: any = {};
+  for (const key in obj) {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    result[snakeKey] = obj[key];
+  }
+  return result;
 };
 
 // Generic interface with id
@@ -110,6 +121,21 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item.duration_minutes) mappedItem.durationMinutes = item.duration_minutes;
         if (item.table_number) mappedItem.tableNumber = item.table_number;
 
+        // B2B Specific Name Mapping
+        if (item.company_anchor_name) mappedItem.companyAnchorName = item.company_anchor_name;
+        if (item.company_vendor_name) mappedItem.companyVendorName = item.company_vendor_name;
+        if (item.interest_level) mappedItem.interestLevel = item.interest_level;
+        if (item.follow_up !== undefined) mappedItem.followUp = item.follow_up;
+
+        // Mentoring Specific Mapping
+        if (item.mentor_name) mappedItem.mentorName = item.mentor_name;
+        if (item.mentee_name) mappedItem.menteeName = item.mentee_name;
+        if (item.three_steps) mappedItem.threeSteps = item.three_steps;
+        if (item.mentor_id) mappedItem.mentorId = item.mentor_id;
+        if (item.mentee_id) mappedItem.menteeId = item.mentee_id;
+        if (item.years_experience) mappedItem.yearsExperience = item.years_experience;
+        if (item.max_mentories) mappedItem.maxMentories = item.max_mentories;
+
         return mappedItem as T;
       });
 
@@ -132,8 +158,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
       const tableName = getTableName(projectId, entityName);
 
       // Map CamelCase back to snake_case for Supabase
-      const dataToInsert: any = { ...item };
-      delete dataToInsert.projectId;
+      const dataToInsert = mapToSnakeCase(item);
       dataToInsert.project_id = projectId;
 
       const { data: inserted, error } = await supabase
@@ -158,9 +183,11 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId!, entityName);
+      const dataToUpdate = mapToSnakeCase(updates);
+
       const { error } = await supabase
         .from(tableName)
-        .update(updates as any)
+        .update(dataToUpdate)
         .eq('id', id);
 
       if (error) throw error;
@@ -253,7 +280,7 @@ export function useProjects() {
   const create = useCallback(async (item: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     try {
-      const { data: inserted, error } = await supabase
+      const { data: inserted, error } = await (supabase
         .from('projects')
         .insert({
           ...item,
@@ -262,7 +289,7 @@ export function useProjects() {
           short_description: item.shortDescription,
           primary_color: item.primaryColor,
           secondary_color: item.secondaryColor,
-        })
+        } as any) as any)
         .select()
         .single();
 
@@ -347,7 +374,7 @@ export function useMentors() {
 }
 
 export function useMentoringSessions() {
-  return useData<MentoringSession>(mockMentoringSessions, 'sessions');
+  return useData<MentoringSession>(mockMentoringSessions, 'mentoring_sessions');
 }
 
 export function useCompanies() {
