@@ -46,6 +46,7 @@ import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
 import { SectionShare } from '@/components/social/SectionShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
+import { useMentors } from '@/hooks/useData';
 
 // Dados do evento
 const palestrantes = [
