@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS public.rodada_negocios_b2b (
     tipo_interesse TEXT NOT NULL,
     areas_interesse TEXT NOT NULL,
     descricao_objetivos TEXT NOT NULL,
+    logo_url TEXT,
     status TEXT DEFAULT 'pendente',
     -- 'pendente', 'aprovado', 'rejeitado'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

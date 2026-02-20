@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -19,10 +19,8 @@ const mockTransactions: Transaction[] = [];
 const mockCheckIns: CheckIn[] = [];
 const mockSessions: Session[] = [];
 const mockLeads: Lead[] = [];
-const mockProjects: Project[] = [];
 
 // Project IDs
-const GS_2026 = 'gs-2026';
 const GE_TRIUNFO = 'ge-triunfo-2026';
 
 // Table Mapping based on project and entity
@@ -34,6 +32,9 @@ const getTableName = (projectId: string, entity: string) => {
       case 'companies': return 'rodada_negocios_b2b';
       case 'mentors': return 'mentores_growth_experience';
       case 'sessions': return 'mentorias_agendadas';
+      case 'b2b_swipes': return 'b2b_swipes';
+      case 'b2b_matches': return 'b2b_matches';
+      case 'b2b_appointments': return 'b2b_appointments_triunfo';
       default: return entity;
     }
   }
@@ -82,6 +83,11 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item.payment_date) mappedItem.paymentDate = item.payment_date;
         if (item.checked_in) mappedItem.checkedIn = item.checked_in;
 
+        // Specific for Triunfo Registrations
+        if (item.palestras_noturnas !== undefined) mappedItem.palestrasNoturnas = item.palestras_noturnas;
+        if (item.cursos_selecionados) mappedItem.cursosSelecionados = item.cursos_selecionados;
+        if (item.valor_pago) mappedItem.valorPago = item.valor_pago;
+
         // Specific for Startup
         if (item.nome_startup) mappedItem.name = item.nome_startup;
         if (item.descricao_startup) mappedItem.description = item.descricao_startup;
@@ -90,6 +96,19 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         // Specific for B2B/Company
         if (item.nome_empresa) mappedItem.name = item.nome_empresa;
         if (item.nome_representante) mappedItem.contactName = item.nome_representante;
+        if (item.logo_url) mappedItem.logoUrl = item.logo_url;
+        if (item.tipo_interesse) mappedItem.tipoInteresse = item.tipo_interesse;
+        if (item.areas_interesse) mappedItem.areasInteresse = item.areas_interesse;
+
+        // Specific for Matchmaking
+        if (item.from_company_id) mappedItem.fromCompanyId = item.from_company_id;
+        if (item.to_company_id) mappedItem.toCompanyId = item.to_company_id;
+        if (item.company_a_id) mappedItem.companyAId = item.company_a_id;
+        if (item.company_b_id) mappedItem.companyBId = item.company_b_id;
+        if (item.match_id) mappedItem.matchId = item.match_id;
+        if (item.scheduled_at) mappedItem.scheduledAt = item.scheduled_at;
+        if (item.duration_minutes) mappedItem.durationMinutes = item.duration_minutes;
+        if (item.table_number) mappedItem.tableNumber = item.table_number;
 
         return mappedItem as T;
       });
@@ -361,4 +380,16 @@ export function useSessions() {
 
 export function useLeads() {
   return useData<Lead>(mockLeads, 'leads');
+}
+
+export function useB2BSwipes() {
+  return useData<any>([], 'b2b_swipes');
+}
+
+export function useB2BMatches() {
+  return useData<any>([], 'b2b_matches');
+}
+
+export function useB2BAppointmentsTriunfo() {
+  return useData<any>([], 'b2b_appointments');
 }

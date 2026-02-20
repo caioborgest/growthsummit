@@ -50,6 +50,8 @@ export interface User {
   phone?: string;
   role: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'admin';
   avatar?: string;
+  twoFactorEnabled?: boolean;
+  requires2FA?: boolean;
   createdAt: string;
 }
 
@@ -130,12 +132,43 @@ export interface Company {
   description: string;
   website?: string;
   logo?: string;
+  logoUrl?: string; // New field for public url
   contactName: string;
   contactEmail: string;
   contactPhone: string;
   status: 'pending' | 'approved' | 'rejected';
   packageType?: 'anchor' | 'vendor';
   maxMeetings: number;
+  tipoInteresse?: 'comprar' | 'vender' | 'parceria' | 'todos';
+  areasInteresse?: string;
+  createdAt: string;
+}
+
+export interface B2BSwipe {
+  id: string;
+  fromCompanyId: string;
+  toCompanyId: string;
+  status: 'like' | 'dislike';
+  createdAt: string;
+}
+
+export interface B2BMatch {
+  id: string;
+  companyAId: string;
+  companyBId: string;
+  status: 'pending_schedule' | 'scheduled' | 'cancelled';
+  createdAt: string;
+}
+
+export interface B2BAppointmentTriunfo {
+  id: string;
+  matchId?: string;
+  companyAId: string;
+  companyBId: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  tableNumber?: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   createdAt: string;
 }
 

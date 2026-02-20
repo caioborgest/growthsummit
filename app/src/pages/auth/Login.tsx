@@ -18,18 +18,26 @@ export function Login() {
     setError('');
 
     try {
-      await login(email, password);
-      // Redirect based on role
-      if (email === 'admin@growthsummit.site') {
-        navigate('/admin');
-      } else if (email === 'mentor@email.com') {
-        navigate('/mentor-area');
-      } else if (email === 'empresa@email.com') {
-        navigate('/empresa-area');
-      } else if (email === 'startup@email.com') {
-        navigate('/startup-area');
-      } else {
-        navigate('/minha-area');
+      const user = await login(email, password);
+
+      if (user) {
+        // Redirecionamento baseado na role real do usuário
+        switch (user.role) {
+          case 'admin':
+            navigate('/admin');
+            break;
+          case 'mentor':
+            navigate('/mentor-area');
+            break;
+          case 'company':
+            navigate('/empresa-area');
+            break;
+          case 'startup':
+            navigate('/startup-area');
+            break;
+          default:
+            navigate('/minha-area');
+        }
       }
     } catch {
       setError('Email ou senha inválidos');
@@ -46,14 +54,12 @@ export function Login() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">GS</span>
-            </div>
-            <div>
-              <span className="text-white font-bold text-xl">Growth Summit</span>
-              <span className="text-teal-400 text-sm block">2026</span>
-            </div>
+          <Link to="/" className="inline-flex items-center">
+            <img
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
+              alt="Growth Summit"
+              className="h-16 w-auto"
+            />
           </Link>
         </div>
 
@@ -147,19 +153,6 @@ export function Login() {
                 Inscreva-se
               </Link>
             </p>
-          </div>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 glass-card p-4">
-          <p className="text-gray-400 text-sm text-center mb-2">Credenciais de demonstração:</p>
-          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-            <div className="bg-dark-100 p-2 rounded">
-              <span className="text-teal-400">Admin:</span> admin@growthsummit.site
-            </div>
-            <div className="bg-dark-100 p-2 rounded">
-              <span className="text-teal-400">Senha:</span> 123456
-            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Mail,
   Phone,
@@ -44,6 +44,8 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const location = useLocation();
+
   return (
     <footer className="bg-dark-200 border-t border-dark-300">
       {/* Newsletter Section */}
@@ -78,13 +80,23 @@ export function Footer() {
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
-                <span className="text-dark-100 font-bold text-lg">GS</span>
-              </div>
-              <div>
-                <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
-                <span className="text-brand-yellow text-xs block font-bold">2026</span>
-              </div>
+              {location.pathname === '/growth-experience' || location.pathname === '/growth-experience-triunfo' ? (
+                <>
+                  <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
+                    <span className="text-dark-100 font-bold text-lg">GS</span>
+                  </div>
+                  <div>
+                    <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
+                    <span className="text-brand-yellow text-xs block font-bold">2026</span>
+                  </div>
+                </>
+              ) : (
+                <img
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
+                  alt="Growth Summit"
+                  className="h-10 w-auto"
+                />
+              )}
             </Link>
             <p className="text-gray-400 text-sm mb-6 max-w-xs">
               A maior conferência de Growth, Marketing, Vendas e IA do Nordeste.

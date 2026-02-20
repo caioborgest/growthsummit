@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Loader2, CheckCircle, Handshake } from 'lucide-react';
+import { X, Loader2, CheckCircle, Handshake, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 
@@ -41,6 +41,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
@@ -82,6 +84,10 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         setError('');
 
         try {
+            // Validação de Logo (Obrigatória agora que o usuário pediu)
+            if (!logoFile) {
+                throw new Error('Por favor, anexe a logomarca da sua empresa.');
+            }
             // Validação básica
             if (!formData.nome_representante || !formData.cargo || !formData.email ||
                 !formData.telefone || !formData.senha || !formData.confirmarSenha ||
@@ -139,6 +145,26 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 throw new Error('Erro ao identificar usuário para inscrição');
             }
 
+            // 1.5 Upload Logo if exists
+            let logoUrl = '';
+            if (logoFile) {
+                const fileExt = logoFile.name.split('.').pop();
+                const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+                const filePath = `b2b-logos/${fileName}`;
+
+                const { error: uploadError, data: uploadData } = await supabase.storage
+                    .from('event-assets')
+                    .upload(filePath, logoFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('event-assets')
+                    .getPublicUrl(filePath);
+
+                logoUrl = publicUrl;
+            }
+
             // Preparar dados para inserção
             const dataToInsert = {
                 user_id: user.id,
@@ -159,6 +185,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 tipo_interesse: formData.tipo_interesse,
                 areas_interesse: formData.areas_interesse,
                 descricao_objetivos: formData.descricao_objetivos,
+                logo_url: logoUrl,
                 status: 'pendente',
             };
 
@@ -230,6 +257,18 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             ...formData,
             [e.target.name]: e.target.value,
         });
+    };
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
@@ -400,6 +439,45 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                             placeholder="00.000.000/0000-00"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Seção: Logomarca da Empresa */}
+                                <div className="md:col-span-2 p-4 bg-teal-500/5 border border-teal-500/20 rounded-xl mb-6">
+                                    <label className="block text-sm font-bold text-teal-400 mb-3 uppercase tracking-wider">
+                                        Logomarca da Empresa *
+                                    </label>
+                                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-teal-500/30 rounded-xl p-6 hover:bg-teal-500/10 transition-colors cursor-pointer relative">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleLogoChange}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            required
+                                        />
+                                        {logoPreview ? (
+                                            <div className="relative group">
+                                                <img
+                                                    src={logoPreview}
+                                                    alt="Preview do Logo"
+                                                    className="w-32 h-32 object-contain rounded-lg"
+                                                />
+                                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                                                    <Camera className="text-white h-8 w-8" />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center">
+                                                <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                    <Upload className="h-8 w-8 text-teal-400" />
+                                                </div>
+                                                <p className="text-teal-400 font-medium">Clique ou arraste o logo</p>
+                                                <p className="text-gray-500 text-xs mt-1">PNG ou JPG até 2MB</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-300 mb-2">
                                             Setor *

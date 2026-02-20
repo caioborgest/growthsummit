@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { 
-  Search, 
+import {
+  Search,
   Building2,
   Handshake,
   CheckCircle,
   XCircle,
   Star,
-  Plus
+  Plus,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCompanies, useB2BMeetings } from '@/hooks/useData';
+import { useCompanies, useB2BMeetings, useB2BMatches, useB2BSwipes } from '@/hooks/useData';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-blue-500/20 text-blue-400',
@@ -29,13 +33,35 @@ const interestColors: Record<string, string> = {
 export function AdminB2B() {
   const { data: companies } = useCompanies();
   const { data: meetings, update } = useB2BMeetings();
+  const { data: matches, refetch: refetchMatches } = useB2BMatches();
+  const { data: swipes } = useB2BSwipes();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'meetings' | 'companies'>('meetings');
+  const [activeTab, setActiveTab] = useState<'meetings' | 'companies' | 'matches'>('meetings');
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const filteredMeetings = meetings.filter(meeting => {
+  const handleGenerateSchedule = async () => {
+    setIsGenerating(true);
+    try {
+      const { error } = await supabase.rpc('rpc_generate_b2b_schedule');
+      if (error) throw error;
+      toast.success('Agenda gerada com sucesso!', {
+        description: 'Os agendamentos foram criados para todos os matches pendentes.'
+      });
+      refetchMatches();
+    } catch (err) {
+      console.error('Erro ao gerar agenda:', err);
+      toast.error('Erro ao gerar agenda');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const filteredMatches = matches.filter(match => {
+    const companyA = companies.find(c => c.id === match.companyAId);
+    const companyB = companies.find(c => c.id === match.companyBId);
     return (
-      meeting.companyAnchorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      meeting.companyVendorName.toLowerCase().includes(searchQuery.toLowerCase())
+      companyA?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      companyB?.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
@@ -60,23 +86,30 @@ export function AdminB2B() {
       <div className="flex space-x-4 border-b border-dark-300">
         <button
           onClick={() => setActiveTab('meetings')}
-          className={`pb-4 text-sm font-medium transition-colors ${
-            activeTab === 'meetings' 
-              ? 'text-teal-400 border-b-2 border-teal-400' 
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'meetings'
+              ? 'text-teal-400 border-b-2 border-teal-400'
               : 'text-gray-400 hover:text-white'
-          }`}
+            }`}
         >
           Reuniões
         </button>
         <button
           onClick={() => setActiveTab('companies')}
-          className={`pb-4 text-sm font-medium transition-colors ${
-            activeTab === 'companies' 
-              ? 'text-teal-400 border-b-2 border-teal-400' 
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'companies'
+              ? 'text-teal-400 border-b-2 border-teal-400'
               : 'text-gray-400 hover:text-white'
-          }`}
+            }`}
         >
           Empresas
+        </button>
+        <button
+          onClick={() => setActiveTab('matches')}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'matches'
+              ? 'text-teal-400 border-b-2 border-teal-400'
+              : 'text-gray-400 hover:text-white'
+            }`}
+        >
+          Matches ({matches.length})
         </button>
       </div>
 
@@ -92,10 +125,22 @@ export function AdminB2B() {
             className="pl-12 w-full sm:w-80 bg-dark-100 border-dark-300 text-white"
           />
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          {activeTab === 'meetings' ? 'Nova Reunião' : 'Nova Empresa'}
-        </Button>
+        <div className="flex gap-2">
+          {activeTab === 'matches' && (
+            <Button
+              onClick={handleGenerateSchedule}
+              disabled={isGenerating}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
+            >
+              <Zap className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-pulse' : ''}`} />
+              {isGenerating ? 'Gerando...' : 'Gerar Agenda Automática'}
+            </Button>
+          )}
+          <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            {activeTab === 'meetings' ? 'Nova Reunião' : 'Nova Empresa'}
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -195,17 +240,17 @@ export function AdminB2B() {
                       <div className="flex space-x-2">
                         {meeting.status === 'scheduled' && (
                           <>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               className="text-green-400"
                               onClick={() => update(meeting.id, { status: 'completed' })}
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               className="text-red-400"
                               onClick={() => update(meeting.id, { status: 'cancelled' })}
                             >
@@ -221,7 +266,67 @@ export function AdminB2B() {
             </table>
           </div>
         </div>
+      ) : activeTab === 'matches' ? (
+        /* Matches Table */
+        <div className="glass-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-dark-300">
+                  <th className="p-4 text-left text-gray-400 font-medium">Empresa A</th>
+                  <th className="p-4 text-left text-gray-400 font-medium">Interação</th>
+                  <th className="p-4 text-left text-gray-400 font-medium">Empresa B</th>
+                  <th className="p-4 text-left text-gray-400 font-medium">Status</th>
+                  <th className="p-4 text-left text-gray-400 font-medium">Data do Match</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMatches.map((match) => {
+                  const companyA = companies.find(c => c.id === match.companyAId);
+                  const companyB = companies.find(c => c.id === match.companyBId);
+                  return (
+                    <tr key={match.id} className="border-b border-dark-300 hover:bg-dark-100/50">
+                      <td className="p-4">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center mr-3">
+                            <Building2 className="h-4 w-4 text-teal-400" />
+                          </div>
+                          <span className="text-white">{companyA?.name || '---'}</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2 text-teal-500">
+                          <Sparkles className="h-4 w-4" />
+                          <span className="text-xs font-bold uppercase">Mutual Like</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center mr-3">
+                            <Building2 className="h-4 w-4 text-teal-400" />
+                          </div>
+                          <span className="text-white">{companyB?.name || '---'}</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Badge className={
+                          match.status === 'scheduled' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                        }>
+                          {match.status === 'scheduled' ? 'Agendado' : 'Pendente Agendamento'}
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-gray-400 text-sm">
+                        {new Date(match.createdAt).toLocaleDateString('pt-BR')}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
+
         /* Companies Grid */
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCompanies.map((company) => (

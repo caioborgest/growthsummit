@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Clock, Users, MapPin, Coffee, Mic2, Award, Zap } from 'lucide-react';
+import { Clock, Users, MapPin, Coffee, Mic2, Award, Zap, UserPlus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Atividade {
     horario: string;
@@ -40,6 +41,7 @@ interface ProgramacaoTarde {
     bloco3: Bloco;
     circulacao2: Circulacao;
     bloco4: Bloco;
+    retirement?: Circulacao;
     encerramento: Circulacao;
 }
 
@@ -53,6 +55,7 @@ interface Estacao {
     totalDia: string;
     temas: string[];
     cor: string;
+    tempo?: string;
 }
 
 interface MomentoAncora {
@@ -70,19 +73,12 @@ interface ProgramacaoTabsProps {
         manha: MomentoAncora[];
         tarde: MomentoAncora[];
     };
+    onInscricao?: () => void;
 }
 
 const corMap: Record<string, string> = {
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-    green: 'bg-green-500/10 text-green-400 border-green-500/30',
-    orange: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-    red: 'bg-red-500/10 text-red-400 border-red-500/30',
-    indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-    pink: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
-    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-    cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    orange: 'bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30',
+    neutral: 'bg-white/5 text-gray-400 border-white/10',
 };
 
 export function ProgramacaoTabs({
@@ -90,91 +86,133 @@ export function ProgramacaoTabs({
     programacaoTarde,
     programacaoNoturna,
     circuitoExperiencias,
-    momentosAncora
+    momentosAncora,
+    onInscricao
 }: ProgramacaoTabsProps) {
     const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
 
     const renderBloco = (bloco: Bloco) => (
-        <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-                <Clock className="h-5 w-5 text-brand-orange-coral" />
-                <h4 className="text-xl font-bold text-white">{bloco.horario}</h4>
-                <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                    {bloco.titulo}
-                </Badge>
+        <div className="mb-10 last:mb-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                        <Clock className="h-5 w-5 text-brand-orange-coral" />
+                    </div>
+                    <div>
+                        <span className="text-2xl font-black text-white tracking-tight block leading-none mb-1">{bloco.horario}</span>
+                        <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-0.5 font-bold text-[10px] uppercase">
+                            {bloco.titulo}
+                        </Badge>
+                    </div>
+                </div>
+
+                <Button
+                    onClick={onInscricao}
+                    size="sm"
+                    className="bg-brand-orange-coral/10 border border-brand-orange-coral/30 text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white transition-all font-black text-[10px] uppercase tracking-widest px-6 h-9 rounded-full"
+                >
+                    <UserPlus className="h-3 w-3 mr-2" />
+                    Garantir Vaga Gratuita
+                </Button>
             </div>
 
             {/* Salão Principal */}
             {bloco.salao && (
-                <Card className="glass-card p-6 mb-4 border-brand-blue/30 hover:border-brand-orange-coral/50 transition-all">
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-brand-blue flex items-center justify-center">
-                                <Mic2 className="h-6 w-6 text-brand-orange-coral" />
-                            </div>
-                            <div>
-                                <h5 className="text-lg font-bold text-white">{bloco.salao.titulo}</h5>
-                                <p className="text-sm text-gray-400">{bloco.salao.tipo}</p>
+                <div className="mb-6">
+                    <div className="text-xs font-black text-brand-orange-coral/60 uppercase tracking-widest mb-3 ml-1">Salão Principal (80 Pessoas)</div>
+                    <Card className="glass-card p-8 border-white/10 hover:border-brand-orange-coral/40 transition-all group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-colors" />
+
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+                            <div className="flex items-start gap-5">
+                                <div className="w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">
+                                    <Mic2 className="h-7 w-7 text-brand-orange-coral" />
+                                </div>
+                                <div>
+                                    <h5 className="text-xl md:text-2xl font-black text-white mb-2 leading-tight group-hover:text-brand-orange-coral transition-colors">
+                                        {bloco.salao.titulo}
+                                    </h5>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <Badge variant="outline" className="border-brand-orange-coral/30 text-brand-orange-coral bg-brand-orange-coral/5">
+                                            {bloco.salao.tipo}
+                                        </Badge>
+                                        <div className="flex items-center gap-2 text-gray-400 text-sm font-medium">
+                                            <Users className="h-4 w-4" />
+                                            <span>Capacidade: {bloco.salao.capacidade} pessoas</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-400">
-                            <Users className="h-4 w-4" />
-                            <span className="text-sm">{bloco.salao.capacidade} pessoas</span>
-                        </div>
-                    </div>
-                    {bloco.salao.topicos && (
-                        <ul className="space-y-2">
-                            {bloco.salao.topicos.map((topico, idx) => (
-                                <li key={idx} className="flex items-start gap-2 text-gray-300 text-sm">
-                                    <span className="text-brand-orange-coral mt-1">•</span>
-                                    <span>{topico}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </Card>
+
+                        {bloco.salao.topicos && (
+                            <div className="mt-8 grid sm:grid-cols-2 gap-4 border-t border-white/5 pt-6">
+                                {bloco.salao.topicos.map((topico, idx) => (
+                                    <div key={idx} className="flex items-start gap-3 text-gray-300">
+                                        <Zap className="h-4 w-4 text-brand-orange-coral mt-0.5 flex-shrink-0" />
+                                        <span className="text-sm font-medium leading-relaxed">{topico}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </Card>
+                </div>
             )}
 
             {/* Salas Paralelas */}
             {bloco.salas && bloco.salas.length > 0 && (
-                <div className="grid md:grid-cols-3 gap-4">
-                    {bloco.salas.map((sala) => (
-                        <Card key={sala.numero} className="glass-card p-5 border-white/10 hover:border-brand-orange-coral/30 transition-all">
-                            <div className="flex items-center gap-2 mb-3">
-                                <div className="w-8 h-8 rounded bg-brand-orange-coral/20 flex items-center justify-center">
-                                    <span className="text-brand-orange-coral font-bold text-sm">S{sala.numero}</span>
+                <div>
+                    <div className="text-xs font-black text-brand-orange-coral/60 uppercase tracking-widest mb-3 ml-1">Workshops Simultâneos (Salas 1 a 3)</div>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {bloco.salas.map((sala) => (
+                            <Card key={sala.numero} className="glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all hover:-translate-y-1 relative group bg-white/[0.02]">
+                                <div className="absolute top-0 left-0 w-1 h-0 bg-brand-orange-coral group-hover:h-full transition-all duration-300" />
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="px-3 py-1 rounded bg-brand-orange-coral/20 border border-brand-orange-coral/30">
+                                        <span className="text-brand-orange-coral font-black text-xs tracking-tighter">SALA 0{sala.numero}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-gray-500 font-bold text-[10px] uppercase">
+                                        <Users className="h-3 w-3" />
+                                        <span>{sala.capacidade} LUGAR</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-gray-400 text-xs">
-                                    <Users className="h-3 w-3" />
-                                    <span>{sala.capacidade}</span>
-                                </div>
-                            </div>
-                            <h6 className="text-white font-semibold text-sm mb-2 leading-tight">{sala.titulo}</h6>
-                            <p className="text-xs text-brand-orange-coral mb-3">{sala.tipo}</p>
-                            {sala.topicos && (
-                                <ul className="space-y-1">
-                                    {sala.topicos.map((topico, idx) => (
-                                        <li key={idx} className="text-xs text-gray-400 flex items-start gap-1">
-                                            <span className="text-brand-orange-coral">→</span>
-                                            <span>{topico}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </Card>
-                    ))}
+                                <h6 className="text-white font-bold text-base mb-3 leading-snug group-hover:text-brand-orange-coral transition-colors">{sala.titulo}</h6>
+                                <p className="text-[11px] font-black uppercase tracking-wider text-brand-orange-coral/70 mb-4">{sala.tipo}</p>
+
+                                {sala.topicos && (
+                                    <div className="space-y-2.5">
+                                        {sala.topicos.map((topico, idx) => (
+                                            <div key={idx} className="flex items-start gap-2 text-[13px] text-gray-400 group-hover:text-gray-300">
+                                                <div className="w-1 h-1 rounded-full bg-brand-orange-coral mt-1.5 flex-shrink-0" />
+                                                <span className="leading-tight">{topico}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Card>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
     );
 
     const renderCirculacao = (circulacao: Circulacao) => (
-        <div className="flex items-center gap-4 py-4 px-6 bg-brand-orange-coral/5 rounded-lg border border-brand-orange-coral/20 mb-8">
-            <Coffee className="h-5 w-5 text-brand-orange-coral" />
-            <div className="flex-1">
-                <span className="text-white font-medium">{circulacao.horario}</span>
-                <span className="text-gray-400 mx-3">•</span>
-                <span className="text-gray-300">{circulacao.atividade}</span>
+        <div className="relative group mb-10">
+            <div className="absolute inset-0 bg-brand-orange-coral/5 blur-xl group-hover:bg-brand-orange-coral/10 transition-colors rounded-3xl" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 py-5 px-8 border border-brand-orange-coral/20 rounded-2xl bg-dark-100/50 backdrop-blur-sm overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-brand-orange-coral/30" />
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-brand-orange-coral/10 border border-brand-orange-coral/20">
+                        <Coffee className="h-5 w-5 text-brand-orange-coral" />
+                    </div>
+                    <span className="text-brand-orange-coral font-black text-lg tracking-tight">{circulacao.horario}</span>
+                </div>
+                <div className="h-4 w-px bg-white/10 hidden sm:block mx-2" />
+                <span className="text-gray-200 font-bold text-lg">{circulacao.atividade}</span>
+                <div className="ml-auto hidden md:block">
+                    <Badge variant="outline" className="text-[10px] border-white/10 text-gray-500 uppercase tracking-widest px-3 py-0.5">Networking</Badge>
+                </div>
             </div>
         </div>
     );
@@ -182,153 +220,163 @@ export function ProgramacaoTabs({
     return (
         <div className="w-full">
             {/* Tabs Navigation */}
-            <div className="flex flex-wrap gap-2 mb-8 p-1 bg-dark-200 rounded-xl border border-white/5">
-                <button
-                    onClick={() => setActiveTab('diurna')}
-                    className={`flex-1 min-w-[150px] px-6 py-4 rounded-lg font-semibold transition-all ${activeTab === 'diurna'
-                            ? 'bg-brand-orange-coral text-dark-100 shadow-lg'
+            <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 mb-12 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
+                {[
+                    { id: 'diurna', label: 'Programação Diurna', icon: Clock, desc: '8h30 - 17h30' },
+                    { id: 'circuito', label: 'Circuito Experiência', icon: Zap, desc: 'Consultoria Real-time' },
+                    { id: 'noturna', label: 'Palestras Noturnas', icon: Mic2, desc: 'Night Experience' }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex-1 group px-4 py-4 md:py-5 rounded-[14px] transition-all duration-300 relative overflow-hidden ${activeTab === tab.id
+                            ? 'bg-brand-orange-coral text-dark-100 shadow-glow'
                             : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                >
-                    <Clock className="h-4 w-4 inline mr-2" />
-                    Programação Diurna
-                </button>
-                <button
-                    onClick={() => setActiveTab('noturna')}
-                    className={`flex-1 min-w-[150px] px-6 py-4 rounded-lg font-semibold transition-all ${activeTab === 'noturna'
-                            ? 'bg-brand-orange-coral text-dark-100 shadow-lg'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                >
-                    <Mic2 className="h-4 w-4 inline mr-2" />
-                    Palestras Noturnas
-                </button>
-                <button
-                    onClick={() => setActiveTab('circuito')}
-                    className={`flex-1 min-w-[150px] px-6 py-4 rounded-lg font-semibold transition-all ${activeTab === 'circuito'
-                            ? 'bg-brand-orange-coral text-dark-100 shadow-lg'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                        }`}
-                >
-                    <Zap className="h-4 w-4 inline mr-2" />
-                    Circuito de Experiências
-                </button>
+                            }`}
+                    >
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                                <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-dark-100' : 'text-brand-orange-coral animate-pulse'}`} />
+                                <span className="font-black uppercase tracking-wider text-xs md:text-sm">{tab.label}</span>
+                            </div>
+                            <p className={`text-[10px] font-bold ${activeTab === tab.id ? 'text-dark-100/60' : 'text-gray-500'}`}>{tab.desc}</p>
+                        </div>
+                    </button>
+                ))}
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[600px]">
+            <div className="min-h-[500px] animate-fade-in">
                 {/* Nota sobre alteração de programação */}
-                <div className="mb-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-                    <p className="text-yellow-200 text-sm text-center">
-                        <strong>Programação Diária pode ser alterada</strong> conforme necessidade da organização e parceiros. 
-                        Você receberá atualizações no aplicativo e grupo do WhatsApp.
+                <div className="mb-10 px-6 py-4 bg-brand-orange-coral/5 rounded-2xl border border-brand-orange-coral/20 flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <Zap className="h-20 w-20 text-brand-orange-coral" />
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-brand-orange-coral/20 flex items-center justify-center border border-brand-orange-coral/30 flex-shrink-0">
+                        <Zap className="h-5 w-5 text-brand-orange-coral animate-pulse" />
+                    </div>
+                    <p className="text-gray-300 text-sm md:text-base text-center md:text-left font-medium">
+                        <span className="text-white font-black uppercase tracking-tighter mr-2 italic">Aviso Importante:</span>
+                        As trilhas de conhecimento e horários podem sofrer ajustes para garantir a melhor experiência.
+                        Todas as atualizações serão enviadas em tempo real via **WhatsApp e Aplicativo**.
                     </p>
                 </div>
 
                 {activeTab === 'diurna' && (
-                    <div className="space-y-12">
+                    <div className="space-y-16">
                         {/* Manhã */}
                         <div>
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-orange-coral to-brand-blue flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">☀️</span>
-                                </div>
+                            <div className="flex items-center gap-4 mb-10 border-l-4 border-brand-orange-coral pl-6">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-white">Manhã</h3>
-                                    <p className="text-gray-400">8h30 - 12h00</p>
+                                    <h3 className="text-4xl font-black text-white tracking-tighter flex items-center gap-3">
+                                        MANHÃ
+                                        <span className="text-brand-orange-coral text-lg opacity-50">☀️</span>
+                                    </h3>
+                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Abertura e Trilhas Iniciais</p>
                                 </div>
                             </div>
 
                             {/* Momentos Âncora Manhã */}
-                            <div className="mb-6 p-4 bg-brand-blue/10 rounded-lg border border-brand-blue/30">
-                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <Award className="h-4 w-4 text-brand-orange-coral" />
-                                    Momentos Âncora
-                                </h4>
-                                <div className="grid md:grid-cols-3 gap-3">
-                                    {momentosAncora.manha.map((momento, idx) => (
-                                        <div key={idx} className="text-sm">
-                                            <span className="text-brand-orange-coral font-semibold">{momento.horario}</span>
-                                            <p className="text-gray-300">{momento.atividade}</p>
-                                            <p className="text-gray-500 text-xs">{momento.local}</p>
+                            <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {momentosAncora.manha.map((momento, idx) => (
+                                    <div key={idx} className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-brand-orange-coral/20 transition-colors group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-brand-orange-coral font-black text-base">{momento.horario}</span>
+                                            <div className="w-2 h-2 rounded-full bg-brand-orange-coral animate-pulse" />
                                         </div>
-                                    ))}
-                                </div>
+                                        <p className="text-white font-bold leading-tight mb-2 group-hover:text-brand-orange-coral transition-colors">{momento.atividade}</p>
+                                        <div className="flex items-center gap-1.5 text-gray-500 text-[10px] uppercase font-black">
+                                            <MapPin className="h-3 w-3" />
+                                            {momento.local}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
-                            {renderBloco(programacaoManha.bloco1)}
-                            {renderCirculacao(programacaoManha.circulacao1)}
-                            {renderBloco(programacaoManha.bloco2)}
-                            {renderCirculacao(programacaoManha.encerramento)}
+                            <div className="space-y-10">
+                                {renderBloco(programacaoManha.bloco1)}
+                                {renderCirculacao(programacaoManha.circulacao1)}
+                                {renderBloco(programacaoManha.bloco2)}
+                                <div className="p-6 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center text-gray-500 font-bold uppercase tracking-widest text-xs">
+                                    {programacaoManha.encerramento.horario} • {programacaoManha.encerramento.atividade}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Tarde */}
                         <div>
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-blue to-brand-orange-coral flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">🌅</span>
-                                </div>
+                            <div className="flex items-center gap-4 mb-10 border-l-4 border-brand-orange-coral pl-6">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-white">Tarde</h3>
-                                    <p className="text-gray-400">14h00 - 17h30</p>
+                                    <h3 className="text-4xl font-black text-white tracking-tighter flex items-center gap-3">
+                                        TARDE
+                                        <span className="text-brand-orange-coral text-lg opacity-50">🌅</span>
+                                    </h3>
+                                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Estratégia e Casos de Sucesso</p>
                                 </div>
                             </div>
 
                             {/* Momentos Âncora Tarde */}
-                            <div className="mb-6 p-4 bg-brand-blue/10 rounded-lg border border-brand-blue/30">
-                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <Award className="h-4 w-4 text-brand-orange-coral" />
-                                    Momentos Âncora
-                                </h4>
-                                <div className="grid md:grid-cols-3 gap-3">
-                                    {momentosAncora.tarde.map((momento, idx) => (
-                                        <div key={idx} className="text-sm">
-                                            <span className="text-brand-orange-coral font-semibold">{momento.horario}</span>
-                                            <p className="text-gray-300">{momento.atividade}</p>
-                                            <p className="text-gray-500 text-xs">{momento.local}</p>
+                            <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {momentosAncora.tarde.map((momento, idx) => (
+                                    <div key={idx} className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-brand-orange-coral/20 transition-colors group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-brand-orange-coral font-black text-base">{momento.horario}</span>
+                                            <div className="w-2 h-2 rounded-full bg-brand-orange-coral animate-pulse" />
                                         </div>
-                                    ))}
-                                </div>
+                                        <p className="text-white font-bold leading-tight mb-2 group-hover:text-brand-orange-coral transition-colors">{momento.atividade}</p>
+                                        <div className="flex items-center gap-1.5 text-gray-500 text-[10px] uppercase font-black">
+                                            <MapPin className="h-3 w-3" />
+                                            {momento.local}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
-                            {renderBloco(programacaoTarde.bloco3)}
-                            {renderCirculacao(programacaoTarde.circulacao2)}
-                            {renderBloco(programacaoTarde.bloco4)}
-                            {renderCirculacao(programacaoTarde.encerramento)}
+                            <div className="space-y-10">
+                                {renderBloco(programacaoTarde.bloco3)}
+                                {renderCirculacao(programacaoTarde.circulacao2)}
+                                {renderBloco(programacaoTarde.bloco4)}
+                                <div className="p-6 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center text-brand-orange-coral font-black uppercase tracking-[0.2em] text-sm animate-pulse">
+                                    {programacaoTarde.encerramento.atividade}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'noturna' && (
-                    <div>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-brand-orange-coral flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">🌙</span>
-                            </div>
+                    <div className="animate-fade-in">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                             <div>
-                                <h3 className="text-2xl font-bold text-white">Palestras Noturnas</h3>
-                                <p className="text-gray-400">19h00 - 23h00</p>
+                                <h3 className="text-4xl font-black text-white tracking-tighter mb-2">NIGHT EXPERIENCE</h3>
+                                <p className="text-brand-orange-coral font-black uppercase tracking-widest text-xs">O ponto alto do evento • 19h00 às 23h00</p>
+                            </div>
+                            <div className="flex flex-col items-start md:items-end bg-brand-orange-coral p-5 rounded-2xl shadow-glow">
+                                <span className="text-dark-100 font-black text-xs uppercase tracking-widest mb-1 opacity-70">Ingresso Premium</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-dark-100 text-3xl font-black tracking-tighter">R$ 179,99</span>
+                                    <Badge className="bg-dark-100 text-brand-orange-coral font-black border-none">ÚLTIMAS VAGAS</Badge>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="mb-6 p-6 bg-gradient-to-r from-brand-orange-coral/10 to-brand-blue/10 rounded-xl border border-brand-orange-coral/30">
-                            <div className="flex items-center gap-3 mb-2">
-                                <Badge className="bg-brand-orange-coral text-dark-100 font-bold">INGRESSO PAGO</Badge>
-                                <span className="text-2xl font-bold text-brand-orange-coral">R$ 179,99</span>
-                            </div>
-                            <p className="text-gray-300">Acesso exclusivo às palestras com CEOs de destaque nacional</p>
-                        </div>
-
-                        <div className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-6">
                             {programacaoNoturna.map((item, idx) => (
-                                <Card key={idx} className="glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-brand-blue flex items-center justify-center">
-                                            <Clock className="h-6 w-6 text-brand-orange-coral" />
+                                <Card key={idx} className="glass-card p-6 border-white/5 hover:border-brand-orange-coral/40 transition-all group overflow-hidden relative">
+                                    <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+                                        <Mic2 className="h-24 w-24 text-white" />
+                                    </div>
+                                    <div className="relative z-10 flex items-center gap-6">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-brand-orange-coral font-black text-xl italic tracking-tighter">{item.horario}</span>
+                                            <div className="w-px h-10 bg-gradient-to-b from-brand-orange-coral to-transparent mt-2" />
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="text-brand-orange-coral font-bold mb-1">{item.horario}</p>
-                                            <p className="text-white font-semibold">{item.atividade}</p>
+                                        <div>
+                                            <h5 className="text-white font-black text-lg leading-snug group-hover:text-brand-orange-coral transition-colors">{item.atividade}</h5>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <Badge variant="outline" className="text-[10px] border-white/10 text-gray-400 font-bold">Palco Principal</Badge>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral" />
+                                            </div>
                                         </div>
                                     </div>
                                 </Card>
@@ -338,67 +386,62 @@ export function ProgramacaoTabs({
                 )}
 
                 {activeTab === 'circuito' && (
-                    <div>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-orange-coral to-yellow-500 flex items-center justify-center">
-                                <Zap className="h-6 w-6 text-dark-100" />
-                            </div>
+                    <div className="animate-fade-in">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-l-4 border-brand-orange-coral pl-6">
                             <div>
-                                <h3 className="text-2xl font-bold text-white">Circuito de Experiências</h3>
-                                <p className="text-gray-400">Funcionamento contínuo: 8h30 - 17h30</p>
+                                <h3 className="text-4xl font-black text-white tracking-tighter">CIRCUITO DE EXPERIÊNCIAS</h3>
+                                <p className="text-gray-500 font-bold uppercase tracking-widest text-xs italic">Consultoria & Conexões em Fluxo Contínuo</p>
                             </div>
+                            <Button
+                                onClick={onInscricao}
+                                className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-8 py-6 rounded-2xl shadow-glow-orange transition-all hover:scale-105"
+                            >
+                                <UserPlus className="h-5 w-5 mr-2" />
+                                Garantir Vaga Gratuita
+                            </Button>
                         </div>
-
-                        <p className="text-gray-300 mb-8 text-lg">
-                            10 estações abertas em funcionamento contínuo com sessões cronometradas. Alto giro de pessoas e muitas interações rápidas!
-                        </p>
 
                         <div className="grid md:grid-cols-2 gap-6">
                             {circuitoExperiencias.map((estacao, idx) => {
                                 const Icon = estacao.icon;
-                                const corClass = corMap[estacao.cor] || corMap.blue;
+                                const isOrange = estacao.cor === 'orange';
 
                                 return (
-                                    <Card key={idx} className="glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all group">
-                                        <div className="flex items-start gap-4 mb-4">
-                                            <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${corClass} flex items-center justify-center border`}>
-                                                <Icon className="h-6 w-6" />
+                                    <Card key={idx} className={`glass-card p-8 transition-all group relative overflow-hidden ${isOrange ? 'border-brand-orange-coral/20 hover:border-brand-orange-coral/50' : 'border-white/5 hover:border-white/20'}`}>
+                                        <div className="relative z-10 flex flex-col h-full">
+                                            <div className="flex items-start gap-5 mb-6">
+                                                <div className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center border transition-transform group-hover:scale-110 ${isOrange
+                                                    ? 'bg-brand-orange-coral/10 border-brand-orange-coral/20 text-brand-orange-coral'
+                                                    : 'bg-white/5 border-white/10 text-gray-400'
+                                                    }`}>
+                                                    <Icon className="h-7 w-7" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <h4 className="text-white font-black text-xl tracking-tight group-hover:text-brand-orange-coral transition-colors">{estacao.nome}</h4>
+                                                        <Badge className={`${isOrange ? 'bg-brand-orange-coral text-dark-100' : 'bg-white/10 text-gray-400'} font-black text-[9px] uppercase tracking-tighter border-none`}>
+                                                            {estacao.parceiro}
+                                                        </Badge>
+                                                    </div>
+                                                    <p className="text-gray-400 text-sm font-medium">{estacao.subtitulo}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="text-white font-bold text-lg mb-1">{estacao.nome}</h4>
-                                                <p className="text-gray-400 text-sm mb-2">{estacao.subtitulo}</p>
-                                                <Badge className={`${corClass} text-xs`}>{estacao.parceiro}</Badge>
-                                            </div>
-                                        </div>
 
-                                        <div className="space-y-3 mb-4">
-                                            <div className="flex items-start gap-2 text-sm">
-                                                <MapPin className="h-4 w-4 text-brand-orange-coral flex-shrink-0 mt-0.5" />
-                                                <div>
-                                                    <p className="text-gray-400">Formato:</p>
-                                                    <p className="text-white">{estacao.formato}</p>
+                                            <div className="mb-6">
+                                                <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${isOrange ? 'bg-brand-orange-coral/5 border-brand-orange-coral/10' : 'bg-white/[0.02] border-white/5'}`}>
+                                                    <p className={`text-[10px] uppercase font-black mb-1 tracking-[0.2em] ${isOrange ? 'text-brand-orange-coral/60' : 'text-gray-500'}`}>Duração da Experiência</p>
+                                                    <p className={`font-black text-2xl tracking-tighter ${isOrange ? 'text-brand-orange-coral' : 'text-white'}`}>{estacao.tempo || '10-15 min'}</p>
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                                <div>
-                                                    <p className="text-gray-400">Capacidade/hora:</p>
-                                                    <p className="text-white font-semibold">{estacao.capacidade}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-400">Total/dia:</p>
-                                                    <p className="text-brand-orange-coral font-semibold">{estacao.totalDia}</p>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="pt-4 border-t border-white/5">
-                                            <p className="text-gray-400 text-xs mb-2 font-semibold">Temas:</p>
-                                            <div className="flex flex-wrap gap-1">
-                                                {estacao.temas.map((tema, tIdx) => (
-                                                    <span key={tIdx} className="text-xs bg-white/5 text-gray-300 px-2 py-1 rounded">
-                                                        {tema}
-                                                    </span>
-                                                ))}
+                                            <div className="mt-auto">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {estacao.temas.map((tema, tIdx) => (
+                                                        <span key={tIdx} className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isOrange ? 'bg-brand-orange-coral/5 border-brand-orange-coral/20 text-brand-orange-coral/80' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                                                            #{tema}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>

@@ -40,7 +40,7 @@ import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
-import { ProgramacaoCompleta } from '@/components/growth-experience/ProgramacaoCompleta';
+import { ProgramacaoCircuitoSection } from '@/components/growth-experience/ProgramacaoCircuitoSection';
 import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
 import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
@@ -420,12 +420,8 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       {/* Programação Completa */}
-      <ProgramacaoCompleta onInscrever={(tipo) => {
-        if (tipo === 'mentoria') setModalAberto('mentor');
-        else if (tipo === 'startup') setModalAberto('startup');
-        else if (tipo === 'b2b') setModalAberto('b2b');
-        else setModalInscricaoAberto(true);
-      }} />
+      {/* Programação - Circuito de Experiências */}
+      <ProgramacaoCircuitoSection onInscricao={() => setModalInscricaoAberto(true)} />
 
       {/* Seção Inovadora: Incentivo de Equipe */}
       <section className="py-24 bg-dark-100 relative overflow-hidden">
@@ -537,17 +533,21 @@ export function GrowthExperienceTriunfo() {
                 <SectionShare sectionId="arena-pitch" title="Arena Pitch - Growth Experience" />
               </div>
               <h3 id="arena-pitch" className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
-                Arena Pitch
-                <Badge className="bg-orange-500 text-white border-none animate-pulse">LIVE</Badge>
+                Expo StartUp
+                <Badge className="bg-orange-500 text-white border-none animate-pulse">10 VAGAS</Badge>
               </h3>
               <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-                Apresente sua startup para uma banca de tubarões.
+                Apresente sua startup na <strong>Arena Pitch</strong>, tenha um espaço exclusivo de <strong>exposição</strong> e ganhe <strong>2 ingressos</strong> para as palestras noturnas.
               </p>
+              <div className="mb-8">
+                <span className="text-4xl font-black text-white">R$ 999,00</span>
+                <p className="text-sm text-gray-400 mt-1">Pacote completo para startups</p>
+              </div>
               <Button
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-2xl h-auto"
                 onClick={() => setModalAberto('startup')}
               >
-                CANDIDATAR MINHA STARTUP
+                GARANTIR EXPO STARTUP
               </Button>
             </Card>
 
@@ -565,6 +565,10 @@ export function GrowthExperienceTriunfo() {
               <p className="text-gray-300 mb-8 text-lg leading-relaxed">
                 Conectamos grandes empresas com fornecedores qualificados.
               </p>
+              <div className="mb-8">
+                <span className="text-4xl font-black text-teal-400 uppercase">Gratuito</span>
+                <p className="text-sm text-gray-400 mt-1">Sua empresa conectada com o mercado</p>
+              </div>
               <Button
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-8 rounded-2xl h-auto"
                 onClick={() => setModalAberto('b2b')}

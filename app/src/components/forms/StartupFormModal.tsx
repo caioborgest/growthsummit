@@ -243,13 +243,16 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                     <Rocket className="h-6 w-6 text-orange-400" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white">Arena Pitch</h2>
+                                    <h2 className="text-2xl font-bold text-white">Expo StartUp</h2>
                                     <p className="text-gray-400">Inscreva sua startup</p>
                                 </div>
                             </div>
                             <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
                                 <p className="text-sm text-orange-400">
-                                    <strong>Prêmios:</strong> Até R$ 2.000 + 3 meses de mentoria gratuita
+                                    <strong>Investimento:</strong> R$ 999,00
+                                </p>
+                                <p className="text-xs text-orange-400/80 mt-1">
+                                    Inclui: Exposição + Arena Pitch + 2 Ingressos Noturnos
                                 </p>
                             </div>
                         </div>

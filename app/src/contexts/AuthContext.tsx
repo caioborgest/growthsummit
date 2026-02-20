@@ -9,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
   loginWithOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, token: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -111,11 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (currentSession?.user) {
           // Buscar metadados do usuário do banco
-          const { data: userData } = await supabase
+          const { data: userData } = await (supabase
             .from('users')
             .select('*')
             .eq('id', currentSession.user.id)
-            .single();
+            .single() as any);
 
           setSession(currentSession);
           setUser(mapSupabaseUserToUser(currentSession.user, userData));
@@ -135,14 +135,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      logger.info('Auth state changed:', event);
+      logger.info('Auth state changed:', { event });
 
       if (currentSession?.user) {
-        const { data: userData } = await supabase
+        const { data: userData } = await (supabase
           .from('users')
           .select('*')
           .eq('id', currentSession.user.id)
-          .single();
+          .single() as any);
 
         setSession(currentSession);
         setUser(mapSupabaseUserToUser(currentSession.user, userData));
@@ -225,27 +225,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rateLimiter.clearAttempts(email);
 
         // Buscar dados do usuário
-        const { data: userData } = await supabase
+        const { data: userData } = await (supabase
           .from('users')
           .select('*')
           .eq('id', data.user.id)
-          .single();
+          .single() as any);
 
         // Verificar se 2FA está habilitado
-        if (userData?.two_factor_enabled) {
+        if ((userData as any)?.two_factor_enabled) {
           // Redirecionar para verificação 2FA
           setSession(data.session);
           setUser({ ...mapSupabaseUserToUser(data.user, userData), requires2FA: true });
           return;
         }
 
+        const userObj = mapSupabaseUserToUser(data.user, userData);
         setSession(data.session);
-        setUser(mapSupabaseUserToUser(data.user, userData));
+        setUser(userObj);
         localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
 
         // Log de auditoria - sucesso
         await logAuditEvent('login_success', data.user.id);
+        return userObj;
       }
+      return null;
     } catch (error: any) {
       logger.error('Erro no login:', error);
       throw error;
@@ -267,11 +270,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) throw error;
-
       // Log de auditoria
       await logAuditEvent('otp_sent', undefined, { email });
-
-      logger.info('OTP enviado para:', email);
+      logger.info('OTP enviado para:', { email });
     } catch (error: any) {
       logger.error('Erro ao enviar OTP:', error);
       throw error;
@@ -294,11 +295,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (data.user) {
-        const { data: userData } = await supabase
+        const { data: userData } = await (supabase
           .from('users')
           .select('*')
           .eq('id', data.user.id)
-          .single();
+          .single() as any);
 
         setSession(data.session);
         setUser(mapSupabaseUserToUser(data.user, userData));
@@ -346,10 +347,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error('Usuário não autenticado');
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('users')
         .update(data)
-        .eq('id', user.id);
+        .eq('id', user.id) as any);
 
       if (error) throw error;
 
@@ -369,9 +370,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       // Gerar secret para 2FA
-      const { data, error } = await supabase.rpc('generate_2fa_secret', {
+      const { data, error } = await (supabase.rpc('generate_2fa_secret', {
         user_id: user.id,
-      });
+      }) as any);
 
       if (error) throw error;
 
@@ -390,10 +391,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error('Usuário não autenticado');
 
     try {
-      const { data, error } = await supabase.rpc('verify_2fa_token', {
+      const { data, error } = await (supabase.rpc('verify_2fa_token', {
         user_id: user.id,
         token,
-      });
+      }) as any);
 
       if (error) throw error;
 
@@ -416,10 +417,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error('Usuário não autenticado');
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('users')
-        .update({ two_factor_enabled: false, two_factor_secret: null })
-        .eq('id', user.id);
+        .update({ two_factor_enabled: false, two_factor_secret: null } as any)
+        .eq('id', user.id) as any);
 
       if (error) throw error;
 
@@ -465,14 +466,14 @@ export function useAuth() {
 // Helper para log de auditoria
 async function logAuditEvent(event: string, userId?: string, metadata?: any) {
   try {
-    await supabase.from('audit_logs').insert({
+    await (supabase.from('audit_logs').insert({
       event,
       user_id: userId,
       metadata,
       ip_address: await getClientIP(),
       user_agent: navigator.userAgent,
       timestamp: new Date().toISOString(),
-    });
+    }) as any);
   } catch (error) {
     logger.error('Erro ao registrar log de auditoria:', error);
   }

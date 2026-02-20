@@ -96,14 +96,12 @@ export function AdminLayout() {
       >
         {/* Logo */}
         <div className="p-6 border-b border-dark-300">
-          <Link to="/admin" className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-              <span className="text-white font-bold">GS</span>
-            </div>
-            <div>
-              <span className="text-white font-bold">Growth Summit</span>
-              <span className="text-teal-400 text-xs block">Admin</span>
-            </div>
+          <Link to="/admin" className="flex items-center">
+            <img
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
+              alt="Growth Summit"
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
 

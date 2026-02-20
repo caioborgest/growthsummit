@@ -68,13 +68,23 @@ export function Header() {
         <div className="flex items-center justify-between h-18 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
-              <span className="text-dark-100 font-bold text-lg">GS</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
-              <span className="text-brand-yellow text-xs block font-bold">2026</span>
-            </div>
+            {location.pathname === '/growth-experience' || location.pathname === '/growth-experience-triunfo' ? (
+              <>
+                <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
+                  <span className="text-dark-100 font-bold text-lg">GS</span>
+                </div>
+                <div className="hidden sm:block">
+                  <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
+                  <span className="text-brand-yellow text-xs block font-bold">2026</span>
+                </div>
+              </>
+            ) : (
+              <img
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
+                alt="Growth Summit"
+                className="h-10 lg:h-12 w-auto"
+              />
+            )}
           </Link>
 
           {/* Desktop Navigation */}

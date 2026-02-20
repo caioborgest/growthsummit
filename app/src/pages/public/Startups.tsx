@@ -1,6 +1,6 @@
-import { 
-  Rocket, 
-  Users, 
+import {
+  Rocket,
+  Users,
   Check,
   ArrowRight,
   Building2,
@@ -20,30 +20,30 @@ const benefits = [
 
 const packages = [
   {
-    name: "Expo",
-    price: 1500,
-    description: "Stand no corredor de exposição",
+    name: "Expo StartUp",
+    price: 999,
+    description: "Pacote completo para exposição e visibilidade",
+    vagas: 10,
     features: [
-      "Mesa e 2 cadeiras",
-      "Tomada e internet",
-      "2 ingressos evento",
-      "Perfil no diretório",
-      "Captura de leads",
-    ],
-  },
-  {
-    name: "Pitch",
-    price: 2500,
-    description: "Pitch de 5 min + Expo",
-    features: [
-      "Tudo do Expo",
-      "Pitch de 5 minutos",
-      "Acesso à sala de investidores",
-      "4 ingressos evento",
-      "Destaque no app",
-      "Video do pitch",
+      "Espaço para exposição (Stand)",
+      "Participação na Arena Pitch",
+      "2 ingressos para palestras à noite",
+      "Mesa e 2 cadeiras inclusas",
+      "Energia e Internet no local",
+      "Visibilidade no App e Site",
     ],
     popular: true,
+  },
+  {
+    name: "Pitch Only",
+    price: 499,
+    description: "Apenas participação na arena",
+    features: [
+      "Pitch de 5 minutos na Arena",
+      "Feedback de mentores",
+      "1 ingresso evento",
+      "Destaque no app",
+    ],
   },
 ];
 
@@ -54,7 +54,7 @@ export function Startups() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -106,11 +106,11 @@ export function Startups() {
                 Por que expor sua startup?
               </h2>
               <p className="text-gray-400 mb-8">
-                O Startup Expo do Growth Summit é a oportunidade perfeita para 
-                apresentar sua empresa para um público qualificado de investidores, 
+                O Startup Expo do Growth Summit é a oportunidade perfeita para
+                apresentar sua empresa para um público qualificado de investidores,
                 potenciais clientes e parceiros estratégicos.
               </p>
-              
+
               <ul className="space-y-4">
                 {benefits.map((benefit, i) => (
                   <li key={i} className="flex items-center text-gray-300">
@@ -120,7 +120,7 @@ export function Startups() {
                 ))}
               </ul>
             </div>
-            
+
             <div className="relative">
               <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/20 to-orange-500/20 border border-dark-300">
                 <img
@@ -145,7 +145,7 @@ export function Startups() {
               Escolha sua participação
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {packages.map((pkg) => (
               <div
@@ -157,7 +157,7 @@ export function Startups() {
                     Mais Popular
                   </Badge>
                 )}
-                
+
                 <div className="flex items-center mb-4">
                   <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center mr-4">
                     {pkg.name === 'Expo' ? (
@@ -169,15 +169,20 @@ export function Startups() {
                   <div>
                     <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
                     <p className="text-gray-400 text-sm">{pkg.description}</p>
+                    {pkg.vagas && (
+                      <Badge className="mt-2 bg-orange-500/10 text-orange-400 border-orange-500/30">
+                        {pkg.vagas} vagas disponíveis
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                
+
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-white">
                     R$ {pkg.price.toLocaleString()}
                   </span>
                 </div>
-                
+
                 <ul className="space-y-3 mb-8">
                   {pkg.features.map((feature, i) => (
                     <li key={i} className="flex items-start text-sm text-gray-300">
@@ -186,13 +191,12 @@ export function Startups() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <Button
-                  className={`w-full ${
-                    pkg.popular
-                      ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                      : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
-                  }`}
+                  className={`w-full ${pkg.popular
+                    ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                    : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
+                    }`}
                 >
                   Quero participar
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -206,7 +210,7 @@ export function Startups() {
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-orange-500/10" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             Pronto para decolar?
@@ -214,18 +218,18 @@ export function Startups() {
           <p className="text-xl text-gray-400 mb-8">
             Inscreva sua startup e faça parte do ecossistema de inovação do Nordeste
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-teal-500 hover:bg-teal-600 text-white"
             >
               <Rocket className="h-5 w-5 mr-2" />
               Inscrever startup
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-dark-300 text-gray-300 hover:text-white"
             >
               <Users className="h-5 w-5 mr-2" />
