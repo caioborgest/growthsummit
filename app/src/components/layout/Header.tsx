@@ -82,7 +82,7 @@ export function Header() {
               <img
                 src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
                 alt="Growth Summit"
-                className="h-10 lg:h-12 w-auto"
+                className="h-8 lg:h-12 w-auto max-w-[150px] sm:max-w-none"
               />
             )}
           </Link>

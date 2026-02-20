@@ -78,13 +78,26 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
+// Mapeamento de roles para normalização
+const ROLE_MAPPING: Record<string, string> = {
+  'participante': 'participant',
+  'admin': 'admin',
+  'mentor': 'mentor',
+  'company': 'company',
+  'startup': 'startup',
+  'sponsor': 'sponsor'
+};
+
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: any): User {
+  const rawRole = metadata?.role || supabaseUser.user_metadata?.role || 'participant';
+  const role = ROLE_MAPPING[rawRole] || rawRole;
+
   return {
     id: supabaseUser.id,
     email: supabaseUser.email || '',
     name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-    role: metadata?.role || supabaseUser.user_metadata?.role || 'participant',
+    role,
     avatar: metadata?.avatar || supabaseUser.user_metadata?.avatar || undefined,
     phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
     createdAt: supabaseUser.created_at,
@@ -101,28 +114,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Verificar sessão existente
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
           logger.error('Erro ao obter sessão:', error);
+          setIsLoading(false);
           return;
         }
 
         if (currentSession?.user) {
-          // Buscar metadados do usuário do banco
-          const { data: userData } = await (supabase
-            .from('users')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single() as any);
+          try {
+            // Buscar metadados silenciosamente
+            const { data: userData } = await (supabase
+              .from('users')
+              .select('*')
+              .eq('id', currentSession.user.id)
+              .single() as any);
 
-          setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user, userData));
+            setSession(currentSession);
+            setUser(mapSupabaseUserToUser(currentSession.user, userData));
+          } catch (e) {
+            console.warn('Metadata fetch failed, using auth metadata');
+            setSession(currentSession);
+            setUser(mapSupabaseUserToUser(currentSession.user));
+          }
+
           localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
-
-          // Log de auditoria
-          await logAuditEvent('session_restored', currentSession.user.id);
+          logAuditEvent('session_restored', currentSession.user.id);
         }
       } catch (error) {
         logger.error('Erro ao inicializar autenticação:', error);
@@ -138,17 +156,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.info('Auth state changed:', { event });
 
       if (currentSession?.user) {
-        const { data: userData } = await (supabase
-          .from('users')
-          .select('*')
-          .eq('id', currentSession.user.id)
-          .single() as any);
+        try {
+          const { data: userData } = await (supabase
+            .from('users')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single() as any);
 
-        setSession(currentSession);
-        setUser(mapSupabaseUserToUser(currentSession.user, userData));
+          setSession(currentSession);
+          setUser(mapSupabaseUserToUser(currentSession.user, userData));
+        } catch (e) {
+          setSession(currentSession);
+          setUser(mapSupabaseUserToUser(currentSession.user));
+        }
 
-        // Log de auditoria
-        await logAuditEvent(event, currentSession.user.id);
+        logAuditEvent(event, currentSession.user.id);
       } else {
         setSession(null);
         setUser(null);
@@ -181,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
         if (timeSinceLastActivity > SESSION_TIMEOUT) {
           await logout();
-          alert('Sua sessão expirou por inatividade. Por favor, faça login novamente.');
+          alert('Sua sessão expirou por inatividade.');
         }
       }
     }, 60000); // Verificar a cada minuto
@@ -195,14 +217,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   // Login com email e senha
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<User | null> => {
     setIsLoading(true);
 
     try {
       // Verificar rate limiting
       if (rateLimiter.isRateLimited(email)) {
         const remainingTime = Math.ceil(rateLimiter.getRemainingLockoutTime() / 60000);
-        throw new Error(`Muitas tentativas de login. Tente novamente em ${remainingTime} minutos.`);
+        throw new Error(`Limite atingido. Tente em ${remainingTime} min.`);
       }
 
       // Tentar login
@@ -215,7 +237,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rateLimiter.recordAttempt(email);
 
         // Log de auditoria - tentativa falha
-        await logAuditEvent('login_failed', undefined, { email, error: error.message });
+        logAuditEvent('login_failed', undefined, { email, error: error.message });
 
         throw error;
       }
@@ -224,19 +246,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Limpar tentativas de login
         rateLimiter.clearAttempts(email);
 
-        // Buscar dados do usuário
-        const { data: userData } = await (supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single() as any);
+        let userData = null;
+        try {
+          const { data: ud } = await (supabase
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single() as any);
+          userData = ud;
+        } catch (e) {
+          console.warn('No DB metadata for user');
+        }
 
         // Verificar se 2FA está habilitado
         if ((userData as any)?.two_factor_enabled) {
           // Redirecionar para verificação 2FA
           setSession(data.session);
-          setUser({ ...mapSupabaseUserToUser(data.user, userData), requires2FA: true });
-          return;
+          const u = { ...mapSupabaseUserToUser(data.user, userData), requires2FA: true };
+          setUser(u);
+          return u;
         }
 
         const userObj = mapSupabaseUserToUser(data.user, userData);
@@ -245,7 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
 
         // Log de auditoria - sucesso
-        await logAuditEvent('login_success', data.user.id);
+        logAuditEvent('login_success', data.user.id);
         return userObj;
       }
       return null;
@@ -260,22 +288,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login com OTP (Magic Link)
   const loginWithOTP = useCallback(async (email: string) => {
     setIsLoading(true);
-
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
-
       if (error) throw error;
-      // Log de auditoria
-      await logAuditEvent('otp_sent', undefined, { email });
-      logger.info('OTP enviado para:', { email });
-    } catch (error: any) {
-      logger.error('Erro ao enviar OTP:', error);
-      throw error;
+      logAuditEvent('otp_sent', undefined, { email });
     } finally {
       setIsLoading(false);
     }
@@ -284,33 +303,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Verificar OTP
   const verifyOTP = useCallback(async (email: string, token: string) => {
     setIsLoading(true);
-
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: 'email',
-      });
-
+      const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
       if (error) throw error;
-
       if (data.user) {
-        const { data: userData } = await (supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.user.id)
-          .single() as any);
-
+        const { data: userData } = await (supabase.from('users').select('*').eq('id', data.user.id).single() as any);
         setSession(data.session);
         setUser(mapSupabaseUserToUser(data.user, userData));
-        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
-
-        // Log de auditoria
-        await logAuditEvent('otp_verified', data.user.id);
+        logAuditEvent('otp_verified', data.user.id);
       }
-    } catch (error: any) {
-      logger.error('Erro ao verificar OTP:', error);
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -319,19 +320,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout
   const logout = useCallback(async () => {
     try {
-      // Log de auditoria
-      if (user) {
-        await logAuditEvent('logout', user.id);
-      }
-
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
+      if (user) logAuditEvent('logout', user.id);
+      await supabase.auth.signOut();
       setUser(null);
       setSession(null);
       localStorage.removeItem(LAST_ACTIVITY_KEY);
     } catch (error: any) {
-      logger.error('Erro no logout:', error);
+      logger.error('Logout error:', error);
       throw error;
     }
   }, [user]);
@@ -344,94 +339,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Atualizar perfil
   const updateProfile = useCallback(async (data: Partial<User>) => {
-    if (!user) throw new Error('Usuário não autenticado');
-
-    try {
-      const { error } = await (supabase
-        .from('users')
-        .update(data)
-        .eq('id', user.id) as any);
-
-      if (error) throw error;
-
-      setUser({ ...user, ...data });
-
-      // Log de auditoria
-      await logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
-    } catch (error: any) {
-      logger.error('Erro ao atualizar perfil:', error);
-      throw error;
-    }
+    if (!user) throw new Error('Auth required');
+    const { error } = await (supabase.from('users') as any).update(data).eq('id', user.id);
+    if (error) throw error;
+    setUser({ ...user, ...data });
+    logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
   }, [user]);
 
   // Habilitar 2FA
   const enable2FA = useCallback(async (): Promise<{ qrCode: string; secret: string }> => {
-    if (!user) throw new Error('Usuário não autenticado');
-
-    try {
-      // Gerar secret para 2FA
-      const { data, error } = await (supabase.rpc('generate_2fa_secret', {
-        user_id: user.id,
-      }) as any);
-
-      if (error) throw error;
-
-      // Log de auditoria
-      await logAuditEvent('2fa_enabled', user.id);
-
-      return data;
-    } catch (error: any) {
-      logger.error('Erro ao habilitar 2FA:', error);
-      throw error;
-    }
+    if (!user) throw new Error('Auth required');
+    const { data, error } = await (supabase.rpc('generate_2fa_secret', { user_id: user.id } as any) as any);
+    if (error) throw error;
+    logAuditEvent('2fa_enabled', user.id);
+    return data;
   }, [user]);
 
   // Verificar código 2FA
   const verify2FA = useCallback(async (token: string): Promise<boolean> => {
-    if (!user) throw new Error('Usuário não autenticado');
-
-    try {
-      const { data, error } = await (supabase.rpc('verify_2fa_token', {
-        user_id: user.id,
-        token,
-      }) as any);
-
-      if (error) throw error;
-
-      if (data) {
-        setUser({ ...user, requires2FA: false });
-
-        // Log de auditoria
-        await logAuditEvent('2fa_verified', user.id);
-      }
-
-      return data;
-    } catch (error: any) {
-      logger.error('Erro ao verificar 2FA:', error);
-      return false;
+    if (!user) throw new Error('Auth required');
+    const { data, error } = await (supabase.rpc('verify_2fa_token', { user_id: user.id, token } as any) as any);
+    if (error) throw error;
+    if (data) {
+      setUser({ ...user, requires2FA: false });
+      logAuditEvent('2fa_verified', user.id);
     }
+    return data;
   }, [user]);
 
   // Desabilitar 2FA
   const disable2FA = useCallback(async () => {
-    if (!user) throw new Error('Usuário não autenticado');
-
-    try {
-      const { error } = await (supabase
-        .from('users')
-        .update({ two_factor_enabled: false, two_factor_secret: null } as any)
-        .eq('id', user.id) as any);
-
-      if (error) throw error;
-
-      setUser({ ...user, twoFactorEnabled: false });
-
-      // Log de auditoria
-      await logAuditEvent('2fa_disabled', user.id);
-    } catch (error: any) {
-      logger.error('Erro ao desabilitar 2FA:', error);
-      throw error;
-    }
+    if (!user) throw new Error('Auth required');
+    const { error } = await (supabase.from('users') as any).update({ two_factor_enabled: false }).eq('id', user.id);
+    if (error) throw error;
+    setUser({ ...user, twoFactorEnabled: false });
+    logAuditEvent('2fa_disabled', user.id);
   }, [user]);
 
   return (
@@ -457,32 +399,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
 
-// Helper para log de auditoria
-async function logAuditEvent(event: string, userId?: string, metadata?: any) {
-  try {
-    await (supabase.from('audit_logs').insert({
+// ---------------------------------------------------------
+// HELPERS (NÃO BLOQUEANTES)
+// ---------------------------------------------------------
+
+function logAuditEvent(event: string, userId?: string, metadata?: any) {
+  // Fire and forget
+  getClientIP().then(ip => {
+    (supabase.from('audit_logs') as any).insert({
       event,
       user_id: userId,
       metadata,
-      ip_address: await getClientIP(),
+      ip_address: ip,
       user_agent: navigator.userAgent,
       timestamp: new Date().toISOString(),
-    }) as any);
-  } catch (error) {
-    logger.error('Erro ao registrar log de auditoria:', error);
-  }
+    }).then(({ error }: any) => {
+      if (error) logger.error('Audit log error:', error);
+    });
+  }).catch(() => { });
 }
 
-// Helper para obter IP do cliente
 async function getClientIP(): Promise<string> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 2000); // 2 segundos timeout
+
   try {
-    const response = await fetch('https://api.ipify.org?format=json');
+    const response = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+    clearTimeout(id);
     const data = await response.json();
     return data.ip;
   } catch {

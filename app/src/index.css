@@ -307,6 +307,31 @@
     }
   }
 
+  /* Global Mobile Fixes for Overflow */
+  @media (max-width: 768px) {
+
+    button,
+    .btn,
+    img,
+    input,
+    select,
+    textarea {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .break-words {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    body {
+      overflow-x: hidden;
+      width: 100%;
+      position: relative;
+    }
+  }
+
   /* iOS specific fixes */
   @supports (-webkit-touch-callout: none) {
 

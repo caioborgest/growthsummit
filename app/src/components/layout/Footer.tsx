@@ -199,7 +199,7 @@ export function Footer() {
       <div className="border-t border-dark-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm break-words">
               © 2026 Growth Summit. Todos os direitos reservados.
             </p>
 

@@ -16,12 +16,12 @@ export function Step5DownloadApp({ onContinuar }: Step5DownloadAppProps) {
         <div className="space-y-6">
             {/* Header */}
             <div className="text-center">
-                <Smartphone className="h-16 w-16 text-brand-orange-coral mx-auto mb-4 animate-bounce" />
-                <h3 className="text-3xl font-bold text-white mb-3">
-                    Passo Fundamental: Baixe o App
+                <Smartphone className="h-10 sm:h-16 w-10 sm:w-16 text-brand-orange-coral mx-auto mb-4 animate-bounce" />
+                <h3 className="text-xl sm:text-3xl font-black text-white mb-2 leading-tight">
+                    Baixe o Super App
                 </h3>
-                <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                    Para acessar sua inscrição, ver a programação e fazer networking, você precisa ter o app instalado.
+                <p className="text-gray-400 text-sm sm:text-lg max-w-2xl mx-auto px-4">
+                    Acesse sua credencial, programação e networking em um só lugar.
                 </p>
             </div>
 

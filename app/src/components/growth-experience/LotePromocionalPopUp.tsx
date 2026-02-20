@@ -13,12 +13,12 @@ export function LotePromocionalPopUp() {
             // Verificar se o popup já foi mostrado hoje
             const lastShownDate = localStorage.getItem('lotePromocionalLastShown');
             const today = new Date().toDateString();
-            
+
             if (lastShownDate !== today) {
                 setIsOpen(true);
                 setShouldRender(true);
             }
-        }, 5000);
+        }, 20000);
 
         return () => clearTimeout(timer);
     }, []);
@@ -66,7 +66,7 @@ export function LotePromocionalPopUp() {
 
                 {/* Conteúdo Principal */}
                 <div className="px-5 sm:px-8 pb-6 sm:pb-8 relative z-10">
-                    
+
                     {/* Badge Superior */}
                     <div className="flex justify-center mb-4 sm:mb-5">
                         <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1.5 text-[10px] sm:text-xs font-black tracking-[0.2em] animate-pulse uppercase">

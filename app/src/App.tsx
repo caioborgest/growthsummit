@@ -112,7 +112,7 @@ function AppRoutes() {
       <Route
         path="/minha-area/*"
         element={
-          <ProtectedRoute allowedRoles={['participant', 'admin']}>
+          <ProtectedRoute allowedRoles={['participant', 'participante', 'admin']}>
             <DashboardParticipante />
           </ProtectedRoute>
         }

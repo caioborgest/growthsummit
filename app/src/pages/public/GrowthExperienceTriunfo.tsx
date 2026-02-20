@@ -148,7 +148,7 @@ function InnerHeader() {
             <img
               src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
               alt="Growth Experience"
-              className="h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
+              className="h-8 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
               onError={(e) => {
                 e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png';
               }}
@@ -269,8 +269,8 @@ function InnerFooter() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-white/5 text-center text-gray-500 text-sm">
-          <p>© 2026 Growth Experience Triunfo-PE. Realização: Growth Summit. Patrocínio: SEBRAE.</p>
+        <div className="pt-8 border-t border-white/5 text-center text-gray-500 text-xs sm:text-sm">
+          <p className="break-words px-4">© 2026 Growth Experience Triunfo-PE. Realização: Growth Summit. Patrocínio: SEBRAE.</p>
         </div>
       </div>
     </footer>
