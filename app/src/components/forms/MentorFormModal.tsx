@@ -39,6 +39,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         fotoPreview: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
 
@@ -53,8 +54,17 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         }));
     };
 
-    const nextStep = () => setStep(prev => prev + 1);
-    const prevStep = () => setStep(prev => prev - 1);
+    const nextStep = () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        setStep(prev => prev + 1);
+        setTimeout(() => setIsProcessing(false), 500);
+    };
+
+    const prevStep = () => {
+        if (isProcessing) return;
+        setStep(prev => prev - 1);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

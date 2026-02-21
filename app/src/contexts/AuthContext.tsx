@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthenticating: boolean;
   login: (email: string, password: string) => Promise<User | null>;
   loginWithOTP: (email: string) => Promise<void>;
   verifyOTP: (email: string, token: string) => Promise<void>;
@@ -109,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Verificar sessão ao carregar
   useEffect(() => {
@@ -218,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login com email e senha
   const login = useCallback(async (email: string, password: string): Promise<User | null> => {
-    setIsLoading(true);
+    setIsAuthenticating(true);
 
     try {
       // Verificar rate limiting
@@ -281,13 +283,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.error('Erro no login:', error);
       throw error;
     } finally {
-      setIsLoading(false);
+      setIsAuthenticating(false);
     }
   }, []);
 
   // Login com OTP (Magic Link)
   const loginWithOTP = useCallback(async (email: string) => {
-    setIsLoading(true);
+    setIsAuthenticating(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -296,13 +298,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       logAuditEvent('otp_sent', undefined, { email });
     } finally {
-      setIsLoading(false);
+      setIsAuthenticating(false);
     }
   }, []);
 
   // Verificar OTP
   const verifyOTP = useCallback(async (email: string, token: string) => {
-    setIsLoading(true);
+    setIsAuthenticating(true);
     try {
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
       if (error) throw error;
@@ -313,7 +315,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logAuditEvent('otp_verified', data.user.id);
       }
     } finally {
-      setIsLoading(false);
+      setIsAuthenticating(false);
     }
   }, []);
 
@@ -382,6 +384,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       isAuthenticated: !!user && !user.requires2FA,
       isLoading,
+      isAuthenticating,
       login,
       loginWithOTP,
       verifyOTP,

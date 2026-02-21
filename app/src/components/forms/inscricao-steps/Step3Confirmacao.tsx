@@ -96,13 +96,16 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             }
 
             // 4. Sucesso - Finalizar loading antes de avisar o componente pai
-            setLoading(false);
+            // 3. Sucesso - continuar
             onConfirmar(userId || '', finalInscricaoId || '');
+
+            // Note: We DON'T set loading(false) here because we are transitioning 
+            // to the next step and want to keep the button disabled.
 
         } catch (err: any) {
             console.error('Erro crítico na inscrição:', err);
             setError(err.message || 'Erro ao processar inscrição. Tente novamente.');
-            setLoading(false);
+            setLoading(false); // Only reset on error
         }
     };
 

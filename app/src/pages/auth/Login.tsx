@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,22 +7,46 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isAuthenticating, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
+  // Redirecionamento automático se já estiver logado
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      switch (user.role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'mentor':
+          navigate('/mentor-area');
+          break;
+        case 'company':
+          navigate('/empresa-area');
+          break;
+        case 'startup':
+          navigate('/startup-area');
+          break;
+        default:
+          navigate('/minha-area');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isAuthenticating) return;
+
     setError('');
 
     try {
-      const user = await login(email, password);
+      const loggedInUser = await login(email, password);
 
-      if (user) {
+      if (loggedInUser) {
         // Redirecionamento baseado na role real do usuário
-        switch (user.role) {
+        switch (loggedInUser.role) {
           case 'admin':
             navigate('/admin');
             break;
@@ -39,8 +63,8 @@ export function Login() {
             navigate('/minha-area');
         }
       }
-    } catch {
-      setError('Email ou senha inválidos');
+    } catch (err: any) {
+      setError(err?.message || 'Email ou senha inválidos');
     }
   };
 
@@ -133,9 +157,9 @@ export function Login() {
             <Button
               type="submit"
               className="w-full bg-teal-500 hover:bg-teal-600 text-white py-6"
-              disabled={isLoading}
+              disabled={isAuthenticating}
             >
-              {isLoading ? (
+              {isAuthenticating ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
               ) : (
                 <>

@@ -91,8 +91,8 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                     size="lg"
                     onClick={() => {
                         onFechar();
-                        // Redirecionar para app ou dashboard se necessário
-                        window.location.href = '/app';
+                        // Redirecionar para dashboard ou home
+                        window.location.href = '/minha-area';
                     }}
                     className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
                 >

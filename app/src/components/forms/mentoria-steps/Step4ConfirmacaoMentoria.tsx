@@ -122,8 +122,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             }
 
             setError(errorMessage);
-        } finally {
-            setLoading(false);
+            setLoading(false); // Only reset on error
         }
     };
 

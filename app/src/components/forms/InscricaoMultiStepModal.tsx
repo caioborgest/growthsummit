@@ -17,6 +17,7 @@ interface InscricaoMultiStepModalProps {
 
 export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosInscricao>({
         cursosSelecionados: [],
         nome: '',
@@ -55,12 +56,16 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     };
 
     const nextStep = () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
         if (currentStep < totalSteps) {
             setCurrentStep(prev => prev + 1);
         }
+        setTimeout(() => setIsProcessing(false), 500);
     };
 
     const prevStep = () => {
+        if (isProcessing) return;
         if (currentStep > 1) {
             setCurrentStep(prev => prev - 1);
         }
@@ -118,6 +123,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 return (
                     <Step5DownloadApp
                         onContinuar={async () => {
+                            if (isProcessing) return;
+                            setIsProcessing(true);
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
@@ -130,6 +137,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     console.error('Erro ao marcar app como instalado:', err);
                                 }
                             }
+                            setIsProcessing(false); // Reset before nextStep because nextStep will set it to true again
                             nextStep();
                         }}
                     />
@@ -200,10 +208,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                 >
                                     <div
                                         className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
-                                                ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
-                                                : isActive
-                                                    ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.4)] scale-110'
-                                                    : 'bg-dark-200 border-white/10 text-gray-500'
+                                            ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                                            : isActive
+                                                ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.4)] scale-110'
+                                                : 'bg-dark-200 border-white/10 text-gray-500'
                                             }`}
                                     >
                                         {isCompleted ? (
@@ -214,10 +222,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     </div>
                                     <span
                                         className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive
-                                                ? 'text-brand-orange-coral'
-                                                : isCompleted
-                                                    ? 'text-green-500'
-                                                    : 'text-gray-600'
+                                            ? 'text-brand-orange-coral'
+                                            : isCompleted
+                                                ? 'text-green-500'
+                                                : 'text-gray-600'
                                             }`}
                                     >
                                         {label}

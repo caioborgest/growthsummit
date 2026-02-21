@@ -19,6 +19,7 @@ interface MentoriaMultiStepModalProps {
 
 export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosMentoria>({
         area: '',
         mentorId: '',
@@ -47,8 +48,17 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         setDados(prev => ({ ...prev, ...novos }));
     };
 
-    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+    const nextStep = async () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+        setTimeout(() => setIsProcessing(false), 500); // Guard to prevent double clicks
+    };
+
+    const prevStep = () => {
+        if (isProcessing) return;
+        setCurrentStep(prev => Math.max(prev - 1, 1));
+    };
 
     const renderStep = () => {
         switch (currentStep) {
@@ -99,6 +109,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
             case 5:
                 return (
                     <Step4OfertaPalestras
+                        dados={dados as any}
                         onComprar={() => {
                             updateDados({ comprarPalestras: true });
                             nextStep();
