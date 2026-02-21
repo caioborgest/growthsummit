@@ -80,10 +80,13 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
         setIsSubmitting(true);
         setError('');
 
         try {
+            console.log('Iniciando inscrição B2B...');
             // Validação de Logo (Obrigatória agora que o usuário pediu)
             if (!logoFile) {
                 throw new Error('Por favor, anexe a logomarca da sua empresa.');
@@ -365,6 +368,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            Telefone/WhatsApp *
+                                        </label>
                                         <input
                                             type="tel"
                                             name="telefone"

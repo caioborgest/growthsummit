@@ -65,10 +65,13 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
         setIsSubmitting(true);
         setError('');
 
         try {
+            console.log('Iniciando inscrição de startup...');
             // Validação básica
             if (!formData.nome_fundador || !formData.email || !formData.telefone || !formData.senha || !formData.confirmarSenha ||
                 !formData.nome_startup || !formData.descricao_startup || !formData.setor ||

@@ -28,10 +28,14 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
         setIsSubmitting(true);
         setError('');
 
         try {
+            console.log('Iniciando inscrição de empresa incentivadora...');
+
             // Salvar no banco de dados
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert({
@@ -39,13 +43,17 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 email: formData.email,
                 telefone: formData.telefone,
                 nome_empresa: formData.nomeEmpresa,
-                quantidade_equipe: parseInt(formData.quantidadeEquipe),
+                quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
                 objetivo: formData.objetivo,
                 status: 'pendente'
             });
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Erro ao salvar no banco (Empresa):', dbError);
+                throw dbError;
+            }
 
+            console.log('Sucesso! Empresa inscrita.');
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
@@ -60,8 +68,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 });
             }, 5000);
 
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Erro ao processar inscrição');
+        } catch (err: any) {
+            console.error('Erro crítico no formulário de empresa:', err);
+            setError(err.message || 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);
         }
