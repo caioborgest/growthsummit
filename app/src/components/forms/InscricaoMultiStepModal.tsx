@@ -117,6 +117,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             updateDados({ comprarPalestras: false });
                             nextStep();
                         }}
+                        onUpdate={updateDados}
                     />
                 );
             case 5:

@@ -1,16 +1,79 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Star, Calendar, Clock, ArrowRight, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket, Key, AlertCircle } from 'lucide-react';
 import { palestrasNoturnas } from '@/data/programacao';
+import { supabase } from '@/lib/supabase';
+import type { DadosInscricao } from './inscricaoTypes';
 
 interface Step4OfertaPalestrasProps {
     dados: DadosInscricao;
     onComprar: () => void;
     onPular: () => void;
+    onUpdate?: (novos: Partial<DadosInscricao>) => void;
 }
 
-export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaPalestrasProps) {
+export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: Step4OfertaPalestrasProps) {
+    const [cupom, setCupom] = useState(dados.cupomPalestra || '');
+    const [isValidating, setIsValidating] = useState(false);
+    const [error, setError] = useState('');
+    const [cupomAplicado, setCupomAplicado] = useState(!!dados.descontoPalestra);
+
+    const valorOriginal = 179.99;
+
+    // Se o usuário já tiver um desconto social da etapa anterior, ele já começa com desconto
+    // Mas ele pode aplicar um cupom diferente aqui se quiser
+    const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+
+    const handleValidarCupom = async () => {
+        if (!cupom.trim()) return;
+        setIsValidating(true);
+        setError('');
+
+        try {
+            const { data, error: cError } = await (supabase
+                .from('cupons_parceria_social') as any)
+                .select('*')
+                .eq('codigo', cupom.trim().toUpperCase())
+                .eq('ativo', true)
+                .single();
+
+            if (cError || !data) {
+                setError('Código inválido ou inativo');
+                setCupomAplicado(false);
+                onUpdate?.({ descontoPalestra: 0, cupomPalestra: '' });
+            } else {
+                // Verificar Validade
+                if (data.vencimento && new Date(data.vencimento) < new Date()) {
+                    setError('Este código já expirou');
+                    return;
+                }
+
+                // Verificar Limite
+                if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+                    setError('Limite de usos atingido');
+                    return;
+                }
+
+                setCupomAplicado(true);
+                onUpdate?.({
+                    descontoPalestra: data.porcentagem_desconto,
+                    cupomPalestra: cupom.trim().toUpperCase(),
+                    tipoSocioPalestra: data.indicacao_tipo
+                });
+            }
+        } catch (err) {
+            console.error('Erro cupom palestra:', err);
+            setError('Falha ao validar código');
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    const precoFinal = valorOriginal * (1 - descontoEfetivo / 100);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -59,14 +122,58 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaP
                                 {palestra.descricao}
                             </p>
                         </div>
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-dark/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                     </Card>
                 ))}
             </div>
 
+            {/* Seção de Cupons */}
+            <Card className="glass-card border-white/10 p-4 sm:p-6 bg-dark-300/30">
+                <div className="flex flex-col sm:flex-row items-end gap-3 sm:gap-4">
+                    <div className="flex-1 w-full translate-y-[-1px]">
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1 flex items-center gap-2">
+                            <Ticket className="h-3 w-3 text-brand-orange-coral" />
+                            Possui Código de Parceiro ou Equipe?
+                        </label>
+                        <div className="relative">
+                            <Input
+                                placeholder="DIGITE O CÓDIGO AQUI"
+                                value={cupom}
+                                onChange={(e) => setCupom(e.target.value.toUpperCase())}
+                                className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest pl-10 h-12 uppercase ${cupomAplicado ? 'border-green-500/50 ring-1 ring-green-500/20' : ''}`}
+                            />
+                            <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                            {isValidating && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-orange-coral animate-spin" />
+                            )}
+                            {cupomAplicado && !isValidating && (
+                                <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                            )}
+                        </div>
+                    </div>
+                    <Button
+                        type="button"
+                        onClick={handleValidarCupom}
+                        disabled={isValidating || !cupom.trim()}
+                        className={`h-12 px-6 font-bold sm:min-w-[120px] transition-all ${cupomAplicado ? 'bg-green-600/20 text-green-400 border border-green-500/30 hover:bg-green-600/30' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
+                    >
+                        {cupomAplicado ? 'Aplicado' : 'Validar'}
+                    </Button>
+                </div>
+                {error && (
+                    <p className="text-red-400 text-[10px] sm:text-xs mt-2 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {error}
+                    </p>
+                )}
+                {cupomAplicado && (
+                    <p className="text-green-400 text-[10px] sm:text-xs mt-2 font-bold animate-in fade-in slide-in-from-top-1">
+                        Voucher ativado! Desconto de {descontoEfetivo}% aplicado com sucesso.
+                    </p>
+                )}
+            </Card>
+
             {/* Card da Oferta */}
-            <Card className="relative overflow-hidden border-brand-orange-coral/30 bg-gradient-to-br from-brand-orange-coral/10 via-dark-200 to-dark p-4 sm:p-8">
+            <Card className="relative overflow-hidden border-brand-orange-coral/30 bg-gradient-to-br from-brand-orange-coral/10 via-dark-200 to-dark p-4 sm:p-8 shadow-2xl">
                 <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-orange-coral/20 rounded-full blur-2xl" />
                 <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-brand-orange-gradient/20 rounded-full blur-2xl" />
 
@@ -95,16 +202,16 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaP
 
                     <div className="flex flex-col items-center md:items-end gap-3 sm:gap-4 w-full md:min-w-[200px]">
                         <div className="text-center md:text-right">
-                            {dados.descontoSocial && dados.descontoSocial > 0 ? (
+                            {descontoEfetivo > 0 ? (
                                 <>
                                     <Badge className="mb-2 bg-green-500/20 text-green-500 border-green-500/30 text-[10px] sm:text-xs">
-                                        -{dados.descontoSocial}% Parceria {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Político'}
+                                        -{descontoEfetivo}% DESCONTO ATIVADO
                                     </Badge>
                                     <p className="text-[10px] sm:text-sm text-gray-500 line-through">de R$ 179,99</p>
                                     <div className="flex items-baseline gap-1 justify-center md:justify-end">
                                         <span className="text-xs sm:text-sm text-brand-orange-coral font-bold">R$</span>
                                         <span className="text-3xl sm:text-4xl font-black text-white">
-                                            {(179.99 * (1 - dados.descontoSocial / 100)).toFixed(2).replace('.', ',')}
+                                            {precoFinal.toFixed(2).replace('.', ',')}
                                         </span>
                                     </div>
                                 </>
@@ -123,9 +230,9 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaP
                         <Button
                             size="lg"
                             onClick={onComprar}
-                            className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-extrabold shadow-lg h-12 sm:h-14 py-0"
+                            className="w-full bg-gradient-to-r from-teal-500 to-teal-400 hover:from-teal-600 hover:to-teal-500 text-dark-100 font-extrabold shadow-glow-teal/20 h-12 sm:h-14 py-0"
                         >
-                            {dados.descontoSocial === 100 ? 'GARANTIR VAGA GRATUITA' : 'GARANTIR MINHA VAGA'}
+                            {descontoEfetivo === 100 ? 'GARANTIR VAGA GRATUITA' : 'COMPRAR PASSAPORTE NIGHT'}
                             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
                         </Button>
 
@@ -133,7 +240,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular }: Step4OfertaP
                             onClick={onPular}
                             className="text-[10px] sm:text-sm text-gray-500 hover:text-white transition-colors flex items-center gap-1 py-1"
                         >
-                            Não tenho interesse agora
+                            Não tenho interesse no momento
                             <X className="h-3 w-3" />
                         </button>
                     </div>

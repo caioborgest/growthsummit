@@ -25,7 +25,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
-    const [cupomValido, setCupomValido] = useState<{ porcentagem: number; nome: string } | null>(null);
+    const [cupomValido, setCupomValido] = useState<{ porcentagem: number; nome: string; tipo: string } | null>(null);
     const [validandoCupom, setValidandoCupom] = useState(false);
 
     if (!isOpen) return null;
@@ -34,8 +34,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         if (!codigo || codigo.length < 3) return;
         setValidandoCupom(true);
         try {
-            const { data, error: cError } = await supabase
-                .from('cupons_parceria_social')
+            const { data, error: cError } = await (supabase
+                .from('cupons_parceria_social') as any)
                 .select('*')
                 .eq('codigo', codigo.toUpperCase())
                 .eq('ativo', true)
@@ -46,14 +46,25 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 return;
             }
 
-            // Verificar limite de uso
-            if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+            // Verificar validade por data
+            if (data.vencimento && new Date(data.vencimento) < new Date()) {
                 setCupomValido(null);
-                setError('Este código já atingiu o limite de usos.');
+                setError('Este código de voucher já expirou.');
                 return;
             }
 
-            setCupomValido({ porcentagem: data.porcentagem_desconto, nome: data.indicacao_nome });
+            // Verificar limite de uso
+            if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+                setCupomValido(null);
+                setError('Este código atingiu o limite de utilizações.');
+                return;
+            }
+
+            setCupomValido({
+                porcentagem: data.porcentagem_desconto,
+                nome: data.indicacao_nome,
+                tipo: data.indicacao_tipo
+            });
             setError('');
         } catch (err) {
             console.error('Erro cupom:', err);
@@ -81,7 +92,19 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         if (cupomValido) {
             const desconto = (valorOriginal * cupomValido.porcentagem) / 100;
             const final = valorOriginal - desconto;
-            return final === 0 ? 'GRATUITO (Voucher Equipe)' : `R$ ${final.toFixed(2).replace('.', ',')}`;
+
+            const labelMap: Record<string, string> = {
+                'prefeitura': 'Convênio Prefeitura',
+                'politico': 'Cota Liderança',
+                'empresa': 'Voucher Empresarial',
+                'influenciador': 'Cópia VIP',
+                'associacao': 'Parceria Associação',
+                'instituicao': 'Convênio Institucional',
+                'promocional': 'Lote Especial'
+            };
+
+            const label = labelMap[cupomValido.tipo] || 'Voucher Especial';
+            return final === 0 ? `GRATUITO (${label})` : `R$ ${final.toFixed(2).replace('.', ',')}`;
         }
         return 'R$ 179,99';
     };
@@ -117,7 +140,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 ? (cupomValido ? valorOriginal * (1 - cupomValido.porcentagem / 100) : valorOriginal)
                 : 0;
 
-            const { error: insError } = await supabase.from('inscricoes_growth_experience').insert({
+            const { error: insError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
                 user_id: user.id,
                 nome: formData.nome,
                 email: formData.email,

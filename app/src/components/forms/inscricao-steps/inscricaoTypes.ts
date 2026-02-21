@@ -9,13 +9,16 @@ export interface DadosInscricao {
     email: string;
     telefone: string;
     senha: string;
-    indicacaoTipo?: 'prefeitura' | 'politico' | 'nenhum';
+    indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro' | 'nenhum';
     indicacaoNome?: string;
     codigo?: string;
     descontoSocial?: number;
 
-    // Etapa 4
+    // Etapa 4 (Night Experience)
     comprarPalestras: boolean;
+    cupomPalestra?: string;
+    descontoPalestra?: number;
+    tipoSocioPalestra?: string;
 
     // Controle
     userId?: string;

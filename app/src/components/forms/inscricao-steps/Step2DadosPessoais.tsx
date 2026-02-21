@@ -43,7 +43,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [email, setEmail] = useState(dados.email);
     const [telefone, setTelefone] = useState(dados.telefone);
     const [senha, setSenha] = useState(dados.senha);
-    const [indicacaoTipo, setIndicacaoTipo] = useState<'prefeitura' | 'politico' | 'nenhum'>(dados.indicacaoTipo || 'nenhum');
+    const [indicacaoTipo, setIndicacaoTipo] = useState<DadosInscricao['indicacaoTipo']>(dados.indicacaoTipo || 'nenhum');
     const [indicacaoNome, setIndicacaoNome] = useState(dados.indicacaoNome || '');
     const [codigo, setCodigo] = useState(dados.codigo || '');
     const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
@@ -112,18 +112,26 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             } else {
                 setValidating(true);
                 try {
-                    const { data, error } = await supabase
-                        .from('cupons_parceria_social')
+                    const { data, error } = await (supabase
+                        .from('cupons_parceria_social') as any)
                         .select('*')
                         .eq('codigo', codigo.trim().toUpperCase())
-                        .eq('indicacao_tipo', indicacaoTipo)
                         .eq('ativo', true)
                         .single();
 
                     if (error || !data) {
-                        newErrors.codigo = 'Código inválido para esta categoria';
+                        newErrors.codigo = 'Código inválido ou inativo';
                     } else {
-                        setDesconto(data.porcentagem_desconto);
+                        const couponData = data as any;
+                        if (couponData.indicacao_tipo !== indicacaoTipo) {
+                            newErrors.codigo = `Este código pertence à categoria ${couponData.indicacao_tipo}`;
+                        } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
+                            newErrors.codigo = 'Este código de parceria já expirou';
+                        } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
+                            newErrors.codigo = 'Limite de usos atingido para este código';
+                        } else {
+                            setDesconto(couponData.porcentagem_desconto);
+                        }
                     }
                 } catch (validationError) {
                     console.error('Erro na validação pública:', validationError);
@@ -330,17 +338,22 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             Sua inscrição faz parte de uma parceria com alguma Prefeitura ou Liderança Política da região?
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2">
                             {[
                                 { id: 'prefeitura', label: 'Prefeitura' },
                                 { id: 'politico', label: 'Político' },
+                                { id: 'empresa', label: 'Empresa' },
+                                { id: 'influenciador', label: 'Influencer' },
+                                { id: 'associacao', label: 'Associação' },
+                                { id: 'instituicao', label: 'Instituição' },
+                                { id: 'promocional', label: 'Promocional' },
                                 { id: 'nenhum', label: 'Nenhum' }
                             ].map((tipo) => (
                                 <button
                                     key={tipo.id}
                                     type="button"
-                                    onClick={() => setIndicacaoTipo(tipo.id as 'prefeitura' | 'politico' | 'nenhum')}
-                                    className={`px-4 py-2 sm:py-3 rounded-xl border text-sm font-bold transition-all ${indicacaoTipo === tipo.id
+                                    onClick={() => setIndicacaoTipo(tipo.id as any)}
+                                    className={`px-2 py-2 rounded-xl border text-[10px] sm:text-xs font-bold transition-all h-full ${indicacaoTipo === tipo.id
                                         ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white shadow-glow-orange/20'
                                         : 'bg-dark-200 border-white/5 text-gray-400 hover:border-white/10'
                                         }`}
@@ -353,7 +366,13 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
                             <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                 <Label htmlFor="indicacaoNome" className="text-white mb-2 block text-sm">
-                                    {indicacaoTipo === 'prefeitura' ? 'Qual Prefeitura?' : 'Qual Deputado ou Vereador?'}
+                                    {indicacaoTipo === 'prefeitura' ? 'Qual Prefeitura?' :
+                                        indicacaoTipo === 'politico' ? 'Qual Deputado ou Vereador?' :
+                                            indicacaoTipo === 'empresa' ? 'Nome da Empresa/Equipe?' :
+                                                indicacaoTipo === 'influenciador' ? 'Nome do Influenciador?' :
+                                                    indicacaoTipo === 'associacao' ? 'Nome da Associação?' :
+                                                        indicacaoTipo === 'instituicao' ? 'Nome da Instituição?' :
+                                                            'Nome da Origem / Parceiro?'}
                                 </Label>
 
                                 {indicacaoTipo === 'prefeitura' ? (

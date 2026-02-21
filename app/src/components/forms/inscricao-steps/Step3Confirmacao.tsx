@@ -61,6 +61,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             }
 
             // 2. Salvar inscrição no banco (user_id opcional se já existir conta)
+            const valorOriginal = 179.99;
+            const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+            const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
+
             const { data: inscricaoData, error: inscricaoError } = await (supabase
                 .from('inscricoes_growth_experience') as any)
                 .insert({
@@ -69,14 +73,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     email: dados.email,
                     telefone: dados.telefone,
                     cursos_selecionados: dados.cursosSelecionados,
-                    palestras_noturnas: false,
-                    valor_pago: 0,
-                    status_pagamento: 'pago',
+                    palestras_noturnas: dados.comprarPalestras,
+                    valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
+                    status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
                     status: 'ativo',
                     app_instalado: false,
                     indicacao_tipo: dados.indicacaoTipo,
                     indicacao_nome: dados.indicacaoNome,
-                    codigo_social: dados.codigo
+                    codigo_social: dados.codigo,
+                    codigo_palestra: dados.cupomPalestra || null
                 })
                 .select();
 
@@ -132,7 +137,13 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     </div>
                     {dados.indicacaoTipo && dados.indicacaoTipo !== 'nenhum' && (
                         <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                            {dados.indicacaoTipo === 'prefeitura' ? 'Parceria Prefeitura' : 'Parceria Político'}
+                            {dados.indicacaoTipo === 'prefeitura' ? 'Parceria Prefeitura' :
+                                dados.indicacaoTipo === 'politico' ? 'Cota Liderança' :
+                                    dados.indicacaoTipo === 'empresa' ? 'Convênio Empresa' :
+                                        dados.indicacaoTipo === 'influenciador' ? 'Influenciador VIP' :
+                                            dados.indicacaoTipo === 'associacao' ? 'Parceria Associação' :
+                                                dados.indicacaoTipo === 'instituicao' ? 'Parceria Instituição' :
+                                                    dados.indicacaoTipo === 'promocional' ? 'Promoção' : 'Parceria'}
                         </Badge>
                     )}
                 </div>
