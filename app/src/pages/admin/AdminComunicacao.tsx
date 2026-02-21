@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { 
+import {
   Mail,
   Send,
   Users,
@@ -14,9 +14,18 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
-const emailTemplates = [
+const initialEmailTemplates = [
   {
     id: '1',
     name: 'Confirmação de Inscrição',
@@ -47,7 +56,7 @@ const emailTemplates = [
   },
 ];
 
-const emailCampaigns = [
+const initialEmailCampaigns = [
   {
     id: '1',
     name: 'Lançamento Early Bird',
@@ -71,6 +80,25 @@ const emailCampaigns = [
 
 export function AdminComunicacao() {
   const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose'>('templates');
+  const [templates, setTemplates] = useState(initialEmailTemplates);
+  const [campaigns, setCampaigns] = useState(initialEmailCampaigns);
+
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+
+  const [templateFormData, setTemplateFormData] = useState({
+    name: '',
+    subject: '',
+    category: 'Inscrições',
+    body: ''
+  });
+
+  const [campaignFormData, setCampaignFormData] = useState({
+    name: '',
+    templateId: '',
+    recipients: 'all' as any
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedTemplate, _setSelectedTemplate] = useState<string | null>(null);
   const [composeData, setComposeData] = useState({
@@ -78,6 +106,48 @@ export function AdminComunicacao() {
     body: '',
     recipients: 'all',
   });
+
+  const handleCreateTemplate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!templateFormData.name || !templateFormData.subject) {
+      toast.error('Preencha os campos obrigatórios');
+      return;
+    }
+
+    const newTemplate = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...templateFormData,
+      lastUsed: new Date().toISOString()
+    };
+
+    setTemplates([newTemplate, ...templates]);
+    toast.success('Template criado com sucesso!');
+    setIsTemplateModalOpen(false);
+    setTemplateFormData({ name: '', subject: '', category: 'Inscrições', body: '' });
+  };
+
+  const handleCreateCampaign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!campaignFormData.name || !campaignFormData.templateId) {
+      toast.error('Preencha os campos obrigatórios');
+      return;
+    }
+
+    const newCampaign = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: campaignFormData.name,
+      recipients: 1247, // Mock number
+      sent: 0,
+      opened: 0,
+      clicked: 0,
+      status: 'draft'
+    };
+
+    setCampaigns([newCampaign, ...campaigns]);
+    toast.success('Campanha criada com sucesso!');
+    setIsCampaignModalOpen(false);
+    setCampaignFormData({ name: '', templateId: '', recipients: 'all' });
+  };
 
   const handleSend = () => {
     alert('Email enviado com sucesso!');
@@ -90,31 +160,28 @@ export function AdminComunicacao() {
       <div className="flex space-x-4 border-b border-dark-300">
         <button
           onClick={() => setActiveTab('templates')}
-          className={`pb-4 text-sm font-medium transition-colors ${
-            activeTab === 'templates' 
-              ? 'text-teal-400 border-b-2 border-teal-400' 
-              : 'text-gray-400 hover:text-white'
-          }`}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'templates'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
+            }`}
         >
           Templates
         </button>
         <button
           onClick={() => setActiveTab('campaigns')}
-          className={`pb-4 text-sm font-medium transition-colors ${
-            activeTab === 'campaigns' 
-              ? 'text-teal-400 border-b-2 border-teal-400' 
-              : 'text-gray-400 hover:text-white'
-          }`}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'campaigns'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
+            }`}
         >
           Campanhas
         </button>
         <button
           onClick={() => setActiveTab('compose')}
-          className={`pb-4 text-sm font-medium transition-colors ${
-            activeTab === 'compose' 
-              ? 'text-teal-400 border-b-2 border-teal-400' 
-              : 'text-gray-400 hover:text-white'
-          }`}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'compose'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
+            }`}
         >
           Compor Email
         </button>
@@ -125,14 +192,78 @@ export function AdminComunicacao() {
         <>
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">Templates de Email</h2>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Template
-            </Button>
+            <Dialog open={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Template</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateTemplate} className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome do Template *</Label>
+                      <Input
+                        required
+                        value={templateFormData.name}
+                        onChange={e => setTemplateFormData({ ...templateFormData, name: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                        placeholder="Ex: Boas-vindas Mentores"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Categoria</Label>
+                      <select
+                        value={templateFormData.category}
+                        onChange={e => setTemplateFormData({ ...templateFormData, category: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      >
+                        <option value="Inscrições">Inscrições</option>
+                        <option value="Lembretes">Lembretes</option>
+                        <option value="Mentorias">Mentorias</option>
+                        <option value="Acesso">Acesso</option>
+                        <option value="Outros">Outros</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Assunto do Email *</Label>
+                    <Input
+                      required
+                      value={templateFormData.subject}
+                      onChange={e => setTemplateFormData({ ...templateFormData, subject: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="Assunto que o usuário verá na caixa de entrada"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Corpo do Email (HTML/Texto)</Label>
+                    <Textarea
+                      value={templateFormData.body}
+                      onChange={e => setTemplateFormData({ ...templateFormData, body: e.target.value })}
+                      className="bg-dark-100 border-dark-300 min-h-[200px]"
+                      placeholder="Olá {{nome}}, seja bem-vindo ao evento..."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                    <Button type="button" variant="outline" onClick={() => setIsTemplateModalOpen(false)} className="border-dark-300 text-gray-400">
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                      Criar Template
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {emailTemplates.map((template) => (
+            {templates.map((template) => (
               <div key={template.id} className="glass-card p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
@@ -171,10 +302,66 @@ export function AdminComunicacao() {
         <>
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">Campanhas</h2>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Campanha
-            </Button>
+            <Dialog open={isCampaignModalOpen} onOpenChange={setIsCampaignModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Campanha
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-dark-200 border-dark-300 text-white">
+                <DialogHeader>
+                  <DialogTitle>Criar Nova Campanha</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateCampaign} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Nome da Campanha *</Label>
+                    <Input
+                      required
+                      value={campaignFormData.name}
+                      onChange={e => setCampaignFormData({ ...campaignFormData, name: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="Ex: Campanha de Lançamento"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Template base *</Label>
+                    <select
+                      required
+                      value={campaignFormData.templateId}
+                      onChange={e => setCampaignFormData({ ...campaignFormData, templateId: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="">Selecione um template</option>
+                      {templates.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Público Alvo</Label>
+                    <select
+                      value={campaignFormData.recipients}
+                      onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="all">Todos os inscritos</option>
+                      <option value="paid">Apenas pagos</option>
+                      <option value="pending">Apenas pendentes</option>
+                      <option value="vip">Apenas VIP</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                    <Button type="button" variant="outline" onClick={() => setIsCampaignModalOpen(false)} className="border-dark-300 text-gray-400">
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                      Criar Campanha
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="glass-card overflow-hidden">
@@ -191,7 +378,7 @@ export function AdminComunicacao() {
                   </tr>
                 </thead>
                 <tbody>
-                  {emailCampaigns.map((campaign) => (
+                  {campaigns.map((campaign) => (
                     <tr key={campaign.id} className="border-b border-dark-300 hover:bg-dark-100/50">
                       <td className="p-4">
                         <p className="text-white font-medium">{campaign.name}</p>
@@ -234,8 +421,8 @@ export function AdminComunicacao() {
                       <td className="p-4">
                         <Badge className={
                           campaign.status === 'sent' ? 'bg-green-500/20 text-green-400' :
-                          campaign.status === 'draft' ? 'bg-gray-500/20 text-gray-400' :
-                          'bg-yellow-500/20 text-yellow-400'
+                            campaign.status === 'draft' ? 'bg-gray-500/20 text-gray-400' :
+                              'bg-yellow-500/20 text-yellow-400'
                         }>
                           {campaign.status === 'sent' ? 'Enviado' : 'Rascunho'}
                         </Badge>
@@ -248,14 +435,19 @@ export function AdminComunicacao() {
                               Enviar
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost" className="text-gray-400">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-gray-400"
+                            onClick={() => setCampaigns(campaigns.filter(c => c.id !== campaign.id))}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>
                     </tr>
                   ))}
-              </tbody>
+                </tbody>
               </table>
             </div>
           </div>
@@ -266,7 +458,7 @@ export function AdminComunicacao() {
       {activeTab === 'compose' && (
         <div className="glass-card p-6">
           <h2 className="text-lg font-semibold text-white mb-6">Compor Email</h2>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-gray-400 mb-2">Destinatários</label>
@@ -317,7 +509,7 @@ export function AdminComunicacao() {
             </div>
 
             <div className="flex space-x-4">
-              <Button 
+              <Button
                 className="bg-teal-500 hover:bg-teal-600 text-white"
                 onClick={handleSend}
                 disabled={!composeData.subject || !composeData.body}

@@ -12,7 +12,8 @@ import {
     ArrowLeft,
     Search,
     CheckCircle2,
-    Info
+    Info,
+    Gem
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

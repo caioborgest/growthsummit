@@ -8,11 +8,20 @@ import {
   Star,
   Plus,
   Sparkles,
-  Zap
+  Zap,
+  Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { useCompanies, useB2BMeetings, useB2BMatches } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -31,12 +40,95 @@ const interestColors: Record<string, string> = {
 };
 
 export function AdminB2B() {
-  const { data: companies } = useCompanies();
-  const { data: meetings, update } = useB2BMeetings();
+  const { data: companies, create: createCompany } = useCompanies();
+  const { data: meetings, create: createMeeting, update, isLoading: isMeetingLoading } = useB2BMeetings();
   const { data: matches, refetch: refetchMatches } = useB2BMatches();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'meetings' | 'companies' | 'matches'>('meetings');
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+  const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+
+  const [meetingFormData, setMeetingFormData] = useState({
+    companyAnchorId: '',
+    companyVendorId: '',
+    scheduledAt: '',
+    duration: 20,
+    tableNumber: ''
+  });
+
+  const [companyFormData, setCompanyFormData] = useState({
+    name: '',
+    cnpj: '',
+    sector: '',
+    contactName: '',
+    contactEmail: '',
+    type: 'vendor' as 'anchor' | 'vendor',
+    maxMeetings: 10
+  });
+
+  const handleCreateMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!meetingFormData.companyAnchorId || !meetingFormData.companyVendorId || !meetingFormData.scheduledAt) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      const anchor = companies.find(c => c.id === meetingFormData.companyAnchorId);
+      const vendor = companies.find(c => c.id === meetingFormData.companyVendorId);
+
+      await createMeeting({
+        companyAnchorId: meetingFormData.companyAnchorId,
+        companyVendorId: meetingFormData.companyVendorId,
+        companyAnchorName: anchor?.name || '',
+        companyVendorName: vendor?.name || '',
+        scheduledAt: meetingFormData.scheduledAt,
+        status: 'scheduled',
+        duration: meetingFormData.duration,
+        tableNumber: meetingFormData.tableNumber
+      } as any);
+
+      toast.success('Reunião agendada com sucesso!');
+      setIsMeetingModalOpen(false);
+      setMeetingFormData({
+        companyAnchorId: '',
+        companyVendorId: '',
+        scheduledAt: '',
+        duration: 20,
+        tableNumber: ''
+      });
+    } catch (err) {
+      toast.error('Erro ao agendar reunião');
+    }
+  };
+
+  const handleCreateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!companyFormData.name || !companyFormData.cnpj) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      await createCompany(companyFormData as any);
+      toast.success('Empresa cadastrada com sucesso!');
+      setIsCompanyModalOpen(false);
+      setCompanyFormData({
+        name: '',
+        cnpj: '',
+        sector: '',
+        contactName: '',
+        contactEmail: '',
+        type: 'vendor',
+        maxMeetings: 10
+      });
+    } catch (err) {
+      toast.error('Erro ao cadastrar empresa');
+    }
+  };
 
   const handleGenerateSchedule = async () => {
     setIsGenerating(true);
@@ -142,10 +234,146 @@ export function AdminB2B() {
               {isGenerating ? 'Gerando...' : 'Gerar Agenda Automática'}
             </Button>
           )}
-          <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            {activeTab === 'meetings' ? 'Nova Reunião' : 'Nova Empresa'}
-          </Button>
+
+          {activeTab === 'meetings' ? (
+            <Dialog open={isMeetingModalOpen} onOpenChange={setIsMeetingModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Reunião
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-dark-200 border-dark-300 text-white">
+                <DialogHeader>
+                  <DialogTitle>Agendar Reunião B2B</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateMeeting} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Empresa Âncora (Compradora) *</Label>
+                    <select
+                      required
+                      value={meetingFormData.companyAnchorId}
+                      onChange={e => setMeetingFormData({ ...meetingFormData, companyAnchorId: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="">Selecione a empresa âncora</option>
+                      {companies.filter(c => c.type === 'anchor').map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Fornecedor (Vendedor) *</Label>
+                    <select
+                      required
+                      value={meetingFormData.companyVendorId}
+                      onChange={e => setMeetingFormData({ ...meetingFormData, companyVendorId: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="">Selecione o fornecedor</option>
+                      {companies.filter(c => c.type === 'vendor').map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Data e Hora *</Label>
+                      <Input
+                        required
+                        type="datetime-local"
+                        value={meetingFormData.scheduledAt}
+                        onChange={e => setMeetingFormData({ ...meetingFormData, scheduledAt: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Mesa / Local</Label>
+                      <Input
+                        value={meetingFormData.tableNumber}
+                        onChange={e => setMeetingFormData({ ...meetingFormData, tableNumber: e.target.value })}
+                        placeholder="Ex: Mesa 05"
+                        className="bg-dark-100 border-dark-300"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                    <Button type="button" variant="outline" onClick={() => setIsMeetingModalOpen(false)} className="border-dark-300 text-gray-400">
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={isMeetingLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                      {isMeetingLoading ? 'Agendando...' : 'Agendar Reunião'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          ) : activeTab === 'companies' ? (
+            <Dialog open={isCompanyModalOpen} onOpenChange={setIsCompanyModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Empresa
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-dark-200 border-dark-300 text-white">
+                <DialogHeader>
+                  <DialogTitle>Cadastrar Nova Empresa B2B</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateCompany} className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome da Empresa *</Label>
+                      <Input
+                        required
+                        value={companyFormData.name}
+                        onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CNPJ *</Label>
+                      <Input
+                        required
+                        value={companyFormData.cnpj}
+                        onChange={e => setCompanyFormData({ ...companyFormData, cnpj: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Setor / Ramo</Label>
+                      <Input
+                        value={companyFormData.sector}
+                        onChange={e => setCompanyFormData({ ...companyFormData, sector: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tipo de Empresa</Label>
+                      <select
+                        value={companyFormData.type}
+                        onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as any })}
+                        className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      >
+                        <option value="vendor">Fornecedor</option>
+                        <option value="anchor">Âncora</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                    <Button type="button" variant="outline" onClick={() => setIsCompanyModalOpen(false)} className="border-dark-300 text-gray-400">
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                      Cadastrar Empresa
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          ) : null}
         </div>
       </div>
 

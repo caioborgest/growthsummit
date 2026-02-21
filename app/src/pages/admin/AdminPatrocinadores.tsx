@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { 
-  Search, 
+import {
+  Search,
   Gem,
   CheckCircle,
   ExternalLink,
@@ -12,7 +12,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { useSponsors } from '@/hooks/useData';
+import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
   closed: 'bg-green-500/20 text-green-400',
@@ -36,18 +45,58 @@ const levelLabels: Record<string, string> = {
 };
 
 export function AdminPatrocinadores() {
-  const { data: sponsors, update } = useSponsors();
+  const { data: sponsors, create, update, isLoading } = useSponsors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    companyName: '',
+    level: 'silver' as 'bronze' | 'silver' | 'gold' | 'diamond',
+    investment: 0,
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    status: 'prospect' as 'prospect' | 'negotiation' | 'closed' | 'cancelled'
+  });
+
   const [_selectedSponsor, _setSelectedSponsor] = useState<string | null>(null);
 
   const filteredSponsors = sponsors.filter(sponsor => {
-    const matchesSearch = 
+    const matchesSearch =
       sponsor.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sponsor.contactName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || sponsor.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!formData.companyName || !formData.contactName) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      await create({
+        ...formData,
+        deliverables: []
+      } as any);
+
+      toast.success('Patrocinador adicionado com sucesso!');
+      setIsModalOpen(false);
+      setFormData({
+        companyName: '',
+        level: 'silver',
+        investment: 0,
+        contactName: '',
+        contactEmail: '',
+        contactPhone: '',
+        status: 'prospect'
+      });
+    } catch (err) {
+      toast.error('Erro ao adicionar patrocinador');
+    }
+  };
 
   const totalInvestment = sponsors
     .filter(s => s.status === 'closed')
@@ -87,10 +136,105 @@ export function AdminPatrocinadores() {
             <option value="cancelled">Cancelado</option>
           </select>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Patrocinador
-        </Button>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Patrocinador
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-dark-200 border-dark-300 text-white">
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo Patrocinador</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Empresa *</Label>
+                  <Input
+                    required
+                    value={formData.companyName}
+                    onChange={e => setFormData({ ...formData, companyName: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nível</Label>
+                  <select
+                    value={formData.level}
+                    onChange={e => setFormData({ ...formData, level: e.target.value as any })}
+                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="bronze">Bronze</option>
+                    <option value="silver">Prata</option>
+                    <option value="gold">Ouro</option>
+                    <option value="diamond">Diamante</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Valor do Investimento</Label>
+                  <Input
+                    type="number"
+                    value={formData.investment}
+                    onChange={e => setFormData({ ...formData, investment: Number(e.target.value) })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <select
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="prospect">Prospect</option>
+                    <option value="negotiation">Negociação</option>
+                    <option value="closed">Fechado</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Nome do Contato *</Label>
+                <Input
+                  required
+                  value={formData.contactName}
+                  onChange={e => setFormData({ ...formData, contactName: e.target.value })}
+                  className="bg-dark-100 border-dark-300"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.contactEmail}
+                    onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <Input
+                    value={formData.contactPhone}
+                    onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                  {isLoading ? 'Adicionando...' : 'Adicionar Patrocinador'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -122,7 +266,7 @@ export function AdminPatrocinadores() {
             <span className="text-teal-400 text-sm">{Math.round((totalInvestment / 200000) * 100)}%</span>
           </div>
           <div className="w-full bg-dark-300 rounded-full h-3">
-            <div 
+            <div
               className="bg-gradient-to-r from-teal-500 to-teal-400 h-3 rounded-full transition-all"
               style={{ width: `${Math.min((totalInvestment / 200000) * 100, 100)}%` }}
             />
@@ -130,12 +274,10 @@ export function AdminPatrocinadores() {
           <div className="flex justify-between mt-4">
             {['Prospect', 'Negociação', 'Fechado'].map((stage, i) => (
               <div key={stage} className="text-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-1 ${
-                  i === 0 ? 'bg-blue-500/20' : i === 1 ? 'bg-yellow-500/20' : 'bg-green-500/20'
-                }`}>
-                  <Target className={`h-5 w-5 ${
-                    i === 0 ? 'text-blue-400' : i === 1 ? 'text-yellow-400' : 'text-green-400'
-                  }`} />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-1 ${i === 0 ? 'bg-blue-500/20' : i === 1 ? 'bg-yellow-500/20' : 'bg-green-500/20'
+                  }`}>
+                  <Target className={`h-5 w-5 ${i === 0 ? 'text-blue-400' : i === 1 ? 'text-yellow-400' : 'text-green-400'
+                    }`} />
                 </div>
                 <p className="text-gray-400 text-xs">{stage}</p>
               </div>
@@ -186,8 +328,8 @@ export function AdminPatrocinadores() {
                       <span className="text-gray-300">{del.item}</span>
                       <Badge className={
                         del.status === 'completed' ? 'bg-green-500/20 text-green-400 text-xs' :
-                        del.status === 'in_progress' ? 'bg-yellow-500/20 text-yellow-400 text-xs' :
-                        'bg-gray-500/20 text-gray-400 text-xs'
+                          del.status === 'in_progress' ? 'bg-yellow-500/20 text-yellow-400 text-xs' :
+                            'bg-gray-500/20 text-gray-400 text-xs'
                       }>
                         {del.status}
                       </Badge>
@@ -203,8 +345,8 @@ export function AdminPatrocinadores() {
             {/* Actions */}
             <div className="flex space-x-2">
               {sponsor.status === 'prospect' && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white"
                   onClick={() => handleStatusChange(sponsor.id, 'negotiation')}
                 >
@@ -213,8 +355,8 @@ export function AdminPatrocinadores() {
                 </Button>
               )}
               {sponsor.status === 'negotiation' && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                   onClick={() => handleStatusChange(sponsor.id, 'closed')}
                 >

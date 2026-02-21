@@ -101,6 +101,9 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: any): User
     role,
     avatar: metadata?.avatar || supabaseUser.user_metadata?.avatar || undefined,
     phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
+    department: metadata?.department || undefined,
+    staffRole: metadata?.staff_role || undefined,
+    permissions: metadata?.permissions || [],
     createdAt: supabaseUser.created_at,
     twoFactorEnabled: metadata?.two_factor_enabled || false,
   };

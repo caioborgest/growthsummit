@@ -1,17 +1,27 @@
 import { useState } from 'react';
-import { 
-  Search, 
+import {
+  Search,
   CheckCircle,
   XCircle,
   User,
   MessageSquare,
   Star,
-  Calendar
+  Calendar,
+  Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useMentoringSessions } from '@/hooks/useData';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import { useMentoringSessions, useMentors, useRegistrations } from '@/hooks/useData';
+import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-blue-500/20 text-blue-400',
@@ -21,17 +31,65 @@ const statusColors: Record<string, string> = {
 };
 
 export function AdminMentorias() {
-  const { data: sessions, update } = useMentoringSessions();
+  const { data: sessions, create, update, isLoading } = useMentoringSessions();
+  const { data: mentors } = useMentors();
+  const { data: registrations } = useRegistrations();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    mentorId: '',
+    menteeId: '',
+    scheduledAt: '',
+    topic: '',
+    duration: 30
+  });
 
   const filteredSessions = sessions.filter(session => {
-    const matchesSearch = 
-      session.mentorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.menteeName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      session.mentorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      session.menteeName?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!formData.mentorId || !formData.menteeId || !formData.scheduledAt) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      const mentor = mentors.find(m => m.id === formData.mentorId);
+      const registration = registrations.find(r => r.id === formData.menteeId);
+
+      await create({
+        mentorId: formData.mentorId,
+        menteeId: registration?.userId || '', // Assuming menteeId in session is userId
+        mentorName: mentor?.name || '',
+        menteeName: registration?.name || '',
+        scheduledAt: formData.scheduledAt,
+        status: 'scheduled',
+        topic: formData.topic,
+        duration: formData.duration
+      } as any);
+
+      toast.success('Mentoria agendada com sucesso!');
+      setIsModalOpen(false);
+      setFormData({
+        mentorId: '',
+        menteeId: '',
+        scheduledAt: '',
+        topic: '',
+        duration: 30
+      });
+    } catch (err: any) {
+      console.error('Erro ao agendar mentoria:', err);
+      toast.error('Erro ao agendar mentoria');
+    }
+  };
 
   const stats = {
     scheduled: sessions.filter(s => s.status === 'scheduled').length,
@@ -39,7 +97,7 @@ export function AdminMentorias() {
     cancelled: sessions.filter(s => s.status === 'cancelled').length,
     avgRating: sessions
       .filter(s => s.feedback)
-      .reduce((acc, s) => acc + (s.feedback?.rating || 0), 0) / 
+      .reduce((acc, s) => acc + (s.feedback?.rating || 0), 0) /
       sessions.filter(s => s.feedback).length || 0,
   };
 
@@ -70,10 +128,96 @@ export function AdminMentorias() {
             <option value="no_show">No-show</option>
           </select>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <Calendar className="h-4 w-4 mr-2" />
-          Nova Mentoria
-        </Button>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+              <Calendar className="h-4 w-4 mr-2" />
+              Nova Mentoria
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-dark-200 border-dark-300 text-white">
+            <DialogHeader>
+              <DialogTitle>Agendar Nova Mentoria</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Mentor *</Label>
+                <select
+                  required
+                  value={formData.mentorId}
+                  onChange={e => setFormData({ ...formData, mentorId: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                >
+                  <option value="">Selecione um mentor</option>
+                  {mentors.filter(m => m.status === 'approved').map(mentor => (
+                    <option key={mentor.id} value={mentor.id}>{mentor.name} ({mentor.company})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Participante (Mentorado) *</Label>
+                <select
+                  required
+                  value={formData.menteeId}
+                  onChange={e => setFormData({ ...formData, menteeId: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                >
+                  <option value="">Selecione um participante</option>
+                  {registrations.map(reg => (
+                    <option key={reg.id} value={reg.id}>{reg.name} ({reg.ticketType})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Data e Hora *</Label>
+                  <Input
+                    required
+                    type="datetime-local"
+                    value={formData.scheduledAt}
+                    onChange={e => setFormData({ ...formData, scheduledAt: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duração (minutos)</Label>
+                  <Input
+                    type="number"
+                    value={formData.duration}
+                    onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tópico / Assunto</Label>
+                <Input
+                  value={formData.topic}
+                  onChange={e => setFormData({ ...formData, topic: e.target.value })}
+                  placeholder="Ex: Revisão de Pitch, Marketing Digital..."
+                  className="bg-dark-100 border-dark-300"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8"
+                >
+                  {isLoading ? 'Agendando...' : 'Agendar Mentoria'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -168,17 +312,17 @@ export function AdminMentorias() {
                       </Button>
                       {session.status === 'scheduled' && (
                         <>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-green-400 hover:text-green-300"
                             onClick={() => update(session.id, { status: 'completed' })}
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-red-400 hover:text-red-300"
                             onClick={() => update(session.id, { status: 'cancelled' })}
                           >

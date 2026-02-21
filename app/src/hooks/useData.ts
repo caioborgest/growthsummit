@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
-  B2BSwipe, B2BMatch, B2BAppointmentTriunfo
+  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User
 } from '@/types';
 
 // Mock Data Placeholders (re-added for fallback/types)
@@ -196,7 +196,6 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     try {
       const tableName = getTableName(projectId!, entityName);
       const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
-
       const { error } = await supabase
         .from(tableName as any)
         .update(dataToUpdate as any)
@@ -382,8 +381,8 @@ export function useProjects() {
       }
 
       const { error } = await supabase
-        .from('projects')
-        .update(dataToUpdate)
+        .from('projects' as any)
+        .update(dataToUpdate as any)
         .eq('id', id);
 
       if (error) throw error;
@@ -497,4 +496,63 @@ export function useB2BAppointmentsTriunfo() {
 
 export function useCoupons() {
   return useData<Coupon>([], 'cupons');
+}
+
+export function useUsers() {
+  const [data, setData] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data: supabaseData, error } = await supabase
+        .from('users' as any)
+        .select('*');
+
+      if (error) throw error;
+
+      const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => ({
+        ...item,
+        id: item['id'] as string,
+        email: item['email'] as string,
+        name: item['name'] as string,
+        role: item['role'] as any,
+        department: item['department'] as string,
+        staffRole: item['staff_role'] as string,
+        permissions: item['permissions'] as string[],
+        createdAt: item['created_at'] as string,
+      }));
+
+      setData(mappedData as User[]);
+    } catch (err) {
+      logger.error('Erro ao buscar usuários:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const update = useCallback(async (id: string, updates: Partial<User>) => {
+    setIsLoading(true);
+    try {
+      const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
+      const { error } = await supabase
+        .from('users' as any)
+        .update(dataToUpdate as any)
+        .eq('id', id);
+
+      if (error) throw error;
+      await fetchData();
+    } catch (err) {
+      logger.error('Erro ao atualizar usuário:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, isLoading, update, refetch: fetchData };
 }

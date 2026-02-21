@@ -57,6 +57,7 @@ const sidebarItems: SidebarItem[] = [
   { id: 'whatsapp-groups', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp-groups' },
   { id: 'comunicacao', name: 'Comunicação', icon: Mail, path: '/admin/comunicacao' },
   { id: 'relatorios', name: 'Relatórios', icon: BarChart3, path: '/admin/relatorios' },
+  { id: 'usuarios', name: 'Usuários', icon: Users, path: '/admin/usuarios' },
   { id: 'cupons', name: 'Cupons', icon: Ticket, path: '/admin/cupons' },
   { id: 'guia', name: 'Manual de Uso', icon: BookOpen, path: '/guia' },
 ];

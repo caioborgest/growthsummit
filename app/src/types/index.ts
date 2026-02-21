@@ -48,8 +48,11 @@ export interface User {
   email: string;
   name: string;
   phone?: string;
-  role: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'admin';
+  role: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'admin' | 'staff' | 'speaker';
   avatar?: string;
+  department?: string;
+  staffRole?: string;
+  permissions?: string[];
   twoFactorEnabled?: boolean;
   requires2FA?: boolean;
   createdAt: string;

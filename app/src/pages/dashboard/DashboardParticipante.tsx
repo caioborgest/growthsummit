@@ -21,6 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRegistrations, useSessions, useMentoringSessions } from '@/hooks/useData';
 import { useNavigate } from 'react-router-dom';
@@ -141,8 +142,17 @@ export function DashboardParticipante() {
               <div className="glass-card p-10 text-center flex flex-col items-center border-teal-500/20">
                 <h2 className="text-xl font-bold text-white mb-8">Seu Acesso</h2>
                 <div className="bg-white p-6 rounded-3xl inline-block mb-8 shadow-2xl shadow-teal-500/20">
-                  <div className="w-48 h-48 bg-dark rounded-2xl flex items-center justify-center border-4 border-dark-100">
-                    <QrCode className="h-32 w-32 text-teal-400" />
+                  <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center">
+                    {myRegistration?.id ? (
+                      <QRCode
+                        value={myRegistration.id}
+                        size={160}
+                        viewBox={`0 0 256 256`}
+                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                      />
+                    ) : (
+                      <QrCode className="h-32 w-32 text-gray-200" />
+                    )}
                   </div>
                 </div>
                 <p className="text-gray-400 mb-1 uppercase tracking-widest text-xs font-bold">Protocolo</p>

@@ -38,6 +38,7 @@ import { AdminProgramacao } from './pages/admin/AdminProgramacao';
 import { AdminSecurity } from './pages/admin/AdminSecurity';
 import { AdminWhatsAppGroups } from './pages/admin/AdminWhatsAppGroups';
 import { AdminCupons } from './pages/admin/AdminCupons';
+import { AdminUsuarios } from './pages/admin/AdminUsuarios';
 import { HelpCenter } from './pages/help/HelpCenter';
 import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
 
@@ -189,6 +190,7 @@ function AppRoutes() {
         <Route path="relatorios" element={<AdminRelatorios />} />
         <Route path="programacao" element={<AdminProgramacao />} />
         <Route path="seguranca" element={<AdminSecurity />} />
+        <Route path="usuarios" element={<AdminUsuarios />} />
         <Route path="cupons" element={<AdminCupons />} />
       </Route>
 

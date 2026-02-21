@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { 
-  Search, 
+import {
+  Search,
   Rocket,
   CheckCircle,
   XCircle,
@@ -9,12 +9,23 @@ import {
   Users,
   DollarSign,
   ExternalLink,
-  Star
+  Star,
+  Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { useStartups, useLeads } from '@/hooks/useData';
+import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
@@ -30,20 +41,64 @@ const stageLabels: Record<string, string> = {
 };
 
 export function AdminStartups() {
-  const { data: startups, update } = useStartups();
+  const { data: startups, create, update, isLoading } = useStartups();
   const { data: leads } = useLeads();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    sector: '',
+    description: '',
+    stage: 'mvp' as 'idea' | 'mvp' | 'traction' | 'scale',
+    website: '',
+    packageType: 'expo' as 'expo' | 'pitch'
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedStartup, _setSelectedStartup] = useState<string | null>(null);
 
   const filteredStartups = startups.filter(startup => {
-    const matchesSearch = 
+    const matchesSearch =
       startup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       startup.sector.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || startup.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!formData.name || !formData.sector) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      await create({
+        ...formData,
+        status: 'approved', // Auto-approved when added by admin
+        foundingTeam: [],
+        metrics: {
+          revenue: 0,
+          users: 0,
+          growth: 0
+        }
+      } as any);
+
+      toast.success('Startup adicionada com sucesso!');
+      setIsModalOpen(false);
+      setFormData({
+        name: '',
+        sector: '',
+        description: '',
+        stage: 'mvp',
+        website: '',
+        packageType: 'expo'
+      });
+    } catch (err) {
+      toast.error('Erro ao adicionar startup');
+    }
+  };
 
   const pendingCount = startups.filter(s => s.status === 'pending').length;
   const approvedCount = startups.filter(s => s.status === 'approved').length;
@@ -83,10 +138,84 @@ export function AdminStartups() {
             <option value="rejected">Rejeitada</option>
           </select>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <Rocket className="h-4 w-4 mr-2" />
-          Adicionar Startup
-        </Button>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+              <Rocket className="h-4 w-4 mr-2" />
+              Adicionar Startup
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-dark-200 border-dark-300 text-white">
+            <DialogHeader>
+              <DialogTitle>Adicionar Nova Startup</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da Startup *</Label>
+                  <Input
+                    required
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Setor *</Label>
+                  <Input
+                    required
+                    value={formData.sector}
+                    onChange={e => setFormData({ ...formData, sector: e.target.value })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Descrição Curta</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  className="bg-dark-100 border-dark-300"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Estágio</Label>
+                  <select
+                    value={formData.stage}
+                    onChange={e => setFormData({ ...formData, stage: e.target.value as any })}
+                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="idea">Ideia</option>
+                    <option value="mvp">MVP</option>
+                    <option value="traction">Tração</option>
+                    <option value="scale">Scale</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Pacote</Label>
+                  <select
+                    value={formData.packageType}
+                    onChange={e => setFormData({ ...formData, packageType: e.target.value as any })}
+                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="expo">Apenas Expo</option>
+                    <option value="pitch">Expo + Pitch Arena</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                  {isLoading ? 'Adicionando...' : 'Adicionar Startup'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -117,8 +246,8 @@ export function AdminStartups() {
             <p className="text-white font-medium">{pendingCount} startups aguardando aprovação</p>
             <p className="text-gray-400 text-sm">Revise as candidaturas pendentes</p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
             onClick={() => setStatusFilter('pending')}
           >
@@ -204,16 +333,16 @@ export function AdminStartups() {
             <div className="flex space-x-2">
               {startup.status === 'pending' ? (
                 <>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={() => handleApprove(startup.id)}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
                     Aprovar
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
                     onClick={() => handleReject(startup.id)}
@@ -258,8 +387,8 @@ export function AdminStartups() {
                   <div className="flex items-center">
                     <Badge className={
                       lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
-                      lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-gray-500/20 text-gray-400'
+                        lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-gray-500/20 text-gray-400'
                     }>
                       {lead.interestLevel}
                     </Badge>

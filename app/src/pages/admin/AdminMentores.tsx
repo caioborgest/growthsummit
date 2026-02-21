@@ -1,19 +1,32 @@
 import { useState } from 'react';
-import { 
-  Search, 
-  CheckCircle, 
+import {
+  Search,
+  CheckCircle,
   XCircle,
   Clock,
   Mail,
   Briefcase,
   Calendar,
   UserPlus,
-  MoreHorizontal
+  MoreHorizontal,
+  Plus,
+  User
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { useMentors } from '@/hooks/useData';
+import { toast } from 'sonner';
+import type { Mentor } from '@/types';
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
@@ -22,12 +35,24 @@ const statusColors: Record<string, string> = {
 };
 
 export function AdminMentores() {
-  const { data: mentors, update } = useMentors();
+  const { data: mentors, create, update, isLoading } = useMentors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    company: '',
+    position: '',
+    bio: '',
+    yearsExperience: 5,
+    maxMentories: 10,
+    specialties: '',
+    linkedin: ''
+  });
 
   const filteredMentors = mentors.filter(mentor => {
-    const matchesSearch = 
+    const matchesSearch =
       mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mentor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mentor.company.toLowerCase().includes(searchQuery.toLowerCase());
@@ -35,12 +60,68 @@ export function AdminMentores() {
     return matchesSearch && matchesStatus;
   });
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!formData.name || !formData.email) {
+        toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      await create({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        position: formData.position,
+        bio: formData.bio,
+        yearsExperience: Number(formData.yearsExperience),
+        maxMentories: Number(formData.maxMentories),
+        specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean),
+        tracks: ['Geral'], // Default track
+        linkedin: formData.linkedin,
+        status: 'approved', // Auto-approved when added by admin
+        userId: 'admin-manual', // Flag for manual creation
+      } as any);
+
+      toast.success('Mentor adicionado com sucesso!');
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err: any) {
+      console.error('Erro ao adicionar mentor:', err);
+      toast.error('Erro ao adicionar mentor: ' + err.message);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      company: '',
+      position: '',
+      bio: '',
+      yearsExperience: 5,
+      maxMentories: 10,
+      specialties: '',
+      linkedin: ''
+    });
+  };
+
   const handleApprove = async (id: string) => {
-    await update(id, { status: 'approved' });
+    try {
+      await update(id, { status: 'approved' });
+      toast.success('Mentor aprovado!');
+    } catch (err) {
+      toast.error('Erro ao aprovar mentor');
+    }
   };
 
   const handleReject = async (id: string) => {
-    await update(id, { status: 'rejected' });
+    try {
+      await update(id, { status: 'rejected' });
+      toast.success('Mentor rejeitado');
+    } catch (err) {
+      toast.error('Erro ao rejeitar mentor');
+    }
   };
 
   const pendingCount = mentors.filter(m => m.status === 'pending').length;
@@ -72,10 +153,130 @@ export function AdminMentores() {
             <option value="rejected">Rejeitado</option>
           </select>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Adicionar Mentor
-        </Button>
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { resetForm(); setIsModalOpen(true); }} className="bg-teal-500 hover:bg-teal-600 text-white">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Adicionar Mentor
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo Mentor</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome Completo *</Label>
+                  <Input
+                    required
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Nome do mentor"
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>E-mail Corporativo *</Label>
+                  <Input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="email@empresa.com"
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Empresa</Label>
+                  <Input
+                    value={formData.company}
+                    onChange={e => setFormData({ ...formData, company: e.target.value })}
+                    placeholder="Nome da empresa"
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Cargo / Posição</Label>
+                  <Input
+                    value={formData.position}
+                    onChange={e => setFormData({ ...formData, position: e.target.value })}
+                    placeholder="Ex: Diretor de Inovação"
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Bio / Experiência</Label>
+                <Textarea
+                  value={formData.bio}
+                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Conte um pouco sobre a trajetória do mentor..."
+                  className="bg-dark-100 border-dark-300 min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Especialidades (separadas por vírgula)</Label>
+                <Input
+                  value={formData.specialties}
+                  onChange={e => setFormData({ ...formData, specialties: e.target.value })}
+                  placeholder="Vendas, Marketing, Gestão, Tecnologia..."
+                  className="bg-dark-100 border-dark-300"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Anos de Experiência</Label>
+                  <Input
+                    type="number"
+                    value={formData.yearsExperience}
+                    onChange={e => setFormData({ ...formData, yearsExperience: Number(e.target.value) })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Limite de Mentorias</Label>
+                  <Input
+                    type="number"
+                    value={formData.maxMentories}
+                    onChange={e => setFormData({ ...formData, maxMentories: Number(e.target.value) })}
+                    className="bg-dark-100 border-dark-300"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Link do LinkedIn</Label>
+                <Input
+                  value={formData.linkedin}
+                  onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                  placeholder="https://linkedin.com/in/perfil"
+                  className="bg-dark-100 border-dark-300"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8"
+                >
+                  {isLoading ? 'Salvando...' : 'Adicionar Mentor'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -106,8 +307,8 @@ export function AdminMentores() {
             <p className="text-white font-medium">{pendingCount} mentores aguardando aprovação</p>
             <p className="text-gray-400 text-sm">Revise os candidatos pendentes</p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
             onClick={() => setStatusFilter('pending')}
           >
@@ -167,16 +368,16 @@ export function AdminMentores() {
             <div className="flex space-x-2">
               {mentor.status === 'pending' ? (
                 <>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                     onClick={() => handleApprove(mentor.id)}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
                     Aprovar
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
                     onClick={() => handleReject(mentor.id)}
