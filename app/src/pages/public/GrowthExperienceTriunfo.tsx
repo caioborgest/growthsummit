@@ -19,7 +19,8 @@ import {
   Sparkles,
   Instagram,
   Linkedin,
-  Facebook
+  Facebook,
+  CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
