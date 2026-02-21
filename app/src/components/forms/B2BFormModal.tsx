@@ -272,8 +272,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-xl w-full p-6 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
+            <div className="glass-card max-w-2xl w-full p-4 sm:p-6 max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -299,12 +299,12 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                         {/* Header */}
                         <div className="mb-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                                    <Handshake className="h-6 w-6 text-teal-400" />
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                                    <Handshake className="h-5 w-5 sm:h-6 sm:w-6 text-teal-400" />
                                 </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-white">Rodada de Negócios B2B</h2>
-                                    <p className="text-gray-400">Conecte-se com outras empresas</p>
+                                <div className="flex-1">
+                                    <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">Rodada de Negócios</h2>
+                                    <p className="text-xs sm:text-gray-400">Matchmaking B2B</p>
                                 </div>
                             </div>
                             <div className="mt-3 p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg">
@@ -662,23 +662,23 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
                             {error && (
                                 <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                    <p className="text-red-400 text-sm">{error}</p>
+                                    <p className="text-red-400 text-xs sm:text-sm">{error}</p>
                                 </div>
                             )}
 
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={onClose}
-                                    className="flex-1 border-dark-300 text-gray-300 hover:text-white"
+                                    className="order-2 sm:order-1 border-dark-300 text-gray-300 hover:text-white h-12 sm:h-10"
                                     disabled={isSubmitting}
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     type="submit"
-                                    className="flex-1 bg-teal-500 hover:bg-teal-600 text-white"
+                                    className="order-1 sm:order-2 flex-1 bg-teal-500 hover:bg-teal-600 text-white h-12 sm:h-10 font-bold"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (

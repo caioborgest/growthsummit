@@ -20,26 +20,26 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
             </div>
 
             {/* Título */}
-            <div>
-                <h3 className="text-3xl font-bold text-white mb-2">
+            <div className="px-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 leading-tight">
                     Inscrição Confirmada!
                 </h3>
-                <p className="text-gray-400 text-lg max-w-xl mx-auto">
+                <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto leading-relaxed">
                     Parabéns, <span className="text-white font-semibold">{dados.nome}</span>! Sua vaga no Growth Experience Triunfo-PE 2026 está garantida.
                 </p>
             </div>
 
             {/* Card de Resumo */}
-            <Card className="glass-card p-6 border-white/10 max-w-2xl mx-auto text-left">
-                <h4 className="font-bold text-white mb-4 flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-brand-orange-coral" />
+            <Card className="glass-card p-4 sm:p-6 border-white/10 max-w-2xl mx-auto text-left mx-4 sm:mx-auto">
+                <h4 className="font-bold text-white mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-brand-orange-coral" />
                     Verifique seu Email
                 </h4>
-                <div className="space-y-4 text-sm text-gray-300">
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-300">
                     <p>
                         Enviamos uma confirmação para <strong className="text-white">{dados.email}</strong> com:
                     </p>
-                    <ul className="list-disc list-inside space-y-2 ml-2">
+                    <ul className="list-disc list-inside space-y-1.5 sm:space-y-2 ml-2">
                         <li>Sua credencial digital</li>
                         <li>Link de acesso rápido ao app</li>
                         <li>Detalhes dos cursos selecionados</li>
@@ -47,42 +47,42 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                             <li>Informações sobre as palestras noturnas</li>
                         )}
                     </ul>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
                         Caso não encontre, verifique sua caixa de spam ou promoções.
                     </p>
                 </div>
             </Card>
 
             {/* Próximos Passos */}
-            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                <Card className="p-4 bg-dark-200/50 border-white/10 flex items-center gap-4 text-left">
-                    <div className="w-10 h-10 rounded-full bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 text-brand-orange-coral font-bold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto px-4 sm:px-0">
+                <Card className="p-3 sm:p-4 bg-dark-200/50 border-white/10 flex items-center gap-3 sm:gap-4 text-left">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 text-brand-orange-coral font-bold text-sm sm:text-base">
                         1
                     </div>
                     <div>
-                        <h5 className="font-semibold text-white">Acesse o App</h5>
-                        <p className="text-xs text-gray-400">Use seu email e senha cadastrados</p>
+                        <h5 className="font-semibold text-white text-sm sm:text-base">Acesse o App</h5>
+                        <p className="text-[10px] sm:text-xs text-gray-400">Use seu email e senha cadastrados</p>
                     </div>
                 </Card>
 
-                <Card className="p-4 bg-dark-200/50 border-white/10 flex items-center gap-4 text-left">
-                    <div className="w-10 h-10 rounded-full bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 text-brand-orange-coral font-bold">
+                <Card className="p-3 sm:p-4 bg-dark-200/50 border-white/10 flex items-center gap-3 sm:gap-4 text-left">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 text-brand-orange-coral font-bold text-sm sm:text-base">
                         2
                     </div>
                     <div>
-                        <h5 className="font-semibold text-white">Monte sua Agenda</h5>
-                        <p className="text-xs text-gray-400">Favorite palestras e cursos</p>
+                        <h5 className="font-semibold text-white text-sm sm:text-base">Monte sua Agenda</h5>
+                        <p className="text-[10px] sm:text-xs text-gray-400">Favorite palestras e cursos</p>
                     </div>
                 </Card>
             </div>
 
             {/* Botões Finais */}
-            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mt-8">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-2xl mx-auto mt-6 sm:mt-8 px-4 sm:px-0">
                 <Button
                     variant="outline"
                     size="lg"
                     onClick={onFechar}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="flex-1 border-white/20 text-white hover:bg-white/10 h-12 sm:h-14"
                 >
                     <Home className="h-5 w-5 mr-2" />
                     Voltar ao Início
@@ -94,7 +94,7 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                         // Redirecionar para dashboard ou home
                         window.location.href = '/minha-area';
                     }}
-                    className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
+                    className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg h-12 sm:h-14"
                 >
                     <Smartphone className="h-5 w-5 mr-2" />
                     Acessar App Agora

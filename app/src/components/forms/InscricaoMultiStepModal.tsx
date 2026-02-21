@@ -159,15 +159,15 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl">
+            <DialogContent className="max-w-2xl max-h-[96vh] sm:max-h-[90vh] overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
                 {/* Header com Progresso */}
-                <div className="bg-dark-100/50 backdrop-blur-md pb-6 pt-8 px-8 border-b border-white/5 z-20 shadow-lg">
+                <div className="bg-dark-100/50 backdrop-blur-md pb-4 pt-6 sm:pb-6 sm:pt-8 px-4 sm:px-8 border-b border-white/5 z-20 shadow-lg">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                            <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight">
                                 Inscrição <span className="text-brand-orange-coral">GE Triunfo</span>
                             </h2>
-                            <p className="text-gray-500 text-sm mt-1">Growth Experience • Workshop & Training</p>
+                            <p className="text-gray-500 text-[10px] sm:text-sm mt-1">Growth Experience • Workshop & Training</p>
                         </div>
                         <Button
                             variant="ghost"
@@ -186,7 +186,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         {/* Linha de progresso ativa */}
                         <div
                             className="absolute top-5 left-8 h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
-                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
+                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 48px)' }}
                         />
 
                         {[
@@ -207,7 +207,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     className="flex flex-col items-center gap-3 relative"
                                 >
                                     <div
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
+                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
                                             ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                                             : isActive
                                                 ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.4)] scale-110'
@@ -237,7 +237,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 </div>
 
                 {/* Content com Scrollbar Customizada */}
-                <div className="px-8 py-8 overflow-y-auto max-h-[calc(90vh-200px)] custom-scrollbar">
+                <div className="px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto max-h-[calc(96vh-180px)] sm:max-h-[calc(90vh-200px)] custom-scrollbar">
                     {renderStep()}
                 </div>
             </DialogContent>

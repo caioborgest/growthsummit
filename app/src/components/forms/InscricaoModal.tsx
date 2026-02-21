@@ -195,8 +195,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
+            <div className="glass-card max-w-md w-full p-4 sm:p-6 relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -226,10 +226,10 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     <>
                         {/* Header */}
                         <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-white mb-2">{getTitulo()}</h2>
-                            <p className="text-gray-400">Growth Experience Triunfo-PE</p>
-                            <div className="mt-3 inline-block px-4 py-2 rounded-lg bg-orange-500/20 border border-orange-500/30">
-                                <span className="text-orange-400 font-semibold">{getValor()}</span>
+                            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2 leading-tight">{getTitulo()}</h2>
+                            <p className="text-xs sm:text-sm text-gray-400">Growth Experience Triunfo-PE</p>
+                            <div className="mt-3 inline-block px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-orange-500/20 border border-orange-500/30">
+                                <span className="text-orange-400 text-sm sm:text-base font-semibold">{getValor()}</span>
                             </div>
                             {tipo === 'palestra' && (
                                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2">

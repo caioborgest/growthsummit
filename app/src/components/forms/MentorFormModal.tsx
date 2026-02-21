@@ -176,8 +176,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-xl w-full max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md">
+            <div className="glass-card max-w-xl w-full max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
                 {/* Progress Bar */}
                 {!isSuccess && (
                     <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
@@ -190,12 +190,12 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors z-10"
+                    className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-white transition-colors z-10 p-2"
                 >
-                    <X className="h-6 w-6" />
+                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
 
-                <div className="p-8">
+                <div className="p-4 sm:p-8">
                     {isSuccess ? (
                         <div className="text-center py-12">
                             <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
@@ -212,12 +212,12 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         </div>
                     ) : (
                         <>
-                            <div className="mb-8">
-                                <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
+                            <div className="mb-6 sm:mb-8">
+                                <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
                                     Módulo Mentor
                                 </Badge>
-                                <h2 className="text-3xl font-bold text-white mb-2">Seja um Mentor</h2>
-                                <p className="text-gray-400">Compartilhe conhecimento e impulsione negócios locais.</p>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Seja um Mentor</h2>
+                                <p className="text-sm sm:text-lg text-gray-400">Compartilhe conhecimento e impulsione negócios locais.</p>
                             </div>
 
                             <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">

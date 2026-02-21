@@ -143,12 +143,12 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10">
-                <div className="sticky top-0 bg-dark-100 pb-6 border-b border-white/10 mb-6 z-10">
+            <DialogContent className="max-w-4xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10 p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
+                <div className="sticky top-0 bg-dark-100 pb-4 sm:pb-6 border-b border-white/10 mb-4 sm:mb-6 z-10">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold text-white">Agendar Mentoria 1:1</h2>
-                        <Button variant="ghost" size="icon" onClick={handleClose} className="text-gray-400 hover:text-white">
-                            <X size={20} />
+                        <h2 className="text-xl sm:text-2xl font-bold text-white">Agendar Mentoria 1:1</h2>
+                        <Button variant="ghost" size="icon" onClick={handleClose} className="text-gray-400 hover:text-white h-8 w-8">
+                            <X size={18} />
                         </Button>
                     </div>
 
@@ -160,15 +160,15 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         ))}
                     </div>
 
-                    <div className="flex justify-between mt-4">
+                    <div className="flex justify-between mt-4 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar scroll-smooth">
                         {['Área', 'Mentor', 'Dados', 'Confirmar', 'Oferta', 'App', 'Fim'].map((label, idx) => {
                             const step = idx + 1;
                             return (
-                                <div key={step} className="flex flex-col items-center gap-1">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${step < currentStep ? 'bg-green-500' : step === currentStep ? 'bg-brand-orange-coral' : 'bg-gray-800 text-gray-500'}`}>
-                                        {step < currentStep ? <CheckCircle size={14} /> : step}
+                                <div key={step} className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-fit">
+                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold ${step < currentStep ? 'bg-green-500' : step === currentStep ? 'bg-brand-orange-coral' : 'bg-gray-800 text-gray-500'}`}>
+                                        {step < currentStep ? <CheckCircle size={12} /> : step}
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase ${step === currentStep ? 'text-brand-orange-coral' : 'text-gray-500'}`}>{label}</span>
+                                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${step === currentStep ? 'text-brand-orange-coral' : 'text-gray-500'}`}>{label}</span>
                                 </div>
                             )
                         })}

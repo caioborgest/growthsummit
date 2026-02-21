@@ -154,17 +154,17 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="text-center">
-                <h3 className="text-3xl font-bold text-white mb-3">
+            <div className="text-left sm:text-center">
+                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">
                     Seus Dados Pessoais
                 </h3>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-sm sm:text-lg">
                     Preencha seus dados para criar sua conta
                 </p>
             </div>
 
             {/* Formulário */}
-            <Card className="glass-card p-4 sm:p-8 border-white/10">
+            <Card className="glass-card p-4 sm:p-8 border-white/10 bg-dark-200/50">
                 <div className="space-y-6">
                     {/* Nome Completo */}
                     <div>
@@ -330,18 +330,18 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             Sua inscrição faz parte de uma parceria com alguma Prefeitura ou Liderança Política da região?
                         </p>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                             {[
                                 { id: 'prefeitura', label: 'Prefeitura' },
                                 { id: 'politico', label: 'Político' },
-                                { id: 'nenhum', label: 'Nenhum/Outro' }
+                                { id: 'nenhum', label: 'Nenhum' }
                             ].map((tipo) => (
                                 <button
                                     key={tipo.id}
                                     type="button"
                                     onClick={() => setIndicacaoTipo(tipo.id as 'prefeitura' | 'politico' | 'nenhum')}
-                                    className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${indicacaoTipo === tipo.id
-                                        ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white'
+                                    className={`px-4 py-2 sm:py-3 rounded-xl border text-sm font-bold transition-all ${indicacaoTipo === tipo.id
+                                        ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white shadow-glow-orange/20'
                                         : 'bg-dark-200 border-white/5 text-gray-400 hover:border-white/10'
                                         }`}
                                 >

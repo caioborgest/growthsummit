@@ -31,11 +31,11 @@ export function Step1SelecionarCursos({
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="text-left mb-8">
-                <h3 className="text-3xl font-black text-white leading-none mb-4">
+            <div className="text-left mb-6 sm:mb-8">
+                <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-2 sm:mb-4">
                     Atividades <span className="text-brand-orange-coral">Disponíveis</span>
                 </h3>
-                <p className="text-gray-400 text-lg max-w-xl">
+                <p className="text-gray-400 text-sm sm:text-lg max-w-xl">
                     Selecione uma trilha de conhecimento para personalizar sua jornada no evento.
                 </p>
                 {selecionados.length > 0 && (
@@ -56,7 +56,7 @@ export function Step1SelecionarCursos({
                     return (
                         <div
                             key={curso.id}
-                            className={`relative group p-6 rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
+                            className={`relative group p-4 sm:p-6 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
                                 ? 'border-brand-orange-coral bg-brand-orange-coral/5 shadow-[0_10px_30px_rgba(255,112,67,0.15)] ring-1 ring-brand-orange-coral/20'
                                 : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60'
                                 }`}
@@ -69,12 +69,12 @@ export function Step1SelecionarCursos({
 
                             <div className="flex items-start gap-6 relative z-10">
                                 {/* Radio Circle Customizado */}
-                                <div className="pt-1 select-none">
-                                    <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
+                                <div className="pt-0.5 sm:pt-1 select-none">
+                                    <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
                                         ? 'border-brand-orange-coral bg-brand-orange-coral'
                                         : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
                                         {isSelected && (
-                                            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                                            <div className="w-1.5 h-1.5 sm:w-2.5 sm:w-2.5 rounded-full bg-white shadow-sm" />
                                         )}
                                     </div>
                                 </div>
@@ -88,8 +88,8 @@ export function Step1SelecionarCursos({
                                         </h4>
                                         {curso.nivel && (
                                             <Badge className={`px-2 py-0 text-[10px] uppercase font-black tracking-tighter ${curso.nivel === 'Iniciante' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                    curso.nivel === 'Intermediário' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                        'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                                curso.nivel === 'Intermediário' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                    'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                                                 }`}>
                                                 {curso.nivel}
                                             </Badge>
@@ -132,14 +132,14 @@ export function Step1SelecionarCursos({
             </div>
 
             {/* Sticky Action Footer */}
-            <div className="mt-8 pt-8 border-t border-white/5 flex flex-col items-center gap-4">
+            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/5 flex flex-col items-center gap-4">
                 <Button
                     size="lg"
                     disabled={selecionados.length === 0}
                     onClick={handleContinuar}
-                    className={`w-full h-14 rounded-2xl font-black text-lg tracking-tight transition-all duration-300 shadow-2xl ${selecionados.length === 0
-                            ? 'bg-dark-400 text-gray-600 border border-white/5'
-                            : 'bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white shadow-[0_10px_30px_rgba(255,112,67,0.3)] hover:scale-[1.02]'
+                    className={`w-full h-12 sm:h-14 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg tracking-tight transition-all duration-300 shadow-2xl ${selecionados.length === 0
+                        ? 'bg-dark-400 text-gray-600 border border-white/5'
+                        : 'bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white shadow-[0_10px_30px_rgba(255,112,67,0.3)]'
                         }`}
                 >
                     {selecionados.length === 0
