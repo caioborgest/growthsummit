@@ -164,6 +164,7 @@ export interface B2BMatch {
 
 export interface B2BAppointmentTriunfo {
   id: string;
+  projectId: string;
   matchId?: string;
   companyAId: string;
   companyBId: string;
@@ -358,4 +359,19 @@ export interface ProjectStats {
   startups: number;
   sponsors: number;
   checkIns: number;
+}
+
+export interface Coupon {
+  id: string;
+  projectId: string;
+  codigo: string;
+  indicacaoTipo: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro';
+  indicacaoNome: string;
+  porcentagemDesconto: number;
+  ativo: boolean;
+  usoLimite: number | null;
+  usoAtual: number;
+  descricao?: string;
+  vencimento?: string;
+  createdAt: string;
 }

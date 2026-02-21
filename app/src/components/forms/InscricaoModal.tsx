@@ -19,13 +19,48 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         telefone: '',
         empresa: '',
         senha: '',
-        confirmarSenha: ''
+        confirmarSenha: '',
+        cupom: '' // Novo campo
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [cupomValido, setCupomValido] = useState<{ porcentagem: number; nome: string } | null>(null);
+    const [validandoCupom, setValidandoCupom] = useState(false);
 
     if (!isOpen) return null;
+
+    const handleValidarCupom = async (codigo: string) => {
+        if (!codigo || codigo.length < 3) return;
+        setValidandoCupom(true);
+        try {
+            const { data, error: cError } = await supabase
+                .from('cupons_parceria_social')
+                .select('*')
+                .eq('codigo', codigo.toUpperCase())
+                .eq('ativo', true)
+                .single();
+
+            if (cError || !data) {
+                setCupomValido(null);
+                return;
+            }
+
+            // Verificar limite de uso
+            if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+                setCupomValido(null);
+                setError('Este código já atingiu o limite de usos.');
+                return;
+            }
+
+            setCupomValido({ porcentagem: data.porcentagem_desconto, nome: data.indicacao_nome });
+            setError('');
+        } catch (err) {
+            console.error('Erro cupom:', err);
+        } finally {
+            setValidandoCupom(false);
+        }
+    };
 
     const getTitulo = () => {
         switch (tipo) {
@@ -33,7 +68,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 return 'Inscrição Palestra Noturna';
             case 'mentor':
                 return 'Inscrição Mentorado 1:1';
-
             case 'cursos':
                 return 'Inscrição Cursos e Treinamentos';
             default:
@@ -41,8 +75,15 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         }
     };
 
+    const valorOriginal = 179.99;
     const getValor = () => {
-        return tipo === 'palestra' ? 'R$ 179,99' : 'Gratuito';
+        if (tipo !== 'palestra') return 'Gratuito';
+        if (cupomValido) {
+            const desconto = (valorOriginal * cupomValido.porcentagem) / 100;
+            const final = valorOriginal - desconto;
+            return final === 0 ? 'GRATUITO (Voucher Equipe)' : `R$ ${final.toFixed(2).replace('.', ',')}`;
+        }
+        return 'R$ 179,99';
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -51,137 +92,66 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         setError('');
 
         try {
-            // Validação básica
-            if (!formData.nome || !formData.email || !formData.telefone || !formData.senha || !formData.confirmarSenha) {
-                throw new Error('Por favor, preencha todos os campos obrigatórios');
+            // Validações
+            if (!formData.nome || !formData.email || !formData.telefone || !formData.senha) {
+                throw new Error('Preencha os campos obrigatórios');
             }
 
-            // Validação de senhas
-            if (formData.senha !== formData.confirmarSenha) {
-                throw new Error('As senhas não coincidem');
-            }
-
-            if (formData.senha.length < 6) {
-                throw new Error('A senha deve ter pelo menos 6 caracteres');
-            }
-
-            // Validação de email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email)) {
-                throw new Error('Por favor, insira um email válido');
-            }
-
-            // 0. Verificar se já existe uma sessão ativa
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let user = existingSession?.user;
-            let authError = null;
+            const { data: { session } } = await supabase.auth.getSession();
+            let user = session?.user;
 
             if (!user) {
-                // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
                     password: formData.senha,
-                    options: {
-                        data: {
-                            name: formData.nome,
-                            phone: formData.telefone,
-                            role: (tipo === 'mentor') ? 'mentor' : 'participante'
-                        }
-                    }
+                    options: { data: { name: formData.nome, phone: formData.telefone, role: 'participante' } }
                 });
+                if (sError) throw sError;
                 user = authData?.user || null;
-                authError = sError;
             }
 
-            if (authError) {
-                if (authError.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
-                }
-                throw authError;
+            if (!user) throw new Error('Falha na autenticação');
+
+            // 2. Inserir Inscrição
+            const valorFinal = tipo === 'palestra'
+                ? (cupomValido ? valorOriginal * (1 - cupomValido.porcentagem / 100) : valorOriginal)
+                : 0;
+
+            const { error: insError } = await supabase.from('inscricoes_growth_experience').insert({
+                user_id: user.id,
+                nome: formData.nome,
+                email: formData.email,
+                telefone: formData.telefone,
+                empresa: formData.empresa || cupomValido?.nome || null,
+                tipo_inscricao: tipo,
+                evento: eventoNome,
+                valor_pago: valorFinal,
+                status_pagamento: valorFinal === 0 ? 'pago' : 'pendente',
+                status: 'ativo',
+                codigo_social: formData.cupom || null
+            });
+
+            if (insError) throw insError;
+
+            // 3. Atualizar uso do cupom se existir
+            if (formData.cupom && cupomValido) {
+                await supabase.rpc('increment_coupon_usage', { coupon_code: formData.cupom.toUpperCase() });
             }
 
-            if (!user) {
-                throw new Error('Erro ao identificar usuário para inscrição');
-            }
-
-            // 2. Inserir no Supabase dependendo do tipo
-            let supabaseQuery;
-
-            if (tipo === 'mentor') {
-                supabaseQuery = supabase.from('mentorias_agendadas').insert({
-                    mentorado_id: user.id,
-                    nome_mentorado: formData.nome,
-                    email_mentorado: formData.email,
-                    telefone_mentorado: formData.telefone,
-                    status: 'pendente'
-                });
-            } else {
-                supabaseQuery = supabase.from('inscricoes_growth_experience').insert({
-                    user_id: user.id,
-                    nome: formData.nome,
-                    email: formData.email,
-                    telefone: formData.telefone,
-                    empresa: formData.empresa || null,
-                    tipo_inscricao: tipo,
-                    evento: eventoNome,
-                    valor_pago: tipo === 'palestra' ? 179.99 : 0,
-                    status_pagamento: tipo === 'palestra' ? 'pendente' : 'pago',
-                    status: 'ativo'
-                });
-            }
-
-            const { error: supabaseError } = await supabaseQuery;
-            if (supabaseError) throw supabaseError;
-
-            // Analytics
-            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
-            if (typeof window !== 'undefined' && win.gtag) {
-                win.gtag('event', 'inscricao_enviada', {
-                    event_category: 'Growth Experience Triunfo',
-                    event_label: tipo,
-                    value: tipo === 'palestra' ? 179.99 : 0,
-                });
-            }
-
-            // Redirecionamento WhatsApp para palestra
-            if (tipo === 'palestra') {
-                const mensagem = encodeURIComponent(
-                    `Olá! Gostaria de finalizar minha inscrição para a Palestra Noturna do Growth Experience Triunfo-PE.\n\n` +
-                    `Nome: ${formData.nome}\n` +
-                    `Email: ${formData.email}\n` +
-                    `Telefone: ${formData.telefone}\n` +
-                    `Valor: R$ 179,99`
-                );
+            // 4. Redirecionamento ou Sucesso
+            if (tipo === 'palestra' && valorFinal > 0) {
+                const mensagem = encodeURIComponent(`Olá! Quero finalizar meu pagamento da Palestra Noturna.\nNome: ${formData.nome}\nEmail: ${formData.email}`);
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
             }
 
             setIsSuccess(true);
-
             setTimeout(() => {
-                setFormData({
-                    nome: '',
-                    email: '',
-                    telefone: '',
-                    empresa: '',
-                    senha: '',
-                    confirmarSenha: ''
-                });
                 setIsSuccess(false);
                 onClose();
             }, 3000);
 
-        } catch (err: unknown) {
-            console.error('Erro ao enviar inscrição:', err);
-            let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
-
-            if (err instanceof Error) {
-                if (err.message.includes('rate limit exceeded')) {
-                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
-                } else {
-                    errorMessage = err.message;
-                }
-            }
-            setError(errorMessage);
+        } catch (err: any) {
+            setError(err.message || 'Erro ao processar');
         } finally {
             setIsSubmitting(false);
         }
@@ -338,6 +308,41 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 />
                             </div>
 
+                            {tipo === 'palestra' && (
+                                <div className="pt-2">
+                                    <label htmlFor="cupom" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Possui um Código de Voucher ou Equipe?
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            id="cupom"
+                                            name="cupom"
+                                            value={formData.cupom}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData({ ...formData, cupom: val });
+                                                if (val.length >= 3) handleValidarCupom(val);
+                                                else setCupomValido(null);
+                                            }}
+                                            className={`w-full px-4 py-3 bg-dark-200 border ${cupomValido ? 'border-green-500' : 'border-dark-300'} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all`}
+                                            placeholder="Ex: EQUIPE-123"
+                                        />
+                                        {validandoCupom && (
+                                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500 animate-spin" />
+                                        )}
+                                        {cupomValido && (
+                                            <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
+                                        )}
+                                    </div>
+                                    {cupomValido && (
+                                        <p className="text-xs text-green-500 mt-2 font-medium">
+                                            Voucher aplicado: {cupomValido.porcentagem}% de desconto para {cupomValido.nome}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             {error && (
                                 <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                                     <p className="text-red-400 text-sm">{error}</p>
@@ -366,8 +371,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                         </>
                                     ) : (
                                         <>
-                                            {tipo === 'palestra' && <MessageCircle className="h-4 w-4 mr-2" />}
-                                            {tipo === 'palestra' ? 'Pagar via WhatsApp' : 'Confirmar Inscrição'}
+                                            {tipo === 'palestra' && getValor().includes('R$') && <MessageCircle className="h-4 w-4 mr-2" />}
+                                            {tipo === 'palestra' && getValor().includes('R$') ? 'Pagar via WhatsApp' : 'Confirmar Inscrição'}
                                         </>
                                     )}
                                 </Button>

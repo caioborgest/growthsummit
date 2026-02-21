@@ -4,7 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
-  Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project
+  Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
+  B2BSwipe, B2BMatch, B2BAppointmentTriunfo
 } from '@/types';
 
 // Mock Data Placeholders (re-added for fallback/types)
@@ -36,6 +37,7 @@ const getTableName = (projectId: string, entity: string) => {
       case 'b2b_swipes': return 'b2b_swipes';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_appointments': return 'b2b_appointments_triunfo';
+      case 'cupons': return 'cupons_parceria_social';
       default: return entity;
     }
   }
@@ -137,6 +139,14 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item['mentee_id']) mappedItem['menteeId'] = item['mentee_id'];
         if (item['years_experience']) mappedItem['yearsExperience'] = item['years_experience'];
         if (item['max_mentories']) mappedItem['maxMentories'] = item['max_mentories'];
+
+        // Specific for Coupons
+        if (item['indicacao_tipo']) mappedItem['indicacaoTipo'] = item['indicacao_tipo'];
+        if (item['indicacao_nome']) mappedItem['indicacaoNome'] = item['indicacao_nome'];
+        if (item['porcentagem_desconto'] !== undefined) mappedItem['porcentagemDesconto'] = item['porcentagem_desconto'];
+        if (item['uso_limite'] !== undefined) mappedItem['usoLimite'] = item['uso_limite'];
+        if (item['uso_atual'] !== undefined) mappedItem['usoAtual'] = item['uso_atual'];
+        if (item['codigo']) mappedItem['codigo'] = item['codigo'];
 
         return mappedItem as unknown as T;
       });
@@ -421,4 +431,8 @@ export function useB2BMatches() {
 
 export function useB2BAppointmentsTriunfo() {
   return useData<B2BAppointmentTriunfo>([], 'b2b_appointments');
+}
+
+export function useCoupons() {
+  return useData<Coupon>([], 'cupons');
 }
