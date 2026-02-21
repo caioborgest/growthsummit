@@ -6,7 +6,11 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/((?!assets/|images/|icons/|favicon.ico|sw.js|manifest.webmanifest|clear-site-data.js).*)",
       "destination": "/index.html"
     }
   ],
