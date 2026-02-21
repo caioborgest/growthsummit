@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Loader2, CheckCircle, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface StartupFormModalProps {
     isOpen: boolean;
@@ -62,6 +63,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
         { value: 'tracao', label: 'Tração (crescimento consistente)' },
         { value: 'escala', label: 'Escala (expansão acelerada)' }
     ];
+
+    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -129,6 +132,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             // Preparar dados para inserção
             const dataToInsert = {
+                project_id: projectId,
                 user_id: user.id,
                 nome_fundador: formData.nome_fundador,
                 email: formData.email,

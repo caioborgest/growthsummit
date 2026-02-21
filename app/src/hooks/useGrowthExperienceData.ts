@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { useProject } from '@/contexts/ProjectContext';
 
 // ==================== TYPES ====================
 
@@ -90,12 +91,16 @@ export function useInscricoesTriunfo() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { projectId } = useProject();
+
     const fetchData = async () => {
+        if (!projectId) return;
         try {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
                 .from('inscricoes_growth_experience')
                 .select('*')
+                .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
@@ -163,12 +168,16 @@ export function useStartupsArenaPitch() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { projectId } = useProject();
+
     const fetchData = async () => {
+        if (!projectId) return;
         try {
             setLoading(true);
             const { data: startups, error: fetchError } = await supabase
                 .from('startups_arena_pitch')
                 .select('*')
+                .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
@@ -250,12 +259,16 @@ export function useEmpresasB2B() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const { projectId } = useProject();
+
     const fetchData = async () => {
+        if (!projectId) return;
         try {
             setLoading(true);
             const { data: empresas, error: fetchError } = await supabase
                 .from('rodada_negocios_b2b')
                 .select('*')
+                .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;

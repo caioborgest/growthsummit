@@ -21,8 +21,10 @@ import {
     useEmpresasB2B,
     useGrowthExperienceStats
 } from '@/hooks/useGrowthExperienceData';
+import { useProject } from '@/contexts/ProjectContext';
 
 export function AdminGrowthExperienceTriunfo() {
+    const { selectedProject } = useProject();
     const stats = useGrowthExperienceStats();
     const { data: inscricoes, loading: loadingInscricoes } = useInscricoesTriunfo();
     const { data: startups, loading: loadingStartups } = useStartupsArenaPitch();
@@ -44,7 +46,7 @@ export function AdminGrowthExperienceTriunfo() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">
-                        Growth Experience Triunfo-PE 2026
+                        {selectedProject?.name || 'Projeto Growth Experience'}
                     </h1>
                     <p className="text-gray-400">
                         Painel de gestão do evento • 09 de Abril de 2026

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Loader2, CheckCircle, Handshake, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface B2BFormModalProps {
     isOpen: boolean;
@@ -77,6 +78,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         { value: 'parceria', label: 'Estabelecer parcerias estratégicas' },
         { value: 'todos', label: 'Todos os acima' }
     ];
+
+    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -170,6 +173,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // Preparar dados para inserção
             const dataToInsert = {
+                project_id: projectId,
                 user_id: user.id,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,

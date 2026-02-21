@@ -26,22 +26,30 @@ const GE_TRIUNFO = 'ge-triunfo-2026';
 
 // Table Mapping based on project and entity
 const getTableName = (projectId: string, entity: string) => {
-  if (projectId === GE_TRIUNFO) {
+  // Global table mappings
+  if (entity === 'cupons') return 'cupons_parceria_social';
+  if (entity === 'projects') return 'projects';
+  if (entity === 'users') return 'users';
+  if (entity === 'profiles') return 'profiles';
+
+  // Specific mappings for Growth Experience projects
+  if (projectId && (projectId === GE_TRIUNFO || projectId.startsWith('ge-'))) {
     switch (entity) {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
       case 'companies': return 'rodada_negocios_b2b';
       case 'mentoring_sessions': return 'mentorias_agendadas';
+      case 'mentors': return 'mentores_growth_experience';
       case 'sessions': return 'programacao_evento';
       case 'b2b_meetings': return 'b2b_appointments_triunfo';
       case 'b2b_swipes': return 'b2b_swipes';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_appointments': return 'b2b_appointments_triunfo';
-      case 'cupons': return 'cupons_parceria_social';
       default: return entity;
     }
   }
-  // Default to summit tables
+
+  // Default to entity name for other projects
   return entity;
 };
 
@@ -75,14 +83,18 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId, entityName);
-      const { data: supabaseData, error } = await supabase
-        .from(tableName)
-        .select('*');
+      let query = supabase.from(tableName as any).select('*');
+
+      // Filter by project for non-generic tables
+      if (tableName !== 'projects' && tableName !== 'users' && tableName !== 'profiles') {
+        query = query.eq('project_id', projectId);
+      }
+
+      const { data: supabaseData, error } = await query;
 
       if (error) throw error;
 
       // Basic mapping from snake_case to CamelCase if needed
-      // This is a simple heuristic, might need refinement for complex types
       const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => {
         const mappedItem: Record<string, unknown> = { ...item };
         // Map common fields
@@ -101,7 +113,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         // Specific for Triunfo Registrations
         if (item['palestras_noturnas'] !== undefined) mappedItem['palestrasNoturnas'] = item['palestras_noturnas'];
         if (item['cursos_selecionados']) mappedItem['cursosSelecionados'] = item['cursos_selecionados'];
-        if (item['valor_pago']) mappedItem['valorPago'] = item['valor_pago'];
+        if (item['valor_pago'] !== undefined) mappedItem['valorPago'] = item['valor_pago'];
 
         // Specific for Startup
         if (item['nome_startup']) mappedItem['name'] = item['nome_startup'];
@@ -196,6 +208,29 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     try {
       const tableName = getTableName(projectId!, entityName);
       const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
+
+      // Se for a tabela de projetos, tratar os campos específicos
+      if (tableName === 'projects') {
+        if (updates.settings) {
+          const settings = updates.settings as any;
+          if (settings.maxRegistrations !== undefined) dataToUpdate.max_registrations = settings.maxRegistrations;
+          if (settings.maxMentors !== undefined) dataToUpdate.max_mentors = settings.maxMentors;
+          if (settings.maxStartups !== undefined) dataToUpdate.max_startups = settings.maxStartups;
+          if (settings.maxCompanies !== undefined) dataToUpdate.max_companies = settings.maxCompanies;
+          if (settings.enableB2B !== undefined) dataToUpdate.enable_b2b = settings.enableB2B;
+          if (settings.enableMentoring !== undefined) dataToUpdate.enable_mentoring = settings.enableMentoring;
+          if (settings.enableStartups !== undefined) dataToUpdate.enable_startups = settings.enableStartups;
+          if (settings.enableCheckIn !== undefined) dataToUpdate.enable_check_in = settings.enableCheckIn;
+
+          if (settings.ticketPrices) {
+            if (settings.ticketPrices.standard !== undefined) dataToUpdate.ticket_price_standard = Math.round(settings.ticketPrices.standard * 100);
+            if (settings.ticketPrices.pro !== undefined) dataToUpdate.ticket_price_pro = Math.round(settings.ticketPrices.pro * 100);
+            if (settings.ticketPrices.vip !== undefined) dataToUpdate.ticket_price_vip = Math.round(settings.ticketPrices.vip * 100);
+          }
+          delete dataToUpdate.settings;
+        }
+      }
+
       const { error } = await supabase
         .from(tableName as any)
         .update(dataToUpdate as any)

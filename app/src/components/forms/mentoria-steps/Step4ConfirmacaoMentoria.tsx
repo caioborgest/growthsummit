@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { User, Mail, Phone, Briefcase, Loader2, AlertCircle } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface Step4ConfirmacaoMentoriaProps {
     dados: DadosMentoria;
@@ -42,6 +43,8 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
         }
         if (dados.mentorId) fetchMentor();
     }, [dados.mentorId]);
+
+    const { projectId } = useProject();
 
     const handleConfirmar = async () => {
         setLoading(true);
@@ -94,6 +97,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             const { data: mentoriaData, error: mentoriaError } = await supabase
                 .from('mentorias_agendadas')
                 .insert({
+                    project_id: projectId,
                     mentorado_id: userId,
                     mentor_id: dados.mentorId,
                     nome_mentorado: dados.nome,

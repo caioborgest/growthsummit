@@ -3,6 +3,7 @@ import { X, Loader2, CheckCircle, Linkedin, Target, Camera, User } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface MentorFormModalProps {
     isOpen: boolean;
@@ -65,6 +66,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         if (isProcessing) return;
         setStep(prev => prev - 1);
     };
+
+    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -144,6 +147,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             const { error: dbError } = await (supabase
                 .from('mentores_growth_experience') as any)
                 .insert({
+                    project_id: projectId,
                     user_id: user?.id || null, // Se for nulo, salvamos como candidatura avulsa
                     nome: formData.nome,
                     email: formData.email,

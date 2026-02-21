@@ -6,6 +6,7 @@ import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, 
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 
 interface Step3ConfirmacaoProps {
@@ -73,9 +74,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             console.log('Enviando dados da inscrição para o Supabase...');
 
+            const { projectId } = useProject();
+
             const { data: inscricaoData, error: inscricaoError } = await (supabase
                 .from('inscricoes_growth_experience') as any)
                 .insert({
+                    project_id: projectId,
                     user_id: userId || null,
                     nome: dados.nome,
                     email: dados.email,

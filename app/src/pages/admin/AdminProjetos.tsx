@@ -89,7 +89,17 @@ export default function AdminProjetos() {
 
     try {
       console.log('Atualizando projeto:', editingProject.id);
-      await update(editingProject.id, formData);
+
+      // Sanitizar dados antes de enviar
+      const updateData = {
+        ...formData,
+        settings: {
+          ...defaultSettings,
+          ...formData.settings,
+        }
+      };
+
+      await update(editingProject.id, updateData);
       toast.success('Projeto atualizado com sucesso!');
       setIsDialogOpen(false);
       setEditingProject(null);
@@ -266,6 +276,43 @@ export default function AdminProjetos() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Cor Primária</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={formData.primaryColor || '#21808D'}
+                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      className="w-12 p-1 bg-[#0F172A] border-[#334155]"
+                    />
+                    <Input
+                      value={formData.primaryColor || '#21808D'}
+                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      placeholder="#000000"
+                      className="flex-1 bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cor Secundária</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={formData.secondaryColor || '#FE4C38'}
+                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      className="w-12 p-1 bg-[#0F172A] border-[#334155]"
+                    />
+                    <Input
+                      value={formData.secondaryColor || '#FE4C38'}
+                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      placeholder="#000000"
+                      className="flex-1 bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
@@ -286,13 +333,13 @@ export default function AdminProjetos() {
               </div>
 
               <div className="border-t border-[#334155] pt-4">
-                <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Configurações</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Configurações de Preços</h4>
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Preço Standard (R$)</Label>
+                    <Label>Standard (R$)</Label>
                     <Input
                       type="number"
-                      value={formData.settings?.ticketPrices?.standard || 197}
+                      value={formData.settings?.ticketPrices?.standard || 0}
                       onChange={(e) => setFormData({
                         ...formData,
                         settings: {
@@ -301,7 +348,7 @@ export default function AdminProjetos() {
                           ticketPrices: {
                             ...defaultSettings.ticketPrices,
                             ...formData.settings?.ticketPrices,
-                            standard: parseInt(e.target.value) || 0
+                            standard: parseFloat(e.target.value) || 0
                           }
                         }
                       })}
@@ -309,10 +356,10 @@ export default function AdminProjetos() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Preço Pro (R$)</Label>
+                    <Label>Pro (R$)</Label>
                     <Input
                       type="number"
-                      value={formData.settings?.ticketPrices?.pro || 347}
+                      value={formData.settings?.ticketPrices?.pro || 0}
                       onChange={(e) => setFormData({
                         ...formData,
                         settings: {
@@ -321,8 +368,66 @@ export default function AdminProjetos() {
                           ticketPrices: {
                             ...defaultSettings.ticketPrices,
                             ...formData.settings?.ticketPrices,
-                            pro: parseInt(e.target.value) || 0
+                            pro: parseFloat(e.target.value) || 0
                           }
+                        }
+                      })}
+                      className="bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>VIP (R$)</Label>
+                    <Input
+                      type="number"
+                      value={formData.settings?.ticketPrices?.vip || 0}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        settings: {
+                          ...defaultSettings,
+                          ...formData.settings,
+                          ticketPrices: {
+                            ...defaultSettings.ticketPrices,
+                            ...formData.settings?.ticketPrices,
+                            vip: parseFloat(e.target.value) || 0
+                          }
+                        }
+                      })}
+                      className="bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-[#334155] pt-4">
+                <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Limites e Vagas</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Max Inscrições</Label>
+                    <Input
+                      type="number"
+                      value={formData.settings?.maxRegistrations || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        settings: {
+                          ...defaultSettings,
+                          ...formData.settings,
+                          maxRegistrations: parseInt(e.target.value) || undefined
+                        }
+                      })}
+                      className="bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max Mentores</Label>
+                    <Input
+                      type="number"
+                      value={formData.settings?.maxMentors || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        settings: {
+                          ...defaultSettings,
+                          ...formData.settings,
+                          maxMentors: parseInt(e.target.value) || undefined
                         }
                       })}
                       className="bg-[#0F172A] border-[#334155]"

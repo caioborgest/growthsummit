@@ -47,7 +47,9 @@ import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
 import { SectionShare } from '@/components/social/SectionShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
-import { useMentors } from '@/hooks/useData';
+import { useMentors, useProjects } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
+import { useEffect } from 'react';
 
 // Dados do evento
 const palestrantes = [
@@ -382,8 +384,19 @@ function InnerFooter() {
 
 // Main Component
 export function GrowthExperienceTriunfo() {
+  const { data: projects } = useProjects();
+  const { setSelectedProject, selectedProject } = useProject();
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
+
+  // Encontrar o projeto específico para esta página pelo slug
+  useEffect(() => {
+    const proyecto = projects.find(p => p.slug === 'ge-triunfo-2026');
+    if (proyecto && (!selectedProject || selectedProject.id !== proyecto.id)) {
+      setSelectedProject(proyecto);
+    }
+  }, [projects, setSelectedProject, selectedProject]);
+
   const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
 
