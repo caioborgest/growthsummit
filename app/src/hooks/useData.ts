@@ -279,6 +279,21 @@ export function useProjects() {
         secondaryColor: item['secondary_color'] as string,
         createdAt: item['created_at'] as string,
         updatedAt: item['updated_at'] as string,
+        settings: {
+          maxRegistrations: item['max_registrations'],
+          maxMentors: item['max_mentors'],
+          maxStartups: item['max_startups'],
+          maxCompanies: item['max_companies'],
+          enableB2B: item['enable_b2b'],
+          enableMentoring: item['enable_mentoring'],
+          enableStartups: item['enable_startups'],
+          enableCheckIn: item['enable_check_in'],
+          ticketPrices: {
+            standard: (item['ticket_price_standard'] as number || 0) / 100,
+            pro: (item['ticket_price_pro'] as number || 0) / 100,
+            vip: (item['ticket_price_vip'] as number || 0) / 100,
+          }
+        }
       }));
 
       setData(mappedData as Project[]);
@@ -292,16 +307,35 @@ export function useProjects() {
   const create = useCallback(async (item: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     try {
+      const { settings, ...rest } = item;
+      const dataToInsert: any = {
+        ...mapToSnakeCase(rest as Record<string, unknown>),
+        start_date: item.startDate,
+        end_date: item.endDate,
+        short_description: item.shortDescription,
+        primary_color: item.primaryColor,
+        secondary_color: item.secondaryColor,
+      };
+
+      if (settings) {
+        dataToInsert.max_registrations = settings.maxRegistrations;
+        dataToInsert.max_mentors = settings.maxMentors;
+        dataToInsert.max_startups = settings.maxStartups;
+        dataToInsert.max_companies = settings.maxCompanies;
+        dataToInsert.enable_b2b = settings.enableB2B;
+        dataToInsert.enable_mentoring = settings.enableMentoring;
+        dataToInsert.enable_startups = settings.enableStartups;
+        dataToInsert.enable_check_in = settings.enableCheckIn;
+        if (settings.ticketPrices) {
+          dataToInsert.ticket_price_standard = Math.round((settings.ticketPrices.standard || 0) * 100);
+          dataToInsert.ticket_price_pro = Math.round((settings.ticketPrices.pro || 0) * 100);
+          dataToInsert.ticket_price_vip = Math.round((settings.ticketPrices.vip || 0) * 100);
+        }
+      }
+
       const { data: inserted, error } = await (supabase
         .from('projects')
-        .insert({
-          ...item,
-          start_date: item.startDate,
-          end_date: item.endDate,
-          short_description: item.shortDescription,
-          primary_color: item.primaryColor,
-          secondary_color: item.secondaryColor,
-        } as any)
+        .insert(dataToInsert)
         .select()
         .single());
 
@@ -319,9 +353,37 @@ export function useProjects() {
   const update = useCallback(async (id: string, updates: Partial<Project>) => {
     setIsLoading(true);
     try {
+      const { settings, ...rest } = updates;
+      const dataToUpdate: any = {
+        ...mapToSnakeCase(rest as Record<string, unknown>),
+      };
+
+      if (rest.startDate) dataToUpdate.start_date = rest.startDate;
+      if (rest.endDate) dataToUpdate.end_date = rest.endDate;
+      if (rest.shortDescription) dataToUpdate.short_description = rest.shortDescription;
+      if (rest.primaryColor) dataToUpdate.primary_color = rest.primaryColor;
+      if (rest.secondaryColor) dataToUpdate.secondary_color = rest.secondaryColor;
+
+      if (settings) {
+        if (settings.maxRegistrations !== undefined) dataToUpdate.max_registrations = settings.maxRegistrations;
+        if (settings.maxMentors !== undefined) dataToUpdate.max_mentors = settings.maxMentors;
+        if (settings.maxStartups !== undefined) dataToUpdate.max_startups = settings.maxStartups;
+        if (settings.maxCompanies !== undefined) dataToUpdate.max_companies = settings.maxCompanies;
+        if (settings.enableB2B !== undefined) dataToUpdate.enable_b2b = settings.enableB2B;
+        if (settings.enableMentoring !== undefined) dataToUpdate.enable_mentoring = settings.enableMentoring;
+        if (settings.enableStartups !== undefined) dataToUpdate.enable_startups = settings.enableStartups;
+        if (settings.enableCheckIn !== undefined) dataToUpdate.enable_check_in = settings.enableCheckIn;
+
+        if (settings.ticketPrices) {
+          if (settings.ticketPrices.standard !== undefined) dataToUpdate.ticket_price_standard = Math.round((settings.ticketPrices.standard || 0) * 100);
+          if (settings.ticketPrices.pro !== undefined) dataToUpdate.ticket_price_pro = Math.round((settings.ticketPrices.pro || 0) * 100);
+          if (settings.ticketPrices.vip !== undefined) dataToUpdate.ticket_price_vip = Math.round((settings.ticketPrices.vip || 0) * 100);
+        }
+      }
+
       const { error } = await supabase
         .from('projects')
-        .update(updates as any)
+        .update(dataToUpdate)
         .eq('id', id);
 
       if (error) throw error;

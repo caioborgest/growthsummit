@@ -56,41 +56,55 @@ export default function AdminProjetos() {
       return;
     }
 
-    const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
-    await create({
-      ...formData,
-      slug: `${slug}-2026`,
-      description: formData.description || '',
-      settings: formData.settings || defaultSettings,
-    } as Omit<Project, 'id' | 'createdAt' | 'updatedAt'>);
-    
-    toast.success('Projeto criado com sucesso!');
-    setIsDialogOpen(false);
-    setFormData({
-      type: 'growth_experience',
-      status: 'draft',
-      location: '',
-      city: '',
-      state: '',
-      settings: defaultSettings,
-    });
+    try {
+      const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+      console.log('Criando novo projeto:', formData.name);
+
+      await create({
+        ...formData,
+        slug: `${slug}-2026`,
+        description: formData.description || '',
+        settings: formData.settings || defaultSettings,
+      } as Omit<Project, 'id' | 'createdAt' | 'updatedAt'>);
+
+      toast.success('Projeto criado com sucesso!');
+      setIsDialogOpen(false);
+      setFormData({
+        type: 'growth_experience',
+        status: 'draft',
+        location: '',
+        city: '',
+        state: '',
+        settings: defaultSettings,
+      });
+    } catch (err: any) {
+      console.error('Erro ao criar projeto:', err);
+      toast.error(`Erro ao criar projeto: ${err.message || 'Erro desconhecido'}`);
+    }
   };
 
   const handleUpdate = async () => {
     if (!editingProject) return;
-    await update(editingProject.id, formData);
-    toast.success('Projeto atualizado com sucesso!');
-    setIsDialogOpen(false);
-    setEditingProject(null);
-    setFormData({
-      type: 'growth_experience',
-      status: 'draft',
-      location: '',
-      city: '',
-      state: '',
-      settings: defaultSettings,
-    });
+
+    try {
+      console.log('Atualizando projeto:', editingProject.id);
+      await update(editingProject.id, formData);
+      toast.success('Projeto atualizado com sucesso!');
+      setIsDialogOpen(false);
+      setEditingProject(null);
+      setFormData({
+        type: 'growth_experience',
+        status: 'draft',
+        location: '',
+        city: '',
+        state: '',
+        settings: defaultSettings,
+      });
+    } catch (err: any) {
+      console.error('Erro ao atualizar projeto:', err);
+      toast.error(`Erro ao atualizar projeto: ${err.message || 'Erro desconhecido'}`);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -281,14 +295,14 @@ export default function AdminProjetos() {
                       value={formData.settings?.ticketPrices?.standard || 197}
                       onChange={(e) => setFormData({
                         ...formData,
-                        settings: { 
-                          ...defaultSettings, 
-                          ...formData.settings, 
-                          ticketPrices: { 
-                            ...defaultSettings.ticketPrices, 
-                            ...formData.settings?.ticketPrices, 
-                            standard: parseInt(e.target.value) || 0 
-                          } 
+                        settings: {
+                          ...defaultSettings,
+                          ...formData.settings,
+                          ticketPrices: {
+                            ...defaultSettings.ticketPrices,
+                            ...formData.settings?.ticketPrices,
+                            standard: parseInt(e.target.value) || 0
+                          }
                         }
                       })}
                       className="bg-[#0F172A] border-[#334155]"
@@ -301,14 +315,14 @@ export default function AdminProjetos() {
                       value={formData.settings?.ticketPrices?.pro || 347}
                       onChange={(e) => setFormData({
                         ...formData,
-                        settings: { 
-                          ...defaultSettings, 
-                          ...formData.settings, 
-                          ticketPrices: { 
-                            ...defaultSettings.ticketPrices, 
-                            ...formData.settings?.ticketPrices, 
-                            pro: parseInt(e.target.value) || 0 
-                          } 
+                        settings: {
+                          ...defaultSettings,
+                          ...formData.settings,
+                          ticketPrices: {
+                            ...defaultSettings.ticketPrices,
+                            ...formData.settings?.ticketPrices,
+                            pro: parseInt(e.target.value) || 0
+                          }
                         }
                       })}
                       className="bg-[#0F172A] border-[#334155]"
@@ -396,7 +410,7 @@ export default function AdminProjetos() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-[#94A3B8] line-clamp-2">{project.description}</p>
-                      
+
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-[#94A3B8]">
                           <Calendar className="w-4 h-4" />
