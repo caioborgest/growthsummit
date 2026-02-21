@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { 
+import {
   Rocket,
   Users,
   TrendingUp,
@@ -20,6 +20,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStartups, useLeads } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ProfileForm } from './components/ProfileForm';
+import { User as UserIcon } from 'lucide-react';
 
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
@@ -36,7 +38,7 @@ export function DashboardStartup() {
   const [activeTab, setActiveTab] = useState('visao-geral');
 
   const startupData = startups.find(s => s.userId === user?.id);
-  const startupLeads = startupData 
+  const startupLeads = startupData
     ? leads.filter(l => l.startupId === startupData.id)
     : [];
 
@@ -111,34 +113,26 @@ export function DashboardStartup() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-dark-200 mb-8">
-            <TabsTrigger 
-              value="visao-geral" 
-              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-            >
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-dark-200 mb-8 p-1">
+            <TabsTrigger value="visao-geral" className="data-[state=active]:bg-orange-500">
               <TrendingUp className="h-4 w-4 mr-2" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger 
-              value="leads" 
-              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="leads" className="data-[state=active]:bg-orange-500">
               <Users className="h-4 w-4 mr-2" />
               Leads
             </TabsTrigger>
-            <TabsTrigger 
-              value="stand" 
-              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="stand" className="data-[state=active]:bg-orange-500">
               <QrCode className="h-4 w-4 mr-2" />
-              Meu Stand
+              Stand
             </TabsTrigger>
-            <TabsTrigger 
-              value="recursos" 
-              className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="recursos" className="data-[state=active]:bg-orange-500">
               <FileText className="h-4 w-4 mr-2" />
               Recursos
+            </TabsTrigger>
+            <TabsTrigger value="perfil" className="data-[state=active]:bg-orange-500">
+              <UserIcon className="h-4 w-4 mr-2" />
+              Perfil
             </TabsTrigger>
           </TabsList>
 
@@ -154,7 +148,7 @@ export function DashboardStartup() {
                       <label className="block text-sm text-gray-400 mb-1">Descrição</label>
                       <p className="text-gray-300">{startupData.description}</p>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-gray-400 mb-1">Setor</label>
@@ -246,7 +240,7 @@ export function DashboardStartup() {
                   Exportar CSV
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {startupLeads.map((lead) => (
                   <div key={lead.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
@@ -260,8 +254,8 @@ export function DashboardStartup() {
                     <div className="flex items-center space-x-4">
                       <Badge className={
                         lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
-                        lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-gray-500/20 text-gray-400'
+                          lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-gray-500/20 text-gray-400'
                       }>
                         <Star className="h-3 w-3 mr-1" />
                         {lead.interestLevel}
@@ -272,7 +266,7 @@ export function DashboardStartup() {
                     </div>
                   </div>
                 ))}
-                
+
                 {startupLeads.length === 0 && (
                   <div className="text-center py-12">
                     <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
@@ -373,7 +367,7 @@ export function DashboardStartup() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="glass-card p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Links Úteis</h3>
                 <div className="space-y-3">
@@ -383,8 +377,8 @@ export function DashboardStartup() {
                     { name: 'Suporte para Startups', url: '#' },
                     { name: 'Grupo WhatsApp Startups', url: '#' },
                   ].map((link, i) => (
-                    <a 
-                      key={i} 
+                    <a
+                      key={i}
                       href={link.url}
                       className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
                     >
@@ -395,6 +389,10 @@ export function DashboardStartup() {
                 </div>
               </div>
             </div>
+          </TabsContent>
+          {/* Perfil Tab */}
+          <TabsContent value="perfil" className="mt-0">
+            <ProfileForm />
           </TabsContent>
         </Tabs>
       </div>

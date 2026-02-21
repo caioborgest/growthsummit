@@ -25,6 +25,7 @@ import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRegistrations, useSessions, useMentoringSessions } from '@/hooks/useData';
 import { useNavigate } from 'react-router-dom';
+import { ProfileForm } from './components/ProfileForm';
 
 export function DashboardParticipante() {
   const navigate = useNavigate();
@@ -329,31 +330,7 @@ export function DashboardParticipante() {
 
           {/* Perfil Tab */}
           <TabsContent value="dados">
-            <div className="glass-card p-10 max-w-3xl">
-              <div className="flex items-center justify-between mb-10">
-                <h2 className="text-2xl font-bold text-white">Configurações do Perfil</h2>
-                <Button className="bg-teal-500 text-white font-bold px-8">Salvar</Button>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Nome Completo</label>
-                  <input className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white focus:ring-2 focus:ring-teal-500 outline-none" defaultValue={user?.name} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Email Principal</label>
-                  <input className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white focus:ring-2 focus:ring-teal-500 outline-none" defaultValue={user?.email} disabled />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">WhatsApp</label>
-                  <input className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white focus:ring-2 focus:ring-teal-500 outline-none" placeholder="(00) 00000-0000" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empresa / Cargo</label>
-                  <input className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white focus:ring-2 focus:ring-teal-500 outline-none" placeholder="Ex: CEO na Empresa X" />
-                </div>
-              </div>
-            </div>
+            <ProfileForm />
           </TabsContent>
 
           {/* Suporte Tab */}

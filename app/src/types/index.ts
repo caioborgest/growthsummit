@@ -59,6 +59,7 @@ export interface User {
 }
 
 export interface Profile {
+  id: string;
   userId: string;
   company?: string;
   position?: string;
@@ -67,6 +68,12 @@ export interface Profile {
   linkedin?: string;
   city?: string;
   state?: string;
+  country?: string;
+  birthDate?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  cpf?: string;
+  cnpj?: string;
+  newsletterOptIn?: boolean;
 }
 
 export interface Registration {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { 
-  Calendar, 
+import {
+  Calendar,
   Star,
   TrendingUp,
   MessageSquare,
@@ -8,7 +8,8 @@ import {
   User,
   FileText,
   Edit3,
-  LogOut
+  LogOut,
+  Briefcase
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMentoringSessions, useMentors } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ProfileForm } from './components/ProfileForm';
 
 export function DashboardMentor() {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ export function DashboardMentor() {
     scheduled: mentorSessions.filter(s => s.status === 'scheduled').length,
     avgRating: mentorSessions
       .filter(s => s.feedback)
-      .reduce((acc, s) => acc + (s.feedback?.rating || 0), 0) / 
+      .reduce((acc, s) => acc + (s.feedback?.rating || 0), 0) /
       mentorSessions.filter(s => s.feedback).length || 0,
   };
 
@@ -97,32 +99,24 @@ export function DashboardMentor() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-dark-200 mb-8">
-            <TabsTrigger 
-              value="agenda" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
-            >
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-dark-200 mb-8 p-1">
+            <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500">
               <Calendar className="h-4 w-4 mr-2" />
-              Minha Agenda
+              Agenda
             </TabsTrigger>
-            <TabsTrigger 
-              value="historico" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="historico" className="data-[state=active]:bg-teal-500">
               <TrendingUp className="h-4 w-4 mr-2" />
               Histórico
             </TabsTrigger>
-            <TabsTrigger 
-              value="perfil" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="perfil" className="data-[state=active]:bg-teal-500">
               <User className="h-4 w-4 mr-2" />
-              Meu Perfil
+              Perfil
             </TabsTrigger>
-            <TabsTrigger 
-              value="recursos" 
-              className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
-            >
+            <TabsTrigger value="mentor_data" className="data-[state=active]:bg-teal-500">
+              <Briefcase className="h-4 w-4 mr-2" />
+              Currículo
+            </TabsTrigger>
+            <TabsTrigger value="recursos" className="data-[state=active]:bg-teal-500">
               <FileText className="h-4 w-4 mr-2" />
               Recursos
             </TabsTrigger>
@@ -155,8 +149,8 @@ export function DashboardMentor() {
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Chat
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-green-500 hover:bg-green-600 text-white"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -166,7 +160,7 @@ export function DashboardMentor() {
                     </div>
                   </div>
                 ))}
-              
+
               {mentorSessions.filter(s => s.status === 'scheduled').length === 0 && (
                 <div className="glass-card p-12 text-center">
                   <Calendar className="h-12 w-12 text-gray-500 mx-auto mb-4" />
@@ -227,16 +221,18 @@ export function DashboardMentor() {
           </TabsContent>
 
           {/* Perfil Tab */}
-          <TabsContent value="perfil" className="mt-0">
-            <div className="glass-card p-6 max-w-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">Meu Perfil</h2>
-                <Button variant="outline" size="sm" className="border-dark-300 text-gray-300">
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
+          <TabsContent value="perfil" className="mt-0 text-left">
+            <ProfileForm />
+          </TabsContent>
+
+          {/* Mentor Data Tab */}
+          <TabsContent value="mentor_data" className="mt-0 text-left">
+            <div className="glass-card p-10">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-dark-300">
+                <h2 className="text-xl font-bold text-white">Informações de Mentor</h2>
+                <Button variant="outline" className="border-teal-500/30 text-teal-400">Solicitar Alteração</Button>
               </div>
-              
+
               {mentorData && (
                 <div className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
@@ -257,12 +253,12 @@ export function DashboardMentor() {
                       <p className="text-white">{mentorData.position}</p>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Bio</label>
                     <p className="text-gray-300">{mentorData.bio}</p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-400 mb-1">Especialidades</label>
                     <div className="flex flex-wrap gap-2">
@@ -273,7 +269,7 @@ export function DashboardMentor() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm text-gray-400 mb-1">Anos de Experiência</label>
@@ -310,7 +306,7 @@ export function DashboardMentor() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="glass-card p-6">
                 <h3 className="text-lg font-semibold text-white mb-4">Links Úteis</h3>
                 <div className="space-y-3">
@@ -319,8 +315,8 @@ export function DashboardMentor() {
                     { name: 'Mapa do Venue', url: '#' },
                     { name: 'Contato Organização', url: '#' },
                   ].map((link, i) => (
-                    <a 
-                      key={i} 
+                    <a
+                      key={i}
                       href={link.url}
                       className="flex items-center p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
                     >

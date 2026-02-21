@@ -63,75 +63,76 @@ export function Login() {
             navigate('/minha-area');
         }
       }
-    } catch (err: any) {
-      setError(err?.message || 'Email ou senha inválidos');
+    } catch (err) {
+      const error = err as Error;
+      setError(error?.message || 'Email ou senha inválidos');
     }
   };
 
   return (
-    <div className="min-h-screen bg-dark flex items-center justify-center p-4">
+    <div className="h-screen h-[100dvh] bg-dark flex items-center justify-center p-4 overflow-hidden relative">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl opacity-50" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl opacity-50" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <img
               src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
               alt="Growth Summit"
-              className="h-16 w-auto"
+              className="h-10 sm:h-16 w-auto transition-all"
             />
           </Link>
         </div>
 
         {/* Login Card */}
-        <div className="glass-card p-8">
-          <h1 className="text-2xl font-bold text-white text-center mb-2">
+        <div className="glass-card p-6 sm:p-8 w-full">
+          <h1 className="text-xl sm:text-2xl font-bold text-white text-center mb-1">
             Bem-vindo de volta
           </h1>
-          <p className="text-gray-400 text-center mb-6">
+          <p className="text-gray-400 text-center mb-4 sm:mb-6 text-sm sm:text-base">
             Entre com suas credenciais para acessar
           </p>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-xs sm:text-sm text-center">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                 <Input
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 bg-dark-100 border-dark-300 text-white placeholder:text-gray-500"
+                  className="pl-11 bg-dark-100 border-dark-300 text-white placeholder:text-gray-500 h-10 sm:h-12"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2">
                 Senha
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 bg-dark-100 border-dark-300 text-white placeholder:text-gray-500"
+                  className="pl-11 pr-11 bg-dark-100 border-dark-300 text-white placeholder:text-gray-500 h-10 sm:h-12"
                   required
                 />
                 <button
@@ -147,16 +148,16 @@ export function Login() {
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="rounded bg-dark-100 border-dark-300 text-teal-500" />
-                <span className="ml-2 text-sm text-gray-400">Lembrar-me</span>
+                <span className="ml-2 text-xs text-gray-400">Lembrar-me</span>
               </label>
-              <a href="#" className="text-sm text-teal-400 hover:underline">
+              <a href="#" className="text-xs text-teal-400 hover:underline">
                 Esqueceu a senha?
               </a>
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-teal-500 hover:bg-teal-600 text-white py-6"
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white py-5 sm:py-6 mt-2"
               disabled={isAuthenticating}
             >
               {isAuthenticating ? (
@@ -170,16 +171,16 @@ export function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400 text-sm">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-gray-400 text-xs sm:text-sm">
               Ainda não tem conta?{' '}
-              <Link to="/inscricoes" className="text-teal-400 hover:underline">
+              <Link to="/inscricoes" className="text-teal-400 hover:underline font-bold">
                 Inscreva-se
               </Link>
             </p>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

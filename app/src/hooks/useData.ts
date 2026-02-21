@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
-  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User
+  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile
 } from '@/types';
 
 // Mock Data Placeholders (re-added for fallback/types)
@@ -549,6 +549,79 @@ export function useUsers() {
       setIsLoading(false);
     }
   }, [fetchData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, isLoading, update, refetch: fetchData };
+}
+
+export function useProfile(userId?: string) {
+  const [data, setData] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    try {
+      const { data: supabaseData, error } = await supabase
+        .from('profiles' as any)
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (supabaseData) {
+        setData({
+          id: supabaseData.id,
+          userId: supabaseData.user_id,
+          company: supabaseData.company,
+          position: supabaseData.position,
+          bio: supabaseData.bio,
+          website: supabaseData.website,
+          linkedin: supabaseData.linkedin,
+          city: supabaseData.city,
+          state: supabaseData.state,
+          country: supabaseData.country,
+          birthDate: supabaseData.birth_date,
+          gender: supabaseData.gender,
+          cpf: supabaseData.cpf,
+          cnpj: supabaseData.cnpj,
+          newsletterOptIn: supabaseData.newsletter_opt_in,
+        } as Profile);
+      }
+    } catch (err) {
+      logger.error('Erro ao buscar perfil:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId]);
+
+  const update = useCallback(async (updates: Partial<Profile>) => {
+    if (!userId) return;
+    setIsLoading(true);
+    try {
+      const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
+
+      const { error } = await supabase
+        .from('profiles' as any)
+        .upsert({
+          user_id: userId,
+          ...dataToUpdate,
+          updated_at: new Date().toISOString()
+        } as any);
+
+      if (error) throw error;
+      await fetchData();
+    } catch (err) {
+      logger.error('Erro ao atualizar perfil:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, fetchData]);
 
   useEffect(() => {
     fetchData();

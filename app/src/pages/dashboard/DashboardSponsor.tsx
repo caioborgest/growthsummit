@@ -25,6 +25,8 @@ import { useSponsors } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ProfileForm } from './components/ProfileForm';
+import { User as UserIcon } from 'lucide-react';
 
 export function DashboardSponsor() {
   const navigate = useNavigate();
@@ -136,7 +138,7 @@ export function DashboardSponsor() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-dark-200 mb-8">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1">
             <TabsTrigger
               value="overview"
               className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
@@ -171,6 +173,13 @@ export function DashboardSponsor() {
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Contato
+            </TabsTrigger>
+            <TabsTrigger
+              value="perfil"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+            >
+              <UserIcon className="h-4 w-4 mr-2" />
+              Perfil
             </TabsTrigger>
           </TabsList>
 
@@ -553,6 +562,11 @@ export function DashboardSponsor() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Perfil Tab */}
+          <TabsContent value="perfil" className="mt-0">
+            <ProfileForm />
           </TabsContent>
         </Tabs>
       </div>

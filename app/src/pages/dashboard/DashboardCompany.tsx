@@ -18,7 +18,8 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Map
+  Map,
+  User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ProfileForm } from './components/ProfileForm';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
@@ -169,26 +171,30 @@ export function DashboardCompany() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-10 p-1">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 bg-dark-200 mb-10 p-1">
             <TabsTrigger value="discovery" className="data-[state=active]:bg-teal-500">
               <Sparkles className="h-4 w-4 mr-2" />
               Discovery
             </TabsTrigger>
             <TabsTrigger value="reunioes" className="data-[state=active]:bg-teal-500">
               <Handshake className="h-4 w-4 mr-2" />
-              B2B Agenda
-            </TabsTrigger>
-            <TabsTrigger value="programacao" className="data-[state=active]:bg-teal-500">
-              <Calendar className="h-4 w-4 mr-2" />
-              Palestras
+              Agenda
             </TabsTrigger>
             <TabsTrigger value="matches" className="data-[state=active]:bg-teal-500">
               <Heart className="h-4 w-4 mr-2" />
               Matches
             </TabsTrigger>
             <TabsTrigger value="perfil" className="data-[state=active]:bg-teal-500">
+              <User className="h-4 w-4 mr-2" />
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger value="empresa" className="data-[state=active]:bg-teal-500">
               <Building2 className="h-4 w-4 mr-2" />
               Empresa
+            </TabsTrigger>
+            <TabsTrigger value="programacao" className="data-[state=active]:bg-teal-500">
+              <Calendar className="h-4 w-4 mr-2" />
+              Palestras
             </TabsTrigger>
             <TabsTrigger value="recursos" className="data-[state=active]:bg-teal-500">
               <FileText className="h-4 w-4 mr-2" />
@@ -427,7 +433,12 @@ export function DashboardCompany() {
 
           {/* Perfil Tab */}
           <TabsContent value="perfil">
-            <div className="glass-card p-10 max-w-4xl">
+            <ProfileForm />
+          </TabsContent>
+
+          {/* Empresa Tab */}
+          <TabsContent value="empresa">
+            <div className="glass-card p-10 max-w-4xl text-left">
               <div className="flex items-center justify-between mb-12">
                 <h2 className="text-2xl font-black text-white">Configurações da Empresa</h2>
                 <Button className="bg-teal-500 hover:bg-teal-400 text-white font-black px-10 py-6 rounded-2xl">
