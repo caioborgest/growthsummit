@@ -71,7 +71,7 @@ function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatIte
                 </div>
 
                 {/* Valor */}
-                <div className="text-5xl lg:text-6xl font-bold bg-gradient-to-br from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent mb-2">
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold bg-gradient-to-br from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent mb-2">
                     {count}{suffix}
                 </div>
 

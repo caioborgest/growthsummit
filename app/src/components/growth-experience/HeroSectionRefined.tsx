@@ -84,10 +84,10 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
                     {/* Título principal */}
                     <h1
-                        className="text-3xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
+                        className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
                         style={{ animationDelay: '0.2s' }}
                     >
-                        <span className="block mb-2">Growth Experience</span>
+                        <span className="block mb-2 text-3xl sm:text-6xl lg:text-7xl">Growth Experience</span>
                         <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent">
                             Triunfo-PE 2026
                         </span>

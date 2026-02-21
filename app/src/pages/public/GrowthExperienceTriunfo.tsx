@@ -149,7 +149,7 @@ function InnerHeader() {
             <img
               src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
               alt="Growth Experience"
-              className="h-8 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
+              className="h-10 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
               onError={(e) => {
                 e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png';
               }}
@@ -181,7 +181,7 @@ function InnerHeader() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-dark-100/98 backdrop-blur-xl border-b border-white/10 px-4 py-8 space-y-4 animate-fade-in-up fixed inset-x-0 top-20 bottom-0 overflow-y-auto z-40">
+        <div className="lg:hidden bg-dark-100/98 backdrop-blur-xl border-b border-white/10 px-4 py-8 space-y-4 animate-fade-in-up fixed inset-0 top-20 bottom-0 overflow-y-auto z-40">
           <nav className="space-y-2">
             {[
               { label: 'Sobre', href: '#sobre' },
@@ -219,21 +219,21 @@ function InnerHeader() {
 // Footer Component
 function InnerFooter() {
   return (
-    <footer className="bg-dark-100 pt-16 pb-8 border-t border-white/5">
+    <footer className="bg-dark-100 pt-16 pb-12 sm:pb-8 border-t border-white/5 safe-area-bottom">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div className="col-span-2">
+        <div className="grid md:grid-cols-4 gap-12 mb-12 text-center md:text-left">
+          <div className="col-span-2 flex flex-col items-center md:items-start">
             <div className="mb-6">
               <img
                 src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png"
                 alt="Growth Experience"
-                className="h-12 w-auto"
+                className="h-10 sm:h-12 w-auto"
                 onError={(e) => {
                   e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
                 }}
               />
             </div>
-            <p className="text-gray-400 max-w-sm mb-6">
+            <p className="text-gray-400 max-w-sm mb-6 text-sm sm:text-base">
               A maior exposição de negócios do Sertão do Pajeú. Transformando empresas locais através de conhecimento prático e conexões reais.
             </p>
             <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export function GrowthExperienceTriunfo() {
       <StatsSection />
 
       {/* Sobre o Evento */}
-      <section id="sobre" className="py-24 bg-dark-100 relative overflow-hidden">
+      <section id="sobre" className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-orange-coral/20 blur-[120px] rounded-full" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-orange-coral/10 blur-[120px] rounded-full" />
@@ -383,7 +383,7 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       {/* Mentores do Evento */}
-      <section id="mentores" className="py-24 bg-dark-100 relative overflow-hidden">
+      <section id="mentores" className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[30%] h-[30%] bg-brand-orange-coral/5 blur-[100px] rounded-full pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -409,7 +409,6 @@ export function GrowthExperienceTriunfo() {
                       alt={mentor.name}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
                   <div className="space-y-2">
@@ -468,7 +467,7 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       {/* Palestrantes */}
-      <section id="palestrantes" className="py-24 bg-dark-200 relative overflow-hidden">
+      <section id="palestrantes" className="py-16 sm:py-24 bg-dark-200 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
@@ -516,7 +515,7 @@ export function GrowthExperienceTriunfo() {
       <ProgramacaoCircuitoSection onInscricao={() => setModalInscricaoAberto(true)} />
 
       {/* Seção Inovadora: Incentivo de Equipe */}
-      <section className="py-24 bg-dark-100 relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-orange-coral/5 to-transparent pointer-events-none" />
 
         <div id="premio-empresa" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -616,8 +615,8 @@ export function GrowthExperienceTriunfo() {
       {/* Ecossistema e Negócios */}
       <section className="py-24 bg-dark relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <Card className="glass-card p-10 border-orange-500/30 hover:bg-orange-500/10 transition-all group relative overflow-hidden animate-fade-in-up">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            <Card className="glass-card p-6 sm:p-10 border-orange-500/30 hover:bg-orange-500/10 transition-all group relative overflow-hidden animate-fade-in-up">
               <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
                 <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center shadow-lg shadow-orange-500/20">
                   <Rocket className="h-8 w-8 text-orange-400" />
@@ -643,7 +642,7 @@ export function GrowthExperienceTriunfo() {
               </Button>
             </Card>
 
-            <Card className="glass-card p-10 border-teal-500/30 hover:bg-teal-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <Card className="glass-card p-6 sm:p-10 border-teal-500/30 hover:bg-teal-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
                 <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center shadow-lg shadow-teal-500/20">
                   <Handshake className="h-8 w-8 text-teal-400" />
@@ -673,7 +672,7 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       {/* Patrocínios */}
-      <section id="patrocinios" className="py-24 bg-dark-200">
+      <section id="patrocinios" className="py-16 sm:py-24 bg-dark-200">
         <div id="expositores" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-16 animate-fade-in-up">
             <div className="text-left">
