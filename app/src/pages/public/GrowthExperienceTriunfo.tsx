@@ -593,6 +593,7 @@ export function GrowthExperienceTriunfo() {
                 horario={p.horario}
                 foto={getPalestranteImage(p.nome)}
                 destaque={true}
+                onInscricao={() => setModalInscricaoAberto(true)}
               />
             ))}
           </div>

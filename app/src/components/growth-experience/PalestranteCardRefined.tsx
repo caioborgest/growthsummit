@@ -11,6 +11,7 @@ interface PalestranteCardProps {
     horario: string;
     foto?: string;
     destaque?: boolean;
+    onInscricao?: () => void;
 }
 
 export function PalestranteCardRefined({
@@ -20,7 +21,8 @@ export function PalestranteCardRefined({
     tema,
     horario,
     foto,
-    destaque = false
+    destaque = false,
+    onInscricao
 }: PalestranteCardProps) {
     return (
         <div
@@ -41,8 +43,8 @@ export function PalestranteCardRefined({
                     }}
                 />
 
-                {/* Overlay gradiente - Ajustado para ser mais transparente no topo no Mobile */}
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/60 sm:via-brand-black/80 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+                {/* Overlay gradiente - Sempre visível para legibilidade do texto */}
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/80 sm:via-brand-black/90 to-transparent opacity-100 transition-opacity duration-300" />
 
                 {/* Badge de destaque */}
                 {destaque && (
@@ -59,7 +61,7 @@ export function PalestranteCardRefined({
                 </Badge>
 
                 {/* Conteúdo sobre a imagem - Padding reduzido no mobile */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 transform transition-transform duration-300 group-hover:translate-y-0">
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 transition-transform duration-300">
                     {/* Nome */}
                     <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-1 group-hover:text-brand-orange-coral transition-colors leading-none">
                         {nome}
@@ -74,12 +76,12 @@ export function PalestranteCardRefined({
                     </div>
 
                     {/* Descrição - Mais compacta no mobile */}
-                    <p className="text-gray-300 text-xs sm:text-sm lg:text-base mb-4 line-clamp-1 sm:line-clamp-2 lg:group-hover:line-clamp-none transition-all font-medium">
+                    <p className="text-gray-300 text-xs sm:text-sm lg:text-base mb-4 line-clamp-2 md:line-clamp-none transition-all font-medium">
                         {descricao}
                     </p>
 
-                    {/* Tema da palestra - Escondido por padrão no mobile para mostrar a foto */}
-                    <div className="glass-card p-3 sm:p-4 border-brand-orange-coral/20 mb-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                    {/* Tema da palestra - Sempre visível */}
+                    <div className="glass-card p-3 sm:p-4 border-brand-orange-coral/20 mb-4 transition-all duration-300">
                         <p className="text-[10px] text-brand-orange-coral font-bold mb-1 uppercase tracking-[0.15em]">
                             Tema da Palestra
                         </p>
@@ -88,13 +90,14 @@ export function PalestranteCardRefined({
                         </p>
                     </div>
 
-                    {/* Botão de ação */}
+                    {/* Botão de ação - Sempre visível */}
                     <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        className="w-full border-brand-orange-coral/50 text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 text-[10px] sm:text-sm font-bold uppercase tracking-widest h-9 sm:h-10"
+                        onClick={onInscricao}
+                        className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white transition-all duration-300 text-[10px] sm:text-sm font-black uppercase tracking-widest h-9 sm:h-12 shadow-glow-orange"
                     >
-                        Ver Mais Detalhes
+                        Garantir Minha Vaga
                         <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
                 </div>
