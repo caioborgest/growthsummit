@@ -343,15 +343,14 @@ function InnerFooter() {
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Organização Principal</p>
                 <div className="flex items-center justify-center md:justify-start gap-3">
-                  <img src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GS-site.png" alt="Growth Summit" className="h-8 w-auto grayscale group-hover:grayscale-0 transition-all opacity-70" />
-                  <span className="text-white font-bold tracking-tight">Growth Summit</span>
+                  <img src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png" alt="CBX Growth & IA" className="h-8 w-auto grayscale-0 group-hover:grayscale-0 transition-all opacity-100" />
+                  <span className="text-white font-bold tracking-tight">CBX Growth & IA</span>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Patrocinador Master</p>
                 <div className="flex items-center justify-center md:justify-start gap-3">
                   <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-1 text-xs">SEBRAE-PE</Badge>
-                  <span className="text-white/60 text-xs">Agência Triunfo</span>
                 </div>
               </div>
             </div>
@@ -373,7 +372,7 @@ function InnerFooter() {
 
           <div className="order-1 md:order-2 flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
             <Sparkles className="h-3 w-3 text-brand-orange-coral" />
-            <span className="text-gray-400 text-[10px] sm:text-xs">Desenvolvido por <span className="text-white font-bold">Growth Summit Tech</span></span>
+            <span className="text-gray-400 text-[10px] sm:text-xs">Desenvolvido por <span className="text-white font-bold">CBX Growth & IA</span></span>
           </div>
         </div>
       </div>
