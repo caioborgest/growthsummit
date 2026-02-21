@@ -55,8 +55,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         setDados(prev => ({ ...prev, ...novos }));
     };
 
-    const nextStep = () => {
-        if (isProcessing) return;
+    const nextStep = (force = false) => {
+        if (isProcessing && !force) return;
         setIsProcessing(true);
         if (currentStep < totalSteps) {
             setCurrentStep(prev => prev + 1);
@@ -100,7 +100,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         dados={dados}
                         onConfirmar={(userId, inscricaoId) => {
                             updateDados({ userId, inscricaoId });
-                            nextStep();
+                            setIsProcessing(false); // Reset to allow nextStep
+                            nextStep(true); // Force next step
                         }}
                         onVoltar={prevStep}
                     />

@@ -27,12 +27,17 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
         setError('');
 
         try {
+            console.log('Iniciando processo de confirmação...');
+
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
 
+            console.log('User ID atual:', userId);
+
             // 1. Tentar criar usuário apenas se não estiver logado
             if (!userId) {
+                console.log('Tentando criar usuário:', dados.email);
                 try {
                     const { data: authData, error: sError } = await supabase.auth.signUp({
                         email: dados.email,
@@ -48,15 +53,16 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
                     if (sError) {
                         // Se já existe, não é um erro fatal para a inscrição
-                        if (!sError.message.includes('already registered')) {
+                        if (!sError.message.toLowerCase().includes('already registered')) {
                             throw sError;
                         }
                         console.log('Usuário já registrado, prosseguindo com inscrição por email.');
                     } else {
                         userId = authData?.user?.id;
+                        console.log('Usuário criado com sucesso:', userId);
                     }
                 } catch (signUpErr) {
-                    console.error('Erro no signUp (não fatal se já existir):', signUpErr);
+                    console.warn('Erro no signUp (não fatal se já existir):', signUpErr);
                 }
             }
 
@@ -64,6 +70,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const valorOriginal = 179.99;
             const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
             const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
+
+            console.log('Enviando dados da inscrição para o Supabase...');
 
             const { data: inscricaoData, error: inscricaoError } = await (supabase
                 .from('inscricoes_growth_experience') as any)
@@ -78,18 +86,21 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
                     status: 'ativo',
                     app_instalado: false,
-                    indicacao_tipo: dados.indicacaoTipo,
-                    indicacao_nome: dados.indicacaoNome,
-                    codigo_social: dados.codigo,
-                    codigo_palestra: dados.cupomPalestra || null
+                    indicacao_tipo: dados.indicacaoTipo || 'nenhum',
+                    indicacao_nome: dados.indicacaoNome || null,
+                    codigo_social: dados.codigo || null,
+                    codigo_palestra: dados.cupomPalestra || null,
+                    cupom_palestra: dados.cupomPalestra || null
                 })
                 .select();
 
             if (inscricaoError) {
+                console.error('Erro no Supabase Insert:', inscricaoError);
                 throw new Error(inscricaoError.message);
             }
 
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
+            console.log('Inscrição salva com sucesso. ID:', finalInscricaoId);
 
             // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
             if (finalInscricaoId) {
@@ -100,12 +111,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 ).catch(e => console.warn('Invite fail:', e));
             }
 
-            // 4. Sucesso - Finalizar loading antes de avisar o componente pai
-            // 3. Sucesso - continuar
+            // 4. Sucesso - Avisar o componente pai
             onConfirmar(userId || '', finalInscricaoId || '');
-
-            // Note: We DON'T set loading(false) here because we are transitioning 
-            // to the next step and want to keep the button disabled.
 
         } catch (err: any) {
             console.error('Erro crítico na inscrição:', err);

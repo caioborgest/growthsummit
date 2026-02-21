@@ -11,11 +11,13 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
+        id: 'com.growthsummit.app',
         name: 'Growth Summit 2026',
         short_name: 'Growth Summit',
         description: 'Plataforma oficial do Growth Summit 2026',
-        theme_color: '#162636',
-        background_color: '#0A0E14',
+        start_url: '/login',
+        theme_color: '#ff7043',
+        background_color: '#0c0e12',
         display: 'standalone',
         icons: [
           {

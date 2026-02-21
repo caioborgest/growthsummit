@@ -88,7 +88,13 @@ function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
+        <Route index element={
+          window.matchMedia('(display-mode: standalone)').matches ? (
+            <Navigate to="/login" replace />
+          ) : (
+            <Home />
+          )
+        } />
         <Route path="sobre" element={<Sobre />} />
         <Route path="programacao" element={<Programacao />} />
         <Route path="palestrantes" element={<Palestrantes />} />

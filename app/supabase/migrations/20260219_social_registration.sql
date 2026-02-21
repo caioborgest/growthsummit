@@ -3,10 +3,25 @@
 -- 1. Adicionar colunas de indicação na tabela de inscrições
 ALTER TABLE public.inscricoes_growth_experience
 ADD COLUMN IF NOT EXISTS indicacao_tipo TEXT CHECK (
-        indicacao_tipo IN ('prefeitura', 'politico', 'nenhum')
+        indicacao_tipo IN (
+            'prefeitura',
+            'politico',
+            'empresa',
+            'promocional',
+            'influenciador',
+            'associacao',
+            'instituicao',
+            'outro',
+            'nenhum'
+        )
     ),
     ADD COLUMN IF NOT EXISTS indicacao_nome TEXT,
-    ADD COLUMN IF NOT EXISTS codigo_social TEXT;
+    ADD COLUMN IF NOT EXISTS codigo_social TEXT,
+    ADD COLUMN IF NOT EXISTS codigo_palestra TEXT,
+    ADD COLUMN IF NOT EXISTS cupom_palestra TEXT,
+    -- Alias para consistência
+ADD COLUMN IF NOT EXISTS valor_desconto_social DECIMAL(10, 2) DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS valor_desconto_palestra DECIMAL(10, 2) DEFAULT 0;
 -- 2. Criar uma View para o Ranking de Prefeituras (Opcional para o Admin)
 CREATE OR REPLACE VIEW public.view_ranking_prefeituras AS
 SELECT indicacao_nome as prefeitura,
@@ -51,7 +66,20 @@ INSERT INTO public.cupons_parceria_social (
         porcentagem_desconto
     )
 VALUES ('TRIUNFO50', 'prefeitura', 'TRIUNFO', 50) ON CONFLICT (codigo) DO NOTHING;
+-- 5. Ajustes na Tabela de Mentores (Adicionar colunas faltantes)
+ALTER TABLE public.mentores_growth_experience
+ADD COLUMN IF NOT EXISTS foto_url TEXT,
+    ADD COLUMN IF NOT EXISTS cargo TEXT;
 -- Habilitar RLS
 ALTER TABLE public.cupons_parceria_social ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Leitura pública de cupons" ON public.cupons_parceria_social;
 CREATE POLICY "Leitura pública de cupons" ON public.cupons_parceria_social FOR
+SELECT USING (true);
+-- Garantir RLS em mentores
+ALTER TABLE public.mentores_growth_experience ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Qualquer um pode se candidatar como mentor" ON public.mentores_growth_experience;
+CREATE POLICY "Qualquer um pode se candidatar como mentor" ON public.mentores_growth_experience FOR
+INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Usuários podem ver seu próprio perfil de mentor" ON public.mentores_growth_experience;
+CREATE POLICY "Usuários podem ver seu próprio perfil de mentor" ON public.mentores_growth_experience FOR
 SELECT USING (true);

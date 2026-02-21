@@ -54,8 +54,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         }));
     };
 
-    const nextStep = () => {
-        if (isProcessing) return;
+    const nextStep = (force = false) => {
+        if (isProcessing && !force) return;
         setIsProcessing(true);
         setStep(prev => prev + 1);
         setTimeout(() => setIsProcessing(false), 500);
@@ -68,42 +68,53 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+
         setIsSubmitting(true);
         setError('');
         let fotoUrl = '';
 
         try {
+            console.log('Iniciando submissão de mentor...');
+
             if (formData.senha !== formData.confirmarSenha) {
                 throw new Error('As senhas não coincidem');
             }
 
             // 0. Upload Foto if exists
             if (formData.foto) {
-                const file = formData.foto;
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Math.random()}.${fileExt}`;
-                const filePath = `mentores/${fileName}`;
+                console.log('Enviando foto...');
+                try {
+                    const file = formData.foto;
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random()}.${fileExt}`;
+                    const filePath = `mentores/${fileName}`;
 
-                const { error: uploadError } = await supabase.storage
-                    .from('event-images')
-                    .upload(filePath, file);
+                    const { error: uploadError } = await supabase.storage
+                        .from('event-images')
+                        .upload(filePath, file);
 
-                if (uploadError) throw uploadError;
+                    if (uploadError) throw uploadError;
 
-                const { data: urlData } = supabase.storage
-                    .from('event-images')
-                    .getPublicUrl(filePath);
+                    const { data: urlData } = supabase.storage
+                        .from('event-images')
+                        .getPublicUrl(filePath);
 
-                fotoUrl = urlData.publicUrl;
+                    fotoUrl = urlData.publicUrl;
+                    console.log('Foto enviada com sucesso:', fotoUrl);
+                } catch (imgErr) {
+                    console.warn('Erro ao enviar imagem (não fatal):', imgErr);
+                }
             }
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let user = existingSession?.user;
-            let authError = null;
+            console.log('Usuário atual:', user?.id || 'nenhum');
 
             if (!user) {
                 // 1. Auth SignUp
+                console.log('Criando novo usuário mentor...');
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
                     password: formData.senha,
@@ -115,28 +126,30 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user ?? undefined;
-                authError = sError;
-            }
 
-            if (authError) {
-                if (authError.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Por favor, use outro email ou faça login.');
+                if (sError) {
+                    if (sError.message.toLowerCase().includes('already registered')) {
+                        console.log('Usuário já existe, prosseguindo...');
+                        // Se já existe, tentamos registrar apenas a mentoria
+                        // (Idealmente o usuário deveria fazer login, mas para o evento facilitamos)
+                    } else {
+                        throw sError;
+                    }
                 }
-                throw authError;
+                user = authData?.user ?? undefined;
             }
-
-            if (!user) throw new Error('Falha ao identificar usuário');
 
             // 2. Salvar inscrição no banco
-            const { error: dbError } = await supabase
-                .from('mentores_growth_experience')
+            console.log('Salvando dados do mentor no banco...');
+            const { error: dbError } = await (supabase
+                .from('mentores_growth_experience') as any)
                 .insert({
-                    user_id: user!.id,
+                    user_id: user?.id || null, // Se for nulo, salvamos como candidatura avulsa
                     nome: formData.nome,
                     email: formData.email,
                     telefone: formData.telefone,
                     empresa: formData.empresa,
+                    cargo: formData.cargo,
                     especialidades: formData.especialidades,
                     bio: formData.bio,
                     linkedin_url: formData.linkedin,
@@ -144,9 +157,15 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                     status: 'pendente'
                 });
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Erro ao salvar no banco:', dbError);
+                throw dbError;
+            }
 
+            console.log('Sucesso! Mentor registrado.');
             setIsSuccess(true);
+
+            // Limpeza após 5 segundos
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
@@ -158,15 +177,14 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 });
             }, 5000);
 
-        } catch (err: unknown) {
-            console.error('Erro ao confirmar inscrição:', err);
+        } catch (err: any) {
+            console.error('Erro crítico no formulário de mentor:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
-            const error = err as Error;
-            if (error.message?.includes('rate limit exceeded')) {
-                errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
-            } else if (error.message) {
-                errorMessage = error.message;
+            if (err.message?.toLowerCase().includes('rate limit')) {
+                errorMessage = 'Muitas tentativas em pouco tempo. Aguarde 60 segundos.';
+            } else if (err.message) {
+                errorMessage = err.message;
             }
 
             setError(errorMessage);
@@ -305,6 +323,16 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                         </div>
                                         <div className="grid md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Cargo / Função</label>
+                                                <input
+                                                    required
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.cargo}
+                                                    onChange={e => setFormData({ ...formData, cargo: e.target.value })}
+                                                    placeholder="Ex: Diretor de Vendas"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
                                                 <label className="text-sm font-medium text-gray-300">Crie uma Senha</label>
                                                 <input
                                                     required
@@ -315,6 +343,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                                     placeholder="Mínimo 6 caracteres"
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="text-sm font-medium text-gray-300">Confirme a Senha</label>
                                                 <input
