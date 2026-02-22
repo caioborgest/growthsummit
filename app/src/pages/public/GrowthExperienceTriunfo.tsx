@@ -33,7 +33,7 @@ import { MentorFormModal } from '@/components/forms/MentorFormModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getPalestranteImage } from '@/lib/storage';
+import { getPalestranteImage, getStandImage } from '@/lib/storage';
 import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
@@ -46,6 +46,8 @@ import { PalestranteCardRefined } from '@/components/growth-experience/Palestran
 import { SectionShare } from '@/components/social/SectionShare';
 import { SocialShare } from '@/components/social/SocialShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
+import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
+import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useMentors, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { useEffect, useCallback } from 'react';
