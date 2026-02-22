@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Zap, Mic2, Users, MapPin, Coffee, Trophy } from 'lucide-react';
 import { ProgramacaoTabs } from './ProgramacaoTabs';
+import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
 import {
     circuitoExperienciasData,
     momentosAncoraData,
@@ -13,7 +14,45 @@ interface ProgramacaoCircuitoSectionProps {
     onInscricao?: () => void;
 }
 
+// Mapa de ícones para as estações (baseado no nome ou categoria)
+const getIcon = (nome: string) => {
+    const n = nome.toLowerCase();
+    if (n.includes('sebrae') || n.includes('negócio') || n.includes('consultório')) return Briefcase;
+    if (n.includes('digital') || n.includes('instagram') || n.includes('ia') || n.includes('ia')) return Zap;
+    if (n.includes('venda')) return Trophy;
+    if (n.includes('senac') || n.includes('carreira')) return GraduationCap;
+    if (n.includes('sicoob') || n.includes('dinheiro')) return Landmark;
+    return Briefcase;
+};
+
+// Import needed icons that might be used
+import { Briefcase, GraduationCap, Landmark } from 'lucide-react';
+
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
+    const { programacao, isLoading } = useProgramacaoTriunfo();
+
+    // Se não houver dados no banco, usa os estáticos como fallback
+    // Isso garante que a página não fique vazia enquanto o admin não preenche
+    const hasData = programacao && (
+        programacao.programacaoNoturna.length > 0 ||
+        programacao.circuitoExperiencias.length > 0 ||
+        programacao.momentosAncora.manha.length > 0
+    );
+
+    const finalData = hasData ? {
+        ...programacao,
+        circuitoExperiencias: programacao.circuitoExperiencias.map(est => ({
+            ...est,
+            icon: getIcon(est.nome)
+        }))
+    } : {
+        programacaoManha: programacaoManhaData,
+        programacaoTarde: programacaoTardeData,
+        programacaoNoturna: programacaoNoturnaData,
+        circuitoExperiencias: circuitoExperienciasData,
+        momentosAncora: momentosAncoraData
+    };
+
     return (
         <section id="programacao" className="py-24 bg-dark relative overflow-hidden">
             {/* Background Decorativo */}
@@ -24,7 +63,7 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                 <div className="text-center mb-16">
                     <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
                         <BookOpen className="h-3 w-3 mr-2" />
-                        PROGRAMAÇÃO EXCLUSIVA
+                        PROGRAMAÇÃO EXCLUSIVA {hasData && <span className="ml-2">• ATUALIZADO</span>}
                     </Badge>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                         Circuito de<br />
@@ -39,11 +78,11 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                 </div>
 
                 <ProgramacaoTabs
-                    programacaoManha={programacaoManhaData as any}
-                    programacaoTarde={programacaoTardeData as any}
-                    programacaoNoturna={programacaoNoturnaData}
-                    circuitoExperiencias={circuitoExperienciasData}
-                    momentosAncora={momentosAncoraData}
+                    programacaoManha={finalData.programacaoManha as any}
+                    programacaoTarde={finalData.programacaoTarde as any}
+                    programacaoNoturna={finalData.programacaoNoturna as any}
+                    circuitoExperiencias={finalData.circuitoExperiencias as any}
+                    momentosAncora={finalData.momentosAncora as any}
                     onInscricao={onInscricao}
                 />
             </div>
