@@ -23,6 +23,7 @@ const mockLeads: Lead[] = [];
 
 // Project IDs
 const GE_TRIUNFO = 'ge-triunfo-2026';
+const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
 // Table Mapping based on project and entity
 const getTableName = (projectId: string, entity: string) => {
@@ -33,7 +34,7 @@ const getTableName = (projectId: string, entity: string) => {
   if (entity === 'profiles') return 'profiles';
 
   // Specific mappings for Growth Experience projects
-  if (projectId && (projectId === GE_TRIUNFO || projectId.startsWith('ge-'))) {
+  if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
     switch (entity) {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
@@ -152,7 +153,7 @@ function getSelectFields(entity: string): string {
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
     check_ins: 'id,project_id,user_id,user_name,ticket_number,timestamp,location,method',
-    sessions: 'id,project_id,title,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count',
+    sessions: 'id,project_id,title,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count,category,topics,partner,color,metadata',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
@@ -260,6 +261,13 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item['uso_limite'] !== undefined) mappedItem['usoLimite'] = item['uso_limite'];
         if (item['uso_atual'] !== undefined) mappedItem['usoAtual'] = item['uso_atual'];
         if (item['codigo']) mappedItem['codigo'] = item['codigo'];
+
+        // Specific for Sessions
+        if (item['start_time']) mappedItem['startTime'] = item['start_time'];
+        if (item['end_time']) mappedItem['endTime'] = item['end_time'];
+        if (item['max_capacity'] !== undefined) mappedItem['maxCapacity'] = item['max_capacity'];
+        if (item['registered_count'] !== undefined) mappedItem['registeredCount'] = item['registered_count'];
+
 
         return mappedItem as unknown as T;
       });

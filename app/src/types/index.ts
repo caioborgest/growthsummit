@@ -317,17 +317,22 @@ export interface EmailCampaign {
 export interface Session {
   id: string;
   projectId: string;
+  category: string;
   title: string;
   description?: string;
-  type: 'keynote' | 'talk' | 'panel' | 'workshop' | 'networking';
+  type: 'keynote' | 'talk' | 'panel' | 'workshop' | 'networking' | 'circuito';
   track?: string;
-  day: 1 | 2;
+  day?: 1 | 2;
   startTime: string;
   endTime: string;
   room: string;
   speakers: string[];
+  partner?: string;
   maxCapacity?: number;
   registeredCount: number;
+  topics?: string[];
+  color?: string;
+  metadata?: any;
 }
 
 export interface Notification {
