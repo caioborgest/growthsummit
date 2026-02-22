@@ -49,7 +49,8 @@ import { SectionShare } from '@/components/social/SectionShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
 import { useMentors, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
+import { ensureGETriunfoProject } from '@/lib/ensureGETriunfoProject';
 
 // Dados do evento
 const palestrantes = [
@@ -390,13 +391,27 @@ export function GrowthExperienceTriunfo() {
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
 
-  // Encontrar o projeto específico para esta página pelo slug
-  useEffect(() => {
-    const proyecto = projects.find(p => p.slug === 'ge-triunfo-2026');
-    if (proyecto && (!selectedProject || selectedProject.id !== proyecto.id)) {
-      setSelectedProject(proyecto);
+  // Garantir que o projeto exista no Supabase e selecioná-lo no contexto
+  const initProject = useCallback(async () => {
+    // 1. Tentar achar no array já carregado (cache)
+    const fromCache = projects.find(p => p.slug === 'ge-triunfo-2026');
+    if (fromCache) {
+      if (!selectedProject || selectedProject.id !== fromCache.id) {
+        setSelectedProject(fromCache);
+      }
+      return;
     }
-  }, [projects, setSelectedProject, selectedProject]);
+
+    // 2. Criar/buscar diretamente no Supabase
+    const project = await ensureGETriunfoProject();
+    if (project && (!selectedProject || selectedProject.id !== project.id)) {
+      setSelectedProject(project);
+    }
+  }, [projects, selectedProject, setSelectedProject]);
+
+  useEffect(() => {
+    initProject();
+  }, [initProject]);
 
   const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';

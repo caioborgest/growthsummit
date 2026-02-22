@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useProject } from '@/contexts/ProjectContext';
@@ -93,7 +93,7 @@ export function useInscricoesTriunfo() {
 
     const { projectId } = useProject();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!projectId) return;
         try {
             setLoading(true);
@@ -112,11 +112,11 @@ export function useInscricoesTriunfo() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [projectId]);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
@@ -170,7 +170,7 @@ export function useStartupsArenaPitch() {
 
     const { projectId } = useProject();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!projectId) return;
         try {
             setLoading(true);
@@ -189,11 +189,11 @@ export function useStartupsArenaPitch() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [projectId]);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const updateStatus = async (
         id: string,
@@ -261,7 +261,7 @@ export function useEmpresasB2B() {
 
     const { projectId } = useProject();
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!projectId) return;
         try {
             setLoading(true);
@@ -280,11 +280,11 @@ export function useEmpresasB2B() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [projectId]);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const updateStatus = async (id: string, status: EmpresaB2B['status']) => {
         try {
