@@ -44,6 +44,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const [error, setError] = useState('');
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const { projectId } = useProject();
 
     if (!isOpen) return null;
 
@@ -78,8 +79,6 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         { value: 'parceria', label: 'Estabelecer parcerias estratégicas' },
         { value: 'todos', label: 'Todos os acima' }
     ];
-
-    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -158,7 +157,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 const fileName = `${user.id}-${Math.random()}.${fileExt}`;
                 const filePath = `b2b-logos/${fileName}`;
 
-                const { error: uploadError, data: uploadData } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                     .from('event-assets')
                     .upload(filePath, logoFile);
 
@@ -197,8 +196,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await supabase
-                .from('rodada_negocios_b2b')
+            const { error: supabaseError } = await (supabase
+                .from('rodada_negocios_b2b') as any)
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;

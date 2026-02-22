@@ -39,6 +39,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const { projectId } = useProject();
 
     if (!isOpen) return null;
 
@@ -63,8 +64,6 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
         { value: 'tracao', label: 'Tração (crescimento consistente)' },
         { value: 'escala', label: 'Escala (expansão acelerada)' }
     ];
-
-    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -152,8 +151,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await supabase
-                .from('startups_arena_pitch')
+            const { error: supabaseError } = await (supabase
+                .from('startups_arena_pitch') as any)
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;

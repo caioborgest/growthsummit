@@ -8,13 +8,8 @@ import {
   FileText,
   HelpCircle,
   Download,
-  Share2,
-  Printer,
   Clock,
   MapPin,
-  Check,
-  TrendingUp,
-  Layout,
   LogOut,
   Sparkles
 } from 'lucide-react';

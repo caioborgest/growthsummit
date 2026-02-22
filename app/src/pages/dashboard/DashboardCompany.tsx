@@ -3,13 +3,10 @@ import {
   Building2,
   Handshake,
   TrendingUp,
-  Star,
   Users,
   MessageSquare,
   CheckCircle,
-  XCircle,
   FileText,
-  ExternalLink,
   LogOut,
   Sparkles,
   Heart,
@@ -18,7 +15,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Map,
   User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,7 +45,7 @@ export function DashboardCompany() {
 
   const companyMeetings = useMemo(() =>
     companyData
-      ? [...meetings, ...appointments].filter(m =>
+      ? ([...meetings, ...appointments] as any[]).filter(m =>
         (m.companyAnchorId === companyData.id || m.companyVendorId === companyData.id) ||
         (m.companyAId === companyData.id || m.companyBId === companyData.id)
       )

@@ -161,10 +161,10 @@ function InnerHeader() {
             </Link>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              {['Sobre', 'Programação', 'Palestrantes', 'Inscrições', 'Seja Expositor'].map((item) => (
+              {['Sobre', 'Edição JN', 'Programação', 'Palestrantes', 'Inscrições', 'Seja Expositor'].map((item) => (
                 <a
                   key={item}
-                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  href={item === 'Edição JN' ? '#edicao-jn' : `#${item.toLowerCase().replace(' ', '-')}`}
                   className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-brand-orange-coral transition-all duration-300 relative group"
                 >
                   {item}
@@ -191,6 +191,7 @@ function InnerHeader() {
           <nav className="flex flex-col gap-2">
             {[
               { label: 'Sobre', href: '#sobre' },
+              { label: 'Edição JN', href: '#edicao-jn' },
               { label: 'Mentores', href: '#mentores' },
               { label: 'Programação', href: '#programacao' },
               { label: 'Palestrantes', href: '#palestrantes' },
@@ -490,6 +491,184 @@ export function GrowthExperienceTriunfo() {
                 <div className="mt-2 h-1 w-12 bg-brand-orange-coral rounded-full" />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Edição Pocket: Juazeiro do Norte ── */}
+      <section id="edicao-jn" className="py-16 sm:py-28 bg-dark relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-orange-coral/8 blur-[140px] rounded-full -translate-x-1/2 -translate-y-1/4" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/8 blur-[120px] rounded-full translate-x-1/3 translate-y-1/4" />
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '32px 32px' }}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+          {/* Section header */}
+          <div className="text-center mb-12 sm:mb-20 animate-fade-in-up">
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-gradient-to-r from-brand-orange-coral/20 to-purple-500/20 border border-brand-orange-coral/30 mb-6">
+              <MapPin className="h-4 w-4 text-brand-orange-coral" />
+              <span className="text-xs font-black uppercase tracking-[0.25em] text-brand-orange-coral">Edição Pocket</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
+              Growth Experience em{' '}
+              <span className="relative inline-block">
+                <span className="text-gradient">Juazeiro do Norte</span>
+                <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-brand-orange-coral to-transparent rounded-full" />
+              </span>
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+              Uma imersão exclusiva para <strong className="text-white">empresários</strong> e profissionais de{' '}
+              <strong className="text-white">marketing, vendas e inteligência artificial</strong> do Cariri cearense.
+              O formato Pocket — menor escala, impacto máximo.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+            {/* ── Video Player ── */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="relative group">
+                {/* Glow ring */}
+                <div className="absolute -inset-3 bg-gradient-to-r from-brand-orange-coral/40 to-purple-500/30 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
+
+                {/* Video wrapper */}
+                <div className="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl shadow-black/50 bg-dark-200">
+                  {/* Top bar UI decoration */}
+                  <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2 px-5 py-3 bg-gradient-to-b from-black/60 to-transparent">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                    </div>
+                    <span className="text-white/50 text-xs font-mono ml-2 truncate">Growth Experience — Cobertura Juazeiro do Norte</span>
+                  </div>
+
+                  <video
+                    className="w-full aspect-video object-cover"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    poster="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                  >
+                    <source
+                      src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov"
+                      type="video/mp4"
+                    />
+                    <source
+                      src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov"
+                      type="video/quicktime"
+                    />
+                    Seu navegador não suporta reprodução de vídeo.
+                  </video>
+
+                  {/* Bottom gradient overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-dark-200/80 to-transparent pointer-events-none" />
+                </div>
+
+                {/* Floating badge */}
+                <div className="absolute -bottom-6 -right-4 sm:-right-8 glass-card px-5 py-3 border-brand-orange-coral/30 shadow-glow-orange flex items-center gap-3 z-20 animate-float">
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+                  <p className="text-white text-sm font-bold whitespace-nowrap">Cobertura Oficial • JN 2025</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Info side ── */}
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+
+              {/* Audience tags */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {['Empresários', 'Marketing', 'Vendas', 'Inteligência Artificial', 'Gestão'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-brand-orange-coral/10 border border-brand-orange-coral/25 text-brand-orange-coral text-xs font-black uppercase tracking-widest"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mb-6 leading-snug">
+                Uma edição com o DNA Growth —{' '}
+                <span className="text-gradient">calibrada para o Cariri</span>
+              </h3>
+
+              <p className="text-gray-400 text-base sm:text-lg leading-relaxed mb-10">
+                O Growth Experience Pocket reúne em poucas horas o que negócios do interior precisam para dar o próximo salto:
+                estratégias comprovadas de crescimento, ferramentas de IA aplicadas à realidade do mercado local e networking
+                qualificado com quem já escalou.
+              </p>
+
+              {/* Highlights */}
+              <div className="space-y-4 mb-10">
+                {[
+                  { icon: TrendingUp, title: 'Vendas & Growth Hacking', desc: 'Táticas de geração de demanda aplicáveis no mesmo dia' },
+                  { icon: Zap, title: 'IA para Negócios Reais', desc: 'Casos práticos de automação e IA generativa' },
+                  { icon: Handshake, title: 'Networking de Alto Nível', desc: 'Conexões com empresários e especialistas da região' },
+                  { icon: Target, title: 'Marketing que Converte', desc: 'Funil, tráfego e branding para PMEs do interior' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/5 transition-colors group cursor-default">
+                    <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center group-hover:bg-brand-orange-coral group-hover:scale-110 transition-all duration-300">
+                      <item.icon className="h-5 w-5 text-brand-orange-coral group-hover:text-white transition-colors" />
+                    </div>
+                    <div>
+                      <p className="text-white font-bold mb-0.5 group-hover:text-brand-orange-coral transition-colors">{item.title}</p>
+                      <p className="text-gray-500 text-sm">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <a
+                  href={`https://wa.me/5588988432310?text=${encodeURIComponent('Olá! Quero receber informações sobre o Growth Experience em Juazeiro do Norte.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-3 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-8 py-5 rounded-2xl shadow-glow-orange hover:scale-105 transition-all duration-300 text-base"
+                >
+                  <Phone className="h-5 w-5" />
+                  Quero ser avisado — JN
+                </a>
+                <a
+                  href="#inscricoes"
+                  className="inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold px-8 py-5 rounded-2xl transition-all duration-300 text-base"
+                >
+                  Ver Edição Triunfo
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+
+              {/* Location note */}
+              <div className="mt-8 flex items-center gap-3 text-gray-500 text-sm">
+                <MapPin className="h-4 w-4 text-brand-orange-coral flex-shrink-0" />
+                <span>Juazeiro do Norte – CE &nbsp;·&nbsp; Formato Pocket (meio período)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats strip */}
+          <div className="mt-20 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            {[
+              { value: '200+', label: 'Participantes' },
+              { value: '4h', label: 'Imersão Intensiva' },
+              { value: '6+', label: 'Palestrantes' },
+              { value: '100%', label: 'Prático' },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="glass-card p-6 text-center border-white/5 hover:border-brand-orange-coral/20 transition-all duration-300 hover:-translate-y-1"
+              >
+                <p className="text-3xl sm:text-4xl font-black text-white mb-1">{stat.value}</p>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

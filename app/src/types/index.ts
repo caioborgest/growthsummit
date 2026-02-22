@@ -92,6 +92,9 @@ export interface Registration {
   createdAt: string;
   checkedIn: boolean;
   checkInTime?: string;
+  // Growth Experience specific fields
+  cursosSelecionados?: string[];
+  palestrasNoturnas?: boolean;
 }
 
 export interface Mentor {

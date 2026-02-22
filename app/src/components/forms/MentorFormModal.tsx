@@ -43,6 +43,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const { projectId } = useProject();
 
     if (!isOpen) return null;
 
@@ -66,8 +67,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         if (isProcessing) return;
         setStep(prev => prev - 1);
     };
-
-    const { projectId } = useProject();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

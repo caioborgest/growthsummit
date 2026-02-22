@@ -18,6 +18,7 @@ interface Step3ConfirmacaoProps {
 export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3ConfirmacaoProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { projectId } = useProject();
 
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => getAtividadeById(id))
@@ -73,8 +74,6 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
 
             console.log('Enviando dados da inscrição para o Supabase...');
-
-            const { projectId } = useProject();
 
             const { data: inscricaoData, error: inscricaoError } = await (supabase
                 .from('inscricoes_growth_experience') as any)

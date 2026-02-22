@@ -94,8 +94,8 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             }
 
             // 2. Salvar agendamento de mentoria no banco
-            const { data: mentoriaData, error: mentoriaError } = await supabase
-                .from('mentorias_agendadas')
+            const { data: mentoriaData, error: mentoriaError } = await (supabase
+                .from('mentorias_agendadas') as any)
                 .insert({
                     project_id: projectId,
                     mentorado_id: userId,
