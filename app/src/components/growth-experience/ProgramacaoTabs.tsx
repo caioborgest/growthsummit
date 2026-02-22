@@ -220,26 +220,29 @@ export function ProgramacaoTabs({
     return (
         <div className="w-full">
             {/* Tabs Navigation */}
-            <div className="flex flex-wrap md:flex-nowrap gap-2 md:gap-4 mb-12 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-12 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
                 {[
-                    { id: 'diurna', label: 'Programação Diurna', icon: Clock, desc: '8h30 - 17h30' },
-                    { id: 'circuito', label: 'Circuito Experiência', icon: Zap, desc: 'Consultoria Real-time' },
-                    { id: 'noturna', label: 'Palestras Noturnas', icon: Mic2, desc: 'Night Experience' }
+                    { id: 'diurna', label: 'Programação Diurna', labelMobile: 'Diurna', icon: Clock, desc: '8h30 - 17h30' },
+                    { id: 'circuito', label: 'Circuito Experiência', labelMobile: 'Circuito', icon: Zap, desc: 'Consultoria Real-time' },
+                    { id: 'noturna', label: 'Palestras Noturnas', labelMobile: 'Noturnas', icon: Mic2, desc: 'Night Experience' }
                 ].map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 group px-4 py-4 md:py-5 rounded-[14px] transition-all duration-300 relative overflow-hidden ${activeTab === tab.id
-                            ? 'bg-brand-orange-coral text-dark-100 shadow-glow'
-                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        className={`flex-1 group px-3 sm:px-4 py-4 sm:py-5 rounded-[14px] transition-all duration-300 relative overflow-hidden ${activeTab === tab.id
+                                ? 'bg-brand-orange-coral text-dark-100 shadow-glow'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <div className="relative z-10">
-                            <div className="flex items-center justify-center gap-2 mb-1">
-                                <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-dark-100' : 'text-brand-orange-coral animate-pulse'}`} />
-                                <span className="font-black uppercase tracking-wider text-xs md:text-sm">{tab.label}</span>
+                            <div className="flex items-center justify-center gap-1.5 mb-1">
+                                <tab.icon className={`h-4 w-4 flex-shrink-0 ${activeTab === tab.id ? 'text-dark-100' : 'text-brand-orange-coral animate-pulse'}`} />
+                                <span className="font-black uppercase tracking-wide text-[11px] sm:text-xs leading-tight text-center">
+                                    <span className="sm:hidden">{tab.labelMobile}</span>
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </span>
                             </div>
-                            <p className={`text-[10px] font-bold ${activeTab === tab.id ? 'text-dark-100/60' : 'text-gray-500'}`}>{tab.desc}</p>
+                            <p className={`text-[9px] sm:text-[10px] font-bold ${activeTab === tab.id ? 'text-dark-100/60' : 'text-gray-500'}`}>{tab.desc}</p>
                         </div>
                     </button>
                 ))}

@@ -344,12 +344,16 @@ function InnerFooter() {
               Realização
             </h4>
             <div className="space-y-6 w-full">
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Organização Principal</p>
-                <div className="flex items-center justify-center md:justify-start gap-3">
-                  <img src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png" alt="CBX Growth & IA" className="h-8 w-auto grayscale-0 group-hover:grayscale-0 transition-all opacity-100" />
-                  <span className="text-white font-bold tracking-tight">CBX Growth & IA</span>
-                </div>
+              <div className="p-4 rounded-xl bg-white border border-white/20 hover:shadow-md transition-all flex flex-col items-center justify-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-4">Organização Principal</p>
+                <img
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png"
+                  alt="CBX Growth & IA"
+                  className="h-10 w-auto object-contain mx-auto"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
+                  }}
+                />
               </div>
               <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Patrocinador Master</p>
@@ -419,7 +423,7 @@ export function GrowthExperienceTriunfo() {
   const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
 
   return (
-    <div className="bg-dark min-h-screen pt-20 flex flex-col">
+    <div className="bg-dark min-h-screen pt-20 flex flex-col overflow-x-hidden">
       <SEOHead
         title="Growth Experience Triunfo-PE 2026 | 09 de Abril"
         description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e oportunidades para PMEs. 09/04/2026 no Espaço Parque."
