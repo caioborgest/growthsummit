@@ -54,17 +54,29 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     });
 
                     if (sError) {
-                        // Se já existe, não é um erro fatal para a inscrição
-                        if (!sError.message.toLowerCase().includes('already registered')) {
+                        // Se já existe, tentamos login automático
+                        if (sError.message.toLowerCase().includes('already registered')) {
+                            console.log('Usuário já registrado, tentando login...');
+                            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                                email: dados.email,
+                                password: dados.senha
+                            });
+
+                            if (!signInError) {
+                                userId = signInData.user.id;
+                                console.log('Login automático realizado:', userId);
+                            } else {
+                                console.log('Login automático falhou (possivelmente senha diferente), prosseguindo por email.');
+                            }
+                        } else {
                             throw sError;
                         }
-                        console.log('Usuário já registrado, prosseguindo com inscrição por email.');
                     } else {
                         userId = authData?.user?.id;
                         console.log('Usuário criado com sucesso:', userId);
                     }
                 } catch (signUpErr) {
-                    console.warn('Erro no signUp (não fatal se já existir):', signUpErr);
+                    console.warn('Erro no processamento de Auth (não fatal):', signUpErr);
                 }
             }
 

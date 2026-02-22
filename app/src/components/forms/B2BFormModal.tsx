@@ -140,15 +140,27 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             }
 
             if (authError) {
+                // Se já existe, tentamos login automático
                 if (authError.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
+                    console.log('Usuário já registrado, tentando login...');
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: formData.email,
+                        password: formData.senha
+                    });
+
+                    if (!signInError) {
+                        user = signInData.user;
+                        console.log('Login automático realizado:', user?.id);
+                    } else {
+                        console.warn('Login automático falhou:', signInError.message);
+                    }
+                } else {
+                    throw authError;
                 }
-                throw authError;
             }
 
-            if (!user) {
-                throw new Error('Erro ao identificar usuário para inscrição');
-            }
+            // Prosseguimento (user_id opcional na tabela)
+            console.log('Prosseguindo com registro B2B. User ID:', user?.id || 'nenhum');
 
             // 1.5 Upload Logo if exists
             let logoUrl = '';

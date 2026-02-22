@@ -74,23 +74,29 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             }
 
             if (authError) {
-                // Se já existe, prosseguimos
-                if (!authError.message.includes('already registered')) {
+                // Se já existe, tentamos fazer login automático
+                if (authError.message.includes('already registered')) {
+                    console.log('Usuário já registrado, tentando login...');
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: dados.email,
+                        password: dados.senha
+                    });
+
+                    if (!signInError) {
+                        userId = signInData.user.id;
+                        console.log('Login automático realizado:', userId);
+                    } else {
+                        console.warn('Login automático falhou:', signInError.message);
+                    }
+                } else {
                     throw authError;
                 }
             }
 
-            // Precisamos do ID do usuário.
-            if (!userId && !authError?.message.includes('already registered')) {
-                throw new Error('Erro ao identificar usuário para o agendamento');
-            }
-
+            // Se ainda não temos userId, prosseguimos mesmo assim (será salvo com user_id null)
+            // mas logamos o aviso.
             if (!userId) {
-                // Tentar logar se já existe? Para simplificar vamos lançar erro se não conseguirmos o ID
-                if (authError?.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Por favor, faça login.');
-                }
-                throw new Error('Erro ao identificar usuário');
+                console.warn('Prosseguindo com agendamento sem ID de usuário vinculado.');
             }
 
             // 2. Salvar agendamento de mentoria no banco

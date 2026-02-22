@@ -131,8 +131,25 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     password: formData.senha,
                     options: { data: { name: formData.nome, phone: formData.telefone, role: 'participante' } }
                 });
-                if (sError) throw sError;
-                user = authData?.user || null;
+
+                if (sError) {
+                    if (sError.message.toLowerCase().includes('already registered')) {
+                        console.log('Usuário já existe, tentando login...');
+                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                            email: formData.email,
+                            password: formData.senha
+                        });
+                        if (!signInError) {
+                            user = signInData.user;
+                        } else {
+                            console.log('Login falhou, prosseguindo sem vincular ID de usuário');
+                        }
+                    } else {
+                        throw sError;
+                    }
+                } else {
+                    user = authData?.user || null;
+                }
             }
 
             if (!user) throw new Error('Falha na autenticação');

@@ -104,7 +104,11 @@ function AppRoutes() {
           <Route index element={
             window.matchMedia('(display-mode: standalone)').matches ? (
               isAuthenticated ? (
-                user?.role === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/minha-area" replace />
+                user?.role === 'admin' ? <Navigate to="/admin" replace /> :
+                  user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
+                    (user?.role === 'company' || user?.role === 'empresa') ? <Navigate to="/empresa-area" replace /> :
+                      user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
+                        <Navigate to="/minha-area" replace />
               ) : (
                 <Navigate to="/login" replace />
               )

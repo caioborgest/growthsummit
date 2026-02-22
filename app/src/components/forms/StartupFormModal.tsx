@@ -119,15 +119,28 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             }
 
             if (authError) {
+                // Se já existe, tentamos login automático
                 if (authError.message.includes('already registered')) {
-                    throw new Error('Este email já está cadastrado. Por favor, faça login ou use outro email.');
+                    console.log('Usuário já registrado, tentando login...');
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: formData.email,
+                        password: formData.senha
+                    });
+
+                    if (!signInError) {
+                        user = signInData.user;
+                        console.log('Login automático realizado:', user?.id);
+                    } else {
+                        console.warn('Login automático falhou:', signInError.message);
+                    }
+                } else {
+                    throw authError;
                 }
-                throw authError;
             }
 
-            if (!user) {
-                throw new Error('Erro ao identificar usuário para inscrição');
-            }
+            // Se ainda não temos user, prosseguimos sem vincular ID se possível
+            // (A tabela startups_arena_pitch permite user_id null)
+            console.log('Prosseguindo com registro de startup. User ID:', user?.id || 'nenhum');
 
             // Preparar dados para inserção
             const dataToInsert = {
