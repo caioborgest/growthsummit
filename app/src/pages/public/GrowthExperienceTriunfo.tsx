@@ -44,6 +44,7 @@ import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRe
 import { StatsSection } from '@/components/growth-experience/StatsSection';
 import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
 import { SectionShare } from '@/components/social/SectionShare';
+import { SocialShare } from '@/components/social/SocialShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
 import { useMentors, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
@@ -347,7 +348,7 @@ function InnerFooter() {
                 <img
                   src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png"
                   alt="CBX Growth & IA"
-                  className="h-10 w-auto object-contain mx-auto"
+                  className="h-16 w-auto object-contain mx-auto"
                   onError={(e) => {
                     e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
                   }}

@@ -170,17 +170,8 @@ export function Login() {
               )}
             </Button>
           </form>
-
-          <div className="mt-4 sm:mt-6 text-center">
-            <p className="text-gray-400 text-xs sm:text-sm">
-              Ainda não tem conta?{' '}
-              <Link to="/inscricoes" className="text-teal-400 hover:underline font-bold">
-                Inscreva-se
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
