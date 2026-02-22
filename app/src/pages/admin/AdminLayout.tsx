@@ -56,9 +56,11 @@ const sidebarItems: SidebarItem[] = [
   { id: 'check-in', name: 'Check-in', icon: QrCode, path: '/admin/check-in' },
   { id: 'whatsapp-groups', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp-groups' },
   { id: 'comunicacao', name: 'Comunicação', icon: Mail, path: '/admin/comunicacao' },
+  { id: 'cupons', name: 'Cupons', icon: Ticket, path: '/admin/cupons' },
+  { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },
   { id: 'relatorios', name: 'Relatórios', icon: BarChart3, path: '/admin/relatorios' },
   { id: 'usuarios', name: 'Usuários', icon: Users, path: '/admin/usuarios' },
-  { id: 'cupons', name: 'Cupons', icon: Ticket, path: '/admin/cupons' },
+  { id: 'seguranca', name: 'Segurança', icon: AlertCircle, path: '/admin/seguranca' },
   { id: 'guia', name: 'Manual de Uso', icon: BookOpen, path: '/guia' },
 ];
 

@@ -54,8 +54,10 @@ const getTableName = (projectId: string, entity: string) => {
 };
 
 // Helper to map CamelCase back to snake_case for Supabase
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapToSnakeCase = (obj: Record<string, unknown>) => {
-  const result: Record<string, unknown> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result: Record<string, any> = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -65,10 +67,100 @@ const mapToSnakeCase = (obj: Record<string, unknown>) => {
   return result;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapToSupabase = (projectId: string, entity: string, data: Record<string, any>): any => {
+  const result = mapToSnakeCase(data);
+
+  // Project isolation
+  if (entity !== 'projects' && entity !== 'users' && entity !== 'profiles') {
+    result.project_id = projectId;
+  }
+
+  // Specific semantic remapping for Growth Experience tables
+  if (projectId === GE_TRIUNFO || projectId.startsWith('ge-')) {
+    if (entity === 'registrations') {
+      if (data.name) result.nome = data.name;
+      if (data.email) result.email = data.email;
+      if (data.phone) result.telefone = data.phone;
+      if (data.company) result.empresa = data.company;
+    }
+
+    if (entity === 'startups') {
+      if (data.name) result.nome_startup = data.name;
+      if (data.description) result.descricao_startup = data.description;
+      if (data.sector) result.setor = data.sector;
+      if (data.stage) result.estagio = data.stage;
+      if (data.foundingTeam && data.foundingTeam.length > 0) {
+        result.nome_fundador = data.foundingTeam[0].name;
+      }
+    }
+
+    if (entity === 'companies') {
+      if (data.name) result.nome_empresa = data.name;
+      if (data.contactName) result.nome_representante = data.contactName;
+      if (data.sector) result.setor = data.sector;
+      if (data.description) result.descricao_empresa = data.description;
+    }
+
+    if (entity === 'mentors') {
+      if (data.name) result.nome = data.name;
+      if (data.email) result.email = data.email;
+      if (data.phone) result.telefone = data.phone;
+      if (data.company) result.empresa = data.company;
+      if (data.position) result.cargo = data.position;
+    }
+
+    if (entity === 'mentoring_sessions') {
+      if (data.menteeName) result.nome_mentorado = data.menteeName;
+      if (data.topic) result.tema_interesse = data.topic;
+      if (data.scheduledAt) result.horario_preferido = data.scheduledAt.toString();
+    }
+
+    if (entity === 'cupons') {
+      if (data.indicacaoTipo) result.indicacao_tipo = data.indicacaoTipo;
+      if (data.indicacaoNome) result.indicacao_nome = data.indicacaoNome;
+      if (data.porcentagemDesconto) result.porcentagem_desconto = data.porcentagemDesconto;
+      if (data.usoLimite) result.uso_limite = data.usoLimite;
+    }
+  }
+
+  return result;
+};
+
 // Generic interface with id
 interface WithId {
   id: string;
   projectId: string;
+}
+
+// ── In-memory cache (TTL: 30s) ──────────────────────────────────────────────
+const CACHE_TTL = 30_000;
+const dataCache = new Map<string, { data: unknown[]; ts: number }>();
+
+function invalidateCache(projectId: string, entityName: string) {
+  dataCache.delete(`${projectId}:${entityName}`);
+}
+
+// ── Minimal column selection per entity (avoids SELECT *) ───────────────────
+function getSelectFields(entity: string): string {
+  const fields: Record<string, string> = {
+    registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
+    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,created_at,nome,telefone,empresa,cargo',
+    mentoring_sessions: 'id,project_id,mentor_id,mentor_name,mentee_id,mentee_name,scheduled_at,duration,status,topic,created_at,three_steps',
+    companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
+    startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
+    sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
+    transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
+    check_ins: 'id,project_id,user_id,user_name,ticket_number,timestamp,location,method',
+    sessions: 'id,project_id,title,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count',
+    leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at',
+    cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
+    b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
+    b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
+    b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
+  };
+  return fields[entity] ?? '*';
 }
 
 // Generic hook for CRUD operations with project filtering
@@ -80,10 +172,19 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
   const fetchData = useCallback(async () => {
     if (!projectId) return;
 
+    // Check cache first
+    const cacheKey = `${projectId}:${entityName}`;
+    const cached = dataCache.get(cacheKey);
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      setData(cached.data as T[]);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId, entityName);
-      let query = supabase.from(tableName as any).select('*');
+      const fields = getSelectFields(entityName);
+      let query = supabase.from(tableName as any).select(fields);
 
       // Filter by project for non-generic tables
       if (tableName !== 'projects' && tableName !== 'users' && tableName !== 'profiles') {
@@ -164,6 +265,8 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
       });
 
       setData(mappedData);
+      // Store in cache
+      dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
     } catch (err) {
       logger.error(`Erro ao buscar ${entityName}:`, err);
       // Fallback to initial (mock) data in development if table doesn't exist
@@ -180,10 +283,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId, entityName);
-
-      // mapToSnakeCase returned type might need to be cast to matching table insert type
-      const dataToInsert = mapToSnakeCase(item as Record<string, unknown>);
-      dataToInsert.project_id = projectId;
+      const dataToInsert = mapToSupabase(projectId, entityName, item);
 
       const { data: inserted, error } = await supabase
         .from(tableName as any)
@@ -193,6 +293,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
 
       if (error) throw error;
 
+      invalidateCache(projectId!, entityName);
       await fetchData();
       return inserted as unknown as T;
     } catch (err) {
@@ -207,12 +308,14 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId!, entityName);
-      const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
+      const dataToUpdate = mapToSupabase(projectId!, entityName, updates);
 
       // Se for a tabela de projetos, tratar os campos específicos
       if (tableName === 'projects') {
-        if (updates.settings) {
-          const settings = updates.settings as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projectUpdates = updates as any;
+        if (projectUpdates.settings) {
+          const settings = projectUpdates.settings;
           if (settings.maxRegistrations !== undefined) dataToUpdate.max_registrations = settings.maxRegistrations;
           if (settings.maxMentors !== undefined) dataToUpdate.max_mentors = settings.maxMentors;
           if (settings.maxStartups !== undefined) dataToUpdate.max_startups = settings.maxStartups;
@@ -231,12 +334,14 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         }
       }
 
-      const { error } = await supabase
-        .from(tableName as any)
-        .update(dataToUpdate as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from(tableName)
+        .update(dataToUpdate)
         .eq('id', id);
 
       if (error) throw error;
+      invalidateCache(projectId!, entityName);
       await fetchData();
     } catch (err) {
       logger.error(`Erro ao atualizar ${entityName}:`, err);
@@ -250,12 +355,14 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId!, entityName);
-      const { error } = await supabase
-        .from(tableName as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from(tableName)
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      invalidateCache(projectId!, entityName);
       await fetchData();
     } catch (err) {
       logger.error(`Erro ao remover ${entityName}:`, err);
@@ -570,9 +677,10 @@ export function useUsers() {
     setIsLoading(true);
     try {
       const dataToUpdate = mapToSnakeCase(updates as Record<string, unknown>);
-      const { error } = await supabase
-        .from('users' as any)
-        .update(dataToUpdate as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from('users')
+        .update(dataToUpdate)
         .eq('id', id);
 
       if (error) throw error;
@@ -609,22 +717,24 @@ export function useProfile(userId?: string) {
       if (error) throw error;
 
       if (supabaseData) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const d = supabaseData as any;
         setData({
-          id: supabaseData.id,
-          userId: supabaseData.user_id,
-          company: supabaseData.company,
-          position: supabaseData.position,
-          bio: supabaseData.bio,
-          website: supabaseData.website,
-          linkedin: supabaseData.linkedin,
-          city: supabaseData.city,
-          state: supabaseData.state,
-          country: supabaseData.country,
-          birthDate: supabaseData.birth_date,
-          gender: supabaseData.gender,
-          cpf: supabaseData.cpf,
-          cnpj: supabaseData.cnpj,
-          newsletterOptIn: supabaseData.newsletter_opt_in,
+          id: d.id,
+          userId: d.user_id,
+          company: d.company,
+          position: d.position,
+          bio: d.bio,
+          website: d.website,
+          linkedin: d.linkedin,
+          city: d.city,
+          state: d.state,
+          country: d.country,
+          birthDate: d.birth_date,
+          gender: d.gender,
+          cpf: d.cpf,
+          cnpj: d.cnpj,
+          newsletterOptIn: d.newsletter_opt_in,
         } as Profile);
       }
     } catch (err) {

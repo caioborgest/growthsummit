@@ -80,6 +80,8 @@ export interface Registration {
   id: string;
   projectId: string;
   userId: string;
+  name?: string;
+  email?: string;
   ticketType: 'standard' | 'pro' | 'vip';
   status: 'pending' | 'paid' | 'cancelled' | 'refunded';
   qrCode: string;

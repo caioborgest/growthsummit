@@ -319,7 +319,5 @@ export type Tables<T extends keyof Database['public']['Tables']> = Database['pub
 export type Insert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
 export type Update<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
 
-// Tipos específicos
-export type User = Tables<'users'>;
-export type Project = Tables<'projects'>;
-export type Registration = Tables<'registrations'>;
+// Nota: User, Project, Registration são definidos em index.ts com a forma correta para o app.
+// Não re-exportar aqui para evitar conflitos de tipo.

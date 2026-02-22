@@ -1,48 +1,62 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Layout } from './components/layout/Layout';
-import { Home } from './pages/public/Home';
-import { Sobre } from './pages/public/Sobre';
-import { Programacao } from './pages/public/Programacao';
-import { Palestrantes } from './pages/public/Palestrantes';
-import { Inscricoes } from './pages/public/Inscricoes';
-import { Mentorias } from './pages/public/Mentorias';
-import { RodadaB2B } from './pages/public/RodadaB2B';
-import { Startups } from './pages/public/Startups';
-import { Patrocinio } from './pages/public/Patrocinio';
-import { GrowthExperience } from './pages/public/GrowthExperience';
-import { GrowthExperienceTriunfo } from './pages/public/GrowthExperienceTriunfo';
-import { FAQ } from './pages/public/FAQ';
-import { Contato } from './pages/public/Contato';
-import { Login } from './pages/auth/Login';
-import { DashboardParticipante } from './pages/dashboard/DashboardParticipante';
-import { DashboardMentor } from './pages/dashboard/DashboardMentor';
-import { DashboardCompany } from './pages/dashboard/DashboardCompany';
-import { DashboardStartup } from './pages/dashboard/DashboardStartup';
-import { DashboardSponsor } from './pages/dashboard/DashboardSponsor';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import AdminProjetos from './pages/admin/AdminProjetos';
-import { AdminInscricoes } from './pages/admin/AdminInscricoes';
-import { AdminMentores } from './pages/admin/AdminMentores';
-import { AdminMentorias } from './pages/admin/AdminMentorias';
-import { AdminB2B } from './pages/admin/AdminB2B';
-import { AdminStartups } from './pages/admin/AdminStartups';
-import { AdminPatrocinadores } from './pages/admin/AdminPatrocinadores';
-import { AdminFinanceiro } from './pages/admin/AdminFinanceiro';
-import { AdminCheckIn } from './pages/admin/AdminCheckIn';
-import { AdminComunicacao } from './pages/admin/AdminComunicacao';
-import { AdminRelatorios } from './pages/admin/AdminRelatorios';
-import { AdminProgramacao } from './pages/admin/AdminProgramacao';
-import { AdminSecurity } from './pages/admin/AdminSecurity';
-import { AdminWhatsAppGroups } from './pages/admin/AdminWhatsAppGroups';
-import { AdminCupons } from './pages/admin/AdminCupons';
-import { AdminUsuarios } from './pages/admin/AdminUsuarios';
-import { HelpCenter } from './pages/help/HelpCenter';
-import { PWAInstallPrompt, IOSInstallBadge } from './components/PWAInstallPrompt';
+import { PageLoader } from './components/ui/PageLoader';
 
-// 404 Not Found Component
+// ── Public Layout (loaded eagerly — needed for initial route)
+import { Layout } from './components/layout/Layout';
+
+// ── Public Pages (lazy)
+const Home = lazy(() => import('./pages/public/Home').then(m => ({ default: m.Home })));
+const Sobre = lazy(() => import('./pages/public/Sobre').then(m => ({ default: m.Sobre })));
+const Programacao = lazy(() => import('./pages/public/Programacao').then(m => ({ default: m.Programacao })));
+const Palestrantes = lazy(() => import('./pages/public/Palestrantes').then(m => ({ default: m.Palestrantes })));
+const Inscricoes = lazy(() => import('./pages/public/Inscricoes').then(m => ({ default: m.Inscricoes })));
+const Mentorias = lazy(() => import('./pages/public/Mentorias').then(m => ({ default: m.Mentorias })));
+const RodadaB2B = lazy(() => import('./pages/public/RodadaB2B').then(m => ({ default: m.RodadaB2B })));
+const Startups = lazy(() => import('./pages/public/Startups').then(m => ({ default: m.Startups })));
+const Patrocinio = lazy(() => import('./pages/public/Patrocinio').then(m => ({ default: m.Patrocinio })));
+const GrowthExperience = lazy(() => import('./pages/public/GrowthExperience').then(m => ({ default: m.GrowthExperience })));
+const GrowthExperienceTriunfo = lazy(() => import('./pages/public/GrowthExperienceTriunfo').then(m => ({ default: m.GrowthExperienceTriunfo })));
+const FAQ = lazy(() => import('./pages/public/FAQ').then(m => ({ default: m.FAQ })));
+const Contato = lazy(() => import('./pages/public/Contato').then(m => ({ default: m.Contato })));
+const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ default: m.HelpCenter })));
+
+// ── Auth (lazy)
+const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
+
+// ── Dashboards (lazy — each in its own chunk)
+const DashboardParticipante = lazy(() => import('./pages/dashboard/DashboardParticipante').then(m => ({ default: m.DashboardParticipante })));
+const DashboardMentor = lazy(() => import('./pages/dashboard/DashboardMentor').then(m => ({ default: m.DashboardMentor })));
+const DashboardCompany = lazy(() => import('./pages/dashboard/DashboardCompany').then(m => ({ default: m.DashboardCompany })));
+const DashboardStartup = lazy(() => import('./pages/dashboard/DashboardStartup').then(m => ({ default: m.DashboardStartup })));
+const DashboardSponsor = lazy(() => import('./pages/dashboard/DashboardSponsor').then(m => ({ default: m.DashboardSponsor })));
+
+// ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos'));
+const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.AdminInscricoes })));
+const AdminMentores = lazy(() => import('./pages/admin/AdminMentores').then(m => ({ default: m.AdminMentores })));
+const AdminMentorias = lazy(() => import('./pages/admin/AdminMentorias').then(m => ({ default: m.AdminMentorias })));
+const AdminB2B = lazy(() => import('./pages/admin/AdminB2B').then(m => ({ default: m.AdminB2B })));
+const AdminStartups = lazy(() => import('./pages/admin/AdminStartups').then(m => ({ default: m.AdminStartups })));
+const AdminPatrocinadores = lazy(() => import('./pages/admin/AdminPatrocinadores').then(m => ({ default: m.AdminPatrocinadores })));
+const AdminFinanceiro = lazy(() => import('./pages/admin/AdminFinanceiro').then(m => ({ default: m.AdminFinanceiro })));
+const AdminCheckIn = lazy(() => import('./pages/admin/AdminCheckIn').then(m => ({ default: m.AdminCheckIn })));
+const AdminComunicacao = lazy(() => import('./pages/admin/AdminComunicacao').then(m => ({ default: m.AdminComunicacao })));
+const AdminRelatorios = lazy(() => import('./pages/admin/AdminRelatorios').then(m => ({ default: m.AdminRelatorios })));
+const AdminProgramacao = lazy(() => import('./pages/admin/AdminProgramacao').then(m => ({ default: m.AdminProgramacao })));
+const AdminSecurity = lazy(() => import('./pages/admin/AdminSecurity').then(m => ({ default: m.AdminSecurity })));
+const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
+const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ default: m.AdminCupons })));
+const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.AdminUsuarios })));
+const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
+const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
+const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));
+
+// ── 404 Not Found
 function NotFound() {
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-4">
@@ -61,16 +75,12 @@ function NotFound() {
   );
 }
 
-// Protected Route Component
+// ── Protected Route
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!isAuthenticated) {
@@ -86,117 +96,120 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 function AppRoutes() {
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Layout />}>
-        <Route index element={
-          window.matchMedia('(display-mode: standalone)').matches ? (
-            <Navigate to="/login" replace />
-          ) : (
-            <Home />
-          )
-        } />
-        <Route path="sobre" element={<Sobre />} />
-        <Route path="programacao" element={<Programacao />} />
-        <Route path="palestrantes" element={<Palestrantes />} />
-        <Route path="inscricoes" element={<Inscricoes />} />
-        <Route path="mentorias" element={<Mentorias />} />
-        <Route path="rodada-negocios" element={<RodadaB2B />} />
-        <Route path="startups" element={<Startups />} />
-        <Route path="seja-patrocinador" element={<Patrocinio />} />
-        <Route path="growth-experience" element={<GrowthExperience />} />
-        <Route path="faq" element={<FAQ />} />
-        <Route path="contato" element={<Contato />} />
-        <Route path="guia" element={<HelpCenter />} />
-      </Route>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={
+            window.matchMedia('(display-mode: standalone)').matches ? (
+              <Navigate to="/login" replace />
+            ) : (
+              <Home />
+            )
+          } />
+          <Route path="sobre" element={<Sobre />} />
+          <Route path="programacao" element={<Programacao />} />
+          <Route path="palestrantes" element={<Palestrantes />} />
+          <Route path="inscricoes" element={<Inscricoes />} />
+          <Route path="mentorias" element={<Mentorias />} />
+          <Route path="rodada-negocios" element={<RodadaB2B />} />
+          <Route path="startups" element={<Startups />} />
+          <Route path="seja-patrocinador" element={<Patrocinio />} />
+          <Route path="growth-experience" element={<GrowthExperience />} />
+          <Route path="faq" element={<FAQ />} />
+          <Route path="contato" element={<Contato />} />
+          <Route path="guia" element={<HelpCenter />} />
+        </Route>
 
-      {/* Dedicated Page for Triunfo (No Global Layout) */}
-      <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
+        {/* Dedicated Page for Triunfo (No Global Layout) */}
+        <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
 
-      {/* Auth Routes */}
-      <Route path="/login" element={<Login />} />
+        {/* Auth Routes */}
+        <Route path="/login" element={<Login />} />
 
-      {/* Participant Dashboard */}
-      <Route
-        path="/minha-area/*"
-        element={
-          <ProtectedRoute allowedRoles={['participant', 'participante', 'admin']}>
-            <DashboardParticipante />
-          </ProtectedRoute>
-        }
-      />
+        {/* Participant Dashboard */}
+        <Route
+          path="/minha-area/*"
+          element={
+            <ProtectedRoute allowedRoles={['participant', 'participante', 'admin']}>
+              <DashboardParticipante />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Mentor Dashboard */}
-      <Route
-        path="/mentor-area/*"
-        element={
-          <ProtectedRoute allowedRoles={['mentor', 'admin']}>
-            <DashboardMentor />
-          </ProtectedRoute>
-        }
-      />
+        {/* Mentor Dashboard */}
+        <Route
+          path="/mentor-area/*"
+          element={
+            <ProtectedRoute allowedRoles={['mentor', 'admin']}>
+              <DashboardMentor />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Company Dashboard */}
-      <Route
-        path="/empresa-area/*"
-        element={
-          <ProtectedRoute allowedRoles={['company', 'admin']}>
-            <DashboardCompany />
-          </ProtectedRoute>
-        }
-      />
+        {/* Company Dashboard */}
+        <Route
+          path="/empresa-area/*"
+          element={
+            <ProtectedRoute allowedRoles={['company', 'admin']}>
+              <DashboardCompany />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Startup Dashboard */}
-      <Route
-        path="/startup-area/*"
-        element={
-          <ProtectedRoute allowedRoles={['startup', 'admin']}>
-            <DashboardStartup />
-          </ProtectedRoute>
-        }
-      />
+        {/* Startup Dashboard */}
+        <Route
+          path="/startup-area/*"
+          element={
+            <ProtectedRoute allowedRoles={['startup', 'admin']}>
+              <DashboardStartup />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Sponsor Dashboard */}
-      <Route
-        path="/patrocinador-area/*"
-        element={
-          <ProtectedRoute allowedRoles={['sponsor', 'admin']}>
-            <DashboardSponsor />
-          </ProtectedRoute>
-        }
-      />
+        {/* Sponsor Dashboard */}
+        <Route
+          path="/patrocinador-area/*"
+          element={
+            <ProtectedRoute allowedRoles={['sponsor', 'admin']}>
+              <DashboardSponsor />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<AdminDashboard />} />
-        <Route path="projetos" element={<AdminProjetos />} />
-        <Route path="inscricoes" element={<AdminInscricoes />} />
-        <Route path="mentores" element={<AdminMentores />} />
-        <Route path="mentorias" element={<AdminMentorias />} />
-        <Route path="rodada-negocios" element={<AdminB2B />} />
-        <Route path="startups" element={<AdminStartups />} />
-        <Route path="patrocinadores" element={<AdminPatrocinadores />} />
-        <Route path="financeiro" element={<AdminFinanceiro />} />
-        <Route path="check-in" element={<AdminCheckIn />} />
-        <Route path="whatsapp-groups" element={<AdminWhatsAppGroups />} />
-        <Route path="comunicacao" element={<AdminComunicacao />} />
-        <Route path="relatorios" element={<AdminRelatorios />} />
-        <Route path="programacao" element={<AdminProgramacao />} />
-        <Route path="seguranca" element={<AdminSecurity />} />
-        <Route path="usuarios" element={<AdminUsuarios />} />
-        <Route path="cupons" element={<AdminCupons />} />
-      </Route>
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="projetos" element={<AdminProjetos />} />
+          <Route path="inscricoes" element={<AdminInscricoes />} />
+          <Route path="mentores" element={<AdminMentores />} />
+          <Route path="mentorias" element={<AdminMentorias />} />
+          <Route path="rodada-negocios" element={<AdminB2B />} />
+          <Route path="startups" element={<AdminStartups />} />
+          <Route path="patrocinadores" element={<AdminPatrocinadores />} />
+          <Route path="financeiro" element={<AdminFinanceiro />} />
+          <Route path="check-in" element={<AdminCheckIn />} />
+          <Route path="whatsapp-groups" element={<AdminWhatsAppGroups />} />
+          <Route path="comunicacao" element={<AdminComunicacao />} />
+          <Route path="relatorios" element={<AdminRelatorios />} />
+          <Route path="programacao" element={<AdminProgramacao />} />
+          <Route path="seguranca" element={<AdminSecurity />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="cupons" element={<AdminCupons />} />
+          <Route path="growth-experience" element={<AdminGrowthExperienceTriunfo />} />
+        </Route>
 
-      {/* 404 - Catch all undefined routes */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
 
@@ -204,9 +217,13 @@ function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <IOSInstallBadge />
+        <Suspense fallback={null}>
+          <IOSInstallBadge />
+        </Suspense>
         <AppRoutes />
-        <PWAInstallPrompt />
+        <Suspense fallback={null}>
+          <PWAInstallPrompt />
+        </Suspense>
       </BrowserRouter>
     </ErrorBoundary>
   );

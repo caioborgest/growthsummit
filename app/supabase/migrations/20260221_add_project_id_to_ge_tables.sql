@@ -18,9 +18,23 @@ ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELET
 -- 6. Adicionar project_id à tabela de programação
 ALTER TABLE public.programacao
 ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
+-- 7. Adicionar project_id à tabela de mentores
+ALTER TABLE public.mentores_growth_experience
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
+-- 8. Adicionar project_id às tabelas de B2B Matchmaking
+ALTER TABLE public.b2b_swipes
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
+ALTER TABLE public.b2b_matches
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
+ALTER TABLE public.b2b_appointments_triunfo
+ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
 -- Criar índices para os novos campos
 CREATE INDEX IF NOT EXISTS idx_inscricoes_ge_project_id ON public.inscricoes_growth_experience(project_id);
 CREATE INDEX IF NOT EXISTS idx_startups_ap_project_id ON public.startups_arena_pitch(project_id);
 CREATE INDEX IF NOT EXISTS idx_rodada_b2b_project_id ON public.rodada_negocios_b2b(project_id);
 CREATE INDEX IF NOT EXISTS idx_cupons_social_project_id ON public.cupons_parceria_social(project_id);
 CREATE INDEX IF NOT EXISTS idx_programacao_project_id ON public.programacao(project_id);
+CREATE INDEX IF NOT EXISTS idx_mentores_ge_project_id ON public.mentores_growth_experience(project_id);
+CREATE INDEX IF NOT EXISTS idx_b2b_swipes_project_id ON public.b2b_swipes(project_id);
+CREATE INDEX IF NOT EXISTS idx_b2b_matches_project_id ON public.b2b_matches(project_id);
+CREATE INDEX IF NOT EXISTS idx_b2b_appointments_project_id ON public.b2b_appointments_triunfo(project_id);

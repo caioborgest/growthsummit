@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Buscar metadados silenciosamente
             const { data: userData } = await (supabase
               .from('users')
-              .select('*')
+              .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
               .eq('id', currentSession.user.id)
               .single() as any);
 
@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const { data: userData } = await (supabase
             .from('users')
-            .select('*')
+            .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
             .eq('id', currentSession.user.id)
             .single() as any);
 
@@ -191,14 +191,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
+    // Throttled activity update: max 1 write per 2 seconds
+    let lastActivityWrite = 0;
     const updateActivity = () => {
-      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+      const now = Date.now();
+      if (now - lastActivityWrite > 2000) {
+        lastActivityWrite = now;
+        localStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
+      }
     };
 
-    // Eventos que indicam atividade
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    // Track only meaningful interaction events (not scroll — too noisy)
+    const events = ['mousedown', 'keydown', 'touchstart'];
     events.forEach(event => {
-      window.addEventListener(event, updateActivity);
+      window.addEventListener(event, updateActivity, { passive: true });
     });
 
     // Verificar timeout periodicamente
