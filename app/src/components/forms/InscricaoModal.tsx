@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Loader2, CheckCircle, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface InscricaoModalProps {
     isOpen: boolean;
@@ -27,6 +28,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     const [error, setError] = useState('');
     const [cupomValido, setCupomValido] = useState<{ porcentagem: number; nome: string; tipo: string } | null>(null);
     const [validandoCupom, setValidandoCupom] = useState(false);
+    const { projectId } = useProject();
 
     if (!isOpen) return null;
 
@@ -141,6 +143,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 : 0;
 
             const { error: insError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
+                project_id: projectId,
                 user_id: user.id,
                 nome: formData.nome,
                 email: formData.email,

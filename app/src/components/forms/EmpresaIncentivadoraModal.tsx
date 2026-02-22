@@ -4,6 +4,7 @@ import { X, Loader2, CheckCircle, Users, Trophy, Building2, Ticket } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface EmpresaIncentivadoraModalProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const { projectId } = useProject();
 
     const [formData, setFormData] = useState({
         nomeResponsavel: '',
@@ -39,6 +41,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             // Salvar no banco de dados
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert({
+                project_id: projectId,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
                 telefone: formData.telefone,

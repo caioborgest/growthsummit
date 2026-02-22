@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 
 const benefits = [
   {
@@ -220,6 +221,9 @@ export function GrowthExperience() {
           </div>
         </div>
       </section>
+
+      {/* Edição Anterior — Juazeiro do Norte 2025 */}
+      <EdicaoAnteriorVideo showTriunfoTeaser={false} />
 
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
