@@ -83,6 +83,8 @@ const rateLimiter = new RateLimiter();
 const ROLE_MAPPING: Record<string, string> = {
   'participante': 'participant',
   'admin': 'admin',
+  'superadmin': 'admin',
+  'super-admin': 'admin',
   'mentor': 'mentor',
   'company': 'company',
   'startup': 'startup',

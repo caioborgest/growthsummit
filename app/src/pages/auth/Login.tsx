@@ -18,6 +18,8 @@ export function Login() {
     if (isAuthenticated && user) {
       switch (user.role) {
         case 'admin':
+        case 'superadmin':
+        case 'super-admin':
           navigate('/admin');
           break;
         case 'mentor':
@@ -48,6 +50,8 @@ export function Login() {
         // Redirecionamento baseado na role real do usuário
         switch (loggedInUser.role) {
           case 'admin':
+          case 'superadmin':
+          case 'super-admin':
             navigate('/admin');
             break;
           case 'mentor':

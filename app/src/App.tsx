@@ -95,6 +95,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 }
 
 function AppRoutes() {
+  const { isAuthenticated, user } = useAuth();
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -102,7 +103,11 @@ function AppRoutes() {
         <Route path="/" element={<Layout />}>
           <Route index element={
             window.matchMedia('(display-mode: standalone)').matches ? (
-              <Navigate to="/login" replace />
+              isAuthenticated ? (
+                user?.role === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/minha-area" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             ) : (
               <Home />
             )
