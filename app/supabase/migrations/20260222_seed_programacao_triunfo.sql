@@ -2,8 +2,18 @@
 -- SEED: PROGRAMAÇÃO TRIUNFO 2026
 -- ============================================
 -- Primeiro, limpar dados existentes para este projeto (evitar duplicatas)
+-- Usamos um bloco DO para evitar erro caso a tabela não exista ainda (embora deva existir)
+DO $$ BEGIN IF EXISTS (
+    SELECT
+    FROM information_schema.tables
+    WHERE table_name = 'programacao_evento'
+) THEN
 DELETE FROM public.programacao_evento
-WHERE project_id = 'ge-triunfo-2026';
+WHERE project_id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+END IF;
+END $$;
+-- O ID do projeto Triunfo-PE definido na migração 20260222_seed_ge_triunfo_project.sql
+-- é 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 -- 1. MANHÃ - ÂNCORA
 INSERT INTO public.programacao_evento (
         project_id,
@@ -15,7 +25,7 @@ INSERT INTO public.programacao_evento (
         end_time
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_ancora',
         'talk',
         'Palestra: Mapa de Crescimento para MPEs',
@@ -24,7 +34,7 @@ VALUES (
         '10:00'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_ancora',
         'talk',
         'Palestra + Painel: Digital e WhatsApp',
@@ -33,7 +43,7 @@ VALUES (
         '11:45'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_ancora',
         'talk',
         'Encerramento Manhã e Orientações',
@@ -55,7 +65,7 @@ INSERT INTO public.programacao_evento (
         topics
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_1',
         'keynote',
         'Mapa de Crescimento para MPEs do Sertão do Pajeú',
@@ -67,7 +77,7 @@ VALUES (
         ARRAY ['Desafios de gestão, vendas e caixa', 'Oportunidades locais', 'Organizar prioridades']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_1',
         'workshop',
         'Gestão simples de caixa, estoque e preço',
@@ -79,7 +89,7 @@ VALUES (
         ARRAY ['Fluxo de caixa', 'Precificação', 'Controle de estoque']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_1',
         'workshop',
         'Posicionamento e ofertas para virar referência',
@@ -91,7 +101,7 @@ VALUES (
         ARRAY ['Diferenciais locais', 'Proposta de valor', 'Construção de ofertas']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_1',
         'workshop',
         'Atendimento que vende: roteiro de abordagem',
@@ -113,7 +123,7 @@ INSERT INTO public.programacao_evento (
         end_time
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_circulacao',
         'networking',
         'Café, Networking e Visita aos Stands',
@@ -122,7 +132,7 @@ VALUES (
         '10:15'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_encerramento',
         'talk',
         'Recados Finais e Chamada para Tarde',
@@ -144,7 +154,7 @@ INSERT INTO public.programacao_evento (
         topics
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_2',
         'keynote',
         'Como usar o digital e o WhatsApp para vender mais',
@@ -156,7 +166,7 @@ VALUES (
         ARRAY ['Vendas por mídias digitais e WhatsApp', 'Estratégia de funil simples', 'Painel com empresários locais']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_2',
         'workshop',
         'Listas de transmissão e atendimento rápido',
@@ -168,7 +178,7 @@ VALUES (
         ARRAY ['Organização de listas', 'Modelos de mensagens', 'Pós-venda']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_2',
         'workshop',
         'Instagram e Reels para negócios locais',
@@ -180,7 +190,7 @@ VALUES (
         ARRAY ['Conteúdo para produtos/serviços', 'Rotina de posts', 'Métricas']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'manha_bloco_2',
         'workshop',
         'Primeiros passos com Inteligência Artificial',
@@ -202,7 +212,7 @@ INSERT INTO public.programacao_evento (
         end_time
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_ancora',
         'talk',
         'Palestra: Do Improviso ao Plano',
@@ -211,7 +221,7 @@ VALUES (
         '15:30'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_ancora',
         'talk',
         'Talk Show: Histórias de Crescimento',
@@ -220,7 +230,7 @@ VALUES (
         '17:15'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_ancora',
         'talk',
         'Encerramento do Circuito',
@@ -242,7 +252,7 @@ INSERT INTO public.programacao_evento (
         topics
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_3',
         'keynote',
         'Do improviso ao plano: estratégia para 12 meses',
@@ -254,7 +264,7 @@ VALUES (
         ARRAY ['Importância do planejamento', 'Definição de metas simples', 'Prioridades claras']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_3',
         'workshop',
         'Plano de ação em uma página',
@@ -266,7 +276,7 @@ VALUES (
         ARRAY ['Canvas de planejamento', 'Metas e ações', 'Revisão mensal']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_3',
         'workshop',
         'Vendendo para empresas e prefeituras (B2B/B2G)',
@@ -278,7 +288,7 @@ VALUES (
         ARRAY ['Vendas corporativas', 'Abordagem a órgãos públicos', 'Propostas comerciais']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_3',
         'workshop',
         'Automatizando tarefas chatas com IA',
@@ -300,7 +310,7 @@ INSERT INTO public.programacao_evento (
         end_time
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_circulacao',
         'networking',
         'Networking Orientado',
@@ -309,7 +319,7 @@ VALUES (
         '15:45'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_encerramento',
         'talk',
         'Encerramento e Chamada à Ação',
@@ -331,7 +341,7 @@ INSERT INTO public.programacao_evento (
         topics
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_4',
         'keynote',
         'Histórias de crescimento no Sertão',
@@ -343,7 +353,7 @@ VALUES (
         ARRAY ['Casos de sucesso locais', 'Gestão e inovação na prática', 'Perguntas da plateia']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_4',
         'workshop',
         'Do primeiro contato ao pós-venda: experiência do cliente',
@@ -355,7 +365,7 @@ VALUES (
         ARRAY ['Jornada do cliente', 'Fidelização e indicação', 'Pesquisa de satisfação']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_4',
         'workshop',
         'Organizando as finanças para acessar crédito',
@@ -367,7 +377,7 @@ VALUES (
         ARRAY ['Separação PF/PJ', 'Preparação para crédito', 'Indicadores financeiros']
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'tarde_bloco_4',
         'workshop',
         'Transformando problemas em oportunidades',
@@ -389,7 +399,7 @@ INSERT INTO public.programacao_evento (
         end_time
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'noturna',
         'keynote',
         'Leandro Batista: Crescimento Exponencial',
@@ -398,7 +408,7 @@ VALUES (
         '20:00'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'noturna',
         'talk',
         'Premiação Arena Pitch + Networking',
@@ -407,7 +417,7 @@ VALUES (
         '21:10'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'noturna',
         'keynote',
         'Vanylton Matias: Inovação Corporativa',
@@ -416,7 +426,7 @@ VALUES (
         '22:30'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'noturna',
         'talk',
         'Encerramento Oficial',
@@ -440,7 +450,7 @@ INSERT INTO public.programacao_evento (
         metadata
     )
 VALUES (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'circuito',
         'circuito',
         'Espaço Sebrae',
@@ -454,7 +464,7 @@ VALUES (
         '{"tempo": "15 min", "totalDia": "250 atendimentos"}'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'circuito',
         'circuito',
         'Espaço Senac',
@@ -468,7 +478,7 @@ VALUES (
         '{"tempo": "15 min", "totalDia": "200 pessoas"}'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'circuito',
         'circuito',
         'Espaço Sicoob',
@@ -482,7 +492,7 @@ VALUES (
         '{"tempo": "10 min", "totalDia": "250 pessoas"}'
     ),
     (
-        'ge-triunfo-2026',
+        'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'circuito',
         'circuito',
         'IA na Prática',

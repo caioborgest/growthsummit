@@ -5,7 +5,7 @@
 -- Ensure the table programacao_evento exists with all necessary fields
 CREATE TABLE IF NOT EXISTS public.programacao_evento (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id VARCHAR(100) NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
     category VARCHAR(100) NOT NULL,
     -- diurna_bloco_1, circuito, noturna, etc.
     type VARCHAR(50) NOT NULL,
