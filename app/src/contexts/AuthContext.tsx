@@ -79,7 +79,7 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
-// Mapeamento de roles para normalização
+// Mapeamento de roles para normalização (sempre em lowercase)
 const ROLE_MAPPING: Record<string, string> = {
   'participante': 'participant',
   'admin': 'admin',
@@ -87,13 +87,14 @@ const ROLE_MAPPING: Record<string, string> = {
   'super-admin': 'admin',
   'mentor': 'mentor',
   'company': 'company',
+  'empresa': 'company',
   'startup': 'startup',
   'sponsor': 'sponsor'
 };
 
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: any): User {
-  const rawRole = metadata?.role || supabaseUser.user_metadata?.role || 'participant';
+  const rawRole = (metadata?.role || supabaseUser.user_metadata?.role || 'participant').toLowerCase();
   const role = ROLE_MAPPING[rawRole] || rawRole;
 
   return {

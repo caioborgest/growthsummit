@@ -15,11 +15,9 @@ export function Login() {
 
   // Redirecionamento automático se já estiver logado
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !user.requires2FA) {
       switch (user.role) {
         case 'admin':
-        case 'superadmin':
-        case 'super-admin':
           navigate('/admin');
           break;
         case 'mentor':
@@ -47,11 +45,16 @@ export function Login() {
       const loggedInUser = await login(email, password);
 
       if (loggedInUser) {
+        // Se precisar de 2FA, o AuthContext já terá atualizado o estado
+        // e o componente de login pode mostrar o formulário de 2FA ou esperar
+        if (loggedInUser.requires2FA) {
+          console.log('2FA requerido');
+          return;
+        }
+
         // Redirecionamento baseado na role real do usuário
         switch (loggedInUser.role) {
           case 'admin':
-          case 'superadmin':
-          case 'super-admin':
             navigate('/admin');
             break;
           case 'mentor':
