@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
