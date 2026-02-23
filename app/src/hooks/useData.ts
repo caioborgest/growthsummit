@@ -143,7 +143,14 @@ function invalidateCache(projectId: string, entityName: string) {
 }
 
 // ── Minimal column selection per entity (avoids SELECT *) ───────────────────
-function getSelectFields(entity: string): string {
+function getSelectFields(entity: string, projectId?: string): string {
+  // If it's a Growth Experience project, use the specific table schema
+  if (projectId && (projectId === GE_TRIUNFO || projectId.startsWith('ge-'))) {
+    if (entity === 'registrations') {
+      return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,created_at';
+    }
+  }
+
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,created_at,nome,telefone,empresa,cargo',
@@ -184,7 +191,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId, entityName);
-      const fields = getSelectFields(entityName);
+      const fields = getSelectFields(entityName, projectId);
       let query = supabase.from(tableName as any).select(fields);
 
       // Filter by project for non-generic tables
@@ -204,6 +211,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item['user_id']) mappedItem['userId'] = item['user_id'];
         if (item['ticket_type']) mappedItem['ticketType'] = item['ticket_type'];
         if (item['ticket_number']) mappedItem['ticketNumber'] = item['ticket_number'];
+        if (!item['ticket_number'] && item['id']) mappedItem['ticketNumber'] = (item['id'] as string).split('-')[0].toUpperCase();
         if (item['qr_code']) mappedItem['qrCode'] = item['qr_code'];
         if (item['created_at']) mappedItem['createdAt'] = item['created_at'];
         if (item['updated_at']) mappedItem['updatedAt'] = item['updated_at'];
@@ -213,9 +221,13 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
         if (item['checked_in']) mappedItem['checkedIn'] = item['checked_in'];
 
         // Specific for Triunfo Registrations
+        if (item['tipo_inscricao']) mappedItem['ticketType'] = item['tipo_inscricao'];
         if (item['palestras_noturnas'] !== undefined) mappedItem['palestrasNoturnas'] = item['palestras_noturnas'];
         if (item['cursos_selecionados']) mappedItem['cursosSelecionados'] = item['cursos_selecionados'];
-        if (item['valor_pago'] !== undefined) mappedItem['valorPago'] = item['valor_pago'];
+        if (item['valor_pago'] !== undefined) {
+          mappedItem['valorPago'] = item['valor_pago'];
+          mappedItem['amount'] = item['valor_pago'];
+        }
 
         // Specific for Startup
         if (item['nome_startup']) mappedItem['name'] = item['nome_startup'];

@@ -119,10 +119,16 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let user = existingSession?.user;
+            let userId = existingSession?.user?.id;
             let authError = null;
 
-            if (!user) {
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (existingSession && existingSession.user.email !== formData.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
+
+            if (!userId) {
                 // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
@@ -135,7 +141,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user ?? undefined;
+                userId = authData?.user?.id;
                 authError = sError;
             }
 
@@ -149,24 +155,46 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     });
 
                     if (!signInError) {
-                        user = signInData.user;
-                        console.log('Login automático realizado:', user?.id);
+                        userId = signInData.user.id;
+                        console.log('Login automático realizado:', userId);
                     } else {
                         console.warn('Login automático falhou:', signInError.message);
+                        if (signInError.message.includes('Invalid login credentials')) {
+                            throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                        }
+                        throw signInError;
                     }
                 } else {
                     throw authError;
                 }
             }
 
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    await (supabase
+                        .from('users') as any)
+                        .upsert({
+                            id: userId,
+                            email: formData.email,
+                            name: formData.nome_representante,
+                            phone: formData.telefone,
+                            role: 'b2b',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+                } catch (userTableCatch) {
+                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                }
+            }
+
             // Prosseguimento (user_id opcional na tabela)
-            console.log('Prosseguindo com registro B2B. User ID:', user?.id || 'nenhum');
+            console.log('Prosseguindo com registro B2B. User ID:', userId || 'nenhum');
 
             // 1.5 Upload Logo if exists
             let logoUrl = '';
             if (logoFile) {
                 const fileExt = logoFile.name.split('.').pop();
-                const fileName = `${user?.id || 'anon'}-${Math.random()}.${fileExt}`;
+                const fileName = `${userId || 'anon'}-${Math.random()}.${fileExt}`;
                 const filePath = `b2b-logos/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -185,7 +213,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             // Preparar dados para inserção
             const dataToInsert = {
                 project_id: projectId,
-                user_id: user?.id || null,
+                user_id: userId || null,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,
                 email: formData.email,

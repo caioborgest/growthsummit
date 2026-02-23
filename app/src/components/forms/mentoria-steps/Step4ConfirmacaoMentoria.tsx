@@ -56,6 +56,12 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             let userId = existingSession?.user?.id;
             let authError = null;
 
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (existingSession && existingSession.user.email !== dados.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
+
             if (!userId) {
                 // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
@@ -65,7 +71,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         data: {
                             name: dados.nome,
                             phone: dados.telefone,
-                            role: 'participante'
+                            role: 'participant'
                         }
                     }
                 });
@@ -87,24 +93,40 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         console.log('Login automático realizado:', userId);
                     } else {
                         console.warn('Login automático falhou:', signInError.message);
+                        if (signInError.message.includes('Invalid login credentials')) {
+                            throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                        }
+                        throw signInError;
                     }
                 } else {
                     throw authError;
                 }
             }
 
-            // Se ainda não temos userId, prosseguimos mesmo assim (será salvo com user_id null)
-            // mas logamos o aviso.
-            if (!userId) {
-                console.warn('Prosseguindo com agendamento sem ID de usuário vinculado.');
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    const usersTable = supabase.from('users') as any;
+                    await usersTable
+                        .upsert({
+                            id: userId,
+                            email: dados.email,
+                            name: dados.nome,
+                            phone: dados.telefone,
+                            role: 'participant',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+                } catch (userTableCatch) {
+                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                }
             }
 
             // 2. Salvar agendamento de mentoria no banco
-            const { data: mentoriaData, error: mentoriaError } = await (supabase
-                .from('mentorias_agendadas') as any)
+            const mentoriasTable = supabase.from('mentorias_agendadas') as any;
+            const { data: mentoriaData, error: mentoriaError } = await mentoriasTable
                 .insert({
                     project_id: projectId,
-                    mentorado_id: userId,
+                    mentorado_id: userId || null,
                     mentor_id: dados.mentorId,
                     nome_mentorado: dados.nome,
                     email_mentorado: dados.email,

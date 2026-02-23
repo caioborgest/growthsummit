@@ -98,10 +98,16 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let user = existingSession?.user;
+            let userId = existingSession?.user?.id;
             let authError = null;
 
-            if (!user) {
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (existingSession && existingSession.user.email !== formData.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
+
+            if (!userId) {
                 // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
@@ -114,7 +120,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                         }
                     }
                 });
-                user = authData?.user ?? undefined;
+                userId = authData?.user?.id;
                 authError = sError;
             }
 
@@ -128,24 +134,46 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                     });
 
                     if (!signInError) {
-                        user = signInData.user;
-                        console.log('Login automático realizado:', user?.id);
+                        userId = signInData.user.id;
+                        console.log('Login automático realizado:', userId);
                     } else {
                         console.warn('Login automático falhou:', signInError.message);
+                        if (signInError.message.includes('Invalid login credentials')) {
+                            throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                        }
+                        throw signInError;
                     }
                 } else {
                     throw authError;
                 }
             }
 
-            // Se ainda não temos user, prosseguimos sem vincular ID se possível
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    await (supabase
+                        .from('users') as any)
+                        .upsert({
+                            id: userId,
+                            email: formData.email,
+                            name: formData.nome_fundador,
+                            phone: formData.telefone,
+                            role: 'startup',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+                } catch (userTableCatch) {
+                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                }
+            }
+
+            // Se ainda não temos userId, prosseguimos sem vincular ID se possível
             // (A tabela startups_arena_pitch permite user_id null)
-            console.log('Prosseguindo com registro de startup. User ID:', user?.id || 'nenhum');
+            console.log('Prosseguindo com registro de startup. User ID:', userId || 'nenhum');
 
             // Preparar dados para inserção
             const dataToInsert = {
                 project_id: projectId,
-                user_id: user?.id || null,
+                user_id: userId || null,
                 nome_fundador: formData.nome_fundador,
                 email: formData.email,
                 telefone: formData.telefone,

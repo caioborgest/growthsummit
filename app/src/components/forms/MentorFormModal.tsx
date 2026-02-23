@@ -111,10 +111,16 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let user = existingSession?.user;
-            console.log('Usuário atual:', user?.id || 'nenhum');
+            let userId = existingSession?.user?.id;
+            console.log('Sessão existente:', userId || 'nenhuma');
 
-            if (!user) {
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (existingSession && existingSession.user.email !== formData.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
+
+            if (!userId) {
                 // 1. Auth SignUp
                 console.log('Criando novo usuário mentor...');
                 const { data: authData, error: sError } = await supabase.auth.signUp({
@@ -131,14 +137,46 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                 if (sError) {
                     if (sError.message.toLowerCase().includes('already registered')) {
-                        console.log('Usuário já existe, prosseguindo...');
-                        // Se já existe, tentamos registrar apenas a mentoria
-                        // (Idealmente o usuário deveria fazer login, mas para o evento facilitamos)
+                        console.log('Usuário já registrado, tentando login...');
+                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                            email: formData.email,
+                            password: formData.senha
+                        });
+
+                        if (!signInError) {
+                            userId = signInData.user.id;
+                            console.log('Login automático realizado:', userId);
+                        } else {
+                            console.warn('Login automático falhou:', signInError.message);
+                            if (signInError.message.includes('Invalid login credentials')) {
+                                throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                            }
+                            throw signInError;
+                        }
                     } else {
                         throw sError;
                     }
+                } else {
+                    userId = authData?.user?.id;
                 }
-                user = authData?.user ?? undefined;
+            }
+
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    await (supabase
+                        .from('users') as any)
+                        .upsert({
+                            id: userId,
+                            email: formData.email,
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            role: 'mentor',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+                } catch (userTableCatch) {
+                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                }
             }
 
             // 2. Salvar inscrição no banco
@@ -147,7 +185,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 .from('mentores_growth_experience') as any)
                 .insert({
                     project_id: projectId,
-                    user_id: user?.id || null, // Se for nulo, salvamos como candidatura avulsa
+                    user_id: userId || null, // Se for nulo, salvamos como candidatura avulsa
                     nome: formData.nome,
                     email: formData.email,
                     telefone: formData.telefone,

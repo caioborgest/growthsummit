@@ -35,48 +35,80 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
 
-            console.log('User ID atual:', userId);
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (existingSession && existingSession.user.email !== dados.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
 
-            // 1. Tentar criar usuário apenas se não estiver logado
+            console.log('User ID inicial:', userId);
+
+            // 1. Tentar criar usuário apenas se não estiver logado com o email correto
             if (!userId) {
                 console.log('Tentando criar usuário:', dados.email);
-                try {
-                    const { data: authData, error: sError } = await supabase.auth.signUp({
-                        email: dados.email,
-                        password: dados.senha,
-                        options: {
-                            data: {
-                                name: dados.nome,
-                                phone: dados.telefone,
-                                role: 'participante'
-                            }
+                const { data: authData, error: sError } = await supabase.auth.signUp({
+                    email: dados.email,
+                    password: dados.senha,
+                    options: {
+                        data: {
+                            name: dados.nome,
+                            phone: dados.telefone,
+                            role: 'participante'
                         }
-                    });
+                    }
+                });
 
-                    if (sError) {
-                        // Se já existe, tentamos login automático
-                        if (sError.message.toLowerCase().includes('already registered')) {
-                            console.log('Usuário já registrado, tentando login...');
-                            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                                email: dados.email,
-                                password: dados.senha
-                            });
+                if (sError) {
+                    // Se já existe, tentamos login automático para validar a senha
+                    if (sError.message.toLowerCase().includes('already registered')) {
+                        console.log('Usuário já registrado em Auth, tentando validar senha...');
+                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                            email: dados.email,
+                            password: dados.senha
+                        });
 
-                            if (!signInError) {
-                                userId = signInData.user.id;
-                                console.log('Login automático realizado:', userId);
-                            } else {
-                                console.log('Login automático falhou (possivelmente senha diferente), prosseguindo por email.');
-                            }
+                        if (!signInError) {
+                            userId = signInData.user.id;
+                            console.log('Login realizado e senha validada:', userId);
                         } else {
-                            throw sError;
+                            console.error('Falha na validação de usuário existente:', signInError);
+                            throw new Error('Este email já está cadastrado, mas a senha informada está incorreta. Se você já possui uma conta, use a senha anterior ou recupere-a.');
                         }
                     } else {
-                        userId = authData?.user?.id;
-                        console.log('Usuário criado com sucesso:', userId);
+                        throw sError;
                     }
-                } catch (signUpErr) {
-                    console.warn('Erro no processamento de Auth (não fatal):', signUpErr);
+                } else if (authData.user) {
+                    userId = authData.user.id;
+                    console.log('Usuário criado com sucesso:', userId);
+
+                    // Se não houver sessão imediata (email confirmation enabled), o login manual será necessário depois
+                    if (!authData.session) {
+                        console.log('Confirmação de email necessária ou sessão não iniciada.');
+                    }
+                } else {
+                    throw new Error('Não foi possível processar o cadastro do usuário.');
+                }
+            }
+
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    const { error: userTableError } = await (supabase
+                        .from('users') as any)
+                        .upsert({
+                            id: userId,
+                            email: dados.email,
+                            name: dados.nome,
+                            phone: dados.telefone,
+                            role: 'participant',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+
+                    if (userTableError) {
+                        console.warn('Erro ao sincronizar tabela public.users (pode ser RLS):', userTableError.message);
+                    }
+                } catch (userTableCatch) {
+                    console.warn('Explosão ao tentar upsert em users:', userTableCatch);
                 }
             }
 
@@ -97,6 +129,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     telefone: dados.telefone,
                     cursos_selecionados: dados.cursosSelecionados,
                     palestras_noturnas: dados.comprarPalestras,
+                    tipo_inscricao: 'standard', // Adicionado para compatibilidade com Admin
                     valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
                     status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
                     status: 'ativo',

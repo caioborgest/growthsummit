@@ -123,13 +123,19 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             }
 
             const { data: { session } } = await supabase.auth.getSession();
-            let user = session?.user;
+            let userId = session?.user?.id;
 
-            if (!user) {
+            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
+            if (session && session.user.email !== formData.email) {
+                console.log('Sessão existente pertence a outro email. Ignorando...');
+                userId = undefined;
+            }
+
+            if (!userId) {
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
                     password: formData.senha,
-                    options: { data: { name: formData.nome, phone: formData.telefone, role: 'participante' } }
+                    options: { data: { name: formData.nome, phone: formData.telefone, role: 'participant' } }
                 });
 
                 if (sError) {
@@ -140,20 +146,41 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                             password: formData.senha
                         });
                         if (!signInError) {
-                            user = signInData.user;
+                            userId = signInData.user.id;
                         } else {
-                            console.log('Login falhou, prosseguindo sem vincular ID de usuário');
+                            console.warn('Login falhou:', signInError.message);
+                            if (signInError.message.includes('Invalid login credentials')) {
+                                throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                            }
                         }
                     } else {
                         throw sError;
                     }
                 } else {
-                    user = authData?.user || null;
+                    userId = authData?.user?.id || null;
+                }
+            }
+
+            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            if (userId) {
+                try {
+                    await (supabase
+                        .from('users') as any)
+                        .upsert({
+                            id: userId,
+                            email: formData.email,
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            role: 'participant',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
+                } catch (userTableCatch) {
+                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
                 }
             }
 
             // Prosseguindo (user_id pode ser null se auth falhou)
-            console.log('Prosseguindo com inscrição. User ID:', user?.id || 'nenhum');
+            console.log('Prosseguindo com inscrição. User ID:', userId || 'nenhum');
 
             // 2. Inserir Inscrição
             const valorFinal = tipo === 'palestra'
@@ -162,7 +189,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             const { error: insError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
                 project_id: projectId,
-                user_id: user?.id || null,
+                user_id: userId || null,
                 nome: formData.nome,
                 email: formData.email,
                 telefone: formData.telefone,
