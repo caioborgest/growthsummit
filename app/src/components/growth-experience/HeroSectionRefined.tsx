@@ -17,7 +17,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     // Contador regressivo
     useEffect(() => {
-        const eventDate = new Date('2026-04-09T08:00:00');
+        const eventDate = new Date('2026-04-16T08:00:00');
 
         const updateCountdown = () => {
             const now = new Date().getTime();
