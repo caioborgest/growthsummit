@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 
 export function Login() {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   // Redirecionamento automático se já estiver logado
   useEffect(() => {
@@ -153,13 +154,17 @@ export function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer group">
                 <input type="checkbox" className="rounded bg-dark-100 border-dark-300 text-teal-500" />
-                <span className="ml-2 text-xs text-gray-400">Lembrar-me</span>
+                <span className="ml-2 text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Lembrar-me</span>
               </label>
-              <a href="#" className="text-xs text-teal-400 hover:underline">
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(true)}
+                className="text-xs text-brand-orange-coral hover:text-brand-orange-intense font-bold transition-all"
+              >
                 Esqueceu a senha?
-              </a>
+              </button>
             </div>
 
             <Button
@@ -179,6 +184,11 @@ export function Login() {
           </form>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+      />
     </div>
   );
 }

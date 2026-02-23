@@ -83,7 +83,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
                     // Se não houver sessão imediata (email confirmation enabled), o login manual será necessário depois
                     if (!authData.session) {
-                        console.log('Confirmação de email necessária ou sessão não iniciada.');
+                        console.log('Confirmação de email necessária.');
+                        toast.info('Verifique seu email para confirmar seu cadastro!');
                     }
                 } else {
                     throw new Error('Não foi possível processar o cadastro do usuário.');

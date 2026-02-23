@@ -25,6 +25,7 @@ const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ def
 
 // ── Auth (lazy)
 const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword').then(m => ({ default: m.ResetPassword })));
 
 // ── Dashboards (lazy — each in its own chunk)
 const DashboardParticipante = lazy(() => import('./pages/dashboard/DashboardParticipante').then(m => ({ default: m.DashboardParticipante })));
@@ -135,6 +136,7 @@ function AppRoutes() {
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
 
         {/* Participant Dashboard */}
         <Route
