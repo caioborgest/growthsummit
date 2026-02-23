@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Clock, MapPin, Users, CheckCircle } from 'lucide-react';
-import { cursosDisponiveis } from '@/data/programacao';
+import { useSessions } from '@/hooks/useData';
+import { Loader2, Clock, MapPin, Users, CheckCircle } from 'lucide-react';
 
 interface Step1SelecionarCursosProps {
     cursosSelecionados: string[];
@@ -15,7 +13,13 @@ export function Step1SelecionarCursos({
     cursosSelecionados: inicial,
     onContinuar
 }: Step1SelecionarCursosProps) {
+    const { data: sessions, isLoading } = useSessions();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
+
+    // Filtrar sessões que são cursos/oficinas (tipo 'workshop' ou 'circuito')
+    const cursosDisponiveis = sessions.filter(s =>
+        (s.type as string) === 'workshop' || (s.type as string) === 'circuito'
+    );
 
     const selectCurso = (cursoId: string) => {
         // Apenas 1 seleção permitida
@@ -36,7 +40,7 @@ export function Step1SelecionarCursos({
                     Atividades <span className="text-brand-orange-coral">Disponíveis</span>
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg max-w-xl">
-                    Selecione uma trilha de conhecimento para personalizar sua jornada no evento.
+                    Selecione uma atividade para personalizar sua jornada no evento. Cursos, oficinas e workshops disponíveis.
                 </p>
                 {selecionados.length > 0 && (
                     <div className="mt-4 flex animate-fade-in">
@@ -50,85 +54,97 @@ export function Step1SelecionarCursos({
 
             {/* Lista de Cursos */}
             <div className="grid gap-4 pr-2">
-                {cursosDisponiveis.map((curso) => {
-                    const isSelected = selecionados.includes(curso.id);
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                        <Loader2 className="h-10 w-10 animate-spin mb-4 text-brand-orange-coral" />
+                        <p>Carregando atividades...</p>
+                    </div>
+                ) : cursosDisponiveis.length > 0 ? (
+                    cursosDisponiveis.map((curso) => {
+                        const isSelected = selecionados.includes(curso.id);
 
-                    return (
-                        <div
-                            key={curso.id}
-                            className={`relative group p-4 sm:p-6 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
-                                ? 'border-brand-orange-coral bg-brand-orange-coral/5 shadow-[0_10px_30px_rgba(255,112,67,0.15)] ring-1 ring-brand-orange-coral/20'
-                                : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60'
-                                }`}
-                            onClick={() => selectCurso(curso.id)}
-                        >
-                            {/* Efeito de Gradiente no Background para o Ativo */}
-                            {isSelected && (
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/10 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
-                            )}
+                        return (
+                            <div
+                                key={curso.id}
+                                className={`relative group p-4 sm:p-6 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
+                                    ? 'border-brand-orange-coral bg-brand-orange-coral/5 shadow-[0_10px_30px_rgba(255,112,67,0.15)] ring-1 ring-brand-orange-coral/20'
+                                    : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60'
+                                    }`}
+                                onClick={() => selectCurso(curso.id)}
+                            >
+                                {/* Efeito de Gradiente no Background para o Ativo */}
+                                {isSelected && (
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/10 rounded-full blur-[50px] -mr-10 -mt-10 pointer-events-none" />
+                                )}
 
-                            <div className="flex items-start gap-6 relative z-10">
-                                {/* Radio Circle Customizado */}
-                                <div className="pt-0.5 sm:pt-1 select-none">
-                                    <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
-                                        ? 'border-brand-orange-coral bg-brand-orange-coral'
-                                        : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
-                                        {isSelected && (
-                                            <div className="w-1.5 h-1.5 sm:w-2.5 sm:w-2.5 rounded-full bg-white shadow-sm" />
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Conteúdo do Card */}
-                                <div className="flex-1 min-w-0">
-                                    {/* Badge de Nível e Título */}
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                                        <h4 className="text-xl font-bold text-white tracking-tight group-hover:text-brand-orange-coral/90 transition-colors">
-                                            {curso.titulo}
-                                        </h4>
-                                        {curso.nivel && (
-                                            <Badge className={`px-2 py-0 text-[10px] uppercase font-black tracking-tighter ${curso.nivel === 'Iniciante' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                curso.nivel === 'Intermediário' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                    'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                                                }`}>
-                                                {curso.nivel}
-                                            </Badge>
-                                        )}
+                                <div className="flex items-start gap-6 relative z-10">
+                                    {/* Radio Circle Customizado */}
+                                    <div className="pt-0.5 sm:pt-1 select-none">
+                                        <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
+                                            ? 'border-brand-orange-coral bg-brand-orange-coral'
+                                            : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
+                                            {isSelected && (
+                                                <div className="w-1.5 h-1.5 sm:w-2.5 sm:w-2.5 rounded-full bg-white shadow-sm" />
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Descrição Compacta */}
-                                    <p className="text-gray-400 text-sm mb-5 leading-relaxed line-clamp-2">
-                                        {curso.descricao}
-                                    </p>
-
-                                    {/* Meta Info (Palestrante, Hora, Local) */}
-                                    <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-xs font-semibold">
-                                        {curso.palestrante && (
-                                            <div className="flex items-center gap-2 group-hover:text-white transition-colors">
-                                                <div className="w-6 h-6 rounded-full bg-brand-orange-coral/10 flex items-center justify-center">
-                                                    <Users className="h-3 w-3 text-brand-orange-coral" />
-                                                </div>
-                                                <span className="text-gray-300">{curso.palestrante}</span>
+                                    {/* Conteúdo do Card */}
+                                    <div className="flex-1 min-w-0">
+                                        {/* Badge de Tipo, Nível e Título */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <Badge className={`px-2 py-0 text-[10px] uppercase font-black tracking-tighter ${curso.type === 'workshop' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                    curso.type === 'circuito' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                                                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                                    }`}>
+                                                    {(curso.type || 'CURSO').toUpperCase()}
+                                                </Badge>
                                             </div>
-                                        )}
-
-                                        <div className="flex items-center gap-2 text-brand-orange-coral">
-                                            <Clock className="h-3.5 w-3.5" />
-                                            <span>
-                                                {curso.horario_inicio} - {curso.horario_fim}
-                                            </span>
                                         </div>
 
-                                        <div className="flex items-center gap-2 text-gray-500">
-                                            <MapPin className="h-3.5 w-3.5" />
-                                            <span>{curso.local}</span>
+                                        <h4 className="text-xl font-bold text-white tracking-tight group-hover:text-brand-orange-coral/90 transition-colors">
+                                            {curso.title}
+                                        </h4>
+
+                                        {/* Descrição Compacta */}
+                                        <p className="text-gray-400 text-sm mb-5 leading-relaxed line-clamp-2">
+                                            {curso.description}
+                                        </p>
+
+                                        {/* Meta Info (Palestrante, Hora, Local) */}
+                                        <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-xs font-semibold">
+                                            {curso.speakers && Array.isArray(curso.speakers) && curso.speakers.length > 0 && (
+                                                <div className="flex items-center gap-2 group-hover:text-white transition-colors">
+                                                    <div className="w-6 h-6 rounded-full bg-brand-orange-coral/10 flex items-center justify-center">
+                                                        <Users className="h-3 w-3 text-brand-orange-coral" />
+                                                    </div>
+                                                    <span className="text-gray-300">{curso.speakers.join(', ')}</span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center gap-2 text-brand-orange-coral">
+                                                <Clock className="h-3.5 w-3.5" />
+                                                <span>
+                                                    {curso.startTime} - {curso.endTime}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 text-gray-500">
+                                                <MapPin className="h-3.5 w-3.5" />
+                                                <span>{curso.room}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })
+                ) : (
+                    <div className="text-center py-20 bg-dark-200/40 rounded-3xl border border-dashed border-white/10">
+                        <p className="text-gray-500 italic">Nenhuma atividade disponível no momento.</p>
+                    </div>
+                )}
             </div>
 
             {/* Sticky Action Footer */}

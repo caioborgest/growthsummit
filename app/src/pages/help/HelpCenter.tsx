@@ -3,10 +3,8 @@ import {
     BookOpen,
     ChevronRight,
     User,
-    Settings,
     Zap,
     ShieldCheck,
-    Users,
     Building2,
     Rocket,
     ArrowLeft,
@@ -19,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { usabilityGuide, RoleGuide } from '@/data/usabilityGuide';
+import { usabilityGuide, type RoleGuide } from '@/data/usabilityGuide';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -40,7 +38,7 @@ export function HelpCenter() {
         guide.modules.some(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    const roleIcons: Record<string, any> = {
+    const roleIcons: Record<string, React.ElementType> = {
         admin: ShieldCheck,
         participant: User,
         mentor: Zap,

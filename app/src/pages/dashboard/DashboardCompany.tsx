@@ -3,7 +3,6 @@ import {
   Building2,
   Handshake,
   TrendingUp,
-  Users,
   MessageSquare,
   CheckCircle,
   FileText,
@@ -13,7 +12,6 @@ import {
   X as CloseIcon,
   Info,
   Calendar,
-  Clock,
   MapPin,
   User
 } from 'lucide-react';
@@ -25,6 +23,7 @@ import { useCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, 
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
+import type { B2BMeeting, B2BAppointmentTriunfo, B2BMatch } from '@/types';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
@@ -45,10 +44,12 @@ export function DashboardCompany() {
 
   const companyMeetings = useMemo(() =>
     companyData
-      ? ([...meetings, ...appointments] as any[]).filter(m =>
-        (m.companyAnchorId === companyData.id || m.companyVendorId === companyData.id) ||
-        (m.companyAId === companyData.id || m.companyBId === companyData.id)
-      )
+      ? ([...meetings, ...appointments] as (B2BMeeting | B2BAppointmentTriunfo)[]).filter(m => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const am = m as any;
+        return (am.companyAnchorId === companyData.id || am.companyVendorId === companyData.id) ||
+          (am.companyAId === companyData.id || am.companyBId === companyData.id);
+      })
       : [],
     [meetings, appointments, companyData]
   );
@@ -71,7 +72,11 @@ export function DashboardCompany() {
     total: companyMeetings.length,
     scheduled: companyMeetings.filter(m => m.status === 'scheduled').length,
     matches: matches.filter(m => m.companyAId === companyData?.id || m.companyBId === companyData?.id).length,
-    highInterest: companyMeetings.filter(m => m.interestLevel === 'high' || m.matchId).length,
+    highInterest: companyMeetings.filter(m => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const am = m as any;
+      return am.interestLevel === 'high' || am.matchId;
+    }).length,
   };
 
   const handleSwipe = async (targetCompanyId: string, direction: 'like' | 'dislike') => {
@@ -297,8 +302,10 @@ export function DashboardCompany() {
               </div>
 
               <div className="grid gap-4">
-                {companyMeetings.length > 0 ? companyMeetings.map((meeting: any) => {
-                  const otherId = meeting.companyAId === companyData?.id ? meeting.companyBId : (meeting.companyBId || meeting.companyVendorId || meeting.companyAnchorId);
+                {companyMeetings.length > 0 ? companyMeetings.map((meeting: B2BMeeting | B2BAppointmentTriunfo) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const m = meeting as any;
+                  const otherId = m.companyAId === companyData?.id ? m.companyBId : (m.companyBId || m.companyVendorId || m.companyAnchorId);
                   const other = companies.find(c => c.id === otherId);
 
                   return (
@@ -319,7 +326,7 @@ export function DashboardCompany() {
                           <div>
                             <div className="flex items-center gap-3 mb-1">
                               <p className="text-white font-black text-xl">{other?.name || 'Parceiro Estratégico'}</p>
-                              <Badge variant="outline" className="text-[10px] border-dark-300 text-gray-500 font-bold">Mesa {meeting.tableNumber || '00'}</Badge>
+                              <Badge variant="outline" className="text-[10px] border-dark-300 text-gray-500 font-bold">Mesa {m.tableNumber || '00'}</Badge>
                             </div>
                             <p className="text-gray-500 text-sm font-medium">{other?.sector || 'Setor Industrial'}</p>
                           </div>
@@ -358,7 +365,7 @@ export function DashboardCompany() {
               </div>
 
               <div className="space-y-4">
-                {sessions.length > 0 ? sessions.filter(s => s.type !== 'mentoring').map((session, i) => (
+                {sessions.length > 0 ? sessions.filter(s => (s.type as string) !== 'mentoring').map((session, i) => (
                   <div key={i} className="flex items-center p-5 bg-dark-100/50 rounded-2xl border border-dark-300 group hover:border-teal-500/20 transition-all">
                     <div className="w-24 text-center">
                       <p className="text-teal-400 font-black text-xl">{session.startTime}</p>
@@ -394,7 +401,7 @@ export function DashboardCompany() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {matches
                   .filter(m => m.companyAId === companyData?.id || m.companyBId === companyData?.id)
-                  .map((match: any) => {
+                  .map((match: B2BMatch) => {
                     const otherId = match.companyAId === companyData?.id ? match.companyBId : match.companyAId;
                     const other = companies.find(c => c.id === otherId);
                     if (!other) return null;

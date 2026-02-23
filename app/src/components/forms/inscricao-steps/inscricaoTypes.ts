@@ -1,8 +1,12 @@
 // Tipos compartilhados entre os steps de inscrição
 
 export interface DadosInscricao {
-    // Etapa 1
+    // Etapa 1 - Atividades Diurnas
     cursosSelecionados: string[];
+    tipoAtividadeSelecionada?: string;
+    salaAtividade?: string;
+    horarioAtividade?: string;
+    nivelAtividade?: string;
 
     // Etapa 2
     nome: string;

@@ -18,7 +18,6 @@ import {
     Ticket,
     ShoppingCart,
     PhoneCall,
-    Trash
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,14 +41,14 @@ import {
 import { Label } from '@/components/ui/label';
 import type { User } from '@/types';
 
-const departmentIcons: Record<string, React.ComponentType<any>> = {
+const departmentIcons: Record<string, React.ElementType> = {
     'sponsorship': HeartHandshake,
     'stands': HardHat,
     'programming': Monitor,
     'accreditation': Ticket,
     'sales': ShoppingCart,
     'support': PhoneCall,
-    'cleaning': Trash,
+    'cleaning': Trash2,
     'marketing': Mail,
     'finance': Briefcase,
     'security': Shield,
@@ -121,7 +120,8 @@ export function AdminUsuarios() {
             });
             toast.success('Usuário atualizado com sucesso!');
             setIsEditDialogOpen(false);
-        } catch (_error) {
+        } catch (error) {
+            console.error(error);
             toast.error('Erro ao atualizar usuário');
         }
     };

@@ -107,7 +107,7 @@ function AppRoutes() {
               isAuthenticated ? (
                 user?.role === 'admin' ? <Navigate to="/admin" replace /> :
                   user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
-                    (user?.role === 'company' || user?.role === 'empresa') ? <Navigate to="/empresa-area" replace /> :
+                    user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
                       user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
                         <Navigate to="/minha-area" replace />
               ) : (

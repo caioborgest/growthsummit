@@ -23,7 +23,6 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useMentors } from '@/hooks/useData';
-import type { Mentor } from '@/types';
 import { toast } from 'sonner';
 
 
@@ -76,11 +75,12 @@ export function AdminMentores() {
         yearsExperience: Number(formData.yearsExperience),
         maxMentories: Number(formData.maxMentories),
         specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean),
-        tracks: ['Geral'], // Default track
+        tracks: ['Geral'],
         linkedin: formData.linkedin,
-        status: 'approved', // Auto-approved when added by admin
-        userId: 'admin-manual', // Flag for manual creation
-      } as Partial<Mentor>);
+        status: 'approved',
+        userId: 'admin-manual',
+        projectId: 'manual', // useData will likely override this, but it's required by type
+      });
 
       toast.success('Mentor adicionado com sucesso!');
       setIsModalOpen(false);
@@ -110,7 +110,8 @@ export function AdminMentores() {
     try {
       await update(id, { status: 'approved' });
       toast.success('Mentor aprovado!');
-    } catch (_err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Erro ao aprovar mentor');
     }
   };
@@ -119,7 +120,8 @@ export function AdminMentores() {
     try {
       await update(id, { status: 'rejected' });
       toast.success('Mentor rejeitado');
-    } catch (_err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Erro ao rejeitar mentor');
     }
   };

@@ -160,7 +160,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
     check_ins: 'id,project_id,user_id,user_name,ticket_number,timestamp,location,method',
-    sessions: 'id,project_id,title,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count,category,topics,partner,color,metadata',
+    sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count,category,topics,partner,color,metadata',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',

@@ -37,6 +37,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         setValidandoCupom(true);
         try {
             const { data, error: cError } = await (supabase
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .from('cupons_parceria_social') as any)
                 .select('*')
                 .eq('codigo', codigo.toUpperCase())
@@ -157,7 +158,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         throw sError;
                     }
                 } else {
-                    userId = authData?.user?.id || null;
+                    userId = authData?.user?.id || undefined;
                 }
             }
 
@@ -165,6 +166,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             if (userId) {
                 try {
                     await (supabase
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .from('users') as any)
                         .upsert({
                             id: userId,
@@ -187,26 +189,29 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 ? (cupomValido ? valorOriginal * (1 - cupomValido.porcentagem / 100) : valorOriginal)
                 : 0;
 
-            const { error: insError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
-                project_id: projectId,
-                user_id: userId || null,
-                nome: formData.nome,
-                email: formData.email,
-                telefone: formData.telefone,
-                empresa: formData.empresa || cupomValido?.nome || null,
-                tipo_inscricao: tipo,
-                evento: eventoNome,
-                valor_pago: valorFinal,
-                status_pagamento: valorFinal === 0 ? 'pago' : 'pendente',
-                status: 'ativo',
-                codigo_social: formData.cupom || null
-            });
+            const { error: insError } = await (supabase
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('inscricoes_growth_experience') as any).insert({
+                    project_id: projectId,
+                    user_id: userId || null,
+                    nome: formData.nome,
+                    email: formData.email,
+                    telefone: formData.telefone,
+                    empresa: formData.empresa || cupomValido?.nome || null,
+                    tipo_inscricao: tipo,
+                    evento: eventoNome,
+                    valor_pago: valorFinal,
+                    status_pagamento: valorFinal === 0 ? 'pago' : 'pendente',
+                    status: 'ativo',
+                    codigo_social: formData.cupom || null
+                });
 
             if (insError) throw insError;
 
             // 3. Atualizar uso do cupom se existir
             if (formData.cupom && cupomValido) {
-                await supabase.rpc('increment_coupon_usage', { coupon_code: formData.cupom.toUpperCase() });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (supabase.rpc as any)('increment_coupon_usage', { coupon_code: formData.cupom.toUpperCase() });
             }
 
             // 4. Redirecionamento ou Sucesso
@@ -221,8 +226,9 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 onClose();
             }, 3000);
 
-        } catch (err: any) {
-            setError(err.message || 'Erro ao processar');
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || 'Erro ao processar');
         } finally {
             setIsSubmitting(false);
         }

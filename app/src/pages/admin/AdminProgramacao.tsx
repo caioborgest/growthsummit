@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import {
-  Clock,
-  MapPin,
-  Users,
   Plus,
   Edit2,
   Trash2,
@@ -17,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSessions } from '@/hooks/useData';
+import type { Session } from '@/types';
+import { Clock } from 'lucide-react';
 
 const typeIcons: Record<string, React.ElementType> = {
   keynote: Mic,
@@ -74,7 +73,7 @@ export function AdminProgramacao() {
   const { data: sessions, create, update, remove } = useSessions();
   const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
   const [showForm, setShowForm] = useState(false);
-  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -107,11 +106,17 @@ export function AdminProgramacao() {
     };
 
     if (editingSession) {
-      await update(editingSession.id, payload);
+      await update(editingSession.id, {
+        ...payload,
+        type: payload.type as Session['type'],
+      });
     } else {
       await create({
         ...payload,
+        projectId: sessions[0]?.projectId || 'ge-triunfo-2026', // Fallback or get from context if possible
         registeredCount: 0,
+        type: payload.type as Session['type'],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
     setShowForm(false);
@@ -136,7 +141,7 @@ export function AdminProgramacao() {
     });
   };
 
-  const handleEdit = (session: any) => {
+  const handleEdit = (session: Session) => {
     setEditingSession(session);
     setFormData({
       title: session.title,
@@ -172,10 +177,10 @@ export function AdminProgramacao() {
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
             className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
-                ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
-                : 'text-gray-400 hover:text-white'
+              ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -406,7 +411,7 @@ export function AdminProgramacao() {
                     <p className="text-gray-400 text-sm line-clamp-2 mb-2">{session.description}</p>
                   )}
 
-                  {session.topics?.length > 0 && (
+                  {session.topics && session.topics.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {session.topics.slice(0, 3).map((t: string, i: number) => (
                         <div key={i} className="flex items-center gap-1 text-[10px] text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">
@@ -421,7 +426,7 @@ export function AdminProgramacao() {
 
                 {/* Info & Actions */}
                 <div className="flex flex-col lg:items-end gap-3 shrink-0">
-                  {session.maxCapacity > 0 && (
+                  {session.maxCapacity !== undefined && session.maxCapacity > 0 && (
                     <div className="text-xs bg-dark-300 px-3 py-1.5 rounded-lg border border-white/5">
                       <span className="text-brand-orange-coral font-bold">{session.registeredCount}</span>
                       <span className="text-gray-400 mx-1">/</span>

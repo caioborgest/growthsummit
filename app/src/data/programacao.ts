@@ -1,5 +1,5 @@
 // Tipos de atividades
-export const TiposAtividade = ['curso', 'mentoria', 'palestra', 'networking', 'startup', 'b2b'] as const;
+export const TiposAtividade = ['curso', 'oficina', 'workshop', 'palestra', 'networking', 'startup', 'b2b', 'mentoria'] as const;
 export type TipoAtividade = typeof TiposAtividade[number];
 export const TipoAtividade = TiposAtividade; // Runtime value with the same name as the type
 
@@ -313,9 +313,9 @@ export const programacaoNoturna: AtividadeProgramacao[] = [
     }
 ];
 
-// TODOS OS CURSOS (para seleção na inscrição)
+// TODOS OS CURSOS, OFICINAS E WORKSHOPS (para seleção na inscrição)
 export const cursosDisponiveis = programacaoDiurna.filter(
-    atividade => atividade.tipo === 'curso'
+    atividade => ['curso', 'oficina', 'workshop'].includes(atividade.tipo)
 );
 
 // TODAS AS PALESTRAS NOTURNAS (para oferta)

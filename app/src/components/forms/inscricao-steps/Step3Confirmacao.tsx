@@ -8,6 +8,7 @@ import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
+import { toast } from 'sonner';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
@@ -23,6 +24,13 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => getAtividadeById(id))
         .filter(Boolean);
+
+    // Obter informações detalhadas da primeira atividade selecionada
+    const primeiraAtividade = cursosSelecionados[0];
+    const tipoAtividade = primeiraAtividade?.tipo || '';
+    const salaAtividade = primeiraAtividade?.local || '';
+    const horarioAtividade = primeiraAtividade?.horario_inicio || '';
+    const nivelAtividade = primeiraAtividade?.nivel || '';
 
     const handleConfirmar = async () => {
         setLoading(true);
@@ -95,6 +103,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             if (userId) {
                 try {
                     const { error: userTableError } = await (supabase
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .from('users') as any)
                         .upsert({
                             id: userId,
@@ -121,6 +130,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             console.log('Enviando dados da inscrição para o Supabase...');
 
             const { data: inscricaoData, error: inscricaoError } = await (supabase
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .from('inscricoes_growth_experience') as any)
                 .insert({
                     project_id: projectId,
@@ -129,6 +139,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     email: dados.email,
                     telefone: dados.telefone,
                     cursos_selecionados: dados.cursosSelecionados,
+                    tipo_atividade_selecionada: tipoAtividade,
+                    sala_atividade: salaAtividade,
+                    horario_atividade: horarioAtividade,
+                    nivel_atividade: nivelAtividade,
                     palestras_noturnas: dados.comprarPalestras,
                     tipo_inscricao: 'standard', // Adicionado para compatibilidade com Admin
                     valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
@@ -163,9 +177,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // 4. Sucesso - Avisar o componente pai
             onConfirmar(userId || '', finalInscricaoId || '');
 
-        } catch (err: any) {
-            console.error('Erro crítico na inscrição:', err);
-            setError(err.message || 'Erro ao processar inscrição. Tente novamente.');
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error('Erro crítico na inscrição:', error);
+            setError(error.message || 'Erro ao processar inscrição. Tente novamente.');
             setLoading(false); // Only reset on error
         }
     };

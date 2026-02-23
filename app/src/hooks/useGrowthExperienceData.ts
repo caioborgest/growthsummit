@@ -122,8 +122,9 @@ export function useInscricoesTriunfo() {
 
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
-            const { error: updateError } = await supabase
-                .from('inscricoes_growth_experience')
+            const { error: updateError } = await (supabase
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('inscricoes_growth_experience') as any)
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
@@ -139,8 +140,9 @@ export function useInscricoesTriunfo() {
 
     const deleteInscricao = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('inscricoes_growth_experience')
+            const { error: deleteError } = await (supabase
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('inscricoes_growth_experience') as any)
                 .delete()
                 .eq('id', id);
 
@@ -217,7 +219,8 @@ export function useStartupsArenaPitch() {
             if (status !== 'pendente') updateData.avaliado_at = new Date().toISOString();
 
             const { error: updateError } = await (supabase
-                .from('startups_arena_pitch'))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('startups_arena_pitch') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -234,7 +237,8 @@ export function useStartupsArenaPitch() {
     const deleteStartup = async (id: string) => {
         try {
             const { error: deleteError } = await (supabase
-                .from('startups_arena_pitch'))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('startups_arena_pitch') as any)
                 .delete()
                 .eq('id', id);
 
@@ -306,7 +310,8 @@ export function useEmpresasB2B() {
             }
 
             const { error: updateError } = await (supabase
-                .from('rodada_negocios_b2b'))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('rodada_negocios_b2b') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -323,7 +328,8 @@ export function useEmpresasB2B() {
     const deleteEmpresa = async (id: string) => {
         try {
             const { error: deleteError } = await (supabase
-                .from('rodada_negocios_b2b'))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .from('rodada_negocios_b2b') as any)
                 .delete()
                 .eq('id', id);
 

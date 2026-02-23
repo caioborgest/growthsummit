@@ -21,6 +21,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { eventInfo, stats, tracks, speakers, ticketTypes, testimonials } from '@/data/eventData';
 
+const TimeUnit = ({ value, label }: { value: number; label: string }) => (
+  <div className="flex flex-col items-center">
+    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-dark-200 rounded-xl border border-dark-300 flex items-center justify-center">
+      <span className="text-2xl sm:text-3xl font-bold text-teal-400">
+        {value.toString().padStart(2, '0')}
+      </span>
+    </div>
+    <span className="text-xs sm:text-sm text-gray-400 mt-2">{label}</span>
+  </div>
+);
+
 // Countdown Timer Component
 function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -46,17 +57,6 @@ function CountdownTimer() {
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const TimeUnit = ({ value, label }: { value: number; label: string }) => (
-    <div className="flex flex-col items-center">
-      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-dark-200 rounded-xl border border-dark-300 flex items-center justify-center">
-        <span className="text-2xl sm:text-3xl font-bold text-teal-400">
-          {value.toString().padStart(2, '0')}
-        </span>
-      </div>
-      <span className="text-xs sm:text-sm text-gray-400 mt-2">{label}</span>
-    </div>
-  );
 
   return (
     <div className="flex space-x-3 sm:space-x-4">

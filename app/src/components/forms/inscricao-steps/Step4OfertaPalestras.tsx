@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket, Key, AlertCircle } from 'lucide-react';
-import { palestrasNoturnas } from '@/data/programacao';
+import { useSessions } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import type { DadosInscricao } from './inscricaoTypes';
 
@@ -16,10 +16,16 @@ interface Step4OfertaPalestrasProps {
 }
 
 export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: Step4OfertaPalestrasProps) {
+    const { data: sessions, isLoading } = useSessions();
     const [cupom, setCupom] = useState(dados.cupomPalestra || '');
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState('');
     const [cupomAplicado, setCupomAplicado] = useState(!!dados.descontoPalestra);
+
+    // Filtrar palestras noturnas da base (categoria 'noturna' ou tipo 'palestra'/'keynote')
+    const palestrasNoturnas = sessions.filter(s =>
+        s.category === 'noturna' || s.type === 'keynote' || s.type === 'talk'
+    );
 
     const valorOriginal = 179.99;
 
@@ -92,38 +98,49 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
 
             {/* Grid de Palestras */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {palestrasNoturnas.map((palestra) => (
-                    <Card key={palestra.id} className="relative overflow-hidden group border-white/10 hover:border-brand-orange-coral/30 transition-all bg-dark-200/50">
-                        <div className="absolute top-0 right-0 p-3 z-10">
-                            <Badge variant="secondary" className="bg-dark/80 backdrop-blur-sm text-white border-white/20 text-[10px] sm:text-xs">
-                                19:00 - 22:30
-                            </Badge>
-                        </div>
+                {isLoading ? (
+                    <div className="col-span-2 flex flex-col items-center justify-center py-10 text-gray-500">
+                        <Loader2 className="h-8 w-8 animate-spin mb-4 text-brand-orange-coral" />
+                        <p>Carregando palestras...</p>
+                    </div>
+                ) : palestrasNoturnas.length > 0 ? (
+                    palestrasNoturnas.map((palestra) => (
+                        <Card key={palestra.id} className="relative overflow-hidden group border-white/10 hover:border-brand-orange-coral/30 transition-all bg-dark-200/50">
+                            <div className="absolute top-0 right-0 p-3 z-10">
+                                <Badge variant="secondary" className="bg-dark/80 backdrop-blur-sm text-white border-white/20 text-[10px] sm:text-xs">
+                                    {palestra.startTime} - {palestra.endTime}
+                                </Badge>
+                            </div>
 
-                        <div className="p-4 sm:p-6">
-                            <div className="mb-3 sm:mb-4">
-                                <h4 className="text-lg sm:text-xl font-bold text-white mb-1 group-hover:text-brand-orange-coral transition-colors leading-tight">
-                                    {palestra.titulo}
-                                </h4>
-                                <p className="text-xs sm:text-sm text-gray-400">
-                                    com <span className="text-white font-semibold">{palestra.palestrante}</span>
+                            <div className="p-4 sm:p-6">
+                                <div className="mb-3 sm:mb-4">
+                                    <h4 className="text-lg sm:text-xl font-bold text-white mb-1 group-hover:text-brand-orange-coral transition-colors leading-tight">
+                                        {palestra.title}
+                                    </h4>
+                                    <p className="text-xs sm:text-sm text-gray-400">
+                                        com <span className="text-white font-semibold">{palestra.speakers?.join(', ')}</span>
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                                    {(palestra.topics || []).slice(0, 3).map((tag) => (
+                                        <Badge key={tag} variant="outline" className="text-[10px] sm:text-xs border-white/10 text-gray-500">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+
+                                <p className="text-xs sm:text-sm text-gray-400 line-clamp-3 leading-relaxed">
+                                    {palestra.description}
                                 </p>
                             </div>
-
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                                {palestra.tags.slice(0, 3).map((tag) => (
-                                    <Badge key={tag} variant="outline" className="text-[10px] sm:text-xs border-white/10 text-gray-500">
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
-
-                            <p className="text-xs sm:text-sm text-gray-400 line-clamp-3 leading-relaxed">
-                                {palestra.descricao}
-                            </p>
-                        </div>
-                    </Card>
-                ))}
+                        </Card>
+                    ))
+                ) : (
+                    <div className="col-span-2 text-center py-10 bg-dark-200/40 rounded-2xl border border-dashed border-white/10">
+                        <p className="text-gray-500 italic">Programação noturna em breve...</p>
+                    </div>
+                )}
             </div>
 
             {/* Seção de Cupons */}
