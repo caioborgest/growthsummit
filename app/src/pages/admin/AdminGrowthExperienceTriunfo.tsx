@@ -49,7 +49,7 @@ export function AdminGrowthExperienceTriunfo() {
                         {selectedProject?.name || 'Projeto Growth Experience'}
                     </h1>
                     <p className="text-gray-400">
-                        Painel de gestão do evento • 09 de Abril de 2026
+                        Painel de gestão do evento • 16 de Abril de 2026
                     </p>
                 </div>
                 <div className="flex gap-3">

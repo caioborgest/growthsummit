@@ -426,8 +426,8 @@ export function GrowthExperienceTriunfo() {
   return (
     <div className="bg-dark min-h-screen pt-20 flex flex-col overflow-x-hidden">
       <SEOHead
-        title="Growth Experience Triunfo-PE 2026 | 09 de Abril"
-        description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e oportunidades para PMEs. 09/04/2026 no Espaço Parque."
+        title="Growth Experience Triunfo-PE 2026 | 16 de Abril"
+        description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e oportunidades para PMEs. 16/04/2026 no Espaço Parque."
         keywords="growth experience, triunfo pe, evento negócios, sebrae, empreendedorismo, sertão do pajeú"
         url={pageUrl}
       />

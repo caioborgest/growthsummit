@@ -324,7 +324,7 @@ export function Home() {
                     </div>
                     <div>
                       <p className="text-white font-bold">Triunfo - Pernambuco</p>
-                      <p className="text-brand-orange-coral text-sm font-semibold">09 de Abril, 2026</p>
+                      <p className="text-brand-orange-coral text-sm font-semibold">16 de Abril, 2026</p>
                     </div>
                   </div>
                 </div>

@@ -111,7 +111,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">09 de Abril, 2026</span>
+                            <span className="font-semibold">16 de Abril, 2026</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Clock className="h-5 w-5 text-brand-orange-coral" />

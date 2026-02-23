@@ -17,7 +17,7 @@ const PROJECT_DATA = {
     name: 'Growth Experience Triunfo-PE 2026',
     slug: GE_TRIUNFO_SLUG,
     type: 'growth_experience' as const,
-    description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito em 09 de abril de 2026.',
+    description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito em 16 de abril de 2026.',
     short_description: 'Edição Triunfo-PE',
     location: 'Espaço Parque',
     city: 'Triunfo',
