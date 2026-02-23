@@ -3,10 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 
 export function Login() {
+  console.log('Login component loaded');
   const navigate = useNavigate();
   const { login, isAuthenticating, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
