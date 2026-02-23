@@ -145,7 +145,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             // Preparar dados para inserção
             const dataToInsert = {
                 project_id: projectId,
-                user_id: user.id,
+                user_id: user?.id || null,
                 nome_fundador: formData.nome_fundador,
                 email: formData.email,
                 telefone: formData.telefone,

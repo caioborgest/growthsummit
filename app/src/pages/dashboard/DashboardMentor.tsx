@@ -7,7 +7,6 @@ import {
   CheckCircle,
   User,
   FileText,
-  Edit3,
   LogOut,
   Briefcase
 } from 'lucide-react';

@@ -166,7 +166,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             let logoUrl = '';
             if (logoFile) {
                 const fileExt = logoFile.name.split('.').pop();
-                const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+                const fileName = `${user?.id || 'anon'}-${Math.random()}.${fileExt}`;
                 const filePath = `b2b-logos/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
@@ -185,7 +185,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             // Preparar dados para inserção
             const dataToInsert = {
                 project_id: projectId,
-                user_id: user.id,
+                user_id: user?.id || null,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,
                 email: formData.email,

@@ -8,9 +8,7 @@ import {
   Briefcase,
   Calendar,
   UserPlus,
-  MoreHorizontal,
-  Plus,
-  User
+  MoreHorizontal
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,8 +23,9 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useMentors } from '@/hooks/useData';
-import { toast } from 'sonner';
 import type { Mentor } from '@/types';
+import { toast } from 'sonner';
+
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
@@ -81,14 +80,15 @@ export function AdminMentores() {
         linkedin: formData.linkedin,
         status: 'approved', // Auto-approved when added by admin
         userId: 'admin-manual', // Flag for manual creation
-      } as any);
+      } as Partial<Mentor>);
 
       toast.success('Mentor adicionado com sucesso!');
       setIsModalOpen(false);
       resetForm();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido';
       console.error('Erro ao adicionar mentor:', err);
-      toast.error('Erro ao adicionar mentor: ' + err.message);
+      toast.error('Erro ao adicionar mentor: ' + message);
     }
   };
 
@@ -110,7 +110,7 @@ export function AdminMentores() {
     try {
       await update(id, { status: 'approved' });
       toast.success('Mentor aprovado!');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Erro ao aprovar mentor');
     }
   };
@@ -119,7 +119,7 @@ export function AdminMentores() {
     try {
       await update(id, { status: 'rejected' });
       toast.success('Mentor rejeitado');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Erro ao rejeitar mentor');
     }
   };

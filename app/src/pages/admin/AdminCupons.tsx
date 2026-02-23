@@ -7,7 +7,6 @@ import {
     Edit3,
     CheckCircle,
     XCircle,
-    AlertCircle,
     Copy,
     Users,
     Calendar,
@@ -19,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCoupons } from '@/hooks/useData';
-import { Coupon } from '@/types';
+import type { Coupon } from '@/types';
 import { logger } from '@/lib/logger';
 
 const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string }> = {
@@ -61,14 +60,14 @@ export function AdminCupons() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const payload = {
+            const payload: Partial<Coupon> = {
                 codigo: formData.codigo.toUpperCase(),
                 indicacaoTipo: formData.indicacaoTipo,
                 indicacaoNome: formData.indicacaoNome,
                 porcentagemDesconto: Number(formData.porcentagemDesconto),
-                usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
+                usoLimite: formData.usoLimite ? Number(formData.usoLimite) : undefined,
                 descricao: formData.descricao,
-                vencimento: formData.vencimento || null,
+                vencimento: formData.vencimento || undefined,
                 ativo: formData.ativo,
                 usoAtual: editingCoupon ? editingCoupon.usoAtual : 0
             };

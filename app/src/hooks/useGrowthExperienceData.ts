@@ -13,8 +13,9 @@ export interface InscricaoTriunfo {
     empresa: string | null;
     tipo_inscricao: 'palestra' | 'mentor' | 'cursos';
     evento: string;
-    valor: number;
-    status: 'pendente' | 'confirmado' | 'pago' | 'cancelado';
+    valor_pago: number;
+    status_pagamento: 'pendente' | 'pago' | 'processando' | 'erro';
+    status: 'ativo' | 'cancelado' | 'pendente';
     stripe_payment_intent_id: string | null;
     stripe_session_id: string | null;
     stripe_payment_status: string | null;
@@ -104,10 +105,11 @@ export function useInscricoesTriunfo() {
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
-            setData(inscricoes as any || []);
+            setData(inscricoes || []);
             setError(null);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
+            setError(message);
             logger.error('Erro ao buscar inscrições:', err);
         } finally {
             setLoading(false);
@@ -120,33 +122,35 @@ export function useInscricoesTriunfo() {
 
     const updateStatus = async (id: string, status: InscricaoTriunfo['status']) => {
         try {
-            const { error: updateError } = await (supabase
-                .from('inscricoes_growth_experience') as any)
+            const { error: updateError } = await supabase
+                .from('inscricoes_growth_experience')
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
             if (updateError) throw updateError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao atualizar status:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
     const deleteInscricao = async (id: string) => {
         try {
-            const { error: deleteError } = await (supabase
-                .from('inscricoes_growth_experience') as any)
+            const { error: deleteError } = await supabase
+                .from('inscricoes_growth_experience')
                 .delete()
                 .eq('id', id);
 
             if (deleteError) throw deleteError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao deletar inscrição:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
@@ -183,8 +187,9 @@ export function useStartupsArenaPitch() {
             if (fetchError) throw fetchError;
             setData(startups || []);
             setError(null);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
+            setError(message);
             logger.error('Erro ao buscar startups:', err);
         } finally {
             setLoading(false);
@@ -202,7 +207,7 @@ export function useStartupsArenaPitch() {
         feedback?: string
     ) => {
         try {
-            const updateData: any = {
+            const updateData: Record<string, unknown> = {
                 status,
                 updated_at: new Date().toISOString(),
             };
@@ -212,32 +217,34 @@ export function useStartupsArenaPitch() {
             if (status !== 'pendente') updateData.avaliado_at = new Date().toISOString();
 
             const { error: updateError } = await (supabase
-                .from('startups_arena_pitch') as any)
+                .from('startups_arena_pitch'))
                 .update(updateData)
                 .eq('id', id);
 
             if (updateError) throw updateError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao atualizar startup:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
     const deleteStartup = async (id: string) => {
         try {
             const { error: deleteError } = await (supabase
-                .from('startups_arena_pitch') as any)
+                .from('startups_arena_pitch'))
                 .delete()
                 .eq('id', id);
 
             if (deleteError) throw deleteError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao deletar startup:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
@@ -274,8 +281,9 @@ export function useEmpresasB2B() {
             if (fetchError) throw fetchError;
             setData(empresas || []);
             setError(null);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
+            setError(message);
             logger.error('Erro ao buscar empresas B2B:', err);
         } finally {
             setLoading(false);
@@ -288,7 +296,7 @@ export function useEmpresasB2B() {
 
     const updateStatus = async (id: string, status: EmpresaB2B['status']) => {
         try {
-            const updateData: any = {
+            const updateData: Record<string, unknown> = {
                 status,
                 updated_at: new Date().toISOString(),
             };
@@ -298,32 +306,34 @@ export function useEmpresasB2B() {
             }
 
             const { error: updateError } = await (supabase
-                .from('rodada_negocios_b2b') as any)
+                .from('rodada_negocios_b2b'))
                 .update(updateData)
                 .eq('id', id);
 
             if (updateError) throw updateError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao atualizar empresa:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
     const deleteEmpresa = async (id: string) => {
         try {
             const { error: deleteError } = await (supabase
-                .from('rodada_negocios_b2b') as any)
+                .from('rodada_negocios_b2b'))
                 .delete()
                 .eq('id', id);
 
             if (deleteError) throw deleteError;
             await fetchData();
             return { success: true };
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Erro desconhecido';
             logger.error('Erro ao deletar empresa:', err);
-            return { success: false, error: err.message };
+            return { success: false, error: message };
         }
     };
 
@@ -348,8 +358,8 @@ export function useGrowthExperienceStats() {
     const stats = {
         // Inscrições
         totalInscricoes: inscricoes.length,
-        inscricoesPagas: inscricoes.filter(i => i.status === 'pago').length,
-        inscricoesPendentes: inscricoes.filter(i => i.status === 'pendente').length,
+        inscricoesPagas: inscricoes.filter(i => i.status_pagamento === 'pago').length,
+        inscricoesPendentes: inscricoes.filter(i => i.status_pagamento === 'pendente').length,
         inscricoesPalestra: inscricoes.filter(i => i.tipo_inscricao === 'palestra').length,
         inscricoesMentor: inscricoes.filter(i => i.tipo_inscricao === 'mentor').length,
         inscricoesCursos: inscricoes.filter(i => i.tipo_inscricao === 'cursos').length,
@@ -368,11 +378,11 @@ export function useGrowthExperienceStats() {
 
         // Receita
         receitaTotal: inscricoes
-            .filter(i => i.status === 'pago')
-            .reduce((sum, i) => sum + i.valor, 0),
+            .filter(i => i.status_pagamento === 'pago')
+            .reduce((sum, i) => sum + (Number(i.valor_pago) || 0), 0),
         receitaPendente: inscricoes
-            .filter(i => i.status === 'pendente' && i.tipo_inscricao === 'palestra')
-            .reduce((sum, i) => sum + i.valor, 0),
+            .filter(i => i.status_pagamento === 'pendente' && i.tipo_inscricao === 'palestra')
+            .reduce((sum, i) => sum + (Number(i.valor_pago) || 0), 0),
     };
 
     return stats;

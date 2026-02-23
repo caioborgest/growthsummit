@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-interface Atividade {
+export interface Atividade {
     horario: string;
     titulo?: string;
     tipo?: string;
@@ -14,30 +14,30 @@ interface Atividade {
     local?: string;
 }
 
-interface Sala extends Atividade {
+export interface Sala extends Atividade {
     numero: number;
 }
 
-interface Bloco {
+export interface Bloco {
     horario: string;
     titulo: string;
     salao?: Atividade;
     salas?: Sala[];
 }
 
-interface Circulacao {
+export interface Circulacao {
     horario: string;
     atividade: string;
 }
 
-interface ProgramacaoDiurna {
+export interface ProgramacaoDiurna {
     bloco1: Bloco;
     circulacao1: Circulacao;
     bloco2: Bloco;
     encerramento: Circulacao;
 }
 
-interface ProgramacaoTarde {
+export interface ProgramacaoTarde {
     bloco3: Bloco;
     circulacao2: Circulacao;
     bloco4: Bloco;
@@ -45,10 +45,10 @@ interface ProgramacaoTarde {
     encerramento: Circulacao;
 }
 
-interface Estacao {
+export interface Estacao {
     icon: any;
     nome: string;
-    subtitulo: string;
+    subtitulo?: string;
     parceiro: string;
     formato: string;
     capacidade: string;
@@ -58,13 +58,13 @@ interface Estacao {
     tempo?: string;
 }
 
-interface MomentoAncora {
+export interface MomentoAncora {
     horario: string;
     atividade: string;
     local: string;
 }
 
-interface ProgramacaoTabsProps {
+export interface ProgramacaoTabsProps {
     programacaoManha: ProgramacaoDiurna;
     programacaoTarde: ProgramacaoTarde;
     programacaoNoturna: { horario: string; atividade: string }[];
@@ -230,8 +230,8 @@ export function ProgramacaoTabs({
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex-1 group px-3 sm:px-4 py-4 sm:py-5 rounded-[14px] transition-all duration-300 relative overflow-hidden ${activeTab === tab.id
-                                ? 'bg-brand-orange-coral text-dark-100 shadow-glow'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            ? 'bg-brand-orange-coral text-dark-100 shadow-glow'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <div className="relative z-10">

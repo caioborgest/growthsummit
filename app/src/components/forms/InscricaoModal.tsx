@@ -152,7 +152,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 }
             }
 
-            if (!user) throw new Error('Falha na autenticação');
+            // Prosseguindo (user_id pode ser null se auth falhou)
+            console.log('Prosseguindo com inscrição. User ID:', user?.id || 'nenhum');
 
             // 2. Inserir Inscrição
             const valorFinal = tipo === 'palestra'
@@ -161,7 +162,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             const { error: insError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
                 project_id: projectId,
-                user_id: user.id,
+                user_id: user?.id || null,
                 nome: formData.nome,
                 email: formData.email,
                 telefone: formData.telefone,

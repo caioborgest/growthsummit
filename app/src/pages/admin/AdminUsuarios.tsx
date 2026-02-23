@@ -10,7 +10,6 @@ import {
     Edit2,
     Trash2,
     CheckCircle,
-    XCircle,
     Filter,
     User as UserIcon,
     HardHat,
@@ -41,9 +40,9 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { User } from '@/types';
+import type { User } from '@/types';
 
-const departmentIcons: Record<string, any> = {
+const departmentIcons: Record<string, React.ComponentType<any>> = {
     'sponsorship': HeartHandshake,
     'stands': HardHat,
     'programming': Monitor,
@@ -122,7 +121,7 @@ export function AdminUsuarios() {
             });
             toast.success('Usuário atualizado com sucesso!');
             setIsEditDialogOpen(false);
-        } catch (error) {
+        } catch (_error) {
             toast.error('Erro ao atualizar usuário');
         }
     };
@@ -338,7 +337,7 @@ export function AdminUsuarios() {
                             <select
                                 id="role"
                                 value={editingUser?.role || ''}
-                                onChange={(e) => setEditingUser(prev => prev ? { ...prev, role: e.target.value as any } : null)}
+                                onChange={(e) => setEditingUser(prev => prev ? { ...prev, role: e.target.value as User['role'] } : null)}
                                 className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
                             >
                                 <option value="participant">Participante</option>

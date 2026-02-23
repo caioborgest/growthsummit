@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Zap, Mic2, Users, MapPin, Coffee, Trophy } from 'lucide-react';
-import { ProgramacaoTabs } from './ProgramacaoTabs';
+import { BookOpen, Zap, Trophy } from 'lucide-react';
+import { ProgramacaoTabs, type ProgramacaoDiurna, type ProgramacaoTarde, type Estacao, type MomentoAncora } from './ProgramacaoTabs';
 import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
 import {
     circuitoExperienciasData,
@@ -18,7 +18,7 @@ interface ProgramacaoCircuitoSectionProps {
 const getIcon = (nome: string) => {
     const n = nome.toLowerCase();
     if (n.includes('sebrae') || n.includes('negócio') || n.includes('consultório')) return Briefcase;
-    if (n.includes('digital') || n.includes('instagram') || n.includes('ia') || n.includes('ia')) return Zap;
+    if (n.includes('digital') || n.includes('instagram') || n.includes('ia') || n.includes('growth')) return Zap;
     if (n.includes('venda')) return Trophy;
     if (n.includes('senac') || n.includes('carreira')) return GraduationCap;
     if (n.includes('sicoob') || n.includes('dinheiro')) return Landmark;
@@ -29,7 +29,7 @@ const getIcon = (nome: string) => {
 import { Briefcase, GraduationCap, Landmark } from 'lucide-react';
 
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
-    const { programacao, isLoading } = useProgramacaoTriunfo();
+    const { programacao } = useProgramacaoTriunfo();
 
     // Se não houver dados no banco, usa os estáticos como fallback
     // Isso garante que a página não fique vazia enquanto o admin não preenche
@@ -39,19 +39,28 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
         programacao.momentosAncora.manha.length > 0
     );
 
-    const finalData = hasData ? {
+    const finalData: {
+        programacaoManha: ProgramacaoDiurna;
+        programacaoTarde: ProgramacaoTarde;
+        programacaoNoturna: { horario: string; atividade: string }[];
+        circuitoExperiencias: Estacao[];
+        momentosAncora: {
+            manha: MomentoAncora[];
+            tarde: MomentoAncora[];
+        };
+    } = hasData ? {
         ...programacao,
         circuitoExperiencias: programacao.circuitoExperiencias.map(est => ({
             ...est,
             icon: getIcon(est.nome)
         }))
     } : {
-        programacaoManha: programacaoManhaData,
-        programacaoTarde: programacaoTardeData,
-        programacaoNoturna: programacaoNoturnaData,
-        circuitoExperiencias: circuitoExperienciasData,
-        momentosAncora: momentosAncoraData
-    };
+            programacaoManha: programacaoManhaData,
+            programacaoTarde: programacaoTardeData,
+            programacaoNoturna: programacaoNoturnaData,
+            circuitoExperiencias: circuitoExperienciasData,
+            momentosAncora: momentosAncoraData
+        };
 
     return (
         <section id="programacao" className="py-24 bg-dark relative overflow-hidden">
@@ -78,11 +87,11 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                 </div>
 
                 <ProgramacaoTabs
-                    programacaoManha={finalData.programacaoManha as any}
-                    programacaoTarde={finalData.programacaoTarde as any}
-                    programacaoNoturna={finalData.programacaoNoturna as any}
-                    circuitoExperiencias={finalData.circuitoExperiencias as any}
-                    momentosAncora={finalData.momentosAncora as any}
+                    programacaoManha={finalData.programacaoManha}
+                    programacaoTarde={finalData.programacaoTarde}
+                    programacaoNoturna={finalData.programacaoNoturna}
+                    circuitoExperiencias={finalData.circuitoExperiencias}
+                    momentosAncora={finalData.momentosAncora}
                     onInscricao={onInscricao}
                 />
             </div>

@@ -295,6 +295,11 @@ export interface Database {
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
       };
+      rodada_negocios_b2b: {
+        Row: Record<string, unknown>;
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
       // Outras tabelas do schema
       [key: string]: {
         Row: Record<string, unknown>;

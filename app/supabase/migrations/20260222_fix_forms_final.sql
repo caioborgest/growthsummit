@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS public.cupons_parceria_social (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID,
     codigo TEXT UNIQUE NOT NULL,
-    nome TEXT NOT NULL,
+    indicacao_nome TEXT NOT NULL,
     indicacao_tipo TEXT NOT NULL,
     porcentagem_desconto INTEGER NOT NULL DEFAULT 0,
     uso_atual INTEGER NOT NULL DEFAULT 0,
