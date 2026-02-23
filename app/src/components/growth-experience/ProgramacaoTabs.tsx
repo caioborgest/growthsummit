@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export interface Atividade {
-    horario: string;
+    horario?: string;
     titulo?: string;
     tipo?: string;
     capacidade?: number;
