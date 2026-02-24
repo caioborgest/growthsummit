@@ -69,7 +69,10 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo Section */}
-          <Link to="/" className="flex items-center group transition-transform duration-300 hover:scale-105">
+          <Link
+            to={location.pathname.startsWith('/growth-experience') ? '/growth-experience' : '/'}
+            className="flex items-center group transition-transform duration-300 hover:scale-105"
+          >
             {location.pathname.startsWith('/growth-experience') ? (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-orange-coral flex items-center justify-center shadow-lg shadow-brand-orange-coral/20">

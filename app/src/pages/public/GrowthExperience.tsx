@@ -7,8 +7,11 @@ import {
   MessageCircle,
   Check,
   Star,
-  ArrowRight
+  ArrowRight,
+  MapPin,
+  Calendar
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
@@ -86,6 +89,89 @@ export function GrowthExperience() {
               <div className="glass-card px-6 py-3">
                 <span className="text-gray-400 text-sm">Duração</span>
                 <p className="text-2xl font-bold text-white">2 dias + 3 meses</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Proximas Edicoes 2026 */}
+      <section className="py-20 bg-dark-100 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-orange-500/10 text-orange-400 border-orange-500/30">
+              Calendário 2026
+            </Badge>
+            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">
+              Escolha sua <span className="text-gradient">Experiência</span>
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Duas cidades, um único propósito: acelerar o crescimento do interior através da inovação e inteligência artificial.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Edition Triunfo */}
+            <div className="group relative glass-card p-1 border-white/5 hover:border-orange-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative p-8 space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all">
+                    <MapPin className="h-8 w-8 text-orange-400 group-hover:text-white" />
+                  </div>
+                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">TRIUNFO-PE</Badge>
+                </div>
+                <div>
+                  <h3 className="text-3xl font-bold text-white mb-2">Edição Sertão do Pajeú</h3>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                    <Calendar className="h-4 w-4 text-orange-400" />
+                    <span>16 de Abril, 2026</span>
+                  </div>
+                  <p className="text-gray-400 leading-relaxed line-clamp-2">
+                    A maior imersão de growth em uma das cidades mais charmosas do Sertão. Foco em varejo, agro e serviços.
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 rounded-2xl"
+                >
+                  <Link to="/growth-experience-triunfo">
+                    Acessar Edição Triunfo
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Edition Petrolina */}
+            <div className="group relative glass-card p-1 border-white/5 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative p-8 space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                    <MapPin className="h-8 w-8 text-teal-400 group-hover:text-white" />
+                  </div>
+                  <Badge className="bg-teal-500/20 text-teal-400 border-teal-500/30">PETROLINA-PE</Badge>
+                </div>
+                <div>
+                  <h3 className="text-3xl font-bold text-white mb-2">Edição Vale do São Francisco</h3>
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                    <Calendar className="h-4 w-4 text-teal-400" />
+                    <span>30 de Abril, 2026</span>
+                  </div>
+                  <p className="text-gray-400 leading-relaxed line-clamp-2">
+                    O hub de inovação do Vale. Um evento focado em escala global, agrotech e inteligência artificial aplicada.
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-2xl"
+                >
+                  <Link to="/growth-experience-petrolina">
+                    Acessar Edição Petrolina
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

@@ -46,14 +46,16 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
-                <img
-                    src={selectedProject?.slug === 'ge-petrolina-2026'
-                        ? "https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
-                        : "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
-                    }
-                    alt={selectedProject?.city || "Growth Experience"}
-                    className="w-full h-full object-cover object-center scale-105"
-                />
+                {selectedProject?.slug !== 'ge-petrolina-2026' && (
+                    <img
+                        src={selectedProject?.slug === 'ge-petrolina-2026'
+                            ? "https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
+                            : "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                        }
+                        alt={selectedProject?.city || "Growth Experience"}
+                        className="w-full h-full object-cover object-center scale-105"
+                    />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-black/95 via-dark-100/90 to-brand-black/95" />
                 <div
                     className="absolute inset-0 opacity-30"
@@ -105,7 +107,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                         className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-12 animate-fade-in-up"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior evento de empreendedorismo e inovação do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Interior'}.
+                        O maior evento de empreendedorismo e inovação do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}.
                         <span className="block mt-2 text-brand-orange-coral font-semibold">
                             Networking, Mentorias e Oportunidades de Negócios
                         </span>
