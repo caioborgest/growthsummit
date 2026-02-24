@@ -7,7 +7,10 @@ interface HeroSectionProps {
     onCTAClick: () => void;
 }
 
+import { useProject } from '@/contexts/ProjectContext';
+
 export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
+    const { selectedProject } = useProject();
     const [timeLeft, setTimeLeft] = useState({
         dias: 0,
         horas: 0,
@@ -17,7 +20,8 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     // Contador regressivo
     useEffect(() => {
-        const eventDate = new Date('2026-04-16T08:00:00');
+        const dateStr = selectedProject?.startDate || '2026-04-16';
+        const eventDate = new Date(`${dateStr}T08:00:00`);
 
         const updateCountdown = () => {
             const now = new Date().getTime();
@@ -36,7 +40,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedProject?.startDate]);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -78,7 +82,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <Sparkles className="h-4 w-4 text-brand-orange-coral" />
                         <span className="text-brand-orange-coral font-semibold text-sm">
-                            Evento Presencial • Triunfo-PE
+                            Evento Presencial • {selectedProject?.city}-{selectedProject?.state || 'PE'}
                         </span>
                     </div>
 
@@ -89,7 +93,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <span className="block mb-2 text-3xl sm:text-6xl lg:text-7xl">Growth Experience</span>
                         <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent">
-                            Triunfo-PE 2026
+                            {selectedProject?.city}-{selectedProject?.state} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
                         </span>
                     </h1>
 
@@ -98,7 +102,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                         className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-12 animate-fade-in-up"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior evento de empreendedorismo e inovação do Sertão do Pajeú.
+                        O maior evento de empreendedorismo e inovação do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Interior'}.
                         <span className="block mt-2 text-brand-orange-coral font-semibold">
                             Networking, Mentorias e Oportunidades de Negócios
                         </span>
@@ -111,7 +115,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">16 de Abril, 2026</span>
+                            <span className="font-semibold">{selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ', ' + new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '16 de Abril, 2026'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Clock className="h-5 w-5 text-brand-orange-coral" />

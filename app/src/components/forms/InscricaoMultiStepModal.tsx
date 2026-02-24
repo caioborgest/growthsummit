@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X } from 'lucide-react';
+import { useProject } from '@/contexts/ProjectContext';
 import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
@@ -16,6 +17,7 @@ interface InscricaoMultiStepModalProps {
 }
 
 export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepModalProps) {
+    const { selectedProject } = useProject();
     const [currentStep, setCurrentStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosInscricao>({
@@ -110,11 +112,49 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 return (
                     <Step4OfertaPalestras
                         dados={dados}
-                        onComprar={() => {
+                        onComprar={async () => {
+                            if (isProcessing) return;
+                            setIsProcessing(true);
+                            if (dados.inscricaoId) {
+                                try {
+                                    const { supabase } = await import('@/lib/supabase');
+                                    // Cálculo de valor (mesma lógica do Step 3)
+                                    const valorOriginal = 179.99;
+                                    const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+                                    const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
+
+                                    await (supabase
+                                        .from('inscricoes_growth_experience') as any)
+                                        .update({
+                                            palestras_noturnas: true,
+                                            valor_pago: valorComDesconto,
+                                            status_pagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
+                                            cupom_palestra: dados.cupomPalestra || null,
+                                            codigo_palestra: dados.cupomPalestra || null,
+                                            valor_desconto_palestra: (dados.descontoPalestra || 0)
+                                        })
+                                        .eq('id', dados.inscricaoId);
+                                } catch (err) {
+                                    console.error('Erro ao atualizar compra de palestras:', err);
+                                }
+                            }
                             updateDados({ comprarPalestras: true });
+                            setIsProcessing(false);
                             nextStep();
                         }}
-                        onPular={() => {
+                        onPular={async () => {
+                            // Mesmo pular, garantimos que está false (já é por padrão, mas reforçamos se for refazer o fluxo)
+                            if (dados.inscricaoId) {
+                                try {
+                                    const { supabase } = await import('@/lib/supabase');
+                                    await (supabase
+                                        .from('inscricoes_growth_experience') as any)
+                                        .update({ palestras_noturnas: false, valor_pago: 0 })
+                                        .eq('id', dados.inscricaoId);
+                                } catch (e) {
+                                    console.error('Erro ao pular palestras:', e);
+                                }
+                            }
                             updateDados({ comprarPalestras: false });
                             nextStep();
                         }}
@@ -167,9 +207,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight">
-                                Inscrição <span className="text-brand-orange-coral">GE Triunfo</span>
+                                Inscrição <span className="text-brand-orange-coral">{selectedProject?.shortDescription || selectedProject?.name || 'Evento'}</span>
                             </h2>
-                            <p className="text-gray-500 text-[10px] sm:text-sm mt-1">Growth Experience • Workshop & Training</p>
+                            <p className="text-gray-500 text-[10px] sm:text-sm mt-1">{selectedProject?.name || 'Growth Experience'} • Workshop & Training</p>
                         </div>
                         <Button
                             variant="ghost"

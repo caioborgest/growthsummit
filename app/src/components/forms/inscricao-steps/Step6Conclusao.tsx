@@ -1,3 +1,4 @@
+import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle, Home, Smartphone, Mail } from 'lucide-react';
@@ -9,6 +10,8 @@ interface Step6ConclusaoProps {
 }
 
 export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
+    const { selectedProject } = useProject();
+
     return (
         <div className="text-center space-y-6">
             {/* Icon Sucesso */}
@@ -25,7 +28,7 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                     Inscrição Confirmada!
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto leading-relaxed">
-                    Parabéns, <span className="text-white font-semibold">{dados.nome}</span>! Sua vaga no Growth Experience Triunfo-PE 2026 está garantida.
+                    Parabéns, <span className="text-white font-semibold">{dados.nome}</span>! Sua vaga no <span className="text-white font-semibold">{selectedProject?.name || 'evento'}</span> está garantida.
                 </p>
             </div>
 

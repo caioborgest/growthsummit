@@ -8,7 +8,10 @@ interface SocialRegistrationSectionProps {
     onInscrever: () => void;
 }
 
+import { useProject } from '@/contexts/ProjectContext';
+
 export function SocialRegistrationSection({ onInscrever }: SocialRegistrationSectionProps) {
+    const { selectedProject } = useProject();
     return (
         <section id="inscricao-social" className="py-24 bg-dark-200 relative overflow-hidden">
             {/* Background Decorative Elements */}
@@ -85,9 +88,9 @@ export function SocialRegistrationSection({ onInscrever }: SocialRegistrationSec
                                 </div>
                                 <div className="p-2">
                                     {[
-                                        { rank: 1, name: 'Triunfo', stats: '242', coupon: '100%' },
-                                        { rank: 2, name: 'Serra Talhada', stats: '187', coupon: '75%' },
-                                        { rank: 3, name: 'Afogados da Ingazeira', stats: '154', coupon: '50%' },
+                                        { rank: 1, name: selectedProject?.city || 'Triunfo', stats: '242', coupon: '100%' },
+                                        { rank: 2, name: selectedProject?.city === 'Triunfo' ? 'Serra Talhada' : 'Cidade B', stats: '187', coupon: '75%' },
+                                        { rank: 3, name: selectedProject?.city === 'Triunfo' ? 'Afogados da Ingazeira' : 'Cidade C', stats: '154', coupon: '50%' },
                                     ].map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors rounded-lg group">
                                             <div className="flex items-center gap-4">
@@ -118,8 +121,8 @@ export function SocialRegistrationSection({ onInscrever }: SocialRegistrationSec
                                 </div>
                                 <div className="p-2">
                                     {[
-                                        { rank: 1, name: 'Deputado A', location: 'Triunfo', stats: '940' },
-                                        { rank: 2, name: 'Vereador B', location: 'Serra Talhada', stats: '820' },
+                                        { rank: 1, name: 'Deputado A', location: selectedProject?.city || 'Triunfo', stats: '940' },
+                                        { rank: 2, name: 'Vereador B', location: selectedProject?.city === 'Triunfo' ? 'Serra Talhada' : 'Cidade B', stats: '820' },
                                         { rank: 3, name: 'Liderança C', location: 'Região', stats: '750' },
                                     ].map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors rounded-lg group">

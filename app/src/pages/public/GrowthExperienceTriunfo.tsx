@@ -51,7 +51,7 @@ import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useMentors, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { useEffect, useCallback } from 'react';
-import { ensureGETriunfoProject } from '@/lib/ensureGETriunfoProject';
+import { ensureProject } from '@/lib/ensureProject';
 
 // Dados do evento
 const palestrantes = [
@@ -163,13 +163,13 @@ function InnerHeader() {
             </Link>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              {['Sobre', 'Edição JN', 'Programação', 'Palestrantes', 'Inscrições', 'Seja Expositor'].map((item) => (
+              {navItems.map((item) => (
                 <a
-                  key={item}
-                  href={item === 'Edição JN' ? '#edicao-jn' : `#${item.toLowerCase().replace(' ', '-')}`}
+                  key={item.label}
+                  href={item.href}
                   className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-brand-orange-coral transition-all duration-300 relative group"
                 >
-                  {item}
+                  {item.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-orange-coral transition-all duration-300 group-hover:w-full" />
                 </a>
               ))}
@@ -191,15 +191,7 @@ function InnerHeader() {
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-[45] bg-dark backdrop-blur-2xl px-4 pt-24 pb-12 overflow-y-auto animate-in fade-in duration-300">
           <nav className="flex flex-col gap-2">
-            {[
-              { label: 'Sobre', href: '#sobre' },
-              { label: 'Edição JN', href: '#edicao-jn' },
-              { label: 'Mentores', href: '#mentores' },
-              { label: 'Programação', href: '#programacao' },
-              { label: 'Palestrantes', href: '#palestrantes' },
-              { label: 'Inscrições', href: '#inscricoes' },
-              { label: 'Seja Expositor', href: '#patrocinios' }
-            ].map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
@@ -217,7 +209,7 @@ function InnerHeader() {
               <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Entrar na Área do Aluno</Link>
             </Button>
             <div className="text-center pt-4">
-              <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">Growth Experience Triunfo 2026</p>
+              <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">{selectedProject?.name || 'Growth Experience'}</p>
             </div>
           </div>
         </div>
@@ -408,7 +400,36 @@ export function GrowthExperienceTriunfo() {
     }
 
     // 2. Criar/buscar diretamente no Supabase
-    const project = await ensureGETriunfoProject();
+    const project = await ensureProject({
+      name: 'Growth Experience Triunfo-PE 2026',
+      slug: 'ge-triunfo-2026',
+      type: 'growth_experience',
+      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito em 16 de abril de 2026.',
+      shortDescription: 'Edição Triunfo-PE',
+      location: 'Espaço Parque',
+      city: 'Triunfo',
+      state: 'PE',
+      startDate: '2026-04-16',
+      endDate: '2026-04-16',
+      primaryColor: '#FE4C38',
+      secondaryColor: '#FF6B35',
+      settings: {
+        maxRegistrations: 500,
+        maxMentors: 30,
+        maxStartups: 20,
+        maxCompanies: 40,
+        enableB2B: true,
+        enableMentoring: true,
+        enableStartups: true,
+        enableCheckIn: true,
+        ticketPrices: {
+          standard: 0,
+          pro: 179.99,
+          vip: 0,
+        },
+      },
+    });
+
     if (project && (!selectedProject || selectedProject.id !== project.id)) {
       setSelectedProject(project);
     }

@@ -145,6 +145,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     nivel_atividade: nivelAtividade,
                     palestras_noturnas: dados.comprarPalestras,
                     tipo_inscricao: 'standard', // Adicionado para compatibilidade com Admin
+                    evento: 'Growth Experience Triunfo',
                     valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
                     status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
                     status: 'ativo',

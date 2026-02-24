@@ -14,6 +14,7 @@ interface InscricaoModalProps {
 const WHATSAPP_NUMBER = '5588988432310';
 
 export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoModalProps) {
+    const { selectedProject, projectId } = useProject();
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
@@ -28,7 +29,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     const [error, setError] = useState('');
     const [cupomValido, setCupomValido] = useState<{ porcentagem: number; nome: string; tipo: string } | null>(null);
     const [validandoCupom, setValidandoCupom] = useState(false);
-    const { projectId } = useProject();
 
     if (!isOpen) return null;
 
@@ -274,7 +274,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         {/* Header */}
                         <div className="mb-6">
                             <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2 leading-tight">{getTitulo()}</h2>
-                            <p className="text-xs sm:text-sm text-gray-400">Growth Experience Triunfo-PE</p>
+                            <p className="text-xs sm:text-sm text-gray-400">{selectedProject?.name || 'Growth Experience'}</p>
                             <div className="mt-3 inline-block px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-orange-500/20 border border-orange-500/30">
                                 <span className="text-orange-400 text-sm sm:text-base font-semibold">{getValor()}</span>
                             </div>
