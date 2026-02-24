@@ -34,7 +34,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
             if (distance > 0) {
                 setTimeLeft({
-                    dias: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                    dias: Math.ceil(distance / (1000 * 60 * 60 * 24)),
                     horas: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
                     minutos: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
                     segundos: Math.floor((distance % (1000 * 60)) / 1000)
@@ -139,7 +139,9 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">{selectedProject?.settings?.maxRegistrations?.toLocaleString() || '2.000'}+ Participantes</span>
+                            <span className="font-semibold">
+                                {(selectedProject?.settings?.maxRegistrations || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo') ? 2000 : 500)).toLocaleString()}+ Participantes
+                            </span>
                         </div>
                     </div>
 
