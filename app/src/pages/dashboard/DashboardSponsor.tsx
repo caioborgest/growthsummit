@@ -12,6 +12,7 @@ import {
   FileText,
   MapPin,
   ExternalLink,
+  HelpCircle,
   LogOut,
   Upload,
   MessageSquare,
@@ -98,6 +99,10 @@ export function DashboardSponsor() {
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Patrocinador Ativo
               </Badge>
+              <Button variant="ghost" size="sm" className="text-yellow-400 hover:text-yellow-300" onClick={() => navigate('/guia')}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Acessar Manual
+              </Button>
               <Button variant="outline" size="sm" className="border-dark-300 text-gray-300" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

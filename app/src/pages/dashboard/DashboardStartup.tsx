@@ -11,6 +11,7 @@ import {
   FileText,
   ExternalLink,
   Edit3,
+  HelpCircle,
   LogOut,
   CheckCircle
 } from 'lucide-react';
@@ -79,6 +80,10 @@ export function DashboardStartup() {
                   Stand {startupData.standNumber}
                 </Badge>
               )}
+              <Button variant="ghost" size="sm" className="text-orange-400 hover:text-orange-300" onClick={() => navigate('/guia')}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Acessar Manual
+              </Button>
               <Button variant="outline" size="sm" className="border-dark-300 text-gray-300" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

@@ -129,7 +129,11 @@ function AppRoutes() {
           <Route path="growth-experience" element={<GrowthExperience />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="contato" element={<Contato />} />
-          <Route path="guia" element={<HelpCenter />} />
+          <Route path="guia" element={
+            <ProtectedRoute>
+              <HelpCenter />
+            </ProtectedRoute>
+          } />
         </Route>
 
         {/* Dedicated Pages for Regional Editions (No Global Layout) */}

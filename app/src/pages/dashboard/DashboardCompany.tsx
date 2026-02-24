@@ -12,6 +12,7 @@ import {
   X as CloseIcon,
   Info,
   Calendar,
+  HelpCircle,
   MapPin,
   User
 } from 'lucide-react';
@@ -128,6 +129,10 @@ export function DashboardCompany() {
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Empresa Validada
               </Badge>
+              <Button variant="ghost" size="sm" className="text-teal-400 hover:text-teal-300" onClick={() => navigate('/guia')}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Acessar Manual
+              </Button>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

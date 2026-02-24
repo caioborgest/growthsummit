@@ -161,5 +161,34 @@ export const usabilityGuide: RoleGuide[] = [
                 ]
             }
         ]
+    },
+    {
+        role: 'sponsor',
+        title: 'Guia do Patrocinador',
+        description: 'Manual para gerir seus benefícios, ingressos VIP e visibilidade de marca.',
+        modules: [
+            {
+                id: 'ingressos-vip',
+                name: 'Gestão de Convidados',
+                steps: [
+                    {
+                        title: 'Liberando Acessos',
+                        description: 'Na aba "Ingressos", você pode gerar códigos únicos para seus convidados VIP e colaboradores.',
+                        tip: 'Monitore quem já ativou o ingresso em tempo real pelo dashboard.'
+                    }
+                ]
+            },
+            {
+                id: 'branding-visibilidade',
+                name: 'Marca e Ativação',
+                steps: [
+                    {
+                        title: 'Upload de Materiais',
+                        description: 'Envie sua logo em alta resolução para ser exibida nos telões e materiais impressos do evento.',
+                        tip: 'O formato ideal é PNG com fundo transparente ou SVG.'
+                    }
+                ]
+            }
+        ]
     }
 ];

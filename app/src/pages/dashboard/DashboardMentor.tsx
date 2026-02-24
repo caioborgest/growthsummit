@@ -6,6 +6,7 @@ import {
   MessageSquare,
   CheckCircle,
   User,
+  HelpCircle,
   FileText,
   LogOut,
   Briefcase
@@ -63,6 +64,10 @@ export function DashboardMentor() {
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Aprovado
               </Badge>
+              <Button variant="ghost" size="sm" className="text-teal-400 hover:text-teal-300" onClick={() => navigate('/guia')}>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Acessar Manual
+              </Button>
               <Button variant="outline" size="sm" className="border-dark-300 text-gray-300" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair

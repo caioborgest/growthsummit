@@ -29,8 +29,14 @@ export function HelpCenter() {
     const [searchQuery, setSearchQuery] = useState('');
 
     const guidesToShow = usabilityGuide.filter(guide => {
-        if (guide.role === 'admin') return user?.role === 'admin';
-        return true;
+        // Admin vê todos os guias
+        if (user?.role === 'admin') return true;
+
+        // Normalização de roles (ex: participante -> participant)
+        const userRole = user?.role === 'participante' ? 'participant' : user?.role;
+
+        // Cada usuário vê apenas seu respectivo guia
+        return guide.role === userRole;
     });
 
     const filteredGuides = guidesToShow.filter(guide =>
