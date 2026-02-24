@@ -15,6 +15,7 @@ const navLinks = [
   { name: 'Sobre', href: '/sobre' },
   { name: 'Programação', href: '/programacao' },
   { name: 'Palestrantes', href: '/palestrantes' },
+  { name: 'Petrolina 2026', href: '/growth-experience-petrolina' },
   { name: 'Inscrições', href: '/inscricoes' },
 ];
 
@@ -69,14 +70,17 @@ export function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo Section */}
           <Link to="/" className="flex items-center group transition-transform duration-300 hover:scale-105">
-            {location.pathname === '/growth-experience' || location.pathname === '/growth-experience-triunfo' ? (
+            {location.pathname.startsWith('/growth-experience') ? (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-orange-coral flex items-center justify-center shadow-lg shadow-brand-orange-coral/20">
                   <span className="text-white font-black text-lg tracking-tighter">GX</span>
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-white font-black text-lg leading-none block tracking-tight">Growth Experience</span>
-                  <span className="text-brand-orange-coral text-[10px] block font-black uppercase tracking-[0.2em] mt-0.5">Triunfo 2026</span>
+                  <span className="text-brand-orange-coral text-[10px] block font-black uppercase tracking-[0.2em] mt-0.5">
+                    {location.pathname.includes('triunfo') ? 'Triunfo 2026' :
+                      location.pathname.includes('petrolina') ? 'Petrolina 2026' : 'Edições 2026'}
+                  </span>
                 </div>
               </div>
             ) : (

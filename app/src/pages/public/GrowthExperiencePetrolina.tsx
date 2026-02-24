@@ -130,6 +130,12 @@ function InnerHeader() {
                                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-orange-coral transition-all duration-300 group-hover:w-full" />
                                 </a>
                             ))}
+                            <Link
+                                to="/"
+                                className="text-xs font-black uppercase tracking-widest text-brand-orange-coral hover:text-white transition-all bg-brand-orange-coral/10 px-4 py-2 rounded-xl"
+                            >
+                                Voltar ao Portal
+                            </Link>
                         </nav>
 
                         <div className="flex items-center space-x-4">
@@ -163,6 +169,10 @@ function InnerHeader() {
                         <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-16 text-xl font-black rounded-2xl" asChild>
                             <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Entrar na Área do Aluno</Link>
                         </Button>
+                        <div className="text-center pt-4">
+                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">Growth Experience Petrolina 2026</p>
+                            <Link to="/" className="text-brand-orange-coral text-xs font-black uppercase mt-4 block">Voltar ao Portal Global</Link>
+                        </div>
                     </div>
                 </div>
             )}
@@ -185,7 +195,7 @@ function InnerFooter() {
                             />
                         </div>
                         <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-sm">
-                            A edição Petrolina do Growth Experience chega para transformar o Sertão de Pernambuco com o que há de mais moderno em gestão e tecnologia.
+                            A maior imersão de Growth e IA do Vale do São Francisco. O evento que vai conectar Petrolina ao futuro do marketing e das vendas.
                         </p>
                     </div>
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
@@ -199,8 +209,8 @@ function InnerFooter() {
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h4 className="text-white font-bold text-lg mb-8">Contato</h4>
                         <ul className="space-y-6 text-gray-400 text-sm">
-                            <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-brand-orange-coral" /> Petrolina, PE</li>
-                            <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-brand-orange-coral" /> contato@growthsummit.site</li>
+                            <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-brand-orange-coral" /> Petrolina-PE (Vale do São Francisco)</li>
+                            <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-brand-orange-coral" /> petrolina@growthsummit.site</li>
                             <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-brand-orange-coral" /> (88) 98843-2310</li>
                         </ul>
                     </div>
@@ -318,6 +328,41 @@ export function GrowthExperiencePetrolina() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section id="mentores" className="py-16 sm:py-24 bg-dark-200 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">CONSELHORES ESTRATÉGICOS</Badge>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Mentores <span className="text-gradient">Confirmados</span></h2>
+                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Especialistas prontos para diagnosticar seu negócio e acelerar Petrolina.</p>
+                    </div>
+
+                    {!mentorsLoading && approvedMentors.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                            {approvedMentors.map((mentor) => (
+                                <div key={mentor.id} className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500">
+                                    <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
+                                        <img
+                                            src={mentor.photo || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
+                                            alt={mentor.name}
+                                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                        />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white group-hover:text-brand-orange-coral transition-colors">{mentor.name}</h3>
+                                    <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest">{mentor.position} @ {mentor.company}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : mentorsLoading ? (
+                        <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div></div>
+                    ) : (
+                        <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl mb-16">
+                            <Sparkles className="h-10 w-10 text-gray-700 mx-auto mb-4" />
+                            <p className="text-gray-500 text-lg">Novos mentores estão sendo aprovados para o Vale...</p>
+                        </div>
+                    )}
                 </div>
             </section>
 
