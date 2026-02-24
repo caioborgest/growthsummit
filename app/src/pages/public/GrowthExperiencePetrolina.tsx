@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     MapPin,
     TrendingUp,
@@ -34,30 +34,10 @@ import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRe
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { useState, useEffect, useCallback } from 'react';
 import { Project } from '@/types';
 import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
 
-// Dados do evento exclusivos para Petrolina
-const palestrantes = [
-    {
-        nome: "Caio Borges",
-        cargo: "CEO, Growth & IA",
-        descricao: "Especialista em Growth Hacking e Inteligência Artificial aplicada a negócios.",
-        tema: "A Nova Era do Growth: IA como Motor de Escala no Sertão",
-        horario: "19:00 - 19:45",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/caio-borges.png"
-    },
-    {
-        nome: "Leandro Batista",
-        cargo: "CEO, Exclusive Fitness",
-        descricao: "Empreendedor serial e líder da maior rede de academias do interior do Nordeste.",
-        tema: "Crescimento Exponencial: Estratégias de Escala para Negócios Regionais",
-        horario: "19:45 - 20:30",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/leandro-batista.png"
-    }
-];
 
 const conselheiros = [
     {
@@ -76,32 +56,6 @@ const conselheiros = [
     }
 ];
 
-const cotas = [
-    {
-        nome: "DIAMANTE",
-        espaco: "10m x 10m - Stand Premium",
-        ingressos: 15,
-        beneficios: [
-            "Posição de destaque total",
-            "Logo em todas as comunicações",
-            "Slot de palestra garantido",
-            "Relatório de leads qualificados"
-        ],
-        destaque: true,
-        vagas: 2
-    },
-    {
-        nome: "OURO",
-        espaco: "5m x 10m - Stand Gold",
-        ingressos: 10,
-        beneficios: [
-            "Posição de grande visibilidade",
-            "Logo em banners e programas",
-            "Menção nos palcos principais"
-        ],
-        vagas: 4
-    }
-];
 
 const navItems = [
     { label: 'Sobre', href: '#sobre' },
@@ -112,7 +66,6 @@ const navItems = [
 
 function InnerHeader() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { selectedProject } = useProject();
 
     return (
         <>
@@ -142,7 +95,7 @@ function InnerHeader() {
                                 </a>
                             ))}
                             <Link
-                                to="/"
+                                to="/login"
                                 className="text-xs font-black uppercase tracking-widest text-brand-orange-coral hover:text-white transition-all bg-brand-orange-coral/10 px-4 py-2 rounded-xl"
                             >
                                 Voltar ao Portal
@@ -276,7 +229,7 @@ export function GrowthExperiencePetrolina() {
                 setSelectedProject(project);
             }
         }
-    }, [projects, selectedProject, setSelectedProject]);
+    }, [projects, contextProject, setSelectedProject]);
 
     useEffect(() => {
         initProject();
@@ -401,14 +354,14 @@ export function GrowthExperiencePetrolina() {
                             },
                             {
                                 hora: "19:00",
-                                titulo: "Palestra Magna 1: Inovação e Growth",
-                                desc: "A primeira imersão sobre como aplicar as tendências de 2026 no seu negócio.",
+                                titulo: "Growth & IA (Caio Borges)",
+                                desc: "Como aplicar as tendências de inteligência artificial de 2026 para acelerar seu negócio.",
                                 icon: Mic2
                             },
                             {
                                 hora: "19:45",
-                                titulo: "Palestra Magna 2: Estratégias de Escala",
-                                desc: "Técnicas avançadas de vendas e processos para crescer de forma sustentável.",
+                                titulo: "Escala e Alta Performance (Leandro Batista)",
+                                desc: "Estratégias avançadas de gestão e processos para escalar sua empresa com lucratividade.",
                                 icon: Zap
                             },
                             {

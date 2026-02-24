@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { 
+import {
   Download,
   FileText,
   BarChart3,
@@ -14,6 +14,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRegistrations, useMentors, useMentoringSessions, useStartups, useSponsors, useTransactions } from '@/hooks/useData';
+import { toast } from 'sonner';
+import { useProject } from '@/contexts/ProjectContext';
+import { generateInscricoesReport, generateFinanceiroReport, generateMentoriasReport } from '@/lib/reports';
 
 const reportTypes = [
   {
@@ -61,6 +64,7 @@ const reportTypes = [
 ];
 
 export function AdminRelatorios() {
+  const { selectedProject } = useProject();
   const [generating, setGenerating] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
@@ -73,10 +77,36 @@ export function AdminRelatorios() {
 
   const handleGenerate = async (reportId: string) => {
     setGenerating(reportId);
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setGenerating(null);
-    alert(`Relatório ${reportId} gerado com sucesso!`);
+
+    try {
+      const projectName = selectedProject?.name || 'Growth Summit';
+
+      // Simula pequeno delay de processamento para UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      switch (reportId) {
+        case 'inscricoes':
+          generateInscricoesReport(registrations, projectName);
+          break;
+        case 'financeiro':
+          generateFinanceiroReport(transactions, projectName);
+          break;
+        case 'mentorias':
+          generateMentoriasReport(sessions, projectName);
+          break;
+        default:
+          toast.error(`Geração do relatório ${reportId} ainda não disponível em formato PDF real.`);
+          setGenerating(null);
+          return;
+      }
+
+      toast.success(`Relatório ${reportId} baixado com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      toast.error('Ocorreu um erro ao gerar o relatório em PDF.');
+    } finally {
+      setGenerating(null);
+    }
   };
 
   const stats = {
@@ -162,7 +192,7 @@ export function AdminRelatorios() {
               <h3 className="text-lg font-semibold text-white mb-2">{report.name}</h3>
               <p className="text-gray-400 text-sm mb-6">{report.description}</p>
 
-              <Button 
+              <Button
                 className={`w-full bg-${report.color}-500 hover:bg-${report.color}-600 text-white`}
                 onClick={() => handleGenerate(report.id)}
                 disabled={generating === report.id}
@@ -232,10 +262,10 @@ export function AdminRelatorios() {
             <div className="space-y-2">
               {['PDF', 'Excel', 'CSV'].map((format) => (
                 <label key={format} className="flex items-center">
-                  <input 
-                    type="radio" 
-                    name="format" 
-                    className="bg-dark-100 border-dark-300 text-teal-500 mr-2" 
+                  <input
+                    type="radio"
+                    name="format"
+                    className="bg-dark-100 border-dark-300 text-teal-500 mr-2"
                     defaultChecked={format === 'PDF'}
                   />
                   <span className="text-gray-300 text-sm">{format}</span>

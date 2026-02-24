@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
-    onConfirmar: (userId: string, inscricaoId: string) => void;
+    onConfirmar: (userId: string, inscricaoId: string, statusPagamento: string) => void;
     onVoltar: () => void;
 }
 
@@ -218,7 +218,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             }
 
             // 4. Sucesso - Avisar o componente pai
-            onConfirmar(userId || '', finalInscricaoId || '');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const finalStatusPagamento = (inscricaoData as any)?.[0]?.status_pagamento || 'pago';
+            onConfirmar(userId || '', finalInscricaoId || '', finalStatusPagamento);
 
         } catch (err: unknown) {
             const error = err as Error;

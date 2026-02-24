@@ -1,5 +1,6 @@
 import { Users, Building2, Handshake, TrendingUp, Target, Award } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Project } from '@/types';
 
 interface StatItemProps {
     icon: React.ElementType;
@@ -7,6 +8,10 @@ interface StatItemProps {
     label: string;
     suffix?: string;
     delay?: number;
+}
+
+interface StatsSectionProps {
+    project?: Project;
 }
 
 function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatItemProps) {
@@ -87,17 +92,18 @@ function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatIte
     );
 }
 
-export function StatsSection() {
+export function StatsSection({ project }: StatsSectionProps) {
+    const isTriunfo = project?.slug === 'ge-triunfo-2026';
     const stats = [
         {
             icon: Users,
-            value: 2000,
+            value: project?.settings?.maxRegistrations || (isTriunfo ? 2000 : 500),
             label: 'Participantes',
             suffix: '+'
         },
         {
             icon: Building2,
-            value: 25,
+            value: project?.settings?.maxCompanies || (isTriunfo ? 25 : 10),
             label: 'Empresas Expositoras',
             suffix: '+'
         },
@@ -109,7 +115,7 @@ export function StatsSection() {
         },
         {
             icon: Handshake,
-            value: 10,
+            value: isTriunfo ? 10 : 2,
             label: 'Milhões em Negócios',
             suffix: 'M+'
         },

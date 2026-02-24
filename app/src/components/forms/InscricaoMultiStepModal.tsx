@@ -100,8 +100,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 return (
                     <Step3Confirmacao
                         dados={dados}
-                        onConfirmar={(userId, inscricaoId) => {
-                            updateDados({ userId, inscricaoId });
+                        onConfirmar={(userId, inscricaoId, statusPagamento) => {
+                            updateDados({ userId, inscricaoId, statusPagamento });
                             setIsProcessing(false); // Reset to allow nextStep
                             nextStep(true); // Force next step
                         }}
@@ -123,6 +123,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
                                     const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
 
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
                                         .from('inscricoes_growth_experience') as any)
                                         .update({
@@ -134,11 +135,18 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                             valor_desconto_palestra: (dados.descontoPalestra || 0)
                                         })
                                         .eq('id', dados.inscricaoId);
+
+                                    updateDados({
+                                        comprarPalestras: true,
+                                        statusPagamento: valorComDesconto > 0 ? 'pendente' : 'pago'
+                                    });
                                 } catch (err) {
                                     console.error('Erro ao atualizar compra de palestras:', err);
+                                    updateDados({ comprarPalestras: true, statusPagamento: 'pendente' });
                                 }
+                            } else {
+                                updateDados({ comprarPalestras: true, statusPagamento: 'pendente' });
                             }
-                            updateDados({ comprarPalestras: true });
                             setIsProcessing(false);
                             nextStep();
                         }}
@@ -147,6 +155,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
                                         .from('inscricoes_growth_experience') as any)
                                         .update({ palestras_noturnas: false, valor_pago: 0 })
@@ -170,6 +179,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
                                         .from('inscricoes_growth_experience') as any)
                                         .update({ app_instalado: true })

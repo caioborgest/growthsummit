@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 
 export function PetrolinaRegistrationForm() {
     const { selectedProject } = useProject();
@@ -80,7 +81,7 @@ export function PetrolinaRegistrationForm() {
             }
 
             // 3. Insert Registration
-            const { error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
+            const { data: inscricaoData, error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
                 project_id: selectedProject?.id,
                 user_id: userId || null,
                 nome: formData.nome,
@@ -94,9 +95,19 @@ export function PetrolinaRegistrationForm() {
                 numero_colaboradores: formData.colaboradores,
                 faturamento_anual: formData.faturamento,
                 cupom_palestra: formData.cupom || null
-            });
+            }).select();
 
             if (regError) throw regError;
+
+            // 3.5. Auto-invite to WhatsApp Group (Async)
+            const finalInscricaoId = (inscricaoData as any)?.[0]?.id;
+            if (finalInscricaoId && selectedProject?.id) {
+                autoInviteOnRegistration(
+                    finalInscricaoId,
+                    selectedProject.id,
+                    'standard'
+                ).catch(e => console.error('Auto-invite error:', e));
+            }
 
             // 4. Send Confirmation Email (Async, non-blocking)
             supabase.functions.invoke('send-email', {

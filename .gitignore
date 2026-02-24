@@ -1,0 +1,10 @@
+node_modules/
+dist/
+out.txt
+git_config.txt
+git_status_output.txt
+dir_output.txt
+.DS_Store
+*.log
+.env
+.vercel

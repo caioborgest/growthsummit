@@ -6,6 +6,19 @@ import { ProjectProvider } from '@/contexts/ProjectContext';
 import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import './index.css';
+import { registerSW } from 'virtual:pwa-register';
+
+// PWA Registration
+registerSW({
+  onNeedRefresh() {
+    if (confirm('Nova versão disponível! Deseja atualizar agora?')) {
+      window.location.reload();
+    }
+  },
+  onOfflineReady() {
+    console.log('App pronto para uso offline');
+  },
+});
 
 // Valida configurações
 import { validateConfig } from '@/lib/config';

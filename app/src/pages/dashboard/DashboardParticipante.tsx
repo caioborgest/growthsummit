@@ -21,8 +21,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRegistrations, useSessions, useMentoringSessions } from '@/hooks/useData';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
+import { useProject } from '@/contexts/ProjectContext';
+import { generateTicketPDF } from '@/lib/reports';
+import { toast } from 'sonner';
 
 export function DashboardParticipante() {
+  const { selectedProject } = useProject();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { data: registrations } = useRegistrations();
@@ -155,7 +159,15 @@ export function DashboardParticipante() {
                 <p className="text-3xl font-black text-white mb-8">#{myRegistration?.id?.slice(0, 8).toUpperCase() || 'GS2026-X'}</p>
 
                 <div className="flex gap-4">
-                  <Button variant="outline" className="border-dark-300 rounded-xl hover:bg-dark-300 transition-all">
+                  <Button
+                    variant="outline"
+                    className="border-dark-300 rounded-xl hover:bg-dark-300 transition-all"
+                    onClick={() => {
+                      if (!myRegistration) return;
+                      generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
+                      toast.success('Seu ingresso PDF foi gerado!');
+                    }}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     PDF
                   </Button>
@@ -181,7 +193,13 @@ export function DashboardParticipante() {
                     </div>
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
                       <span className="text-gray-400">Status Financeiro</span>
-                      <Badge className="bg-green-500/20 text-green-400 border-none">Confirmado</Badge>
+                      {myRegistration?.statusPagamento === 'pago' ? (
+                        <Badge className="bg-green-500/20 text-green-400 border-none">Confirmado</Badge>
+                      ) : (
+                        <Badge className="bg-orange-500/20 text-orange-400 border-none uppercase text-[10px] font-black">
+                          Pendência de Pagamento
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
                       <span className="text-gray-400">Acesso Noturno</span>

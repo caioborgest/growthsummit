@@ -51,7 +51,6 @@ import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useMentors, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { useEffect, useCallback } from 'react';
 import { ensureProject } from '@/lib/ensureProject';
 
 // Dados do evento
@@ -440,7 +439,7 @@ export function GrowthExperienceTriunfo() {
         setSelectedProject(project);
       }
     }
-  }, [projects, selectedProject, setSelectedProject]);
+  }, [projects, contextProject, setSelectedProject]);
 
   useEffect(() => {
     initProject();
@@ -480,7 +479,7 @@ export function GrowthExperienceTriunfo() {
       />
 
       {/* Stats Section Refinada */}
-      <StatsSection />
+      <StatsSection project={currentProject || undefined} />
 
       {/* Sobre o Evento */}
       <section id="sobre" className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">

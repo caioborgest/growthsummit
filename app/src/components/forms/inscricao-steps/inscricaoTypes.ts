@@ -27,5 +27,6 @@ export interface DadosInscricao {
     // Controle
     userId?: string;
     inscricaoId?: string;
+    statusPagamento?: string;
     appInstalado?: boolean;
 }
