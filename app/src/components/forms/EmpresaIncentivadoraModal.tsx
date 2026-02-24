@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface EmpresaIncentivadoraModalProps {
     isOpen: boolean;
@@ -36,7 +37,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
         setError('');
 
         try {
-            console.log('Iniciando inscrição de empresa incentivadora...');
+            logger.info('Iniciando inscrição de empresa incentivadora...');
 
             // Salvar no banco de dados
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,11 +53,10 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             });
 
             if (dbError) {
-                console.error('Erro ao salvar no banco (Empresa):', dbError);
+                logger.error('Erro ao salvar no banco (Empresa):', dbError);
                 throw dbError;
             }
 
-            console.log('Sucesso! Empresa inscrita.');
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
@@ -72,7 +72,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             }, 5000);
 
         } catch (err: any) {
-            console.error('Erro crítico no formulário de empresa:', err);
+            logger.error('Erro crítico no formulário de empresa:', err);
             setError(err.message || 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);

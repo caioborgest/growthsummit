@@ -3,6 +3,7 @@ import { X, Loader2, CheckCircle, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface InscricaoModalProps {
     isOpen: boolean;
@@ -70,7 +71,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             });
             setError('');
         } catch (err) {
-            console.error('Erro cupom:', err);
+            logger.error('Erro cupom:', err);
         } finally {
             setValidandoCupom(false);
         }
@@ -128,7 +129,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (session && session.user.email !== formData.email) {
-                console.log('Sessão existente pertence a outro email. Ignorando...');
                 userId = undefined;
             }
 
@@ -141,7 +141,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
                 if (sError) {
                     if (sError.message.toLowerCase().includes('already registered')) {
-                        console.log('Usuário já existe, tentando login...');
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                             email: formData.email,
                             password: formData.senha
@@ -149,10 +148,11 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         if (!signInError) {
                             userId = signInData.user.id;
                         } else {
-                            console.warn('Login falhou:', signInError.message);
+                            logger.warn('Login falhou:', signInError.message);
                             if (signInError.message.includes('Invalid login credentials')) {
                                 throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                             }
+                            throw signInError;
                         }
                     } else {
                         throw sError;
@@ -165,7 +165,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    await (supabase
+                    const { error: userTableError } = await (supabase
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .from('users') as any)
                         .upsert({
@@ -176,13 +176,16 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                             role: 'participant',
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
+
+                    if (userTableError) {
+                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    }
                 } catch (userTableCatch) {
-                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
                 }
             }
 
             // Prosseguindo (user_id pode ser null se auth falhou)
-            console.log('Prosseguindo com inscrição. User ID:', userId || 'nenhum');
 
             // 2. Inserir Inscrição
             const valorFinal = tipo === 'palestra'

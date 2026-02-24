@@ -3,6 +3,7 @@ import { X, Loader2, CheckCircle, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface StartupFormModalProps {
     isOpen: boolean;
@@ -73,7 +74,6 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
         setError('');
 
         try {
-            console.log('Iniciando inscrição de startup...');
             // Validação básica
             if (!formData.nome_fundador || !formData.email || !formData.telefone || !formData.senha || !formData.confirmarSenha ||
                 !formData.nome_startup || !formData.descricao_startup || !formData.setor ||
@@ -103,7 +103,6 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== formData.email) {
-                console.log('Sessão existente pertence a outro email. Ignorando...');
                 userId = undefined;
             }
 
@@ -127,7 +126,6 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             if (authError) {
                 // Se já existe, tentamos login automático
                 if (authError.message.includes('already registered')) {
-                    console.log('Usuário já registrado, tentando login...');
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                         email: formData.email,
                         password: formData.senha
@@ -135,9 +133,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
                     if (!signInError) {
                         userId = signInData.user.id;
-                        console.log('Login automático realizado:', userId);
                     } else {
-                        console.warn('Login automático falhou:', signInError.message);
+                        logger.warn('Login automático falhou:', signInError.message);
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -162,13 +159,12 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
                 } catch (userTableCatch) {
-                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
                 }
             }
 
             // Se ainda não temos userId, prosseguimos sem vincular ID se possível
             // (A tabela startups_arena_pitch permite user_id null)
-            console.log('Prosseguindo com registro de startup. User ID:', userId || 'nenhum');
 
             // Preparar dados para inserção
             const dataToInsert = {
@@ -234,7 +230,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 onClose();
             }, 3000);
         } catch (err: unknown) {
-            console.error('Erro na inscrição de startup:', err);
+            logger.error('Erro na inscrição de startup:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
             if (err instanceof Error) {

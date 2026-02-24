@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
@@ -37,23 +38,18 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
         setError('');
 
         try {
-            console.log('Iniciando processo de confirmação...');
-
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== dados.email) {
-                console.log('Sessão existente pertence a outro email. Ignorando...');
                 userId = undefined;
             }
 
-            console.log('User ID inicial:', userId);
 
             // 1. Tentar criar usuário apenas se não estiver logado com o email correto
             if (!userId) {
-                console.log('Tentando criar usuário:', dados.email);
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: dados.email,
                     password: dados.senha,
@@ -69,7 +65,6 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 if (sError) {
                     // Se já existe, tentamos login automático para validar a senha
                     if (sError.message.toLowerCase().includes('already registered')) {
-                        console.log('Usuário já registrado em Auth, tentando validar senha...');
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                             email: dados.email,
                             password: dados.senha
@@ -77,9 +72,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
                         if (!signInError) {
                             userId = signInData.user.id;
-                            console.log('Login realizado e senha validada:', userId);
                         } else {
-                            console.error('Falha na validação de usuário existente:', signInError);
+                            logger.error('Falha na validação de usuário existente:', signInError);
                             throw new Error('Este email já está cadastrado, mas a senha informada está incorreta. Se você já possui uma conta, use a senha anterior ou recupere-a.');
                         }
                     } else {
@@ -87,11 +81,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     }
                 } else if (authData.user) {
                     userId = authData.user.id;
-                    console.log('Usuário criado com sucesso:', userId);
 
                     // Se não houver sessão imediata (email confirmation enabled), o login manual será necessário depois
                     if (!authData.session) {
-                        console.log('Confirmação de email necessária.');
                         toast.info('Verifique seu email para confirmar seu cadastro!');
                     }
                 } else {
@@ -115,10 +107,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         }, { onConflict: 'id' });
 
                     if (userTableError) {
-                        console.warn('Erro ao sincronizar tabela public.users (pode ser RLS):', userTableError.message);
+                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
                     }
                 } catch (userTableCatch) {
-                    console.warn('Explosão ao tentar upsert em users:', userTableCatch);
+                    logger.warn('Erro ao tentar upsert em users:', userTableCatch);
                 }
             }
 
@@ -126,8 +118,6 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const valorOriginal = 179.99;
             const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
             const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
-
-            console.log('Enviando dados da inscrição para o Supabase...');
 
             const { data: inscricaoData, error: inscricaoError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,21 +149,19 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 .select();
 
             if (inscricaoError) {
-                console.error('Erro no Supabase Insert:', inscricaoError);
+                logger.error('Erro no Supabase Insert:', inscricaoError);
                 throw new Error(inscricaoError.message);
             }
 
             // 2.5 Incrementar contador de inscritos nas sessões (Real-time)
             if (dados.cursosSelecionados && dados.cursosSelecionados.length > 0) {
-                console.log('Incrementando contador de inscritos para as sessões:', dados.cursosSelecionados);
                 for (const sessionId of dados.cursosSelecionados) {
                     const { error: rpcError } = await supabase.rpc('increment_session_count', { session_id: sessionId });
-                    if (rpcError) console.warn('Erro ao incrementar contador (não crítico):', rpcError);
+                    if (rpcError) logger.warn('Erro ao incrementar contador:', rpcError);
                 }
             }
 
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
-            console.log('Inscrição salva com sucesso. ID:', finalInscricaoId);
 
             // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
             if (finalInscricaoId) {
@@ -182,7 +170,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     finalInscricaoId,
                     projectSlug,
                     'standard'
-                ).catch(e => console.warn('Invite fail:', e));
+                ).catch(e => logger.warn('Invite fail:', e));
 
                 // 3.5 Send Confirmation Email (Async, non-blocking)
                 supabase.functions.invoke('send-email', {
@@ -214,7 +202,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         </div>
                         `
                     }
-                }).catch(e => console.error('Email confirmation error:', e));
+                }).catch(e => logger.error('Email confirmation error:', e));
             }
 
             // 4. Sucesso - Avisar o componente pai
@@ -224,7 +212,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
         } catch (err: unknown) {
             const error = err as Error;
-            console.error('Erro crítico na inscrição:', error);
+            logger.error('Erro crítico na inscrição:', error);
             setError(error.message || 'Erro ao processar inscrição. Tente novamente.');
             setLoading(false); // Only reset on error
         }

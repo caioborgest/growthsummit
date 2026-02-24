@@ -3,6 +3,7 @@ import { X, Loader2, CheckCircle, Handshake, Upload, Camera } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface B2BFormModalProps {
     isOpen: boolean;
@@ -88,7 +89,6 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         setError('');
 
         try {
-            console.log('Iniciando inscrição B2B...');
             // Validação de Logo (Obrigatória agora que o usuário pediu)
             if (!logoFile) {
                 throw new Error('Por favor, anexe a logomarca da sua empresa.');
@@ -124,7 +124,6 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== formData.email) {
-                console.log('Sessão existente pertence a outro email. Ignorando...');
                 userId = undefined;
             }
 
@@ -148,7 +147,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             if (authError) {
                 // Se já existe, tentamos login automático
                 if (authError.message.includes('already registered')) {
-                    console.log('Usuário já registrado, tentando login...');
+                    logger.info('Usuário já registrado, tentando login...');
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                         email: formData.email,
                         password: formData.senha
@@ -156,9 +155,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
                     if (!signInError) {
                         userId = signInData.user.id;
-                        console.log('Login automático realizado:', userId);
+                        logger.info('Login automático realizado:', userId);
                     } else {
-                        console.warn('Login automático falhou:', signInError.message);
+                        logger.warn('Login automático falhou:', signInError.message);
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -172,7 +171,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    await (supabase
+                    const { error: userTableError } = await (supabase
                         .from('users') as any)
                         .upsert({
                             id: userId,
@@ -182,13 +181,15 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                             role: 'b2b',
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
+                    if (userTableError) {
+                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    }
                 } catch (userTableCatch) {
-                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
                 }
             }
 
             // Prosseguimento (user_id opcional na tabela)
-            console.log('Prosseguindo com registro B2B. User ID:', userId || 'nenhum');
 
             // 1.5 Upload Logo if exists
             let logoUrl = '';
@@ -281,7 +282,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 onClose();
             }, 3000);
         } catch (err: unknown) {
-            console.error('Erro na inscrição B2B:', err);
+            logger.error('Erro na inscrição B2B:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
             if (err instanceof Error) {

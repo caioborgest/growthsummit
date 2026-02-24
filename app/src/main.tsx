@@ -16,7 +16,7 @@ registerSW({
     }
   },
   onOfflineReady() {
-    console.log('App pronto para uso offline');
+    // logger.info('App pronto para uso offline');
   },
 });
 

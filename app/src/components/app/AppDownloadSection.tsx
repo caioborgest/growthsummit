@@ -12,7 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function AppDownloadSection() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isInstallable, setIsInstallable] = useState(false);
-    const [isInstalled, setIsInstalled] = useState(false);
+    const [, setIsInstalled] = useState(false);
 
     useEffect(() => {
         if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -38,7 +38,9 @@ export function AppDownloadSection() {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') console.log('PWA instalado');
+        if (outcome === 'accepted') {
+            // Success
+        }
         setDeferredPrompt(null);
         setIsInstallable(false);
     };

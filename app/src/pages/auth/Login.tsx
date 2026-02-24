@@ -7,7 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 
 export function Login() {
-  console.log('Login component loaded');
   const navigate = useNavigate();
   const { login, isAuthenticating, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
@@ -49,9 +48,7 @@ export function Login() {
 
       if (loggedInUser) {
         // Se precisar de 2FA, o AuthContext já terá atualizado o estado
-        // e o componente de login pode mostrar o formulário de 2FA ou esperar
         if (loggedInUser.requires2FA) {
-          console.log('2FA requerido');
           return;
         }
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface MentorFormModalProps {
     isOpen: boolean;
@@ -103,26 +104,22 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         .getPublicUrl(filePath);
 
                     fotoUrl = urlData.publicUrl;
-                    console.log('Foto enviada com sucesso:', fotoUrl);
                 } catch (imgErr) {
-                    console.warn('Erro ao enviar imagem (não fatal):', imgErr);
+                    logger.warn('Erro ao enviar imagem (não fatal):', imgErr);
                 }
             }
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
-            console.log('Sessão existente:', userId || 'nenhuma');
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== formData.email) {
-                console.log('Sessão existente pertence a outro email. Ignorando...');
                 userId = undefined;
             }
 
             if (!userId) {
                 // 1. Auth SignUp
-                console.log('Criando novo usuário mentor...');
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
                     password: formData.senha,
@@ -137,7 +134,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                 if (sError) {
                     if (sError.message.toLowerCase().includes('already registered')) {
-                        console.log('Usuário já registrado, tentando login...');
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                             email: formData.email,
                             password: formData.senha
@@ -145,9 +141,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                         if (!signInError) {
                             userId = signInData.user.id;
-                            console.log('Login automático realizado:', userId);
                         } else {
-                            console.warn('Login automático falhou:', signInError.message);
+                            logger.warn('Login automático falhou:', signInError.message);
                             if (signInError.message.includes('Invalid login credentials')) {
                                 throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                             }
@@ -164,23 +159,23 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    await (supabase
-                        .from('users') as any)
-                        .upsert({
-                            id: userId,
-                            email: formData.email,
-                            name: formData.nome,
-                            phone: formData.telefone,
-                            role: 'mentor',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
+                    const { error: userTableError } = await (supabase.from('users') as any).upsert({
+                        id: userId,
+                        email: formData.email,
+                        name: formData.nome,
+                        phone: formData.telefone,
+                        role: 'mentor',
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
+                    if (userTableError) {
+                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    }
                 } catch (userTableCatch) {
-                    console.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
                 }
             }
 
             // 2. Salvar inscrição no banco
-            console.log('Salvando dados do mentor no banco...');
             const { error: dbError } = await (supabase
                 .from('mentores_growth_experience') as any)
                 .insert({
@@ -199,11 +194,11 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 });
 
             if (dbError) {
-                console.error('Erro ao salvar no banco:', dbError);
+                logger.error('Erro ao salvar no banco:', dbError);
                 throw dbError;
             }
 
-            console.log('Sucesso! Mentor registrado.');
+            logger.info('Sucesso! Mentor registrado.');
             setIsSuccess(true);
 
             // Limpeza após 5 segundos
@@ -218,13 +213,13 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 });
             }, 5000);
 
-        } catch (err: any) {
-            console.error('Erro crítico no formulário de mentor:', err);
+        } catch (err: unknown) {
+            logger.error('Erro na inscrição de mentor:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
-            if (err.message?.toLowerCase().includes('rate limit')) {
+            if (err instanceof Error && err.message?.toLowerCase().includes('rate limit')) {
                 errorMessage = 'Muitas tentativas em pouco tempo. Aguarde 60 segundos.';
-            } else if (err.message) {
+            } else if (err instanceof Error && err.message) {
                 errorMessage = err.message;
             }
 
