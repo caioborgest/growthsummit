@@ -26,9 +26,9 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
         };
 
         if (existing) {
-            // Update if exists to ensure settings are in sync with code config if needed
-            // Or just return existing. Let's return mapped existing for now.
-            return rowToProject(existing);
+            // Update if exists to ensure settings are in sync with code config
+            // We'll proceed to the upsert below which uses onConflict: slug
+            projectDataToUpsert.id = existing.id;
         }
 
         // 2. Create if doesn't exist

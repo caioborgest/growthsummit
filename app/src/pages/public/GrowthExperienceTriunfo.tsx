@@ -399,14 +399,7 @@ export function GrowthExperienceTriunfo() {
 
   // Garantir que o projeto exista no Supabase e selecioná-lo no contexto
   const initProject = useCallback(async () => {
-    // 1. Tentar achar no array já carregado (cache)
-    const fromCache = projects.find(p => p.slug === 'ge-triunfo-2026');
-    if (fromCache) {
-      if (!selectedProject || selectedProject.id !== fromCache.id) {
-        setSelectedProject(fromCache);
-      }
-      return;
-    }
+    // 2. Garantir persistência e obter dados atualizados do projeto
 
     // 2. Criar/buscar diretamente no Supabase
     const project = await ensureProject({

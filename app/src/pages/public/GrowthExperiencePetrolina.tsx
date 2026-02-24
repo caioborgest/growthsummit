@@ -244,13 +244,7 @@ export function GrowthExperiencePetrolina() {
     const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
 
     const initProject = useCallback(async () => {
-        const fromCache = projects.find(p => p.slug === 'ge-petrolina-2026');
-        if (fromCache) {
-            if (!selectedProject || selectedProject.id !== fromCache.id) {
-                setSelectedProject(fromCache);
-            }
-            return;
-        }
+        // Garantir dados atualizados do projeto
 
         const project = await ensureProject({
             name: 'Growth Experience Petrolina-PE 2026',

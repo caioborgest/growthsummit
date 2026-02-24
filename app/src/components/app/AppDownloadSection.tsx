@@ -102,7 +102,7 @@ export function AppDownloadSection() {
                                             </div>
                                             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange-coral/20 border border-brand-orange-coral/40">
                                                 <Calendar className="h-3 w-3 text-brand-orange-coral" />
-                                                <span className="text-brand-orange-coral text-[10px] font-bold">09 ABR 2026</span>
+                                                <span className="text-brand-orange-coral text-[10px] font-bold">16 ABR 2026</span>
                                             </div>
                                         </div>
 
