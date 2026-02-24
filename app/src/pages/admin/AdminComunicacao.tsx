@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { useRegistrations } from '@/hooks/useData';
 import { toast } from 'sonner';
 
 const initialEmailTemplates = [
@@ -83,6 +84,8 @@ export function AdminComunicacao() {
   const [templates, setTemplates] = useState(initialEmailTemplates);
   const [campaigns, setCampaigns] = useState(initialEmailCampaigns);
 
+  const { data: registrations } = useRegistrations();
+
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
 
@@ -136,7 +139,7 @@ export function AdminComunicacao() {
     const newCampaign = {
       id: Math.random().toString(36).substr(2, 9),
       name: campaignFormData.name,
-      recipients: 1247, // Mock number
+      recipients: registrations.length, // Real number
       sent: 0,
       opened: 0,
       clicked: 0,

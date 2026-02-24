@@ -143,13 +143,21 @@ export function AdminDashboard() {
   const pendingMentors = filterMentors((m: Mentor) => m.status === 'pending');
   const pendingStartups = filterStartups((s: Startup) => s.status === 'pending');
 
+  // Gerar Atividade Recente dinamicamente
   const recentActivity = [
-    { action: 'Nova inscrição', detail: 'João Silva - Passe Pro', time: '2 min atrás', type: 'success' as const },
-    { action: 'Mentoria agendada', detail: 'Ana + Dr. Fernando', time: '5 min atrás', type: 'info' as const },
-    { action: 'Pagamento confirmado', detail: 'R$ 2.500 - Growth Experience', time: '12 min atrás', type: 'success' as const },
-    { action: 'Startup aprovada', detail: 'TechStart Brasil', time: '25 min atrás', type: 'info' as const },
-    { action: 'Patrocinador fechado', detail: 'InnovateLabs - Ouro', time: '1h atrás', type: 'success' as const },
-  ];
+    ...registrations.slice(0, 3).map(r => ({
+      action: 'Nova inscrição',
+      detail: `${r.nome || 'Usuário'} - ${r.ticketType === 'vip' ? 'VIP' : r.ticketType === 'pro' ? 'Pro' : 'Standard'}`,
+      time: new Date(r.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      type: 'success' as const
+    })),
+    ...sessions.slice(0, 2).map(s => ({
+      action: 'Mentoria agendada',
+      detail: `${s.menteeName} + ${s.mentorName}`,
+      time: new Date(s.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      type: 'info' as const
+    }))
+  ].sort((a, b) => b.time.localeCompare(a.time)).slice(0, 5);
 
   // Show project selection prompt if no project is selected
   if (!isProjectSelected) {

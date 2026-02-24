@@ -8,24 +8,10 @@ import type {
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile
 } from '@/types';
 
-// Mock Data Placeholders (re-added for fallback/types)
-const mockRegistrations: Registration[] = [];
-const mockMentors: Mentor[] = [];
-const mockMentoringSessions: MentoringSession[] = [];
-const mockCompanies: Company[] = [];
-const mockB2BMeetings: B2BMeeting[] = [];
-const mockStartups: Startup[] = [];
-const mockSponsors: Sponsor[] = [];
-const mockTransactions: Transaction[] = [];
-const mockCheckIns: CheckIn[] = [];
-const mockSessions: Session[] = [];
-const mockLeads: Lead[] = [];
-
-// Project IDs
+// Table Mapping based on project and entity
 const GE_TRIUNFO = 'ge-triunfo-2026';
 const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
-// Table Mapping based on project and entity
 const getTableName = (projectId: string, entity: string) => {
   // Global table mappings
   if (entity === 'cupons') return 'cupons_parceria_social';
@@ -289,10 +275,6 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
       dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
     } catch (err) {
       logger.error(`Erro ao buscar ${entityName}:`, err);
-      // Fallback to initial (mock) data in development if table doesn't exist
-      if (import.meta.env.DEV) {
-        setData(initialData.filter(item => item.projectId === projectId));
-      }
     } finally {
       setIsLoading(false);
     }
@@ -601,47 +583,47 @@ export function useProjects() {
 
 // Specific hooks with project filtering
 export function useRegistrations() {
-  return useData<Registration>(mockRegistrations, 'registrations');
+  return useData<Registration>([], 'registrations');
 }
 
 export function useMentors() {
-  return useData<Mentor>(mockMentors, 'mentors');
+  return useData<Mentor>([], 'mentors');
 }
 
 export function useMentoringSessions() {
-  return useData<MentoringSession>(mockMentoringSessions, 'mentoring_sessions');
+  return useData<MentoringSession>([], 'mentoring_sessions');
 }
 
 export function useCompanies() {
-  return useData<Company>(mockCompanies, 'companies');
+  return useData<Company>([], 'companies');
 }
 
 export function useB2BMeetings() {
-  return useData<B2BMeeting>(mockB2BMeetings, 'b2b_meetings');
+  return useData<B2BMeeting>([], 'b2b_meetings');
 }
 
 export function useStartups() {
-  return useData<Startup>(mockStartups, 'startups');
+  return useData<Startup>([], 'startups');
 }
 
 export function useSponsors() {
-  return useData<Sponsor>(mockSponsors, 'sponsors');
+  return useData<Sponsor>([], 'sponsors');
 }
 
 export function useTransactions() {
-  return useData<Transaction>(mockTransactions, 'transactions');
+  return useData<Transaction>([], 'transactions');
 }
 
 export function useCheckIns() {
-  return useData<CheckIn>(mockCheckIns, 'check_ins');
+  return useData<CheckIn>([], 'check_ins');
 }
 
 export function useSessions() {
-  return useData<Session>(mockSessions, 'sessions');
+  return useData<Session>([], 'sessions');
 }
 
 export function useLeads() {
-  return useData<Lead>(mockLeads, 'leads');
+  return useData<Lead>([], 'leads');
 }
 
 export function useB2BSwipes() {

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { User, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface Mentor {
     id: string;
@@ -24,6 +25,7 @@ interface Step2SelecionarMentorProps {
 export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, onVoltar }: Step2SelecionarMentorProps) {
     const [mentores, setMentores] = useState<Mentor[]>([]);
     const [loading, setLoading] = useState(true);
+    const { projectId } = useProject();
 
     useEffect(() => {
         async function fetchMentores() {
@@ -31,6 +33,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
                 const { data, error } = await supabase
                     .from('mentores_growth_experience')
                     .select('*')
+                    .eq('project_id', projectId)
                     .eq('status', 'aprovado'); // Ou remova o filtro se quiser mostrar todos pendentes para teste
 
                 if (error) throw error;
@@ -39,7 +42,8 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
                 if (!data || data.length === 0) {
                     const { data: allData } = await supabase
                         .from('mentores_growth_experience')
-                        .select('*');
+                        .select('*')
+                        .eq('project_id', projectId);
                     setMentores(allData || []);
                 } else {
                     setMentores(data);

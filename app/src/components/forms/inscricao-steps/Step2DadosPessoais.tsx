@@ -13,6 +13,7 @@ import {
 import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle, Award, Key, Loader2 } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { supabase } from '@/lib/supabase';
+import { useProject } from '@/contexts/ProjectContext';
 
 const CIDADES_PAJEU = [
     'SERRA TALHADA',
@@ -52,6 +53,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [validating, setValidating] = useState(false);
     const [desconto, setDesconto] = useState(dados.descontoSocial || 0);
+    const { projectId } = useProject();
 
     const formatTelefone = (value: string) => {
         const numbers = value.replace(/\D/g, '');
@@ -115,6 +117,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     const { data, error } = await (supabase
                         .from('cupons_parceria_social') as any)
                         .select('*')
+                        .eq('project_id', projectId)
                         .eq('codigo', codigo.trim().toUpperCase())
                         .eq('ativo', true)
                         .single();
