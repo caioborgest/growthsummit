@@ -20,7 +20,8 @@ import {
     Instagram,
     Linkedin,
     Facebook,
-    CheckCircle
+    CheckCircle,
+    Users
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';

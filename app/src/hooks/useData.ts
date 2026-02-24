@@ -158,8 +158,8 @@ function getSelectFields(entity: string, projectId?: string): string {
 }
 
 // Generic hook for CRUD operations with project filtering
-export function useData<T extends WithId>(initialData: T[], entityName: string = 'registrations') {
-  const [data, setData] = useState<T[]>([]);
+export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations') {
+  const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const { projectId } = useProject();
 
@@ -278,7 +278,7 @@ export function useData<T extends WithId>(initialData: T[], entityName: string =
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, entityName, initialData]);
+  }, [projectId, entityName]);
 
   const create = useCallback(async (item: Omit<T, 'id' | 'createdAt'>) => {
     if (!projectId) throw new Error('No project selected');
