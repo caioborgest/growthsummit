@@ -27,48 +27,50 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { InscricaoModal } from '@/components/forms/InscricaoModal';
-import { StartupFormModal } from '@/components/forms/StartupFormModal';
-import { B2BFormModal } from '@/components/forms/B2BFormModal';
-import { MentorFormModal } from '@/components/forms/MentorFormModal';
-import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
-import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getPalestranteImage, getStandImage } from '@/lib/storage';
-import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
-import { AppDownloadSection } from '@/components/app/AppDownloadSection';
-import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
-import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
-import { ProgramacaoCircuitoSection } from '@/components/growth-experience/ProgramacaoCircuitoSection';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
-import { StatsSection } from '@/components/growth-experience/StatsSection';
-import { PalestranteCardRefined } from '@/components/growth-experience/PalestranteCardRefined';
-import { SectionShare } from '@/components/social/SectionShare';
-import { SocialShare } from '@/components/social/SocialShare';
-import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
-import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { useMentors, useProjects } from '@/hooks/useData';
+import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { useEffect, useCallback } from 'react';
 import { ensureProject } from '@/lib/ensureProject';
 
-// Dados do evento
+// Dados do evento exclusivos para Petrolina
 const palestrantes = [
     {
-        nome: "Speaker Nacional 1",
-        cargo: "Especialista em Growth & IA",
-        descricao: "Referência em estratégias de crescimento acelerado utilizando inteligência artificial.",
-        tema: "O Futuro do Growth: Como a IA está redefinindo o mercado",
-        horario: "19:00 - 19:45"
+        nome: "Caio Borges",
+        cargo: "CEO, Growth & IA",
+        descricao: "Especialista em Growth Hacking e Inteligência Artificial aplicada a negócios.",
+        tema: "A Nova Era do Growth: IA como Motor de Escala no Sertão",
+        horario: "19:00 - 19:45",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/caio-borges.png"
     },
     {
-        nome: "Speaker Nacional 2",
-        cargo: "Expert em Vendas e Escala",
-        descricao: "Especialista em construir times de vendas de alta performance e processos de escala.",
-        tema: "Escala Inevitável: Processos de Vendas para 2026",
-        horario: "19:45 - 20:30"
+        nome: "Leandro Batista",
+        cargo: "CEO, Exclusive Fitness",
+        descricao: "Empreendedor serial e líder da maior rede de academias do interior do Nordeste.",
+        tema: "Crescimento Exponencial: Estratégias de Escala para Negócios Regionais",
+        horario: "19:45 - 20:30",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/leandro-batista.png"
+    }
+];
+
+const conselheiros = [
+    {
+        nome: "Caio Borges",
+        cargo: "CEO, Growth & IA",
+        bio: "Especialista em inteligência artificial e estratégias de crescimento acelerado.",
+        empresa: "Growth & IA",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/caio-borges.png"
+    },
+    {
+        nome: "Leandro Batista",
+        cargo: "CEO, Exclusive Fitness",
+        bio: "Especialista em escala de negócios e gestão de alta performance.",
+        empresa: "Exclusive Fitness",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/leandro-batista.png"
     }
 ];
 
@@ -101,10 +103,9 @@ const cotas = [
 
 const navItems = [
     { label: 'Sobre', href: '#sobre' },
-    { label: 'Mentores', href: '#mentores' },
-    { label: 'Palestrantes', href: '#palestrantes' },
+    { label: 'Conselheiros', href: '#mentores' },
     { label: 'Programação', href: '#programacao' },
-    { label: 'Inscrições', href: '#inscricoes' },
+    { label: 'Inscrições', href: '#registro' },
 ];
 
 function InnerHeader() {
@@ -240,8 +241,6 @@ function InnerFooter() {
 export function GrowthExperiencePetrolina() {
     const { data: projects } = useProjects();
     const { setSelectedProject, selectedProject } = useProject();
-    const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
-    const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
 
     const initProject = useCallback(async () => {
         // Garantir dados atualizados do projeto
@@ -261,10 +260,10 @@ export function GrowthExperiencePetrolina() {
             secondaryColor: '#FF6B35',
             settings: {
                 maxRegistrations: 500,
-                maxMentors: 30,
-                enableB2B: true,
-                enableMentoring: true,
-                enableStartups: true,
+                maxMentors: 0,
+                enableB2B: false,
+                enableMentoring: false,
+                enableStartups: false,
             },
         });
 
@@ -277,9 +276,7 @@ export function GrowthExperiencePetrolina() {
         initProject();
     }, [initProject]);
 
-    const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
     const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-petrolina';
-    const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
 
     return (
         <div className="bg-dark min-h-screen pt-20 flex flex-col overflow-x-hidden">
@@ -292,18 +289,9 @@ export function GrowthExperiencePetrolina() {
 
             <InnerHeader />
 
-            <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
-            <MentoriaMultiStepModal isOpen={modalAberto === 'mentor'} onClose={() => setModalAberto(null)} />
-            <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={() => setModalAberto(null)} tipo="palestra" eventoNome="Growth Experience Petrolina 2026" />
-            <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={() => setModalAberto(null)} />
-            <StartupFormModal isOpen={modalAberto === 'startup'} onClose={() => setModalAberto(null)} />
-            <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
-            <EmpresaIncentivadoraModal isOpen={modalAberto === 'empresa'} onClose={() => setModalAberto(null)} />
+            <HeroSectionRefined onCTAClick={() => document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth' })} />
 
-            <HeroSectionRefined onCTAClick={() => setModalInscricaoAberto(true)} />
-            <StatsSection />
-
-            <section id="sobre" className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
+            <section id="sobre" className="py-20 bg-dark-100 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-fade-in-up">
@@ -314,8 +302,8 @@ export function GrowthExperiencePetrolina() {
                             </p>
                             <div className="grid sm:grid-cols-2 gap-8 mb-8">
                                 {[
-                                    { icon: TrendingUp, title: 'Inovação', desc: 'IA aplicada ao agronegócio e varejo' },
-                                    { icon: Handshake, title: 'Conexões', desc: 'Networking com os maiores do Vale' }
+                                    { icon: Zap, title: 'Inovação Local', desc: 'IA aplicada ao agronegócio e varejo do Vale' },
+                                    { icon: Users, title: 'Conexões de Alto Valor', desc: 'Networking com os maiores empresários da região' }
                                 ].map((item, idx) => (
                                     <div key={idx} className="flex gap-4 group">
                                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center group-hover:bg-brand-orange-coral transition-all">
@@ -329,42 +317,53 @@ export function GrowthExperiencePetrolina() {
                                 ))}
                             </div>
                         </div>
+
+                        <div className="relative">
+                            <img
+                                src="https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
+                                className="rounded-3xl shadow-2xl border border-white/5"
+                                alt="Petrolina-PE"
+                            />
+                            <div className="absolute -bottom-6 -right-6 glass-card p-6 border-brand-orange-coral/30 animate-float">
+                                <p className="text-brand-orange-coral font-black text-4xl">30/04</p>
+                                <p className="text-white font-bold">Petrolina-PE</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section id="mentores" className="py-16 sm:py-24 bg-dark-200 relative overflow-hidden">
+            <section id="mentores" className="py-20 bg-dark-200 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
                         <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">CONSELHORES ESTRATÉGICOS</Badge>
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Mentores <span className="text-gradient">Confirmados</span></h2>
-                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Especialistas prontos para diagnosticar seu negócio e acelerar Petrolina.</p>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Apoio <span className="text-gradient">Especialista</span></h2>
+                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Mentores selecionados para guiar a transformação digital do Vale.</p>
                     </div>
 
-                    {!mentorsLoading && approvedMentors.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                            {approvedMentors.map((mentor) => (
-                                <div key={mentor.id} className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500">
-                                    <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        {conselheiros.map((mentor, idx) => (
+                            <div key={idx} className="group relative glass-card p-8 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-brand-orange-coral/30 transition-all">
                                         <img
-                                            src={mentor.photo || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
-                                            alt={mentor.name}
+                                            src={mentor.foto}
+                                            alt={mentor.name || mentor.nome}
                                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                            onError={(e) => {
+                                                e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png';
+                                            }}
                                         />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white group-hover:text-brand-orange-coral transition-colors">{mentor.name}</h3>
-                                    <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest">{mentor.position} @ {mentor.company}</p>
+                                    <div>
+                                        <h3 className="text-2xl font-extrabold text-white group-hover:text-brand-orange-coral transition-colors">{mentor.nome}</h3>
+                                        <p className="text-brand-orange-coral font-bold text-sm uppercase tracking-widest mb-2">{mentor.cargo}</p>
+                                        <p className="text-gray-400 text-sm leading-relaxed">{mentor.bio}</p>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : mentorsLoading ? (
-                        <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div></div>
-                    ) : (
-                        <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl mb-16">
-                            <Sparkles className="h-10 w-10 text-gray-700 mx-auto mb-4" />
-                            <p className="text-gray-500 text-lg">Novos mentores estão sendo aprovados para o Vale...</p>
-                        </div>
-                    )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -436,56 +435,102 @@ export function GrowthExperiencePetrolina() {
 
             <EdicaoAnteriorVideo showTriunfoTeaser={false} />
 
-            {/* Seções de Inscrição */}
-            <div id="inscricoes">
-                <InscricaoSection
-                    id="night-experience"
-                    icon={Mic2}
-                    titulo="Night Experience Petrolina"
-                    subtitulo="O auge do conhecimento e networking"
-                    descricao="Participe do momento principal com palestras magnas e o prêmio empresa incentivadora."
-                    beneficios={[
-                        "Acesso às palestras principais",
-                        "Networking com grandes empresários do Vale",
-                        "Certificado de participação VIP"
-                    ]}
-                    vagasLimitadas
-                    onInscrever={() => setModalInscricaoAberto(true)}
-                    imagemUrl="https://images.unsplash.com/photo-1475721027181-e00184321c2e?q=80&w=2070&auto=format&fit=crop"
-                />
+            {/* Seção de Inscrição Petrolina */}
+            <section id="registro" className="py-24 bg-dark relative overflow-hidden border-t border-white/5">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+                    <div className="glass-card p-8 sm:p-12 border-brand-orange-coral/20 shadow-glow-orange/10">
+                        <div className="text-center mb-10">
+                            <div className="w-16 h-16 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center mx-auto mb-6 border border-brand-orange-coral/30">
+                                <Rocket className="h-8 w-8 text-brand-orange-coral" />
+                            </div>
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">Garanta sua <span className="text-gradient">Vaga no Vale</span></h2>
+                            <p className="text-gray-400">Preencha os dados abaixo para confirmar sua participação no Night Experience Petrolina.</p>
+                        </div>
 
-                <InscricaoSection
-                    id="cursos-workshops"
-                    icon={GraduationCap}
-                    titulo="Cursos e Workshops Gratuitos"
-                    subtitulo="Acesso ilimitado a todas as trilhas diurnas"
-                    descricao="Participe de workshops práticos e oficinas mão na massa focadas no varejo e agro local."
-                    beneficios={[
-                        "Acesso a todos os workshops e oficinas",
-                        "Certificado de participação digital",
-                        "Material didático da edição Petrolina"
-                    ]}
-                    gratuito
-                    onInscrever={() => setModalInscricaoAberto(true)}
-                    imagemUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
-                />
+                        <form className="space-y-6" onSubmit={(e) => {
+                            e.preventDefault();
+                            // Lógica de envio (mock para agora, simulando sucesso e redirecionamento WhatsApp)
+                            const form = e.currentTarget;
+                            const whatsappUrl = "https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9"; // Exemplo
+                            alert("Inscrição confirmada! Você será redirecionado para o grupo do WhatsApp.");
+                            window.open(whatsappUrl, '_blank');
+                        }}>
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome Completo</label>
+                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Como quer ser chamado?" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome da Empresa</label>
+                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Sua empresa ou projeto" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">WhatsApp</label>
+                                    <input required type="tel" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="(87) 99999-9999" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">E-mail Corporativo</label>
+                                    <input required type="email" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="seu@email.com" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Senha para o App</label>
+                                    <input required type="password" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Mínimo 6 caracteres" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Quantidade de Colaboradores</label>
+                                    <select required className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none">
+                                        <option value="">Selecione...</option>
+                                        <option value="1-5">1 a 5</option>
+                                        <option value="6-20">6 a 20</option>
+                                        <option value="21-50">21 a 50</option>
+                                        <option value="51-200">51 a 200</option>
+                                        <option value="201+">Mais de 200</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Faturamento Médio Anual</label>
+                                    <select required className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none">
+                                        <option value="">Selecione...</option>
+                                        <option value="ate-100k">Até R$ 100k</option>
+                                        <option value="100k-500k">R$ 100k a R$ 500k</option>
+                                        <option value="500k-2m">R$ 500k a R$ 2M</option>
+                                        <option value="2m-10m">R$ 2M a R$ 10M</option>
+                                        <option value="10m+">Acima de R$ 10M</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Cupom (Opcional)</label>
+                                    <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Possui um cupom?" />
+                                </div>
+                            </div>
 
-                <InscricaoSection
-                    id="mentorias"
-                    icon={Target}
-                    titulo="Mentoria Individual no Vale"
-                    subtitulo="30 minutos exclusivos com especialistas"
-                    descricao="Sessões personalizadas para diagnosticar e acelerar o seu negócio no Sertão."
-                    beneficios={[
-                        "Sessão individual de 30 minutos",
-                        "Diagnóstico personalizado",
-                        "Plano de ação imediato"
-                    ]}
-                    gratuito
-                    onInscrever={() => setModalAberto('mentor')}
-                    imagemUrl="https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=2071&auto=format&fit=crop"
-                />
-            </div>
+                            <Button
+                                type="submit"
+                                className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:scale-[1.02] text-white font-black py-7 text-xl rounded-2xl shadow-glow-orange mt-8 transition-all group"
+                            >
+                                CONFIRMAR INSCRIÇÃO
+                                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                        </form>
+
+                        <div className="mt-12 p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
+                            <p className="text-green-400 font-bold mb-4 flex items-center justify-center gap-2">
+                                <CheckCircle className="h-5 w-5" />
+                                Ingressos para o Night Experience são Limitados
+                            </p>
+                            <a
+                                href="https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-white bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-bold transition-all"
+                            >
+                                <Phone className="h-5 w-5" />
+                                Entrar no Grupo do WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <InnerFooter />
             <WhatsAppButton />
