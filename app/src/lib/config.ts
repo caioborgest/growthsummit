@@ -4,8 +4,8 @@ import { logger } from './logger';
 export const config = {
   // App
   appName: import.meta.env.VITE_APP_NAME || 'Growth Summit 2026',
-  appUrl: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  appUrl: import.meta.env.VITE_APP_URL || 'https://www.growthsummit.site',
+  apiUrl: import.meta.env.VITE_API_URL || 'https://www.growthsummit.site/api',
   environment: import.meta.env.VITE_ENVIRONMENT || 'development',
 
   // Feature Flags
