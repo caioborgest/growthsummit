@@ -34,7 +34,8 @@ import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRe
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Project } from '@/types';
 import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
 
@@ -241,7 +242,8 @@ function InnerFooter() {
 
 export function GrowthExperiencePetrolina() {
     const { data: projects } = useProjects();
-    const { setSelectedProject, selectedProject } = useProject();
+    const { setSelectedProject, selectedProject: contextProject } = useProject();
+    const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
     const initProject = useCallback(async () => {
         // Garantir dados atualizados do projeto
@@ -268,8 +270,11 @@ export function GrowthExperiencePetrolina() {
             },
         });
 
-        if (project && (!selectedProject || selectedProject.id !== project.id)) {
-            setSelectedProject(project);
+        if (project) {
+            setCurrentProject(project);
+            if (!contextProject || contextProject.id !== project.id) {
+                setSelectedProject(project);
+            }
         }
     }, [projects, selectedProject, setSelectedProject]);
 
@@ -290,7 +295,10 @@ export function GrowthExperiencePetrolina() {
 
             <InnerHeader />
 
-            <HeroSectionRefined onCTAClick={() => document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth' })} />
+            <HeroSectionRefined
+                project={currentProject || undefined}
+                onCTAClick={() => document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth' })}
+            />
 
             <section id="sobre" className="py-20 bg-dark-100 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

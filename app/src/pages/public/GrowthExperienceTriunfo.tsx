@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Project } from '@/types';
 import {
   MapPin,
   TrendingUp,
@@ -393,7 +394,8 @@ function InnerFooter() {
 // Main Component
 export function GrowthExperienceTriunfo() {
   const { data: projects } = useProjects();
-  const { setSelectedProject, selectedProject } = useProject();
+  const { setSelectedProject, selectedProject: contextProject } = useProject();
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
 
@@ -416,7 +418,7 @@ export function GrowthExperienceTriunfo() {
       primaryColor: '#FE4C38',
       secondaryColor: '#FF6B35',
       settings: {
-        maxRegistrations: 500,
+        maxRegistrations: 2000,
         maxMentors: 30,
         maxStartups: 20,
         maxCompanies: 40,
@@ -432,8 +434,11 @@ export function GrowthExperienceTriunfo() {
       },
     });
 
-    if (project && (!selectedProject || selectedProject.id !== project.id)) {
-      setSelectedProject(project);
+    if (project) {
+      setCurrentProject(project);
+      if (!contextProject || contextProject.id !== project.id) {
+        setSelectedProject(project);
+      }
     }
   }, [projects, selectedProject, setSelectedProject]);
 
@@ -469,7 +474,10 @@ export function GrowthExperienceTriunfo() {
       <LotePromocionalPopUp />
 
       {/* Hero Section Refinada */}
-      <HeroSectionRefined onCTAClick={() => setModalInscricaoAberto(true)} />
+      <HeroSectionRefined
+        project={currentProject || undefined}
+        onCTAClick={() => setModalInscricaoAberto(true)}
+      />
 
       {/* Stats Section Refinada */}
       <StatsSection />

@@ -3,14 +3,18 @@ import { Calendar, MapPin, Users, Clock, ArrowRight, Sparkles } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+import { Project } from '@/types';
+
 interface HeroSectionProps {
     onCTAClick: () => void;
+    project?: Project;
 }
 
 import { useProject } from '@/contexts/ProjectContext';
 
-export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
-    const { selectedProject } = useProject();
+export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSectionProps) {
+    const { selectedProject: contextProject } = useProject();
+    const selectedProject = propProject || contextProject;
     const [timeLeft, setTimeLeft] = useState({
         dias: 0,
         horas: 0,
@@ -20,7 +24,8 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     // Contador regressivo
     useEffect(() => {
-        const dateStr = selectedProject?.slug === 'ge-triunfo-2026' ? '2026-04-16' : (selectedProject?.startDate || '2026-04-16');
+        const dateStr = selectedProject?.startDate || '';
+        if (!dateStr) return;
         const eventDate = new Date(`${dateStr}T08:00:00`);
 
         const updateCountdown = () => {
@@ -46,8 +51,8 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
-                {/* A imagem de fundo é removida para Triunfo e Petrolina para manter o foco na "Nova Era" */}
-                {!['ge-petrolina-2026', 'ge-triunfo-2026'].includes(selectedProject?.slug || '') && (
+                {/* A imagem de fundo é mantida para Triunfo e removida para Petrolina conforme solicitado */}
+                {selectedProject?.slug !== 'ge-petrolina-2026' && (
                     <img
                         src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
                         alt={selectedProject?.city || "Growth Experience"}
@@ -118,7 +123,11 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">{selectedProject?.slug === 'ge-triunfo-2026' ? '16 de Abril, 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ', ' + new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '16 de Abril, 2026')}</span>
+                            <span className="font-semibold">
+                                {selectedProject?.startDate
+                                    ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+                                    : 'Data a definir'}
+                            </span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Clock className="h-5 w-5 text-brand-orange-coral" />
@@ -126,7 +135,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <MapPin className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">{selectedProject?.location ? `${selectedProject.location}, ${selectedProject.city}-${selectedProject.state}` : 'Espaço Parque, Triunfo-PE'}</span>
+                            <span className="font-semibold">{selectedProject?.location ? `${selectedProject.location}, ${selectedProject.city}-${selectedProject.state}` : 'Local a definir'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
