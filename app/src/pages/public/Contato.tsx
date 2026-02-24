@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 const contactInfo = [
   {
@@ -64,10 +66,35 @@ export function Contato() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    alert('Mensagem enviada com sucesso!');
+    try {
+      toast.loading('Enviando mensagem...');
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: 'suporte@growthsummit.site',
+          subject: `Formulário de Contato: ${formData.subject} [${formData.department}]`,
+          html: `
+            <h3>Nova mensagem de contato</h3>
+            <p><strong>Nome:</strong> ${formData.name}</p>
+            <p><strong>Email:</strong> ${formData.email}</p>
+            <p><strong>Departamento:</strong> ${formData.department}</p>
+            <hr/>
+            <p>${formData.message.replace(/\n/g, '<br/>')}</p>
+          `,
+          from: `Growth Site <${formData.email}>`
+        }
+      });
+
+      if (error) throw error;
+
+      toast.dismiss();
+      toast.success('Mensagem enviada com sucesso!');
+      setFormData({ name: '', email: '', department: 'geral', subject: '', message: '' });
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error('Erro ao enviar mensagem: ' + err.message);
+    }
   };
 
   return (

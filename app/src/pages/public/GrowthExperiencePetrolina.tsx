@@ -35,6 +35,7 @@ import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { useEffect, useCallback } from 'react';
+import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
 
 // Dados do evento exclusivos para Petrolina
@@ -435,7 +436,6 @@ export function GrowthExperiencePetrolina() {
 
             <EdicaoAnteriorVideo showTriunfoTeaser={false} />
 
-            {/* Seção de Inscrição Petrolina */}
             <section id="registro" className="py-24 bg-dark relative overflow-hidden border-t border-white/5">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
                     <div className="glass-card p-8 sm:p-12 border-brand-orange-coral/20 shadow-glow-orange/10">
@@ -447,71 +447,7 @@ export function GrowthExperiencePetrolina() {
                             <p className="text-gray-400">Preencha os dados abaixo para confirmar sua participação no Night Experience Petrolina.</p>
                         </div>
 
-                        <form className="space-y-6" onSubmit={(e) => {
-                            e.preventDefault();
-                            // Lógica de envio (mock para agora, simulando sucesso e redirecionamento WhatsApp)
-                            const form = e.currentTarget;
-                            const whatsappUrl = "https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9"; // Exemplo
-                            alert("Inscrição confirmada! Você será redirecionado para o grupo do WhatsApp.");
-                            window.open(whatsappUrl, '_blank');
-                        }}>
-                            <div className="grid sm:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome Completo</label>
-                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Como quer ser chamado?" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome da Empresa</label>
-                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Sua empresa ou projeto" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">WhatsApp</label>
-                                    <input required type="tel" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="(87) 99999-9999" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">E-mail Corporativo</label>
-                                    <input required type="email" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="seu@email.com" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Senha para o App</label>
-                                    <input required type="password" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Mínimo 6 caracteres" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Quantidade de Colaboradores</label>
-                                    <select required className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none">
-                                        <option value="">Selecione...</option>
-                                        <option value="1-5">1 a 5</option>
-                                        <option value="6-20">6 a 20</option>
-                                        <option value="21-50">21 a 50</option>
-                                        <option value="51-200">51 a 200</option>
-                                        <option value="201+">Mais de 200</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Faturamento Médio Anual</label>
-                                    <select required className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none">
-                                        <option value="">Selecione...</option>
-                                        <option value="ate-100k">Até R$ 100k</option>
-                                        <option value="100k-500k">R$ 100k a R$ 500k</option>
-                                        <option value="500k-2m">R$ 500k a R$ 2M</option>
-                                        <option value="2m-10m">R$ 2M a R$ 10M</option>
-                                        <option value="10m+">Acima de R$ 10M</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Cupom (Opcional)</label>
-                                    <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none" placeholder="Possui um cupom?" />
-                                </div>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:scale-[1.02] text-white font-black py-7 text-xl rounded-2xl shadow-glow-orange mt-8 transition-all group"
-                            >
-                                CONFIRMAR INSCRIÇÃO
-                                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </form>
+                        <PetrolinaRegistrationForm />
 
                         <div className="mt-12 p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center">
                             <p className="text-green-400 font-bold mb-4 flex items-center justify-center gap-2">

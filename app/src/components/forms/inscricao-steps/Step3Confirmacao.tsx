@@ -183,6 +183,38 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     projectSlug,
                     'standard'
                 ).catch(e => console.warn('Invite fail:', e));
+
+                // 3.5 Send Confirmation Email (Async, non-blocking)
+                supabase.functions.invoke('send-email', {
+                    body: {
+                        to: dados.email,
+                        subject: `Sua inscrição no ${selectedProject?.name || 'Growth Experience'} está confirmada!`,
+                        html: `
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; color: #ffffff; padding: 40px; border-radius: 20px;">
+                            <h2 style="color: #fe4c38;">Olá, ${dados.nome}!</h2>
+                            <p>Sua inscrição no <strong>${selectedProject?.name || 'Growth Experience'}</strong> foi confirmada com sucesso!</p>
+                            <p>Sua atividade "<strong>${cursosSelecionados[0]?.titulo || 'Palestras'}</strong>" já está reservada para você.</p>
+                            
+                            <div style="background: rgba(254, 76, 56, 0.1); border: 1px solid rgba(254, 76, 56, 0.2); padding: 20px; border-radius: 12px; margin: 20px 0;">
+                                <h3 style="margin-top: 0; color: #fe4c38;">Detalhes da Reserva:</h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li>🕒 <strong>Horário:</strong> ${cursosSelecionados[0]?.horario_inicio || ''}</li>
+                                    <li>📍 <strong>Local:</strong> ${cursosSelecionados[0]?.local || ''}</li>
+                                    <li>🎫 <strong>Status:</strong> Confirmado</li>
+                                </ul>
+                            </div>
+                            
+                            <p>Para acessar sua credencial, ver a programação completa e fazer networking com outros participantes, baixe agora o app do evento:</p>
+                            <div style="margin: 20px 0;">
+                                <a href="#" style="display: inline-block; background: #fe4c38; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-right: 10px;">Baixar para iOS</a>
+                                <a href="#" style="display: inline-block; background: #fe4c38; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Baixar para Android</a>
+                            </div>
+                            
+                            <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Nos vemos no evento!<br/>Equipe Growth Summit</p>
+                        </div>
+                        `
+                    }
+                }).catch(e => console.error('Email confirmation error:', e));
             }
 
             // 4. Sucesso - Avisar o componente pai

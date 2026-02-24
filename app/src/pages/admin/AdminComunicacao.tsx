@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { useRegistrations } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 const initialEmailTemplates = [
   {
@@ -152,9 +153,70 @@ export function AdminComunicacao() {
     setCampaignFormData({ name: '', templateId: '', recipients: 'all' });
   };
 
-  const handleSend = () => {
-    alert('Email enviado com sucesso!');
-    setComposeData({ subject: '', body: '', recipients: 'all' });
+  const handleSend = async () => {
+    if (!composeData.subject || !composeData.body) {
+      toast.error('Preencha o assunto e o corpo do email');
+      return;
+    }
+
+    try {
+      const loadingToast = toast.loading('Preparando envio...');
+
+      let emails: string[] = [];
+
+      // 1. Buscar destinatários baseados no filtro
+      if (composeData.recipients === 'all') {
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'paid') {
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pago');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'pending') {
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pendente');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'vip') {
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('tipo_inscricao', 'vip');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'mentors') {
+        const { data } = await supabase.from('mentores_growth_experience').select('email');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'startups') {
+        const { data } = await supabase.from('startups_arena_pitch').select('email');
+        emails = [...new Set(data?.map(i => i.email) || [])];
+      }
+
+      if (emails.length === 0) {
+        toast.dismiss(loadingToast);
+        toast.error('Nenhum destinatário encontrado para este filtro');
+        return;
+      }
+
+      // 2. Chamar a Edge Function para enviar
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: emails,
+          subject: composeData.subject,
+          html: composeData.body.replace(/\n/g, '<br/>')
+        }
+      });
+
+      if (error) throw error;
+
+      toast.dismiss(loadingToast);
+      toast.success(`Emails enviados com sucesso para ${emails.length} destinatários!`);
+
+      // Limpar formulário
+      setComposeData({
+        recipients: 'all',
+        subject: '',
+        body: ''
+      });
+
+    } catch (err: any) {
+      console.error('Send error:', err);
+      toast.dismiss();
+      toast.error('Erro ao enviar emails: ' + (err.message || 'Erro desconhecido'));
+    }
   };
 
   return (
