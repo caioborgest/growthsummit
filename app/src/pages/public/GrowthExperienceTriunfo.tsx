@@ -142,9 +142,18 @@ const cotas = [
   }
 ];
 
+const navItems = [
+  { label: 'Sobre', href: '#sobre' },
+  { label: 'Mentores', href: '#mentores' },
+  { label: 'Palestrantes', href: '#palestrantes' },
+  { label: 'Programação', href: '#programacao' },
+  { label: 'Inscrições', href: '#inscricoes' },
+];
+
 // Header Component
 function InnerHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { selectedProject } = useProject();
 
   return (
     <>
