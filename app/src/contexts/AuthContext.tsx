@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(currentSession);
             setUser(mapSupabaseUserToUser(currentSession.user, userData));
           } catch (e) {
-            console.warn('Metadata fetch failed, using auth metadata');
+            logger.warn('Metadata fetch failed, using auth metadata');
             setSession(currentSession);
             setUser(mapSupabaseUserToUser(currentSession.user));
           }
@@ -269,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .single() as any);
           userData = ud;
         } catch (e) {
-          console.warn('No DB metadata for user');
+          logger.warn('No DB metadata for user');
         }
 
         // Verificar se 2FA está habilitado

@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
@@ -141,7 +142,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                         statusPagamento: valorComDesconto > 0 ? 'pendente' : 'pago'
                                     });
                                 } catch (err) {
-                                    console.error('Erro ao atualizar compra de palestras:', err);
+                                    logger.error('Erro ao atualizar compra de palestras:', err);
                                     updateDados({ comprarPalestras: true, statusPagamento: 'pendente' });
                                 }
                             } else {
@@ -161,7 +162,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                         .update({ palestras_noturnas: false, valor_pago: 0 })
                                         .eq('id', dados.inscricaoId);
                                 } catch (e) {
-                                    console.error('Erro ao pular palestras:', e);
+                                    logger.error('Erro ao pular palestras:', e);
                                 }
                             }
                             updateDados({ comprarPalestras: false });
@@ -186,7 +187,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                         .eq('id', dados.inscricaoId);
                                     updateDados({ appInstalado: true });
                                 } catch (err) {
-                                    console.error('Erro ao marcar app como instalado:', err);
+                                    logger.error('Erro ao marcar app como instalado:', err);
                                 }
                             }
                             setIsProcessing(false); // Reset before nextStep because nextStep will set it to true again

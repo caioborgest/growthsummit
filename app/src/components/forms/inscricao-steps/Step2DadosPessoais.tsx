@@ -14,6 +14,7 @@ import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle, Award, Key, Loader2 
 import type { DadosInscricao } from './inscricaoTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 const CIDADES_PAJEU = [
     'SERRA TALHADA',
@@ -137,7 +138,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         }
                     }
                 } catch (validationError) {
-                    console.error('Erro na validação pública:', validationError);
+                    logger.error('Erro na validação pública:', validationError);
                     newErrors.codigo = 'Erro ao validar código';
                 } finally {
                     setValidating(false);

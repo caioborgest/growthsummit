@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface WhatsAppGroup {
   id: string;
   project_id: string;
   group_name: string;
   group_description?: string;
-  group_type: 'participants_geral' | 'participants_vip' | 'speakers_palestrantes' | 
-              'startups_arena' | 'mentores' | 'organizacao' | 'patrocinadores' | 
-              'networking_b2b' | 'ajuda_suporte' | 'custom';
+  group_type: 'participants_geral' | 'participants_vip' | 'speakers_palestrantes' |
+  'startups_arena' | 'mentores' | 'organizacao' | 'patrocinadores' |
+  'networking_b2b' | 'ajuda_suporte' | 'custom';
   invite_link?: string;
   qr_code_url?: string;
   max_participants: number;
@@ -94,21 +95,21 @@ export function useWhatsAppGroups(projectId?: string) {
   const fetchGroups = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       let query = supabase
         .from('whatsapp_groups')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (projectId) {
         query = query.eq('project_id', projectId);
       }
-      
+
       const { data, error: supabaseError } = await query;
-      
+
       if (supabaseError) throw supabaseError;
-      
+
       setGroups(data || []);
     } catch (err: any) {
       setError(err.message);
@@ -125,7 +126,7 @@ export function useWhatsAppGroups(projectId?: string) {
   const createGroup = async (groupData: CreateGroupData): Promise<WhatsAppGroup | null> => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const { data, error } = await supabase
         .from('whatsapp_groups')
         .insert({
@@ -136,9 +137,9 @@ export function useWhatsAppGroups(projectId?: string) {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       setGroups(prev => [data, ...prev]);
       toast.success('Grupo criado com sucesso!');
       return data;
@@ -154,9 +155,9 @@ export function useWhatsAppGroups(projectId?: string) {
         .from('whatsapp_groups')
         .update(updates)
         .eq('id', groupId);
-      
+
       if (error) throw error;
-      
+
       setGroups(prev => prev.map(g => g.id === groupId ? { ...g, ...updates } : g));
       toast.success('Grupo atualizado com sucesso!');
       return true;
@@ -172,9 +173,9 @@ export function useWhatsAppGroups(projectId?: string) {
         .from('whatsapp_groups')
         .delete()
         .eq('id', groupId);
-      
+
       if (error) throw error;
-      
+
       setGroups(prev => prev.filter(g => g.id !== groupId));
       toast.success('Grupo excluído com sucesso!');
       return true;
@@ -185,9 +186,9 @@ export function useWhatsAppGroups(projectId?: string) {
   };
 
   const closeGroup = async (groupId: string): Promise<boolean> => {
-    return updateGroup(groupId, { 
-      is_active: false, 
-      closed_at: new Date().toISOString() 
+    return updateGroup(groupId, {
+      is_active: false,
+      closed_at: new Date().toISOString()
     });
   };
 
@@ -211,19 +212,19 @@ export function useWhatsAppGroupMembers(groupId: string) {
 
   const fetchMembers = useCallback(async () => {
     if (!groupId) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, error: supabaseError } = await supabase
         .from('whatsapp_group_members')
         .select('*')
         .eq('group_id', groupId)
         .order('created_at', { ascending: false });
-      
+
       if (supabaseError) throw supabaseError;
-      
+
       setMembers(data || []);
     } catch (err: any) {
       setError(err.message);
@@ -240,7 +241,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
   const addMember = async (memberData: AddMemberData): Promise<WhatsAppGroupMember | null> => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const { data, error } = await supabase
         .from('whatsapp_group_members')
         .insert({
@@ -251,9 +252,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       setMembers(prev => [data, ...prev]);
       toast.success('Membro adicionado com sucesso!');
       return data;
@@ -266,7 +267,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
   const addMembersBulk = async (membersData: Omit<AddMemberData, 'group_id'>[]): Promise<number> => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const membersToInsert = membersData.map(m => ({
         ...m,
         group_id: groupId,
@@ -274,14 +275,14 @@ export function useWhatsAppGroupMembers(groupId: string) {
         invited_by: user.user?.id,
         invited_at: new Date().toISOString(),
       }));
-      
+
       const { data, error } = await supabase
         .from('whatsapp_group_members')
         .insert(membersToInsert)
         .select();
-      
+
       if (error) throw error;
-      
+
       setMembers(prev => [...data, ...prev]);
       toast.success(`${data.length} membros adicionados com sucesso!`);
       return data.length;
@@ -294,7 +295,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
   const updateMemberStatus = async (memberId: string, status: WhatsAppGroupMember['status']): Promise<boolean> => {
     try {
       const updates: any = { status };
-      
+
       if (status === 'joined') {
         updates.joined_at = new Date().toISOString();
       } else if (status === 'left') {
@@ -302,14 +303,14 @@ export function useWhatsAppGroupMembers(groupId: string) {
       } else if (status === 'removed') {
         updates.removed_at = new Date().toISOString();
       }
-      
+
       const { error } = await supabase
         .from('whatsapp_group_members')
         .update(updates)
         .eq('id', memberId);
-      
+
       if (error) throw error;
-      
+
       setMembers(prev => prev.map(m => m.id === memberId ? { ...m, ...updates } : m));
       return true;
     } catch (err: any) {
@@ -328,9 +329,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
       const { data, error } = await supabase.functions.invoke('whatsapp-send-invite', {
         body: sendData,
       });
-      
+
       if (error) throw error;
-      
+
       if (data.success) {
         await updateMemberStatus(sendData.member_id, 'invite_sent');
         toast.success('Convite enviado com sucesso!');
@@ -377,7 +378,7 @@ export function useWhatsAppTemplates(projectId?: string) {
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
-    
+
     try {
       let query = supabase
         .from('whatsapp_message_templates')
@@ -385,17 +386,17 @@ export function useWhatsAppTemplates(projectId?: string) {
         .eq('is_active', true)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
-      
+
       if (projectId) {
         query = query.or(`project_id.eq.${projectId},is_default.eq.true`);
       } else {
         query = query.eq('is_default', true);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) throw error;
-      
+
       setTemplates(data || []);
     } catch (err: any) {
       toast.error('Erro ao carregar templates: ' + err.message);
@@ -411,7 +412,7 @@ export function useWhatsAppTemplates(projectId?: string) {
   const createTemplate = async (templateData: Omit<WhatsAppMessageTemplate, 'id' | 'created_at' | 'updated_at' | 'created_by'>): Promise<WhatsAppMessageTemplate | null> => {
     try {
       const { data: user } = await supabase.auth.getUser();
-      
+
       const { data, error } = await supabase
         .from('whatsapp_message_templates')
         .insert({
@@ -420,9 +421,9 @@ export function useWhatsAppTemplates(projectId?: string) {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
-      
+
       setTemplates(prev => [data, ...prev]);
       toast.success('Template criado com sucesso!');
       return data;
@@ -434,12 +435,12 @@ export function useWhatsAppTemplates(projectId?: string) {
 
   const renderTemplate = (template: WhatsAppMessageTemplate, variables: Record<string, string>): string => {
     let rendered = template.content;
-    
+
     template.variables.forEach(varName => {
       const value = variables[varName] || '';
       rendered = rendered.replace(new RegExp(`{{${varName}}}`, 'g'), value);
     });
-    
+
     return rendered;
   };
 
@@ -466,36 +467,36 @@ export function useWhatsAppStats(projectId?: string) {
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
-    
+
     try {
       // Buscar estatísticas de grupos
       let groupsQuery = supabase
         .from('whatsapp_groups')
         .select('id, is_active, is_full, current_participants');
-      
+
       if (projectId) {
         groupsQuery = groupsQuery.eq('project_id', projectId);
       }
-      
+
       const { data: groups, error: groupsError } = await groupsQuery;
-      
+
       if (groupsError) throw groupsError;
-      
+
       const groupIds = groups?.map(g => g.id) || [];
-      
+
       // Buscar estatísticas de membros
       let membersQuery = supabase
         .from('whatsapp_group_members')
         .select('status');
-      
+
       if (groupIds.length > 0) {
         membersQuery = membersQuery.in('group_id', groupIds);
       }
-      
+
       const { data: members, error: membersError } = await membersQuery;
-      
+
       if (membersError) throw membersError;
-      
+
       setStats({
         totalGroups: groups?.length || 0,
         activeGroups: groups?.filter(g => g.is_active).length || 0,
@@ -520,7 +521,7 @@ export function useWhatsAppStats(projectId?: string) {
 
 // Função para auto-convite baseado em inscrição
 export async function autoInviteOnRegistration(
-  registrationId: string, 
+  registrationId: string,
   projectId: string,
   userType: 'standard' | 'vip' | 'speaker' | 'startup' | 'mentor'
 ): Promise<boolean> {
@@ -533,12 +534,12 @@ export async function autoInviteOnRegistration(
         trigger: 'registration',
       },
     });
-    
+
     if (error) throw error;
-    
+
     return data.success || false;
   } catch (err: any) {
-    console.error('Erro no auto-convite:', err);
+    logger.error('Erro no auto-convite:', err);
     return false;
   }
 }
@@ -556,12 +557,12 @@ export async function autoInviteOnCheckIn(
         trigger: 'checkin',
       },
     });
-    
+
     if (error) throw error;
-    
+
     return data.success || false;
   } catch (err: any) {
-    console.error('Erro no auto-convite:', err);
+    logger.error('Erro no auto-convite:', err);
     return false;
   }
 }

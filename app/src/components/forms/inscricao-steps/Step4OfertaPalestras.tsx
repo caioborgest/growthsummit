@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket, Key, AlertCircle } from 'lucide-react';
 import { useSessions } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricaoTypes';
 
 interface Step4OfertaPalestrasProps {
@@ -71,7 +72,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
                 });
             }
         } catch (err) {
-            console.error('Erro cupom palestra:', err);
+            logger.error('Erro cupom palestra:', err);
             setError('Falha ao validar código');
         } finally {
             setIsValidating(false);

@@ -25,6 +25,7 @@ import {
 import { useCompanies, useB2BMeetings, useB2BMatches } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-blue-500/20 text-blue-400',
@@ -140,7 +141,7 @@ export function AdminB2B() {
       });
       refetchMatches();
     } catch (err) {
-      console.error('Erro ao gerar agenda:', err);
+      logger.error('Erro ao gerar agenda:', err);
       toast.error('Erro ao gerar agenda');
     } finally {
       setIsGenerating(false);

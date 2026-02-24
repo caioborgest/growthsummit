@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Share2, Check, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import {
     Tooltip,
     TooltipContent,
@@ -33,7 +34,7 @@ export function SectionShare({ sectionId, title }: SectionShareProps) {
                 });
             }
         } catch (err) {
-            console.error('Erro ao copiar:', err);
+            logger.error('Erro ao copiar:', err);
         }
     };
 

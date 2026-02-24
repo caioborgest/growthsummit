@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface ForgotPasswordModalProps {
     isOpen: boolean;
@@ -32,7 +33,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
             setSubmitted(true);
             toast.success('Link de recuperação enviado!');
         } catch (err: any) {
-            console.error('Erro ao recuperar senha:', err);
+            logger.error('Erro ao recuperar senha:', err);
             setError(err.message || 'Erro ao processar solicitação. Verifique o email informado.');
         } finally {
             setLoading(false);

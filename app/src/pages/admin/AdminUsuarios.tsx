@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUsers } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -121,7 +122,7 @@ export function AdminUsuarios() {
             toast.success('Usuário atualizado com sucesso!');
             setIsEditDialogOpen(false);
         } catch (error) {
-            console.error(error);
+            logger.error('Erro ao atualizar usuário:', error);
             toast.error('Erro ao atualizar usuário');
         }
     };

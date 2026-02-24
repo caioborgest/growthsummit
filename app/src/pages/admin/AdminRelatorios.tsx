@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useRegistrations, useMentors, useMentoringSessions, useStartups, useSponsors, useTransactions } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 import { generateInscricoesReport, generateFinanceiroReport, generateMentoriasReport } from '@/lib/reports';
 
 const reportTypes = [
@@ -102,7 +103,7 @@ export function AdminRelatorios() {
 
       toast.success(`Relatório ${reportId} baixado com sucesso!`);
     } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
+      logger.error('Erro ao gerar relatório:', error);
       toast.error('Ocorreu um erro ao gerar o relatório em PDF.');
     } finally {
       setGenerating(null);

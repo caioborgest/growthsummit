@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useMentors } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 
 const statusColors: Record<string, string> = {
@@ -87,7 +88,7 @@ export function AdminMentores() {
       resetForm();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
-      console.error('Erro ao adicionar mentor:', err);
+      logger.error('Erro ao adicionar mentor:', err);
       toast.error('Erro ao adicionar mentor: ' + message);
     }
   };
@@ -111,7 +112,7 @@ export function AdminMentores() {
       await update(id, { status: 'approved' });
       toast.success('Mentor aprovado!');
     } catch (error) {
-      console.error(error);
+      logger.error('Erro ao aprovar mentor:', error);
       toast.error('Erro ao aprovar mentor');
     }
   };
@@ -121,7 +122,7 @@ export function AdminMentores() {
       await update(id, { status: 'rejected' });
       toast.success('Mentor rejeitado');
     } catch (error) {
-      console.error(error);
+      logger.error('Erro ao rejeitar mentor:', error);
       toast.error('Erro ao rejeitar mentor');
     }
   };

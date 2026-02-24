@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, MapPin, Settings, CheckCircle, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import type { Project, ProjectType, ProjectStatus } from '@/types';
 
 const projectTypeLabels: Record<ProjectType, string> = {
@@ -59,8 +60,6 @@ export default function AdminProjetos() {
     try {
       const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-      console.log('Criando novo projeto:', formData.name);
-
       await create({
         ...formData,
         slug: `${slug}-2026`,
@@ -79,7 +78,7 @@ export default function AdminProjetos() {
         settings: defaultSettings,
       });
     } catch (err: any) {
-      console.error('Erro ao criar projeto:', err);
+      logger.error('Erro ao criar projeto:', err);
       toast.error(`Erro ao criar projeto: ${err.message || 'Erro desconhecido'}`);
     }
   };
@@ -88,8 +87,6 @@ export default function AdminProjetos() {
     if (!editingProject) return;
 
     try {
-      console.log('Atualizando projeto:', editingProject.id);
-
       // Sanitizar dados antes de enviar
       const updateData = {
         ...formData,
@@ -112,7 +109,7 @@ export default function AdminProjetos() {
         settings: defaultSettings,
       });
     } catch (err: any) {
-      console.error('Erro ao atualizar projeto:', err);
+      logger.error('Erro ao atualizar projeto:', err);
       toast.error(`Erro ao atualizar projeto: ${err.message || 'Erro desconhecido'}`);
     }
   };

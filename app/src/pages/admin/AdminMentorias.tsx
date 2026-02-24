@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { useMentoringSessions, useMentors, useRegistrations } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-blue-500/20 text-blue-400',
@@ -86,7 +87,7 @@ export function AdminMentorias() {
         duration: 30
       });
     } catch (err: any) {
-      console.error('Erro ao agendar mentoria:', err);
+      logger.error('Erro ao agendar mentoria:', err);
       toast.error('Erro ao agendar mentoria');
     }
   };

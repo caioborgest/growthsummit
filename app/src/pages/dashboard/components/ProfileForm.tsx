@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 
 export function ProfileForm() {
     const { user, updateProfile } = useAuth();
@@ -84,7 +85,7 @@ export function ProfileForm() {
             toast.success('Perfil atualizado com sucesso!');
         } catch (error) {
             toast.error('Erro ao atualizar perfil.');
-            console.error(error);
+            logger.error('Erro ao atualizar perfil:', error);
         } finally {
             setIsSaving(false);
         }

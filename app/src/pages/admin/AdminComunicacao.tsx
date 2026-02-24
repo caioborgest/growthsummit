@@ -26,6 +26,7 @@ import {
 import { useRegistrations } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 const initialEmailTemplates = [
   {
@@ -213,7 +214,7 @@ export function AdminComunicacao() {
       });
 
     } catch (err: any) {
-      console.error('Send error:', err);
+      logger.error('Send error:', err);
       toast.dismiss();
       toast.error('Erro ao enviar emails: ' + (err.message || 'Erro desconhecido'));
     }

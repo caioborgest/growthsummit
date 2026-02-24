@@ -24,6 +24,7 @@ import { useCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, 
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
+import { logger } from '@/lib/logger';
 import type { B2BMeeting, B2BAppointmentTriunfo, B2BMatch } from '@/types';
 
 export function DashboardCompany() {
@@ -98,7 +99,7 @@ export function DashboardCompany() {
         refetchCompanies();
       }, 300);
     } catch (err) {
-      console.error('Erro ao registrar swipe:', err);
+      logger.error('Erro ao registrar swipe:', err);
     }
   };
 

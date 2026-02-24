@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { User, Check, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
 
 interface Mentor {
     id: string;
@@ -49,7 +50,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
                     setMentores(data);
                 }
             } catch (err) {
-                console.error('Erro ao buscar mentores:', err);
+                logger.error('Erro ao buscar mentores:', err);
             } finally {
                 setLoading(false);
             }

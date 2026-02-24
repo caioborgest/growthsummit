@@ -78,7 +78,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         let fotoUrl = '';
 
         try {
-            console.log('Iniciando submissão de mentor...');
+            logger.info('Iniciando submissão de mentor...');
 
             if (formData.senha !== formData.confirmarSenha) {
                 throw new Error('As senhas não coincidem');
@@ -86,7 +86,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             // 0. Upload Foto if exists
             if (formData.foto) {
-                console.log('Enviando foto...');
+                logger.info('Enviando foto...');
                 try {
                     const file = formData.foto;
                     const fileExt = file.name.split('.').pop();

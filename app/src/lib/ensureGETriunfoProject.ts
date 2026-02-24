@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { Project } from '@/types';
 
 const GE_TRIUNFO_SLUG = 'ge-triunfo-2026';
@@ -101,7 +102,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
             .maybeSingle();
 
         if (fetchError) {
-            console.error('[ensureGETriunfoProject] Erro ao buscar projeto:', fetchError.message);
+            logger.error('[ensureGETriunfoProject] Erro ao buscar projeto:', fetchError.message);
             return null;
         }
 
@@ -126,7 +127,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
 
         if (createError) {
             // Pode falhar por RLS (não-admin) — não é fatal para a página pública
-            console.warn('[ensureGETriunfoProject] Não foi possível criar o projeto (RLS?):', createError.message);
+            logger.warn('[ensureGETriunfoProject] Não foi possível criar o projeto (RLS?):', createError.message);
 
             // Tentar buscar novamente — pode ter sido criado por outra aba/instância
             const { data: retry } = await (supabase as any)
@@ -138,10 +139,10 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
             return retry ? rowToProject(retry) : null;
         }
 
-        console.info('[ensureGETriunfoProject] Projeto criado:', created?.id);
+        logger.info('[ensureGETriunfoProject] Projeto criado:', created?.id);
         return created ? rowToProject(created) : null;
     } catch (err) {
-        console.error('[ensureGETriunfoProject] Erro inesperado:', err);
+        logger.error('[ensureGETriunfoProject] Erro inesperado:', err);
         return null;
     }
 }

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { Project } from '@/types';
 
 /**
@@ -15,7 +16,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             .maybeSingle();
 
         if (fetchError) {
-            console.error(`[ensureProject] Error fetching project ${projectConfig.slug}:`, fetchError.message);
+            logger.error(`[ensureProject] Error fetching project ${projectConfig.slug}:`, fetchError.message);
             return null;
         }
 
@@ -39,7 +40,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             .single();
 
         if (createError) {
-            console.warn(`[ensureProject] Failed to create project ${projectConfig.slug}:`, createError.message);
+            logger.warn(`[ensureProject] Failed to create project ${projectConfig.slug}:`, createError.message);
 
             // Final attempt to fetch (race condition check)
             const { data: retry } = await (supabase as any)
@@ -53,7 +54,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
 
         return created ? rowToProject(created) : null;
     } catch (err) {
-        console.error('[ensureProject] Unexpected error:', err);
+        logger.error('[ensureProject] Unexpected error:', err);
         return null;
     }
 }

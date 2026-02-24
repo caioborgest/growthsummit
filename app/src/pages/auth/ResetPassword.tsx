@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export function ResetPassword() {
     const navigate = useNavigate();
@@ -54,7 +55,7 @@ export function ResetPassword() {
                 navigate('/login');
             }, 3000);
         } catch (err: any) {
-            console.error('Erro ao atualizar senha:', err);
+            logger.error('Erro ao atualizar senha:', err);
             setError(err.message || 'Erro ao atualizar senha. O link pode ter expirado.');
         } finally {
             setLoading(false);

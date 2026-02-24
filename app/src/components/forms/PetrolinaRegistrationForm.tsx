@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
+import { logger } from '@/lib/logger';
 
 export function PetrolinaRegistrationForm() {
     const { selectedProject } = useProject();
@@ -106,7 +107,7 @@ export function PetrolinaRegistrationForm() {
                     finalInscricaoId,
                     selectedProject.id,
                     'standard'
-                ).catch(e => console.error('Auto-invite error:', e));
+                ).catch(e => logger.error('Auto-invite error:', e));
             }
 
             // 4. Send Confirmation Email (Async, non-blocking)
@@ -136,7 +137,7 @@ export function PetrolinaRegistrationForm() {
                         </div>
                     `
                 }
-            }).catch(e => console.error('Email confirmation error:', e));
+            }).catch(e => logger.error('Email confirmation error:', e));
 
             setIsSuccess(true);
             toast.success('Inscrição confirmada com sucesso!');
@@ -148,7 +149,7 @@ export function PetrolinaRegistrationForm() {
             }, 2000);
 
         } catch (err: any) {
-            console.error('Error:', err);
+            logger.error('Error:', err);
             toast.error(err.message || 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);
