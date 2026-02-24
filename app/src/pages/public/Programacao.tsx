@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { 
-  Clock, 
-  MapPin, 
-  Users, 
-  Mic, 
-  Wrench, 
+import {
+  Clock,
+  MapPin,
+  Users,
+  Mic,
+  Wrench,
   BookOpen,
   Coffee,
   PartyPopper,
@@ -57,13 +57,13 @@ interface EventItemProps {
 
 function EventItem({ time, title, type, description, speaker }: EventItemProps) {
   const Icon = eventTypeIcons[type] || Clock;
-  
+
   return (
     <div className="flex gap-4 p-4 rounded-xl hover:bg-dark-100/50 transition-colors">
       <div className="flex-shrink-0 w-24 sm:w-32">
         <span className="text-teal-400 font-mono text-sm">{time}</span>
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
           <Badge className={`${eventTypeColors[type]} text-xs`}>
@@ -74,7 +74,7 @@ function EventItem({ time, title, type, description, speaker }: EventItemProps) 
             <span className="text-gray-500 text-sm">{speaker}</span>
           )}
         </div>
-        
+
         <h3 className="text-white font-semibold mb-1">{title}</h3>
         {description && (
           <p className="text-gray-400 text-sm">{description}</p>
@@ -93,7 +93,7 @@ export function Programacao() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -114,19 +114,19 @@ export function Programacao() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-dark-200 mb-8">
-              <TabsTrigger 
-                value="day1" 
+              <TabsTrigger
+                value="day1"
                 className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Dia 1 - 21/05
+                Dia 1 - 16/04
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="day2"
                 className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Dia 2 - 22/05
+                Dia 2 - 17/04
               </TabsTrigger>
             </TabsList>
 
@@ -134,14 +134,14 @@ export function Programacao() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-dark-300">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Quinta-feira, 21 de maio</h2>
+                    <h2 className="text-xl font-bold text-white">Quinta-feira, 16 de abril</h2>
                     <p className="text-gray-400 text-sm">Dia de abertura e trilhas temáticas</p>
                   </div>
                   <Badge className="bg-teal-500/10 text-teal-400">
                     {schedule.day1.events.length} atividades
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   {schedule.day1.events.map((event, index) => (
                     <EventItem
@@ -161,14 +161,14 @@ export function Programacao() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-dark-300">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Sexta-feira, 22 de maio</h2>
+                    <h2 className="text-xl font-bold text-white">Sexta-feira, 17 de abril</h2>
                     <p className="text-gray-400 text-sm">Workshops, mentorias e encerramento</p>
                   </div>
                   <Badge className="bg-teal-500/10 text-teal-400">
                     {schedule.day2.events.length} atividades
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-2">
                   {schedule.day2.events.map((event, index) => (
                     <EventItem
@@ -214,7 +214,7 @@ export function Programacao() {
                 O evento começa às 08:00 nos dois dias. Recomendamos chegar com 30 minutos de antecedência.
               </p>
             </div>
-            
+
             <div className="glass-card p-6 text-center">
               <MapPin className="h-8 w-8 text-teal-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-white mb-2">Local</h3>
@@ -222,7 +222,7 @@ export function Programacao() {
                 Boulevard Hotel, Juazeiro do Norte - CE. Estacionamento disponível para participantes.
               </p>
             </div>
-            
+
             <div className="glass-card p-6 text-center">
               <Users className="h-8 w-8 text-teal-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-white mb-2">Trilhas</h3>

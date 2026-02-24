@@ -29,8 +29,8 @@ export const config = {
   // Evento
   event: {
     name: import.meta.env.VITE_EVENT_NAME || 'Growth Summit 2026',
-    dateStart: import.meta.env.VITE_EVENT_DATE_START || '2026-05-21',
-    dateEnd: import.meta.env.VITE_EVENT_DATE_END || '2026-05-22',
+    dateStart: import.meta.env.VITE_EVENT_DATE_START || '2026-04-16',
+    dateEnd: import.meta.env.VITE_EVENT_DATE_END || '2026-04-16',
     location: import.meta.env.VITE_EVENT_LOCATION || 'Juazeiro do Norte, CE',
     maxParticipants: parseInt(import.meta.env.VITE_EVENT_MAX_PARTICIPANTS || '1500'),
   },

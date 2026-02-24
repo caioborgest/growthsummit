@@ -1,9 +1,9 @@
-import { 
-  Target, 
-  Eye, 
-  Heart, 
-  TrendingUp, 
-  Users, 
+import {
+  Target,
+  Eye,
+  Heart,
+  TrendingUp,
+  Users,
   Lightbulb,
   MapPin,
   Calendar,
@@ -52,7 +52,7 @@ export function Sobre() {
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -62,7 +62,7 @@ export function Sobre() {
               Growth Summit 2026
             </h1>
             <p className="text-xl text-gray-400">
-              A maior conferência de Growth, Marketing, Vendas e IA do Nordeste, 
+              A maior conferência de Growth, Marketing, Vendas e IA do Nordeste,
               reunindo os melhores especialistas e profissionais do mercado.
             </p>
           </div>
@@ -79,20 +79,20 @@ export function Sobre() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Nossa Missão</h2>
               <p className="text-gray-400 leading-relaxed">
-                Democratizar o acesso ao conhecimento de growth e inovação, conectando 
-                profissionais, empreendedores e empresas do Nordeste brasileiro com as 
+                Democratizar o acesso ao conhecimento de growth e inovação, conectando
+                profissionais, empreendedores e empresas do Nordeste brasileiro com as
                 melhores práticas e especialistas do mercado nacional.
               </p>
             </div>
-            
+
             <div className="glass-card p-8">
               <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center mb-6">
                 <Eye className="h-6 w-6 text-orange-400" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Nossa Visão</h2>
               <p className="text-gray-400 leading-relaxed">
-                Ser reconhecido como o principal evento de growth e inovação do Nordeste, 
-                referência em qualidade de conteúdo, networking e geração de oportunidades 
+                Ser reconhecido como o principal evento de growth e inovação do Nordeste,
+                referência em qualidade de conteúdo, networking e geração de oportunidades
                 de negócio para toda a região.
               </p>
             </div>
@@ -111,7 +111,7 @@ export function Sobre() {
               O que nos guia
             </h2>
           </div>
-          
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
               <div key={index} className="glass-card p-6 text-center hover:border-teal-500/30 transition-all">
@@ -138,22 +138,22 @@ export function Sobre() {
                 Uma experiência completa de aprendizado e networking
               </h2>
               <p className="text-gray-400 mb-6">
-                O Growth Summit 2026 acontece nos dias 21 e 22 de maio no Boulevard Hotel 
-                em Juazeiro do Norte, Ceará. São dois dias intensos de conteúdo, conexões 
+                O Growth Summit 2026 acontece nos dias 21 e 22 de maio no Boulevard Hotel
+                em Juazeiro do Norte, Ceará. São dois dias intensos de conteúdo, conexões
                 e oportunidades de negócio.
               </p>
-              
+
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center text-gray-300">
                   <Calendar className="h-5 w-5 mr-3 text-teal-400" />
-                  21-22 de maio de 2026
+                  16 de abril de 2026
                 </div>
                 <div className="flex items-center text-gray-300">
                   <MapPin className="h-5 w-5 mr-3 text-teal-400" />
                   Boulevard Hotel, Juazeiro do Norte
                 </div>
               </div>
-              
+
               <ul className="space-y-3">
                 {highlights.map((item, i) => (
                   <li key={i} className="flex items-center text-gray-300">
@@ -163,7 +163,7 @@ export function Sobre() {
                 ))}
               </ul>
             </div>
-            
+
             <div className="relative">
               <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/20 to-orange-500/20 border border-dark-300">
                 <img
@@ -190,11 +190,11 @@ export function Sobre() {
                   Juazeiro do Norte, Ceará
                 </h2>
                 <p className="text-gray-400 mb-6">
-                  Localizado no coração do Cariri cearense, Juazeiro do Norte é um polo 
-                  de inovação e turismo com mais de 280 mil habitantes. A cidade oferece 
+                  Localizado no coração do Cariri cearense, Juazeiro do Norte é um polo
+                  de inovação e turismo com mais de 280 mil habitantes. A cidade oferece
                   infraestrutura completa para receber eventos de grande porte.
                 </p>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-start">
                     <MapPin className="h-5 w-5 mr-3 text-teal-400 mt-0.5" />
@@ -208,7 +208,7 @@ export function Sobre() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="aspect-video rounded-xl overflow-hidden bg-dark-100 border border-dark-300">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3958.1234567890123!2d-39.3156789!3d-7.2134567!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zN8KwMTInNDguNCJTIDM5wrAxOCc1Ni40Ilc!5e0!3m2!1spt-BR!2sbr!4v1234567890123"
