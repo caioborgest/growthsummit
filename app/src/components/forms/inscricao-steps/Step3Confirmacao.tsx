@@ -163,6 +163,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 throw new Error(inscricaoError.message);
             }
 
+            // 2.5 Incrementar contador de inscritos nas sessões (Real-time)
+            if (dados.cursosSelecionados && dados.cursosSelecionados.length > 0) {
+                console.log('Incrementando contador de inscritos para as sessões:', dados.cursosSelecionados);
+                for (const sessionId of dados.cursosSelecionados) {
+                    const { error: rpcError } = await supabase.rpc('increment_session_count', { session_id: sessionId });
+                    if (rpcError) console.warn('Erro ao incrementar contador (não crítico):', rpcError);
+                }
+            }
+
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
             console.log('Inscrição salva com sucesso. ID:', finalInscricaoId);
 

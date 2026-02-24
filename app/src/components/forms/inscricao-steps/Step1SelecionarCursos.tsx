@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSessions } from '@/hooks/useData';
-import { Loader2, Clock, MapPin, Users, CheckCircle } from 'lucide-react';
+import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
 
 interface Step1SelecionarCursosProps {
     cursosSelecionados: string[];
@@ -62,15 +62,18 @@ export function Step1SelecionarCursos({
                 ) : cursosDisponiveis.length > 0 ? (
                     cursosDisponiveis.map((curso) => {
                         const isSelected = selecionados.includes(curso.id);
+                        const isFull = curso.maxCapacity > 0 && (curso.registeredCount || 0) >= curso.maxCapacity;
 
                         return (
                             <div
                                 key={curso.id}
-                                className={`relative group p-4 sm:p-6 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-500 border-2 overflow-hidden ${isSelected
+                                className={`relative group p-4 sm:p-6 rounded-2xl sm:rounded-3xl transition-all duration-500 border-2 overflow-hidden ${isSelected
                                     ? 'border-brand-orange-coral bg-brand-orange-coral/5 shadow-[0_10px_30px_rgba(255,112,67,0.15)] ring-1 ring-brand-orange-coral/20'
-                                    : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60'
+                                    : isFull
+                                        ? 'border-red-500/20 bg-red-500/5 cursor-not-allowed opacity-60'
+                                        : 'border-white/5 hover:border-white/10 bg-dark-200/40 hover:bg-dark-200/60 cursor-pointer'
                                     }`}
-                                onClick={() => selectCurso(curso.id)}
+                                onClick={() => !isFull && selectCurso(curso.id)}
                             >
                                 {/* Efeito de Gradiente no Background para o Ativo */}
                                 {isSelected && (
@@ -82,9 +85,14 @@ export function Step1SelecionarCursos({
                                     <div className="pt-0.5 sm:pt-1 select-none">
                                         <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
                                             ? 'border-brand-orange-coral bg-brand-orange-coral'
-                                            : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
+                                            : isFull
+                                                ? 'border-red-500/30 bg-red-500/10'
+                                                : 'border-white/10 group-hover:border-white/20 bg-dark-300'}`}>
                                             {isSelected && (
                                                 <div className="w-1.5 h-1.5 sm:w-2.5 sm:w-2.5 rounded-full bg-white shadow-sm" />
+                                            )}
+                                            {isFull && !isSelected && (
+                                                <X className="h-3 w-3 text-red-500" />
                                             )}
                                         </div>
                                     </div>
@@ -100,7 +108,18 @@ export function Step1SelecionarCursos({
                                                     }`}>
                                                     {(curso.type || 'CURSO').toUpperCase()}
                                                 </Badge>
+                                                {isFull && (
+                                                    <Badge className="bg-red-500/10 text-red-500 border-red-500/30 text-[10px] uppercase font-black">
+                                                        ESGOTADO
+                                                    </Badge>
+                                                )}
                                             </div>
+                                            {!isFull && curso.maxCapacity > 0 && (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                    <Users className="h-3 w-3" />
+                                                    <span>{curso.maxCapacity - (curso.registeredCount || 0)} vagas restantes</span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <h4 className="text-xl font-bold text-white tracking-tight group-hover:text-brand-orange-coral/90 transition-colors">

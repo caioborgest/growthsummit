@@ -6,10 +6,12 @@ export function useProgramacaoTriunfo() {
 
     const programacao = useMemo(() => {
         const transformAtividade = (s: any) => ({
+            id: s.id,
             horario: s.startTime,
             titulo: s.title,
             tipo: s.type,
             capacidade: s.maxCapacity,
+            inscritos: s.registeredCount || 0,
             topicos: s.topics || [],
             local: s.room
         });

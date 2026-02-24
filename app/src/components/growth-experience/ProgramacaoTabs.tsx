@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export interface Atividade {
+    id?: string;
     horario?: string;
     titulo?: string;
     tipo?: string;
     capacidade?: number;
+    inscritos?: number;
     topicos?: string[];
     atividade?: string;
     local?: string;
@@ -138,7 +140,10 @@ export function ProgramacaoTabs({
                                         </Badge>
                                         <div className="flex items-center gap-2 text-gray-400 text-sm font-medium">
                                             <Users className="h-4 w-4" />
-                                            <span>Capacidade: {bloco.salao.capacidade} pessoas</span>
+                                            <span>{bloco.salao.inscritos || 0} / {bloco.salao.capacidade} inscritos</span>
+                                            {bloco.salao.capacidade && (bloco.salao.inscritos || 0) >= bloco.salao.capacidade && (
+                                                <Badge className="bg-red-500/10 text-red-500 border-red-500/20 ml-2">ESGOTADO</Badge>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -173,7 +178,10 @@ export function ProgramacaoTabs({
                                     </div>
                                     <div className="flex items-center gap-1.5 text-gray-500 font-bold text-[10px] uppercase">
                                         <Users className="h-3 w-3" />
-                                        <span>{sala.capacidade} LUGAR</span>
+                                        <span>{sala.inscritos || 0}/{sala.capacidade} VAGAS</span>
+                                        {sala.capacidade && (sala.inscritos || 0) >= sala.capacidade && (
+                                            <span className="text-red-500 ml-1">LOTADO</span>
+                                        )}
                                     </div>
                                 </div>
                                 <h6 className="text-white font-bold text-base mb-3 leading-snug group-hover:text-brand-orange-coral transition-colors">{sala.titulo}</h6>
