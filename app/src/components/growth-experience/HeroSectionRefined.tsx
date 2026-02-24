@@ -47,8 +47,11 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
                 <img
-                    src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
-                    alt="Caretas de Triunfo"
+                    src={selectedProject?.slug === 'ge-petrolina-2026'
+                        ? "https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
+                        : "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                    }
+                    alt={selectedProject?.city || "Growth Experience"}
                     className="w-full h-full object-cover object-center scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-black/95 via-dark-100/90 to-brand-black/95" />
@@ -123,11 +126,11 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <MapPin className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">Espaço Parque, Triunfo-PE</span>
+                            <span className="font-semibold">{selectedProject?.location ? `${selectedProject.location}, ${selectedProject.city}-${selectedProject.state}` : 'Espaço Parque, Triunfo-PE'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">2.000+ Participantes</span>
+                            <span className="font-semibold">{selectedProject?.settings?.maxRegistrations?.toLocaleString() || '2.000'}+ Participantes</span>
                         </div>
                     </div>
 
