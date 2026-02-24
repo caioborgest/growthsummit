@@ -56,11 +56,18 @@ import { ensureProject } from '@/lib/ensureProject';
 // Dados do evento
 const palestrantes = [
     {
-        nome: "Speaker Nacional",
-        cargo: "Especialista em Growth",
-        descricao: "Em breve mais detalhes sobre os grandes nomes que estarão em Petrolina",
-        tema: "Estratégias de Crescimento e IA para o Sertão",
-        horario: "19:00 - 20:30"
+        nome: "Speaker Nacional 1",
+        cargo: "Especialista em Growth & IA",
+        descricao: "Referência em estratégias de crescimento acelerado utilizando inteligência artificial.",
+        tema: "O Futuro do Growth: Como a IA está redefinindo o mercado",
+        horario: "19:00 - 19:45"
+    },
+    {
+        nome: "Speaker Nacional 2",
+        cargo: "Expert em Vendas e Escala",
+        descricao: "Especialista em construir times de vendas de alta performance e processos de escala.",
+        tema: "Escala Inevitável: Processos de Vendas para 2026",
+        horario: "19:45 - 20:30"
     }
 ];
 
@@ -366,21 +373,124 @@ export function GrowthExperiencePetrolina() {
                 </div>
             </section>
 
-            <EdicaoAnteriorVideo showTriunfoTeaser={false} />
+            {/* Programação Petrolina */}
+            <section id="programacao" className="py-24 bg-dark-100 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+                            CRONOGRAMA OFICIAL
+                        </Badge>
+                        <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
+                            Programação <span className="text-gradient">Night Experience</span>
+                        </h2>
+                        <p className="text-gray-400 max-w-2xl mx-auto">
+                            Uma noite intensiva de aprendizado, estratégias práticas e mentoria direta com os grandes nomes do mercado.
+                        </p>
+                    </div>
 
-            <section id="inscricoes" className="py-24 bg-dark">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h2 className="text-4xl font-black text-white mb-8">Lista VIP Petrolina</h2>
-                    <p className="text-gray-400 mb-12">Seja o primeiro a saber o local e a programação completa da edição Petrolina.</p>
-                    <Button
-                        size="lg"
-                        className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange h-auto"
-                        onClick={() => setModalInscricaoAberto(true)}
-                    >
-                        ENTRAR NA LISTA VIP
-                    </Button>
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        {[
+                            {
+                                hora: "18:30",
+                                titulo: "Credenciamento e Networking",
+                                desc: "Abertura dos portões e conexões iniciais no Vale do São Francisco.",
+                                icon: Users
+                            },
+                            {
+                                hora: "19:00",
+                                titulo: "Palestra Magna 1: Inovação e Growth",
+                                desc: "A primeira imersão sobre como aplicar as tendências de 2026 no seu negócio.",
+                                icon: Mic2
+                            },
+                            {
+                                hora: "19:45",
+                                titulo: "Palestra Magna 2: Estratégias de Escala",
+                                desc: "Técnicas avançadas de vendas e processos para crescer de forma sustentável.",
+                                icon: Zap
+                            },
+                            {
+                                hora: "20:30",
+                                titulo: "Mentoria Coletiva (Hot Seat)",
+                                desc: "Sessão exclusiva de perguntas e respostas com os dois palestrantes no palco.",
+                                icon: Target,
+                                destaque: true
+                            },
+                            {
+                                hora: "21:30",
+                                titulo: "Encerramento e Happy Hour",
+                                desc: "Momento final de troca de cartões e consolidação de parcerias.",
+                                icon: Handshake
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className={`flex gap-6 p-6 rounded-2xl border transition-all ${item.destaque ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 shadow-glow-orange' : 'bg-dark-200 border-white/5 hover:border-white/10'}`}>
+                                <div className="text-brand-orange-coral font-black text-lg sm:text-xl whitespace-nowrap pt-1">
+                                    {item.hora}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <item.icon className={`h-5 w-5 ${item.destaque ? 'text-brand-orange-coral' : 'text-gray-500'}`} />
+                                        <h4 className="text-white font-bold text-lg sm:text-xl">{item.titulo}</h4>
+                                    </div>
+                                    <p className="text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
+
+            <EdicaoAnteriorVideo showTriunfoTeaser={false} />
+
+            {/* Seções de Inscrição */}
+            <div id="inscricoes">
+                <InscricaoSection
+                    id="night-experience"
+                    icon={Mic2}
+                    titulo="Night Experience Petrolina"
+                    subtitulo="O auge do conhecimento e networking"
+                    descricao="Participe do momento principal com palestras magnas e o prêmio empresa incentivadora."
+                    beneficios={[
+                        "Acesso às palestras principais",
+                        "Networking com grandes empresários do Vale",
+                        "Certificado de participação VIP"
+                    ]}
+                    vagasLimitadas
+                    onInscrever={() => setModalInscricaoAberto(true)}
+                    imagemUrl="https://images.unsplash.com/photo-1475721027181-e00184321c2e?q=80&w=2070&auto=format&fit=crop"
+                />
+
+                <InscricaoSection
+                    id="cursos-workshops"
+                    icon={GraduationCap}
+                    titulo="Cursos e Workshops Gratuitos"
+                    subtitulo="Acesso ilimitado a todas as trilhas diurnas"
+                    descricao="Participe de workshops práticos e oficinas mão na massa focadas no varejo e agro local."
+                    beneficios={[
+                        "Acesso a todos os workshops e oficinas",
+                        "Certificado de participação digital",
+                        "Material didático da edição Petrolina"
+                    ]}
+                    gratuito
+                    onInscrever={() => setModalInscricaoAberto(true)}
+                    imagemUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
+                />
+
+                <InscricaoSection
+                    id="mentorias"
+                    icon={Target}
+                    titulo="Mentoria Individual no Vale"
+                    subtitulo="30 minutos exclusivos com especialistas"
+                    descricao="Sessões personalizadas para diagnosticar e acelerar o seu negócio no Sertão."
+                    beneficios={[
+                        "Sessão individual de 30 minutos",
+                        "Diagnóstico personalizado",
+                        "Plano de ação imediato"
+                    ]}
+                    gratuito
+                    onInscrever={() => setModalAberto('mentor')}
+                    imagemUrl="https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=2071&auto=format&fit=crop"
+                />
+            </div>
 
             <InnerFooter />
             <WhatsAppButton />

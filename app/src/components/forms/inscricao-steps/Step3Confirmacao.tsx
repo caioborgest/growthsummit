@@ -19,7 +19,7 @@ interface Step3ConfirmacaoProps {
 export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3ConfirmacaoProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { projectId } = useProject();
+    const { projectId, selectedProject } = useProject();
 
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => getAtividadeById(id))
@@ -145,7 +145,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     nivel_atividade: nivelAtividade,
                     palestras_noturnas: dados.comprarPalestras,
                     tipo_inscricao: 'standard', // Adicionado para compatibilidade com Admin
-                    evento: 'Growth Experience Triunfo',
+                    evento: selectedProject?.name || 'Growth Experience',
                     valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
                     status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
                     status: 'ativo',
@@ -177,9 +177,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
             if (finalInscricaoId) {
+                const projectSlug = selectedProject?.slug || 'growth-experience-triunfo';
                 autoInviteOnRegistration(
                     finalInscricaoId,
-                    'growth-experience-triunfo',
+                    projectSlug,
                     'standard'
                 ).catch(e => console.warn('Invite fail:', e));
             }
