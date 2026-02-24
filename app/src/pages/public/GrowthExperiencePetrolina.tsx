@@ -30,7 +30,6 @@ import { Card } from '@/components/ui/card';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getPalestranteImage, getStandImage } from '@/lib/storage';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
-import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
@@ -248,10 +247,6 @@ export function GrowthExperiencePetrolina() {
 
             <InnerHeader />
 
-            <HeroSectionRefined
-                project={currentProject || undefined}
-                onCTAClick={() => document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth' })}
-            />
 
             <section id="sobre" className="py-20 bg-dark-100 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
