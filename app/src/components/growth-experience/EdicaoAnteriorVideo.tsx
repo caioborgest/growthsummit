@@ -161,8 +161,8 @@ export function EdicaoAnteriorVideo({
                                     : [
                                         {
                                             icon: Sparkles,
-                                            title: 'Próxima Parada: Petrolina',
-                                            desc: 'Em breve — uma nova edição para o Sertão de Pernambuco',
+                                            title: 'Próxima Parada: Petrolina-PE',
+                                            desc: '30 de Abril de 2026 — uma nova edição para o Sertão de Pernambuco',
                                         },
                                     ]),
                             ].map((item, i) => (
@@ -201,11 +201,11 @@ export function EdicaoAnteriorVideo({
                                     <ChevronRight className="h-5 w-5 text-purple-400 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <p className="text-white font-bold text-sm mb-1">
-                                            Em breve — Growth Experience Petrolina
+                                            30 de Abril — Growth Experience Petrolina
                                         </p>
                                         <p className="text-gray-400 text-xs leading-relaxed">
-                                            O formato que transformou o Cariri chega ao Sertão de Pernambuco.
-                                            Fique ligado para ser um dos primeiros a saber.
+                                            O Vale do São Francisco recebe a metodologia que transformou o Cariri.
+                                            Garanta sua vaga na lista VIP do evento.
                                         </p>
                                     </div>
                                 </div>

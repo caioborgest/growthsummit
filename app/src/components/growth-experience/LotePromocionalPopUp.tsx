@@ -3,6 +3,7 @@ import { X, Gift, Zap, MessageCircle, ArrowRight, Star, Sparkles } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { useProject } from '@/contexts/ProjectContext';
 
 export function LotePromocionalPopUp() {
     const [isOpen, setIsOpen] = useState(false);
@@ -30,8 +31,11 @@ export function LotePromocionalPopUp() {
         localStorage.setItem('lotePromocionalLastShown', new Date().toDateString());
     };
 
+    const { selectedProject } = useProject();
+
     const handleWhatsApp = () => {
-        const message = encodeURIComponent("Olá! Tenho interesse na Oferta de Lote Promocional (Compre 2, Leve 3) para o Growth Experience Triunfo.");
+        const projectName = selectedProject?.name || 'Growth Experience';
+        const message = encodeURIComponent(`Olá! Tenho interesse na Oferta de Lote Promocional (Compre 2, Leve 3) para o ${projectName}.`);
         window.open(`https://wa.me/5588988432310?text=${message}`, '_blank');
         handleClose();
     };

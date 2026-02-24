@@ -19,6 +19,7 @@ const Startups = lazy(() => import('./pages/public/Startups').then(m => ({ defau
 const Patrocinio = lazy(() => import('./pages/public/Patrocinio').then(m => ({ default: m.Patrocinio })));
 const GrowthExperience = lazy(() => import('./pages/public/GrowthExperience').then(m => ({ default: m.GrowthExperience })));
 const GrowthExperienceTriunfo = lazy(() => import('./pages/public/GrowthExperienceTriunfo').then(m => ({ default: m.GrowthExperienceTriunfo })));
+const GrowthExperiencePetrolina = lazy(() => import('./pages/public/GrowthExperiencePetrolina').then(m => ({ default: m.GrowthExperiencePetrolina })));
 const FAQ = lazy(() => import('./pages/public/FAQ').then(m => ({ default: m.FAQ })));
 const Contato = lazy(() => import('./pages/public/Contato').then(m => ({ default: m.Contato })));
 const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ default: m.HelpCenter })));
@@ -131,8 +132,9 @@ function AppRoutes() {
           <Route path="guia" element={<HelpCenter />} />
         </Route>
 
-        {/* Dedicated Page for Triunfo (No Global Layout) */}
+        {/* Dedicated Pages for Regional Editions (No Global Layout) */}
         <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
+        <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
