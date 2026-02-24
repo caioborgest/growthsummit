@@ -20,7 +20,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
 
     // Contador regressivo
     useEffect(() => {
-        const dateStr = selectedProject?.startDate || '2026-04-16';
+        const dateStr = selectedProject?.slug === 'ge-triunfo-2026' ? '2026-04-16' : (selectedProject?.startDate || '2026-04-16');
         const eventDate = new Date(`${dateStr}T08:00:00`);
 
         const updateCountdown = () => {
@@ -40,18 +40,16 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
         return () => clearInterval(interval);
-    }, [selectedProject?.startDate]);
+    }, [selectedProject?.startDate, selectedProject?.slug]);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
-                {selectedProject?.slug !== 'ge-petrolina-2026' && (
+                {/* A imagem de fundo é removida para Triunfo e Petrolina para manter o foco na "Nova Era" */}
+                {!['ge-petrolina-2026', 'ge-triunfo-2026'].includes(selectedProject?.slug || '') && (
                     <img
-                        src={selectedProject?.slug === 'ge-petrolina-2026'
-                            ? "https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
-                            : "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
-                        }
+                        src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
                         alt={selectedProject?.city || "Growth Experience"}
                         className="w-full h-full object-cover object-center scale-105"
                     />
@@ -120,7 +118,7 @@ export function HeroSectionRefined({ onCTAClick }: HeroSectionProps) {
                     >
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">{selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ', ' + new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '16 de Abril, 2026'}</span>
+                            <span className="font-semibold">{selectedProject?.slug === 'ge-triunfo-2026' ? '16 de Abril, 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + ', ' + new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '16 de Abril, 2026')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
                             <Clock className="h-5 w-5 text-brand-orange-coral" />
