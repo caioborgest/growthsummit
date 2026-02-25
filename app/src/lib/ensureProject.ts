@@ -4,7 +4,6 @@ import type { Project, ProjectType, ProjectStatus } from '@/types';
 import type { Database } from '@/types/supabase';
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
-type ProjectUpdate = Database['public']['Tables']['projects']['Update'];
 type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 
 /**
@@ -14,6 +13,7 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 export async function ensureProject(projectConfig: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Project | null> {
     try {
         // 1. Try to find by slug
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
             .select('*')
             .eq('slug', projectConfig.slug)
@@ -26,16 +26,17 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
 
         const projectDataToUpsert: ProjectInsert = {
             ...mapToSupabaseFormat(projectConfig),
-            status: (projectConfig.status as any) || 'active',
             updated_at: new Date().toISOString(),
         };
 
         if (existing) {
             // Update if exists to ensure settings are in sync with code config
-            projectDataToUpsert.id = existing.id;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            projectDataToUpsert.id = (existing as any).id;
         }
 
         // 2. Create if doesn't exist
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: created, error: createError } = await (supabase.from('projects') as any)
             .upsert(projectDataToUpsert, { onConflict: 'slug' })
             .select()
@@ -45,6 +46,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             logger.warn(`[ensureProject] Failed to create project ${projectConfig.slug}:`, { error: createError.message });
 
             // Final attempt to fetch (race condition check)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: retry } = await (supabase.from('projects') as any)
                 .select('*')
                 .eq('slug', projectConfig.slug)
@@ -60,16 +62,17 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
     }
 }
 
-function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Partial<ProjectInsert> {
+function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): ProjectInsert {
     const s = p.settings || {};
     const tp = s.ticketPrices || {};
+
     return {
         id: p.id,
         name: p.name,
         slug: p.slug,
-        type: p.type as any,
+        type: p.type as Database['public']['Tables']['projects']['Insert']['type'],
         description: p.description,
-        short_description: p.shortDescription,
+        short_description: p.shortDescription || null,
         location: p.location,
         city: p.city,
         state: p.state,
@@ -77,20 +80,24 @@ function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> 
         address: p.address || p.location,
         start_date: p.startDate,
         end_date: p.endDate,
-        status: p.status as any,
-        primary_color: p.primaryColor,
-        secondary_color: p.secondaryColor,
-        max_registrations: s.maxRegistrations,
-        max_mentors: s.maxMentors,
-        max_startups: s.maxStartups,
-        max_companies: s.maxCompanies,
-        enable_b2b: s.enableB2B,
-        enable_mentoring: s.enableMentoring,
-        enable_startups: s.enableStartups,
-        enable_check_in: s.enableCheckIn,
+        status: (p.status || 'active') as Database['public']['Tables']['projects']['Insert']['status'],
+        primary_color: p.primaryColor || '#FE4C38',
+        secondary_color: p.secondaryColor || '#FF6B35',
+        max_registrations: s.maxRegistrations || null,
+        max_mentors: s.maxMentors || null,
+        max_startups: s.maxStartups || null,
+        max_companies: s.maxCompanies || null,
+        enable_b2b: s.enableB2B ?? false,
+        enable_mentoring: s.enableMentoring ?? false,
+        enable_startups: s.enableStartups ?? false,
+        enable_check_in: s.enableCheckIn ?? true,
         ticket_price_standard: Math.round((tp.standard || 0) * 100),
         ticket_price_pro: Math.round((tp.pro || 0) * 100),
         ticket_price_vip: Math.round((tp.vip || 0) * 100),
+        target_registrations: s.targetRegistrations || 500,
+        target_revenue: s.targetRevenue || 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
     };
 }
 
@@ -105,6 +112,8 @@ function rowToProject(row: ProjectRow): Project {
         location: row.location,
         city: row.city,
         state: row.state,
+        country: row.country,
+        address: row.address ?? '',
         startDate: row.start_date,
         endDate: row.end_date,
         status: row.status as ProjectStatus,
@@ -128,6 +137,8 @@ function rowToProject(row: ProjectRow): Project {
                 pro: (row.ticket_price_pro ?? 0) / 100,
                 vip: (row.ticket_price_vip ?? 0) / 100,
             },
+            targetRegistrations: row.target_registrations,
+            targetRevenue: row.target_revenue,
         },
     };
 }

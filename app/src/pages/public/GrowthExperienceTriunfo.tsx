@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Project } from '@/types';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { Project } from '@/types';
 import {
   MapPin,
   TrendingUp,
@@ -49,7 +49,7 @@ import { SocialShare } from '@/components/social/SocialShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { useMentors, useProjects } from '@/hooks/useData';
+import { useMentors } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { ensureProject } from '@/lib/ensureProject';
 
@@ -392,7 +392,6 @@ function InnerFooter() {
 
 // Main Component
 export function GrowthExperienceTriunfo() {
-  const { data: projects } = useProjects();
   const { setSelectedProject, selectedProject: contextProject } = useProject();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
@@ -414,6 +413,7 @@ export function GrowthExperienceTriunfo() {
       state: 'PE',
       startDate: '2026-04-16',
       endDate: '2026-04-16',
+      status: 'active',
       primaryColor: '#FE4C38',
       secondaryColor: '#FF6B35',
       settings: {
@@ -439,10 +439,15 @@ export function GrowthExperienceTriunfo() {
         setSelectedProject(project);
       }
     }
-  }, [projects, contextProject, setSelectedProject]);
+  }, [contextProject, setSelectedProject]);
+
+  const initialized = useRef(false);
 
   useEffect(() => {
-    initProject();
+    if (!initialized.current) {
+      setTimeout(() => initProject(), 0);
+      initialized.current = true;
+    }
   }, [initProject]);
 
   const { data: mentorsData, isLoading: mentorsLoading } = useMentors();

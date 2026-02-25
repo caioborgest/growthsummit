@@ -91,9 +91,10 @@ export function Contato() {
       toast.dismiss();
       toast.success('Mensagem enviada com sucesso!');
       setFormData({ name: '', email: '', department: 'geral', subject: '', message: '' });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.dismiss();
-      toast.error('Erro ao enviar mensagem: ' + err.message);
+      const error = err as Error;
+      toast.error('Erro ao enviar mensagem: ' + error.message);
     }
   };
 

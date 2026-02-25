@@ -22,6 +22,8 @@ export interface Project {
   logo?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  country?: string;
+  address?: string;
   settings: ProjectSettings;
   createdAt: string;
   updatedAt: string;
@@ -41,6 +43,8 @@ export interface ProjectSettings {
     pro: number;
     vip: number;
   };
+  targetRegistrations?: number;
+  targetRevenue?: number;
 }
 
 export interface User {

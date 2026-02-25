@@ -1,8 +1,10 @@
 // Edge Function: send-email
 // Envia emails usando Resend API
 
+// @ts-expect-error: Deno is available in Edge Functions
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 
+// @ts-expect-error: Deno is available in Edge Functions
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 interface EmailRequest {
@@ -13,7 +15,7 @@ interface EmailRequest {
     from?: string;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     // CORS headers
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
@@ -68,10 +70,11 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
-    } catch (error: any) {
-        console.error('Edge Function Error:', error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error('Edge Function Error:', err);
         return new Response(
-            JSON.stringify({ error: error.message || 'Internal server error', success: false }),
+            JSON.stringify({ error: err.message || 'Internal server error', success: false }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

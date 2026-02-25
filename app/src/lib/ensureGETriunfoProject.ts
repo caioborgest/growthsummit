@@ -48,6 +48,8 @@ const PROJECT_DATA: ProjectInsert = {
     ticket_price_vip: 0,
     target_registrations: 500,
     target_revenue: 8_000_000,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
 };
 
 /**
@@ -65,6 +67,8 @@ function rowToProject(row: ProjectRow): Project {
         location: row.location,
         city: row.city,
         state: row.state,
+        country: row.country,
+        address: row.address ?? '',
         startDate: row.start_date,
         endDate: row.end_date,
         status: row.status as ProjectStatus,
@@ -88,6 +92,8 @@ function rowToProject(row: ProjectRow): Project {
                 pro: (row.ticket_price_pro ?? 0) / 100,
                 vip: (row.ticket_price_vip ?? 0) / 100,
             },
+            targetRegistrations: row.target_registrations,
+            targetRevenue: row.target_revenue,
         },
     };
 }
@@ -99,6 +105,7 @@ function rowToProject(row: ProjectRow): Project {
 export async function ensureGETriunfoProject(): Promise<Project | null> {
     try {
         // 1. Buscar pelo slug
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
             .select('*')
             .eq('slug', GE_TRIUNFO_SLUG)
@@ -111,8 +118,10 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
 
         if (existing) {
             // Projeto encontrado — garantir status ativo
-            const existingTyped = existing as ProjectRow;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const existingTyped = existing as any as ProjectRow;
             if (existingTyped.status !== 'active') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 await (supabase.from('projects') as any)
                     .update({ status: 'active', updated_at: new Date().toISOString() } as ProjectUpdate)
                     .eq('id', existingTyped.id);
@@ -122,6 +131,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
         }
 
         // 2. Criar se não existe (upsert por id fixo para evitar duplicatas)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: created, error: createError } = await (supabase.from('projects') as any)
             .upsert(PROJECT_DATA, { onConflict: 'id' })
             .select()
@@ -132,16 +142,20 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
             logger.warn('[ensureGETriunfoProject] Não foi possível criar o projeto (RLS?):', { error: createError.message });
 
             // Tentar buscar novamente — pode ter sido criado por outra aba/instância
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: retry } = await (supabase.from('projects') as any)
                 .select('*')
                 .eq('slug', GE_TRIUNFO_SLUG)
                 .maybeSingle();
 
-            return retry ? rowToProject(retry as ProjectRow) : null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return retry ? rowToProject(retry as any as ProjectRow) : null;
         }
 
-        logger.info('[ensureGETriunfoProject] Projeto criado:', { id: created?.id });
-        return created ? rowToProject(created as ProjectRow) : null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        logger.info('[ensureGETriunfoProject] Projeto criado:', { id: (created as any)?.id });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return created ? rowToProject(created as any as ProjectRow) : null;
     } catch (err) {
         logger.error('[ensureGETriunfoProject] Erro inesperado:', { error: err });
         return null;

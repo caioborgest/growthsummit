@@ -1,39 +1,26 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     MapPin,
-    TrendingUp,
     Handshake,
-    Building2,
-    GraduationCap,
     Menu,
     X,
     Mic2,
-    Award,
     Phone,
     Target,
     Mail,
     Zap,
     Rocket,
-    Trophy,
     ArrowRight,
-    Sparkles,
-    Instagram,
-    Linkedin,
-    Facebook,
-    CheckCircle,
-    Users
+    Users,
+    CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getPalestranteImage, getStandImage } from '@/lib/storage';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { Project } from '@/types';
 import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
 
@@ -193,9 +180,7 @@ function InnerFooter() {
 }
 
 export function GrowthExperiencePetrolina() {
-    const { data: projects } = useProjects();
     const { setSelectedProject, selectedProject: contextProject } = useProject();
-    const [currentProject, setCurrentProject] = useState<Project | null>(null);
 
     const initProject = useCallback(async () => {
         // Garantir dados atualizados do projeto
@@ -211,6 +196,7 @@ export function GrowthExperiencePetrolina() {
             state: 'PE',
             startDate: '2026-04-30',
             endDate: '2026-04-30',
+            status: 'active',
             primaryColor: '#FE4C38',
             secondaryColor: '#FF6B35',
             settings: {
@@ -219,19 +205,29 @@ export function GrowthExperiencePetrolina() {
                 enableB2B: false,
                 enableMentoring: false,
                 enableStartups: false,
+                enableCheckIn: true,
+                ticketPrices: {
+                    standard: 0,
+                    pro: 179.99,
+                    vip: 0,
+                },
             },
         });
 
         if (project) {
-            setCurrentProject(project);
             if (!contextProject || contextProject.id !== project.id) {
                 setSelectedProject(project);
             }
         }
-    }, [projects, contextProject, setSelectedProject]);
+    }, [contextProject, setSelectedProject]);
+
+    const initialized = useRef(false);
 
     useEffect(() => {
-        initProject();
+        if (!initialized.current) {
+            setTimeout(() => initProject(), 0);
+            initialized.current = true;
+        }
     }, [initProject]);
 
     const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-petrolina';
@@ -305,7 +301,7 @@ export function GrowthExperiencePetrolina() {
                                     <div className="w-24 h-24 rounded-2xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-brand-orange-coral/30 transition-all">
                                         <img
                                             src={mentor.foto}
-                                            alt={mentor.name || mentor.nome}
+                                            alt={mentor.nome}
                                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                                             onError={(e) => {
                                                 e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png';
