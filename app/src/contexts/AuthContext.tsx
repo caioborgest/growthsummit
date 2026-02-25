@@ -130,117 +130,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // Verificar sessão ao carregar
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-
-        if (error) {
-          logger.error('Erro ao obter sessão:', error);
-          setIsLoading(false);
-          return;
-        }
-
-        if (currentSession?.user) {
-          try {
-            // Buscar metadados silenciosamente
-            const { data: userData } = await supabase
-              .from('users')
-              .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
-              .eq('id', currentSession.user.id)
-              .single();
-
-            setSession(currentSession);
-            setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
-          } catch {
-            logger.warn('Metadata fetch failed, using auth metadata');
-            setSession(currentSession);
-            setUser(mapSupabaseUserToUser(currentSession.user));
-          }
-
-          localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
-          logAuditEvent('session_restored', currentSession.user.id);
-        }
-      } catch (error) {
-        logger.error('Erro ao inicializar autenticação:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Listener para mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      logger.info('Auth state changed:', { event });
-
-      if (currentSession?.user) {
-        try {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
-            .eq('id', currentSession.user.id)
-            .single();
-
-          setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
-        } catch {
-          setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user));
-        }
-
-        logAuditEvent(event, currentSession.user.id);
-      } else {
-        setSession(null);
-        setUser(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Monitorar atividade do usuário
-  useEffect(() => {
-    if (!user) return;
-
-    // Throttled activity update: max 1 write per 2 seconds
-    let lastActivityWrite = 0;
-    const updateActivity = () => {
-      const now = Date.now();
-      if (now - lastActivityWrite > 2000) {
-        lastActivityWrite = now;
-        localStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
-      }
-    };
-
-    // Track only meaningful interaction events (not scroll — too noisy)
-    const events = ['mousedown', 'keydown', 'touchstart'];
-    events.forEach(event => {
-      window.addEventListener(event, updateActivity, { passive: true });
-    });
-
-    // Verificar timeout periodicamente
-    const intervalId = setInterval(async () => {
-      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
-      if (lastActivity) {
-        const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
-        if (timeSinceLastActivity > SESSION_TIMEOUT) {
-          await logout();
-          alert('Sua sessão expirou por inatividade.');
-        }
-      }
-    }, 60000); // Verificar a cada minuto
-
-    return () => {
-      events.forEach(event => {
-        window.removeEventListener(event, updateActivity);
-      });
-      clearInterval(intervalId);
-    };
-  }, [user, logout]);
 
   // Login com email e senha
   const login = useCallback(async (email: string, password: string): Promise<User | null> => {
@@ -401,6 +290,119 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ ...user, twoFactorEnabled: false });
     logAuditEvent('2fa_disabled', user.id);
   }, [user]);
+
+  // Hooks de efeito movidos para cá para evitar TDZ (Temporal Dead Zone)
+  // Verificar sessão ao carregar
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          logger.error('Erro ao obter sessão:', error);
+          setIsLoading(false);
+          return;
+        }
+
+        if (currentSession?.user) {
+          try {
+            // Buscar metadados silenciosamente
+            const { data: userData } = await supabase
+              .from('users')
+              .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
+              .eq('id', currentSession.user.id)
+              .single();
+
+            setSession(currentSession);
+            setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
+          } catch {
+            logger.warn('Metadata fetch failed, using auth metadata');
+            setSession(currentSession);
+            setUser(mapSupabaseUserToUser(currentSession.user));
+          }
+
+          localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+          logAuditEvent('session_restored', currentSession.user.id);
+        }
+      } catch (error) {
+        logger.error('Erro ao inicializar autenticação:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listener para mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      logger.info('Auth state changed:', { event });
+
+      if (currentSession?.user) {
+        try {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          setSession(currentSession);
+          setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
+        } catch {
+          setSession(currentSession);
+          setUser(mapSupabaseUserToUser(currentSession.user));
+        }
+
+        logAuditEvent(event, currentSession.user.id);
+      } else {
+        setSession(null);
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Monitorar atividade do usuário
+  useEffect(() => {
+    if (!user) return;
+
+    // Throttled activity update: max 1 write per 2 seconds
+    let lastActivityWrite = 0;
+    const updateActivity = () => {
+      const now = Date.now();
+      if (now - lastActivityWrite > 2000) {
+        lastActivityWrite = now;
+        localStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
+      }
+    };
+
+    // Track only meaningful interaction events (not scroll — too noisy)
+    const events = ['mousedown', 'keydown', 'touchstart'];
+    events.forEach(event => {
+      window.addEventListener(event, updateActivity, { passive: true });
+    });
+
+    // Verificar timeout periodicamente
+    const intervalId = setInterval(async () => {
+      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      if (lastActivity) {
+        const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
+        if (timeSinceLastActivity > SESSION_TIMEOUT) {
+          await logout();
+          alert('Sua sessão expirou por inatividade.');
+        }
+      }
+    }, 60000); // Verificar a cada minuto
+
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+      clearInterval(intervalId);
+    };
+  }, [user, logout]);
 
   return (
     <AuthContext.Provider value={{
