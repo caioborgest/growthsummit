@@ -6,7 +6,6 @@ import {
   User,
   MessageSquare,
   Star,
-  Calendar,
   Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

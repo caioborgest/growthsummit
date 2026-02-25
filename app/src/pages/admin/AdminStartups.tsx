@@ -24,6 +24,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useStartups, useLeads } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
@@ -40,7 +41,8 @@ const stageLabels: Record<string, string> = {
 };
 
 export function AdminStartups() {
-  const { data: startups, create, update, isLoading } = useStartups();
+  const { projectId } = useProject();
+  const { data: startups, create, update } = useStartups();
   const { data: leads } = useLeads();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -74,7 +76,13 @@ export function AdminStartups() {
       }
 
       await create({
-        ...formData,
+        projectId: projectId || '',
+        name: formData.name,
+        sector: formData.sector,
+        description: formData.description,
+        stage: formData.stage as 'idea' | 'mvp' | 'traction' | 'scale',
+        website: formData.website,
+        packageType: formData.packageType as 'expo' | 'pitch',
         status: 'approved', // Auto-approved when added by admin
         foundingTeam: [],
         metrics: {
@@ -82,7 +90,7 @@ export function AdminStartups() {
           users: 0,
           growth: 0
         }
-      } as Parameters<typeof create>[0]);
+      } as any);
 
       toast.success('Startup adicionada com sucesso!');
       setIsModalOpen(false);

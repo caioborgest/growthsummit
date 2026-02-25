@@ -101,7 +101,7 @@ export function AdminComunicacao() {
   const [campaignFormData, setCampaignFormData] = useState({
     name: '',
     templateId: '',
-    recipients: 'all' as any
+    recipients: 'all'
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -193,7 +193,7 @@ export function AdminComunicacao() {
       }
 
       // 2. Chamar a Edge Function para enviar
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { error } = await supabase.functions.invoke('send-email', {
         body: {
           to: emails,
           subject: composeData.subject,
@@ -213,10 +213,11 @@ export function AdminComunicacao() {
         body: ''
       });
 
-    } catch (err: any) {
-      logger.error('Send error:', err);
+    } catch (err: unknown) {
+      logger.error('Send error:', { error: err });
       toast.dismiss();
-      toast.error('Erro ao enviar emails: ' + (err.message || 'Erro desconhecido'));
+      const message = err instanceof Error ? err.message : 'Erro desconhecido';
+      toast.error('Erro ao enviar emails: ' + message);
     }
   };
 

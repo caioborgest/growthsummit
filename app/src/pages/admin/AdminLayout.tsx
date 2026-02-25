@@ -14,7 +14,13 @@ import {
   BarChart3,
   LogOut,
   Menu,
-  Ticket
+  Ticket,
+  FolderOpen,
+  MessageCircle,
+  AlertCircle,
+  BookOpen,
+  ChevronDown,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';

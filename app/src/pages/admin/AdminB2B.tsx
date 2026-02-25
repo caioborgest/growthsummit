@@ -7,9 +7,9 @@ import {
   XCircle,
   Star,
   Plus,
-  Sparkles,
   Zap,
-  Zap
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { useProject } from '@/contexts/ProjectContext';
 import { useCompanies, useB2BMeetings, useB2BMatches } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -41,6 +42,7 @@ const interestColors: Record<string, string> = {
 };
 
 export function AdminB2B() {
+  const { projectId } = useProject();
   const { data: companies, create: createCompany } = useCompanies();
   const { data: meetings, create: createMeeting, update, isLoading: isMeetingLoading } = useB2BMeetings();
   const { data: matches, refetch: refetchMatches } = useB2BMatches();
@@ -82,6 +84,7 @@ export function AdminB2B() {
       const vendor = companies.find(c => c.id === meetingFormData.companyVendorId);
 
       await createMeeting({
+        projectId: projectId || '',
         companyAnchorId: meetingFormData.companyAnchorId,
         companyVendorId: meetingFormData.companyVendorId,
         companyAnchorName: anchor?.name || '',
@@ -89,8 +92,8 @@ export function AdminB2B() {
         scheduledAt: meetingFormData.scheduledAt,
         status: 'scheduled',
         duration: meetingFormData.duration,
-        tableNumber: meetingFormData.tableNumber
-      } as Parameters<typeof createMeeting>[0]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
       toast.success('Reunião agendada com sucesso!');
       setIsMeetingModalOpen(false);
