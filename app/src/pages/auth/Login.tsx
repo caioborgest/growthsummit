@@ -31,8 +31,15 @@ export function Login() {
         case 'startup':
           navigate('/startup-area');
           break;
-        default:
+        case 'sponsor':
+          navigate('/patrocinador-area');
+          break;
+        case 'participant':
+        case 'participante':
           navigate('/minha-area');
+          break;
+        default:
+          navigate('/');
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -66,8 +73,15 @@ export function Login() {
           case 'startup':
             navigate('/startup-area');
             break;
-          default:
+          case 'sponsor':
+            navigate('/patrocinador-area');
+            break;
+          case 'participant':
+          case 'participante':
             navigate('/minha-area');
+            break;
+          default:
+            navigate('/');
         }
       }
     } catch (err) {

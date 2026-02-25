@@ -110,7 +110,9 @@ function AppRoutes() {
                   user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
                     user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
                       user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
-                        <Navigate to="/minha-area" replace />
+                        user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
+                          (user?.role === 'participant' || user?.role === 'participante') ? <Navigate to="/minha-area" replace /> :
+                            <Home />
               ) : (
                 <Navigate to="/login" replace />
               )
