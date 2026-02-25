@@ -1,11 +1,12 @@
 import { useSessions } from '@/hooks/useData';
 import { useMemo } from 'react';
+import type { Session } from '@/types';
 
 export function useProgramacaoTriunfo() {
     const { data: sessions, isLoading, error } = useSessions();
 
     const programacao = useMemo(() => {
-        const transformAtividade = (s: any) => ({
+        const transformAtividade = (s: Session) => ({
             id: s.id,
             horario: s.startTime,
             titulo: s.title,
@@ -69,7 +70,7 @@ export function useProgramacaoTriunfo() {
             tempo: s.metadata?.tempo || '10-15 min',
             temas: s.topics || [],
             cor: s.color || 'orange',
-            icon: (props: any) => null, // Placeholder fixed below
+            icon: () => null, // Placeholder fixed below
             formato: s.type,
             capacidade: s.maxCapacity?.toString() || '300/dia',
             totalDia: s.metadata?.totalDia || 'Contínuo',

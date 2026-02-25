@@ -332,7 +332,7 @@ export interface Session {
   registeredCount: number;
   topics?: string[];
   color?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Notification {

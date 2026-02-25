@@ -9,14 +9,14 @@ const isDevelopment = import.meta.env.DEV;
 const isProduction = import.meta.env.PROD;
 
 interface LogContext {
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 class Logger {
     /**
      * Log informativo (apenas em desenvolvimento)
      */
-    log(...args: any[]): void {
+    log(...args: unknown[]): void {
         if (isDevelopment) {
             console.log(...args);
         }
@@ -45,7 +45,7 @@ class Logger {
      * Em desenvolvimento: mostra no console
      * Em produção: envia para serviço de monitoramento
      */
-    error(message: string, error?: any, context?: LogContext): void {
+    error(message: string, error?: unknown, context?: LogContext): void {
         if (isDevelopment) {
             console.error(`❌ ${message}`, error || '', context || '');
         } else if (isProduction) {
@@ -64,7 +64,7 @@ class Logger {
     /**
      * Log de debug (apenas em desenvolvimento)
      */
-    debug(message: string, data?: any): void {
+    debug(message: string, data?: unknown): void {
         if (isDevelopment) {
             console.debug(`🐛 ${message}`, data || '');
         }
@@ -113,7 +113,7 @@ class Logger {
     /**
      * Exibe tabela (apenas em desenvolvimento)
      */
-    table(data: any): void {
+    table(data: unknown): void {
         if (isDevelopment) {
             console.table(data);
         }

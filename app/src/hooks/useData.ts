@@ -40,11 +40,8 @@ const getTableName = (projectId: string, entity: string) => {
   return entity;
 };
 
-// Helper to map CamelCase back to snake_case for Supabase
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapToSnakeCase = (obj: Record<string, unknown>) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result: Record<string, any> = {};
+const mapToSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -54,8 +51,7 @@ const mapToSnakeCase = (obj: Record<string, unknown>) => {
   return result;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mapToSupabase = (projectId: string, entity: string, data: Record<string, any>): any => {
+const mapToSupabase = (projectId: string, entity: string, data: Record<string, unknown>): Record<string, unknown> => {
   const result = mapToSnakeCase(data);
 
   // Project isolation
@@ -77,7 +73,7 @@ const mapToSupabase = (projectId: string, entity: string, data: Record<string, a
       if (data.description) result.descricao_startup = data.description;
       if (data.sector) result.setor = data.sector;
       if (data.stage) result.estagio = data.stage;
-      if (data.foundingTeam && data.foundingTeam.length > 0) {
+      if (data.foundingTeam && Array.isArray(data.foundingTeam) && data.foundingTeam.length > 0) {
         result.nome_fundador = data.foundingTeam[0].name;
       }
     }
@@ -100,7 +96,7 @@ const mapToSupabase = (projectId: string, entity: string, data: Record<string, a
     if (entity === 'mentoring_sessions') {
       if (data.menteeName) result.nome_mentorado = data.menteeName;
       if (data.topic) result.tema_interesse = data.topic;
-      if (data.scheduledAt) result.horario_preferido = data.scheduledAt.toString();
+      if (data.scheduledAt) result.horario_preferido = String(data.scheduledAt);
     }
 
     if (entity === 'cupons') {
@@ -178,7 +174,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     try {
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
-      let query = supabase.from(tableName as any).select(fields);
+      let query = (supabase.from(tableName as never).select(fields) as any);
 
       // Filter by project for non-generic tables
       if (tableName !== 'projects' && tableName !== 'users' && tableName !== 'profiles') {
@@ -284,14 +280,14 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     if (!projectId) throw new Error('No project selected');
     setIsLoading(true);
     try {
-      const tableName = getTableName(projectId, entityName);
-      const dataToInsert = mapToSupabase(projectId, entityName, item);
+      const tableName = getTableName(projectId!, entityName);
+      const dataToInsert = mapToSupabase(projectId!, entityName, item as Record<string, unknown>);
 
-      const { data: inserted, error } = await supabase
-        .from(tableName as any)
-        .insert(dataToInsert as any)
+      const { data: inserted, error } = await (supabase
+        .from(tableName as never)
+        .insert(dataToInsert as never)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
 
@@ -310,7 +306,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     setIsLoading(true);
     try {
       const tableName = getTableName(projectId!, entityName);
-      const dataToUpdate = mapToSupabase(projectId!, entityName, updates);
+      const dataToUpdate = mapToSupabase(projectId!, entityName, updates as Record<string, unknown>);
 
       // Se for a tabela de projetos, tratar os campos específicos
       if (tableName === 'projects') {
@@ -339,7 +335,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from(tableName)
-        .update(dataToUpdate)
+        .update(dataToUpdate as never)
         .eq('id', id);
 
       if (error) throw error;

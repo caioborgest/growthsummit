@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
 import { logger } from '@/lib/logger';
+import { logAuditEvent } from '@/lib/auth-audit';
 
 interface AuthContextType {
   user: User | null;
@@ -79,7 +80,6 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
-// Mapeamento de roles para normalização (sempre em lowercase)
 const ROLE_MAPPING: Record<string, string> = {
   'participante': 'participant',
   'admin': 'admin',
@@ -92,8 +92,20 @@ const ROLE_MAPPING: Record<string, string> = {
   'sponsor': 'sponsor'
 };
 
+interface UserDBMetadata {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  avatar?: string;
+  phone?: string;
+  staff_role?: string;
+  permissions?: string[];
+  two_factor_enabled?: boolean;
+}
+
 // Converter SupabaseUser para User
-function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: any): User {
+function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
   const rawRole = (metadata?.role || supabaseUser.user_metadata?.role || 'participant').toLowerCase();
   const role = ROLE_MAPPING[rawRole] || rawRole;
 
@@ -133,15 +145,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (currentSession?.user) {
           try {
             // Buscar metadados silenciosamente
-            const { data: userData } = await (supabase
+            const { data: userData } = await supabase
               .from('users')
               .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
               .eq('id', currentSession.user.id)
-              .single() as any);
+              .single();
 
             setSession(currentSession);
-            setUser(mapSupabaseUserToUser(currentSession.user, userData));
-          } catch (e) {
+            setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
+          } catch {
             logger.warn('Metadata fetch failed, using auth metadata');
             setSession(currentSession);
             setUser(mapSupabaseUserToUser(currentSession.user));
@@ -165,15 +177,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (currentSession?.user) {
         try {
-          const { data: userData } = await (supabase
+          const { data: userData } = await supabase
             .from('users')
             .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
             .eq('id', currentSession.user.id)
-            .single() as any);
+            .single();
 
           setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user, userData));
-        } catch (e) {
+          setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
+        } catch {
           setSession(currentSession);
           setUser(mapSupabaseUserToUser(currentSession.user));
         }
@@ -228,7 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       clearInterval(intervalId);
     };
-  }, [user]);
+  }, [user, logout]);
 
   // Login com email e senha
   const login = useCallback(async (email: string, password: string): Promise<User | null> => {
@@ -260,28 +272,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Limpar tentativas de login
         rateLimiter.clearAttempts(email);
 
-        let userData = null;
+        let userData: UserDBMetadata | null = null;
         try {
-          const { data: ud } = await (supabase
+          const { data: ud } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
-            .single() as any);
-          userData = ud;
-        } catch (e) {
+            .single();
+          userData = ud as UserDBMetadata;
+        } catch {
           logger.warn('No DB metadata for user');
         }
 
         // Verificar se 2FA está habilitado
-        if ((userData as any)?.two_factor_enabled) {
+        if (userData?.two_factor_enabled) {
           // Redirecionar para verificação 2FA
           setSession(data.session);
-          const u = { ...mapSupabaseUserToUser(data.user, userData), requires2FA: true };
+          const u = { ...mapSupabaseUserToUser(data.user, userData || undefined), requires2FA: true };
           setUser(u);
           return u;
         }
 
-        const userObj = mapSupabaseUserToUser(data.user, userData);
+        const userObj = mapSupabaseUserToUser(data.user, userData || undefined);
         setSession(data.session);
         setUser(userObj);
         localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
@@ -291,7 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return userObj;
       }
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Erro no login:', error);
       throw error;
     } finally {
@@ -321,9 +333,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
       if (error) throw error;
       if (data.user) {
-        const { data: userData } = await (supabase.from('users').select('*').eq('id', data.user.id).single() as any);
+        const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
         setSession(data.session);
-        setUser(mapSupabaseUserToUser(data.user, userData));
+        setUser(mapSupabaseUserToUser(data.user, userData as UserDBMetadata));
         logAuditEvent('otp_verified', data.user.id);
       }
     } finally {
@@ -339,7 +351,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setSession(null);
       localStorage.removeItem(LAST_ACTIVITY_KEY);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Logout error:', error);
       throw error;
     }
@@ -354,7 +366,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Atualizar perfil
   const updateProfile = useCallback(async (data: Partial<User>) => {
     if (!user) throw new Error('Auth required');
-    const { error } = await (supabase.from('users') as any).update(data).eq('id', user.id);
+    const { error } = await supabase.from('users').update(data).eq('id', user.id);
     if (error) throw error;
     setUser({ ...user, ...data });
     logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
@@ -363,28 +375,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Habilitar 2FA
   const enable2FA = useCallback(async (): Promise<{ qrCode: string; secret: string }> => {
     if (!user) throw new Error('Auth required');
-    const { data, error } = await (supabase.rpc('generate_2fa_secret', { user_id: user.id } as any) as any);
+    const { data, error } = await supabase.rpc('generate_2fa_secret', { user_id: user.id });
     if (error) throw error;
     logAuditEvent('2fa_enabled', user.id);
-    return data;
+    return data as { qrCode: string; secret: string };
   }, [user]);
 
   // Verificar código 2FA
   const verify2FA = useCallback(async (token: string): Promise<boolean> => {
     if (!user) throw new Error('Auth required');
-    const { data, error } = await (supabase.rpc('verify_2fa_token', { user_id: user.id, token } as any) as any);
+    const { data, error } = await supabase.rpc('verify_2fa_token', { user_id: user.id, token });
     if (error) throw error;
     if (data) {
       setUser({ ...user, requires2FA: false });
       logAuditEvent('2fa_verified', user.id);
     }
-    return data;
+    return !!data;
   }, [user]);
 
   // Desabilitar 2FA
   const disable2FA = useCallback(async () => {
     if (!user) throw new Error('Auth required');
-    const { error } = await (supabase.from('users') as any).update({ two_factor_enabled: false }).eq('id', user.id);
+    const { error } = await supabase.from('users').update({ two_factor_enabled: false }).eq('id', user.id);
     if (error) throw error;
     setUser({ ...user, twoFactorEnabled: false });
     logAuditEvent('2fa_disabled', user.id);
@@ -418,36 +430,4 @@ export function useAuth() {
   return context;
 }
 
-// ---------------------------------------------------------
-// HELPERS (NÃO BLOQUEANTES)
-// ---------------------------------------------------------
 
-function logAuditEvent(event: string, userId?: string, metadata?: any) {
-  // Fire and forget
-  getClientIP().then(ip => {
-    (supabase.from('audit_logs') as any).insert({
-      event,
-      user_id: userId,
-      metadata,
-      ip_address: ip,
-      user_agent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-    }).then(({ error }: any) => {
-      if (error) logger.error('Audit log error:', error);
-    });
-  }).catch(() => { });
-}
-
-async function getClientIP(): Promise<string> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 2000); // 2 segundos timeout
-
-  try {
-    const response = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-    clearTimeout(id);
-    const data = await response.json();
-    return data.ip;
-  } catch {
-    return 'unknown';
-  }
-}
