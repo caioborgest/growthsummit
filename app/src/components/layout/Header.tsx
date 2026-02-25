@@ -142,27 +142,45 @@ export function Header() {
           {/* CTA Buttons Premium */}
           <div className="hidden lg:flex items-center gap-4">
             {isAuthenticated ? (
-              <div className="flex items-center gap-2 bg-white/5 border border-white/5 p-1 rounded-2xl">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-xl px-4 text-xs font-bold text-gray-300 hover:text-white h-10"
-                  asChild
-                >
-                  <Link to={getDashboardLink()}>
-                    <User className="h-4 w-4 mr-2 text-brand-orange-coral" />
-                    {user?.name?.split(' ')[0] || 'Meu Painel'}
-                  </Link>
-                </Button>
-                <div className="w-px h-4 bg-white/10" />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl w-10 h-10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  onClick={logout}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
+              <div className="flex items-center gap-2 bg-white/5 border border-white/5 p-1 rounded-2xl group">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-xl px-4 text-xs font-bold text-gray-300 hover:text-white h-10 gap-2"
+                    >
+                      <User className="h-4 w-4 text-brand-orange-coral" />
+                      <span className="max-w-[100px] truncate">{user?.name?.split(' ')[0] || 'Meu Painel'}</span>
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-[#161920]/95 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-2xl" align="end">
+                    <div className="px-3 py-2 border-b border-white/5 mb-2">
+                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Logado como</p>
+                      <p className="text-white text-xs font-bold truncate">{user?.email}</p>
+                      <Badge className="mt-2 bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[9px] uppercase font-black">
+                        {user?.role === 'admin' ? 'Administrador' :
+                          user?.role === 'mentor' ? 'Mentor' :
+                            user?.role === 'company' ? 'Empresa' :
+                              user?.role === 'startup' ? 'Startup' :
+                                user?.role === 'sponsor' ? 'Patrocinador' : 'Participante'}
+                      </Badge>
+                    </div>
+                    <DropdownMenuItem asChild>
+                      <Link to={getDashboardLink()} className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 cursor-pointer">
+                        Ir para o Painel
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer mt-1"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sair da Conta
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <>

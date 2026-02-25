@@ -26,6 +26,7 @@ import {
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { InscricaoModal } from '@/components/forms/InscricaoModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
@@ -154,6 +155,19 @@ const navItems = [
 function InnerHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { selectedProject } = useProject();
+  const { isAuthenticated, user } = useAuth();
+
+  const getDashboardLink = () => {
+    if (!user) return '/login';
+    switch (user.role) {
+      case 'admin': return '/admin';
+      case 'mentor': return '/mentor-area';
+      case 'company': return '/empresa-area';
+      case 'startup': return '/startup-area';
+      case 'sponsor': return '/patrocinador-area';
+      default: return '/minha-area';
+    }
+  };
 
   return (
     <>
@@ -185,8 +199,10 @@ function InnerHeader() {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <Button variant="outline" className="hidden sm:flex border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10" asChild>
-                <Link to="/login">Entrar</Link>
+              <Button variant="outline" className="hidden sm:flex border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 rounded-xl px-6 h-11" asChild>
+                <Link to={isAuthenticated ? getDashboardLink() : "/login"}>
+                  {isAuthenticated ? (user?.name?.split(' ')[0] || 'Painel') : 'Entrar'}
+                </Link>
               </Button>
               <button className="lg:hidden text-white p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -215,7 +231,9 @@ function InnerHeader() {
 
           <div className="mt-8 px-4 space-y-4">
             <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-16 text-xl font-black rounded-2xl" asChild>
-              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Entrar na Área do Aluno</Link>
+              <Link to={isAuthenticated ? getDashboardLink() : "/login"} onClick={() => setIsMobileMenuOpen(false)}>
+                {isAuthenticated ? `Olá, ${user?.name?.split(' ')[0]}` : 'Entrar na Área do Aluno'}
+              </Link>
             </Button>
             <div className="text-center pt-4">
               <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">{selectedProject?.name || 'Growth Experience'}</p>

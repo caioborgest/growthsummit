@@ -206,45 +206,50 @@ export function AdminLayout() {
 
         {/* Navigation Groups Refined */}
         <nav className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
-          {navigationGroups.map((group) => (
-            <div key={group.title} className="space-y-1">
-              <h3 className="text-[10px] text-gray-600 uppercase font-black tracking-[0.25em] mb-3 px-2 flex items-center">
-                <span>{group.title}</span>
-                <div className="h-[1px] bg-white/5 flex-1 ml-4" />
-              </h3>
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const active = isActive(item.path);
-                  return (
-                    <Link
-                      key={item.id}
-                      to={item.path}
-                      className={`group flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300 relative ${active
-                        ? 'bg-brand-orange-coral text-brand-white shadow-lg shadow-brand-orange-coral/20'
-                        : 'text-gray-500 hover:text-white hover:bg-white/5'
-                        }`}
-                    >
-                      <div className="flex items-center relative z-10">
-                        <item.icon className={`h-5 w-5 mr-3 transition-transform duration-300 group-hover:scale-110 ${active ? 'text-white' : 'text-gray-500 group-hover:text-brand-orange-coral'}`} />
-                        <span className="tracking-tight">{item.name}</span>
-                      </div>
-                      {item.badge && (
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black z-10 ${active
-                          ? 'bg-white/20 text-white'
-                          : 'bg-brand-orange-coral/10 text-brand-orange-coral group-hover:bg-brand-orange-coral group-hover:text-white transition-all'
-                          }`}>
-                          {item.badge}
-                        </span>
-                      )}
-                      {active && (
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white rounded-l-full" />
-                      )}
-                    </Link>
-                  );
-                })}
+          {navigationGroups.map((group) => {
+            // Se for configurações, poderíamos filtrar aqui futuramente
+            const isSettings = group.title === 'Configurações';
+
+            return (
+              <div key={group.title} className="space-y-1">
+                <h3 className="text-[10px] text-gray-600 uppercase font-black tracking-[0.25em] mb-3 px-2 flex items-center">
+                  <span>{group.title}</span>
+                  <div className="h-[1px] bg-white/5 flex-1 ml-4" />
+                </h3>
+                <div className="space-y-1">
+                  {group.items.map((item) => {
+                    const active = isActive(item.path);
+                    return (
+                      <Link
+                        key={item.id}
+                        to={item.path}
+                        className={`group flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300 relative ${active
+                          ? 'bg-brand-orange-coral text-brand-white shadow-lg shadow-brand-orange-coral/20'
+                          : 'text-gray-500 hover:text-white hover:bg-white/5'
+                          }`}
+                      >
+                        <div className="flex items-center relative z-10">
+                          <item.icon className={`h-5 w-5 mr-3 transition-transform duration-300 group-hover:scale-110 ${active ? 'text-white' : 'text-gray-500 group-hover:text-brand-orange-coral'}`} />
+                          <span className="tracking-tight">{item.name}</span>
+                        </div>
+                        {item.badge && (
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black z-10 ${active
+                            ? 'bg-white/20 text-white'
+                            : 'bg-brand-orange-coral/10 text-brand-orange-coral group-hover:bg-brand-orange-coral group-hover:text-white transition-all'
+                            }`}>
+                            {item.badge}
+                          </span>
+                        )}
+                        {active && (
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white rounded-l-full" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* User Profile Section Premium */}
