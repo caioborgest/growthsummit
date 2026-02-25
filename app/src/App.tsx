@@ -89,7 +89,13 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user?.role || '')) {
+  // Normalizar roles para comparação segura
+  const userRole = (user?.role || '').toLowerCase().trim();
+  const normalizedAllowedRoles = allowedRoles?.map(r => r.toLowerCase().trim()) || [];
+
+  if (allowedRoles && !normalizedAllowedRoles.includes(userRole)) {
+    console.warn(`[ProtectedRoute] Acesso negado para role: ${userRole}. Permitidos: ${normalizedAllowedRoles}`);
+    // Se logado mas sem permissão, vai para a página inicial
     return <Navigate to="/" replace />;
   }
 
@@ -98,27 +104,23 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 function AppRoutes() {
   const { isAuthenticated, user } = useAuth();
+
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
           <Route index element={
-            window.matchMedia('(display-mode: standalone)').matches ? (
-              isAuthenticated ? (
-                user?.role === 'admin' ? <Navigate to="/admin" replace /> :
-                  user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
-                    user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
-                      user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
-                        user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
-                          (user?.role === 'participant' || user?.role === 'participante') ? <Navigate to="/minha-area" replace /> :
-                            <Home />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            ) : (
-              <Home />
-            )
+            // Só redireciona automaticamente se estiver no modo standalone (PWA)
+            window.matchMedia('(display-mode: standalone)').matches && isAuthenticated ? (
+              user?.role === 'admin' ? <Navigate to="/admin" replace /> :
+                user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
+                  user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
+                    user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
+                      user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
+                        (user?.role === 'participant' || user?.role === 'participante') ? <Navigate to="/minha-area" replace /> :
+                          <Home />
+            ) : <Home />
           } />
           <Route path="sobre" element={<Sobre />} />
           <Route path="programacao" element={<Programacao />} />
