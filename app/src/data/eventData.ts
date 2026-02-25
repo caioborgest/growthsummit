@@ -4,7 +4,7 @@ export const eventInfo = {
   name: "Growth Summit 2026",
   subtitle: "Gestão e Inovação",
   tagline: "A maior conferência de Growth, Marketing, Vendas e IA do Nordeste",
-  dates: "16 de abril de 2026",
+  dates: "21 de abril de 2026",
   location: "Boulevard Hotel, Juazeiro do Norte - CE",
   address: "Boulevard Hotel, Juazeiro do Norte, Ceará",
   timezone: "-03:00 (Brasil)",
@@ -65,7 +65,7 @@ export const tracks = [
 
 export const schedule = {
   day1: {
-    date: "16 de abril (quinta-feira)",
+    date: "21 de maio (quinta-feira)",
     events: [
       { time: "08:00-09:00", title: "Credenciamento + Coffee da Manhã", type: "networking", speaker: null },
       { time: "09:00-10:00", title: "Abertura + Palestra Âncora: Growth & IA em 2026", type: "keynote", speaker: "Speaker Nacional" },
@@ -78,7 +78,7 @@ export const schedule = {
     ],
   },
   day2: {
-    date: "17 de abril (sexta-feira)",
+    date: "22 de maio (sexta-feira)",
     events: [
       { time: "08:00-09:00", title: "Credenciamento + Café da Manhã", type: "networking", speaker: null },
       { time: "09:00-10:00", title: "Palestra Âncora: Tendências 2026-2027", type: "keynote", speaker: null },

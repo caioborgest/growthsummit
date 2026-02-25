@@ -33,7 +33,7 @@ export function HelpCenter() {
         if (user?.role === 'admin') return true;
 
         // Normalização de roles (ex: participante -> participant)
-        const userRole = user?.role === 'participante' ? 'participant' : user?.role;
+        const userRole = user?.role === 'participant' ? 'participant' : user?.role;
 
         // Cada usuário vê apenas seu respectivo guia
         return guide.role === userRole;

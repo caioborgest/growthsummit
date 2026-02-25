@@ -14,16 +14,8 @@ import {
   BarChart3,
   LogOut,
   Menu,
-  ChevronRight,
-  Bell,
-  FolderOpen,
-  ChevronDown,
-  AlertCircle,
-  MessageCircle,
-  BookOpen,
   Ticket
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';

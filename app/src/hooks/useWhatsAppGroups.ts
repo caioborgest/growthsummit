@@ -97,7 +97,7 @@ export function useWhatsAppGroups(projectId?: string) {
     setError(null);
 
     try {
-      let query = supabase
+      let query = (supabase as any)
         .from('whatsapp_groups')
         .select('*')
         .order('created_at', { ascending: false });
@@ -111,9 +111,10 @@ export function useWhatsAppGroups(projectId?: string) {
       if (supabaseError) throw supabaseError;
 
       setGroups(data || []);
-    } catch (err: any) {
-      setError(err.message);
-      toast.error('Erro ao carregar grupos: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      toast.error('Erro ao carregar grupos: ' + message);
     } finally {
       setLoading(false);
     }
@@ -127,7 +128,7 @@ export function useWhatsAppGroups(projectId?: string) {
     try {
       const { data: user } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('whatsapp_groups')
         .insert({
           ...groupData,
@@ -143,15 +144,16 @@ export function useWhatsAppGroups(projectId?: string) {
       setGroups(prev => [data, ...prev]);
       toast.success('Grupo criado com sucesso!');
       return data;
-    } catch (err: any) {
-      toast.error('Erro ao criar grupo: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao criar grupo: ' + message);
       return null;
     }
   };
 
   const updateGroup = async (groupId: string, updates: Partial<WhatsAppGroup>): Promise<boolean> => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('whatsapp_groups')
         .update(updates)
         .eq('id', groupId);
@@ -161,15 +163,16 @@ export function useWhatsAppGroups(projectId?: string) {
       setGroups(prev => prev.map(g => g.id === groupId ? { ...g, ...updates } : g));
       toast.success('Grupo atualizado com sucesso!');
       return true;
-    } catch (err: any) {
-      toast.error('Erro ao atualizar grupo: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao atualizar grupo: ' + message);
       return false;
     }
   };
 
   const deleteGroup = async (groupId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('whatsapp_groups')
         .delete()
         .eq('id', groupId);
@@ -179,8 +182,9 @@ export function useWhatsAppGroups(projectId?: string) {
       setGroups(prev => prev.filter(g => g.id !== groupId));
       toast.success('Grupo excluído com sucesso!');
       return true;
-    } catch (err: any) {
-      toast.error('Erro ao excluir grupo: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao excluir grupo: ' + message);
       return false;
     }
   };
@@ -217,7 +221,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
     setError(null);
 
     try {
-      const { data, error: supabaseError } = await supabase
+      const { data, error: supabaseError } = await (supabase as any)
         .from('whatsapp_group_members')
         .select('*')
         .eq('group_id', groupId)
@@ -226,9 +230,10 @@ export function useWhatsAppGroupMembers(groupId: string) {
       if (supabaseError) throw supabaseError;
 
       setMembers(data || []);
-    } catch (err: any) {
-      setError(err.message);
-      toast.error('Erro ao carregar membros: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      toast.error('Erro ao carregar membros: ' + message);
     } finally {
       setLoading(false);
     }
@@ -242,7 +247,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
     try {
       const { data: user } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('whatsapp_group_members')
         .insert({
           ...memberData,
@@ -258,8 +263,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
       setMembers(prev => [data, ...prev]);
       toast.success('Membro adicionado com sucesso!');
       return data;
-    } catch (err: any) {
-      toast.error('Erro ao adicionar membro: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao adicionar membro: ' + message);
       return null;
     }
   };
@@ -276,7 +282,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
         invited_at: new Date().toISOString(),
       }));
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('whatsapp_group_members')
         .insert(membersToInsert)
         .select();
@@ -286,8 +292,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
       setMembers(prev => [...data, ...prev]);
       toast.success(`${data.length} membros adicionados com sucesso!`);
       return data.length;
-    } catch (err: any) {
-      toast.error('Erro ao adicionar membros em massa: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao adicionar membros em massa: ' + message);
       return 0;
     }
   };
@@ -304,7 +311,7 @@ export function useWhatsAppGroupMembers(groupId: string) {
         updates.removed_at = new Date().toISOString();
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('whatsapp_group_members')
         .update(updates)
         .eq('id', memberId);
@@ -313,8 +320,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
 
       setMembers(prev => prev.map(m => m.id === memberId ? { ...m, ...updates } : m));
       return true;
-    } catch (err: any) {
-      toast.error('Erro ao atualizar status: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao atualizar status: ' + message);
       return false;
     }
   };
@@ -339,8 +347,9 @@ export function useWhatsAppGroupMembers(groupId: string) {
       } else {
         throw new Error(data.message || 'Erro ao enviar convite');
       }
-    } catch (err: any) {
-      toast.error('Erro ao enviar convite: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao enviar convite: ' + message);
       return false;
     }
   };
@@ -380,7 +389,7 @@ export function useWhatsAppTemplates(projectId?: string) {
     setLoading(true);
 
     try {
-      let query = supabase
+      let query = (supabase as any)
         .from('whatsapp_message_templates')
         .select('*')
         .eq('is_active', true)
@@ -398,8 +407,9 @@ export function useWhatsAppTemplates(projectId?: string) {
       if (error) throw error;
 
       setTemplates(data || []);
-    } catch (err: any) {
-      toast.error('Erro ao carregar templates: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao carregar templates: ' + message);
     } finally {
       setLoading(false);
     }
@@ -413,7 +423,7 @@ export function useWhatsAppTemplates(projectId?: string) {
     try {
       const { data: user } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('whatsapp_message_templates')
         .insert({
           ...templateData,
@@ -427,8 +437,9 @@ export function useWhatsAppTemplates(projectId?: string) {
       setTemplates(prev => [data, ...prev]);
       toast.success('Template criado com sucesso!');
       return data;
-    } catch (err: any) {
-      toast.error('Erro ao criar template: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao criar template: ' + message);
       return null;
     }
   };
@@ -470,7 +481,7 @@ export function useWhatsAppStats(projectId?: string) {
 
     try {
       // Buscar estatísticas de grupos
-      let groupsQuery = supabase
+      let groupsQuery = (supabase as any)
         .from('whatsapp_groups')
         .select('id, is_active, is_full, current_participants');
 
@@ -485,7 +496,7 @@ export function useWhatsAppStats(projectId?: string) {
       const groupIds = groups?.map(g => g.id) || [];
 
       // Buscar estatísticas de membros
-      let membersQuery = supabase
+      let membersQuery = (supabase as any)
         .from('whatsapp_group_members')
         .select('status');
 
@@ -505,8 +516,9 @@ export function useWhatsAppStats(projectId?: string) {
         pendingInvites: members?.filter(m => m.status === 'pending').length || 0,
         acceptedInvites: members?.filter(m => m.status === 'joined').length || 0,
       });
-    } catch (err: any) {
-      toast.error('Erro ao carregar estatísticas: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error('Erro ao carregar estatísticas: ' + message);
     } finally {
       setLoading(false);
     }

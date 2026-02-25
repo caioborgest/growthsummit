@@ -193,7 +193,7 @@ export function DashboardParticipante() {
                     </div>
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
                       <span className="text-gray-400">Status Financeiro</span>
-                      {myRegistration?.statusPagamento === 'pago' ? (
+                      {myRegistration?.status === 'paid' ? (
                         <Badge className="bg-green-500/20 text-green-400 border-none">Confirmado</Badge>
                       ) : (
                         <Badge className="bg-orange-500/20 text-orange-400 border-none uppercase text-[10px] font-black">

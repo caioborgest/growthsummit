@@ -7,7 +7,7 @@ import {
   MessageSquare,
   Star,
   Calendar,
-  Plus
+  Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,7 +75,7 @@ export function AdminMentorias() {
         status: 'scheduled',
         topic: formData.topic,
         duration: formData.duration
-      } as any);
+      } as Parameters<typeof create>[0]);
 
       toast.success('Mentoria agendada com sucesso!');
       setIsModalOpen(false);

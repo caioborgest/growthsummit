@@ -9,7 +9,7 @@ import {
   Plus,
   Sparkles,
   Zap,
-  Calendar
+  Zap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,7 @@ export function AdminB2B() {
         status: 'scheduled',
         duration: meetingFormData.duration,
         tableNumber: meetingFormData.tableNumber
-      } as any);
+      } as Parameters<typeof createMeeting>[0]);
 
       toast.success('Reunião agendada com sucesso!');
       setIsMeetingModalOpen(false);
@@ -101,7 +101,7 @@ export function AdminB2B() {
         duration: 20,
         tableNumber: ''
       });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao agendar reunião');
     }
   };
@@ -114,7 +114,7 @@ export function AdminB2B() {
         return;
       }
 
-      await createCompany(companyFormData as any);
+      await createCompany(companyFormData as Parameters<typeof createCompany>[0]);
       toast.success('Empresa cadastrada com sucesso!');
       setIsCompanyModalOpen(false);
       setCompanyFormData({
@@ -126,7 +126,7 @@ export function AdminB2B() {
         type: 'vendor',
         maxMeetings: 10
       });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao cadastrar empresa');
     }
   };
@@ -141,7 +141,7 @@ export function AdminB2B() {
       });
       refetchMatches();
     } catch (err) {
-      logger.error('Erro ao gerar agenda:', err);
+      logger.error('Erro ao gerar agenda:', { error: err });
       toast.error('Erro ao gerar agenda');
     } finally {
       setIsGenerating(false);

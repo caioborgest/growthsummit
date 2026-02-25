@@ -82,7 +82,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             if (authError) {
                 // Se já existe, tentamos fazer login automático
                 if (authError.message.includes('already registered')) {
-                    logger.log('Usuário já registrado, tentando login...');
+                    logger.info('Usuário já registrado, tentando login...');
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                         email: dados.email,
                         password: dados.senha
@@ -90,9 +90,9 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
                     if (!signInError) {
                         userId = signInData.user.id;
-                        logger.log('Login automático realizado:', userId);
+                        logger.info('Login automático realizado', { userId });
                     } else {
-                        logger.warn('Login automático falhou:', signInError.message);
+                        logger.warn('Login automático falhou:', { message: signInError.message });
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -117,10 +117,10 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
                     if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                        logger.warn('Erro ao sincronizar tabela public.users:', { message: userTableError.message });
                     }
                 } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users', { error: userTableCatch as Error });
                 }
             }
 
@@ -142,7 +142,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             if (mentoriaError) throw new Error(mentoriaError.message);
 
             // 3. Sucesso - continuar
-            onConfirmar(userId, mentoriaData?.[0]?.id || '');
+            onConfirmar(userId || '', mentoriaData?.[0]?.id || '');
 
         } catch (err: unknown) {
             logger.error('Erro ao confirmar mentoria:', err);

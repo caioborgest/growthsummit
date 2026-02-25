@@ -134,7 +134,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                     if (!signInError) {
                         userId = signInData.user.id;
                     } else {
-                        logger.warn('Login automático falhou:', signInError.message);
+                        logger.warn('Login automático falhou:', { message: signInError.message });
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -159,7 +159,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
                 } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', { error: userTableCatch });
                 }
             }
 
@@ -195,7 +195,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             if (supabaseError) throw supabaseError;
 
             // Analytics tracking
-            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            const win = window as unknown as { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
             if (typeof window !== 'undefined' && win.gtag) {
                 win.gtag('event', 'startup_inscricao', {
                     event_category: 'Arena Pitch',
@@ -230,7 +230,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 onClose();
             }, 3000);
         } catch (err: unknown) {
-            logger.error('Erro na inscrição de startup:', err);
+            logger.error('Erro na inscrição de startup:', { error: err });
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
             if (err instanceof Error) {

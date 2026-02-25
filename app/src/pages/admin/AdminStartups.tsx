@@ -9,8 +9,7 @@ import {
   Users,
   DollarSign,
   ExternalLink,
-  Star,
-  Plus
+  Star
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -83,7 +82,7 @@ export function AdminStartups() {
           users: 0,
           growth: 0
         }
-      } as any);
+      } as Parameters<typeof create>[0]);
 
       toast.success('Startup adicionada com sucesso!');
       setIsModalOpen(false);
@@ -95,7 +94,7 @@ export function AdminStartups() {
         website: '',
         packageType: 'expo'
       });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao adicionar startup');
     }
   };
@@ -184,7 +183,7 @@ export function AdminStartups() {
                   <Label>Estágio</Label>
                   <select
                     value={formData.stage}
-                    onChange={e => setFormData({ ...formData, stage: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, stage: e.target.value as 'idea' | 'mvp' | 'traction' | 'scale' })}
                     className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
                   >
                     <option value="idea">Ideia</option>
@@ -197,7 +196,7 @@ export function AdminStartups() {
                   <Label>Pacote</Label>
                   <select
                     value={formData.packageType}
-                    onChange={e => setFormData({ ...formData, packageType: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, packageType: e.target.value as 'expo' | 'pitch' })}
                     className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
                   >
                     <option value="expo">Apenas Expo</option>

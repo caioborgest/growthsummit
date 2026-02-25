@@ -167,22 +167,22 @@ export function AdminComunicacao() {
 
       // 1. Buscar destinatários baseados no filtro
       if (composeData.recipients === 'all') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email');
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       } else if (composeData.recipients === 'paid') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pago');
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pago') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       } else if (composeData.recipients === 'pending') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pendente');
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pendente') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       } else if (composeData.recipients === 'vip') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('tipo_inscricao', 'vip');
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('tipo_inscricao', 'vip') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       } else if (composeData.recipients === 'mentors') {
-        const { data } = await supabase.from('mentores_growth_experience').select('email');
+        const { data } = await supabase.from('mentores_growth_experience').select('email') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       } else if (composeData.recipients === 'startups') {
-        const { data } = await supabase.from('startups_arena_pitch').select('email');
+        const { data } = await supabase.from('startups_arena_pitch').select('email') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
       }
 

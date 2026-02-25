@@ -126,7 +126,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     if (error || !data) {
                         newErrors.codigo = 'Código inválido ou inativo';
                     } else {
-                        const couponData = data as any;
+                        const couponData = data;
                         if (couponData.indicacao_tipo !== indicacaoTipo) {
                             newErrors.codigo = `Este código pertence à categoria ${couponData.indicacao_tipo}`;
                         } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
@@ -138,7 +138,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         }
                     }
                 } catch (validationError) {
-                    logger.error('Erro na validação pública:', validationError);
+                    logger.error('Erro na validação pública:', { error: validationError });
                     newErrors.codigo = 'Erro ao validar código';
                 } finally {
                     setValidating(false);
@@ -356,7 +356,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                 <button
                                     key={tipo.id}
                                     type="button"
-                                    onClick={() => setIndicacaoTipo(tipo.id as any)}
+                                    onClick={() => setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo'])}
                                     className={`px-2 py-2 rounded-xl border text-[10px] sm:text-xs font-bold transition-all h-full ${indicacaoTipo === tipo.id
                                         ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white shadow-glow-orange/20'
                                         : 'bg-dark-200 border-white/5 text-gray-400 hover:border-white/10'

@@ -155,9 +155,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
                     if (!signInError) {
                         userId = signInData.user.id;
-                        logger.info('Login automático realizado:', userId);
+                        logger.info('Login automático realizado:', { userId });
                     } else {
-                        logger.warn('Login automático falhou:', signInError.message);
+                        logger.warn('Login automático falhou:', { message: signInError.message });
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -182,10 +182,10 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
                     if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                        logger.warn('Erro ao sincronizar tabela public.users:', { message: userTableError.message });
                     }
                 } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', { error: userTableCatch });
                 }
             }
 
@@ -281,8 +281,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 setIsSuccess(false);
                 onClose();
             }, 3000);
-        } catch (err: unknown) {
-            logger.error('Erro na inscrição B2B:', err);
+        } catch (err) {
+            toast.error('Erro ao enviar aplicação');
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
             if (err instanceof Error) {

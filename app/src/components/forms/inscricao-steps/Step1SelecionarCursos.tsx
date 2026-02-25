@@ -62,7 +62,7 @@ export function Step1SelecionarCursos({
                 ) : cursosDisponiveis.length > 0 ? (
                     cursosDisponiveis.map((curso) => {
                         const isSelected = selecionados.includes(curso.id);
-                        const isFull = curso.maxCapacity > 0 && (curso.registeredCount || 0) >= curso.maxCapacity;
+                        const isFull = (curso.maxCapacity ?? 0) > 0 && (curso.registeredCount || 0) >= (curso.maxCapacity ?? 0);
 
                         return (
                             <div
@@ -114,10 +114,10 @@ export function Step1SelecionarCursos({
                                                     </Badge>
                                                 )}
                                             </div>
-                                            {!isFull && curso.maxCapacity > 0 && (
+                                            {(curso.maxCapacity ?? 0) > 0 && !isFull && (
                                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                                                     <Users className="h-3 w-3" />
-                                                    <span>{curso.maxCapacity - (curso.registeredCount || 0)} vagas restantes</span>
+                                                    <span>{(curso.maxCapacity ?? 0) - (curso.registeredCount || 0)} vagas restantes</span>
                                                 </div>
                                             )}
                                         </div>

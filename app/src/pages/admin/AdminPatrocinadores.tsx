@@ -59,7 +59,7 @@ export function AdminPatrocinadores() {
     status: 'prospect' as 'prospect' | 'negotiation' | 'closed' | 'cancelled'
   });
 
-  const [_selectedSponsor, _setSelectedSponsor] = useState<string | null>(null);
+  // const [_selectedSponsor, _setSelectedSponsor] = useState<string | null>(null);
 
   const filteredSponsors = sponsors.filter(sponsor => {
     const matchesSearch =
@@ -93,7 +93,7 @@ export function AdminPatrocinadores() {
         contactPhone: '',
         status: 'prospect'
       });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao adicionar patrocinador');
     }
   };

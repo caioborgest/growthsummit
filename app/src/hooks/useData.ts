@@ -157,6 +157,7 @@ function getSelectFields(entity: string, projectId?: string): string {
 export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations') {
   const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const { projectId } = useProject();
 
   const fetchData = useCallback(async () => {
@@ -171,6 +172,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     }
 
     setIsLoading(true);
+    setError(null);
     try {
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
@@ -181,9 +183,9 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         query = query.eq('project_id', projectId);
       }
 
-      const { data: supabaseData, error } = await query;
+      const { data: supabaseData, error: supabaseError } = await query;
 
-      if (error) throw error;
+      if (supabaseError) throw supabaseError;
 
       // Basic mapping from snake_case to CamelCase if needed
       const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => {
@@ -270,7 +272,9 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       // Store in cache
       dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
     } catch (err) {
-      logger.error(`Erro ao buscar ${entityName}:`, err);
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      setError(errorObj);
+      logger.error(`Erro ao buscar ${entityName}:`, errorObj);
     } finally {
       setIsLoading(false);
     }
@@ -392,6 +396,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     getById,
     filter,
     refetch: fetchData,
+    error,
   };
 }
 
@@ -521,8 +526,8 @@ export function useProjects() {
       }
 
       const { error } = await supabase
-        .from('projects' as any)
-        .update(dataToUpdate as any)
+        .from('projects')
+        .update(dataToUpdate)
         .eq('id', id);
 
       if (error) throw error;

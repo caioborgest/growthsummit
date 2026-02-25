@@ -3,7 +3,7 @@ import { Calendar, MapPin, Users, Clock, ArrowRight, Sparkles } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-import { Project } from '@/types';
+import type { Project } from '@/types';
 
 interface HeroSectionProps {
     onCTAClick: () => void;
