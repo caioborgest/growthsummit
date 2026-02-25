@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSessions } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import type { Session } from '@/types';
 import { Clock } from 'lucide-react';
 
@@ -70,6 +71,7 @@ const rooms = [
 ];
 
 export function AdminProgramacao() {
+  const { projectId } = useProject();
   const { data: sessions, create, update, remove } = useSessions();
   const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
   const [showForm, setShowForm] = useState(false);
@@ -113,11 +115,10 @@ export function AdminProgramacao() {
     } else {
       await create({
         ...payload,
-        projectId: sessions[0]?.projectId || 'ge-triunfo-2026', // Fallback or get from context if possible
+        projectId: projectId || 'ge-triunfo-2026',
         registeredCount: 0,
         type: payload.type as Session['type'],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      });
     }
     setShowForm(false);
     setEditingSession(null);

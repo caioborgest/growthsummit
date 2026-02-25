@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCoupons } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import type { Coupon } from '@/types';
 import { logger } from '@/lib/logger';
 
@@ -33,6 +34,7 @@ const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string
 };
 
 export function AdminCupons() {
+    const { projectId } = useProject();
     const { data: cupons, create, update, remove, isLoading } = useCoupons();
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState<Coupon['indicacaoTipo'] | 'all'>('all');
@@ -60,22 +62,30 @@ export function AdminCupons() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const payload: Partial<Coupon> = {
-                codigo: formData.codigo.toUpperCase(),
-                indicacaoTipo: formData.indicacaoTipo,
-                indicacaoNome: formData.indicacaoNome,
-                porcentagemDesconto: Number(formData.porcentagemDesconto),
-                usoLimite: formData.usoLimite ? Number(formData.usoLimite) : undefined,
-                descricao: formData.descricao,
-                vencimento: formData.vencimento || undefined,
-                ativo: formData.ativo,
-                usoAtual: editingCoupon ? editingCoupon.usoAtual : 0
-            };
-
             if (editingCoupon) {
-                await update(editingCoupon.id, payload);
+                await update(editingCoupon.id, {
+                    codigo: formData.codigo.toUpperCase(),
+                    indicacaoTipo: formData.indicacaoTipo,
+                    indicacaoNome: formData.indicacaoNome,
+                    porcentagemDesconto: Number(formData.porcentagemDesconto),
+                    usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
+                    descricao: formData.descricao,
+                    vencimento: formData.vencimento || undefined,
+                    ativo: formData.ativo,
+                });
             } else {
-                await create(payload as any);
+                await create({
+                    projectId: projectId || '',
+                    codigo: formData.codigo.toUpperCase(),
+                    indicacaoTipo: formData.indicacaoTipo,
+                    indicacaoNome: formData.indicacaoNome,
+                    porcentagemDesconto: Number(formData.porcentagemDesconto),
+                    usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
+                    usoAtual: 0,
+                    descricao: formData.descricao,
+                    vencimento: formData.vencimento || undefined,
+                    ativo: formData.ativo,
+                });
             }
 
             setIsModalOpen(false);
@@ -150,7 +160,7 @@ export function AdminCupons() {
                         <Filter className="h-4 w-4 text-gray-500" />
                         <select
                             value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as any)}
+                            onChange={(e) => setTypeFilter(e.target.value as Coupon['indicacaoTipo'] | 'all')}
                             className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
                             <option value="all">Todos os Tipos</option>
@@ -385,7 +395,7 @@ export function AdminCupons() {
                                     <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tipo de Convênio</label>
                                     <select
                                         value={formData.indicacaoTipo}
-                                        onChange={e => setFormData({ ...formData, indicacaoTipo: e.target.value as any })}
+                                        onChange={e => setFormData({ ...formData, indicacaoTipo: e.target.value as Coupon['indicacaoTipo'] })}
                                         className="w-full h-11 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     >
                                         {Object.entries(typeConfig).map(([key, config]) => (

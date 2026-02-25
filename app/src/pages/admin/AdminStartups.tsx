@@ -90,7 +90,7 @@ export function AdminStartups() {
           users: 0,
           growth: 0
         }
-      } as any);
+      } as unknown as Parameters<typeof create>[0]);
 
       toast.success('Startup adicionada com sucesso!');
       setIsModalOpen(false);

@@ -92,8 +92,7 @@ export function AdminB2B() {
         scheduledAt: meetingFormData.scheduledAt,
         status: 'scheduled',
         duration: meetingFormData.duration,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      });
 
       toast.success('Reunião agendada com sucesso!');
       setIsMeetingModalOpen(false);

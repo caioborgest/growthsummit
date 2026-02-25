@@ -21,6 +21,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useSponsors } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 
 const statusColors: Record<string, string> = {
@@ -45,6 +46,7 @@ const levelLabels: Record<string, string> = {
 };
 
 export function AdminPatrocinadores() {
+  const { projectId } = useProject();
   const { data: sponsors, create, update, isLoading } = useSponsors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -78,9 +80,10 @@ export function AdminPatrocinadores() {
       }
 
       await create({
+        projectId: projectId || '',
         ...formData,
         deliverables: []
-      } as any);
+      });
 
       toast.success('Patrocinador adicionado com sucesso!');
       setIsModalOpen(false);
@@ -163,7 +166,7 @@ export function AdminPatrocinadores() {
                   <Label>Nível</Label>
                   <select
                     value={formData.level}
-                    onChange={e => setFormData({ ...formData, level: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, level: e.target.value as 'bronze' | 'silver' | 'gold' | 'diamond' })}
                     className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
                   >
                     <option value="bronze">Bronze</option>
@@ -187,7 +190,7 @@ export function AdminPatrocinadores() {
                   <Label>Status</Label>
                   <select
                     value={formData.status}
-                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    onChange={e => setFormData({ ...formData, status: e.target.value as 'prospect' | 'negotiation' | 'closed' | 'cancelled' })}
                     className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
                   >
                     <option value="prospect">Prospect</option>
