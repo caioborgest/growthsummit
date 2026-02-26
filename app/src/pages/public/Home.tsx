@@ -37,7 +37,7 @@ function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const targetDate = new Date('2026-05-21T09:00:00-03:00');
+    const targetDate = new Date('2026-04-16T09:00:00-03:00');
 
     const calculateTimeLeft = () => {
       const now = new Date();
@@ -259,7 +259,7 @@ export function Home() {
             </div>
             <div className="flex items-center">
               <Users className="h-5 w-5 mr-2 text-teal-400" />
-              <span>700+ participantes</span>
+              <span>1500+ participantes</span>
             </div>
           </div>
         </div>

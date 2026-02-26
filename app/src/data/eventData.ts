@@ -4,7 +4,7 @@ export const eventInfo = {
   name: "Growth Summit 2026",
   subtitle: "Gestão e Inovação",
   tagline: "A maior conferência de Growth, Marketing, Vendas e IA do Nordeste",
-  dates: "21 de abril de 2026",
+  dates: "16 de abril de 2026",
   location: "Boulevard Hotel, Juazeiro do Norte - CE",
   address: "Boulevard Hotel, Juazeiro do Norte, Ceará",
   timezone: "-03:00 (Brasil)",
@@ -12,7 +12,7 @@ export const eventInfo = {
 };
 
 export const stats = {
-  participants: 700,
+  participants: 1500,
   speakers: 10,
   mentorias: 100,
   b2bMeetings: 120,
