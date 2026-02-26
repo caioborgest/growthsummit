@@ -40,8 +40,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             logger.info('Iniciando inscrição de empresa incentivadora...');
 
             // Salvar no banco de dados
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert({
+            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').insert({
                 project_id: projectId,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,

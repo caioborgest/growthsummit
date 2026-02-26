@@ -29,17 +29,17 @@ import { ensureProject } from '@/lib/ensureProject';
 const conselheiros = [
     {
         nome: "Caio Borges",
-        cargo: "CEO, Growth & IA",
+        cargo: "CEO da CBX Growth & IA",
         bio: "Especialista em inteligência artificial e estratégias de crescimento acelerado.",
-        empresa: "Growth & IA",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/caio-borges.png"
+        empresa: "CBX Growth & IA",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
     },
     {
         nome: "Leandro Batista",
-        cargo: "CEO, Exclusive Fitness",
+        cargo: "CEO da Fitness Exclusive",
         bio: "Especialista em escala de negócios e gestão de alta performance.",
-        empresa: "Exclusive Fitness",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/mentors-photos/leandro-batista.png"
+        empresa: "Fitness Exclusive",
+        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
     }
 ];
 
@@ -51,151 +51,7 @@ const navItems = [
     { label: 'Inscrições', href: '#registro' },
 ];
 
-function InnerHeader() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { isAuthenticated, user } = useAuth();
 
-    const getDashboardLink = () => {
-        if (!user) return '/login';
-        switch (user.role) {
-            case 'admin': return '/admin';
-            case 'mentor': return '/mentor-area';
-            case 'company': return '/empresa-area';
-            case 'startup': return '/startup-area';
-            case 'sponsor': return '/patrocinador-area';
-            default: return '/minha-area';
-        }
-    };
-
-    return (
-        <>
-            <header className="fixed top-0 left-0 right-0 z-50 bg-dark/95 backdrop-blur-md border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20">
-                        <Link to="/" className="flex items-center space-x-3 group transition-transform duration-300 hover:scale-[1.05]">
-                            <img
-                                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
-                                alt="Growth Experience"
-                                className="h-10 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
-                                onError={(e) => {
-                                    e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png';
-                                }}
-                            />
-                        </Link>
-
-                        <nav className="hidden lg:flex items-center space-x-8">
-                            {navItems.map((item) => (
-                                <a
-                                    key={item.label}
-                                    href={item.href}
-                                    className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-brand-orange-coral transition-all duration-300 relative group"
-                                >
-                                    {item.label}
-                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-orange-coral transition-all duration-300 group-hover:w-full" />
-                                </a>
-                            ))}
-                            <Link
-                                to={isAuthenticated ? getDashboardLink() : "/login"}
-                                className="text-xs font-black uppercase tracking-widest text-brand-orange-coral hover:text-white transition-all bg-brand-orange-coral/10 px-4 py-2 rounded-xl"
-                            >
-                                {isAuthenticated ? 'Meu Painel' : 'Acessar Portal'}
-                            </Link>
-                        </nav>
-
-                        <div className="flex items-center space-x-4">
-                            <Button variant="outline" className="hidden sm:flex border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 rounded-xl px-6 h-11" asChild>
-                                <Link to={isAuthenticated ? getDashboardLink() : "/login"}>
-                                    {isAuthenticated ? (user?.name?.split(' ')[0] || 'Painel') : 'Entrar'}
-                                </Link>
-                            </Button>
-                            <button className="lg:hidden text-white p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {isMobileMenuOpen && (
-                <div className="lg:hidden fixed inset-0 z-[45] bg-dark backdrop-blur-2xl px-4 pt-24 pb-12 overflow-y-auto animate-in fade-in duration-300">
-                    <nav className="flex flex-col gap-2">
-                        {navItems.map((item) => (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                className="flex items-center justify-between text-2xl font-black text-gray-300 hover:text-white hover:bg-white/5 transition-all px-6 py-5 rounded-3xl group border border-transparent hover:border-white/5"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                {item.label}
-                                <ArrowRight className="h-6 w-6 text-brand-orange-coral opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-                            </a>
-                        ))}
-                    </nav>
-                    <div className="mt-8 px-4 space-y-4">
-                        <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-16 text-xl font-black rounded-2xl" asChild>
-                            <Link to={isAuthenticated ? getDashboardLink() : "/login"} onClick={() => setIsMobileMenuOpen(false)}>
-                                {isAuthenticated ? `Olá, ${user?.name?.split(' ')[0]}` : 'Entrar na Área do Aluno'}
-                            </Link>
-                        </Button>
-                        <div className="text-center pt-4">
-                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">Growth Experience Petrolina 2026</p>
-                            <Link to="/" className="text-brand-orange-coral text-xs font-black uppercase mt-4 block">Voltar ao Portal Global</Link>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
-    );
-}
-
-function InnerFooter() {
-    return (
-        <footer className="bg-dark-100 border-t border-white/5 pt-20 pb-10 sm:pb-8 relative overflow-hidden">
-            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/5 rounded-full blur-[120px] -z-10 translate-y-1/2 translate-x-1/2" />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-                    <div className="lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-                        <div className="mb-8">
-                            <img
-                                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png"
-                                alt="Growth Experience"
-                                className="h-12 w-auto"
-                            />
-                        </div>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-sm">
-                            A maior imersão de Growth e IA do Vale do São Francisco. O evento que vai conectar Petrolina ao futuro do marketing e das vendas.
-                        </p>
-                    </div>
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h4 className="text-white font-bold text-lg mb-8">Navegação</h4>
-                        <ul className="space-y-4">
-                            {navItems.map(item => (
-                                <li key={item.label}><a href={item.href} className="text-gray-400 hover:text-brand-orange-coral transition-all">{item.label}</a></li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h4 className="text-white font-bold text-lg mb-8">Contato</h4>
-                        <ul className="space-y-6 text-gray-400 text-sm">
-                            <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-brand-orange-coral" /> Petrolina-PE (Vale do São Francisco)</li>
-                            <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-brand-orange-coral" /> petrolina@growthsummit.site</li>
-                            <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-brand-orange-coral" /> (88) 98843-2310</li>
-                        </ul>
-                    </div>
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                        <h4 className="text-white font-bold text-lg mb-8">Desenvolvido por</h4>
-                        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                            <img src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png" className="h-12 mx-auto" alt="CBX" />
-                        </div>
-                    </div>
-                </div>
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
-                    <p className="text-gray-500 text-xs text-center md:text-left">© 2026 Growth Experience Petrolina-PE. Todos os direitos reservados.</p>
-                </div>
-            </div>
-        </footer>
-    );
-}
 
 export function GrowthExperiencePetrolina() {
     const { setSelectedProject, selectedProject: contextProject } = useProject();
@@ -251,7 +107,7 @@ export function GrowthExperiencePetrolina() {
     const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-petrolina';
 
     return (
-        <div className="bg-dark min-h-screen pt-20 flex flex-col overflow-x-hidden">
+        <div className="flex flex-col overflow-x-hidden">
             <SEOHead
                 title="Growth Experience Petrolina-PE 2026 | 30 de Abril"
                 description="A Maior Imersão de Growth e IA do Vale do São Francisco. 30/04/2026 em Petrolina-PE. Inscreva-se para a lista VIP."
@@ -259,7 +115,7 @@ export function GrowthExperiencePetrolina() {
                 url={pageUrl}
             />
 
-            <InnerHeader />
+
 
 
             <section id="sobre" className="py-20 bg-dark-100 relative overflow-hidden">
@@ -291,7 +147,7 @@ export function GrowthExperiencePetrolina() {
 
                         <div className="relative">
                             <img
-                                src="https://images.unsplash.com/photo-1510672981848-a1c4f1cb58f3?q=80&w=2070&auto=format&fit=crop"
+                                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
                                 className="rounded-3xl shadow-2xl border border-white/5"
                                 alt="Petrolina-PE"
                             />
@@ -438,7 +294,7 @@ export function GrowthExperiencePetrolina() {
                 </div>
             </section>
 
-            <InnerFooter />
+
             <WhatsAppButton />
         </div>
     );

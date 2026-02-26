@@ -8,7 +8,6 @@ import { PageLoader } from './components/ui/PageLoader';
 import { Layout } from './components/layout/Layout';
 
 // ── Public Pages (lazy)
-const Home = lazy(() => import('./pages/public/Home').then(m => ({ default: m.Home })));
 const Sobre = lazy(() => import('./pages/public/Sobre').then(m => ({ default: m.Sobre })));
 const Programacao = lazy(() => import('./pages/public/Programacao').then(m => ({ default: m.Programacao })));
 const Palestrantes = lazy(() => import('./pages/public/Palestrantes').then(m => ({ default: m.Palestrantes })));
@@ -22,6 +21,8 @@ const GrowthExperienceTriunfo = lazy(() => import('./pages/public/GrowthExperien
 const GrowthExperiencePetrolina = lazy(() => import('./pages/public/GrowthExperiencePetrolina').then(m => ({ default: m.GrowthExperiencePetrolina })));
 const FAQ = lazy(() => import('./pages/public/FAQ').then(m => ({ default: m.FAQ })));
 const Contato = lazy(() => import('./pages/public/Contato').then(m => ({ default: m.Contato })));
+const SejaMentor = lazy(() => import('./pages/public/SejaMentor').then(m => ({ default: m.SejaMentor })));
+const LocalViagem = lazy(() => import('./pages/public/LocalViagem').then(m => ({ default: m.LocalViagem })));
 const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ default: m.HelpCenter })));
 
 // ── Auth (lazy)
@@ -57,6 +58,23 @@ const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m =>
 const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
 const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
 const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));
+
+// ── Legal Pages (Shared Component Stub)
+function LegalPage({ title }: { title: string }) {
+  return (
+    <div className="min-h-screen bg-dark py-20 px-4">
+      <div className="max-w-4xl mx-auto glass-card p-8 sm:p-12">
+        <h1 className="text-3xl font-bold text-white mb-8">{title}</h1>
+        <div className="prose prose-invert max-w-none text-gray-400">
+          <p>Esta página está em desenvolvimento. Por favor, volte em breve para ler o conteúdo completo sobre {title.toLowerCase()}.</p>
+          <div className="mt-8 pt-8 border-t border-dark-300">
+            <a href="/" className="text-brand-orange-coral hover:underline">Voltar para a página inicial</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── 404 Not Found
 function NotFound() {
@@ -118,9 +136,9 @@ function AppRoutes() {
                   user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
                     user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
                       user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
-                        (user?.role === 'participant' || user?.role === 'participante') ? <Navigate to="/minha-area" replace /> :
-                          <Home />
-            ) : <Home />
+                        (user?.role === 'participant' || (user?.role as string) === 'participante') ? <Navigate to="/minha-area" replace /> :
+                          <GrowthExperience />
+            ) : <GrowthExperience />
           } />
           <Route path="sobre" element={<Sobre />} />
           <Route path="programacao" element={<Programacao />} />
@@ -130,19 +148,24 @@ function AppRoutes() {
           <Route path="rodada-negocios" element={<RodadaB2B />} />
           <Route path="startups" element={<Startups />} />
           <Route path="seja-patrocinador" element={<Patrocinio />} />
-          <Route path="growth-experience" element={<GrowthExperience />} />
+          <Route path="growth-experience" element={<Navigate to="/" replace />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="contato" element={<Contato />} />
-          <Route path="guia" element={
-            <ProtectedRoute>
-              <HelpCenter />
-            </ProtectedRoute>
-          } />
+          <Route path="seja-mentor" element={<SejaMentor />} />
+          <Route path="local-e-viagem" element={<LocalViagem />} />
+          <Route path="termos" element={<LegalPage title="Termos de Uso" />} />
+          <Route path="privacidade" element={<LegalPage title="Política de Privacidade" />} />
+          <Route path="lgpd" element={<LegalPage title="LGPD" />} />
+          <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
+          <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
         </Route>
 
-        {/* Dedicated Pages for Regional Editions (No Global Layout) */}
-        <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
-        <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
+        {/* Help Center (App only, no public layout) */}
+        <Route path="guia" element={
+          <ProtectedRoute>
+            <HelpCenter />
+          </ProtectedRoute>
+        } />
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

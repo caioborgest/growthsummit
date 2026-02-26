@@ -73,14 +73,16 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Chave Pix (E-mail)</p>
                                 <div className="flex items-center gap-2 bg-dark-300/50 p-3 rounded-xl border border-white/5">
                                     <code className="text-orange-300 font-mono text-sm flex-1 truncate">{pixKey}</code>
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={handleCopyPix}
-                                        className="h-8 w-8 hover:bg-orange-500/20 text-orange-400"
-                                    >
-                                        {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                                    </Button>
+                                    {isPending && (
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            onClick={handleCopyPix}
+                                            className="h-8 w-8 hover:bg-orange-500/20 text-orange-400"
+                                        >
+                                            {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 
@@ -155,7 +157,18 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                 {isPending ? (
                     <Button
                         size="lg"
-                        onClick={() => window.open('https://wa.me/5588988432310?text=Comprovante%20Growth%20Summit', '_blank')}
+                        onClick={() => {
+                            const mensagem = encodeURIComponent(
+                                `*Comprovante de Pagamento - Growth Experience*\n\n` +
+                                `Olá! Estou enviando o comprovante da minha inscrição.\n\n` +
+                                `*Dados:* \n` +
+                                `• *Nome:* ${dados.nome}\n` +
+                                `• *Email:* ${dados.email}\n` +
+                                `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
+                                `• *Tipo:* Palestra Noturna / Upgrade`
+                            );
+                            window.open(`https://wa.me/5588988432310?text=${mensagem}`, '_blank');
+                        }}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold shadow-lg h-12 sm:h-14"
                     >
                         <MessageCircle className="h-5 w-5 mr-2" />

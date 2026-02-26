@@ -151,262 +151,7 @@ const navItems = [
   { label: 'Inscrições', href: '#inscricoes' },
 ];
 
-// Header Component
-function InnerHeader() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { selectedProject } = useProject();
-  const { isAuthenticated, user } = useAuth();
 
-  const getDashboardLink = () => {
-    if (!user) return '/login';
-    switch (user.role) {
-      case 'admin': return '/admin';
-      case 'mentor': return '/mentor-area';
-      case 'company': return '/empresa-area';
-      case 'startup': return '/startup-area';
-      case 'sponsor': return '/patrocinador-area';
-      default: return '/minha-area';
-    }
-  };
-
-  return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-dark/95 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center space-x-3 group transition-transform duration-300 hover:scale-[1.05]">
-              <img
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
-                alt="Growth Experience"
-                className="h-10 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png';
-                }}
-              />
-            </Link>
-
-            <nav className="hidden lg:flex items-center space-x-8">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-brand-orange-coral transition-all duration-300 relative group"
-                >
-                  {item.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-orange-coral transition-all duration-300 group-hover:w-full" />
-                </a>
-              ))}
-            </nav>
-
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="hidden sm:flex border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 rounded-xl px-6 h-11" asChild>
-                <Link to={isAuthenticated ? getDashboardLink() : "/login"}>
-                  {isAuthenticated ? (user?.name?.split(' ')[0] || 'Painel') : 'Entrar'}
-                </Link>
-              </Button>
-              <button className="lg:hidden text-white p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Menu Mobile - Fora do header para evitar problemas de empilhamento */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[45] bg-dark backdrop-blur-2xl px-4 pt-24 pb-12 overflow-y-auto animate-in fade-in duration-300">
-          <nav className="flex flex-col gap-2">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="flex items-center justify-between text-2xl font-black text-gray-300 hover:text-white hover:bg-white/5 transition-all px-6 py-5 rounded-3xl group border border-transparent hover:border-white/5"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.label}
-                <ArrowRight className="h-6 w-6 text-brand-orange-coral opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
-              </a>
-            ))}
-          </nav>
-
-          <div className="mt-8 px-4 space-y-4">
-            <Button variant="outline" size="lg" className="w-full border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 h-16 text-xl font-black rounded-2xl" asChild>
-              <Link to={isAuthenticated ? getDashboardLink() : "/login"} onClick={() => setIsMobileMenuOpen(false)}>
-                {isAuthenticated ? `Olá, ${user?.name?.split(' ')[0]}` : 'Entrar na Área do Aluno'}
-              </Link>
-            </Button>
-            <div className="text-center pt-4">
-              <p className="text-gray-500 text-sm font-bold uppercase tracking-widest text-[10px]">{selectedProject?.name || 'Growth Experience'}</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-
-  );
-}
-
-// Footer Component
-function InnerFooter() {
-  return (
-    <footer className="bg-dark-100 border-t border-white/5 pt-20 pb-10 sm:pb-8 relative overflow-hidden">
-      {/* Decoração de Fundo */}
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/5 rounded-full blur-[120px] -z-10 translate-y-1/2 translate-x-1/2" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-          {/* Brand Session */}
-          <div className="lg:col-span-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <div className="mb-8">
-              <img
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png"
-                alt="Growth Experience"
-                className="h-12 w-auto animate-pulse-slow"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
-                }}
-              />
-            </div>
-            <p className="text-gray-400 text-sm sm:text-base leading-relaxed mb-8 max-w-sm">
-              A maior exposição de negócios do Sertão do Pajeú. Transformando empresas locais através de conhecimento prático e conexões reais.
-            </p>
-            <div className="flex items-center gap-4">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-brand-orange-coral hover:text-white hover:border-brand-orange-coral transition-all duration-300 group">
-                <Instagram className="h-5 w-5 transition-transform group-hover:scale-110" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-brand-orange-coral hover:text-white hover:border-brand-orange-coral transition-all duration-300 group">
-                <Linkedin className="h-5 w-5 transition-transform group-hover:scale-110" />
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-brand-orange-coral hover:text-white hover:border-brand-orange-coral transition-all duration-300 group">
-                <Facebook className="h-5 w-5 transition-transform group-hover:scale-110" />
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-bold text-lg mb-8 relative after:content-[''] after:absolute after:bottom-[-8px] after:left-1/2 after:md:left-0 after:ml-[-15px] after:md:ml-0 after:w-[30px] after:h-[2px] after:bg-brand-orange-coral">
-              Navegação
-            </h4>
-            <ul className="space-y-4">
-              <li>
-                <a href="#sobre" className="text-gray-400 hover:text-brand-orange-coral transition-all flex items-center gap-2 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral scale-0 group-hover:scale-100 transition-transform" />
-                  Sobre o Evento
-                </a>
-              </li>
-              <li>
-                <a href="#programacao" className="text-gray-400 hover:text-brand-orange-coral transition-all flex items-center gap-2 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral scale-0 group-hover:scale-100 transition-transform" />
-                  Programação
-                </a>
-              </li>
-              <li>
-                <a href="#palestrantes" className="text-gray-400 hover:text-brand-orange-coral transition-all flex items-center gap-2 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral scale-0 group-hover:scale-100 transition-transform" />
-                  Palestrantes
-                </a>
-              </li>
-              <li>
-                <a href="#inscricoes" className="text-gray-400 hover:text-brand-orange-coral transition-all flex items-center gap-2 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral scale-0 group-hover:scale-100 transition-transform" />
-                  Inscrições
-                </a>
-              </li>
-              <li>
-                <a href="#patrocinios" className="text-gray-400 hover:text-brand-orange-coral transition-all flex items-center gap-2 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral scale-0 group-hover:scale-100 transition-transform" />
-                  Seja Expositor
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-bold text-lg mb-8 relative after:content-[''] after:absolute after:bottom-[-8px] after:left-1/2 after:md:left-0 after:ml-[-15px] after:md:ml-0 after:w-[30px] after:h-[2px] after:bg-brand-orange-coral">
-              Suporte & Contato
-            </h4>
-            <ul className="space-y-6">
-              <li className="flex items-start gap-4">
-                <div className="mt-1 w-8 h-8 rounded-lg bg-brand-orange-coral/10 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="h-4 w-4 text-brand-orange-coral" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold mb-1">Localização</p>
-                  <p className="text-gray-400 text-sm">Espaço Parque, Triunfo-PE</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-4">
-                <div className="mt-1 w-8 h-8 rounded-lg bg-brand-orange-coral/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="h-4 w-4 text-brand-orange-coral" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold mb-1">Email</p>
-                  <p className="text-gray-400 text-sm break-all">contato@growthsummit.site</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-4">
-                <div className="mt-1 w-8 h-8 rounded-lg bg-brand-orange-coral/10 flex items-center justify-center flex-shrink-0">
-                  <Phone className="h-4 w-4 text-brand-orange-coral" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold mb-1">WhatsApp</p>
-                  <p className="text-gray-400 text-sm">(88) 98843-2310</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          {/* Realization */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <h4 className="text-white font-bold text-lg mb-8 relative after:content-[''] after:absolute after:bottom-[-8px] after:left-1/2 after:md:left-0 after:ml-[-15px] after:md:ml-0 after:w-[30px] after:h-[2px] after:bg-brand-orange-coral">
-              Realização
-            </h4>
-            <div className="space-y-6 w-full">
-              <div className="p-4 rounded-xl bg-white border border-white/20 hover:shadow-md transition-all flex flex-col items-center justify-center">
-                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-4">Organização Principal</p>
-                <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/cbx%20growth%20ia/cbxGrowth-versao1.png"
-                  alt="CBX Growth & IA"
-                  className="h-16 w-auto object-contain mx-auto"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png';
-                  }}
-                />
-              </div>
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-3">Patrocinador Master</p>
-                <div className="flex items-center justify-center md:justify-start gap-3">
-                  <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-1 text-xs">SEBRAE-PE</Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
-          <div className="order-2 md:order-1 flex flex-col items-center md:items-start gap-2">
-            <p className="text-gray-500 text-xs sm:text-sm">
-              © 2026 Growth Experience Triunfo-PE. Todos os direitos reservados.
-            </p>
-            <div className="flex items-center gap-4 text-[10px] sm:text-xs text-gray-600">
-              <a href="#" className="hover:text-white transition-colors">Políticas de Privacidade</a>
-              <span className="w-1 h-1 rounded-full bg-gray-600" />
-              <a href="#" className="hover:text-white transition-colors">Termos de Uso</a>
-            </div>
-          </div>
-
-          <div className="order-1 md:order-2 flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-            <Sparkles className="h-3 w-3 text-brand-orange-coral" />
-            <span className="text-gray-400 text-[10px] sm:text-xs">Desenvolvido por <span className="text-white font-bold">CBX Growth & IA</span></span>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 // Main Component
 export function GrowthExperienceTriunfo() {
@@ -424,7 +169,7 @@ export function GrowthExperienceTriunfo() {
       name: 'Growth Experience Triunfo-PE 2026',
       slug: 'ge-triunfo-2026',
       type: 'growth_experience',
-      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito em 16 de abril de 2026.',
+      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
       shortDescription: 'Edição Triunfo-PE',
       location: 'Espaço Parque',
       city: 'Triunfo',
@@ -474,7 +219,7 @@ export function GrowthExperienceTriunfo() {
   const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
 
   return (
-    <div className="bg-dark min-h-screen pt-20 flex flex-col overflow-x-hidden">
+    <div className="flex flex-col overflow-x-hidden">
       <SEOHead
         title="Growth Experience Triunfo-PE 2026 | 16 de Abril"
         description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e oportunidades para PMEs. 16/04/2026 no Espaço Parque."
@@ -482,7 +227,7 @@ export function GrowthExperienceTriunfo() {
         url={pageUrl}
       />
 
-      <InnerHeader />
+
 
       {/* Modais */}
       <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
@@ -753,9 +498,9 @@ export function GrowthExperienceTriunfo() {
               <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient rounded-[2.5rem] blur opacity-20" />
               <div className="aspect-square lg:aspect-video rounded-[2rem] overflow-hidden border-2 border-white/10 shadow-2xl relative">
                 <img
-                  src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop"
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                  alt="Premiação Noturna"
+                  alt="Homenagem e Premiação"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent" />
               </div>
@@ -782,7 +527,7 @@ export function GrowthExperienceTriunfo() {
           ]}
           gratuito
           onInscrever={() => setModalInscricaoAberto(true)}
-          imagemUrl="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop"
+          imagemUrl="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
         />
 
         <InscricaoSection
@@ -798,7 +543,7 @@ export function GrowthExperienceTriunfo() {
           ]}
           gratuito
           onInscrever={() => setModalAberto('mentor')}
-          imagemUrl="https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=2071&auto=format&fit=crop"
+          imagemUrl="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
         />
       </div>
 
@@ -927,8 +672,8 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      <InnerFooter />
+
       <WhatsAppButton />
-    </div >
+    </div>
   );
 }

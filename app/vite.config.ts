@@ -39,14 +39,14 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
         navigateFallback: 'index.html',
         suppressWarnings: true,
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+        globPatterns: ['index.html', 'assets/**/*.{js,css,png,svg,woff,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [
@@ -54,9 +54,12 @@ export default defineConfig({
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-assets',
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 // 24 horas
               }
             }
@@ -80,9 +83,10 @@ export default defineConfig({
         "worker-src 'self' blob:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai data:",
-        "img-src 'self' data: https: blob:",
+        "img-src 'self' data: https: blob: https://*.supabase.co",
+        "media-src 'self' blob: https://*.supabase.co",
         "connect-src 'self' https://*.supabase.co https://api.stripe.com https://www.google-analytics.com https://api.ipify.org",
-        "frame-src 'self' https://js.stripe.com",
+        "frame-src 'self' https://js.stripe.com https://www.youtube.com",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
@@ -121,9 +125,10 @@ export default defineConfig({
         "worker-src 'self' blob:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai data:",
-        "img-src 'self' data: https: blob:",
+        "img-src 'self' data: https: blob: https://*.supabase.co",
+        "media-src 'self' blob: https://*.supabase.co",
         "connect-src 'self' https://*.supabase.co https://api.stripe.com https://www.google-analytics.com https://api.ipify.org",
-        "frame-src 'self' https://js.stripe.com",
+        "frame-src 'self' https://js.stripe.com https://www.youtube.com",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",

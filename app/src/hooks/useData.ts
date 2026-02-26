@@ -206,6 +206,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
         // Specific for Triunfo Registrations
         if (item['tipo_inscricao']) mappedItem['ticketType'] = item['tipo_inscricao'];
+        if (item['nome']) mappedItem['name'] = item['nome'];
+        if (item['telefone']) mappedItem['phone'] = item['telefone'];
         if (item['palestras_noturnas'] !== undefined) mappedItem['palestrasNoturnas'] = item['palestras_noturnas'];
         if (item['cursos_selecionados']) mappedItem['cursosSelecionados'] = item['cursos_selecionados'];
         if (item['valor_pago'] !== undefined) {
@@ -271,10 +273,11 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       setData(mappedData);
       // Store in cache
       dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
-    } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error(String(err));
+    } catch (err: any) {
+      const errorMessage = err?.message || String(err);
+      const errorObj = err instanceof Error ? err : new Error(errorMessage);
       setError(errorObj);
-      logger.error(`Erro ao buscar ${entityName}:`, errorObj);
+      logger.error(`Erro ao buscar ${entityName}:`, err);
     } finally {
       setIsLoading(false);
     }
@@ -525,7 +528,7 @@ export function useProjects() {
         }
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('projects')
         .update(dataToUpdate)
         .eq('id', id);

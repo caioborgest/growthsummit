@@ -26,7 +26,9 @@ export function logAuditEvent(event: string, userId?: string, metadata?: unknown
             user_agent: navigator.userAgent,
             timestamp: new Date().toISOString(),
         }).then(({ error }) => {
-            if (error) logger.error('Audit log error:', error);
+            if (error) logger.error('❌ Erro no log de auditoria:', error);
         });
-    }).catch(() => { });
+    }).catch(err => {
+        logger.error('❌ Erro ao obter IP para auditoria:', err);
+    });
 }

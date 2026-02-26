@@ -116,8 +116,14 @@ export default function AdminProjetos() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este projeto?')) {
-      await remove(id);
-      toast.success('Projeto excluído com sucesso!');
+      try {
+        await remove(id);
+        toast.success('Projeto excluído com sucesso!');
+      } catch (err: any) {
+        logger.error('Erro ao remover projeto:', err);
+        const message = err.message || 'Erro desconhecido. Verifique se existem registros vinculados a este projeto.';
+        toast.error(`Erro ao remover projeto: ${message}`);
+      }
     }
   };
 
@@ -526,9 +532,9 @@ export default function AdminProjetos() {
                           <Settings className="w-4 h-4" />
                           <span>
                             {[
-                              project.settings.enableMentoring && 'Mentorias',
-                              project.settings.enableB2B && 'B2B',
-                              project.settings.enableStartups && 'Startups',
+                              project.settings?.enableMentoring && 'Mentorias',
+                              project.settings?.enableB2B && 'B2B',
+                              project.settings?.enableStartups && 'Startups',
                             ].filter(Boolean).join(', ')}
                           </span>
                         </div>

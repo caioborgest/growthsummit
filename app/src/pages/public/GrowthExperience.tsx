@@ -9,7 +9,12 @@ import {
   Star,
   ArrowRight,
   MapPin,
-  Calendar
+  Calendar,
+  Zap,
+  TrendingUp,
+  BrainCircuit,
+  Target,
+  Megaphone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -57,137 +62,347 @@ const schedule = [
   { time: "19:30", activity: "Jantar de Encerramento VIP" },
 ];
 
+const TriumphSpeakers = [
+  {
+    name: "Vanylton Matias",
+    role: "CEO do Grupo Núcleo",
+    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
+  },
+  {
+    name: "Leandro Batista",
+    role: "CEO da Fitness Exclusive",
+    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
+  }
+];
+
+const PetrolinaSpeakers = [
+  {
+    name: "Caio Borges",
+    role: "CEO da CBX Growth & IA",
+    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
+  },
+  {
+    name: "Leandro Batista",
+    role: "CEO da Fitness Exclusive",
+    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
+  }
+];
+
 export function GrowthExperience() {
   return (
-    <div className="bg-dark min-h-screen">
+    <div className="overflow-x-hidden">
       {/* Hero */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30">
-              Programa VIP
+          <div className="text-center max-w-4xl mx-auto">
+            <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30 px-4 py-1 text-sm font-bold uppercase tracking-widest">
+              Imersão de Alto Impacto
             </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Growth Experience
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white mb-8 leading-[1.1] tracking-tight">
+              Domine <span className="text-orange-500">Growth</span>, Marketing, <br />
+              Vendas e <span className="text-teal-400">IA Generativa</span>
             </h1>
-            <p className="text-xl text-gray-400 mb-8">
-              Uma experiência premium de imersão em growth para líderes de alto impacto
+            <p className="text-xl sm:text-2xl text-gray-400 mb-12 leading-relaxed">
+              Estratégias avançadas para empresas que buscam <span className="text-white font-bold">alavancar o crescimento</span> e acelerar a <span className="text-white font-bold">expansão de negócios</span> no interior.
             </p>
 
+            <div className="flex flex-wrap items-center justify-center gap-6 mb-16">
+              <div className="flex items-center gap-3 text-gray-300">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+                <span className="font-medium">Growth Estructural</span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-300">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 text-teal-400">
+                  <BrainCircuit className="h-5 w-5" />
+                </div>
+                <span className="font-medium">Inteligência Artificial</span>
+              </div>
+              <div className="flex items-center gap-3 text-gray-300">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
+                  <Target className="h-5 w-5" />
+                </div>
+                <span className="font-medium">Vendas Consultivas</span>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <div className="glass-card px-6 py-3">
-                <span className="text-gray-400 text-sm">Investimento</span>
-                <p className="text-2xl font-bold text-white">R$ 2.500</p>
-              </div>
-              <div className="glass-card px-6 py-3">
-                <span className="text-gray-400 text-sm">Vagas</span>
-                <p className="text-2xl font-bold text-orange-400">30</p>
-              </div>
-              <div className="glass-card px-6 py-3">
-                <span className="text-gray-400 text-sm">Duração</span>
-                <p className="text-2xl font-bold text-white">2 dias + 3 meses</p>
-              </div>
+              <Button
+                asChild
+                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-10 h-16 rounded-2xl text-lg shadow-xl shadow-orange-500/20 transition-all hover:scale-105"
+              >
+                <a href="#edicoes">
+                  CONHECER AS EDIÇÕES 2026
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </a>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-dark-300 text-gray-300 hover:text-white px-10 h-16 rounded-2xl font-bold"
+                asChild
+              >
+                <a href="https://wa.me/5588988432310" target="_blank" rel="noopener noreferrer">
+                  Falar com consultor
+                </a>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Proximas Edicoes 2026 */}
-      <section className="py-20 bg-dark-100 border-y border-white/5">
+      {/* Featured Edition Triunfo */}
+      <section id="edicoes" className="py-20 bg-dark-200/50 border-y border-white/5 scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-orange-500/10 text-orange-400 border-orange-500/30">
-              Calendário 2026
-            </Badge>
-            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">
-              Escolha sua <span className="text-gradient">Experiência</span>
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Duas cidades, um único propósito: acelerar o crescimento do interior através da inovação e inteligência artificial.
-            </p>
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-24 bg-gradient-to-br from-orange-500/5 to-transparent p-8 lg:p-12 rounded-[2.5rem] border border-orange-500/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8">
+              <Badge className="bg-orange-500 text-white font-black px-4 py-1 text-xs">VAGAS LIMITADAS</Badge>
+            </div>
+            <div className="space-y-8">
+              <div>
+                <Badge className="mb-4 bg-orange-500/10 text-orange-400 border-orange-500/30">EDIÇÃO PRINCIPAL</Badge>
+                <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">
+                  Growth Experience <br /><span className="text-orange-500">Triunfo-PE</span>
+                </h2>
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
+                    <Calendar className="h-4 w-4 text-orange-400" />
+                    <span className="font-bold">16 de Abril, 2026</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
+                    <MapPin className="h-4 w-4 text-orange-400" />
+                    <span className="font-bold">Sertão do Pajeú</span>
+                  </div>
+                </div>
+                <p className="text-lg text-gray-400 leading-relaxed mb-8">
+                  A nossa edição flagship no coração da serra. Uma imersão exclusiva focada em <span className="text-white">estratégias de escala para varejo, agro e serviços no interior</span>. Networking de altíssimo nível com empresários que faturam múltiplos milhões.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-orange-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Mentoria 1:1</span> com profissionais</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-orange-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Circuitos de conhecimento:</span> Cursos, Oficinas e Palestras de IA focada em negócios</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-orange-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Exposição</span> de negócios e marcas</p>
+                </div>
+              </div>
+
+              {/* Speakers Triunfo */}
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-4">Speakers Confirmados</p>
+                <div className="flex flex-wrap gap-6 mb-8">
+                  {TriumphSpeakers.map((speaker, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-dark-100/50 p-2 pr-4 rounded-2xl border border-white/5">
+                      <img
+                        src={speaker.image}
+                        alt={speaker.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-orange-500/20"
+                      />
+                      <div>
+                        <p className="text-white font-bold text-sm leading-tight">{speaker.name}</p>
+                        <p className="text-gray-400 text-[10px] uppercase tracking-wider">{speaker.role}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                asChild
+                className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-16 rounded-2xl text-lg transition-transform hover:scale-105"
+              >
+                <Link to="/growth-experience-triunfo">
+                  QUERO PARTICIPAR EM TRIUNFO
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
+                <img
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                  alt="Experiência Triunfo"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
+                <div className="absolute bottom-8 left-8 right-8">
+                  <p className="text-white font-black text-2xl mb-1">Experiência Triunfo</p>
+                  <p className="text-gray-400 text-sm italic">"Onde a estratégia encontra a execução no interior"</p>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl animate-pulse" />
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Edition Triunfo */}
-            <div className="group relative glass-card p-1 border-white/5 hover:border-orange-500/30 transition-all duration-500 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-8 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all">
-                    <MapPin className="h-8 w-8 text-orange-400 group-hover:text-white" />
-                  </div>
-                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">TRIUNFO-PE</Badge>
+          {/* Secondary Edition Petrolina */}
+          <div className="grid lg:grid-cols-2 gap-16 items-center bg-gradient-to-br from-teal-500/5 to-transparent p-8 lg:p-12 rounded-[2.5rem] border border-teal-500/10">
+            <div className="order-2 lg:order-1 relative">
+              <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
+                <img
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                  alt="Experiência Petrolina"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
+                <div className="absolute bottom-8 left-8 right-8">
+                  <p className="text-white font-black text-2xl mb-1">Experiência Petrolina</p>
+                  <p className="text-gray-400 text-sm italic">"Inovação e Tech no Vale do São Francisco"</p>
                 </div>
-                <div>
-                  <h3 className="text-3xl font-bold text-white mb-2">Edição Sertão do Pajeú</h3>
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
-                    <Calendar className="h-4 w-4 text-orange-400" />
-                    <span>16 de Abril, 2026</span>
-                  </div>
-                  <p className="text-gray-400 leading-relaxed line-clamp-2">
-                    A maior imersão de growth em uma das cidades mais charmosas do Sertão. Foco em varejo, agro e serviços.
-                  </p>
-                </div>
-                <Button
-                  asChild
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-14 rounded-2xl"
-                >
-                  <Link to="/growth-experience-triunfo">
-                    Acessar Edição Triunfo
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
               </div>
             </div>
 
-            {/* Edition Petrolina */}
-            <div className="group relative glass-card p-1 border-white/5 hover:border-teal-500/30 transition-all duration-500 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative p-8 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:bg-teal-500 group-hover:text-white transition-all">
-                    <MapPin className="h-8 w-8 text-teal-400 group-hover:text-white" />
-                  </div>
-                  <Badge className="bg-teal-500/20 text-teal-400 border-teal-500/30">PETROLINA-PE</Badge>
-                </div>
-                <div>
-                  <h3 className="text-3xl font-bold text-white mb-2">Edição Vale do São Francisco</h3>
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+            <div className="order-1 lg:order-2 space-y-8">
+              <div>
+                <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30">EDIÇÃO VALE</Badge>
+                <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">
+                  Growth Experience <br /><span className="text-teal-400">Petrolina-PE</span>
+                </h2>
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
                     <Calendar className="h-4 w-4 text-teal-400" />
-                    <span>30 de Abril, 2026</span>
+                    <span className="font-bold">30 de Abril, 2026</span>
                   </div>
-                  <p className="text-gray-400 leading-relaxed line-clamp-2">
-                    O hub de inovação do Vale. Um evento focado em escala global, agrotech e inteligência artificial aplicada.
-                  </p>
+                  <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
+                    <MapPin className="h-4 w-4 text-teal-400" />
+                    <span className="font-bold">Vale do São Francisco</span>
+                  </div>
                 </div>
-                <Button
-                  asChild
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-2xl"
-                >
-                  <Link to="/growth-experience-petrolina">
-                    Acessar Edição Petrolina
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                <p className="text-lg text-gray-400 leading-relaxed mb-8">
+                  Focado no ecossistema de <span className="text-white">tecnologia, agrotech e exportação</span>. Aprenda como aplicar Inteligência Artificial para ganhar eficiência global e escalar sua empresa além das fronteiras.
+                </p>
               </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-teal-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Imersão em Growth, Marketing, Vendas e IA</span> para negócios</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-teal-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Networking B2B</span> com empresários de destaque</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Check className="h-3 w-3 text-teal-400" />
+                  </div>
+                  <p className="text-gray-300"><span className="text-white font-bold">Mentoria Estratégica</span> focada em resultados e performance</p>
+                </div>
+              </div>
+
+              {/* Speakers Petrolina */}
+              <div className="pt-6 border-t border-white/5">
+                <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-4">Speakers Confirmados</p>
+                <div className="flex flex-wrap gap-6 mb-8">
+                  {PetrolinaSpeakers.map((speaker, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-dark-100/50 p-2 pr-4 rounded-2xl border border-white/5">
+                      <img
+                        src={speaker.image}
+                        alt={speaker.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-teal-500/20"
+                      />
+                      <div>
+                        <p className="text-white font-bold text-sm leading-tight">{speaker.name}</p>
+                        <p className="text-gray-400 text-[10px] uppercase tracking-wider">{speaker.role}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                asChild
+                className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black px-12 h-16 rounded-2xl text-lg transition-transform hover:scale-105"
+              >
+                <Link to="/growth-experience-petrolina">
+                  CONHECER EDIÇÃO PETROLINA
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pillars Section - 4 Pillars of Growth */}
+      <section className="py-24 bg-dark relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-orange-500/5 blur-[120px] rounded-full" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-orange-500/10 text-orange-400 border-orange-500/30">METODOLOGIA EXCLUSIVA</Badge>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mb-6">4 Pilares de <span className="text-orange-500">Expansão</span></h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">Dominamos as frentes fundamentais que permitem a empresas tradicionais escalarem no mundo digital através de inteligência e processos.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                icon: TrendingUp,
+                title: "Growth Strategy",
+                desc: "Análise de funil, hacking de processos e experimentos baseados em dados para escala."
+              },
+              {
+                icon: Megaphone,
+                title: "Premium Marketing",
+                desc: "Posicionamento estratégico para atrair clientes de alto valor e branding de autoridade."
+              },
+              {
+                icon: Target,
+                title: "Vendas Predictivas",
+                desc: "Implementação de máquinas de vendas, CRM avançado e fechamento consultivo."
+              },
+              {
+                icon: BrainCircuit,
+                title: "Inteligência Artificial",
+                desc: "Adoção de LLMs e automação inteligente para produtividade extrema e vantagem competitiva."
+              }
+            ].map((pillar, i) => (
+              <div key={i} className="glass-card p-8 border-white/5 hover:border-orange-500/20 transition-all group hover:-translate-y-2 duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-6 border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all">
+                  <pillar.icon className="h-7 w-7 text-orange-400 group-hover:text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">{pillar.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{pillar.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Benefits */}
-      <section className="py-20 lg:py-28">
+      <section className="py-24 lg:py-32 bg-dark-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-20 text-balance">
             <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30">
-              Benefícios
+              A ENTREGA
             </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
-              Tudo que está incluído
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-6">
+              Acelerando seus <span className="text-teal-400">Resultados</span>
             </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Muito além de um evento, uma jornada de transformação empresarial desenhada para líderes.
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -351,6 +566,19 @@ export function GrowthExperience() {
           </p>
         </div>
       </section>
+      {/* Floating WhatsApp for Conversion */}
+      <a
+        href="https://wa.me/5588988432310"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl shadow-green-500/40 transition-all hover:scale-110 flex items-center justify-center group animate-bounce"
+        aria-label="Falar com consultor"
+      >
+        <MessageCircle className="h-6 w-6" />
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-3 transition-all duration-500 font-bold whitespace-nowrap">
+          Falar com consultor
+        </span>
+      </a>
     </div>
   );
 }

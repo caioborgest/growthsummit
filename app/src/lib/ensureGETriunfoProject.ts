@@ -35,7 +35,7 @@ const PROJECT_DATA: ProjectInsert = {
     status: 'active',
     primary_color: '#FE4C38',
     secondary_color: '#FF6B35',
-    max_registrations: 500,
+    max_registrations: 2000,
     max_mentors: 30,
     max_startups: 20,
     max_companies: 40,
@@ -46,7 +46,7 @@ const PROJECT_DATA: ProjectInsert = {
     ticket_price_standard: 0,       // gratuito — cursos e workshops
     ticket_price_pro: 17999,   // R$ 179,99 — palestras noturnas
     ticket_price_vip: 0,
-    target_registrations: 500,
+    target_registrations: 2000,
     target_revenue: 8_000_000,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -117,15 +117,26 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
         }
 
         if (existing) {
-            // Projeto encontrado — garantir status ativo
+            // Projeto encontrado — garantir status ativo e dados atualizados (2000+ participantes)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const existingTyped = existing as any as ProjectRow;
-            if (existingTyped.status !== 'active') {
+            const needsUpdate = existingTyped.status !== 'active' || existingTyped.max_registrations !== 2000;
+
+            if (needsUpdate) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (supabase.from('projects') as any)
-                    .update({ status: 'active', updated_at: new Date().toISOString() } as ProjectUpdate)
-                    .eq('id', existingTyped.id);
-                existingTyped.status = 'active';
+                const { data: updated } = await (supabase.from('projects') as any)
+                    .update({
+                        status: 'active',
+                        max_registrations: 2000,
+                        target_registrations: 2000,
+                        location: 'Espaço Parque',
+                        updated_at: new Date().toISOString()
+                    } as ProjectUpdate)
+                    .eq('id', existingTyped.id)
+                    .select()
+                    .single();
+
+                if (updated) return rowToProject(updated as any as ProjectRow);
             }
             return rowToProject(existingTyped);
         }

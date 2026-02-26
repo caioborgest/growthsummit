@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { 
-  Search, 
-  Download, 
+import {
+  Search,
+  Download,
   MoreHorizontal,
   CheckCircle,
   XCircle,
@@ -37,17 +37,18 @@ export function AdminInscricoes() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const filteredRegistrations = registrations.filter(reg => {
-    const matchesSearch = 
+    const matchesSearch =
       reg.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reg.userId.toLowerCase().includes(searchQuery.toLowerCase());
+      (reg.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (reg.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
     const matchesType = typeFilter === 'all' || reg.ticketType === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
   const toggleSelection = (id: string) => {
-    setSelectedItems(prev => 
-      prev.includes(id) 
+    setSelectedItems(prev =>
+      prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
     );
@@ -108,8 +109,8 @@ export function AdminInscricoes() {
               Ações em massa ({selectedItems.length})
             </Button>
           )}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-dark-300 text-gray-300"
             onClick={handleExport}
           >
@@ -152,14 +153,15 @@ export function AdminInscricoes() {
             <thead>
               <tr className="border-b border-dark-300">
                 <th className="p-4 text-left">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     className="rounded bg-dark-100 border-dark-300"
                     checked={selectedItems.length === filteredRegistrations.length && filteredRegistrations.length > 0}
                     onChange={selectAll}
                   />
                 </th>
                 <th className="p-4 text-left text-gray-400 font-medium">Inscrição</th>
+                <th className="p-4 text-left text-gray-400 font-medium">Participante</th>
                 <th className="p-4 text-left text-gray-400 font-medium">Tipo</th>
                 <th className="p-4 text-left text-gray-400 font-medium">Status</th>
                 <th className="p-4 text-left text-gray-400 font-medium">Valor</th>
@@ -172,8 +174,8 @@ export function AdminInscricoes() {
               {filteredRegistrations.map((reg) => (
                 <tr key={reg.id} className="border-b border-dark-300 hover:bg-dark-100/50">
                   <td className="p-4">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="rounded bg-dark-100 border-dark-300"
                       checked={selectedItems.includes(reg.id)}
                       onChange={() => toggleSelection(reg.id)}
@@ -186,10 +188,16 @@ export function AdminInscricoes() {
                     </div>
                   </td>
                   <td className="p-4">
+                    <div>
+                      <p className="text-white font-medium">{reg.name || 'Desconhecido'}</p>
+                      <p className="text-gray-500 text-sm">{reg.email || '-'}</p>
+                    </div>
+                  </td>
+                  <td className="p-4">
                     <Badge className={
                       reg.ticketType === 'vip' ? 'bg-orange-500/20 text-orange-400' :
-                      reg.ticketType === 'pro' ? 'bg-teal-500/20 text-teal-400' :
-                      'bg-gray-500/20 text-gray-400'
+                        reg.ticketType === 'pro' ? 'bg-teal-500/20 text-teal-400' :
+                          'bg-gray-500/20 text-gray-400'
                     }>
                       {ticketTypeLabels[reg.ticketType]}
                     </Badge>

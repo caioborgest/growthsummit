@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Plus,
     Search,
@@ -20,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { useCoupons } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import type { Coupon } from '@/types';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
 const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string }> = {
@@ -34,12 +36,38 @@ const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string
 };
 
 export function AdminCupons() {
-    const { projectId } = useProject();
+    const { projectId, isProjectSelected } = useProject();
+    const navigate = useNavigate();
     const { data: cupons, create, update, remove, isLoading } = useCoupons();
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState<Coupon['indicacaoTipo'] | 'all'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+
+    // Redirecionar para projetos se nenhum estiver selecionado
+    if (!isProjectSelected) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="glass-card max-w-lg w-full p-8 text-center border-teal-500/20 shadow-2xl">
+                    <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-6 border border-teal-500/20">
+                        <Filter className="w-10 h-10 text-teal-400" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white mb-3 uppercase tracking-tight">
+                        Selecione um Projeto
+                    </h2>
+                    <p className="text-gray-500 mb-8 font-medium">
+                        Para gerenciar cupons e parcerias, você precisa selecionar um projeto específico primeiro.
+                    </p>
+                    <Button
+                        onClick={() => navigate('/admin/projetos')}
+                        className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold px-8"
+                    >
+                        Ir para Projetos
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     const [formData, setFormData] = useState({
         codigo: '',
@@ -53,8 +81,10 @@ export function AdminCupons() {
     });
 
     const filteredCupons = cupons.filter(c => {
-        const matchesSearch = c.codigo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            c.indicacaoNome.toLowerCase().includes(searchQuery.toLowerCase());
+        const codigo = c.codigo || '';
+        const indicacaoNome = c.indicacaoNome || '';
+        const matchesSearch = codigo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            indicacaoNome.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesType = typeFilter === 'all' || c.indicacaoTipo === typeFilter;
         return matchesSearch && matchesType;
     });
@@ -73,6 +103,7 @@ export function AdminCupons() {
                     vencimento: formData.vencimento || undefined,
                     ativo: formData.ativo,
                 });
+                toast.success('Cupom atualizado com sucesso!');
             } else {
                 await create({
                     projectId: projectId || '',
@@ -86,13 +117,14 @@ export function AdminCupons() {
                     vencimento: formData.vencimento || undefined,
                     ativo: formData.ativo,
                 });
+                toast.success('Novo cupom gerado com sucesso!');
             }
 
             setIsModalOpen(false);
             resetForm();
-        } catch (err) {
+        } catch (err: any) {
             logger.error('Erro ao salvar cupom:', err);
-            alert('Erro ao salvar cupom. Verifique se o código já existe.');
+            toast.error(err.message || 'Erro ao salvar cupom. Verifique se o código já existe.');
         }
     };
 
@@ -112,6 +144,20 @@ export function AdminCupons() {
 
     const handleEdit = (coupon: Coupon) => {
         setEditingCoupon(coupon);
+
+        // Formatar data de vencimento para o input type="date" (YYYY-MM-DD)
+        let vencimentoFormatado = '';
+        if (coupon.vencimento) {
+            try {
+                const date = new Date(coupon.vencimento);
+                if (!isNaN(date.getTime())) {
+                    vencimentoFormatado = date.toISOString().split('T')[0];
+                }
+            } catch (e) {
+                logger.warn('Data de vencimento inválida:', coupon.vencimento);
+            }
+        }
+
         setFormData({
             codigo: coupon.codigo,
             indicacaoTipo: coupon.indicacaoTipo,
@@ -119,7 +165,7 @@ export function AdminCupons() {
             porcentagemDesconto: coupon.porcentagemDesconto,
             usoLimite: coupon.usoLimite?.toString() || '',
             descricao: coupon.descricao || '',
-            vencimento: coupon.vencimento ? new Date(coupon.vencimento).toISOString().split('T')[0] : '',
+            vencimento: vencimentoFormatado,
             ativo: coupon.ativo
         });
         setIsModalOpen(true);
@@ -133,7 +179,7 @@ export function AdminCupons() {
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert('Código copiado: ' + text);
+        toast.success(`Código ${text} copiado para a área de transferência!`);
     };
 
     const isExpired = (vencimento?: string) => {
@@ -183,136 +229,157 @@ export function AdminCupons() {
             </div>
 
             {/* Stats Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="glass-card p-4 border-l-4 border-blue-500">
-                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Total de Cupons</p>
-                    <div className="flex items-end gap-2 mt-1">
-                        <p className="text-2xl font-bold text-white">{cupons.length}</p>
-                        <Ticket className="h-4 w-4 text-blue-500 mb-1" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                    {
+                        label: 'Total de Vouchers',
+                        value: cupons.length,
+                        icon: Ticket,
+                        color: 'blue',
+                        detail: 'Cupons cadastrados'
+                    },
+                    {
+                        label: 'Cupons Ativos',
+                        value: cupons.filter(c => c.ativo && !isExpired(c.vencimento)).length,
+                        icon: CheckCircle,
+                        color: 'emerald',
+                        detail: 'Prontos para uso'
+                    },
+                    {
+                        label: 'Total de Resgates',
+                        value: cupons.reduce((sum, c) => sum + (c.usoAtual || 0), 0),
+                        icon: Users,
+                        color: 'teal',
+                        detail: 'Utilizados no checkout'
+                    },
+                    {
+                        label: 'Desconto Médio',
+                        value: `${cupons.length > 0 ? (cupons.reduce((sum, c) => sum + (c.porcentagemDesconto || 0), 0) / cupons.length).toFixed(0) : 0}%`,
+                        icon: TrendingUp,
+                        color: 'purple',
+                        detail: 'Média de abatimento'
+                    }
+                ].map((stat, i) => (
+                    <div key={i} className={`relative overflow-hidden glass-card p-6 border-l-4 border-${stat.color === 'emerald' ? 'emerald' : stat.color}-500 group hover:translate-y-[-4px] transition-all duration-300 shadow-lg shadow-black/20`}>
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                                <p className="text-3xl font-black text-white tracking-tighter">{stat.value}</p>
+                                <p className="text-gray-600 text-[10px] mt-1 font-medium">{stat.detail}</p>
+                            </div>
+                            <div className={`p-3 rounded-xl bg-${stat.color === 'emerald' ? 'emerald' : stat.color}-500/10 text-${stat.color === 'emerald' ? 'emerald' : stat.color}-400 group-hover:scale-110 transition-transform duration-500`}>
+                                <stat.icon className="h-6 w-6" />
+                            </div>
+                        </div>
+                        {/* Decorative background glow */}
+                        <div className={`absolute -right-4 -bottom-4 w-24 h-24 bg-${stat.color === 'emerald' ? 'emerald' : stat.color}-500/5 rounded-full blur-2xl group-hover:bg-${stat.color === 'emerald' ? 'emerald' : stat.color}-500/10 transition-all`} />
                     </div>
-                </div>
-                <div className="glass-card p-4 border-l-4 border-green-500">
-                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Cupons Ativos</p>
-                    <div className="flex items-end gap-2 mt-1">
-                        <p className="text-2xl font-bold text-green-400">
-                            {cupons.filter(c => c.ativo && !isExpired(c.vencimento)).length}
-                        </p>
-                        <CheckCircle className="h-4 w-4 text-green-500 mb-1" />
-                    </div>
-                </div>
-                <div className="glass-card p-4 border-l-4 border-teal-500">
-                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Total de Usos</p>
-                    <div className="flex items-end gap-2 mt-1">
-                        <p className="text-2xl font-bold text-teal-400">
-                            {cupons.reduce((sum, c) => sum + c.usoAtual, 0)}
-                        </p>
-                        <Users className="h-4 w-4 text-teal-500 mb-1" />
-                    </div>
-                </div>
-                <div className="glass-card p-4 border-l-4 border-purple-500">
-                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ticket Médio Cupom</p>
-                    <div className="flex items-end gap-2 mt-1">
-                        <p className="text-2xl font-bold text-purple-400">
-                            {cupons.length > 0 ? (cupons.reduce((sum, c) => sum + c.porcentagemDesconto, 0) / cupons.length).toFixed(0) : 0}%
-                        </p>
-                        <TrendingUp className="h-4 w-4 text-purple-500 mb-1" />
-                    </div>
-                </div>
+                ))}
             </div>
 
             {/* List */}
-            <div className="glass-card overflow-hidden border-dark-300">
+            <div className="glass-card overflow-hidden border-white/5 shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
-                            <tr className="bg-dark-300/50 border-b border-dark-300">
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Código</th>
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Parceiro / Tipo</th>
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Desconto</th>
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Vencimento</th>
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Status</th>
-                                <th className="p-4 text-left text-gray-400 font-medium text-xs uppercase tracking-wider">Uso</th>
-                                <th className="p-4 text-right text-gray-400 font-medium text-xs uppercase tracking-wider">Ações</th>
+                            <tr className="bg-white/[0.02] border-b border-white/5">
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Código</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Parceiro / Tipo</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Desconto</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Vencimento</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Uso / Limite</th>
+                                <th className="px-6 py-5 text-right text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-dark-300">
+                        <tbody className="divide-y divide-white/5">
                             {filteredCupons.map((coupon) => (
-                                <tr key={coupon.id} className="hover:bg-dark-100/50 transition-colors group">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2">
-                                            <code className="bg-dark-300 px-3 py-1.5 rounded text-teal-400 font-black tracking-tighter text-sm">
-                                                {coupon.codigo}
-                                            </code>
+                                <tr key={coupon.id} className="hover:bg-white/[0.03] transition-all group">
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-gradient-to-br from-teal-500/20 to-teal-600/10 px-4 py-2 rounded-xl border border-teal-500/20 shadow-inner">
+                                                <code className="text-teal-400 font-black tracking-widest text-sm uppercase">
+                                                    {coupon.codigo}
+                                                </code>
+                                            </div>
                                             <button
                                                 onClick={() => copyToClipboard(coupon.codigo)}
-                                                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-white transition-all bg-dark-400 p-1.5 rounded-md"
+                                                className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-white transition-all bg-white/5 p-2 rounded-xl border border-white/10"
                                                 title="Copiar código"
                                             >
-                                                <Copy className="h-3 w-3" />
+                                                <Copy className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="p-4">
+                                    <td className="px-6 py-5">
                                         <div>
-                                            <p className="text-white font-semibold text-sm">{coupon.indicacaoNome}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Badge variant="outline" className={`text-[9px] font-black uppercase px-1.5 py-0 border-transparent ${typeConfig[coupon.indicacaoTipo].color}`}>
-                                                    {typeConfig[coupon.indicacaoTipo].label}
+                                            <p className="text-white font-bold text-sm tracking-tight">{coupon.indicacaoNome}</p>
+                                            <div className="flex items-center gap-2 mt-1.5">
+                                                <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0 border-transparent ${typeConfig[coupon.indicacaoTipo]?.color || 'bg-gray-500/20 text-gray-400'}`}>
+                                                    {typeConfig[coupon.indicacaoTipo]?.label || coupon.indicacaoTipo}
                                                 </Badge>
                                                 {coupon.descricao && (
-                                                    <span className="text-gray-500 text-[10px] truncate max-w-[150px]" title={coupon.descricao}>
+                                                    <span className="text-gray-600 text-[10px] truncate max-w-[150px] font-medium" title={coupon.descricao}>
                                                         • {coupon.descricao}
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4">
-                                        <Badge className="bg-teal-500 text-dark-100 font-black px-2 py-0.5">
-                                            {coupon.porcentagemDesconto}% OFF
-                                        </Badge>
+                                    <td className="px-6 py-5">
+                                        <div className="relative inline-block">
+                                            <Badge className="bg-teal-500 text-dark-100 font-black px-3 py-1 text-xs rounded-lg shadow-lg shadow-teal-500/20">
+                                                {coupon.porcentagemDesconto}% OFF
+                                            </Badge>
+                                        </div>
                                     </td>
-                                    <td className="p-4">
+                                    <td className="px-6 py-5 text-gray-400">
                                         {coupon.vencimento ? (
-                                            <div className={`flex items-center gap-1.5 text-xs ${isExpired(coupon.vencimento) ? 'text-red-400' : 'text-gray-400'}`}>
-                                                <Calendar className="h-3 w-3" />
-                                                {new Date(coupon.vencimento).toLocaleDateString('pt-BR')}
+                                            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.vencimento) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
+                                                <Calendar className="h-3.5 w-3.5" />
+                                                {(() => {
+                                                    const d = new Date(coupon.vencimento);
+                                                    return isNaN(d.getTime()) ? 'Data inválida' : d.toLocaleDateString('pt-BR');
+                                                })()}
                                             </div>
                                         ) : (
-                                            <span className="text-gray-600 text-xs italic">Sem expiração</span>
+                                            <span className="text-gray-600 text-[10px] font-black uppercase tracking-wider bg-white/5 px-2 py-1 rounded-lg">Vitalício</span>
                                         )}
                                     </td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2">
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center">
                                             {!coupon.ativo ? (
-                                                <Badge className="bg-red-500/10 text-red-500 border border-red-500/20">Inativo</Badge>
+                                                <Badge className="bg-white/5 text-gray-500 border border-white/10 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Inativo</Badge>
                                             ) : isExpired(coupon.vencimento) ? (
-                                                <Badge className="bg-orange-500/10 text-orange-500 border border-orange-500/20">Expirado</Badge>
+                                                <Badge className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Expirado</Badge>
                                             ) : (
-                                                <Badge className="bg-green-500/10 text-green-500 border border-green-500/20">Ativo</Badge>
+                                                <div className="flex items-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                                                    <span className="font-black text-[10px] uppercase tracking-wider">Ativo</span>
+                                                </div>
                                             )}
                                         </div>
                                     </td>
-                                    <td className="p-4">
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-[10px] text-gray-500">
-                                                <span>{coupon.usoAtual} usados</span>
+                                    <td className="px-6 py-5">
+                                        <div className="space-y-2 max-w-[120px]">
+                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-gray-500">
+                                                <span>{coupon.usoAtual} USOS</span>
                                                 <span>{coupon.usoLimite || '∞'}</span>
                                             </div>
-                                            <div className="w-24 h-1 bg-dark-300 rounded-full overflow-hidden">
+                                            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
-                                                    className={`h-full ${coupon.usoLimite && coupon.usoAtual >= coupon.usoLimite ? 'bg-red-500' : 'bg-teal-500'}`}
+                                                    className={`h-full transition-all duration-1000 ${coupon.usoLimite && coupon.usoAtual >= coupon.usoLimite ? 'bg-red-500' : 'bg-gradient-to-r from-teal-500 to-teal-400'}`}
                                                     style={{ width: `${coupon.usoLimite ? Math.min((coupon.usoAtual / coupon.usoLimite) * 100, 100) : 100}%` }}
                                                 />
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex justify-end gap-1">
+                                    <td className="px-6 py-5 text-right">
+                                        <div className="flex justify-end gap-2">
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-dark-300"
+                                                className="h-9 w-9 p-0 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl border border-transparent hover:border-white/10 transition-all"
                                                 onClick={() => handleEdit(coupon)}
                                             >
                                                 <Edit3 className="h-4 w-4" />
@@ -320,7 +387,7 @@ export function AdminCupons() {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+                                                className="h-9 w-9 p-0 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl border border-transparent hover:border-red-500/20 transition-all"
                                                 onClick={() => handleDelete(coupon.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -331,10 +398,13 @@ export function AdminCupons() {
                             ))}
                             {filteredCupons.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="p-12 text-center">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Ticket className="h-8 w-8 text-gray-600" />
-                                            <p className="text-gray-500">Nenhum cupom encontrado para os filtros selecionados.</p>
+                                    <td colSpan={7} className="p-20 text-center">
+                                        <div className="flex flex-col items-center gap-4 opacity-40">
+                                            <Ticket className="h-12 w-12 text-gray-500" />
+                                            <div className="space-y-1">
+                                                <p className="text-white font-bold text-lg">Nenhum voucher encontrado</p>
+                                                <p className="text-gray-500 text-sm">Tente ajustar seus filtros ou busca.</p>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>

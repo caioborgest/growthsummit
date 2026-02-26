@@ -172,8 +172,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    const { error: userTableError } = await (supabase
-                        .from('users') as any)
+                    const { error: userTableError } = await supabase
+                        .from('users')
                         .upsert({
                             id: userId,
                             email: formData.email,
@@ -238,8 +238,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await (supabase
-                .from('rodada_negocios_b2b') as any)
+            const { error: supabaseError } = await supabase
+                .from('rodada_negocios_b2b')
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;

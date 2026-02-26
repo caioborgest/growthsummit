@@ -13,8 +13,10 @@ import {
     Shield,
     Bell,
     Save,
-    Loader2
+    Loader2,
+    Check
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +29,7 @@ export function ProfileForm() {
     const { user, updateProfile } = useAuth();
     const { data: profile, update: updateProfileData, isLoading: isProfileLoading } = useProfile(user?.id);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -61,6 +64,7 @@ export function ProfileForm() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSaving) return;
         setIsSaving(true);
         try {
             // Update User table (name, phone)
@@ -83,11 +87,58 @@ export function ProfileForm() {
             });
 
             toast.success('Perfil atualizado com sucesso!');
-        } catch (error) {
-            toast.error('Erro ao atualizar perfil.');
+        } catch (error: any) {
+            toast.error('Erro ao atualizar perfil: ' + (error.message || 'Erro desconhecido'));
             logger.error('Erro ao atualizar perfil:', error);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        // Validation
+        if (!file.type.startsWith('image/')) {
+            toast.error('Por favor, selecione uma imagem válida.');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('A imagem deve ter no máximo 2MB.');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('event-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from('event-images')
+                .getPublicUrl(filePath);
+
+            const photoUrl = urlData.publicUrl;
+
+            // Update Auth/User profile with new avatar
+            await updateProfile({
+                avatar: photoUrl
+            });
+
+            toast.success('Foto de perfil atualizada!');
+        } catch (error: any) {
+            logger.error('Erro no upload da foto:', error);
+            toast.error('Erro ao carregar a foto: ' + (error.message || 'Erro desconhecido'));
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -103,9 +154,20 @@ export function ProfileForm() {
                                 alt={user?.name}
                                 className="w-32 h-32 rounded-3xl object-cover border-4 border-teal-500/20 shadow-2xl transition-transform group-hover:scale-105"
                             />
-                            <button type="button" className="absolute -bottom-2 -right-2 bg-teal-500 p-3 rounded-2xl text-white shadow-xl hover:bg-teal-600 transition-all">
-                                <Camera className="h-5 w-5" />
-                            </button>
+                            <label className="absolute -bottom-2 -right-2 bg-teal-500 p-3 rounded-2xl text-white shadow-xl hover:bg-teal-600 transition-all cursor-pointer">
+                                {isUploading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    <Camera className="h-5 w-5" />
+                                )}
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handlePhotoUpload}
+                                    disabled={isUploading}
+                                />
+                            </label>
                         </div>
                         <h3 className="text-xl font-bold text-white mb-1">{user?.name}</h3>
                         <p className="text-gray-400 text-sm mb-4 uppercase tracking-widest">{user?.role}</p>

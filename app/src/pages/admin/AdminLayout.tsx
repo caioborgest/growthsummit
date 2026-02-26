@@ -115,7 +115,7 @@ export function AdminLayout() {
   const activeProjects = projects.filter(p => p.status === 'active');
 
   return (
-    <div className="min-h-screen bg-[#0c0e12] flex overflow-hidden">
+    <div className="h-screen bg-[#0c0e12] flex overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
@@ -126,7 +126,7 @@ export function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#0c0e12] border-r border-white/5 flex flex-col transition-all duration-500 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-72 h-screen bg-[#0c0e12] border-r border-white/5 flex flex-col transition-all duration-500 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
       >
         {/* Logo Section */}

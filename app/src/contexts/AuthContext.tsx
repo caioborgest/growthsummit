@@ -124,6 +124,25 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
   };
 }
 
+/**
+ * Executa uma query do Supabase com timeout para evitar travamentos (ex: RLS recursion)
+ */
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
+  let timeoutId: any;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('TIMEOUT_EXCEEDED')), timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([promise, timeoutPromise]);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -131,74 +150,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
 
+  // Função centralizada para atualizar sessão e usuário
+  const updateAuthState = useCallback(async (currentSession: Session | null) => {
+    if (!currentSession?.user) {
+      setSession(null);
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Se temos uma sessão mas ainda não temos o objeto 'user' completo, 
+    // mantemos em loading para evitar redirecionamentos indesejados
+    if (!user) setIsLoading(true);
+
+    try {
+      // Buscar metadados com timeout defensivo
+      const { data: userData, error } = await withTimeout(
+        supabase
+          .from('users')
+          .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
+          .eq('id', currentSession.user.id)
+          .single(),
+        3000 // 3 segundos é suficiente para metadados
+      );
+
+      if (error) {
+        logger.warn('Erro ao buscar metadados (usando metadados do Auth):', error.message);
+      }
+
+      const userObj = mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata);
+      setSession(currentSession);
+      setUser(userObj);
+      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+
+    } catch (err) {
+      if (err instanceof Error && err.message === 'TIMEOUT_EXCEEDED') {
+        logger.error('⚠️ Timeout ao buscar metadados (possível recursão RLS). Usando dados básicos.');
+      } else {
+        logger.warn('Erro na sincronização de metadados:', err);
+      }
+
+      setSession(currentSession);
+      setUser(mapSupabaseUserToUser(currentSession.user));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
   // Login com email e senha
   const login = useCallback(async (email: string, password: string): Promise<User | null> => {
+    if (isAuthenticating) return null;
     setIsAuthenticating(true);
 
     try {
-      // Verificar rate limiting
       if (rateLimiter.isRateLimited(email)) {
         const remainingTime = Math.ceil(rateLimiter.getRemainingLockoutTime() / 60000);
-        throw new Error(`Limite atingido. Tente em ${remainingTime} min.`);
+        throw new Error(`Muitas tentativas. Tente novamente em ${remainingTime} min.`);
       }
 
-      // Tentar login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
         rateLimiter.recordAttempt(email);
-
-        // Log de auditoria - tentativa falha
         logAuditEvent('login_failed', undefined, { email, error: error.message });
-
         throw error;
       }
 
-      if (data.user) {
-        // Limpar tentativas de login
+      if (data.user && data.session) {
         rateLimiter.clearAttempts(email);
 
+        // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
+        // para garantir que o retorno da função tenha o usuário atualizado
         let userData: UserDBMetadata | null = null;
         try {
-          const { data: ud } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
+          const { data: ud } = await withTimeout(
+            supabase.from('users').select('*').eq('id', data.user.id).single(),
+            2000
+          );
           userData = ud as UserDBMetadata;
-        } catch {
-          logger.warn('No DB metadata for user');
-        }
-
-        // Verificar se 2FA está habilitado
-        if (userData?.two_factor_enabled) {
-          // Redirecionar para verificação 2FA
-          setSession(data.session);
-          const u = { ...mapSupabaseUserToUser(data.user, userData || undefined), requires2FA: true };
-          setUser(u);
-          return u;
+        } catch (e) {
+          logger.warn('DB metadata fetch failed during login:', e);
         }
 
         const userObj = mapSupabaseUserToUser(data.user, userData || undefined);
+
+        if (userData?.two_factor_enabled) {
+          userObj.requires2FA = true;
+        }
+
         setSession(data.session);
         setUser(userObj);
-        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
-
-        // Log de auditoria - sucesso
         logAuditEvent('login_success', data.user.id);
         return userObj;
       }
       return null;
-    } catch (error: unknown) {
-      logger.error('Erro no login:', error);
+    } catch (error: any) {
+      logger.error('Erro no login:', error.message || error);
       throw error;
     } finally {
       setIsAuthenticating(false);
     }
-  }, []);
+  }, [isAuthenticating]);
 
   // Login com OTP (Magic Link)
   const loginWithOTP = useCallback(async (email: string) => {
@@ -292,42 +344,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   // Hooks de efeito movidos para cá para evitar TDZ (Temporal Dead Zone)
-  // Verificar sessão ao carregar
+  // Efeito de inicialização e monitoramento de Auth
   useEffect(() => {
+    let isMounted = true;
+
     const initializeAuth = async () => {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
-          logger.error('Erro ao obter sessão:', error);
-          setIsLoading(false);
+          logger.error('Erro inicial getSession:', error.message);
+          if (isMounted) setIsLoading(false);
           return;
         }
 
-        if (currentSession?.user) {
-          try {
-            // Buscar metadados silenciosamente
-            const { data: userData } = await supabase
-              .from('users')
-              .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
-              .eq('id', currentSession.user.id)
-              .single();
-
-            setSession(currentSession);
-            setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
-          } catch {
-            logger.warn('Metadata fetch failed, using auth metadata');
-            setSession(currentSession);
-            setUser(mapSupabaseUserToUser(currentSession.user));
-          }
-
-          localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+        if (currentSession && isMounted) {
+          await updateAuthState(currentSession);
           logAuditEvent('session_restored', currentSession.user.id);
         }
       } catch (error) {
-        logger.error('Erro ao inicializar autenticação:', error);
+        logger.error('Fatal auth init error:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -335,34 +373,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      logger.info('Auth state changed:', { event });
+      logger.info('🔔 Auth State Change:', { event });
 
-      if (currentSession?.user) {
-        try {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
-            .eq('id', currentSession.user.id)
-            .single();
-
-          setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata));
-        } catch {
-          setSession(currentSession);
-          setUser(mapSupabaseUserToUser(currentSession.user));
+      if (isMounted) {
+        // Se o evento for SIGNED_OUT, limpar imediatamente para evitar loop de redirecionamento
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+        } else if (currentSession) {
+          await updateAuthState(currentSession);
+          logAuditEvent(event, currentSession.user.id);
         }
-
-        logAuditEvent(event, currentSession.user.id);
-      } else {
-        setSession(null);
-        setUser(null);
       }
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [updateAuthState]);
 
   // Monitorar atividade do usuário
   useEffect(() => {

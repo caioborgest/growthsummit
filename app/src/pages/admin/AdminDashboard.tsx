@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Users,
   DollarSign,
@@ -47,11 +47,21 @@ interface StatCardProps {
 }
 
 function StatCard({ title, value, target, progress, icon: Icon, trend, trendValue, color }: StatCardProps) {
+  const colorClasses: Record<string, { bg: string, text: string, bar: string, bgOpacity: string }> = {
+    teal: { bg: 'bg-teal-500', text: 'text-teal-400', bar: 'bg-teal-500', bgOpacity: 'bg-teal-500/20' },
+    green: { bg: 'bg-green-500', text: 'text-green-400', bar: 'bg-green-500', bgOpacity: 'bg-green-500/20' },
+    blue: { bg: 'bg-blue-500', text: 'text-blue-400', bar: 'bg-blue-500', bgOpacity: 'bg-blue-500/20' },
+    purple: { bg: 'bg-purple-500', text: 'text-purple-400', bar: 'bg-purple-500', bgOpacity: 'bg-purple-500/20' },
+    orange: { bg: 'bg-orange-500', text: 'text-orange-400', bar: 'bg-orange-500', bgOpacity: 'bg-orange-500/20' },
+  };
+
+  const style = colorClasses[color] || colorClasses.teal;
+
   return (
     <div className="glass-card p-6">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 rounded-lg bg-${color}-500/20 flex items-center justify-center`}>
-          <Icon className={`h-6 w-6 text-${color}-400`} />
+        <div className={`w-12 h-12 rounded-lg ${style.bgOpacity} flex items-center justify-center`}>
+          <Icon className={`h-6 w-6 ${style.text}`} />
         </div>
         {trend && (
           <div className={`flex items-center text-sm ${trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
@@ -68,7 +78,7 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
       </div>
       <div className="w-full bg-dark-300 rounded-full h-2">
         <div
-          className={`bg-${color}-500 h-2 rounded-full transition-all`}
+          className={`${style.bar} h-2 rounded-full transition-all`}
           style={{ width: `${Math.min(progress, 100)}%` }}
         />
       </div>
@@ -88,7 +98,7 @@ export function AdminDashboard() {
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
   const { data: registrations } = useRegistrations();
-  const { data: _mentors, filter: filterMentors } = useMentors();
+  const { filter: filterMentors } = useMentors();
   const { data: sessions } = useMentoringSessions();
   const { data: b2bMeetings } = useB2BMeetings();
   const { data: startups, filter: filterStartups } = useStartups();
@@ -96,48 +106,41 @@ export function AdminDashboard() {
   const { data: transactions } = useTransactions();
   const { data: checkIns } = useCheckIns();
 
-  const [stats, setStats] = useState({
-    registrations: { value: 0, target: 1500, progress: 0 },
-    revenue: { value: 0, target: 616000, progress: 0 },
-    mentorias: { value: 0, target: 100, progress: 0 },
-    b2b: { value: 0, target: 120, progress: 0 },
-  });
 
-  useEffect(() => {
+  const stats = useMemo(() => {
     const totalRevenue = transactions
       .filter(t => t.type === 'income' && t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Dynamic targets from project settings or defaults
     const targets = {
       registrations: selectedProject?.settings?.maxRegistrations || 1500,
-      revenue: selectedProject?.settings?.ticketPrices?.vip * 10 || 616000, // Heuristic for revenue target if not explicit
+      revenue: (selectedProject?.settings?.ticketPrices?.vip || 0) * 10 || 616000,
       mentorias: selectedProject?.settings?.maxMentors ? selectedProject.settings.maxMentors * 5 : 100,
       b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,
     };
 
-    setStats({
+    return {
       registrations: {
         value: registrations.length,
         target: targets.registrations,
-        progress: Math.round((registrations.length / targets.registrations) * 100)
+        progress: targets.registrations > 0 ? Math.round((registrations.length / targets.registrations) * 100) : 0
       },
       revenue: {
         value: totalRevenue,
         target: targets.revenue,
-        progress: Math.round((totalRevenue / targets.revenue) * 100)
+        progress: targets.revenue > 0 ? Math.round((totalRevenue / targets.revenue) * 100) : 0
       },
       mentorias: {
         value: sessions.length,
         target: targets.mentorias,
-        progress: Math.round((sessions.length / targets.mentorias) * 100)
+        progress: targets.mentorias > 0 ? Math.round((sessions.length / targets.mentorias) * 100) : 0
       },
       b2b: {
         value: b2bMeetings.length,
         target: targets.b2b,
-        progress: Math.round((b2bMeetings.length / targets.b2b) * 100)
+        progress: targets.b2b > 0 ? Math.round((b2bMeetings.length / targets.b2b) * 100) : 0
       },
-    });
+    };
   }, [registrations, transactions, sessions, b2bMeetings, selectedProject]);
 
   const pendingMentors = filterMentors((m: Mentor) => m.status === 'pending');

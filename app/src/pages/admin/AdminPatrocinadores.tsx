@@ -83,7 +83,7 @@ export function AdminPatrocinadores() {
         projectId: projectId || '',
         ...formData,
         deliverables: []
-      });
+      } as any);
 
       toast.success('Patrocinador adicionado com sucesso!');
       setIsModalOpen(false);
@@ -96,8 +96,9 @@ export function AdminPatrocinadores() {
         contactPhone: '',
         status: 'prospect'
       });
-    } catch {
-      toast.error('Erro ao adicionar patrocinador');
+    } catch (err: any) {
+      logger.error('Erro ao adicionar patrocinador:', err);
+      toast.error('Erro ao adicionar patrocinador: ' + (err.message || 'Erro desconhecido'));
     }
   };
 

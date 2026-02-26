@@ -95,6 +95,14 @@ export function AdminUsuarios() {
     const [deptFilter, setDeptFilter] = useState('all');
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [newUserData, setNewUserData] = useState({
+        name: '',
+        email: '',
+        role: 'participant' as User['role'],
+        department: '',
+        staffRole: '',
+    });
 
     const filteredUsers = users.filter(user => {
         const matchesSearch =
@@ -127,6 +135,40 @@ export function AdminUsuarios() {
         }
     };
 
+    const handleCreate = async () => {
+        if (!newUserData.name || !newUserData.email) {
+            toast.error('Nome e email são obrigatórios');
+            return;
+        }
+
+        try {
+            // No hook create provided for users in useData.ts?
+            // Let's assume there is one or use supabase directly
+            const { error } = await supabase.from('users').insert({
+                ...newUserData,
+                id: crypto.randomUUID(), // Temp ID
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            });
+
+            if (error) throw error;
+
+            toast.success('Membro adicionado com sucesso!');
+            setIsCreateDialogOpen(false);
+            setNewUserData({
+                name: '',
+                email: '',
+                role: 'participant',
+                department: '',
+                staffRole: '',
+            });
+            // Re-fetch handled by hook usually
+        } catch (error: any) {
+            logger.error('Erro ao adicionar membro:', error);
+            toast.error('Erro ao adicionar membro: ' + (error.message || 'Erro desconhecido'));
+        }
+    };
+
     const staffCount = users.filter(u => u.role === 'staff').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
     const totalUsers = users.length;
@@ -143,10 +185,83 @@ export function AdminUsuarios() {
                         <Download className="h-4 w-4 mr-2" />
                         Exportar
                     </Button>
-                    <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Adicionar Membro
-                    </Button>
+                    <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Adicionar Membro
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-md">
+                            <DialogHeader>
+                                <DialogTitle>Adicionar Novo Membro</DialogTitle>
+                                <DialogDescription className="text-gray-400">
+                                    Cadastre um novo membro da equipe ou administrador.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-name">Nome Completo *</Label>
+                                    <Input
+                                        id="create-name"
+                                        value={newUserData.name}
+                                        onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+                                        className="bg-dark-300 border-dark-400 text-white"
+                                        placeholder="Ex: João Silva"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-email">E-mail *</Label>
+                                    <Input
+                                        id="create-email"
+                                        type="email"
+                                        value={newUserData.email}
+                                        onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                                        className="bg-dark-300 border-dark-400 text-white"
+                                        placeholder="email@exemplo.com"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-role">Cargo Principal</Label>
+                                    <select
+                                        id="create-role"
+                                        value={newUserData.role}
+                                        onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value as User['role'] })}
+                                        className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
+                                    >
+                                        <option value="participant">Participante</option>
+                                        <option value="staff">Staff</option>
+                                        <option value="admin">Administrador</option>
+                                        <option value="mentor">Mentor</option>
+                                        <option value="speaker">Palestrante</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-dept">Departamento</Label>
+                                    <select
+                                        id="create-dept"
+                                        value={newUserData.department}
+                                        onChange={(e) => setNewUserData({ ...newUserData, department: e.target.value })}
+                                        className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
+                                    >
+                                        <option value="">Nenhum / Geral</option>
+                                        {Object.entries(departmentLabels).map(([val, label]) => (
+                                            <option key={val} value={val}>{label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="border-dark-400 text-white">
+                                    Cancelar
+                                </Button>
+                                <Button onClick={handleCreate} className="bg-teal-500 hover:bg-teal-600 text-white">
+                                    Adicionar Membro
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Mail,
   Phone,
@@ -11,10 +11,9 @@ import { Button } from '@/components/ui/button';
 
 const footerLinks = {
   evento: [
-    { name: 'Sobre', href: '/sobre' },
-    { name: 'Programação', href: '/programacao' },
-    { name: 'Palestrantes', href: '/palestrantes' },
-    { name: 'Local', href: '/local-viagem' },
+    { name: 'Triunfo-PE', href: '/growth-experience-triunfo' },
+    { name: 'Petrolina-PE', href: '/growth-experience-petrolina' },
+    { name: 'Local & Viagem', href: '/local-e-viagem' },
     { name: 'FAQ', href: '/faq' },
   ],
   participar: [
@@ -22,8 +21,6 @@ const footerLinks = {
     { name: 'Mentorias', href: '/mentorias' },
     { name: 'Rodada B2B', href: '/rodada-negocios' },
     { name: 'Startups', href: '/startups' },
-    { name: 'Growth Experience (Geral)', href: '/growth-experience' },
-    { name: 'Eventos: Triunfo-PE', href: '/growth-experience-triunfo' },
   ],
   parcerias: [
     { name: 'Seja Patrocinador', href: '/seja-patrocinador' },
@@ -44,7 +41,6 @@ const socialLinks = [
 ];
 
 export function Footer() {
-  const location = useLocation();
 
   return (
     <footer className="bg-dark-200 border-t border-dark-300">
@@ -66,7 +62,7 @@ export function Footer() {
                 placeholder="Seu melhor email"
                 className="bg-dark-100 border-dark-300 text-white placeholder:text-gray-500 flex-1"
               />
-              <Button className="bg-brand-yellow hover:bg-brand-yellow/90 text-dark-100 font-bold whitespace-nowrap">
+              <Button className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold whitespace-nowrap">
                 Inscrever
               </Button>
             </div>
@@ -79,52 +75,40 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {/* Brand Column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              {location.pathname === '/growth-experience' || location.pathname === '/growth-experience-triunfo' ? (
-                <>
-                  <div className="w-10 h-10 rounded-lg bg-brand-yellow flex items-center justify-center">
-                    <span className="text-dark-100 font-bold text-lg">GS</span>
-                  </div>
-                  <div>
-                    <span className="text-white font-bold text-lg leading-tight">Growth Summit</span>
-                    <span className="text-brand-yellow text-xs block font-bold">2026</span>
-                  </div>
-                </>
-              ) : (
-                <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
-                  alt="Growth Summit"
-                  className="h-10 w-auto"
-                />
-              )}
+            <Link to="/" className="flex items-center space-x-2 mb-4 group">
+              <img
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
+                alt="Growth Experience"
+                className="h-12 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
+              />
             </Link>
             <p className="text-gray-400 text-sm mb-6 max-w-xs">
-              A maior conferência de Growth, Marketing, Vendas e IA do Nordeste.
-              21-22 de maio de 2026 em Juazeiro do Norte, CE.
+              A maior imersão de Growth e Inteligência Artificial do interior do Nordeste.
+              Edições em Triunfo e Petrolina.
             </p>
+          </div>
 
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <a
-                href="mailto:contato@growthsummit.site"
-                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                contato@growthsummit.site
-              </a>
-              <a
-                href="https://wa.me/5588988432310"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                (88) 98843-2310
-              </a>
-              <div className="flex items-start text-gray-400 text-sm">
-                <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                Boulevard Hotel, Juazeiro do Norte - CE
-              </div>
+          {/* Contact Info */}
+          <div className="space-y-3">
+            <a
+              href="mailto:contato@growthsummit.site"
+              className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              contato@growthsummit.site
+            </a>
+            <a
+              href="https://wa.me/5588988432310"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              (88) 98843-2310
+            </a>
+            <div className="flex items-start text-gray-400 text-sm">
+              <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              Boulevard Hotel, Juazeiro do Norte - CE
             </div>
           </div>
 
@@ -200,7 +184,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <p className="text-gray-500 text-sm break-words">
-              © 2026 Growth Summit. Todos os direitos reservados.
+              © 2026 Growth Experience. Todos os direitos reservados.
             </p>
 
             {/* Social Links */}

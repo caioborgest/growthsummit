@@ -219,7 +219,20 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             // 4. Redirecionamento ou Sucesso
             if (tipo === 'palestra' && valorFinal > 0) {
-                const mensagem = encodeURIComponent(`Olá! Quero finalizar meu pagamento da Palestra Noturna.\nNome: ${formData.nome}\nEmail: ${formData.email}`);
+                const valorFormatado = valorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const mensagem = encodeURIComponent(
+                    `*Growth Experience - Pagamento Palestra*\n\n` +
+                    `Olá! Quero finalizar meu pagamento da Palestra Noturna.\n\n` +
+                    `*Dados da Inscrição:*\n` +
+                    `• *Nome:* ${formData.nome}\n` +
+                    `• *Email:* ${formData.email}\n` +
+                    `• *WhatsApp:* ${formData.telefone}\n` +
+                    `• *Empresa:* ${formData.empresa || 'Não informada'}\n` +
+                    `• *Evento:* ${eventoNome}\n` +
+                    `• *Valor a Pagar:* ${valorFormatado}\n` +
+                    (formData.cupom ? `• *Voucher:* ${formData.cupom.toUpperCase()}\n` : '') +
+                    `\nPor favor, me envie as instruções de PIX.`
+                );
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
             }
 

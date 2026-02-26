@@ -8,13 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Sobre', href: '/sobre' },
-  { name: 'Programação', href: '/programacao' },
-  { name: 'Palestrantes', href: '/palestrantes' },
+  { name: 'Início', href: '/' },
+  { name: 'Triunfo 2026', href: '/growth-experience-triunfo' },
   { name: 'Petrolina 2026', href: '/growth-experience-petrolina' },
   { name: 'Inscrições', href: '/inscricoes' },
 ];
@@ -24,9 +23,6 @@ const moreLinks = [
   { name: 'Rodada B2B', href: '/rodada-negocios' },
   { name: 'Startups', href: '/startups' },
   { name: 'Seja Patrocinador', href: '/seja-patrocinador' },
-  { name: 'Growth Experience (Geral)', href: '/growth-experience' },
-  { name: 'Growth Experience Triunfo-PE', href: '/growth-experience-triunfo' },
-  { name: 'Growth Experience Petrolina-PE', href: '/growth-experience-petrolina' },
   { name: 'FAQ', href: '/faq' },
   { name: 'Contato', href: '/contato' },
 ];
@@ -70,29 +66,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo Section */}
           <Link
-            to={location.pathname.startsWith('/growth-experience') ? '/growth-experience' : '/'}
+            to="/"
             className="flex items-center group transition-transform duration-300 hover:scale-105"
           >
-            {location.pathname.startsWith('/growth-experience') ? (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral flex items-center justify-center shadow-lg shadow-brand-orange-coral/20">
-                  <span className="text-white font-black text-lg tracking-tighter">GX</span>
-                </div>
-                <div className="hidden sm:block">
-                  <span className="text-white font-black text-lg leading-none block tracking-tight">Growth Experience</span>
-                  <span className="text-brand-orange-coral text-[10px] block font-black uppercase tracking-[0.2em] mt-0.5">
-                    {location.pathname.includes('triunfo') ? 'Triunfo 2026' :
-                      location.pathname.includes('petrolina') ? 'Petrolina 2026' : 'Edições 2026'}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <img
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
-                alt="Growth Summit"
-                className="h-9 lg:h-11 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.2)]"
-              />
-            )}
+            <img
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
+              alt="Growth Experience"
+              className="h-10 sm:h-14 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
+            />
           </Link>
 
           {/* Desktop Navigation Refined */}

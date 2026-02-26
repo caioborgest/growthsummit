@@ -104,13 +104,14 @@ export function AdminComunicacao() {
     recipients: 'all'
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_selectedTemplate, _setSelectedTemplate] = useState<string | null>(null);
   const [composeData, setComposeData] = useState({
     subject: '',
     body: '',
     recipients: 'all',
   });
+
+  const [selectedTemplate, setSelectedTemplate] = useState<typeof initialEmailTemplates[0] | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const handleCreateTemplate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,6 +220,18 @@ export function AdminComunicacao() {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       toast.error('Erro ao enviar emails: ' + message);
     }
+  };
+
+  const handleInsertVariable = (variable: string) => {
+    setComposeData(prev => ({
+      ...prev,
+      body: prev.body + variable
+    }));
+  };
+
+  const handlePreviewTemplate = (template: any) => {
+    setSelectedTemplate(template);
+    setIsPreviewModalOpen(true);
   };
 
   return (
@@ -350,7 +363,12 @@ export function AdminComunicacao() {
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" className="flex-1 border-dark-300 text-gray-300">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-dark-300 text-gray-300"
+                    onClick={() => handlePreviewTemplate(template)}
+                  >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
                   </Button>
@@ -568,7 +586,11 @@ export function AdminComunicacao() {
               <p className="text-gray-400 text-sm mb-2">Variáveis disponíveis:</p>
               <div className="flex flex-wrap gap-2">
                 {['{{nome}}', '{{email}}', '{{ticket}}', '{{evento}}', '{{data}}'].map((variable) => (
-                  <Badge key={variable} className="bg-dark-300 text-gray-300 cursor-pointer hover:bg-teal-500/20 hover:text-teal-400">
+                  <Badge
+                    key={variable}
+                    className="bg-dark-300 text-gray-300 cursor-pointer hover:bg-teal-500/20 hover:text-teal-400"
+                    onClick={() => handleInsertVariable(variable)}
+                  >
                     {variable}
                   </Badge>
                 ))}
@@ -592,6 +614,48 @@ export function AdminComunicacao() {
           </div>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Visualizar Template: {selectedTemplate?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-gray-400">Assunto</Label>
+              <div className="p-3 bg-dark-100 border border-dark-300 rounded-lg text-white mt-1">
+                {selectedTemplate?.subject}
+              </div>
+            </div>
+            <div>
+              <Label className="text-gray-400">Conteúdo</Label>
+              <div className="p-4 bg-dark-100 border border-dark-300 rounded-lg text-white mt-1 min-h-[200px] whitespace-pre-wrap">
+                {(selectedTemplate as typeof initialEmailTemplates[0] & { body?: string })?.body || 'Conteúdo do template...'}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)} className="border-dark-300 text-white">
+              Fechar
+            </Button>
+            <Button
+              className="bg-teal-500 hover:bg-teal-600 text-white"
+              onClick={() => {
+                setComposeData({
+                  ...composeData,
+                  subject: selectedTemplate?.subject || '',
+                  body: (selectedTemplate as typeof initialEmailTemplates[0] & { body?: string })?.body || ''
+                });
+                setActiveTab('compose');
+                setIsPreviewModalOpen(false);
+              }}
+            >
+              Usar para Compor
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

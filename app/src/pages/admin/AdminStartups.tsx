@@ -42,7 +42,7 @@ const stageLabels: Record<string, string> = {
 
 export function AdminStartups() {
   const { projectId } = useProject();
-  const { data: startups, create, update } = useStartups();
+  const { data: startups, create, update, isLoading } = useStartups();
   const { data: leads } = useLeads();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -56,8 +56,7 @@ export function AdminStartups() {
     packageType: 'expo' as 'expo' | 'pitch'
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedStartup, _setSelectedStartup] = useState<string | null>(null);
+  const [selectedStartup, setSelectedStartup] = useState<string | null>(null);
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch =
@@ -80,9 +79,9 @@ export function AdminStartups() {
         name: formData.name,
         sector: formData.sector,
         description: formData.description,
-        stage: formData.stage as 'idea' | 'mvp' | 'traction' | 'scale',
+        stage: formData.stage,
         website: formData.website,
-        packageType: formData.packageType as 'expo' | 'pitch',
+        packageType: formData.packageType,
         status: 'approved', // Auto-approved when added by admin
         foundingTeam: [],
         metrics: {
@@ -90,7 +89,7 @@ export function AdminStartups() {
           users: 0,
           growth: 0
         }
-      } as unknown as Parameters<typeof create>[0]);
+      });
 
       toast.success('Startup adicionada com sucesso!');
       setIsModalOpen(false);
@@ -102,8 +101,9 @@ export function AdminStartups() {
         website: '',
         packageType: 'expo'
       });
-    } catch {
-      toast.error('Erro ao adicionar startup');
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error('Erro ao adicionar startup: ' + (error.message || 'Erro desconhecido'));
     }
   };
 
@@ -364,13 +364,19 @@ export function AdminStartups() {
                     <ExternalLink className="h-4 w-4 mr-1" />
                     Ver perfil
                   </Button>
-                  <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className={`border-teal-500 text-teal-400 ${selectedStartup === startup.id ? 'bg-teal-500/10' : ''}`}
+                    onClick={() => setSelectedStartup(selectedStartup === startup.id ? null : startup.id)}
+                  >
                     <Star className="h-4 w-4 mr-1" />
                     Leads
                   </Button>
                 </>
               )}
             </div>
+
           </div>
         ))}
       </div>

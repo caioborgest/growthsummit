@@ -48,8 +48,8 @@ export function AdminMentorias() {
 
   const filteredSessions = sessions.filter(session => {
     const matchesSearch =
-      session.mentorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.menteeName?.toLowerCase().includes(searchQuery.toLowerCase());
+      (session.mentorName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (session.menteeName?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

@@ -1,6 +1,6 @@
 import { Users, Building2, Handshake, TrendingUp, Target, Award } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Project } from '@/types';
+import type { Project } from '@/types';
 
 interface StatItemProps {
     icon: React.ElementType;

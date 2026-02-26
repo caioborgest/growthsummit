@@ -148,8 +148,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    await (supabase
-                        .from('users') as any)
+                    await supabase
+                        .from('users')
                         .upsert({
                             id: userId,
                             email: formData.email,
@@ -188,8 +188,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             };
 
             // Inserir no Supabase
-            const { error: supabaseError } = await (supabase
-                .from('startups_arena_pitch') as any)
+            const { error: supabaseError } = await supabase
+                .from('startups_arena_pitch')
                 .insert(dataToInsert);
 
             if (supabaseError) throw supabaseError;

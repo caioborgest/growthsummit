@@ -140,73 +140,73 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
                             <span className="font-semibold">
-                                {(selectedProject?.settings?.maxRegistrations || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo') ? 2000 : 500)).toLocaleString()}+ Participantes
+                                {(selectedProject?.settings?.maxRegistrations || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo') ? 2000 : 500))}+ Participantes
                             </span>
                         </div>
                     </div>
+                </div>
 
-                    {/* Contador regressivo */}
-                    <div
-                        className="max-w-2xl mx-auto mb-12 animate-fade-in-up"
-                        style={{ animationDelay: '0.5s' }}
-                    >
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {[
-                                { label: 'Dias', value: timeLeft.dias },
-                                { label: 'Horas', value: timeLeft.horas },
-                                { label: 'Min', value: timeLeft.minutos },
-                                { label: 'Seg', value: timeLeft.segundos }
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="glass-card p-4 sm:p-6 text-center border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all hover:scale-105"
-                                >
-                                    <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-br from-brand-orange-coral to-brand-orange-gradient bg-clip-text text-transparent mb-2">
-                                        {String(item.value).padStart(2, '0')}
-                                    </div>
-                                    <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">
-                                        {item.label}
-                                    </div>
+                {/* Contador regressivo */}
+                <div
+                    className="max-w-2xl mx-auto mb-12 animate-fade-in-up"
+                    style={{ animationDelay: '0.5s' }}
+                >
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {[
+                            { label: 'Dias', value: timeLeft.dias },
+                            { label: 'Horas', value: timeLeft.horas },
+                            { label: 'Min', value: timeLeft.minutos },
+                            { label: 'Seg', value: timeLeft.segundos }
+                        ].map((item, i) => (
+                            <div
+                                key={i}
+                                className="glass-card p-4 sm:p-6 text-center border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all hover:scale-105"
+                            >
+                                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-br from-brand-orange-coral to-brand-orange-gradient bg-clip-text text-transparent mb-2">
+                                    {String(item.value).padStart(2, '0')}
                                 </div>
-                            ))}
-                        </div>
+                                <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">
+                                    {item.label}
+                                </div>
+                            </div>
+                        ))}
                     </div>
+                </div>
 
-                    {/* CTAs */}
-                    <div
-                        className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up"
-                        style={{ animationDelay: '0.6s' }}
+                {/* CTAs */}
+                <div
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up"
+                    style={{ animationDelay: '0.6s' }}
+                >
+                    <Button
+                        size="lg"
+                        onClick={onCTAClick}
+                        className="group bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white px-8 py-6 text-lg font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
                     >
-                        <Button
-                            size="lg"
-                            onClick={onCTAClick}
-                            className="group bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white px-8 py-6 text-lg font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
-                        >
-                            Garantir Minha Vaga
-                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
+                        Garantir Minha Vaga
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
 
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="border-2 border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 px-8 py-6 text-lg font-bold hover:scale-105 transition-all duration-300"
-                            onClick={() => {
-                                document.getElementById('programacao')?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                        >
-                            Ver Programação
-                        </Button>
-                    </div>
-
-                    {/* Badge de vagas limitadas */}
-                    <div
-                        className="mt-8 animate-fade-in-up"
-                        style={{ animationDelay: '0.7s' }}
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        className="border-2 border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 px-8 py-6 text-lg font-bold hover:scale-105 transition-all duration-300"
+                        onClick={() => {
+                            document.getElementById('programacao')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
                     >
-                        <Badge className="bg-brand-orange-intense/20 text-brand-orange-intense border-brand-orange-intense/30 px-4 py-2 text-sm font-semibold animate-pulse">
-                            ⚡ Vagas Limitadas - Inscrições Abertas
-                        </Badge>
-                    </div>
+                        Ver Programação
+                    </Button>
+                </div>
+
+                {/* Badge de vagas limitadas */}
+                <div
+                    className="mt-8 animate-fade-in-up"
+                    style={{ animationDelay: '0.7s' }}
+                >
+                    <Badge className="bg-brand-orange-intense/20 text-brand-orange-intense border-brand-orange-intense/30 px-4 py-2 text-sm font-semibold animate-pulse">
+                        ⚡ Vagas Limitadas - Inscrições Abertas
+                    </Badge>
                 </div>
             </div>
 

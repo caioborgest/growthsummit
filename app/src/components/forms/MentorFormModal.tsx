@@ -156,10 +156,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    const { error: userTableError } = await (supabase.from('users') as any).upsert({
+                    const { error: userTableError } = await supabase.from('users').upsert({
                         id: userId,
                         email: formData.email,
                         name: formData.nome,
@@ -176,8 +175,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             }
 
             // 2. Salvar inscrição no banco
-            const { error: dbError } = await (supabase
-                .from('mentores_growth_experience') as any)
+            const { error: dbError } = await supabase
+                .from('mentores_growth_experience')
                 .insert({
                     project_id: projectId,
                     user_id: userId || null, // Se for nulo, salvamos como candidatura avulsa

@@ -23,8 +23,11 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useMentors } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
+import { Camera, User } from 'lucide-react';
 
 
 const statusColors: Record<string, string> = {
@@ -34,10 +37,12 @@ const statusColors: Record<string, string> = {
 };
 
 export function AdminMentores() {
+  const { projectId } = useProject();
   const { data: mentors, create, update, isLoading } = useMentors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,24 +52,49 @@ export function AdminMentores() {
     yearsExperience: 5,
     maxMentories: 10,
     specialties: '',
-    linkedin: ''
+    linkedin: '',
+    photo: null as File | null,
+    photoPreview: ''
   });
 
   const filteredMentors = mentors.filter(mentor => {
     const matchesSearch =
-      mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mentor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mentor.company.toLowerCase().includes(searchQuery.toLowerCase());
+      (mentor.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (mentor.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (mentor.company?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || mentor.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
       if (!formData.name || !formData.email) {
         toast.error('Preencha os campos obrigatórios');
         return;
+      }
+
+      let photoUrl = '';
+      if (formData.photo) {
+        const file = formData.photo;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `mentores/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(filePath);
+
+        photoUrl = urlData.publicUrl;
       }
 
       await create({
@@ -78,10 +108,10 @@ export function AdminMentores() {
         specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean),
         tracks: ['Geral'],
         linkedin: formData.linkedin,
+        photo: photoUrl, // Mapping expected by application type
         status: 'approved',
-        userId: 'admin-manual',
-        projectId: 'manual', // useData will likely override this, but it's required by type
-      });
+        projectId: projectId || 'manual',
+      } as any);
 
       toast.success('Mentor adicionado com sucesso!');
       setIsModalOpen(false);
@@ -90,6 +120,8 @@ export function AdminMentores() {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       logger.error('Erro ao adicionar mentor:', err);
       toast.error('Erro ao adicionar mentor: ' + message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -103,7 +135,9 @@ export function AdminMentores() {
       yearsExperience: 5,
       maxMentories: 10,
       specialties: '',
-      linkedin: ''
+      linkedin: '',
+      photo: null,
+      photoPreview: ''
     });
   };
 
@@ -169,6 +203,37 @@ export function AdminMentores() {
               <DialogTitle>Adicionar Novo Mentor</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-4">
+              <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-dark-300 mb-4">
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-teal-500/50">
+                    {formData.photoPreview ? (
+                      <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
+                    ) : (
+                      <User className="h-10 w-10 text-gray-500" />
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 p-2 bg-teal-500 rounded-full cursor-pointer shadow-lg hover:bg-teal-600 transition-colors">
+                    <Camera className="h-4 w-4 text-white" />
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({
+                            ...formData,
+                            photo: file,
+                            photoPreview: URL.createObjectURL(file)
+                          });
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500">Foto de Perfil</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nome Completo *</Label>
@@ -360,7 +425,7 @@ export function AdminMentores() {
             <div className="mb-4">
               <p className="text-gray-400 text-sm mb-2">Especialidades:</p>
               <div className="flex flex-wrap gap-2">
-                {mentor.specialties.map((spec, i) => (
+                {mentor.specialties?.map((spec, i) => (
                   <Badge key={i} className="bg-dark-300 text-gray-300">
                     {spec}
                   </Badge>
