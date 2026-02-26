@@ -30,14 +30,14 @@ const conselheiros = [
     {
         nome: "Caio Borges",
         cargo: "CEO da CBX Growth & IA",
-        bio: "Especialista em inteligência artificial e estratégias de crescimento acelerado.",
+        bio: "Especialista em growth e inteligência artificial para performance de negócios.",
         empresa: "CBX Growth & IA",
         foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
     },
     {
         nome: "Leandro Batista",
         cargo: "CEO da Fitness Exclusive",
-        bio: "Especialista em escala de negócios e gestão de alta performance.",
+        bio: "CEO da rede de academias que mais cresce no interior do Nordeste.",
         empresa: "Fitness Exclusive",
         foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
     }

@@ -59,7 +59,7 @@ const palestrantes = [
   {
     nome: "Leandro Batista",
     cargo: "CEO, Fitness Exclusive",
-    descricao: "Empreendedor que escalou a maior rede de academias do interior do Nordeste",
+    descricao: "CEO da rede de academias que mais cresce no interior do Nordeste",
     tema: "Crescimento Exponencial em Mercado Competitivo: Estratégias de Escala",
     horario: "19:00 - 19:50"
   },

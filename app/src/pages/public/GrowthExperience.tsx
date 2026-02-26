@@ -78,12 +78,12 @@ const TriumphSpeakers = [
 const PetrolinaSpeakers = [
   {
     name: "Caio Borges",
-    role: "CEO da CBX Growth & IA",
+    role: "Especialista em Growth e IA",
     image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
   },
   {
     name: "Leandro Batista",
-    role: "CEO da Fitness Exclusive",
+    role: "CEO Rede de Academias",
     image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
   }
 ];
