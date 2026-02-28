@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
-  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile
+  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate
 } from '@/types';
 
 // Table Mapping based on project and entity
@@ -18,6 +18,7 @@ const getTableName = (projectId: string, entity: string) => {
   if (entity === 'projects') return 'projects';
   if (entity === 'users') return 'users';
   if (entity === 'profiles') return 'profiles';
+  if (entity === 'certificates') return 'certificates';
 
   // Specific mappings for Growth Experience projects
   if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
@@ -127,9 +128,24 @@ function invalidateCache(projectId: string, entityName: string) {
 // ── Minimal column selection per entity (avoids SELECT *) ───────────────────
 function getSelectFields(entity: string, projectId?: string): string {
   // If it's a Growth Experience project, use the specific table schema
-  if (projectId && (projectId === GE_TRIUNFO || projectId.startsWith('ge-'))) {
+  if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
     if (entity === 'registrations') {
       return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,created_at';
+    }
+    if (entity === 'sessions') {
+      return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color,metadata';
+    }
+    if (entity === 'mentors') {
+      return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at';
+    }
+    if (entity === 'check_ins') {
+      return 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method';
+    }
+    if (entity === 'companies') {
+      return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,faturamento_anual,numero_funcionarios,descricao_empresa,produtos_servicos,site_url,linkedin_url,logo_url,tipo_interesse,areas_interesse,descricao_objetivos,status,created_at';
+    }
+    if (entity === 'startups') {
+      return 'id,project_id,user_id,nome_fundador,email,telefone,nome_startup,setor,estagio,descricao_startup,problema,solucao,modelo_negocio,diferencial,site_url,linkedin_url,faturamento_mensal,investimento_buscado,pitch_deck_url,video_pitch_url,status,created_at';
     }
   }
 
@@ -141,8 +157,8 @@ function getSelectFields(entity: string, projectId?: string): string {
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
-    check_ins: 'id,project_id,user_id,user_name,ticket_number,timestamp,location,method',
-    sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,speakers,max_capacity,registered_count,category,topics,partner,color,metadata',
+    check_ins: 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method',
+    sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
@@ -163,7 +179,6 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   const fetchData = useCallback(async () => {
     if (!projectId) return;
 
-    // Check cache first
     const cacheKey = `${projectId}:${entityName}`;
     const cached = dataCache.get(cacheKey);
     if (cached && Date.now() - cached.ts < CACHE_TTL) {
@@ -176,6 +191,10 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     try {
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
+
+      console.log(`[useData] Fetching ${entityName} for project ${projectId}`);
+      console.log(`[useData] Using table: ${tableName}, fields: ${fields}`);
+
       let query = (supabase.from(tableName as never).select(fields) as any);
 
       // Filter by project for non-generic tables
@@ -184,6 +203,10 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       }
 
       const { data: supabaseData, error: supabaseError } = await query;
+
+      if (supabaseData) {
+        console.log(`[useData] Successfully fetched ${supabaseData.length} records for ${entityName}`);
+      }
 
       if (supabaseError) throw supabaseError;
 
@@ -203,6 +226,13 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         if (item['payment_status']) mappedItem['paymentStatus'] = item['payment_status'];
         if (item['payment_date']) mappedItem['paymentDate'] = item['payment_date'];
         if (item['checked_in']) mappedItem['checkedIn'] = item['checked_in'];
+
+        // QR & Certification Specific
+        if (item['session_id']) mappedItem['sessionId'] = item['session_id'];
+        if (item['registration_id']) mappedItem['registrationId'] = item['registration_id'];
+        if (item['check_in_type']) mappedItem['checkInType'] = item['check_in_type'];
+        if (item['issue_date']) mappedItem['issueDate'] = item['issue_date'];
+        if (item['download_count'] !== undefined) mappedItem['downloadCount'] = item['download_count'];
 
         // Specific for Triunfo Registrations
         if (item['tipo_inscricao']) mappedItem['ticketType'] = item['tipo_inscricao'];
@@ -624,6 +654,10 @@ export function useCheckIns() {
 
 export function useSessions() {
   return useData<Session>([], 'sessions');
+}
+
+export function useCertificates() {
+  return useData<Certificate>([], 'certificates');
 }
 
 export function useLeads() {

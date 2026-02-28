@@ -13,14 +13,27 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 export async function ensureProject(projectConfig: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Project | null> {
     try {
         // 1. Try to find by slug
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
             .select('*')
             .eq('slug', projectConfig.slug)
             .maybeSingle();
 
-        if (fetchError) {
-            logger.error(`[ensureProject] Error fetching project ${projectConfig.slug}:`, { error: fetchError.message });
+        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is just 'no rows' which is fine
+            logger.warn(`[ensureProject] Potential issue fetching project ${projectConfig.slug}:`, { error: fetchError.message });
+        }
+
+        // 2. Only attempt UPSERT if we have a session or if we are in development
+        // This prevents 401 errors for anonymous users who shouldn't be creating projects anyway
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session && existing) {
+            // If already exists and no session, don't try to update, just return existing
+            return rowToProject(existing as ProjectRow);
+        }
+
+        if (!session && !existing) {
+            // Cannot create without session, return null but don't error out hard
+            logger.warn(`[ensureProject] Project ${projectConfig.slug} not found and no auth session to create it.`);
             return null;
         }
 

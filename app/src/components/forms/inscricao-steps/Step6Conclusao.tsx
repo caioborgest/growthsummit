@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { CheckCircle, Home, Smartphone, Mail, AlertCircle, Copy, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 import type { DadosInscricao } from './inscricaoTypes';
 
 interface Step6ConclusaoProps {
@@ -17,7 +18,7 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
 
     // Check if payment is pending (standard logic from Step 3/4)
     const isPending = dados.comprarPalestras && dados.statusPagamento !== 'pago';
-    const pixKey = "financeiro@growthsummit.site"; // Placeholder Pix Key
+    const pixKey = "financeiro@growthsummit.site"; // TODO: Mover para EVENT_CONFIG se for mudar
 
     const handleCopyPix = () => {
         navigator.clipboard.writeText(pixKey);
@@ -167,7 +168,7 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                                 `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
                                 `• *Tipo:* Palestra Noturna / Upgrade`
                             );
-                            window.open(`https://wa.me/5588988432310?text=${mensagem}`, '_blank');
+                            window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
                         }}
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold shadow-lg h-12 sm:h-14"
                     >

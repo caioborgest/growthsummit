@@ -23,22 +23,28 @@ export function AdminCheckIn() {
   const [lastCheckIn, setLastCheckIn] = useState<any>(null);
 
   const handleManualCheckIn = useCallback(async (registration: any) => {
-    await update(registration.id, {
-      checkedIn: true,
-      checkInTime: new Date().toISOString()
-    });
+    try {
+      await update(registration.id, {
+        checkedIn: true,
+        checkInTime: new Date().toISOString()
+      });
 
-    await create({
-      userId: registration.userId,
-      userName: 'Participante', // Would come from user data
-      ticketNumber: registration.ticketNumber,
-      timestamp: new Date().toISOString(),
-      location: 'Entrada Principal',
-      method: 'manual',
-    } as any);
+      await create({
+        userId: registration.userId,
+        userName: registration.name || 'Participante',
+        ticketNumber: registration.ticketNumber,
+        timestamp: new Date().toISOString(),
+        location: 'Entrada Principal',
+        method: 'manual',
+      } as any);
 
-    setLastCheckIn(registration);
-    setSearchQuery('');
+      setLastCheckIn(registration);
+      setSearchQuery('');
+      toast.success(`Check-in realizado: ${registration.ticketNumber}`);
+    } catch (err: any) {
+      console.error('Erro no check-in:', err);
+      toast.error(`Erro ao realizar check-in: ${err.message || 'Erro desconhecido'}`);
+    }
   }, [update, create]);
 
   // Handle Enter key for hardware scanners (standard behavior)

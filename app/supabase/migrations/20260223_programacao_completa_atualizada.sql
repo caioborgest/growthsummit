@@ -10,12 +10,32 @@
 -- ============================================
 
 -- Remover constraint antigo se existir
-ALTER TABLE public.programacao DROP CONSTRAINT IF EXISTS programacao_tipo_check;
+DO $$ 
+BEGIN
+    ALTER TABLE public.programacao 
+    DROP CONSTRAINT IF EXISTS programacao_bloco_check;
+EXCEPTION
+    WHEN OTHERS THEN NULL; -- Ignorar se não existir
+END $$;
+
+-- Remover constraint antigo se existir
+DO $$ 
+BEGIN
+    ALTER TABLE public.programacao 
+    DROP CONSTRAINT IF EXISTS programacao_tipo_check;
+EXCEPTION
+    WHEN OTHERS THEN NULL; -- Ignorar se não existir
+END $$;
 
 -- Adicionar novos tipos de atividades
 ALTER TABLE public.programacao 
 ADD CONSTRAINT programacao_tipo_check 
 CHECK (tipo IN ('palestra', 'oficina', 'workshop', 'curso', 'networking', 'circuito', 'mentoria', 'startup', 'b2b'));
+
+-- Adicionar novos blocos
+ALTER TABLE public.programacao 
+ADD CONSTRAINT programacao_bloco_check 
+CHECK (bloco IN ('manha-1', 'manha-2', 'tarde-1', 'tarde-2', 'circulacao', 'noite-1', 'noite-2'));
 
 -- ============================================
 -- 2. LIMPAR DADOS ANTIGOS E INSERIR PROGRAMAÇÃO COMPLETA
@@ -66,10 +86,19 @@ ADD COLUMN IF NOT EXISTS sala_atividade TEXT,
 ADD COLUMN IF NOT EXISTS horario_atividade TIME,
 ADD COLUMN IF NOT EXISTS nivel_atividade TEXT;
 
+-- Remover constraint antigo se existir
+DO $$ 
+BEGIN
+    ALTER TABLE public.inscricoes_growth_experience 
+    DROP CONSTRAINT IF EXISTS inscricoes_tipo_atividade_check;
+EXCEPTION
+    WHEN OTHERS THEN NULL; -- Ignorar se não existir
+END $$;
+
 -- Adicionar constraint para tipo_atividade_selecionada
 ALTER TABLE public.inscricoes_growth_experience 
-ADD CONSTRAINT IF NOT EXISTS inscricoes_tipo_atividade_check 
-CHECK (tipo_atividade_selecionada IN ('curso', 'oficina', 'workshop', 'palestra', 'networking', 'mentoria', 'startup', 'b2b'));
+ADD CONSTRAINT inscricoes_tipo_atividade_check 
+CHECK (tipo_atividade_selecionada IN ('curso', 'oficina', 'workshop', 'palestra', 'networking', 'mentoria', 'startup', 'b2b') OR tipo_atividade_selecionada IS NULL);
 
 -- ============================================
 -- 4. CRIAR VIEWS PARA FACILITAR CONSULTAS
@@ -206,7 +235,7 @@ CREATE TRIGGER trigger_atualizar_inscricao
 -- ============================================
 
 /*
-✅ ATUALIZAÇÕES REALIZADAS:
+ATUALIZAÇÕES REALIZADAS:
 
 1. CAPACIDADES DAS SALAS:
    - Sala 1: 20 pessoas (cursos/oficinas/workshops)
@@ -244,5 +273,5 @@ CREATE TRIGGER trigger_atualizar_inscricao
    - Badges coloridos por tipo
    - Informações completas salvas
 
-🚀 PROGRAMAÇÃO MANTIDA - APENAS INTEGRADA AO FORMULÁRIO!
+PROGRAMAÇÃO MANTIDA - APENAS INTEGRADA AO FORMULÁRIO!
 */

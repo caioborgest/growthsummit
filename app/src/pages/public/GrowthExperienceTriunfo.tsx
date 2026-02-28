@@ -21,9 +21,12 @@ import {
   Instagram,
   Linkedin,
   Facebook,
-  CheckCircle
+  CheckCircle,
+  QrCode
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { QRScanner } from '@/components/app/QRScanner';
+import { useCheckIns, useRegistrations, useMentors, useSessions } from '@/hooks/useData';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,11 +51,11 @@ import { PalestranteCardRefined } from '@/components/growth-experience/Palestran
 import { SectionShare } from '@/components/social/SectionShare';
 import { SocialShare } from '@/components/social/SocialShare';
 import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromocionalPopUp';
-import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
-import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { useMentors } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { ensureProject } from '@/lib/ensureProject';
+import { CertificateService } from '@/lib/certificateService';
+import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
+import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 
 // Dados do evento
 const palestrantes = [
@@ -146,7 +149,6 @@ const cotas = [
 const navItems = [
   { label: 'Sobre', href: '#sobre' },
   { label: 'Mentores', href: '#mentores' },
-  { label: 'Palestrantes', href: '#palestrantes' },
   { label: 'Programação', href: '#programacao' },
   { label: 'Inscrições', href: '#inscricoes' },
 ];
@@ -159,6 +161,63 @@ export function GrowthExperienceTriunfo() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
+  const [scannerAberto, setScannerAberto] = useState(false);
+  const { user } = useAuth();
+  const { data: userRegistrations } = useRegistrations();
+  const { create: registerCheckIn } = useCheckIns();
+  const { data: allSessions } = useSessions();
+
+  const handleScanSuccess = async (qrData: any) => {
+    setScannerAberto(false);
+
+    if (!user) {
+      toast.error("Você precisa estar logado para confirmar presença.");
+      return;
+    }
+
+    // Find user registration for this project
+    const userReg = (userRegistrations || []).find(r => r.projectId === currentProject?.id);
+
+    if (!userReg) {
+      toast.error("Você não possui uma inscrição ativa para este evento.");
+      return;
+    }
+
+    try {
+      if (qrData.type === 'session') {
+        const session = (allSessions || []).find(s => s.id === qrData.id);
+
+        await registerCheckIn({
+          projectId: currentProject?.id,
+          registrationId: userReg.id,
+          userId: user.id,
+          sessionId: qrData.id,
+          ticketNumber: userReg.ticketNumber,
+          timestamp: new Date().toISOString(),
+          location: 'Sala de Atividade',
+          method: 'self_scan',
+          checkInType: 'session'
+        } as any);
+
+        // --- Automatic Certification Trigger ---
+        if (session && currentProject) {
+          await CertificateService.checkAndIssueSessionCertificate(
+            user as any,
+            currentProject,
+            session,
+            userReg.id
+          );
+        }
+
+        toast.success("Presença confirmada! Seu certificado já está disponível na sua galeria.");
+      } else {
+        toast.error("Este QR Code não é válido para confirmação de presença em atividades.");
+      }
+    } catch (err: any) {
+      console.error("Erro ao registrar check-in:", err);
+      toast.error("Erro ao confirmar presença. Tente novamente.");
+    }
+  };
 
   // Garantir que o projeto exista no Supabase e selecioná-lo no contexto
   const initProject = useCallback(async () => {
@@ -383,7 +442,7 @@ export function GrowthExperienceTriunfo() {
                 className="text-brand-orange-coral mt-4 font-bold"
                 onClick={() => setModalAberto('mentor-cadastro')}
               >
-                Quero ser um mentor confirmadado
+                Quero ser um mentor confirmado
               </Button>
             </div>
           )}
@@ -674,6 +733,28 @@ export function GrowthExperienceTriunfo() {
 
 
       <WhatsAppButton />
+
+      {/* Floating QR Check-in Button */}
+      {user && (
+        <button
+          onClick={() => setScannerAberto(true)}
+          className="fixed bottom-24 right-6 z-50 w-16 h-16 bg-white text-dark rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+        >
+          <div className="absolute -top-12 right-0 bg-dark-200 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Confirmar Presença
+          </div>
+          <QrCode className="h-8 w-8 text-brand-orange-coral" />
+        </button>
+      )}
+
+      {/* QR Scanner Component */}
+      {scannerAberto && (
+        <QRScanner
+          onClose={() => setScannerAberto(false)}
+          onSuccess={handleScanSuccess}
+          title="Confirmar Presença na Sala"
+        />
+      )}
     </div>
   );
 }

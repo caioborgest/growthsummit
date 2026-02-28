@@ -316,7 +316,14 @@ export function AdminMentorias() {
                             size="sm"
                             variant="ghost"
                             className="text-green-400 hover:text-green-300"
-                            onClick={() => update(session.id, { status: 'completed' })}
+                            onClick={async () => {
+                              try {
+                                await update(session.id, { status: 'completed' });
+                                toast.success('Mentoria concluída!');
+                              } catch (err: any) {
+                                toast.error('Erro ao atualizar mentoria');
+                              }
+                            }}
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
@@ -324,7 +331,16 @@ export function AdminMentorias() {
                             size="sm"
                             variant="ghost"
                             className="text-red-400 hover:text-red-300"
-                            onClick={() => update(session.id, { status: 'cancelled' })}
+                            onClick={async () => {
+                              try {
+                                if (confirm('Cancelar esta mentoria?')) {
+                                  await update(session.id, { status: 'cancelled' });
+                                  toast.success('Mentoria cancelada');
+                                }
+                              } catch (err: any) {
+                                toast.error('Erro ao cancelar mentoria');
+                              }
+                            }}
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>

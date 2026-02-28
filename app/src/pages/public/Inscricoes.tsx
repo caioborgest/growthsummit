@@ -1,15 +1,24 @@
 import { useState } from 'react';
-import { 
-  Check, 
-  Star, 
-  Zap, 
+import { useNavigate } from 'react-router-dom';
+import {
+  Check,
+  Star,
+  Zap,
   Crown,
   ArrowRight,
   Shield,
-  CreditCard
+  CreditCard,
+  MapPin
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { ticketTypes } from '@/data/eventData';
 
 const trustBadges = [
@@ -20,7 +29,9 @@ const trustBadges = [
 ];
 
 export function Inscricoes() {
+  const navigate = useNavigate();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const [showEventSelector, setShowEventSelector] = useState(false);
 
   const getTicketIcon = (id: string) => {
     switch (id) {
@@ -35,13 +46,23 @@ export function Inscricoes() {
     }
   };
 
+  const handleTicketSelect = (id: string) => {
+    setSelectedTicket(id);
+    setShowEventSelector(true);
+  };
+
+  const handleEventChoose = (slug: string) => {
+    // Redireciona para a página do evento com o ticket selecionado via state ou query
+    navigate(`/${slug}`, { state: { selectedTicket } });
+  };
+
   return (
     <div className="bg-dark min-h-screen">
       {/* Hero */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        
+
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -78,11 +99,10 @@ export function Inscricoes() {
             {ticketTypes.map((ticket) => (
               <div
                 key={ticket.id}
-                className={`relative glass-card p-8 transition-all duration-300 ${
-                  selectedTicket === ticket.id 
-                    ? 'border-teal-500 ring-2 ring-teal-500/20' 
-                    : 'hover:border-dark-300'
-                } ${ticket.popular ? 'md:scale-105 md:-my-4' : ''}`}
+                className={`relative glass-card p-8 transition-all duration-300 ${selectedTicket === ticket.id
+                  ? 'border-teal-500 ring-2 ring-teal-500/20'
+                  : 'hover:border-dark-300'
+                  } ${ticket.popular ? 'md:scale-105 md:-my-4' : ''}`}
                 onClick={() => setSelectedTicket(ticket.id)}
               >
                 {ticket.popular && (
@@ -95,16 +115,15 @@ export function Inscricoes() {
                     Apenas {ticket.limit} vagas
                   </Badge>
                 )}
-                
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 ${
-                  ticket.color === 'teal' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'
-                }`}>
+
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 ${ticket.color === 'teal' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'
+                  }`}>
                   {getTicketIcon(ticket.id)}
                 </div>
-                
+
                 <h3 className="text-2xl font-bold text-white mb-2">{ticket.name}</h3>
                 <p className="text-gray-400 mb-6">{ticket.description}</p>
-                
+
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-white">
                     R$ {ticket.price.toLocaleString()}
@@ -115,7 +134,7 @@ export function Inscricoes() {
                     </span>
                   )}
                 </div>
-                
+
                 <ul className="space-y-3 mb-8">
                   {ticket.features.map((feature, i) => (
                     <li key={i} className="flex items-start text-sm text-gray-300">
@@ -124,14 +143,14 @@ export function Inscricoes() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <Button
-                  className={`w-full ${
-                    selectedTicket === ticket.id || ticket.popular
-                      ? 'bg-teal-500 hover:bg-teal-600 text-white'
-                      : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
-                  }`}
+                  className={`w-full ${selectedTicket === ticket.id || ticket.popular
+                    ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                    : 'bg-dark-100 hover:bg-dark-300 text-white border border-dark-300'
+                    }`}
                   size="lg"
+                  onClick={() => handleTicketSelect(ticket.id)}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
                   Escolher este
@@ -153,7 +172,7 @@ export function Inscricoes() {
               Perguntas frequentes
             </h2>
           </div>
-          
+
           <div className="space-y-4">
             {[
               {
@@ -185,7 +204,7 @@ export function Inscricoes() {
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-orange-500/10" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             Ainda tem dúvidas?
@@ -193,10 +212,10 @@ export function Inscricoes() {
           <p className="text-xl text-gray-400 mb-8">
             Nossa equipe está pronta para ajudar você a escolher a melhor opção
           </p>
-          
-          <Button 
-            size="lg" 
-            variant="outline" 
+
+          <Button
+            size="lg"
+            variant="outline"
             className="border-dark-300 text-gray-300 hover:text-white hover:border-teal-500"
           >
             Falar com organização
@@ -204,6 +223,48 @@ export function Inscricoes() {
           </Button>
         </div>
       </section>
+
+      {/* Event Selection Modal */}
+      <Dialog open={showEventSelector} onOpenChange={setShowEventSelector}>
+        <DialogContent className="bg-dark-100 border-white/10 text-white max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Onde você participará?</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Escolha a cidade da sua imersão Growth Experience 2026.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <button
+              onClick={() => handleEventChoose('growth-experience-triunfo')}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all text-left group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white">Triunfo-PE</h4>
+                <p className="text-sm text-gray-400">16 de Abril - Edição Flagship</p>
+              </div>
+              <ArrowRight className="ml-auto h-5 w-5 text-orange-500 opacity-0 group-hover:opacity-100 transition-all" />
+            </button>
+
+            <button
+              onClick={() => handleEventChoose('growth-experience-petrolina')}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all text-left group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white">Petrolina-PE</h4>
+                <p className="text-sm text-gray-400">30 de Abril - Edição Vale</p>
+              </div>
+              <ArrowRight className="ml-auto h-5 w-5 text-teal-500 opacity-0 group-hover:opacity-100 transition-all" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const footerLinks = {
   evento: [
@@ -36,8 +37,8 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/growthsummit2026' },
-  { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/caioborgesgrowth/' },
+  { name: 'Instagram', icon: Instagram, href: EVENT_CONFIG.social.instagram },
+  { name: 'LinkedIn', icon: Linkedin, href: EVENT_CONFIG.social.linkedin },
 ];
 
 export function Footer() {
@@ -91,20 +92,20 @@ export function Footer() {
           {/* Contact Info */}
           <div className="space-y-3">
             <a
-              href="mailto:contato@growthsummit.site"
+              href={`mailto:${EVENT_CONFIG.email}`}
               className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
             >
               <Mail className="h-4 w-4 mr-2" />
-              contato@growthsummit.site
+              {EVENT_CONFIG.email}
             </a>
             <a
-              href="https://wa.me/5588988432310"
+              href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
             >
               <Phone className="h-4 w-4 mr-2" />
-              (88) 98843-2310
+              {EVENT_CONFIG.whatsapp.display}
             </a>
             <div className="flex items-start text-gray-400 text-sm">
               <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />

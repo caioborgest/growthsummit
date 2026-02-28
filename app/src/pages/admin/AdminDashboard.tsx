@@ -86,14 +86,6 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
   );
 }
 
-const quickActions = [
-  { name: 'Aprovar Mentor', icon: CheckCircle, color: 'green', path: '/admin/mentores' },
-  { name: 'Exportar Inscritos', icon: Download, color: 'blue', action: () => { } },
-  { name: 'Enviar Email', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
-  { name: 'Ver Check-ins', icon: QrCode, color: 'teal', path: '/admin/check-in' },
-  { name: 'Matching B2B', icon: Users2, color: 'orange', path: '/admin/rodada-negocios' },
-];
-
 export function AdminDashboard() {
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
@@ -105,6 +97,47 @@ export function AdminDashboard() {
   const { data: _sponsors } = useSponsors();
   const { data: transactions } = useTransactions();
   const { data: checkIns } = useCheckIns();
+
+  const quickActions = [
+    { name: 'Aprovar Mentor', icon: CheckCircle, color: 'green', path: '/admin/mentores' },
+    {
+      name: 'Exportar Inscritos',
+      icon: Download,
+      color: 'blue',
+      action: () => {
+        if (registrations.length === 0) {
+          toast.error('Nenhum inscrito para exportar');
+          return;
+        }
+        const headers = ['ID', 'Nome', 'Email', 'Empresa', 'Tipo', 'Status'];
+        const csvContent = [
+          headers.join(','),
+          ...registrations.map(r => [
+            r.id,
+            `"${r.nome}"`,
+            r.email,
+            `"${r.empresa || ''}"`,
+            r.tipoInscricao || 'padrão',
+            r.status
+          ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `inscritos_${selectedProject?.slug || 'evento'}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Exportação iniciada');
+      }
+    },
+    { name: 'Enviar Email', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
+    { name: 'Ver Check-ins', icon: QrCode, color: 'teal', path: '/admin/check-in' },
+    { name: 'Matching B2B', icon: Users2, color: 'orange', path: '/admin/rodada-negocios' },
+  ];
 
 
   const stats = useMemo(() => {
@@ -305,7 +338,10 @@ export function AdminDashboard() {
               key={action.name}
               variant="outline"
               className="border-dark-300 text-gray-300 hover:text-white hover:border-teal-500 h-auto py-4 justify-start"
-              onClick={action.action}
+              onClick={() => {
+                if ('path' in action && action.path) navigate(action.path);
+                if ('action' in action && action.action) action.action();
+              }}
             >
               <div className={`w-10 h-10 rounded-lg bg-${action.color}-500/20 flex items-center justify-center mr-3`}>
                 <action.icon className={`h-5 w-5 text-${action.color}-400`} />

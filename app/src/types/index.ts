@@ -282,13 +282,30 @@ export interface Transaction {
 export interface CheckIn {
   id: string;
   projectId: string;
+  registrationId: string;
   userId: string;
-  userName: string;
+  sessionId?: string;
   ticketNumber: string;
   timestamp: string;
   location: string;
-  method: 'qr_code' | 'manual';
+  method: 'qr_code' | 'manual' | 'rfid' | 'facial' | 'self_scan';
+  checkInType: 'event' | 'session';
   staffId?: string;
+  notes?: string;
+}
+
+export interface Certificate {
+  id: string;
+  projectId: string;
+  userId: string;
+  registrationId: string;
+  sessionId?: string;
+  type: 'event' | 'course' | 'lecture' | 'workshop';
+  code: string;
+  issueDate: string;
+  downloadCount: number;
+  metadata: Record<string, unknown>;
+  createdAt: string;
 }
 
 export interface EmailTemplate {

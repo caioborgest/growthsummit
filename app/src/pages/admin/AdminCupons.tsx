@@ -172,8 +172,13 @@ export function AdminCupons() {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Tem certeza que deseja excluir este cupom?')) {
-            await remove(id);
+        try {
+            if (confirm('Tem certeza que deseja excluir este cupom?')) {
+                await remove(id);
+                toast.success('Cupom excluído com sucesso');
+            }
+        } catch (err: any) {
+            toast.error('Erro ao excluir cupom');
         }
     };
 

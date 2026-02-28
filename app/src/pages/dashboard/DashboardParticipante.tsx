@@ -11,7 +11,8 @@ import {
   Clock,
   MapPin,
   LogOut,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -129,6 +130,10 @@ export function DashboardParticipante() {
             <TabsTrigger value="dados" className="data-[state=active]:bg-teal-500">
               <User className="h-4 w-4 mr-2" />
               Perfil
+            </TabsTrigger>
+            <TabsTrigger value="certificados" className="data-[state=active]:bg-teal-500">
+              <Award className="h-4 w-4 mr-2" />
+              Certificados
             </TabsTrigger>
             <TabsTrigger value="suporte" className="data-[state=active]:bg-teal-500">
               <HelpCircle className="h-4 w-4 mr-2" />
@@ -344,6 +349,26 @@ export function DashboardParticipante() {
           {/* Perfil Tab */}
           <TabsContent value="dados">
             <ProfileForm />
+          </TabsContent>
+
+          {/* Certificados Tab */}
+          <TabsContent value="certificados">
+            <div className="glass-card p-12 text-center border-teal-500/20">
+              <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-6">
+                <Award className="h-10 w-10 text-teal-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">Seas Conquistas Acadêmicas</h2>
+              <p className="text-gray-400 max-w-lg mx-auto mb-8">
+                Você pode acessar todos os seus certificados de participação e cursos na nossa galeria dedicada.
+              </p>
+              <Button
+                className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 py-6 h-auto rounded-xl shadow-xl"
+                onClick={() => navigate('/meus-certificados')}
+              >
+                <Award className="h-5 w-5 mr-2" />
+                IR PARA GALERIA DE CERTIFICADOS
+              </Button>
+            </div>
           </TabsContent>
 
           {/* Suporte Tab */}

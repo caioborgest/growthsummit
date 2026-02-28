@@ -103,8 +103,9 @@ export function AdminB2B() {
         duration: 20,
         tableNumber: ''
       });
-    } catch {
-      toast.error('Erro ao agendar reunião');
+    } catch (err: any) {
+      logger.error('Erro ao agendar reunião:', err);
+      toast.error(`Erro ao agendar reunião: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
@@ -116,7 +117,10 @@ export function AdminB2B() {
         return;
       }
 
-      await createCompany(companyFormData as Parameters<typeof createCompany>[0]);
+      await createCompany({
+        ...companyFormData,
+        projectId: projectId || '',
+      } as any);
       toast.success('Empresa cadastrada com sucesso!');
       setIsCompanyModalOpen(false);
       setCompanyFormData({
@@ -128,8 +132,9 @@ export function AdminB2B() {
         type: 'vendor',
         maxMeetings: 10
       });
-    } catch {
-      toast.error('Erro ao cadastrar empresa');
+    } catch (err: any) {
+      logger.error('Erro ao cadastrar empresa:', err);
+      toast.error(`Erro ao cadastrar empresa: ${err.message || 'Erro desconhecido'}`);
     }
   };
 

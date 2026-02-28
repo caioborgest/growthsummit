@@ -112,11 +112,23 @@ export function AdminStartups() {
   const totalLeads = leads.length;
 
   const handleApprove = async (id: string) => {
-    await update(id, { status: 'approved' });
+    try {
+      await update(id, { status: 'approved' });
+      toast.success('Startup aprovada com sucesso!');
+    } catch (err: any) {
+      toast.error(`Erro ao aprovar startup: ${err.message || 'Erro desconhecido'}`);
+    }
   };
 
   const handleReject = async (id: string) => {
-    await update(id, { status: 'rejected' });
+    try {
+      if (confirm('Tem certeza que deseja rejeitar esta startup?')) {
+        await update(id, { status: 'rejected' });
+        toast.success('Startup rejeitada');
+      }
+    } catch (err: any) {
+      toast.error(`Erro ao rejeitar startup: ${err.message || 'Erro desconhecido'}`);
+    }
   };
 
   return (

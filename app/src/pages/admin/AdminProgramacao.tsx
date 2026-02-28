@@ -8,8 +8,19 @@ import {
   Users2,
   Coffee,
   Zap,
-  LayoutGrid
+  LayoutGrid,
+  QrCode,
+  Printer
 } from 'lucide-react';
+import QRCode from 'react-qr-code';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { generateQRString } from '@/lib/qrUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +28,7 @@ import { useSessions } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import type { Session } from '@/types';
 import { Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 const typeIcons: Record<string, React.ElementType> = {
   keynote: Mic,
@@ -76,6 +88,7 @@ export function AdminProgramacao() {
   const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
   const [showForm, setShowForm] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [qrSession, setQrSession] = useState<Session | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -92,37 +105,52 @@ export function AdminProgramacao() {
   });
 
   const filteredSessions = sessions.filter(s => {
-    if (activeTab === 'diurna') return s.category.startsWith('manha_') || s.category.startsWith('tarde_');
-    if (activeTab === 'noturna') return s.category === 'noturna';
-    if (activeTab === 'circuito') return s.category === 'circuito';
+    const category = s.category || '';
+    if (activeTab === 'diurna') return category.startsWith('manha_') || category.startsWith('tarde_');
+    if (activeTab === 'noturna') return category === 'noturna';
+    if (activeTab === 'circuito') return category === 'circuito';
     return true;
-  }).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }).sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+  console.log('[AdminProgramacao] Filtered sessions:', filteredSessions);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      speakers: formData.speakers ? formData.speakers.split(',').map(s => s.trim()) : [],
-      topics: formData.topics ? formData.topics.split('\n').map(s => s.trim()) : [],
-      maxCapacity: parseInt(formData.maxCapacity) || 0,
-    };
 
-    if (editingSession) {
-      await update(editingSession.id, {
-        ...payload,
-        type: payload.type as Session['type'],
-      });
-    } else {
-      await create({
-        ...payload,
-        projectId: projectId || 'ge-triunfo-2026',
-        registeredCount: 0,
-        type: payload.type as Session['type'],
-      });
+    if (!projectId) {
+      toast.error('Por favor, selecione um projeto no menu lateral antes de criar atividades.');
+      return;
     }
-    setShowForm(false);
-    setEditingSession(null);
-    resetForm();
+
+    try {
+      const payload = {
+        ...formData,
+        speakers: formData.speakers ? formData.speakers.split(',').map(s => s.trim()) : [],
+        topics: formData.topics ? formData.topics.split('\n').map(s => s.trim()) : [],
+        maxCapacity: parseInt(formData.maxCapacity) || 0,
+      };
+
+      if (editingSession) {
+        await update(editingSession.id, {
+          ...payload,
+          type: payload.type as Session['type'],
+        });
+        toast.success('Atividade atualizada com sucesso!');
+      } else {
+        await create({
+          ...payload,
+          projectId: projectId, // Usar o ID do contexto, sem fallback para slug se possível
+          registeredCount: 0,
+          type: payload.type as Session['type'],
+        });
+        toast.success('Atividade criada com sucesso!');
+      }
+      setShowForm(false);
+      setEditingSession(null);
+      resetForm();
+    } catch (err: any) {
+      console.error('Erro ao salvar atividade:', err);
+      toast.error(`Erro ao salvar: ${err.message || 'Ocorreu um erro inesperado'}`);
+    }
   };
 
   const resetForm = () => {
@@ -140,6 +168,58 @@ export function AdminProgramacao() {
       topics: '',
       color: 'orange',
     });
+  };
+
+  const handlePrintQR = () => {
+    const printContent = document.getElementById('printable-qr');
+    if (!printContent) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Imprimir QR Code - ${qrSession?.title}</title>
+          <style>
+            body { 
+              font-family: sans-serif; 
+              display: flex; 
+              flex-direction: column; 
+              align-items: center; 
+              justify-content: center; 
+              height: 100vh; 
+              margin: 0; 
+              text-align: center;
+              background-color: white;
+              color: black;
+            }
+            .container { border: 2px solid #000; padding: 40px; border-radius: 20px; }
+            h1 { margin-bottom: 5px; font-size: 24px; }
+            h2 { margin-top: 0; color: #666; font-size: 18px; margin-bottom: 30px; }
+            .footer { margin-top: 30px; font-size: 12px; color: #999; }
+            svg { display: block; margin: 0 auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>${qrSession?.title}</h1>
+            <h2>${qrSession?.room}</h2>
+            ${printContent.innerHTML}
+            <div class="footer">Escaneie para confirmar presença - Growth Experience</div>
+          </div>
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleEdit = (session: Session) => {
@@ -168,30 +248,32 @@ export function AdminProgramacao() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" >
       {/* View Tabs */}
-      <div className="flex space-x-4 border-b border-dark-300">
-        {[
-          { id: 'diurna', label: 'Diurna', icon: Clock },
-          { id: 'noturna', label: 'Noturna', icon: Mic },
-          { id: 'circuito', label: 'Circuito', icon: Zap },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
-            className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
-              ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
-              : 'text-gray-400 hover:text-white'
-              }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      < div className="flex space-x-4 border-b border-dark-300" >
+        {
+          [
+            { id: 'diurna', label: 'Diurna', icon: Clock },
+            { id: 'noturna', label: 'Noturna', icon: Mic },
+            { id: 'circuito', label: 'Circuito', icon: Zap },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
+              className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
+                ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
+                : 'text-gray-400 hover:text-white'
+                }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          ))
+        }
+      </div >
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      < div className="flex justify-between items-center" >
         <div>
           <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
             Gestão da Programação - {activeTab.toUpperCase()}
@@ -209,169 +291,171 @@ export function AdminProgramacao() {
           <Plus className="h-4 w-4 mr-2" />
           Adicionar Atividade
         </Button>
-      </div>
+      </div >
 
       {/* Form */}
-      {showForm && (
-        <div className="glass-card p-6 border-brand-orange-coral/30">
-          <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-            {editingSession ? <Edit2 className="h-5 w-5 text-brand-orange-coral" /> : <Plus className="h-5 w-5 text-brand-orange-coral" />}
-            {editingSession ? 'Editar Atividade' : 'Nova Atividade'}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Título</label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Ex: Do Improviso ao Plano"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+      {
+        showForm && (
+          <div className="glass-card p-6 border-brand-orange-coral/30">
+            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+              {editingSession ? <Edit2 className="h-5 w-5 text-brand-orange-coral" /> : <Plus className="h-5 w-5 text-brand-orange-coral" />}
+              {editingSession ? 'Editar Atividade' : 'Nova Atividade'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Categoria/Bloco</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      required
-                    >
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tipo</label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      required
-                    >
-                      {Object.keys(typeLabels).map(key => (
-                        <option key={key} value={key}>{typeLabels[key]}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Início</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Título</label>
                     <Input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white h-12"
+                      placeholder="Ex: Do Improviso ao Plano"
                       required
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Categoria/Bloco</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        required
+                      >
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tipo</label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        required
+                      >
+                        {Object.keys(typeLabels).map(key => (
+                          <option key={key} value={key}>{typeLabels[key]}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Início</label>
+                      <Input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Fim</label>
+                      <Input
+                        type="time"
+                        value={formData.endTime}
+                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Fim</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Local/Sala</label>
+                    <select
+                      value={formData.room}
+                      onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="">Outro/Manual</option>
+                      {rooms.map(r => (
+                        <option key={r.id} value={r.name}>{r.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Palestrantes / Responsáveis</label>
                     <Input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      value={formData.speakers}
+                      onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white h-12"
-                      required
+                      placeholder="Nome 1, Nome 2 (opcional)"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Parceiro</label>
+                      <Input
+                        value={formData.partner}
+                        onChange={(e) => setFormData({ ...formData, partner: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12"
+                        placeholder="Ex: SEBRAE (opcional)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacidade</label>
+                      <Input
+                        type="number"
+                        value={formData.maxCapacity}
+                        onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12"
+                        placeholder="0 = Ilimitado"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Local/Sala</label>
-                  <select
-                    value={formData.room}
-                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                    className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="">Outro/Manual</option>
-                    {rooms.map(r => (
-                      <option key={r.id} value={r.name}>{r.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Palestrantes / Responsáveis</label>
-                  <Input
-                    value={formData.speakers}
-                    onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Nome 1, Nome 2 (opcional)"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Parceiro</label>
-                    <Input
-                      value={formData.partner}
-                      onChange={(e) => setFormData({ ...formData, partner: e.target.value })}
-                      className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="Ex: SEBRAE (opcional)"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacidade</label>
-                    <Input
-                      type="number"
-                      value={formData.maxCapacity}
-                      onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
-                      className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="0 = Ilimitado"
-                    />
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tópicos / Pontos Chave (um por linha)</label>
+                <textarea
+                  value={formData.topics}
+                  onChange={(e) => setFormData({ ...formData, topics: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[100px]"
+                  placeholder="Tópico 1&#10;Tópico 2&#10;Tópico 3"
+                />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tópicos / Pontos Chave (um por linha)</label>
-              <textarea
-                value={formData.topics}
-                onChange={(e) => setFormData({ ...formData, topics: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[100px]"
-                placeholder="Tópico 1&#10;Tópico 2&#10;Tópico 3"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Descrição Curta</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[80px]"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Descrição Curta</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[80px]"
-              />
-            </div>
-
-            <div className="flex space-x-4 pt-4">
-              <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
-                {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-dark-300 text-gray-300 px-8 py-6 h-auto font-black text-lg"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingSession(null);
-                }}
-              >
-                CANCELAR
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
+              <div className="flex space-x-4 pt-4">
+                <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
+                  {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-dark-300 text-gray-300 px-8 py-6 h-auto font-black text-lg"
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingSession(null);
+                  }}
+                >
+                  CANCELAR
+                </Button>
+              </div>
+            </form>
+          </div>
+        )
+      }
 
       {/* List */}
       <div className="space-y-4">
@@ -439,6 +523,15 @@ export function AdminProgramacao() {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="border-brand-orange-coral/30 text-brand-orange-coral/70 hover:text-white hover:bg-brand-orange-coral"
+                      onClick={() => setQrSession(session)}
+                      title="Gerar QR Code para Check-in"
+                    >
+                      <QrCode className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
                       onClick={() => handleEdit(session)}
                     >
@@ -474,6 +567,53 @@ export function AdminProgramacao() {
           </div>
         )}
       </div>
-    </div>
+
+      {/* QR Code Dialog */}
+      <Dialog open={!!qrSession} onOpenChange={(open) => !open && setQrSession(null)}>
+        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <QrCode className="text-brand-orange-coral" />
+              QR Code de Check-in
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Imprima este QR Code e coloque-o na entrada da sala para que os participantes confirmem presença.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl my-4" id="printable-qr">
+            {qrSession && (
+              <QRCode
+                value={generateQRString('session', projectId || '', qrSession.id)}
+                size={256}
+                level="H"
+              />
+            )}
+          </div>
+
+          <div className="text-center mb-6">
+            <h3 className="font-bold text-lg text-white">{qrSession?.title}</h3>
+            <p className="text-brand-orange-coral font-bold">{qrSession?.room}</p>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white"
+              onClick={handlePrintQR}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir QR Code
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 border-dark-300 text-gray-400"
+              onClick={() => setQrSession(null)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

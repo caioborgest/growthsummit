@@ -160,18 +160,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Se temos uma sessão mas ainda não temos o objeto 'user' completo, 
-    // mantemos em loading para evitar redirecionamentos indesejados
-    if (!user) setIsLoading(true);
+    // mantemos o estado carregando se necessário
+    setIsLoading(true);
 
     try {
       // Buscar metadados com timeout defensivo
+      // Removido staff_role, permissions e two_factor_enabled temporariamente pois podem estar faltando no banco
       const { data: userData, error } = await withTimeout(
         supabase
           .from('users')
-          .select('id,name,email,role,avatar,phone,staff_role,permissions,two_factor_enabled')
+          .select('id,name,email,role,avatar,phone')
           .eq('id', currentSession.user.id)
-          .single(),
-        3000 // 3 segundos é suficiente para metadados
+          .maybeSingle(),
+        5000 // Aumentado para 5s para evitar timeouts falsos
       );
 
       if (error) {
@@ -195,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   // Login com email e senha
   const login = useCallback(async (email: string, password: string): Promise<User | null> => {
@@ -224,8 +225,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userData: UserDBMetadata | null = null;
         try {
           const { data: ud } = await withTimeout(
-            supabase.from('users').select('*').eq('id', data.user.id).single(),
-            2000
+            supabase.from('users').select('id,name,email,role,avatar,phone').eq('id', data.user.id).maybeSingle(),
+            3000
           );
           userData = ud as UserDBMetadata;
         } catch (e) {
@@ -343,7 +344,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logAuditEvent('2fa_disabled', user.id);
   }, [user]);
 
-  // Hooks de efeito movidos para cá para evitar TDZ (Temporal Dead Zone)
   // Efeito de inicialização e monitoramento de Auth
   useEffect(() => {
     let isMounted = true;

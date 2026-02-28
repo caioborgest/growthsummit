@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Crown,
   Coffee,
@@ -16,10 +17,18 @@ import {
   Target,
   Megaphone
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const benefits = [
   {
@@ -89,6 +98,12 @@ const PetrolinaSpeakers = [
 ];
 
 export function GrowthExperience() {
+  const navigate = useNavigate();
+  const [showEventSelector, setShowEventSelector] = useState(false);
+
+  const handleEventChoose = (slug: string) => {
+    navigate(`/${slug}`, { state: { selectedTicket: 'vip' } });
+  };
   return (
     <div className="overflow-x-hidden">
       {/* Hero */}
@@ -147,7 +162,7 @@ export function GrowthExperience() {
                 className="border-dark-300 text-gray-300 hover:text-white px-10 h-16 rounded-2xl font-bold"
                 asChild
               >
-                <a href="https://wa.me/5588988432310" target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`} target="_blank" rel="noopener noreferrer">
                   Falar com consultor
                 </a>
               </Button>
@@ -547,6 +562,7 @@ export function GrowthExperience() {
             <Button
               size="lg"
               className="bg-orange-500 hover:bg-orange-600 text-white px-8"
+              onClick={() => setShowEventSelector(true)}
             >
               <Crown className="h-5 w-5 mr-2" />
               Quero ser VIP
@@ -562,13 +578,13 @@ export function GrowthExperience() {
           </div>
 
           <p className="text-gray-500 text-sm mt-6">
-            Dúvidas? Ligue para (88) 98843-2310 ou envie email para contato@growthsummit.site
+            Dúvidas? Ligue para {EVENT_CONFIG.whatsapp.display} ou envie email para {EVENT_CONFIG.email}
           </p>
         </div>
       </section>
       {/* Floating WhatsApp for Conversion */}
       <a
-        href="https://wa.me/5588988432310"
+        href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl shadow-green-500/40 transition-all hover:scale-110 flex items-center justify-center group animate-bounce"
@@ -579,6 +595,48 @@ export function GrowthExperience() {
           Falar com consultor
         </span>
       </a>
+
+      {/* Event Selection Modal */}
+      <Dialog open={showEventSelector} onOpenChange={setShowEventSelector}>
+        <DialogContent className="bg-dark-100 border-white/10 text-white max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Onde você participará?</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Escolha a cidade da sua imersão Growth Experience 2026.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <button
+              onClick={() => handleEventChoose('growth-experience-triunfo')}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all text-left group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white">Triunfo-PE</h4>
+                <p className="text-sm text-gray-400">16 de Abril - Edição Flagship</p>
+              </div>
+              <ArrowRight className="ml-auto h-5 w-5 text-orange-500 opacity-0 group-hover:opacity-100 transition-all" />
+            </button>
+
+            <button
+              onClick={() => handleEventChoose('growth-experience-petrolina')}
+              className="flex items-center gap-4 p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all text-left group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
+                <MapPin className="h-6 w-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-white">Petrolina-PE</h4>
+                <p className="text-sm text-gray-400">30 de Abril - Edição Vale</p>
+              </div>
+              <ArrowRight className="ml-auto h-5 w-5 text-teal-500 opacity-0 group-hover:opacity-100 transition-all" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

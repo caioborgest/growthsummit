@@ -35,6 +35,7 @@ const DashboardMentor = lazy(() => import('./pages/dashboard/DashboardMentor').t
 const DashboardCompany = lazy(() => import('./pages/dashboard/DashboardCompany').then(m => ({ default: m.DashboardCompany })));
 const DashboardStartup = lazy(() => import('./pages/dashboard/DashboardStartup').then(m => ({ default: m.DashboardStartup })));
 const DashboardSponsor = lazy(() => import('./pages/dashboard/DashboardSponsor').then(m => ({ default: m.DashboardSponsor })));
+const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m => ({ default: m.Certificados })));
 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -158,6 +159,11 @@ function AppRoutes() {
           <Route path="lgpd" element={<LegalPage title="LGPD" />} />
           <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
           <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
+          <Route path="meus-certificados" element={
+            <ProtectedRoute allowedRoles={['participant', 'participante', 'admin']}>
+              <Certificados />
+            </ProtectedRoute>
+          } />
         </Route>
 
         {/* Help Center (App only, no public layout) */}

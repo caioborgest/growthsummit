@@ -209,6 +209,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const finalStatusPagamento = (inscricaoData as any)?.[0]?.status_pagamento || 'pago';
             onConfirmar(userId || '', finalInscricaoId || '', finalStatusPagamento);
+            setLoading(false); // Reset loading on success too
 
         } catch (err: unknown) {
             const error = err as Error;

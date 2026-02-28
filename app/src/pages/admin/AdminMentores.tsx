@@ -144,20 +144,22 @@ export function AdminMentores() {
   const handleApprove = async (id: string) => {
     try {
       await update(id, { status: 'approved' });
-      toast.success('Mentor aprovado!');
-    } catch (error) {
-      logger.error('Erro ao aprovar mentor:', error);
-      toast.error('Erro ao aprovar mentor');
+      toast.success('Mentor aprovado com sucesso!');
+    } catch (err: any) {
+      logger.error('Erro ao aprovar mentor:', err);
+      toast.error(`Erro ao aprovar mentor: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
   const handleReject = async (id: string) => {
     try {
-      await update(id, { status: 'rejected' });
-      toast.success('Mentor rejeitado');
-    } catch (error) {
-      logger.error('Erro ao rejeitar mentor:', error);
-      toast.error('Erro ao rejeitar mentor');
+      if (confirm('Tem certeza que deseja rejeitar este mentor?')) {
+        await update(id, { status: 'rejected' });
+        toast.success('Mentor rejeitado com sucesso');
+      }
+    } catch (err: any) {
+      logger.error('Erro ao rejeitar mentor:', err);
+      toast.error(`Erro ao rejeitar mentor: ${err.message || 'Erro desconhecido'}`);
     }
   };
 
