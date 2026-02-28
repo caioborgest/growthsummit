@@ -97,7 +97,7 @@ export function StatsSection({ project }: StatsSectionProps) {
     const stats = [
         {
             icon: Users,
-            value: project?.settings?.maxRegistrations || (isTriunfo ? 2000 : 500),
+            value: (isTriunfo && (project?.settings?.maxRegistrations || 0) < 1500) ? 1500 : (project?.settings?.maxRegistrations || 500),
             label: 'Participantes',
             suffix: '+'
         },

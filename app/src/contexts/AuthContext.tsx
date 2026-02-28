@@ -4,6 +4,7 @@ import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
 import { logger } from '@/lib/logger';
 import { logAuditEvent } from '@/lib/auth-audit';
+import { withTimeout } from '@/lib/promiseUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -124,30 +125,15 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
   };
 }
 
-/**
- * Executa uma query do Supabase com timeout para evitar travamentos (ex: RLS recursion)
- */
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
-  let timeoutId: any;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error('TIMEOUT_EXCEEDED')), timeoutMs);
-  });
-
-  try {
-    const result = await Promise.race([promise, timeoutPromise]);
-    clearTimeout(timeoutId);
-    return result;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    throw err;
-  }
-}
+// withTimeout movido para @/lib/promiseUtils
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const isSyncingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
 
   // Função centralizada para atualizar sessão e usuário
@@ -156,8 +142,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setUser(null);
       setIsLoading(false);
+      isSyncingRef.current = false;
       return;
     }
+
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
 
     // Se temos uma sessão mas ainda não temos o objeto 'user' completo, 
     // mantemos o estado carregando se necessário
@@ -172,11 +162,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select('id,name,email,role,avatar,phone')
           .eq('id', currentSession.user.id)
           .maybeSingle(),
-        5000 // Aumentado para 5s para evitar timeouts falsos
+        5000,
+        'AuthMetadata'
       );
 
       if (error) {
-        logger.warn('Erro ao buscar metadados (usando metadados do Auth):', error.message);
+        logger.warn(`Erro ao buscar metadados para ${currentSession.user.id}:`, error.message);
       }
 
       const userObj = mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata);
@@ -184,9 +175,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userObj);
       localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
 
-    } catch (err) {
-      if (err instanceof Error && err.message === 'TIMEOUT_EXCEEDED') {
-        logger.error('⚠️ Timeout ao buscar metadados (possível recursão RLS). Usando dados básicos.');
+    } catch (err: any) {
+      if (err?.message?.includes('TIMEOUT_EXCEEDED')) {
+        logger.error(`❌ ⚠️ TIMEOUT RLS: O banco demorou mais de 5s para retornar metadados do usuário. Isso é causado por RECURSÃO INFINITA no RLS. Por favor, execute o script SQL fornecido no 'implementation_plan.md' no seu painel Supabase.`);
       } else {
         logger.warn('Erro na sincronização de metadados:', err);
       }
@@ -195,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(mapSupabaseUserToUser(currentSession.user));
     } finally {
       setIsLoading(false);
+      isSyncingRef.current = false;
     }
   }, []);
 
@@ -213,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         rateLimiter.recordAttempt(email);
-        logAuditEvent('login_failed', undefined, { email, error: error.message });
+        logAuditEvent('login_failed', undefined, { email, error: error.message } as any);
         throw error;
       }
 
@@ -346,7 +338,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Efeito de inicialização e monitoramento de Auth
   useEffect(() => {
-    let isMounted = true;
 
     const initializeAuth = async () => {
       try {
@@ -354,18 +345,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error) {
           logger.error('Erro inicial getSession:', error.message);
-          if (isMounted) setIsLoading(false);
+          if (isMountedRef.current) setIsLoading(false);
           return;
         }
 
-        if (currentSession && isMounted) {
+        if (currentSession && isMountedRef.current) {
           await updateAuthState(currentSession);
           logAuditEvent('session_restored', currentSession.user.id);
         }
       } catch (error) {
         logger.error('Fatal auth init error:', error);
       } finally {
-        if (isMounted) setIsLoading(false);
+        if (isMountedRef.current) setIsLoading(false);
       }
     };
 
@@ -373,22 +364,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Listener para mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      logger.info('🔔 Auth State Change:', { event });
+      logger.info(`🔔 Auth State Change: ${event}`, { userId: currentSession?.user?.id });
 
-      if (isMounted) {
+      if (isMountedRef.current) {
         // Se o evento for SIGNED_OUT, limpar imediatamente para evitar loop de redirecionamento
         if (event === 'SIGNED_OUT') {
+          isSyncingRef.current = false;
           setSession(null);
           setUser(null);
         } else if (currentSession) {
-          await updateAuthState(currentSession);
+          updateAuthState(currentSession);
           logAuditEvent(event, currentSession.user.id);
         }
       }
     });
 
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
       subscription.unsubscribe();
     };
   }, [updateAuthState]);

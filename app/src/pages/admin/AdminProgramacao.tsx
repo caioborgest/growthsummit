@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Plus,
   Edit2,
@@ -104,14 +104,15 @@ export function AdminProgramacao() {
     color: 'orange',
   });
 
-  const filteredSessions = sessions.filter(s => {
-    const category = s.category || '';
-    if (activeTab === 'diurna') return category.startsWith('manha_') || category.startsWith('tarde_');
-    if (activeTab === 'noturna') return category === 'noturna';
-    if (activeTab === 'circuito') return category === 'circuito';
-    return true;
-  }).sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
-  console.log('[AdminProgramacao] Filtered sessions:', filteredSessions);
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(s => {
+      const category = s.category || '';
+      if (activeTab === 'diurna') return category.startsWith('manha_') || category.startsWith('tarde_');
+      if (activeTab === 'noturna') return category === 'noturna';
+      if (activeTab === 'circuito') return category === 'circuito';
+      return true;
+    }).sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+  }, [sessions, activeTab]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,7 +244,13 @@ export function AdminProgramacao() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta atividade?')) {
-      await remove(id);
+      try {
+        await remove(id);
+        toast.success('Atividade excluída com sucesso!');
+      } catch (err: any) {
+        console.error('Erro ao excluir atividade:', err);
+        toast.error(`Erro ao excluir: ${err.message || 'Ocorreu um erro inesperado'}`);
+      }
     }
   };
 

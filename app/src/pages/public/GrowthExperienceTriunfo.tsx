@@ -228,7 +228,7 @@ export function GrowthExperienceTriunfo() {
       name: 'Growth Experience Triunfo-PE 2026',
       slug: 'ge-triunfo-2026',
       type: 'growth_experience',
-      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Tudo gratuito das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
+      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Programação especial das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
       shortDescription: 'Edição Triunfo-PE',
       location: 'Espaço Parque',
       city: 'Triunfo',
@@ -239,7 +239,7 @@ export function GrowthExperienceTriunfo() {
       primaryColor: '#FE4C38',
       secondaryColor: '#FF6B35',
       settings: {
-        maxRegistrations: 2000,
+        maxRegistrations: 1500,
         maxMentors: 30,
         maxStartups: 20,
         maxCompanies: 40,
@@ -256,9 +256,20 @@ export function GrowthExperienceTriunfo() {
     });
 
     if (project) {
-      setCurrentProject(project);
+      // Forçar dados canônicos ignorando atraso de sync do banco
+      const canonicalProject = {
+        ...project,
+        startDate: '2026-04-16',
+        endDate: '2026-04-16',
+        settings: {
+          ...project.settings,
+          maxRegistrations: 1500
+        }
+      };
+
+      setCurrentProject(canonicalProject);
       if (!contextProject || contextProject.id !== project.id) {
-        setSelectedProject(project);
+        setSelectedProject(canonicalProject);
       }
     }
   }, [contextProject, setSelectedProject]);
@@ -527,7 +538,7 @@ export function GrowthExperienceTriunfo() {
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                 Empresas que investem na capacitação de suas equipes são os verdadeiros motores do desenvolvimento local.
-                Ao inscrever sua equipe para o **Night Experience**, sua empresa compete automaticamente ao prêmio de **"Melhor Empresa Incentivadora ao Empreendedorismo"**.
+                Ao inscrever sua equipe para o *Night Experience*, sua empresa compete automaticamente ao prêmio de "Melhor Empresa Incentivadora ao Empreendedorismo".
               </p>
 
               <div className="space-y-4 mb-10">
@@ -577,7 +588,7 @@ export function GrowthExperienceTriunfo() {
           id="cursos-workshops"
           icon={GraduationCap}
           titulo="Cursos e Workshops Gratuitos"
-          subtitulo="Acesso ilimitado a todas as trilhas diurnas"
+          subtitulo="Acesso limitado a todas as trilhas diurnas"
           descricao="Participe de workshops práticos e oficinas mão na massa com especialistas."
           beneficios={[
             "Acesso a todos os workshops e oficinas",
@@ -692,7 +703,7 @@ export function GrowthExperienceTriunfo() {
                 destaque={cota.destaque}
                 imagemUrl={getStandImage(cota.nome)}
                 onContato={() => {
-                  window.location.href = 'mailto:contato@growthsummit.site?subject=Interesse em Cota ' + cota.nome;
+                  window.location.href = 'mailto:projetos@cbxgrowth.com.br?subject=Interesse em Cota ' + cota.nome;
                 }}
               />
             ))}

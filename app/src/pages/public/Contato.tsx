@@ -53,6 +53,7 @@ const departments = [
   { value: 'inscricoes', label: 'Inscrições' },
   { value: 'patrocinio', label: 'Patrocínio' },
   { value: 'palestrantes', label: 'Palestrantes' },
+  { value: 'expansao', label: 'Expansão / Novas Cidades' },
   { value: 'imprensa', label: 'Imprensa' },
   { value: 'suporte', label: 'Suporte Técnico' },
 ];

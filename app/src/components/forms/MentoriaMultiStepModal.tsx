@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X } from 'lucide-react';
 import type { DadosMentoria } from './mentoria-steps/mentoriaTypes';
@@ -146,7 +146,10 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
             <DialogContent className="max-w-4xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10 p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
                 <div className="sticky top-0 bg-dark-100 pb-4 sm:pb-6 border-b border-white/10 mb-4 sm:mb-6 z-10">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-white">Agendar Mentoria 1:1</h2>
+                        <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Agendar Mentoria 1:1</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Formulário para agendamento de mentorias individuais durante o evento.
+                        </DialogDescription>
                         <Button variant="ghost" size="icon" onClick={handleClose} className="text-gray-400 hover:text-white h-8 w-8">
                             <X size={18} />
                         </Button>

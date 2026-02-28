@@ -108,6 +108,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                     </>
                 ) : (
                     <div className="text-center py-8 space-y-6">
+                        <DialogTitle className="sr-only">Email de Recuperação Enviado</DialogTitle>
                         <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-green-500/10">
                             <CheckCircle className="h-10 w-10 text-green-500" />
                         </div>

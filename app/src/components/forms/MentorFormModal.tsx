@@ -59,6 +59,14 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
     const nextStep = (force = false) => {
         if (isProcessing && !force) return;
+
+        // Validação obrigatória da foto no Step 1
+        if (step === 1 && !formData.foto) {
+            setError('Por favor, anexe uma foto de perfil. Ela é necessária para identificação no evento.');
+            return;
+        }
+
+        setError('');
         setIsProcessing(true);
         setStep(prev => prev + 1);
         setTimeout(() => setIsProcessing(false), 500);
@@ -306,8 +314,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                                 </label>
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-sm font-medium text-white">Foto de Identificação</p>
-                                                <p className="text-xs text-gray-500">Clique na câmera para enviar sua foto profissionais</p>
+                                                <p className="text-sm font-medium text-white">Foto de Identificação *</p>
+                                                <p className="text-xs text-gray-500">Obrigatória para visualização dos inscritos</p>
                                             </div>
                                         </div>
 
@@ -434,10 +442,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                                                <Linkedin className="h-4 w-4 text-blue-400" /> URL do LinkedIn
+                                                <Linkedin className="h-4 w-4 text-blue-400" /> URL do LinkedIn (Opcional)
                                             </label>
                                             <input
-                                                required
                                                 type="url"
                                                 className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
                                                 value={formData.linkedin}

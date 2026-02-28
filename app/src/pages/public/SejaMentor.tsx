@@ -16,13 +16,18 @@ export function SejaMentor() {
     position: '',
     expertise: '',
     linkedin: '',
+    photo: null as File | null,
+    photoPreview: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.photo) {
+      toast.error('Por favor, anexe uma foto de perfil.');
+      return;
+    }
     toast.success('Inscrição enviada! Entraremos em contato em breve.');
   };
-
   const benefits = [
     {
       icon: Users,
@@ -173,6 +178,41 @@ export function SejaMentor() {
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Foto de Perfil */}
+                <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                  <div className="relative group">
+                    <div className="w-24 h-24 rounded-full bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-teal-500/50">
+                      {formData.photoPreview ? (
+                        <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
+                      ) : (
+                        <Users className="h-10 w-10 text-gray-500" />
+                      )}
+                    </div>
+                    <label className="absolute bottom-0 right-0 p-2 bg-teal-500 rounded-full cursor-pointer shadow-lg hover:bg-teal-600 transition-colors">
+                      <TrendingUp className="h-4 w-4 text-white" />
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setFormData({
+                              ...formData,
+                              photo: file,
+                              photoPreview: URL.createObjectURL(file)
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white">Foto de Identificação *</p>
+                    <p className="text-xs text-gray-500">Obrigatória para visualização no evento</p>
+                  </div>
+                </div>
+
                 <div>
                   <Label className="text-gray-300">Nome Completo *</Label>
                   <Input
@@ -242,7 +282,7 @@ export function SejaMentor() {
                 </div>
 
                 <div>
-                  <Label className="text-gray-300">LinkedIn</Label>
+                  <Label className="text-gray-300">LinkedIn (Opcional)</Label>
                   <Input
                     value={formData.linkedin}
                     onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}

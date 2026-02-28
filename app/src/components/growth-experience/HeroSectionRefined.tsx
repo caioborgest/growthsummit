@@ -15,6 +15,7 @@ import { useProject } from '@/contexts/ProjectContext';
 export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSectionProps) {
     const { selectedProject: contextProject } = useProject();
     const selectedProject = propProject || contextProject;
+    const isTriunfo = selectedProject?.slug === 'ge-triunfo-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
     const [timeLeft, setTimeLeft] = useState({
         dias: 0,
         horas: 0,
@@ -24,7 +25,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
     // Contador regressivo
     useEffect(() => {
-        const dateStr = selectedProject?.startDate || '';
+        const dateStr = isTriunfo ? '2026-04-16' : (selectedProject?.startDate || '');
         if (!dateStr) return;
         const eventDate = new Date(`${dateStr}T08:00:00`);
 
@@ -124,9 +125,11 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         <div className="flex items-center gap-2 text-gray-300">
                             <Calendar className="h-5 w-5 text-brand-orange-coral" />
                             <span className="font-semibold">
-                                {selectedProject?.startDate
-                                    ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
-                                    : 'Data a definir'}
+                                {isTriunfo
+                                    ? '16 de abril de 2026'
+                                    : (selectedProject?.startDate
+                                        ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+                                        : 'Data a definir')}
                             </span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-300">
@@ -140,7 +143,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         <div className="flex items-center gap-2 text-gray-300">
                             <Users className="h-5 w-5 text-brand-orange-coral" />
                             <span className="font-semibold">
-                                {(selectedProject?.settings?.maxRegistrations || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo') ? 2000 : 500))}+ Participantes
+                                {isTriunfo ? '1500' : (selectedProject?.settings?.maxRegistrations || 500)}+ Participantes
                             </span>
                         </div>
                     </div>
@@ -201,7 +204,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
                 {/* Badge de vagas limitadas */}
                 <div
-                    className="mt-8 animate-fade-in-up"
+                    className="mt-8 animate-fade-in-up text-center"
                     style={{ animationDelay: '0.7s' }}
                 >
                     <Badge className="bg-brand-orange-intense/20 text-brand-orange-intense border-brand-orange-intense/30 px-4 py-2 text-sm font-semibold animate-pulse">

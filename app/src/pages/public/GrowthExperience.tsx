@@ -541,6 +541,75 @@ export function GrowthExperience() {
       {/* Edição Anterior — Juazeiro do Norte 2025 */}
       <EdicaoAnteriorVideo showTriunfoTeaser={false} />
 
+      {/* Expansion Section */}
+      <section className="py-24 lg:py-32 relative overflow-hidden bg-dark-200/50 border-y border-white/5">
+        <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 blur-[120px] rounded-full -translate-x-1/2" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="glass-card p-10 lg:p-20 border-white/5 bg-gradient-to-br from-white/5 to-transparent flex flex-col lg:flex-row items-center gap-16 rounded-[3rem]">
+            <div className="flex-1 text-center lg:text-left">
+              <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30 px-6 py-2 uppercase font-black tracking-widest">
+                Expansão & Parceria
+              </Badge>
+              <h2 className="text-4xl sm:text-6xl font-black text-white mb-8 uppercase tracking-tight leading-[1.1]">
+                Leve este <span className="text-orange-500">Impacto</span> para sua cidade
+              </h2>
+              <p className="text-xl text-gray-400 mb-10 leading-relaxed max-w-2xl">
+                Nossa missão é democratizar as estratégias de Growth e IA para o interior do país. Seja o parceiro que levará esta transformação para sua região em 2026/2027.
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-8 mb-12 text-left">
+                {[
+                  { title: "Metodologia Provada", desc: "Processo estruturado de escala para negócios regionais." },
+                  { title: "Impacto Local Real", desc: "Transformação do ecossistema e networking de alto nível." },
+                  { title: "Modelo de Parceria", desc: "Suporte total da nossa equipe na organização e curadoria." },
+                  { title: "Novas Fronteiras", desc: "Oportunidade de posicionamento como líder regional." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 border border-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange-coral group-hover:text-white transition-all">
+                      <Zap className="h-6 w-6 text-brand-orange-coral group-hover:text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-lg mb-1">{item.title}</h4>
+                      <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                asChild
+                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-18 rounded-2xl text-xl transition-all hover:scale-105 shadow-2xl shadow-orange-500/20"
+              >
+                <a
+                  href="https://wa.me/5588988432310?text=Olá! Falamos da [Nome da Cidade]. Temos interesse em levar o Growth Experience para nossa região."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Falar com nosso Time de Expansão
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </a>
+              </Button>
+            </div>
+
+            <div className="lg:w-2/5 relative">
+              <div className="aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/10 group shadow-2xl">
+                <img
+                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                  alt="Expansão Growth Experience"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/20 to-transparent" />
+                <div className="absolute bottom-10 left-10 right-10">
+                  <Badge className="bg-orange-500 text-white mb-4">CIDADES 2026/27</Badge>
+                  <p className="text-white font-black text-2xl uppercase leading-tight mb-2">Seja nosso próximo destino</p>
+                  <p className="text-gray-400 text-sm">Parcerias para o Nordeste e além.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-teal-500/10" />

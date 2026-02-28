@@ -225,6 +225,61 @@ export function Sobre() {
           </div>
         </div>
       </section>
+      {/* Expansion Section */}
+      <section className="py-20 lg:py-28 relative overflow-hidden bg-dark-200/50">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-teal-500/5 blur-[120px] rounded-full translate-x-1/2" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="glass-card p-10 lg:p-16 border-white/5 bg-gradient-to-br from-white/5 to-transparent flex flex-col lg:flex-row items-center gap-12 rounded-[2.5rem]">
+            <div className="flex-1 text-center lg:text-left">
+              <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30 px-6 py-2 uppercase font-black tracking-widest">
+                Expansão
+              </Badge>
+              <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 uppercase tracking-tight leading-tight">
+                Leve o <span className="text-gradient">Growth Experience</span> <br />para sua cidade
+              </h2>
+              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+                Nossa missão de transformar o interior do país através de Growth e IA está apenas começando. Seja o parceiro estratégico que levará esta imersão para sua região.
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-6 mb-10 text-left">
+                {[
+                  { title: "Parceria Estratégica", desc: "Suporte total em curadoria e organização." },
+                  { title: "Impacto Imediato", desc: "Fomente o empreendedorismo local com autoridade." },
+                  { title: "Networking Premium", desc: "Conecte empresários da sua região com os melhores." },
+                  { title: "Escala Regional", desc: "Modelo testado com sucesso em múltiplas cidades." }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-white font-bold">{item.title}</h4>
+                      <p className="text-sm text-gray-500">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-16 rounded-2xl text-lg transition-all hover:scale-105"
+                >
+                  <a
+                    href="https://wa.me/5588988432310?text=Olá! Temos interesse em discutir a expansão do Growth Experience para nossa cidade."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Falar via WhatsApp
+                  </a>
+                </Button>
+                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Time de Expansão Online
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

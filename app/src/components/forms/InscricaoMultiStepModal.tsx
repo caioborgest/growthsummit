@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
@@ -217,9 +217,12 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 <div className="bg-dark-100/50 backdrop-blur-md pb-4 pt-6 sm:pb-6 sm:pt-8 px-4 sm:px-8 border-b border-white/5 z-20 shadow-lg">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                            <DialogTitle className="text-xl sm:text-3xl font-black text-white tracking-tight">
                                 Inscrição <span className="text-brand-orange-coral">{selectedProject?.shortDescription || selectedProject?.name || 'Evento'}</span>
-                            </h2>
+                            </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Processo de inscrição para workshops e treinamentos do {selectedProject?.name || 'Growth Experience'}.
+                            </DialogDescription>
                             <p className="text-gray-500 text-[10px] sm:text-sm mt-1">{selectedProject?.name || 'Growth Experience'} • Workshop & Training</p>
                         </div>
                         <Button

@@ -7,10 +7,13 @@ import type {
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate
 } from '@/types';
+import { withTimeout } from '@/lib/promiseUtils';
 
 // Table Mapping based on project and entity
 const GE_TRIUNFO = 'ge-triunfo-2026';
 const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const GE_PETROLINA = 'ge-petrolina-2026';
+const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
 
 const getTableName = (projectId: string, entity: string) => {
   // Global table mappings
@@ -21,7 +24,13 @@ const getTableName = (projectId: string, entity: string) => {
   if (entity === 'certificates') return 'certificates';
 
   // Specific mappings for Growth Experience projects
-  if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
+  if (projectId && (
+    projectId === GE_TRIUNFO ||
+    projectId === GE_TRIUNFO_ID ||
+    projectId === GE_PETROLINA ||
+    projectId === GE_PETROLINA_ID ||
+    projectId.startsWith('ge-')
+  )) {
     switch (entity) {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
@@ -152,7 +161,7 @@ function getSelectFields(entity: string, projectId?: string): string {
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,created_at,nome,telefone,empresa,cargo',
-    mentoring_sessions: 'id,project_id,mentor_id,mentor_name,mentee_id,mentee_name,scheduled_at,duration,status,topic,created_at,three_steps',
+    mentoring_sessions: 'id,project_id,mentor_id,mentor_name,mentee_id,mentee_name,scheduled_at,duration,status,topic,created_at',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
@@ -192,8 +201,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
 
-      console.log(`[useData] Fetching ${entityName} for project ${projectId}`);
-      console.log(`[useData] Using table: ${tableName}, fields: ${fields}`);
+      // console.log(`[useData] Fetching ${entityName} for project ${projectId}`);
+      // console.log(`[useData] Using table: ${tableName}, fields: ${fields}`);
 
       let query = (supabase.from(tableName as never).select(fields) as any);
 
@@ -205,7 +214,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const { data: supabaseData, error: supabaseError } = await query;
 
       if (supabaseData) {
-        console.log(`[useData] Successfully fetched ${supabaseData.length} records for ${entityName}`);
+        // console.log(`[useData] Successfully fetched ${supabaseData.length} records for ${entityName}`);
       }
 
       if (supabaseError) throw supabaseError;
@@ -373,7 +382,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const { error } = await (supabase as any)
         .from(tableName)
         .update(dataToUpdate as never)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('project_id', projectId);
 
       if (error) throw error;
       invalidateCache(projectId!, entityName);
@@ -394,7 +404,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const { error } = await (supabase as any)
         .from(tableName)
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('project_id', projectId);
 
       if (error) throw error;
       invalidateCache(projectId!, entityName);
@@ -687,9 +698,13 @@ export function useUsers() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data: supabaseData, error } = await supabase
-        .from('users' as any)
-        .select('*');
+      const { data: supabaseData, error } = await withTimeout(
+        supabase
+          .from('users' as any)
+          .select('*'),
+        8000,
+        'FetchUsers'
+      );
 
       if (error) throw error;
 
