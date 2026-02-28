@@ -357,7 +357,7 @@ export function DashboardParticipante() {
               <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-6">
                 <Award className="h-10 w-10 text-teal-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Seas Conquistas Acadêmicas</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Suas Conquistas Acadêmicas</h2>
               <p className="text-gray-400 max-w-lg mx-auto mb-8">
                 Você pode acessar todos os seus certificados de participação e cursos na nossa galeria dedicada.
               </p>

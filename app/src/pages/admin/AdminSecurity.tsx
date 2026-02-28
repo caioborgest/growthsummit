@@ -21,8 +21,8 @@ interface AuditLog {
     user_id: string;
     metadata: any;
     ip_address: string;
-    user_agent: string;
-    timestamp: string;
+    browser_agent: string;
+    created_at: string; // Unificado de timestamp para created_at
 }
 
 interface SuspiciousLogin {
@@ -89,15 +89,23 @@ export function SecurityDashboard() {
 
             if (activity) setUserActivity(activity);
 
-            // Calcular estatísticas
+            // Calcular estatísticas básicas com cautela
             const { data: users } = await supabase
                 .from('users')
                 .select('id, two_factor_enabled');
 
-            const { data: sessions } = await supabase
-                .from('active_sessions')
-                .select('id')
-                .gt('expires_at', new Date().toISOString());
+            // active_sessions pode não existir no banco do usuário
+            let activeSessionsCount = 0;
+            try {
+                const { data: sessions } = await supabase
+                    .from('active_sessions')
+                    .select('id')
+                    .gt('expires_at', new Date().toISOString())
+                    .limit(1); // just checking exists
+                if (sessions) activeSessionsCount = sessions.length;
+            } catch (e) {
+                // Silently fail if table doesn't exist
+            }
 
             const { data: recentLogins } = await supabase
                 .from('login_attempts')
@@ -106,8 +114,8 @@ export function SecurityDashboard() {
 
             setStats({
                 totalUsers: users?.length || 0,
-                users2FA: users?.filter(u => u.two_factor_enabled).length || 0,
-                activeSessions: sessions?.length || 0,
+                users2FA: (users as any[])?.filter(u => u.two_factor_enabled).length || 0,
+                activeSessions: activeSessionsCount,
                 recentLogins: recentLogins?.filter(l => l.success).length || 0,
                 failedLogins: recentLogins?.filter(l => !l.success).length || 0,
             });
@@ -128,7 +136,7 @@ export function SecurityDashboard() {
                     log.event,
                     log.user_id || 'N/A',
                     log.ip_address || 'N/A',
-                    `"${log.user_agent || 'N/A'}"`
+                    `"${log.browser_agent || 'N/A'}"`
                 ].join(','))
             ].join('\n');
 
@@ -301,7 +309,7 @@ export function SecurityDashboard() {
                             {auditLogs.slice(0, 20).map((log) => (
                                 <tr key={log.id} className="border-b border-white/5 hover:bg-white/5">
                                     <td className="py-3 px-4 text-sm text-gray-300">
-                                        {new Date(log.timestamp).toLocaleString('pt-BR')}
+                                        {new Date(log.created_at).toLocaleString('pt-BR')}
                                     </td>
                                     <td className="py-3 px-4">
                                         <Badge className={getEventBadgeColor(log.event)}>

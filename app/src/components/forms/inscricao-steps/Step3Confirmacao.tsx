@@ -28,7 +28,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
     // Obter informações detalhadas da primeira atividade selecionada
     const primeiraAtividade = cursosSelecionados[0];
-    const tipoAtividade = primeiraAtividade?.tipo || '';
+    const tipoAtividade = primeiraAtividade?.tipo || null;
     const salaAtividade = primeiraAtividade?.local || '';
     const horarioAtividade = primeiraAtividade?.horario_inicio || '';
     const nivelAtividade = primeiraAtividade?.nivel || '';
@@ -84,7 +84,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
                     // Se não houver sessão imediata (email confirmation enabled), o login manual será necessário depois
                     if (!authData.session) {
-                        toast.info('Verifique seu email para confirmar seu cadastro!');
+                        // User needs to confirm email, but we'll show this at the end
                     }
                 } else {
                     throw new Error('Não foi possível processar o cadastro do usuário.');
@@ -232,7 +232,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             </div>
 
             {/* Dados Pessoais */}
-            <Card className="glass-card p-6 border-white/10">
+            <Card className="glass-card p-4 sm:p-6 border-white/10">
                 <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
@@ -309,7 +309,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             </Card>
 
             {/* Cursos Selecionados */}
-            <Card className="glass-card p-6 border-white/10">
+            <Card className="glass-card p-4 sm:p-6 border-white/10">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brand-orange-coral" />
@@ -343,31 +343,19 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 </div>
             </Card>
 
-            {/* Informação Importante */}
-            <Card className="glass-card p-6 border-blue-500/30 bg-blue-500/10">
+            {/* Informação Importante mais compacta no mobile */}
+            <Card className="glass-card p-4 border-blue-500/30 bg-blue-500/10">
                 <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="h-5 w-5 text-blue-500" />
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                        <h4 className="font-bold text-white mb-2">O que acontece agora?</h4>
-                        <ul className="space-y-2 text-sm text-gray-300">
-                            <li className="flex items-start gap-2">
-                                <span className="text-brand-orange-coral mt-0.5">•</span>
-                                <span>Criaremos sua conta com o email fornecido</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-brand-orange-coral mt-0.5">•</span>
-                                <span>Você receberá um email de confirmação</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-brand-orange-coral mt-0.5">•</span>
-                                <span>Sua atividade será reservada automaticamente</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-brand-orange-coral mt-0.5">•</span>
-                                <span>Você poderá acessar o app com seu email e senha</span>
-                            </li>
+                        <h4 className="font-bold text-white text-sm mb-1">O que acontece agora?</h4>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] sm:text-xs text-gray-400">
+                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Conta criada automaticamente</li>
+                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Email de confirmação enviado</li>
+                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Atividade reservada</li>
+                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Acesso ao app liberado</li>
                         </ul>
                     </div>
                 </div>

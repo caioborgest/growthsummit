@@ -18,17 +18,24 @@ export async function getClientIP(): Promise<string> {
 export function logAuditEvent(event: string, userId?: string, metadata?: unknown) {
     // Fire and forget
     getClientIP().then(ip => {
+        // Only attempt to log if we have a userId to avoid 401 if RLS is strict
+        // If not, we still try, but catch the error silently if it's 401
         supabase.from('audit_logs').insert({
             event,
             user_id: userId,
-            metadata,
+            metadata: metadata || {},
             ip_address: ip,
-            user_agent: navigator.userAgent,
-            timestamp: new Date().toISOString(),
+            browser_agent: navigator.userAgent,
+            created_at: new Date().toISOString(), // Unificado para created_at
         }).then(({ error }) => {
-            if (error) logger.error('❌ Erro no log de auditoria:', error);
+            if (error) {
+                // Silent fail on auditing if not an admin/logged in (RLS 42501)
+                if (error.code !== '42501' && error.code !== 'PGRST301') {
+                    logger.debug('Auditoria info:', error.message);
+                }
+            }
         });
-    }).catch(err => {
-        logger.error('❌ Erro ao obter IP para auditoria:', err);
+    }).catch(() => {
+        // Silently skip if IP fetch fails
     });
 }

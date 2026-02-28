@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
 import { logger } from '@/lib/logger';
-import { logAuditEvent } from '@/lib/auth-audit';
+import { logAuditEvent, getClientIP } from '@/lib/auth-audit';
 import { withTimeout } from '@/lib/promiseUtils';
 
 interface AuthContextType {
@@ -134,7 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const isSyncingRef = useRef(false);
   const isMountedRef = useRef(true);
-
+  const lastSyncedSessionIdRef = useRef<string | null>(null);
+  const lastSyncTimeRef = useRef<number>(0);
 
   // Função centralizada para atualizar sessão e usuário
   const updateAuthState = useCallback(async (currentSession: Session | null) => {
@@ -143,11 +144,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsLoading(false);
       isSyncingRef.current = false;
+      lastSyncedSessionIdRef.current = null;
       return;
     }
 
-    if (isSyncingRef.current) return;
+    // Prevenir sincronizações repetidas para a mesma sessão em curto intervalo (< 2s)
+    const now = Date.now();
+    if (
+      isSyncingRef.current ||
+      (lastSyncedSessionIdRef.current === currentSession.user.id && (now - lastSyncTimeRef.current < 2000))
+    ) {
+      return;
+    }
+
     isSyncingRef.current = true;
+    lastSyncedSessionIdRef.current = currentSession.user.id;
+    lastSyncTimeRef.current = now;
 
     // Se temos uma sessão mas ainda não temos o objeto 'user' completo, 
     // mantemos o estado carregando se necessário
@@ -203,14 +215,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
+      // Registrar tentativa (Sucesso ou Falha)
+      const ip = await getClientIP().catch(() => 'unknown');
+
       if (error) {
         rateLimiter.recordAttempt(email);
+
+        // Log de Erro na tabela Auditoria
         logAuditEvent('login_failed', undefined, { email, error: error.message } as any);
+
+        // Log na tabela de Tentativas de Login
+        supabase.from('login_attempts').insert({
+          email,
+          ip_address: ip,
+          success: false,
+          attempted_at: new Date().toISOString()
+        }).then(({ error: err }) => { if (err) logger.debug('Silent login fail log (RLS):', err.message); });
+
         throw error;
       }
 
       if (data.user && data.session) {
         rateLimiter.clearAttempts(email);
+
+        // Registrar Sucesso
+        supabase.from('login_attempts').insert({
+          user_id: data.user.id,
+          email,
+          ip_address: ip,
+          success: true,
+          attempted_at: new Date().toISOString()
+        }).then(({ error: err }) => { if (err) logger.debug('Silent login success log (RLS):', err.message); });
 
         // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
         // para garantir que o retorno da função tenha o usuário atualizado
@@ -231,14 +266,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userObj.requires2FA = true;
         }
 
-        setSession(data.session);
-        setUser(userObj);
+        // Não chamamos mais setSession/setUser manualmente aqui
+        // O listener onAuthStateChange (linha 366+) já detectará o evento SIGNED_IN
+        // e chamará updateAuthState(data.session) automaticamente de forma robusta.
+
         logAuditEvent('login_success', data.user.id);
         return userObj;
       }
       return null;
     } catch (error: any) {
-      logger.error('Erro no login:', error.message || error);
+      if (error.message === 'Invalid login credentials') {
+        logger.error('Login inválido: Verifique se o e-mail ou a senha estão corretos.');
+      } else {
+        logger.error('Erro no login:', error.message || error);
+      }
       throw error;
     } finally {
       setIsAuthenticating(false);

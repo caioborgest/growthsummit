@@ -6,18 +6,21 @@ import {
   Clock,
   TrendingUp,
   X,
-  User
+  User,
+  Camera
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRegistrations, useCheckIns } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { QRScanner } from '@/components/app/QRScanner';
 
 export function AdminCheckIn() {
   const { data: registrations, update } = useRegistrations();
   const { data: checkIns, create } = useCheckIns();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lastCheckIn, setLastCheckIn] = useState<any>(null);
@@ -46,6 +49,20 @@ export function AdminCheckIn() {
       toast.error(`Erro ao realizar check-in: ${err.message || 'Erro desconhecido'}`);
     }
   }, [update, create]);
+
+  const handleScannerSuccess = useCallback((res: any) => {
+    const registration = registrations.find(r => r.id === res.id);
+    if (registration) {
+      if (registration.checkedIn) {
+        toast.error(`Ingresso já utilizado: ${registration.ticketNumber}`);
+      } else {
+        handleManualCheckIn(registration);
+      }
+    } else {
+      toast.error('Ingresso não encontrado no sistema.');
+    }
+    setIsScanning(false);
+  }, [registrations, handleManualCheckIn]);
 
   // Handle Enter key for hardware scanners (standard behavior)
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -116,18 +133,32 @@ export function AdminCheckIn() {
       )}
 
       {/* QR Scanner */}
+      {isScanning && (
+        <QRScanner
+          onSuccess={handleScannerSuccess}
+          onClose={() => setIsScanning(false)}
+        />
+      )}
+
       <div className="glass-card p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div className="space-y-1">
             <h2 className="text-lg font-semibold text-white">Scanner QR Code</h2>
-            <p className="text-sm text-gray-400">O sistema detecta automaticamente QR codes inseridos no campo de busca.</p>
+            <p className="text-sm text-gray-400">O sistema detecta automaticamente QR codes inseridos no campo de busca ou via câmera.</p>
           </div>
+          <Button
+            onClick={() => setIsScanning(true)}
+            className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-bold h-12 px-8"
+          >
+            <Camera className="h-5 w-5 mr-2" />
+            ABRIR SCANNER (CÂMERA)
+          </Button>
         </div>
 
         <div className="aspect-video bg-dark-100 rounded-lg flex items-center justify-center border-2 border-dashed border-dark-300">
           <div className="text-center">
             <QrCode className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400">Use o campo de busca abaixo para ler o código</p>
+            <p className="text-gray-400">Use o scanner de câmera ou o campo de busca abaixo</p>
           </div>
         </div>
       </div>

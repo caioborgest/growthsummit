@@ -20,6 +20,13 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
     const isPending = dados.comprarPalestras && dados.statusPagamento !== 'pago';
     const pixKey = "financeiro@growthsummit.site"; // TODO: Mover para EVENT_CONFIG se for mudar
 
+    useState(() => {
+        // Enviar toast de confirmação apenas uma vez ao montar o componente
+        if (!isPending) {
+            toast.info('Verifique seu e-mail para confirmar seu cadastro!');
+        }
+    });
+
     const handleCopyPix = () => {
         navigator.clipboard.writeText(pixKey);
         setCopied(true);

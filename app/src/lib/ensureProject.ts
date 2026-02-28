@@ -25,14 +25,15 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
         // 2. Only attempt UPSERT if we have a session or if we are in development
         // This prevents 401 errors for anonymous users who shouldn't be creating projects anyway
         const { data: { session } } = await supabase.auth.getSession();
+        const isAdmin = session?.user?.user_metadata?.role === 'admin' || session?.user?.app_metadata?.role === 'admin';
 
-        if (!session && existing) {
-            // If already exists and no session, don't try to update, just return existing
+        if (existing && (!session || !isAdmin)) {
+            // Se já existe e não é admin (ou não está logado), não tenta atualizar
             return rowToProject(existing as ProjectRow);
         }
 
         if (!session && !existing) {
-            // Cannot create without session, return null but don't error out hard
+            // Cannot create without session
             logger.warn(`[ensureProject] Project ${projectConfig.slug} not found and no auth session to create it.`);
             return null;
         }

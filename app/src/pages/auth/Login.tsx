@@ -119,8 +119,8 @@ export function Login() {
         <div className="text-center mb-6 sm:mb-8">
           <Link to="/" className="inline-flex items-center">
             <img
-              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
-              alt="Growth Summit"
+              src="/images/logomarca-GX-fundoescuro.png"
+              alt="Growth Experience"
               className="h-10 sm:h-16 w-auto transition-all"
             />
           </Link>

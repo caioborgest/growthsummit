@@ -65,11 +65,35 @@ function LegalPage({ title }: { title: string }) {
   return (
     <div className="min-h-screen bg-dark py-20 px-4">
       <div className="max-w-4xl mx-auto glass-card p-8 sm:p-12">
-        <h1 className="text-3xl font-bold text-white mb-8">{title}</h1>
-        <div className="prose prose-invert max-w-none text-gray-400">
-          <p>Esta página está em desenvolvimento. Por favor, volte em breve para ler o conteúdo completo sobre {title.toLowerCase()}.</p>
-          <div className="mt-8 pt-8 border-t border-dark-300">
-            <a href="/" className="text-brand-orange-coral hover:underline">Voltar para a página inicial</a>
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/20 flex items-center justify-center">
+            <FileText className="h-6 w-6 text-brand-orange-coral" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white uppercase tracking-tighter">{title}</h1>
+            <p className="text-gray-500 text-sm">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+          </div>
+        </div>
+
+        <div className="prose prose-invert max-w-none text-gray-400 space-y-6">
+          <section>
+            <h3 className="text-white font-bold text-xl mb-4">1. Introdução</h3>
+            <p>O Growth Summit 2026 preza pela transparência e segurança de todos os participantes. Este documento estabelece as diretrizes para {title.toLowerCase()}.</p>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold text-xl mb-4">2. Uso dos Dados</h3>
+            <p>Todas as informações coletadas através desta plataforma são utilizadas exclusivamente para a gestão do evento, emissão de certificados e comunicação oficial.</p>
+          </section>
+
+          <section>
+            <h3 className="text-white font-bold text-xl mb-4">3. Responsabilidades</h3>
+            <p>A organização do evento garante a proteção dos dados em conformidade com a LGPD, implementando as melhores práticas conceituais de segurança cibernética.</p>
+          </section>
+
+          <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-gray-500">Documento gerado automaticamente pela Plataforma Growth Summit.</p>
+            <a href="/" className="text-brand-orange-coral hover:underline font-bold text-sm">Voltar para a página inicial</a>
           </div>
         </div>
       </div>

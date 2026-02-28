@@ -266,9 +266,33 @@ export interface Database {
         Update: Record<string, unknown>;
       };
       audit_logs: {
-        Row: Record<string, unknown>;
-        Insert: Record<string, unknown>;
-        Update: Record<string, unknown>;
+        Row: {
+          id: string;
+          event: string;
+          user_id: string | null;
+          metadata: Json;
+          ip_address: string | null;
+          browser_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event: string;
+          user_id?: string | null;
+          metadata?: Json;
+          ip_address?: string | null;
+          browser_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event?: string;
+          user_id?: string | null;
+          metadata?: Json;
+          ip_address?: string | null;
+          browser_agent?: string | null;
+          created_at?: string;
+        };
       };
       security_suspicious_logins: {
         Row: Record<string, unknown>;
@@ -286,9 +310,30 @@ export interface Database {
         Update: Record<string, unknown>;
       };
       login_attempts: {
-        Row: Record<string, unknown>;
-        Insert: Record<string, unknown>;
-        Update: Record<string, unknown>;
+        Row: {
+          id: string;
+          user_id: string | null;
+          email: string | null;
+          ip_address: string | null;
+          success: boolean;
+          attempted_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          email?: string | null;
+          ip_address?: string | null;
+          success?: boolean;
+          attempted_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          email?: string | null;
+          ip_address?: string | null;
+          success?: boolean;
+          attempted_at?: string;
+        };
       };
       startups_arena_pitch: {
         Row: Record<string, unknown>;
