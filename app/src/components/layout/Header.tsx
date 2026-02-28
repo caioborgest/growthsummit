@@ -19,10 +19,6 @@ const navLinks = [
 ];
 
 const moreLinks = [
-  { name: 'Mentorias', href: '/mentorias' },
-  { name: 'Rodada B2B', href: '/rodada-negocios' },
-  { name: 'Startups', href: '/startups' },
-  { name: 'Seja Patrocinador', href: '/seja-patrocinador' },
   { name: 'FAQ', href: '/faq' },
   { name: 'Contato', href: '/contato' },
 ];

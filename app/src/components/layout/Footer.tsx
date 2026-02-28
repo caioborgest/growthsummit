@@ -14,20 +14,17 @@ const footerLinks = {
   evento: [
     { name: 'Triunfo-PE', href: '/growth-experience-triunfo' },
     { name: 'Petrolina-PE', href: '/growth-experience-petrolina' },
-    { name: 'Local & Viagem', href: '/local-e-viagem' },
+    { name: 'Inscrições', href: '/inscricoes' },
     { name: 'FAQ', href: '/faq' },
   ],
   participar: [
     { name: 'Inscrições', href: '/inscricoes' },
-    { name: 'Mentorias', href: '/mentorias' },
-    { name: 'Rodada B2B', href: '/rodada-negocios' },
-    { name: 'Startups', href: '/startups' },
+    { name: 'Contato', href: '/contato' },
   ],
   parcerias: [
     { name: 'Seja Patrocinador', href: '/seja-patrocinador' },
     { name: 'Seja Mentor', href: '/seja-mentor' },
-    { name: 'Parceiros', href: '/parceiros' },
-    { name: 'Imprensa', href: '/contato' },
+    { name: 'Contato', href: '/contato' },
   ],
   legal: [
     { name: 'Termos de Uso', href: '/termos' },
