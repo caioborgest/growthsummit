@@ -12,8 +12,6 @@ import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
 import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
-import { Step5DownloadApp as Step6DownloadAppLegacy } from './inscricao-steps/Step5DownloadApp';
-import { Step6Conclusao as Step7ConclusaoLegacy } from './inscricao-steps/Step6Conclusao';
 
 interface InscricaoMultiStepModalProps {
     isOpen: boolean;
@@ -190,7 +188,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 }
             case 6:
                 return (
-                    <Step6DownloadAppLegacy
+                    <Step6DownloadApp
                         onContinuar={async () => {
                             if (isProcessing) return;
                             setIsProcessing(true);
@@ -214,7 +212,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 );
             case 7:
                 return (
-                    <Step7ConclusaoLegacy
+                    <Step7Conclusao
                         dados={dados}
                         onFechar={() => {
                             onClose();

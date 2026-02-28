@@ -142,10 +142,10 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                     </div>
                     <div>
                         <h5 className="font-semibold text-white text-sm sm:text-base">
-                            {isPending ? 'Aguarde Confirmação' : 'Monte sua Agenda'}
+                            {isPending ? 'Liberação em breve' : 'Monte sua Agenda'}
                         </h5>
                         <p className="text-[10px] sm:text-xs text-gray-400">
-                            {isPending ? 'Liberaremos seu acesso Pro em breve' : 'Favorite palestras e cursos'}
+                            {isPending ? 'Validaremos seu Pix para ativar o Pro' : 'Favorite palestras e cursos'}
                         </p>
                     </div>
                 </Card>
@@ -166,14 +166,15 @@ export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
                     <Button
                         size="lg"
                         onClick={() => {
+                            const cupomInfo = dados.cupomPalestra ? `\n• *Cupom:* ${dados.cupomPalestra}` : '\n• *Cupom:* Nenhum';
                             const mensagem = encodeURIComponent(
-                                `*Comprovante de Pagamento - Growth Experience*\n\n` +
-                                `Olá! Estou enviando o comprovante da minha inscrição.\n\n` +
-                                `*Dados:* \n` +
+                                `🚀 *COMPROVANTE DE PAGAMENTO - GROWTH EXPERIENCE*\n\n` +
+                                `Olá! Estou enviando o comprovante da minha inscrição para o *Passaporte Night*.\n\n` +
+                                `*DADOS:* \n` +
                                 `• *Nome:* ${dados.nome}\n` +
+                                `• *WhatsApp:* ${dados.telefone}\n` +
                                 `• *Email:* ${dados.email}\n` +
-                                `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
-                                `• *Tipo:* Palestra Noturna / Upgrade`
+                                `• *Evento:* ${selectedProject?.name || 'Growth Experience'}${cupomInfo}`
                             );
                             window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
                         }}

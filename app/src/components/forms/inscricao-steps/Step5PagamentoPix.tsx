@@ -40,33 +40,45 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
 
     /**
      * Gera o payload do PIX (Static) seguindo o padrão EMV QRCPS
-     * Nota: Esta é uma implementação simplificada do padrão BCB
+     * Implementa o algoritmo CRC16-CCITT-FFFF para o checksum final
      */
     const generatePixPayload = () => {
-        // ID 26: Merchant Account Information - Pix
-        // GUI br.gov.bcb.pix (ID 00)
-        // Key (ID 01)
         const cnpjClean = cnpj.replace(/\D/g, '');
         const merchantInfo = `0014br.gov.bcb.pix01${cnpjClean.length.toString().padStart(2, '0')}${cnpjClean}`;
         const merchantAccount = `26${merchantInfo.length.toString().padStart(2, '0')}${merchantInfo}`;
 
-        const payload = [
-            "000201", // Payload Format Indicator
-            "010212", // Point of Initiation Method (12 = recurrent/static)
+        const payloadBase = [
+            "000201", // ID 00: Payload Format Indicator
+            "010212", // ID 01: Point of Initiation Method
             merchantAccount,
-            "52040000", // Merchant Category Code
-            "5303986", // Transaction Currency (BRL)
-            `54${valorFormatado.length.toString().padStart(2, '0')}${valorFormatado}`, // Transaction Amount
-            "5802BR", // Country Code
-            `59${merchantName.length.toString().padStart(2, '0')}${merchantName}`, // Merchant Name
-            `60${merchantCity.length.toString().padStart(2, '0')}${merchantCity}`, // Merchant City
-            "62070503***", // Additional Data (TXID)
+            "52040000", // ID 52: Merchant Category Code
+            "5303986", // ID 53: Transaction Currency (BRL)
+            `54${valorFormatado.length.toString().padStart(2, '0')}${valorFormatado}`, // ID 54: Amount
+            "5802BR", // ID 58: Country Code
+            `59${merchantName.length.toString().padStart(2, '0')}${merchantName}`, // ID 59: Merchant Name
+            `60${merchantCity.length.toString().padStart(2, '0')}${merchantCity}`, // ID 60: Merchant City
+            "62070503***", // ID 62: Additional Data (TXID)
+            "6304", // ID 63: CRC16 (4 digits)
         ].join('');
 
-        // Simulação de CRC16 (Para produção real, usaríamos uma lib de CRC16-CCITT-FFFF)
-        // Como é para demonstração visual e o usuário pediu botão de copiar, 
-        // vamos gerar um payload que "pareça" real e funcione em apps tolerantes.
-        return payload + "6304"; // Fallback simples
+        // Algoritmo CRC16-CCITT (FFFF)
+        const crc16 = (str: string) => {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if (crc & 0x8000) {
+                        crc = (crc << 1) ^ 0x1021;
+                    } else {
+                        crc = crc << 1;
+                    }
+                    crc &= 0xFFFF;
+                }
+            }
+            return crc.toString(16).toUpperCase().padStart(4, '0');
+        };
+
+        return payloadBase + crc16(payloadBase);
     };
 
     const pixPayload = generatePixPayload();

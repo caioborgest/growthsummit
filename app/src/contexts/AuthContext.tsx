@@ -139,64 +139,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Função centralizada para atualizar sessão e usuário
   const updateAuthState = useCallback(async (currentSession: Session | null) => {
+    // 1. Limpar estado se não houver sessão
     if (!currentSession?.user) {
-      setSession(null);
-      setUser(null);
-      setIsLoading(false);
-      isSyncingRef.current = false;
-      lastSyncedSessionIdRef.current = null;
+      if (lastSyncedSessionIdRef.current !== null) {
+        logger.debug('Limpando estado de autenticação (sem sessão)');
+        setSession(null);
+        setUser(null);
+        setIsLoading(false);
+        isSyncingRef.current = false;
+        lastSyncedSessionIdRef.current = null;
+      } else {
+        setIsLoading(false);
+      }
       return;
     }
 
-    // Prevenir sincronizações repetidas para a mesma sessão em curto intervalo (< 2s)
     const now = Date.now();
-    if (
-      isSyncingRef.current ||
-      (lastSyncedSessionIdRef.current === currentSession.user.id && (now - lastSyncTimeRef.current < 2000))
-    ) {
+    const isSameUser = lastSyncedSessionIdRef.current === currentSession.user.id;
+    const isRecent = now - lastSyncTimeRef.current < 2000;
+
+    // 2. Prevenir sincronizações redundantes
+    if (isSyncingRef.current || (isSameUser && isRecent)) {
+      if (isSameUser && isRecent) {
+        logger.debug('Ignorando atualização auth redundante (< 2s)');
+      }
       return;
     }
 
+    // 3. Iniciar sincronização
     isSyncingRef.current = true;
     lastSyncedSessionIdRef.current = currentSession.user.id;
     lastSyncTimeRef.current = now;
 
-    // Se já temos um usuário, fazemos o refresh em background sem bloquear a UI com o loader global
-    if (!user) {
-      setIsLoading(true);
+    // --- ABORDAGEM OTIMISTA ---
+    // Definimos o usuário IMEDIATAMENTE usando os metadados do JWT (Supabase Auth)
+    // Isso garante que a UI (Dashboard) carregue instantaneamente sem depender do banco.
+    const optimisticUser = mapSupabaseUserToUser(currentSession.user);
+
+    // Se o usuário já tiver nome e role no JWT, já podemos liberar a UI
+    const hasCoreData = !!(optimisticUser.name && optimisticUser.role);
+
+    setSession(currentSession);
+    setUser(optimisticUser);
+
+    if (hasCoreData) {
+      setIsLoading(false);
+      logger.debug('✅ UI liberada com dados otimistas (JWT)');
+    } else {
+      // Se não tivermos o essencial no JWT, ainda mostramos o loader até o DB responder.
+      // Usamos isLoading para evitar piscar se já estiver falso.
+      setIsLoading(prev => prev || true);
     }
 
+    // 4. Buscar metadados enriquecidos no banco em background
     try {
-      // Buscar metadados com timeout defensivo
-      // Removido staff_role, permissions e two_factor_enabled temporariamente pois podem estar faltando no banco
-      const { data: userData, error } = await withTimeout(
+      const { data: userData, error: fetchError } = await withTimeout(
         supabase
           .from('users')
           .select('id,name,email,role,avatar,phone')
           .eq('id', currentSession.user.id)
           .maybeSingle(),
         5000,
-        'AuthMetadata'
+        'AuthMetadataFetch'
       );
 
-      if (error) {
-        logger.warn(`Erro ao buscar metadados para ${currentSession.user.id}:`, error.message);
+      if (fetchError) {
+        logger.warn(`DB metadata fetch failed (User: ${currentSession.user.id}):`, fetchError.message);
       }
 
-      const userObj = mapSupabaseUserToUser(currentSession.user, userData as UserDBMetadata);
-      setSession(currentSession);
-      setUser(userObj);
+      const finalUser = mapSupabaseUserToUser(currentSession.user, (userData as UserDBMetadata) || undefined);
+
+      // Atualizar o estado com os dados finais do banco
+      setUser(finalUser);
       localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
 
     } catch (err: any) {
+      // Se der timeout (RLS recursion), avisamos mas NÃO quebramos o site
       if (err?.message?.includes('TIMEOUT_EXCEEDED')) {
-        logger.error(`❌ ⚠️ TIMEOUT RLS: O banco demorou mais de 5s para retornar metadados do usuário. Isso é causado por RECURSÃO INFINITA no RLS. Por favor, execute o script SQL fornecido no 'implementation_plan.md' no seu painel Supabase.`);
+        logger.error(`❌ ⚠️ TIMEOUT RLS DETECTADO: Usando dados do JWT como fallback. O banco de dados está travando ao ler a tabela 'users'.`);
       } else {
-        logger.warn('Erro na sincronização de metadados:', err);
+        logger.warn('Erro silencioso na sincronização de metadados:', err);
       }
-
-      setSession(currentSession);
-      setUser(mapSupabaseUserToUser(currentSession.user));
     } finally {
       setIsLoading(false);
       isSyncingRef.current = false;
