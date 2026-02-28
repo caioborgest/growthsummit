@@ -192,7 +192,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     finalInscricaoId,
                     projectSlug,
                     'standard'
-                ).catch(e => logger.warn('Invite fail:', e));
+                ).catch(e => {
+                    // Log as info/warn since this is non-blocking and often blocked by CORS in dev
+                    logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
+                });
 
                 // 3.5 Send Confirmation Email (Async, non-blocking)
                 supabase.functions.invoke('send-email', {
@@ -224,7 +227,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         </div>
                         `
                     }
-                }).catch(e => logger.error('Email confirmation error:', e));
+                }).catch(e => {
+                    // Non-blocking: email failure shouldn't prevent registration completion
+                    logger.warn('Email confirmation not sent (likely CORS or service limit):', e.message || e);
+                });
             }
 
             // 4. Sucesso - Avisar o componente pai

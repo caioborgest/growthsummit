@@ -9,8 +9,11 @@ import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
 import { Step3Confirmacao } from './inscricao-steps/Step3Confirmacao';
 import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
-import { Step5DownloadApp } from './inscricao-steps/Step5DownloadApp';
-import { Step6Conclusao } from './inscricao-steps/Step6Conclusao';
+import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
+import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
+import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
+import { Step5DownloadApp as Step6DownloadAppLegacy } from './inscricao-steps/Step5DownloadApp';
+import { Step6Conclusao as Step7ConclusaoLegacy } from './inscricao-steps/Step6Conclusao';
 
 interface InscricaoMultiStepModalProps {
     isOpen: boolean;
@@ -30,10 +33,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         comprarPalestras: false
     });
 
-    const totalSteps = 6;
+    const totalSteps = 7;
 
     const handleClose = () => {
-        if (currentStep === 6) {
+        if (currentStep === 7) {
             // Pode fechar na conclusão
             onClose();
             setCurrentStep(1);
@@ -172,8 +175,22 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     />
                 );
             case 5:
+                // Passo condicional: Se comprou palestras e está pendente, mostra pagamento
+                if (dados.comprarPalestras && dados.statusPagamento !== 'pago') {
+                    return (
+                        <Step5PagamentoPix
+                            dados={dados}
+                            onContinuar={nextStep}
+                        />
+                    );
+                } else {
+                    // Pula automaticamente se não houver pagamento pendente
+                    nextStep(true);
+                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin" /></div>;
+                }
+            case 6:
                 return (
-                    <Step5DownloadApp
+                    <Step6DownloadAppLegacy
                         onContinuar={async () => {
                             if (isProcessing) return;
                             setIsProcessing(true);
@@ -190,14 +207,14 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     logger.error('Erro ao marcar app como instalado:', { error: err });
                                 }
                             }
-                            setIsProcessing(false); // Reset before nextStep because nextStep will set it to true again
+                            setIsProcessing(false);
                             nextStep();
                         }}
                     />
                 );
-            case 6:
+            case 7:
                 return (
-                    <Step6Conclusao
+                    <Step7ConclusaoLegacy
                         dados={dados}
                         onFechar={() => {
                             onClose();
@@ -250,6 +267,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             'Dados',
                             'Confirmar',
                             'Upgrade',
+                            'Pix',
                             'App',
                             'OK'
                         ].map((label, index) => {

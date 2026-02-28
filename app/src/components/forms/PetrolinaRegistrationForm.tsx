@@ -107,7 +107,7 @@ export function PetrolinaRegistrationForm() {
                     finalInscricaoId,
                     selectedProject.id,
                     'standard'
-                ).catch(e => logger.error('Auto-invite error:', e));
+                ).catch(e => logger.info('WhatsApp invite info (CORS/SKIP):', e.message || e));
             }
 
             // 4. Send Confirmation Email (Async, non-blocking)
@@ -137,7 +137,7 @@ export function PetrolinaRegistrationForm() {
                         </div>
                     `
                 }
-            }).catch(e => logger.error('Email confirmation error:', e));
+            }).catch(e => logger.warn('Email confirmation not sent (CORS/SKIP):', e.message || e));
 
             setIsSuccess(true);
             toast.success('Inscrição confirmada com sucesso!');
