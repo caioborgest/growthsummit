@@ -7,12 +7,12 @@ import { useState } from 'react';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import type { DadosInscricao } from './inscricaoTypes';
 
-interface Step6ConclusaoProps {
+interface Step7ConclusaoProps {
     dados: DadosInscricao;
     onFechar: () => void;
 }
 
-export function Step6Conclusao({ dados, onFechar }: Step6ConclusaoProps) {
+export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
     const { selectedProject } = useProject();
     const [copied, setCopied] = useState(false);
 

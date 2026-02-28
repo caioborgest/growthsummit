@@ -4,11 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
-interface Step5DownloadAppProps {
+interface Step6DownloadAppProps {
     onContinuar: () => void;
 }
 
-export function Step5DownloadApp({ onContinuar }: Step5DownloadAppProps) {
+export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
 

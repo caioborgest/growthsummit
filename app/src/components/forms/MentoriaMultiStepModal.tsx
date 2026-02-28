@@ -9,8 +9,8 @@ import { Step2SelecionarMentor } from './mentoria-steps/Step2SelecionarMentor';
 import { Step3DadosPessoaisMentoria } from './mentoria-steps/Step3DadosPessoaisMentoria';
 import { Step4ConfirmacaoMentoria } from './mentoria-steps/Step4ConfirmacaoMentoria';
 import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
-import { Step5DownloadApp } from './inscricao-steps/Step5DownloadApp';
-import { Step6Conclusao } from './inscricao-steps/Step6Conclusao';
+import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
+import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 
 interface MentoriaMultiStepModalProps {
     isOpen: boolean;
@@ -122,13 +122,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 );
             case 6:
                 return (
-                    <Step5DownloadApp
+                    <Step6DownloadApp
                         onContinuar={nextStep}
                     />
                 );
             case 7:
                 return (
-                    <Step6Conclusao
+                    <Step7Conclusao
                         dados={dados as any} // Cast to any because the interface is slightly different but fields match
                         onFechar={() => {
                             onClose();

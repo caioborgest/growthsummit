@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 interface EmpresaIncentivadoraModalProps {
     isOpen: boolean;
@@ -56,7 +57,31 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 throw dbError;
             }
 
+            // Calcular valores para o WhatsApp
+            const valorUnitario = 179.99;
+            const qtd = parseInt(formData.quantidadeEquipe) || 0;
+            const temDesconto = qtd > 5;
+            const valorTotal = temDesconto ? (qtd * valorUnitario * 0.9) : (qtd * valorUnitario);
+            const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const mensagem = encodeURIComponent(
+                `🚀 *INSCRIÇÃO DE EQUIPE - GROWTH EXPERIENCE*\n\n` +
+                `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe.\n\n` +
+                `*DADOS DA EMPRESA:*\n` +
+                `• *Empresa:* ${formData.nomeEmpresa}\n` +
+                `• *Responsável:* ${formData.nomeResponsavel}\n` +
+                `• *WhatsApp:* ${formData.telefone}\n` +
+                `• *Equipe:* ${qtd} pessoas\n` +
+                `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe > 5)' : 'Nenhum'}\n` +
+                `• *Valor Total:* ${valorFormatado}\n\n` +
+                `_Pode me enviar a chave Pix para pagamento?_`
+            );
+
+            // Abrir WhatsApp em nova aba
+            window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
+
             setIsSuccess(true);
+            // Agora mantemos o formulário aberto por 5s ou deixamos o usuário fechar
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
@@ -68,7 +93,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                     quantidadeEquipe: '',
                     objetivo: ''
                 });
-            }, 5000);
+            }, 8000);
 
         } catch (err: any) {
             logger.error('Erro crítico no formulário de empresa:', err);
@@ -195,7 +220,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                                 <div className="bg-brand-orange-coral/10 p-4 rounded-xl border border-brand-orange-coral/20 flex gap-3">
                                     <Ticket className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
                                     <p className="text-xs text-gray-300 leading-relaxed">
-                                        Empresas que levam equipes acima de 5 pessoas ganham **10% de desconto adicional** e destaque no telão durante a Rodada B2B.
+                                        Empresas que levam equipes acima de 5 pessoas ganham **10% de desconto adicional** e concorrem ao prêmio de empresa que mais investe no empreendedorismo.
                                     </p>
                                 </div>
 

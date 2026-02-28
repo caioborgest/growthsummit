@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, Loader2 } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
