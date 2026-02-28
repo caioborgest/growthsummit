@@ -161,9 +161,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     lastSyncedSessionIdRef.current = currentSession.user.id;
     lastSyncTimeRef.current = now;
 
-    // Se temos uma sessão mas ainda não temos o objeto 'user' completo, 
-    // mantemos o estado carregando se necessário
-    setIsLoading(true);
+    // Se já temos um usuário, fazemos o refresh em background sem bloquear a UI com o loader global
+    if (!user) {
+      setIsLoading(true);
+    }
 
     try {
       // Buscar metadados com timeout defensivo

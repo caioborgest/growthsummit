@@ -7,6 +7,7 @@ import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
+import { useSessions } from '@/hooks/useData';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -21,17 +22,38 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { projectId, selectedProject } = useProject();
+    const { data: sessions, isLoading: sessionsLoading } = useSessions();
 
     const cursosSelecionados = dados.cursosSelecionados
-        .map(id => getAtividadeById(id))
+        .map(id => {
+            const staticData = getAtividadeById(id);
+            if (staticData) return staticData;
+
+            // Busca na programação do banco se não achar no estático
+            const dbSession = sessions.find(s => s.id === id);
+            if (dbSession) {
+                return {
+                    id: dbSession.id,
+                    titulo: dbSession.title,
+                    local: dbSession.room || 'Auditório',
+                    horario_inicio: dbSession.startTime,
+                    horario_fim: dbSession.endTime,
+                    tipo: dbSession.type as any,
+                    descricao: dbSession.description || '',
+                    gratuito: true,
+                    tags: dbSession.topics || []
+                };
+            }
+            return null;
+        })
         .filter(Boolean);
 
     // Obter informações detalhadas da primeira atividade selecionada
     const primeiraAtividade = cursosSelecionados[0];
-    const tipoAtividade = primeiraAtividade?.tipo || null;
+    const tipoAtividade = primeiraAtividade?.tipo || (sessions.find(s => s.id === dados.cursosSelecionados[0])?.type) || null;
     const salaAtividade = primeiraAtividade?.local || '';
     const horarioAtividade = primeiraAtividade?.horario_inicio || '';
-    const nivelAtividade = primeiraAtividade?.nivel || '';
+    const nivelAtividade = (primeiraAtividade as any)?.nivel || '';
 
     const handleConfirmar = async () => {
         setLoading(true);

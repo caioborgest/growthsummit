@@ -211,7 +211,11 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         query = query.eq('project_id', projectId);
       }
 
-      const { data: supabaseData, error: supabaseError } = await query;
+      const { data: supabaseData, error: supabaseError } = await withTimeout(
+        query,
+        15000,
+        `FetchData:${entityName}`
+      );
 
       if (supabaseData) {
         // console.log(`[useData] Successfully fetched ${supabaseData.length} records for ${entityName}`);

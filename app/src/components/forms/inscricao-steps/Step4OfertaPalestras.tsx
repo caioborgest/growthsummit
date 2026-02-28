@@ -84,186 +84,126 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="text-left sm:text-center">
+            <div className="text-left sm:text-center px-2">
                 <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/40 px-3 py-1 sm:px-4 sm:py-1 text-xs sm:text-sm animate-pulse">
                     <Star className="h-3 w-3 mr-2 fill-current" />
                     OFERTA EXCLUSIVA
                 </Badge>
-                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight">
-                    Sessão Noturna Premium
+                <h3 className="text-2xl sm:text-4xl font-black text-white mb-2 sm:mb-3 leading-tight tracking-tighter">
+                    Passaporte <span className="text-brand-orange-coral text-glow-orange/30">Night Experience</span>
                 </h3>
-                <p className="text-gray-400 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
-                    Participe das palestras magnas e do networking exclusivo com grandes líderes do mercado.
+                <p className="text-gray-400 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed font-medium">
+                    Acesso completo à programação noturna + Benefícios exclusivos
                 </p>
             </div>
 
-            {/* Grid de Palestras */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {isLoading ? (
-                    <div className="col-span-2 flex flex-col items-center justify-center py-10 text-gray-500">
-                        <Loader2 className="h-8 w-8 animate-spin mb-4 text-brand-orange-coral" />
-                        <p>Carregando palestras...</p>
-                    </div>
-                ) : palestrasNoturnas.length > 0 ? (
-                    palestrasNoturnas.map((palestra) => (
-                        <Card key={palestra.id} className="relative overflow-hidden group border-white/10 hover:border-brand-orange-coral/30 transition-all bg-dark-200/50">
-                            <div className="absolute top-0 right-0 p-3 z-10">
-                                <Badge variant="secondary" className="bg-dark/80 backdrop-blur-sm text-white border-white/20 text-[10px] sm:text-xs">
-                                    {palestra.startTime} - {palestra.endTime}
-                                </Badge>
-                            </div>
+            {/* Card da Oferta Principal - Agora o único foco */}
+            <Card className="relative overflow-hidden border-white/5 bg-gradient-to-br from-dark-200 via-dark-100 to-dark p-6 sm:p-10 shadow-2xl rounded-3xl">
+                <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-brand-orange-coral/10 rounded-full blur-3xl pointer-events-none" />
 
-                            <div className="p-4 sm:p-6">
-                                <div className="mb-3 sm:mb-4">
-                                    <h4 className="text-lg sm:text-xl font-bold text-white mb-1 group-hover:text-brand-orange-coral transition-colors leading-tight">
-                                        {palestra.title}
-                                    </h4>
-                                    <p className="text-xs sm:text-sm text-gray-400">
-                                        com <span className="text-white font-semibold">{palestra.speakers?.join(', ')}</span>
-                                    </p>
+                <div className="relative space-y-8">
+                    {/* Lista de Benefícios */}
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4 max-w-xl mx-auto">
+                        {[
+                            'Acesso às 2 palestras magnas do palco principal',
+                            'Coffee Break & Networking Premium',
+                            'Lugar reservado em frente ao palco',
+                            'Certificado de participação especial (4h)',
+                            'Kit exclusivo do evento GX 2026'
+                        ].map((item, index) => (
+                            <li key={index} className="flex items-center gap-3 text-sm sm:text-base text-gray-300 font-medium list-none">
+                                <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="h-3.5 w-3.5 text-green-500" />
                                 </div>
+                                {item}
+                            </li>
+                        ))}
+                    </div>
 
-                                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                                    {(palestra.topics || []).slice(0, 3).map((tag) => (
-                                        <Badge key={tag} variant="outline" className="text-[10px] sm:text-xs border-white/10 text-gray-500">
-                                            {tag}
+                    <div className="border-t border-white/5 pt-8">
+                        <div className="flex flex-col items-center gap-6">
+                            {/* Preço */}
+                            <div className="text-center">
+                                {descontoEfetivo > 0 ? (
+                                    <>
+                                        <Badge className="mb-3 bg-green-500/20 text-green-500 border-green-500/30 text-[10px] sm:text-xs">
+                                            -{descontoEfetivo}% DESCONTO ATIVADO
                                         </Badge>
-                                    ))}
-                                </div>
-
-                                <p className="text-xs sm:text-sm text-gray-400 line-clamp-3 leading-relaxed">
-                                    {palestra.description}
-                                </p>
+                                        <p className="text-xs sm:text-sm text-gray-500 line-through">de R$ 179,99</p>
+                                        <div className="flex items-baseline gap-1 justify-center">
+                                            <span className="text-sm sm:text-base text-brand-orange-coral font-bold">R$</span>
+                                            <span className="text-4xl sm:text-6xl font-black text-white tracking-tighter">
+                                                {precoFinal.toFixed(2).replace('.', ',')}
+                                            </span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-xs sm:text-sm text-gray-400 line-through decoration-red-500/50">de R$ 299,90</p>
+                                        <div className="flex items-baseline gap-1 justify-center">
+                                            <span className="text-sm sm:text-base text-brand-orange-coral font-bold">R$</span>
+                                            <span className="text-4xl sm:text-6xl font-black text-white tracking-tighter">179,99</span>
+                                        </div>
+                                    </>
+                                )}
+                                <p className="text-xs sm:text-sm text-green-500 font-bold mt-1">em até 12x no cartão</p>
                             </div>
-                        </Card>
-                    ))
-                ) : (
-                    <div className="col-span-2 text-center py-10 bg-dark-200/40 rounded-2xl border border-dashed border-white/10">
-                        <p className="text-gray-500 italic">Programação noturna em breve...</p>
-                    </div>
-                )}
-            </div>
 
-            {/* Seção de Cupons */}
-            <Card className="glass-card border-white/10 p-4 sm:p-6 bg-dark-300/30">
-                <div className="flex flex-col sm:flex-row items-end gap-3 sm:gap-4">
-                    <div className="flex-1 w-full translate-y-[-1px]">
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1 flex items-center gap-2">
-                            <Ticket className="h-3 w-3 text-brand-orange-coral" />
-                            Possui Código de Parceiro ou Equipe?
-                        </label>
-                        <div className="relative">
-                            <Input
-                                placeholder="DIGITE O CÓDIGO AQUI"
-                                value={cupom}
-                                onChange={(e) => setCupom(e.target.value.toUpperCase())}
-                                className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest pl-10 h-12 uppercase ${cupomAplicado ? 'border-green-500/50 ring-1 ring-green-500/20' : ''}`}
-                            />
-                            <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                            {isValidating && (
-                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-orange-coral animate-spin" />
-                            )}
-                            {cupomAplicado && !isValidating && (
-                                <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                            )}
+                            {/* Ações */}
+                            <div className="w-full max-w-md space-y-4">
+                                <Button
+                                    size="lg"
+                                    onClick={onComprar}
+                                    className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black shadow-[0_10px_30px_rgba(255,112,67,0.3)] h-14 sm:h-16 text-lg sm:text-xl rounded-2xl group uppercase"
+                                >
+                                    {descontoEfetivo === 100 ? 'GARANTIR MINHA VAGA GRATUITA' : 'COMPRAR PASSAPORTE NIGHT'}
+                                    <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+
+                                <button
+                                    onClick={onPular}
+                                    className="w-full text-sm text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-2 font-bold py-2"
+                                >
+                                    Não tenho interesse no momento
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Cupom (Mais discreto ao final) */}
+            <div className="max-w-md mx-auto w-full">
+                <div className="flex items-center gap-2 mb-3 px-2">
+                    <Ticket className="h-4 w-4 text-brand-orange-coral" />
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Possui um Código Promocional?</span>
+                </div>
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Input
+                            placeholder="CÓDIGO AQUI"
+                            value={cupom}
+                            onChange={(e) => setCupom(e.target.value.toUpperCase())}
+                            className={`bg-dark-300/40 border-white/5 text-white font-mono tracking-widest pl-4 h-11 uppercase rounded-xl transition-all ${cupomAplicado ? 'border-green-500/40 ring-1 ring-green-500/20' : 'focus:border-brand-orange-coral/40'}`}
+                        />
+                        {isValidating && (
+                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-orange-coral animate-spin" />
+                        )}
                     </div>
                     <Button
                         type="button"
+                        variant="secondary"
                         onClick={handleValidarCupom}
                         disabled={isValidating || !cupom.trim()}
-                        className={`h-12 px-6 font-bold sm:min-w-[120px] transition-all ${cupomAplicado ? 'bg-green-600/20 text-green-400 border border-green-500/30 hover:bg-green-600/30' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
+                        className={`h-11 px-6 font-bold rounded-xl transition-all ${cupomAplicado ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'}`}
                     >
-                        {cupomAplicado ? 'Aplicado' : 'Validar'}
+                        {cupomAplicado ? 'OK' : 'Aplicar'}
                     </Button>
                 </div>
-                {error && (
-                    <p className="text-red-400 text-[10px] sm:text-xs mt-2 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {error}
-                    </p>
-                )}
-                {cupomAplicado && (
-                    <p className="text-green-400 text-[10px] sm:text-xs mt-2 font-bold animate-in fade-in slide-in-from-top-1">
-                        Voucher ativado! Desconto de {descontoEfetivo}% aplicado com sucesso.
-                    </p>
-                )}
-            </Card>
-
-            {/* Card da Oferta */}
-            <Card className="relative overflow-hidden border-brand-orange-coral/30 bg-gradient-to-br from-brand-orange-coral/10 via-dark-200 to-dark p-4 sm:p-8 shadow-2xl">
-                <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-orange-coral/20 rounded-full blur-2xl" />
-                <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-24 h-24 bg-brand-orange-gradient/20 rounded-full blur-2xl" />
-
-                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
-                    <div className="flex-1 space-y-3 sm:space-y-4 w-full">
-                        <div>
-                            <h4 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2 leading-tight">Passaporte Night Experience</h4>
-                            <p className="text-xs sm:text-sm text-gray-400">Acesso completo à programação noturna + Benefícios exclusivos</p>
-                        </div>
-
-                        <ul className="space-y-1.5 sm:space-y-2">
-                            {[
-                                'Acesso às 2 palestras magnas',
-                                'Coffee Break & Networking Premium',
-                                'Lugar reservado',
-                                'Certificado de participação especial (4h)',
-                                'Kit exclusivo do evento'
-                            ].map((item, index) => (
-                                <li key={index} className="flex items-center gap-2 text-[11px] sm:text-sm text-gray-300 leading-tight">
-                                    <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <div className="flex flex-col items-center md:items-end gap-3 sm:gap-4 w-full md:min-w-[200px]">
-                        <div className="text-center md:text-right">
-                            {descontoEfetivo > 0 ? (
-                                <>
-                                    <Badge className="mb-2 bg-green-500/20 text-green-500 border-green-500/30 text-[10px] sm:text-xs">
-                                        -{descontoEfetivo}% DESCONTO ATIVADO
-                                    </Badge>
-                                    <p className="text-[10px] sm:text-sm text-gray-500 line-through">de R$ 179,99</p>
-                                    <div className="flex items-baseline gap-1 justify-center md:justify-end">
-                                        <span className="text-xs sm:text-sm text-brand-orange-coral font-bold">R$</span>
-                                        <span className="text-3xl sm:text-4xl font-black text-white">
-                                            {precoFinal.toFixed(2).replace('.', ',')}
-                                        </span>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-[10px] sm:text-sm text-gray-500 line-through">de R$ 299,90</p>
-                                    <div className="flex items-baseline gap-1 justify-center md:justify-end">
-                                        <span className="text-xs sm:text-sm text-brand-orange-coral font-bold">R$</span>
-                                        <span className="text-3xl sm:text-4xl font-black text-white">179,99</span>
-                                    </div>
-                                </>
-                            )}
-                            <p className="text-[10px] sm:text-xs text-green-500 font-semibold">em até 12x no cartão</p>
-                        </div>
-
-                        <Button
-                            size="lg"
-                            onClick={onComprar}
-                            className="w-full bg-gradient-to-r from-teal-500 to-teal-400 hover:from-teal-600 hover:to-teal-500 text-dark-100 font-extrabold shadow-glow-teal/20 h-12 sm:h-14 py-0"
-                        >
-                            {descontoEfetivo === 100 ? 'GARANTIR VAGA GRATUITA' : 'COMPRAR PASSAPORTE NIGHT'}
-                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
-                        </Button>
-
-                        <button
-                            onClick={onPular}
-                            className="text-[10px] sm:text-sm text-gray-500 hover:text-white transition-colors flex items-center gap-1 py-1"
-                        >
-                            Não tenho interesse no momento
-                            <X className="h-3 w-3" />
-                        </button>
-                    </div>
-                </div>
-            </Card>
+                {error && <p className="text-red-400 text-[10px] mt-2 ml-2 italic">{error}</p>}
+                {cupomAplicado && <p className="text-green-400 text-[10px] mt-2 ml-2 font-bold">Desconto de {descontoEfetivo}% aplicado!</p>}
+            </div>
         </div>
     );
 }
