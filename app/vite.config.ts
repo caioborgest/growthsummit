@@ -105,6 +105,9 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     rollupOptions: {
+      // These packages are loaded dynamically at runtime (QR scanner, PDF generation).
+      // Externalizing prevents Rollup from failing when they're not resolvable at build time.
+      external: ['html5-qrcode', 'jspdf', 'jspdf-autotable'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
