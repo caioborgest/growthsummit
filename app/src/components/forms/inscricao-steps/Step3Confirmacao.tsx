@@ -210,7 +210,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
 
             // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
-            if (finalInscricaoId) {
+            // Em desenvolvimento (localhost), as Edge Functions são bloqueadas por CORS — skip automático.
+            if (finalInscricaoId && import.meta.env.PROD) {
                 const projectSlug = selectedProject?.slug || 'growth-experience-triunfo';
                 autoInviteOnRegistration(
                     finalInscricaoId,

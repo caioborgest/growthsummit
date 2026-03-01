@@ -156,12 +156,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const now = Date.now();
     const isSameUser = lastSyncedSessionIdRef.current === currentSession.user.id;
-    const isRecent = now - lastSyncTimeRef.current < 2000;
+    const isRecent = now - lastSyncTimeRef.current < 5000; // 5s throttle
 
-    // 2. Prevenir sincronizações redundantes
+    // 2. Prevenir sincronizações redundantes (mesmo usuário dentro de 5s)
     if (isSyncingRef.current || (isSameUser && isRecent)) {
       if (isSameUser && isRecent) {
-        logger.debug('Ignorando atualização auth redundante (< 2s)');
+        logger.debug('Ignorando atualização auth redundante (< 5s)');
       }
       return;
     }
@@ -432,12 +432,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.info(`🔔 Auth State Change: ${event}`, { userId: currentSession?.user?.id });
 
       if (isMountedRef.current) {
-        // Se o evento for SIGNED_OUT, limpar imediatamente para evitar loop de redirecionamento
         if (event === 'SIGNED_OUT') {
+          // Limpar imediatamente para evitar loop de redirecionamento
           isSyncingRef.current = false;
           setSession(null);
           setUser(null);
+        } else if (event === 'TOKEN_REFRESHED') {
+          // Token refresh é apenas uma rotação do JWT — não precisa re-sincronizar o perfil
+          // Basta atualizar a sessão na memória
+          if (currentSession) setSession(currentSession);
+          logger.debug('TOKEN_REFRESHED: apenas sessão atualizada, sem re-sync do perfil');
         } else if (currentSession) {
+          // SIGNED_IN, INITIAL_SESSION, USER_UPDATED etc.
           updateAuthState(currentSession);
           logAuditEvent(event, currentSession.user.id);
         }

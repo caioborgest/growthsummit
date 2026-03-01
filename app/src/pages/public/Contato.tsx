@@ -70,6 +70,16 @@ export function Contato() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Em desenvolvimento (localhost), as Edge Functions são bloqueadas por CORS.
+      // Redirecionar para WhatsApp como fallback.
+      if (!import.meta.env.PROD) {
+        const msg = encodeURIComponent(`Olá! Mensagem de contato via site:\n\nNome: ${formData.name}\nEmail: ${formData.email}\nAssunto: ${formData.subject}\n\n${formData.message}`);
+        window.open(`https://wa.me/5588988432310?text=${msg}`, '_blank');
+        toast.success('Redirecionando para WhatsApp (modo desenvolvimento)');
+        setFormData({ name: '', email: '', department: 'geral', subject: '', message: '' });
+        return;
+      }
+
       toast.loading('Enviando mensagem...');
       const { error } = await supabase.functions.invoke('send-email', {
         body: {
