@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,9 +9,7 @@ import {
     MessageCircle,
     ArrowRight,
     Loader2,
-    ShieldCheck,
-    AlertCircle,
-    QrCode
+    AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
@@ -27,10 +25,9 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
     const { selectedProject } = useProject();
     const [copied, setCopied] = useState(false);
 
-    // Configurações do PIX
-    const cnpj = "54.789.957/0001-98";
-    const merchantName = "CBX GROWTH MARKETING";
-    const merchantCity = "SAO PAULO";
+    // Configurações do PIX (centralizadas no EVENT_CONFIG)
+    const cnpj = EVENT_CONFIG.pix.cnpj;
+    const merchantName = EVENT_CONFIG.pix.beneficiario;
 
     // Cálculo do valor
     const valorOriginal = 179.99;

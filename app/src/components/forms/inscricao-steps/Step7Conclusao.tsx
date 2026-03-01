@@ -1,10 +1,9 @@
+import { useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Home, Smartphone, Mail, AlertCircle, Copy, MessageCircle } from 'lucide-react';
+import { CheckCircle, Home, Smartphone, Mail, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import { EVENT_CONFIG } from '@/config/eventConfig';
 import type { DadosInscricao } from './inscricaoTypes';
 
 interface Step7ConclusaoProps {
@@ -14,28 +13,18 @@ interface Step7ConclusaoProps {
 
 export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
     const { selectedProject } = useProject();
-    const [copied, setCopied] = useState(false);
-
-    // Check if payment is pending (standard logic from Step 3/4)
-    const isPending = dados.comprarPalestras && dados.statusPagamento !== 'pago';
-    const pixKey = "financeiro@growthsummit.site"; // TODO: Mover para EVENT_CONFIG se for mudar
-
-    useState(() => {
-        // Enviar toast de confirmação apenas uma vez ao montar o componente
-        if (!isPending) {
-            toast.info('Verifique seu e-mail para confirmar seu cadastro!');
-        }
-    });
-
-    const handleCopyPix = () => {
-        navigator.clipboard.writeText(pixKey);
-        setCopied(true);
-        toast.success('Chave Pix copiada!');
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     // Link do Grupo Oficial
     const GROUP_LINK = "https://chat.whatsapp.com/DupSWw5K4Ot4BKEjGG2Ndn?mode=hq1tcla";
+
+    // Disparar toast de confirmação uma única vez ao montar (corretamente com useEffect)
+    useEffect(() => {
+        const isPending = dados.comprarPalestras && dados.statusPagamento !== 'pago';
+        if (!isPending) {
+            toast.info('Verifique seu e-mail para confirmar seu cadastro!');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="text-center space-y-6 animate-in fade-in zoom-in duration-500">
@@ -108,7 +97,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                     size="lg"
                     onClick={() => {
                         onFechar();
-                        window.location.href = '/dashboard/minha-area';
+                        window.location.href = '/minha-area';
                     }}
                     className="flex-1 border-white/10 text-gray-300 hover:text-white hover:bg-white/5 h-14 rounded-xl font-bold"
                 >

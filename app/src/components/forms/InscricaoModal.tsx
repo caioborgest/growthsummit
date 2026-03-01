@@ -179,29 +179,30 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                             .eq('email', formData.email)
                             .maybeSingle();
 
-                        if (zombieUser && (zombieUser as any).id !== userId) {
+                        const zombieUserTyped = zombieUser as { id: string } | null;
+                        if (zombieUserTyped && zombieUserTyped.id !== userId) {
                             logger.warn('Removendo registro de usuário zumbi para:', formData.email);
-                            await supabase.from('users').delete().eq('id', (zombieUser as any).id).catch(() => { });
+                            await supabase.from('users').delete().eq('id', zombieUserTyped.id).catch(() => { });
                         }
 
-                        // Criar o registro
-                        const { error: userTableError } = await (supabase
-                            .from('users') as any)
-                            .upsert({
-                                id: userId,
-                                email: formData.email,
-                                name: formData.nome,
-                                phone: formData.telefone,
-                                role: 'participant',
-                                updated_at: new Date().toISOString()
-                            }, { onConflict: 'id' });
+                        // Criar o registro (tabela public.users tem schema customizado não refletido nos tipos gerados)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const { error: userTableError } = await (supabase.from('users') as any).upsert({
+                            id: userId,
+                            email: formData.email,
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            role: 'participant',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
 
                         if (userTableError) {
                             logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
                         }
                     }
                 } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    const syncError = userTableCatch instanceof Error ? userTableCatch.message : String(userTableCatch);
+                    logger.warn('Erro ao sincronizar tabela public.users:', { message: syncError });
                 }
             }
 

@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { FileText } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -40,7 +41,7 @@ const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos'));
+const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos').then(m => ({ default: m.AdminProjetos })));
 const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.AdminInscricoes })));
 const AdminMentores = lazy(() => import('./pages/admin/AdminMentores').then(m => ({ default: m.AdminMentores })));
 const AdminMentorias = lazy(() => import('./pages/admin/AdminMentorias').then(m => ({ default: m.AdminMentorias })));
@@ -162,7 +163,9 @@ function AppRoutes() {
                     user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
                       user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
                         (user?.role === 'participant' || (user?.role as string) === 'participante') ? <Navigate to="/minha-area" replace /> :
-                          <GrowthExperience />
+                          (user?.role as string) === 'empresa' ? <Navigate to="/empresa-area" replace /> :
+                            (user?.role as string) === 'palestrante' ? <Navigate to="/mentor-area" replace /> :
+                              <GrowthExperience />
             ) : <GrowthExperience />
           } />
           <Route path="sobre" element={<Sobre />} />

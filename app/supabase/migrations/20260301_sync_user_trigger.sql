@@ -1,6 +1,6 @@
 -- ============================================================
 -- MIGRATION: AUTO-SYNC AUTH.USERS TO PUBLIC.USERS
--- Date: 2026-03-01
+-- Date: 2026-03-01 (v2 - adicionado phone + mapeamento de role no backfill)
 -- Description: Ensures public.users record exists as soon as 
 --              auth.users record is created, preventing FK errors.
 -- ============================================================
@@ -32,12 +32,13 @@ END CASE
 DELETE FROM public.users
 WHERE email = NEW.email
     AND id != NEW.id;
--- Insert or Update the user record
-INSERT INTO public.users (id, email, name, role, updated_at)
+-- Insert or Update the user record (now including phone)
+INSERT INTO public.users (id, email, name, phone, role, updated_at)
 VALUES (
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
+        NEW.raw_user_meta_data->>'phone',
         v_role,
         NOW()
     ) ON CONFLICT (id) DO
@@ -46,6 +47,10 @@ SET email = EXCLUDED.email,
     name = COALESCE(
         NEW.raw_user_meta_data->>'name',
         public.users.name
+    ),
+    phone = COALESCE(
+        NEW.raw_user_meta_data->>'phone',
+        public.users.phone
     ),
     role = CASE
         WHEN EXCLUDED.role != 'participant' THEN EXCLUDED.role
@@ -65,12 +70,26 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
 AFTER
 INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
--- 3. Backfill existing users if any are missing
--- (Safety step to ensure consistency)
-INSERT INTO public.users (id, email, name, role, updated_at)
+-- 3. Backfill: com mapeamento de roles para evitar violação de CHECK constraint
+INSERT INTO public.users (id, email, name, phone, role, updated_at)
 SELECT id,
     email,
     COALESCE(raw_user_meta_data->>'name', email),
-    COALESCE(raw_user_meta_data->>'role', 'participant'),
+    raw_user_meta_data->>'phone',
+    CASE
+        LOWER(
+            COALESCE(raw_user_meta_data->>'role', 'participant')
+        )
+        WHEN 'participante' THEN 'participant'
+        WHEN 'empresa' THEN 'company'
+        WHEN 'palestrante' THEN 'mentor'
+        WHEN 'admin' THEN 'admin'
+        WHEN 'mentor' THEN 'mentor'
+        WHEN 'company' THEN 'company'
+        WHEN 'startup' THEN 'startup'
+        WHEN 'sponsor' THEN 'sponsor'
+        WHEN 'staff' THEN 'staff'
+        ELSE 'participant'
+    END,
     NOW()
 FROM auth.users ON CONFLICT (id) DO NOTHING;
