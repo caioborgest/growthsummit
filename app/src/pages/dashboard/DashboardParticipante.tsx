@@ -22,14 +22,18 @@ import {
   Sun,
   Moon,
   XCircle,
-  ChevronRight
+  ChevronRight,
+  ScanLine,
+  Edit3,
+  RefreshCw
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRegistrations, useSessions } from '@/hooks/useData';
+import { useSessions } from '@/hooks/useData';
+import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
@@ -252,17 +256,12 @@ export function DashboardParticipante() {
   const { selectedProject } = useProject();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data: registrations, refetch: refetchRegistrations } = useRegistrations();
+  const { registration: myRegistration, refetch: refetchRegistration, updateCursos, checkInEntrada } = useMyRegistration();
   const { data: sessions } = useSessions();
   const [activeTab, setActiveTab] = useState('ingresso');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
-
-  // Inscrição do usuário
-  const myRegistration = useMemo(() =>
-    registrations.find(r => r.userId === user?.id || (r as any).user_id === user?.id),
-    [registrations, user?.id]
-  );
+  const [showEditCursos, setShowEditCursos] = useState(false);
 
   // ── STATUS FINANCEIRO ──────────────────────────────────────────────────────
   // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
@@ -270,24 +269,28 @@ export function DashboardParticipante() {
   // Experience Pro não pago: status = "Pendente"
   const statusFinanceiro = useMemo(() => {
     if (!myRegistration?.palestrasNoturnas) {
-      // Gratuito: não há pendência financeira, mas não está "confirmado" — está em aberto
-      return { label: 'Em Aberto', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição gratuita' };
+      return { label: 'Em Aberto', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição gratuita — grátis' };
     }
-    const pgto = (myRegistration as any)?.statusPagamento || (myRegistration as any)?.status_pagamento;
+    const pgto = myRegistration?.statusPagamento;
     if (pgto === 'pago' || pgto === 'paid') {
       return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
     }
     return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };
   }, [myRegistration]);
 
-  // Cursos selecionados
+  // Cursos selecionados (busca nas sessions pelos IDs)
   const cursosSelecionados = useMemo(() => {
-    const ids: string[] = (myRegistration as any)?.cursosSelecionados
-      || (myRegistration as any)?.cursos_selecionados
-      || [];
+    const ids: string[] = myRegistration?.cursosSelecionados || [];
     if (!ids.length) return [];
     return sessions.filter(s => ids.includes(s.id));
   }, [sessions, myRegistration]);
+
+  // Todos os cursos/workshops/oficinas disponíveis para troca
+  const cursosDisponiveis = useMemo(() => {
+    return sessions.filter(s =>
+      ['workshop', 'circuito', 'oficina', 'treinamento', 'curso'].includes((s.type as string))
+    );
+  }, [sessions]);
 
   const handleLogout = () => {
     logout();
@@ -342,7 +345,7 @@ export function DashboardParticipante() {
         <UpgradeProModal
           registrationId={myRegistration.id}
           onClose={() => setShowUpgradeModal(false)}
-          onSuccess={() => refetchRegistrations()}
+          onSuccess={() => refetchRegistration()}
         />
       )}
       {showCheckInModal && myRegistration && (
