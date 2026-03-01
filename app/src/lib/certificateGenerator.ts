@@ -1,11 +1,14 @@
-import { jsPDF } from 'jspdf';
-
 // ============================================================
 // GERADOR DE CERTIFICADO — Growth Experience
 // Versão 3 — Sem dourado | Logo GX | Design premium
 // Idioma: Português do Brasil
 // Cores: Laranja #FE4C38 | Teal #21808D | Sem dourado
 // ============================================================
+// NOTA: jsPDF é carregado dinamicamente para compatibilidade com build do Vercel
+async function loadJsPDF() {
+    const { jsPDF } = await import('jspdf');
+    return jsPDF;
+}
 
 export interface CertificateTemplateData {
     /** Nome completo do participante (inserido automaticamente) */
@@ -72,7 +75,8 @@ const TIPO_PILL: Record<string, string> = {
 
 // ── Função auxiliar: texto em caixa com cantos arredondados ───
 function roundedBox(
-    doc: jsPDF,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    doc: any,
     x: number, y: number, w: number, h: number,
     fillColor: [number, number, number],
     r = 3
@@ -88,7 +92,8 @@ function roundedBox(
  * A logomarca é carregada do Supabase Storage via `logoBase64`.
  */
 export async function generateCertificatePDF(data: CertificateTemplateData): Promise<void> {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const JsPDF = await loadJsPDF();
+    const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
     const W = doc.internal.pageSize.getWidth();   // 297 mm
     const H = doc.internal.pageSize.getHeight();  // 210 mm
@@ -377,7 +382,8 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
 }
 
 // ── Fallback de logotipo em texto quando imagem não disponível ─
-function _renderTextLogo(doc: jsPDF, x: number, y: number) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function _renderTextLogo(doc: any, x: number, y: number) {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(254, 76, 56);

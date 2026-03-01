@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { parseQRString } from '@/lib/qrUtils';
 import { CheckCircle, XCircle, QrCode, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,44 +11,59 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QRScannerProps) {
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const scannerRef = useRef<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [isScanning, setIsScanning] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Initialize scanner
-        const scanner = new Html5QrcodeScanner(
-            "reader",
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
-            },
-      /* verbose= */ false
-        );
+        let isMounted = true;
 
-        const onScanSuccess = (decodedText: string) => {
-            const parsed = parseQRString(decodedText);
-            if (parsed) {
-                scanner.clear();
-                setIsScanning(false);
-                onSuccess(parsed);
-            } else {
-                toast.error("QR Code inválido para este evento.");
+        // Dynamic import to avoid build-time resolution failure on Vercel
+        import('html5-qrcode').then(({ Html5QrcodeScanner, Html5QrcodeSupportedFormats }) => {
+            if (!isMounted) return;
+            setIsLoading(false);
+
+            const scanner = new Html5QrcodeScanner(
+                "reader",
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                },
+                /* verbose= */ false
+            );
+
+            const onScanSuccess = (decodedText: string) => {
+                const parsed = parseQRString(decodedText);
+                if (parsed) {
+                    scanner.clear();
+                    setIsScanning(false);
+                    onSuccess(parsed);
+                } else {
+                    toast.error("QR Code inválido para este evento.");
+                }
+            };
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const onScanFailure = (_error: any) => {
+                // Normal behavior, QR code not found in frame — no spam
+            };
+
+            scanner.render(onScanSuccess, onScanFailure);
+            scannerRef.current = scanner;
+        }).catch(() => {
+            if (isMounted) {
+                setError('Biblioteca de scanner não disponível. Verifique a conexão.');
+                setIsLoading(false);
             }
-        };
-
-        const onScanFailure = (error: any) => {
-            // Normal behavior, QR code not found in frame
-            // We don't want to spam the console or toast
-        };
-
-        scanner.render(onScanSuccess, onScanFailure);
-        scannerRef.current = scanner;
+        });
 
         return () => {
+            isMounted = false;
             if (scannerRef.current) {
-                scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
+                scannerRef.current.clear().catch(() => { });
             }
         };
     }, [onSuccess]);
@@ -75,7 +89,12 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                 </div>
 
                 <div className="p-4">
-                    {error ? (
+                    {isLoading ? (
+                        <div className="aspect-square bg-dark-300 rounded-2xl flex flex-col items-center justify-center p-8 text-center">
+                            <div className="w-12 h-12 border-4 border-brand-orange-coral/30 border-t-brand-orange-coral rounded-full animate-spin mb-4" />
+                            <p className="text-gray-400 text-sm">Carregando scanner...</p>
+                        </div>
+                    ) : error ? (
                         <div className="aspect-square bg-dark-300 rounded-2xl flex flex-col items-center justify-center p-8 text-center">
                             <XCircle className="h-12 w-12 text-red-500 mb-4" />
                             <p className="text-white font-bold mb-2">Erro na Câmera</p>

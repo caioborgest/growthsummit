@@ -1,21 +1,24 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-// Extend jsPDF with autotable types for TypeScript
-declare module 'jspdf' {
-    interface jsPDF {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        autoTable: (options: any) => jsPDF;
-    }
+/**
+ * Carrega jsPDF e jspdf-autotable dinamicamente para evitar erro de build no Vercel
+ * quando a dependência ainda não foi declarada no package.json do commit.
+ */
+async function getJsPDF() {
+    const [{ jsPDF }, autoTable] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
+    return { jsPDF, autoTable: autoTable.default };
 }
 
 /**
  * Gera um relatório de inscrições em PDF
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateInscricoesReport = (registrations: any[], projectName: string) => {
+export const generateInscricoesReport = async (registrations: any[], projectName: string) => {
+    const { jsPDF } = await getJsPDF();
     const doc = new jsPDF();
     const dateStr = format(new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR });
 
@@ -46,7 +49,7 @@ export const generateInscricoesReport = (registrations: any[], projectName: stri
         tableRows.push(regData);
     });
 
-    doc.autoTable({
+    (doc as any).autoTable({
         startY: 48,
         head: [tableColumn],
         body: tableRows,
@@ -75,7 +78,8 @@ export const generateInscricoesReport = (registrations: any[], projectName: stri
  * Gera um relatório financeiro resumido em PDF
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateFinanceiroReport = (transactions: any[], projectName: string) => {
+export const generateFinanceiroReport = async (transactions: any[], projectName: string) => {
+    const { jsPDF } = await getJsPDF();
     const doc = new jsPDF();
     const dateStr = format(new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR });
 
@@ -108,7 +112,7 @@ export const generateFinanceiroReport = (transactions: any[], projectName: strin
         tableRows.push(rowData);
     });
 
-    doc.autoTable({
+    (doc as any).autoTable({
         startY: 45,
         head: [tableColumn],
         body: tableRows,
@@ -145,7 +149,8 @@ export const generateFinanceiroReport = (transactions: any[], projectName: strin
  * Gera um relatório de mentorias em PDF
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateMentoriasReport = (sessions: any[], projectName: string) => {
+export const generateMentoriasReport = async (sessions: any[], projectName: string) => {
+    const { jsPDF } = await getJsPDF();
     const doc = new jsPDF();
     const dateStr = format(new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR });
 
@@ -172,7 +177,7 @@ export const generateMentoriasReport = (sessions: any[], projectName: string) =>
         tableRows.push(rowData);
     });
 
-    doc.autoTable({
+    (doc as any).autoTable({
         startY: 45,
         head: [tableColumn],
         body: tableRows,
@@ -187,7 +192,8 @@ export const generateMentoriasReport = (sessions: any[], projectName: string) =>
  * Gera um ingresso individual em PDF
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const generateTicketPDF = (registration: any, projectName: string) => {
+export const generateTicketPDF = async (registration: any, projectName: string) => {
+    const { jsPDF } = await getJsPDF();
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -227,7 +233,7 @@ export const generateTicketPDF = (registration: any, projectName: string) => {
     const tipo = registration.palestrasNoturnas ? 'EXPERIENCE PRO' : 'FREE MORNING';
     doc.text(tipo, 50, 75, { align: 'center' });
 
-    // Protocolo e QR Code
+    // Protocolo
     doc.setTextColor(150);
     doc.setFontSize(8);
     doc.text('PROTOCOLO DE ACESSO', 50, 95, { align: 'center' });
@@ -235,7 +241,7 @@ export const generateTicketPDF = (registration: any, projectName: string) => {
     doc.setFontSize(16);
     doc.text(`#${(registration.id || '---').slice(0, 8).toUpperCase()}`, 50, 105, { align: 'center' });
 
-    // QR Code Box (Simulacional)
+    // QR Code Box
     doc.setDrawColor(200);
     doc.rect(35, 110, 30, 30);
     doc.setFontSize(6);
