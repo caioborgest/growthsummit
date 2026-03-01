@@ -79,7 +79,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         data: {
                             name: dados.nome,
                             phone: dados.telefone,
-                            role: 'participante'
+                            role: 'participant'
                         }
                     }
                 });
@@ -103,37 +103,61 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     }
                 } else if (authData.user) {
                     userId = authData.user.id;
-
-                    // Se não houver sessão imediata (email confirmation enabled), o login manual será necessário depois
-                    if (!authData.session) {
-                        // User needs to confirm email, but we'll show this at the end
-                    }
                 } else {
                     throw new Error('Não foi possível processar o cadastro do usuário.');
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            // 1.5. Sincronização agressiva com public.users
             if (userId) {
                 try {
-                    const { error: userTableError } = await (supabase
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        .from('users') as any)
-                        .upsert({
-                            id: userId,
-                            email: dados.email,
-                            name: dados.nome,
-                            phone: dados.telefone,
-                            role: 'participant',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
+                    // Primeiro, verificar se o registro já existe para este ID
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id, email')
+                        .eq('id', userId)
+                        .maybeSingle();
 
-                    if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    if (!existingUser) {
+                        // Se não existe pelo ID, verificar se existe pelo EMAIL (Zombie)
+                        const { data: zombieUser } = await supabase
+                            .from('users')
+                            .select('id, email')
+                            .eq('email', dados.email)
+                            .maybeSingle();
+
+                        if (zombieUser && zombieUser.id !== userId) {
+                            logger.warn(`Detectado usuário zumbi para o email ${dados.email}. ID antigo: ${zombieUser.id}, ID novo: ${userId}.`);
+                            // Tentamos remover o zumbi. Como o usuário está logado com este email, 
+                            // as políticas de RLS podem permitir se estiverem baseadas em email (improvável).
+                            // Se falhar, tentaremos o upsert de qualquer forma.
+                            await supabase.from('users').delete().eq('id', zombieUser.id).catch(() => { });
+                        }
+
+                        // Tentar criar o registro
+                        const { error: upsertError } = await (supabase
+                            .from('users') as any)
+                            .upsert({
+                                id: userId,
+                                email: dados.email,
+                                name: dados.nome,
+                                phone: dados.telefone,
+                                role: 'participant',
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'id' });
+
+                        if (upsertError) {
+                            logger.error('Falha crítica na sincronização de usuário:', upsertError);
+                            // Se falhar o upsert, a inscrição certamente falhará por FK.
+                            // Mas vamos dar um pequeno tempo para o trigger (se existir) agir.
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
                     }
-                } catch (userTableCatch) {
-                    logger.warn('Erro ao tentar upsert em users:', userTableCatch);
+                } catch (syncErr) {
+                    logger.warn('Erro na lógica de sincronização:', syncErr);
                 }
+            } else {
+                throw new Error('Usuário não identificado para a inscrição.');
             }
 
             // 2. Salvar inscrição no banco (user_id opcional se já existir conta)

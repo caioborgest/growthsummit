@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon } from 'lucide-react';
+import { Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon, Download, ArrowRight } from 'lucide-react';
 import QRCode from 'react-qr-code';
+import { usePWA } from '@/hooks/usePWA';
 
 interface Step6DownloadAppProps {
     onContinuar: () => void;
@@ -11,6 +12,17 @@ interface Step6DownloadAppProps {
 export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
+    const { isInstallable, isStandalone, promptInstall } = usePWA();
+
+    const handleDownload = async () => {
+        if (isInstallable && !isStandalone) {
+            await promptInstall();
+        } else if (isIOS) {
+            alert('No iPhone: Toque em Compartilhar e depois "Adicionar à Tela de Início"');
+        } else {
+            alert('Abra este site no Chrome do seu celular para instalar o app.');
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -22,6 +34,21 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg max-w-2xl mx-auto px-4">
                     Acesse sua credencial, programação e networking em um só lugar.
+                </p>
+            </div>
+
+            {/* Botão de Download Direto */}
+            <div className="flex flex-col items-center gap-4 py-4">
+                <Button
+                    size="lg"
+                    onClick={handleDownload}
+                    className="w-full max-w-md bg-white text-dark hover:bg-gray-200 font-black h-16 text-lg rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all active:scale-95"
+                >
+                    <Download className="h-6 w-6 text-brand-orange-coral" />
+                    BAIXAR APP AGORA
+                </Button>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+                    Instalação instantânea • Sem ocupar memória
                 </p>
             </div>
 
@@ -130,14 +157,11 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
                 <Button
                     size="lg"
                     onClick={onContinuar}
-                    className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
+                    className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl shadow-lg"
                 >
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Já instalei o App, continuar
+                    Próxima Etapa: Concluir Cadastro
+                    <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
-                <p className="text-center text-xs text-gray-500 mt-3">
-                    Ao continuar, você confirma que instalou o aplicativo para acessar sua credencial.
-                </p>
             </div>
         </div>
     );

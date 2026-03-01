@@ -23,10 +23,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
     const [error, setError] = useState('');
     const [cupomAplicado, setCupomAplicado] = useState(!!dados.descontoPalestra);
 
-    // Filtrar palestras noturnas da base (categoria 'noturna' ou tipo 'palestra'/'keynote')
-    const palestrasNoturnas = sessions.filter(s =>
-        s.category === 'noturna' || s.type === 'keynote' || s.type === 'talk'
-    );
+    // Apenas o Passaporte Night é exibido nesta etapa, removendo listagem de outras sessões
 
     const valorOriginal = 179.99;
 

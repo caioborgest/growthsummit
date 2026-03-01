@@ -162,23 +162,43 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            // 1.5. Sincronização robusta com public.users (Zombie record cleanup)
             if (userId) {
                 try {
-                    const { error: userTableError } = await (supabase
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        .from('users') as any)
-                        .upsert({
-                            id: userId,
-                            email: formData.email,
-                            name: formData.nome,
-                            phone: formData.telefone,
-                            role: 'participant',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id, email')
+                        .eq('id', userId)
+                        .maybeSingle();
 
-                    if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    if (!existingUser) {
+                        // Verificar se o email já está em uso por outro ID
+                        const { data: zombieUser } = await supabase
+                            .from('users')
+                            .select('id')
+                            .eq('email', formData.email)
+                            .maybeSingle();
+
+                        if (zombieUser && (zombieUser as any).id !== userId) {
+                            logger.warn('Removendo registro de usuário zumbi para:', formData.email);
+                            await supabase.from('users').delete().eq('id', (zombieUser as any).id).catch(() => { });
+                        }
+
+                        // Criar o registro
+                        const { error: userTableError } = await (supabase
+                            .from('users') as any)
+                            .upsert({
+                                id: userId,
+                                email: formData.email,
+                                name: formData.nome,
+                                phone: formData.telefone,
+                                role: 'participant',
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'id' });
+
+                        if (userTableError) {
+                            logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                        }
                     }
                 } catch (userTableCatch) {
                     logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
