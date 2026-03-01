@@ -38,62 +38,16 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
     const valorFinal = valorOriginal * (1 - descontoEfetivo / 100);
     const valorFormatado = valorFinal.toFixed(2);
 
-    /**
-     * Gera o payload do PIX (Static) seguindo o padrão EMV QRCPS
-     * Implementa o algoritmo CRC16-CCITT-FFFF para o checksum final
-     */
-    const generatePixPayload = () => {
-        const cnpjClean = cnpj.replace(/\D/g, '');
-        const merchantInfo = `0014br.gov.bcb.pix01${cnpjClean.length.toString().padStart(2, '0')}${cnpjClean}`;
-        const merchantAccount = `26${merchantInfo.length.toString().padStart(2, '0')}${merchantInfo}`;
-
-        const payloadBase = [
-            "000201", // ID 00: Payload Format Indicator
-            "010212", // ID 01: Point of Initiation Method
-            merchantAccount,
-            "52040000", // ID 52: Merchant Category Code
-            "5303986", // ID 53: Transaction Currency (BRL)
-            `54${valorFormatado.length.toString().padStart(2, '0')}${valorFormatado}`, // ID 54: Amount
-            "5802BR", // ID 58: Country Code
-            `59${merchantName.length.toString().padStart(2, '0')}${merchantName}`, // ID 59: Merchant Name
-            `60${merchantCity.length.toString().padStart(2, '0')}${merchantCity}`, // ID 60: Merchant City
-            "62070503***", // ID 62: Additional Data (TXID)
-            "6304", // ID 63: CRC16 (4 digits)
-        ].join('');
-
-        // Algoritmo CRC16-CCITT (FFFF)
-        const crc16 = (str: string) => {
-            let crc = 0xFFFF;
-            for (let i = 0; i < str.length; i++) {
-                crc ^= str.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if (crc & 0x8000) {
-                        crc = (crc << 1) ^ 0x1021;
-                    } else {
-                        crc = crc << 1;
-                    }
-                    crc &= 0xFFFF;
-                }
-            }
-            return crc.toString(16).toUpperCase().padStart(4, '0');
-        };
-
-        return payloadBase + crc16(payloadBase);
-    };
-
-    const pixPayload = generatePixPayload();
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(pixPayload)}&size=250x250&bgcolor=ffffff&color=000000&margin=10`;
-
     const handleCopy = () => {
-        navigator.clipboard.writeText(pixPayload);
+        navigator.clipboard.writeText(cnpj);
         setCopied(true);
-        toast.success("Código Copia e Cola copiado!");
+        toast.success("CNPJ copiado!");
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleWhatsApp = () => {
-        const cupomInfo = dados.cupomPalestra ? `\n• *Cupom:* ${dados.cupomPalestra}` : '\n• *Cupom:* Nenhum';
         const phoneInfo = `\n• *Telefone:* ${dados.telefone}`;
+        const cupomInfo = dados.cupomPalestra ? `\n• *Cupom:* ${dados.cupomPalestra}` : '';
 
         const mensagem = encodeURIComponent(
             `🚀 *COMPROVANTE DE PAGAMENTO - GROWTH EXPERIENCE*\n\n` +
@@ -119,7 +73,7 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
                     Finalize seu <span className="text-brand-orange-coral">Passaporte Night</span>
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">
-                    Aponte a câmera do seu banco para o QR Code ou copie o código abaixo.
+                    Copie o CNPJ abaixo para realizar o pagamento via PIX no aplicativo do seu banco.
                 </p>
             </div>
 
@@ -127,29 +81,10 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
             <Card className="glass-card p-6 border-white/10 relative overflow-hidden bg-white/5 shadow-2xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 rounded-full -mr-16 -mt-16 blur-3xl" />
 
-                <div className="flex flex-col md:flex-row gap-8 items-center">
-                    {/* QR Code Column */}
-                    <div className="flex-shrink-0">
-                        <div className="relative p-4 bg-white rounded-[2rem] shadow-2xl group transition-transform hover:scale-105 duration-300">
-                            <img
-                                src={qrCodeUrl}
-                                alt="QR Code Pix"
-                                className="w-40 h-40 sm:w-48 sm:h-48"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/40 pointer-events-none">
-                                <QrCode className="h-10 w-10 text-brand-orange-coral animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                            <ShieldCheck className="h-3 w-3 text-green-500" />
-                            Ambiente Seguro
-                        </div>
-                    </div>
-
-                    {/* Details Column */}
-                    <div className="flex-1 space-y-5 w-full">
-                        <div className="space-y-1">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Valor a pagar</p>
+                <div className="space-y-6 relative z-10">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="space-y-1 text-center sm:text-left">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Valor do Upgrade</p>
                             <p className="text-4xl font-black text-white">
                                 R$ <span className="text-brand-orange-coral">{valorFormatado.replace('.', ',')}</span>
                             </p>
@@ -159,34 +94,30 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
                                 </Badge>
                             )}
                         </div>
+                    </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Favorecido</p>
-                                <div className="p-3 rounded-xl bg-dark-200/50 border border-white/5 space-y-1">
-                                    <p className="text-sm font-bold text-white uppercase">{merchantName}</p>
-                                    <p className="text-xs text-gray-400">CNPJ: {cnpj}</p>
-                                </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Favorecido</p>
+                            <div className="p-3 rounded-xl bg-dark-200/50 border border-white/5 h-full flex flex-col justify-center">
+                                <p className="text-sm font-bold text-white uppercase">{merchantName}</p>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-tighter">Banco PJ</p>
                             </div>
+                        </div>
 
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest flex justify-between">
-                                    Copia e Cola
-                                    <span className="text-brand-orange-coral normal-case font-medium">Recomendado</span>
-                                </p>
-                                <div className="flex items-center gap-2 bg-dark-300/50 p-3 rounded-xl border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
-                                    <code className="text-brand-orange-coral font-mono text-xs flex-1 truncate opacity-70 group-hover:opacity-100 italic">
-                                        {pixPayload}
-                                    </code>
-                                    <Button
-                                        size="sm"
-                                        onClick={handleCopy}
-                                        className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white border border-brand-orange-coral/20 px-4 h-9 font-bold"
-                                    >
-                                        {copied ? <CheckCircle className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                                        Copiar
-                                    </Button>
-                                </div>
+                        <div className="space-y-2">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Chave PIX (CNPJ)</p>
+                            <div className="flex items-center gap-2 bg-dark-300/50 p-1.5 rounded-xl border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
+                                <code className="text-white font-mono text-base font-bold flex-1 text-center py-2">
+                                    {cnpj}
+                                </code>
+                                <Button
+                                    size="sm"
+                                    onClick={handleCopy}
+                                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-4 h-10 font-bold rounded-lg shadow-lg"
+                                >
+                                    {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                </Button>
                             </div>
                         </div>
                     </div>

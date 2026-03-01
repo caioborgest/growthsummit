@@ -227,9 +227,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[96vh] sm:max-h-[90vh] overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
+            <DialogContent className="max-w-2xl h-[96vh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
                 {/* Header com Progresso */}
-                <div className="bg-dark-100/50 backdrop-blur-md pb-4 pt-6 sm:pb-6 sm:pt-8 px-4 sm:px-8 border-b border-white/5 z-20 shadow-lg">
+                <div className="bg-dark-100/50 backdrop-blur-md pb-4 pt-6 sm:pb-6 sm:pt-8 px-4 sm:px-8 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <DialogTitle className="text-xl sm:text-3xl font-black text-white tracking-tight">
@@ -309,7 +309,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 </div>
 
                 {/* Content com Scrollbar Customizada */}
-                <div className="px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto max-h-[calc(96vh-180px)] sm:max-h-[calc(90vh-200px)] custom-scrollbar">
+                <div className="flex-1 px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto custom-scrollbar">
                     {renderStep()}
                 </div>
             </DialogContent>
