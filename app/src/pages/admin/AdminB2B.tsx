@@ -63,11 +63,32 @@ export function AdminB2B() {
   });
 
   const [companyFormData, setCompanyFormData] = useState({
-    name: '',
+    // Representante
+    nome_representante: '',
+    cargo: '',
+    email: '',
+    telefone: '',
+    senha: '',
+    confirmarSenha: '',
+
+    // Empresa
+    nome_empresa: '',
     cnpj: '',
-    sector: '',
-    contactName: '',
-    contactEmail: '',
+    setor: '',
+    porte: '',
+    faturamento_anual: '',
+    numero_funcionarios: '',
+
+    // Sobre
+    descricao_empresa: '',
+    produtos_servicos: '',
+    site_url: '',
+    linkedin_url: '',
+
+    // Objetivos
+    tipo_interesse: 'vender' as 'comprar' | 'vender' | 'parceria' | 'todos',
+    areas_interesse: '',
+    descricao_objetivos: '',
     type: 'vendor' as 'anchor' | 'vendor',
     maxMeetings: 10
   });
@@ -112,30 +133,76 @@ export function AdminB2B() {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!companyFormData.name || !companyFormData.cnpj) {
+      if (!companyFormData.nome_empresa || !companyFormData.nome_representante || !companyFormData.email) {
         toast.error('Preencha os campos obrigatórios');
         return;
       }
 
+      if (companyFormData.senha && companyFormData.senha !== companyFormData.confirmarSenha) {
+        toast.error('As senhas não coincidem');
+        return;
+      }
+
       await createCompany({
-        ...companyFormData,
         projectId: projectId || '',
+        name: companyFormData.nome_empresa,
+        contactName: companyFormData.nome_representante,
+        contactEmail: companyFormData.email,
+        phone: companyFormData.telefone,
+        sector: companyFormData.setor,
+        type: companyFormData.type,
+        maxMeetings: companyFormData.maxMeetings,
+        status: 'approved',
+        // Outros campos integrados
+        metadata: {
+          position: companyFormData.cargo,
+          cnpj: companyFormData.cnpj,
+          companySize: companyFormData.porte,
+          annualRevenue: companyFormData.faturamento_anual,
+          employeeCount: companyFormData.numero_funcionarios,
+          description: companyFormData.descricao_empresa,
+          productsServices: companyFormData.produtos_servicos,
+          website: companyFormData.site_url,
+          linkedin: companyFormData.linkedin_url,
+          interestType: companyFormData.tipo_interesse,
+          interestAreas: companyFormData.areas_interesse,
+          objectives: companyFormData.descricao_objetivos
+        }
       } as any);
+
       toast.success('Empresa cadastrada com sucesso!');
       setIsCompanyModalOpen(false);
-      setCompanyFormData({
-        name: '',
-        cnpj: '',
-        sector: '',
-        contactName: '',
-        contactEmail: '',
-        type: 'vendor',
-        maxMeetings: 10
-      });
+      resetCompanyForm();
     } catch (err: any) {
       logger.error('Erro ao cadastrar empresa:', err);
       toast.error(`Erro ao cadastrar empresa: ${err.message || 'Erro desconhecido'}`);
     }
+  };
+
+  const resetCompanyForm = () => {
+    setCompanyFormData({
+      nome_representante: '',
+      cargo: '',
+      email: '',
+      telefone: '',
+      senha: '',
+      confirmarSenha: '',
+      nome_empresa: '',
+      cnpj: '',
+      setor: '',
+      porte: '',
+      faturamento_anual: '',
+      numero_funcionarios: '',
+      descricao_empresa: '',
+      produtos_servicos: '',
+      site_url: '',
+      linkedin_url: '',
+      tipo_interesse: 'vender',
+      areas_interesse: '',
+      descricao_objetivos: '',
+      type: 'vendor',
+      maxMeetings: 10
+    });
   };
 
   const handleGenerateSchedule = async () => {
@@ -324,57 +391,184 @@ export function AdminB2B() {
                   Nova Empresa
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white">
+              <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Cadastrar Nova Empresa B2B</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleCreateCompany} className="space-y-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nome da Empresa *</Label>
-                      <Input
-                        required
-                        value={companyFormData.name}
-                        onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>CNPJ *</Label>
-                      <Input
-                        required
-                        value={companyFormData.cnpj}
-                        onChange={e => setCompanyFormData({ ...companyFormData, cnpj: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                      />
+                <form onSubmit={handleCreateCompany} className="space-y-6 py-4">
+                  {/* Seção: Representante */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Representante</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 space-y-2">
+                        <Label>Nome Completo *</Label>
+                        <Input
+                          required
+                          value={companyFormData.nome_representante}
+                          onChange={e => setCompanyFormData({ ...companyFormData, nome_representante: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Cargo *</Label>
+                        <Input
+                          required
+                          value={companyFormData.cargo}
+                          onChange={e => setCompanyFormData({ ...companyFormData, cargo: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                          placeholder="Ex: CEO, Diretor"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email *</Label>
+                        <Input
+                          type="email"
+                          required
+                          value={companyFormData.email}
+                          onChange={e => setCompanyFormData({ ...companyFormData, email: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Telefone *</Label>
+                        <Input
+                          required
+                          value={companyFormData.telefone}
+                          onChange={e => setCompanyFormData({ ...companyFormData, telefone: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Senha</Label>
+                        <Input
+                          type="password"
+                          value={companyFormData.senha}
+                          onChange={e => setCompanyFormData({ ...companyFormData, senha: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Setor / Ramo</Label>
-                      <Input
-                        value={companyFormData.sector}
-                        onChange={e => setCompanyFormData({ ...companyFormData, sector: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tipo de Empresa</Label>
-                      <select
-                        value={companyFormData.type}
-                        onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as any })}
-                        className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      >
-                        <option value="vendor">Fornecedor</option>
-                        <option value="anchor">Âncora</option>
-                      </select>
+
+                  {/* Seção: Empresa */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Informações da Empresa</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 space-y-2">
+                        <Label>Nome da Empresa *</Label>
+                        <Input
+                          required
+                          value={companyFormData.nome_empresa}
+                          onChange={e => setCompanyFormData({ ...companyFormData, nome_empresa: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>CNPJ</Label>
+                        <Input
+                          value={companyFormData.cnpj}
+                          onChange={e => setCompanyFormData({ ...companyFormData, cnpj: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Setor *</Label>
+                        <select
+                          required
+                          value={companyFormData.setor}
+                          onChange={e => setCompanyFormData({ ...companyFormData, setor: e.target.value })}
+                          className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        >
+                          <option value="">Selecione o setor</option>
+                          {['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Indústria', 'Serviços', 'Construção', 'Agronegócio', 'Alimentação', 'Logística', 'Consultoria', 'Marketing', 'Financeiro', 'Outro'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Porte da Empresa *</Label>
+                        <select
+                          required
+                          value={companyFormData.porte}
+                          onChange={e => setCompanyFormData({ ...companyFormData, porte: e.target.value })}
+                          className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        >
+                          <option value="">Selecione o porte</option>
+                          <option value="mei">MEI</option>
+                          <option value="micro">Microempresa</option>
+                          <option value="pequena">Pequena</option>
+                          <option value="media">Média</option>
+                          <option value="grande">Grande</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tipo B2B</Label>
+                        <select
+                          value={companyFormData.type}
+                          onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as any })}
+                          className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        >
+                          <option value="vendor">Fornecedor (Vendedor)</option>
+                          <option value="anchor">Âncora (Comprador)</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Seção: Sobre e Objetivos */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Sobre & Objetivos</h3>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Descrição da Empresa *</Label>
+                        <Textarea
+                          required
+                          value={companyFormData.descricao_empresa}
+                          onChange={e => setCompanyFormData({ ...companyFormData, descricao_empresa: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Produtos/Serviços *</Label>
+                        <Textarea
+                          required
+                          value={companyFormData.produtos_servicos}
+                          onChange={e => setCompanyFormData({ ...companyFormData, produtos_servicos: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Tipo de Interesse *</Label>
+                        <select
+                          required
+                          value={companyFormData.tipo_interesse}
+                          onChange={e => setCompanyFormData({ ...companyFormData, tipo_interesse: e.target.value as any })}
+                          className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        >
+                          <option value="comprar">Comprar produtos/serviços</option>
+                          <option value="vender">Vender produtos/serviços</option>
+                          <option value="parceria">Estabelecer parcerias</option>
+                          <option value="todos">Todos os acima</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Áreas de Interesse *</Label>
+                        <Textarea
+                          required
+                          value={companyFormData.areas_interesse}
+                          onChange={e => setCompanyFormData({ ...companyFormData, areas_interesse: e.target.value })}
+                          className="bg-dark-100 border-dark-300"
+                          placeholder="Ex: Tecnologia, Marketing..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
                     <Button type="button" variant="outline" onClick={() => setIsCompanyModalOpen(false)} className="border-dark-300 text-gray-400">
                       Cancelar
                     </Button>
-                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
                       Cadastrar Empresa
                     </Button>
                   </div>

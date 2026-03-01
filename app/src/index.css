@@ -180,6 +180,20 @@
     }
   }
 
+  @keyframes scanMove {
+    0% {
+      top: 0%;
+    }
+
+    100% {
+      top: 100%;
+    }
+  }
+
+  .animate-scan-move {
+    animation: scanMove 2s linear infinite;
+  }
+
   @keyframes float {
 
     0%,

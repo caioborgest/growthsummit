@@ -42,6 +42,7 @@ const getTableName = (projectId: string, entity: string) => {
       case 'b2b_swipes': return 'b2b_swipes';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_appointments': return 'b2b_appointments_triunfo';
+      case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       default: return entity;
     }
   }
@@ -156,11 +157,14 @@ function getSelectFields(entity: string, projectId?: string): string {
     if (entity === 'startups') {
       return 'id,project_id,user_id,nome_fundador,email,telefone,nome_startup,setor,estagio,descricao_startup,problema,solucao,modelo_negocio,diferencial,site_url,linkedin_url,faturamento_mensal,investimento_buscado,pitch_deck_url,video_pitch_url,status,created_at';
     }
+    if (entity === 'empresas_incentivadoras') {
+      return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at';
+    }
   }
 
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
-    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,created_at,nome,telefone,empresa,cargo',
+    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,foto_url,created_at,nome,telefone,empresa,cargo',
     mentoring_sessions: 'id,project_id,mentor_id,mentor_name,mentee_id,mentee_name,scheduled_at,duration,status,topic,created_at',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
@@ -174,6 +178,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
+    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at',
   };
   return fields[entity] ?? '*';
 }
@@ -296,6 +301,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         if (item['mentee_id']) mappedItem['menteeId'] = item['mentee_id'];
         if (item['years_experience']) mappedItem['yearsExperience'] = item['years_experience'];
         if (item['max_mentories']) mappedItem['maxMentories'] = item['max_mentories'];
+        if (item['foto_url']) mappedItem['photo'] = item['foto_url'];
+        if (item['telefone']) mappedItem['phone'] = item['telefone'];
 
         // Specific for Coupons
         if (item['indicacao_tipo']) mappedItem['indicacaoTipo'] = item['indicacao_tipo'];
@@ -835,3 +842,8 @@ export function useProfile(userId?: string) {
 
   return { data, isLoading, update, refetch: fetchData };
 }
+
+export function useEmpresasIncentivadoras() {
+  return useData<any>('empresas_incentivadoras');
+}
+

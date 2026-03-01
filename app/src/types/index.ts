@@ -109,6 +109,7 @@ export interface Mentor {
   userId: string;
   name: string;
   email: string;
+  phone?: string;
   photo?: string;
   bio: string;
   specialties: string[];

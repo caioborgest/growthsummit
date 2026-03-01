@@ -48,11 +48,29 @@ export function AdminStartups() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    sector: '',
-    description: '',
-    stage: 'mvp' as 'idea' | 'mvp' | 'traction' | 'scale',
-    website: '',
+    // Fundador
+    nome_fundador: '',
+    email: '',
+    telefone: '',
+    senha: '',
+    confirmarSenha: '',
+
+    // Startup
+    nome_startup: '',
+    descricao_startup: '',
+    setor: '',
+    estagio: 'mvp' as 'ideia' | 'mvp' | 'validacao' | 'tracao' | 'escala',
+
+    // Pitch
+    problema: '',
+    solucao: '',
+    diferencial: '',
+    faturamento_mensal: '',
+    investimento_buscado: '',
+
+    // URLs
+    pitch_deck_url: '',
+    video_pitch_url: '',
     packageType: 'expo' as 'expo' | 'pitch'
   });
 
@@ -60,8 +78,9 @@ export function AdminStartups() {
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch =
-      startup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      startup.sector.toLowerCase().includes(searchQuery.toLowerCase());
+      (startup.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (startup.sector?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (startup.foundingTeam?.[0]?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || startup.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -69,42 +88,68 @@ export function AdminStartups() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!formData.name || !formData.sector) {
+      if (!formData.nome_startup || !formData.nome_fundador || !formData.email) {
         toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      if (formData.senha && formData.senha !== formData.confirmarSenha) {
+        toast.error('As senhas não coincidem');
         return;
       }
 
       await create({
         projectId: projectId || '',
-        name: formData.name,
-        sector: formData.sector,
-        description: formData.description,
-        stage: formData.stage,
-        website: formData.website,
+        name: formData.nome_startup,
+        sector: formData.setor,
+        description: formData.descricao_startup,
+        stage: formData.estagio,
+        status: 'approved',
+        foundingTeam: [{ name: formData.nome_fundador, role: 'Founder', email: formData.email, phone: formData.telefone }],
         packageType: formData.packageType,
-        status: 'approved', // Auto-approved when added by admin
-        foundingTeam: [],
-        metrics: {
-          revenue: 0,
-          users: 0,
-          growth: 0
+        // Informações completas do Pitch
+        metadata: {
+          problem: formData.problema,
+          solution: formData.solucao,
+          differential: formData.diferencial,
+          monthlyRevenue: formData.faturamento_mensal,
+          soughtInvestment: formData.investimento_buscado,
+          pitchDeckUrl: formData.pitch_deck_url,
+          videoPitchUrl: formData.video_pitch_url,
+          founderEmail: formData.email,
+          founderPhone: formData.telefone
         }
-      });
+      } as any);
 
       toast.success('Startup adicionada com sucesso!');
       setIsModalOpen(false);
-      setFormData({
-        name: '',
-        sector: '',
-        description: '',
-        stage: 'mvp',
-        website: '',
-        packageType: 'expo'
-      });
+      resetForm();
     } catch (err: unknown) {
       const error = err as Error;
       toast.error('Erro ao adicionar startup: ' + (error.message || 'Erro desconhecido'));
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      nome_fundador: '',
+      email: '',
+      telefone: '',
+      senha: '',
+      confirmarSenha: '',
+      nome_startup: '',
+      descricao_startup: '',
+      setor: '',
+      estagio: 'mvp',
+      problema: '',
+      solucao: '',
+      diferencial: '',
+      faturamento_mensal: '',
+      investimento_buscado: '',
+      pitch_deck_url: '',
+      video_pitch_url: '',
+      packageType: 'expo'
+    });
   };
 
   const pendingCount = startups.filter(s => s.status === 'pending').length;
@@ -165,66 +210,220 @@ export function AdminStartups() {
               Adicionar Startup
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-dark-200 border-dark-300 text-white">
+          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Nova Startup</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome da Startup *</Label>
-                  <Input
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Setor *</Label>
-                  <Input
-                    required
-                    value={formData.sector}
-                    onChange={e => setFormData({ ...formData, sector: e.target.value })}
-                    className="bg-dark-100 border-dark-300"
-                  />
+            <form onSubmit={handleCreate} className="space-y-6 py-4">
+              {/* Seção: Informações do Fundador */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Informações do Fundador</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <Label>Nome Completo *</Label>
+                    <Input
+                      required
+                      value={formData.nome_fundador}
+                      onChange={e => setFormData({ ...formData, nome_fundador: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="Nome do fundador"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email *</Label>
+                    <Input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="email@startup.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefone/WhatsApp *</Label>
+                    <Input
+                      required
+                      value={formData.telefone}
+                      onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Senha para Conta</Label>
+                    <Input
+                      type="password"
+                      value={formData.senha}
+                      onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="Crie uma senha"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirmar Senha</Label>
+                    <Input
+                      type="password"
+                      value={formData.confirmarSenha}
+                      onChange={e => setFormData({ ...formData, confirmarSenha: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="Confirme a senha"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Descrição Curta</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  className="bg-dark-100 border-dark-300"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Estágio</Label>
-                  <select
-                    value={formData.stage}
-                    onChange={e => setFormData({ ...formData, stage: e.target.value as 'idea' | 'mvp' | 'traction' | 'scale' })}
-                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="idea">Ideia</option>
-                    <option value="mvp">MVP</option>
-                    <option value="traction">Tração</option>
-                    <option value="scale">Scale</option>
-                  </select>
+
+              {/* Seção: Informações da Startup */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Informações da Startup</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome da Startup *</Label>
+                    <Input
+                      required
+                      value={formData.nome_startup}
+                      onChange={e => setFormData({ ...formData, nome_startup: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Setor *</Label>
+                    <select
+                      value={formData.setor}
+                      onChange={e => setFormData({ ...formData, setor: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      required
+                    >
+                      <option value="">Selecione o setor</option>
+                      {['Tecnologia', 'Saúde', 'Educação', 'Fintech', 'E-commerce', 'Agronegócio', 'Logística', 'Marketing', 'Alimentação', 'Serviços', 'Outro'].map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Estágio *</Label>
+                    <select
+                      value={formData.estagio}
+                      onChange={e => setFormData({ ...formData, estagio: e.target.value as any })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      required
+                    >
+                      <option value="ideia">Ideia (ainda não validada)</option>
+                      <option value="mvp">MVP (produto mínimo viável)</option>
+                      <option value="validacao">Validação (primeiros clientes)</option>
+                      <option value="tracao">Tração (crescimento consistente)</option>
+                      <option value="escala">Escala (expansão acelerada)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pacote Expo</Label>
+                    <select
+                      value={formData.packageType}
+                      onChange={e => setFormData({ ...formData, packageType: e.target.value as 'expo' | 'pitch' })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                    >
+                      <option value="expo">Apenas Exposição</option>
+                      <option value="pitch">Exposição + Arena Pitch</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Descrição da Startup * (máx. 500 caracteres)</Label>
+                    <Textarea
+                      required
+                      maxLength={500}
+                      value={formData.descricao_startup}
+                      onChange={e => setFormData({ ...formData, descricao_startup: e.target.value })}
+                      className="bg-dark-100 border-dark-300 min-h-[100px]"
+                      placeholder="Descreva sua startup..."
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Pacote</Label>
-                  <select
-                    value={formData.packageType}
-                    onChange={e => setFormData({ ...formData, packageType: e.target.value as 'expo' | 'pitch' })}
-                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="expo">Apenas Expo</option>
-                    <option value="pitch">Expo + Pitch Arena</option>
-                  </select>
+              </div>
+
+              {/* Seção: Pitch */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Pitch Details</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Qual problema você resolve? *</Label>
+                    <Textarea
+                      required
+                      value={formData.problema}
+                      onChange={e => setFormData({ ...formData, problema: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Qual é a sua solução? *</Label>
+                    <Textarea
+                      required
+                      value={formData.solucao}
+                      onChange={e => setFormData({ ...formData, solucao: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Qual seu diferencial? *</Label>
+                    <Textarea
+                      required
+                      value={formData.diferencial}
+                      onChange={e => setFormData({ ...formData, diferencial: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Faturamento Mensal (R$)</Label>
+                      <Input
+                        type="number"
+                        value={formData.faturamento_mensal}
+                        onChange={e => setFormData({ ...formData, faturamento_mensal: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Investimento Buscado (R$)</Label>
+                      <Input
+                        type="number"
+                        value={formData.investimento_buscado}
+                        onChange={e => setFormData({ ...formData, investimento_buscado: e.target.value })}
+                        className="bg-dark-100 border-dark-300"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
+
+              {/* Seção: Documentos */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Documentos & Links</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 space-y-2">
+                    <Label>Link do Pitch Deck</Label>
+                    <Input
+                      type="url"
+                      value={formData.pitch_deck_url}
+                      onChange={e => setFormData({ ...formData, pitch_deck_url: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Link do Vídeo Pitch</Label>
+                    <Input
+                      type="url"
+                      value={formData.video_pitch_url}
+                      onChange={e => setFormData({ ...formData, video_pitch_url: e.target.value })}
+                      className="bg-dark-100 border-dark-300"
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t border-dark-300">
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
                   Cancelar
                 </Button>

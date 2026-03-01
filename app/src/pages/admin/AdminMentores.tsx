@@ -7,8 +7,10 @@ import {
   Mail,
   Briefcase,
   Calendar,
+  Phone,
   UserPlus,
-  MoreHorizontal
+  MoreHorizontal,
+  Loader2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,7 +35,20 @@ import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
-import { Camera, User } from 'lucide-react';
+import { Camera, User, Target, Linkedin, Sparkles, LogOut, Briefcase as BriefcaseIcon, GraduationCap, X } from 'lucide-react';
+
+const ESPECIALIDADES = [
+  'Gestão Empresarial',
+  'Marketing Digital',
+  'Vendas & Growth',
+  'Finanças',
+  'Tecnologia & IA',
+  'Recursos Humanos',
+  'Inovação',
+  'Operações & Processos',
+  'Coaching & Liderança',
+  'E-commerce'
+];
 
 
 const statusColors: Record<string, string> = {
@@ -102,6 +117,12 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject }: {
                 <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />
                 <span className="text-sm">{mentor.email}</span>
               </div>
+              {mentor.phone && (
+                <div className="flex items-center text-gray-300">
+                  <Phone className="h-4 w-4 mr-3 text-brand-orange-coral" />
+                  <span className="text-sm">{mentor.phone}</span>
+                </div>
+              )}
               {mentor.linkedin && (
                 <a
                   href={mentor.linkedin.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`}
@@ -192,16 +213,18 @@ export function AdminMentores() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     company: '',
     position: '',
     bio: '',
-    yearsExperience: 5,
-    maxMentories: 10,
-    specialties: '',
+    specialties: [] as string[],
     linkedin: '',
+    password: '',
+    confirmPassword: '',
     photo: null as File | null,
     photoPreview: ''
   });
@@ -217,12 +240,22 @@ export function AdminMentores() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentStep < 3) {
+      setCurrentStep(prev => prev + 1);
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
       if (!formData.name || !formData.email) {
         toast.error('Preencha os campos obrigatórios');
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('As senhas não coincidem');
         return;
       }
 
@@ -249,15 +282,16 @@ export function AdminMentores() {
       await create({
         name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         company: formData.company,
         position: formData.position,
         bio: formData.bio,
-        yearsExperience: Number(formData.yearsExperience),
-        maxMentories: Number(formData.maxMentories),
-        specialties: formData.specialties.split(',').map(s => s.trim()).filter(Boolean),
+        yearsExperience: 5, // Default for manual admin creation
+        maxMentories: 10,   // Default for manual admin creation
+        specialties: formData.specialties,
         tracks: ['Geral'],
         linkedin: formData.linkedin,
-        photo: photoUrl, // Mapping expected by application type
+        photo: photoUrl,
         status: 'approved',
         projectId: projectId || 'manual',
       } as any);
@@ -275,19 +309,32 @@ export function AdminMentores() {
   };
 
   const resetForm = () => {
+    setCurrentStep(1);
     setFormData({
       name: '',
       email: '',
+      phone: '',
       company: '',
       position: '',
       bio: '',
-      yearsExperience: 5,
-      maxMentories: 10,
-      specialties: '',
+      specialties: [],
       linkedin: '',
+      password: '',
+      confirmPassword: '',
       photo: null,
       photoPreview: ''
     });
+  };
+
+  const toggleSpecialty = (spec: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(spec)
+        ? prev.specialties.filter(s => s !== spec)
+        : prev.specialties.length < 3
+          ? [...prev.specialties, spec]
+          : prev.specialties
+    }));
   };
 
   const handleApprove = async (id: string) => {
@@ -357,148 +404,211 @@ export function AdminMentores() {
               Adicionar Mentor
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Novo Mentor</DialogTitle>
+          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-xl p-0 overflow-hidden rounded-[2rem]">
+            {/* Progress Bar */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
+              <div
+                className="h-full bg-teal-500 transition-all duration-500"
+                style={{ width: `${(currentStep / 3) * 100}%` }}
+              />
+            </div>
+
+            <DialogHeader className="p-8 pb-0">
+              <DialogTitle className="text-2xl font-black">Adicionar Novo Mentor</DialogTitle>
+              <p className="text-gray-400 text-sm">Sincronizado com o formulário do site</p>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 py-4">
-              <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-dark-300 mb-4">
-                <div className="relative group">
-                  <div className="w-24 h-24 rounded-full bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-teal-500/50">
-                    {formData.photoPreview ? (
-                      <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
-                    ) : (
-                      <User className="h-10 w-10 text-gray-500" />
-                    )}
+
+            <form onSubmit={handleCreate} className="p-8 space-y-6">
+              {currentStep === 1 && (
+                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-white/5">
+                    <div className="relative group">
+                      <div className="w-24 h-24 rounded-full bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-teal-500/50">
+                        {formData.photoPreview ? (
+                          <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
+                        ) : (
+                          <User className="h-10 w-10 text-gray-500" />
+                        )}
+                      </div>
+                      <label className="absolute bottom-0 right-0 p-2 bg-teal-500 rounded-full cursor-pointer shadow-lg hover:bg-teal-600 transition-colors">
+                        <Camera className="h-4 w-4 text-white" />
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({
+                                ...formData,
+                                photo: file,
+                                photoPreview: URL.createObjectURL(file)
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500">Foto de Identificação *</p>
                   </div>
-                  <label className="absolute bottom-0 right-0 p-2 bg-teal-500 rounded-full cursor-pointer shadow-lg hover:bg-teal-600 transition-colors">
-                    <Camera className="h-4 w-4 text-white" />
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData({
-                            ...formData,
-                            photo: file,
-                            photoPreview: URL.createObjectURL(file)
-                          });
-                        }
-                      }}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome Completo *</Label>
+                      <Input
+                        required
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Nome do mentor"
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>E-mail Corporativo *</Label>
+                      <Input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="email@empresa.com"
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>WhatsApp (Telefone)</Label>
+                      <Input
+                        value={formData.phone}
+                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="(00) 00000-0000"
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Empresa</Label>
+                      <Input
+                        value={formData.company}
+                        onChange={e => setFormData({ ...formData, company: e.target.value })}
+                        placeholder="Nome da empresa"
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Cargo / Posição</Label>
+                      <Input
+                        value={formData.position}
+                        onChange={e => setFormData({ ...formData, position: e.target.value })}
+                        placeholder="Ex: Diretor de Inovação"
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Crie uma Senha *</Label>
+                      <Input
+                        type="password"
+                        required
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        className="bg-dark-100 border-dark-300 h-12"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirme a Senha *</Label>
+                    <Input
+                      type="password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className="bg-dark-100 border-dark-300 h-12"
                     />
-                  </label>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500">Foto de Perfil</p>
-              </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome Completo *</Label>
-                  <Input
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Nome do mentor"
-                    className="bg-dark-100 border-dark-300"
-                  />
+              {currentStep === 2 && (
+                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-3">
+                    <Label className="text-gray-300">Especialidades (Selecione até 3)</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {ESPECIALIDADES.map(esp => (
+                        <button
+                          key={esp}
+                          type="button"
+                          onClick={() => toggleSpecialty(esp)}
+                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${formData.specialties.includes(esp)
+                            ? 'bg-teal-500 text-white border-teal-500'
+                            : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
+                            }`}
+                        >
+                          {esp}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Bio / Experiência</Label>
+                    <Textarea
+                      required
+                      value={formData.bio}
+                      onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                      placeholder="Conte um pouco sobre a trajetória do mentor..."
+                      className="bg-dark-100 border-dark-300 min-h-[150px] resize-none"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>E-mail Corporativo *</Label>
-                  <Input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@empresa.com"
-                    className="bg-dark-100 border-dark-300"
-                  />
+              )}
+
+              {currentStep === 3 && (
+                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Linkedin className="h-4 w-4 text-blue-400" /> URL do LinkedIn
+                    </Label>
+                    <Input
+                      value={formData.linkedin}
+                      onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/in/perfil"
+                      className="bg-dark-100 border-dark-300 h-12"
+                    />
+                  </div>
+
+                  <div className="bg-teal-500/10 p-6 rounded-2xl border border-teal-500/20">
+                    <h4 className="text-teal-400 font-bold mb-2 flex items-center gap-2">
+                      <Target className="h-5 w-5" /> Compromisso
+                    </h4>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                      Ao adicionar este mentor, ele terá acesso à plataforma e será listado oficialmente.
+                      Certifique-se de que os dados estão corretos para sincronia com a agenda de mentorias.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Empresa</Label>
-                  <Input
-                    value={formData.company}
-                    onChange={e => setFormData({ ...formData, company: e.target.value })}
-                    placeholder="Nome da empresa"
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Cargo / Posição</Label>
-                  <Input
-                    value={formData.position}
-                    onChange={e => setFormData({ ...formData, position: e.target.value })}
-                    placeholder="Ex: Diretor de Inovação"
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Bio / Experiência</Label>
-                <Textarea
-                  value={formData.bio}
-                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="Conte um pouco sobre a trajetória do mentor..."
-                  className="bg-dark-100 border-dark-300 min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Especialidades (separadas por vírgula)</Label>
-                <Input
-                  value={formData.specialties}
-                  onChange={e => setFormData({ ...formData, specialties: e.target.value })}
-                  placeholder="Vendas, Marketing, Gestão, Tecnologia..."
-                  className="bg-dark-100 border-dark-300"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Anos de Experiência</Label>
-                  <Input
-                    type="number"
-                    value={formData.yearsExperience}
-                    onChange={e => setFormData({ ...formData, yearsExperience: Number(e.target.value) })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Limite de Mentorias</Label>
-                  <Input
-                    type="number"
-                    value={formData.maxMentories}
-                    onChange={e => setFormData({ ...formData, maxMentories: Number(e.target.value) })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Link do LinkedIn</Label>
-                <Input
-                  value={formData.linkedin}
-                  onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/in/perfil"
-                  className="bg-dark-100 border-dark-300"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
-                  Cancelar
-                </Button>
+              <div className="flex gap-3 pt-6 border-t border-dark-300">
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" onClick={() => setCurrentStep(prev => prev - 1)} className="flex-1 border-dark-300 text-gray-400">
+                    Voltar
+                  </Button>
+                )}
                 <Button
                   type="submit"
-                  disabled={isLoading}
-                  className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black h-12 rounded-xl"
                 >
-                  {isLoading ? 'Salvando...' : 'Adicionar Mentor'}
+                  {isSubmitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : currentStep === 3 ? (
+                    'Finalizar Cadastro'
+                  ) : (
+                    'Próximo Passo'
+                  )}
                 </Button>
               </div>
             </form>
@@ -549,10 +659,14 @@ export function AdminMentores() {
         {filteredMentors.map((mentor) => (
           <div key={mentor.id} className="glass-card p-6">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
-                  {mentor.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                </span>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center overflow-hidden border-2 border-white/10">
+                {mentor.photo ? (
+                  <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white font-bold text-lg">
+                    {mentor.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
                 {mentor.status === 'approved' || mentor.status === 'aprovado' ? (
@@ -575,6 +689,12 @@ export function AdminMentores() {
                 <Mail className="h-4 w-4 mr-2" />
                 {mentor.email}
               </div>
+              {mentor.phone && (
+                <div className="flex items-center text-sm text-gray-400">
+                  <Phone className="h-4 w-4 mr-2" />
+                  {mentor.phone}
+                </div>
+              )}
               <div className="flex items-center text-sm text-gray-400">
                 <Briefcase className="h-4 w-4 mr-2" />
                 {mentor.yearsExperience} anos de experiência

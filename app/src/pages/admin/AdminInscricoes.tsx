@@ -13,14 +13,18 @@ import {
   Moon,
   User,
   Loader2,
-  X
+  X,
+  AlertTriangle,
+  ArrowRight,
+  Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRegistrations } from '@/hooks/useData';
+import { useRegistrations, useTransactions } from '@/hooks/useData';
 import { toast } from 'sonner';
 import type { Registration } from '@/types';
+import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 
 const PAGE_SIZE = 20;
 
@@ -42,7 +46,16 @@ const statusLabels: Record<string, string> = {
 };
 
 // ── Modal de Detalhes ─────────────────────────────────────────
-function DetalhesModal({ reg, onClose }: { reg: Registration; onClose: () => void }) {
+function DetalhesModal({
+  reg,
+  onClose,
+  onUpdateStatus
+}: {
+  reg: Registration;
+  onClose: () => void;
+  onUpdateStatus: (id: string, status: string) => Promise<void>;
+  onToggleCheckIn: (id: string, current: boolean) => Promise<void>;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="glass-card max-w-lg w-full p-6 rounded-2xl space-y-4 relative">
@@ -68,21 +81,29 @@ function DetalhesModal({ reg, onClose }: { reg: Registration; onClose: () => voi
           {[
             { label: 'Nº Inscrição', value: reg.ticketNumber },
             { label: 'Status', value: statusLabels[reg.status] || reg.status },
-            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,99' : 'R$ 0,00' },
-            { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—' },
+            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00' },
+            {
+              label: 'Desconto',
+              value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—',
+              highlight: reg.discountAmount && reg.discountAmount > 0
+            },
             {
               label: 'Valor Líquido',
               value: `R$ ${(reg.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
               highlight: (reg.amount || 0) === 0 && reg.palestrasNoturnas && reg.discountAmount && reg.discountAmount > 0
             },
-            { label: 'Cupom', value: reg.couponCode ? `🎟️ ${reg.couponCode}` : '—' },
+            {
+              label: 'Cupom Utilizado',
+              value: reg.couponCode ? `🎟️ ${reg.couponCode}` : '—',
+              highlight: !!reg.couponCode
+            },
             { label: 'Check-in', value: reg.checkedIn ? `✅ ${reg.checkInTime ? new Date(reg.checkInTime).toLocaleTimeString('pt-BR') : 'Feito'}` : '❌ Pendente' },
             { label: 'Passaporte Night', value: reg.palestrasNoturnas ? '✅ Sim' : '—' },
             { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR') },
           ].map(({ label, value, highlight }) => (
-            <div key={label} className={`p-3 rounded-lg ${highlight ? 'bg-green-500/20 border border-green-500/30' : 'bg-white/5'}`}>
-              <p className="text-gray-500 text-[10px] uppercase mb-1">{label}</p>
-              <p className={`font-semibold ${highlight ? 'text-green-400' : 'text-white'}`}>{value}</p>
+            <div key={label} className={`p-3 rounded-xl border transition-all ${highlight ? 'bg-orange-500/10 border-orange-500/20' : 'bg-white/5 border-transparent'}`}>
+              <p className="text-gray-500 text-[10px] uppercase font-black mb-1 tracking-wider">{label}</p>
+              <p className={`font-bold ${highlight ? 'text-orange-400' : 'text-white'}`}>{value}</p>
             </div>
           ))}
         </div>
@@ -93,6 +114,60 @@ function DetalhesModal({ reg, onClose }: { reg: Registration; onClose: () => voi
             <p className="text-white font-semibold text-xs">{reg.cursosSelecionados.join(', ')}</p>
           </div>
         )}
+
+        <div className="pt-6 border-t border-white/10">
+          <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Ações de Credenciamento</p>
+          <Button
+            onClick={() => onToggleCheckIn(reg.id, !!reg.checkedIn)}
+            className={`w-full font-black py-6 h-auto rounded-xl transition-all flex items-center justify-center gap-2 mb-6 ${reg.checkedIn
+              ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
+              : 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20'
+              }`}
+          >
+            {reg.checkedIn ? <XCircle className="h-5 w-5" /> : <QrCode className="h-5 w-5" />}
+            {reg.checkedIn ? 'CANCELAR CREDENCIAMENTO' : 'REALIZAR CREDENCIAMENTO'}
+          </Button>
+
+          <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Gerenciar Status de Pagamento</p>
+          <div className="flex flex-col gap-2">
+            {reg.status !== 'pago' && reg.status !== 'paid' && (
+              <Button
+                onClick={() => onUpdateStatus(reg.id, 'pago')}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Marcar como Pago
+              </Button>
+            )}
+            {reg.status !== 'pendente' && reg.status !== 'pending' && (
+              <Button
+                onClick={() => onUpdateStatus(reg.id, 'pendente')}
+                variant="outline"
+                className="w-full border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 font-bold"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Marcar como Pendente
+              </Button>
+            )}
+            {reg.status !== 'cancelled' && (
+              <Button
+                onClick={() => onUpdateStatus(reg.id, 'cancelled')}
+                variant="ghost"
+                className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 font-bold"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Cancelar Inscrição
+              </Button>
+            )}
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="w-full mt-2 border-dark-300 text-gray-400 font-bold"
+            >
+              Fechar Visualização
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -100,14 +175,79 @@ function DetalhesModal({ reg, onClose }: { reg: Registration; onClose: () => voi
 
 // ── Componente Principal ──────────────────────────────────────
 export function AdminInscricoes() {
-  const { data: registrations } = useRegistrations();
+  const { data: registrations, update } = useRegistrations();
+  const { create: createTransaction } = useTransactions();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [nightFilter, setNightFilter] = useState<string>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [detalhes, setDetalhes] = useState<Registration | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
+
+  const handleUpdateStatus = async (id: string, status: string) => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      await update(id, { status } as any);
+
+      // Se marcou como pago, registrar automaticamente no financeiro
+      if (status === 'pago') {
+        const registration = registrations.find(r => r.id === id);
+        if (registration) {
+          try {
+            await createTransaction({
+              projectId: registration.projectId || '',
+              type: 'income',
+              category: 'Inscrições',
+              description: `Inscrição: ${registration.nome}`,
+              amount: registration.valor_pago || 0,
+              date: new Date().toISOString(),
+              status: 'completed'
+            } as any);
+            toast.success('Lançamento automático realizado no financeiro');
+          } catch (finErr) {
+            console.error('Erro ao registrar no financeiro:', finErr);
+            toast.error('Status atualizado, mas houve erro no lançamento financeiro');
+          }
+        }
+      }
+
+      toast.success(`Status atualizado para ${statusLabels[status] || status}`);
+      if (detalhes && detalhes.id === id) {
+        setDetalhes(prev => prev ? { ...prev, status } : null);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status de pagamento.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleToggleCheckIn = async (id: string, currentStatus: boolean) => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      await update(id, {
+        checked_in: !currentStatus,
+        check_in_at: !currentStatus ? new Date().toISOString() : null
+      } as any);
+
+      toast.success(currentStatus ? 'Credenciamento removido.' : 'Credenciamento realizado com sucesso!');
+
+      if (detalhes && detalhes.id === id) {
+        setDetalhes(prev => prev ? { ...prev, checkedIn: !currentStatus, checkInTime: !currentStatus ? new Date().toISOString() : null } : null);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar check-in:', error);
+      toast.error('Erro ao processar credenciamento.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   // ── Filtros ───────────────────────────────────────────────
   const filteredRegistrations = registrations.filter(reg => {
@@ -200,7 +340,14 @@ export function AdminInscricoes() {
 
   return (
     <>
-      {detalhes && <DetalhesModal reg={detalhes} onClose={() => setDetalhes(null)} />}
+      {detalhes && (
+        <DetalhesModal
+          reg={detalhes}
+          onClose={() => setDetalhes(null)}
+          onUpdateStatus={handleUpdateStatus}
+          onToggleCheckIn={handleToggleCheckIn}
+        />
+      )}
 
       <div className="space-y-6">
         {/* Header Actions */}
@@ -239,6 +386,13 @@ export function AdminInscricoes() {
             </select>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Inscrição
+            </Button>
             {selectedItems.length > 0 && (
               <>
                 <Button
@@ -385,6 +539,15 @@ export function AdminInscricoes() {
                           <Button
                             size="sm"
                             variant="ghost"
+                            className={`h-8 w-8 p-0 ${reg.checkedIn ? 'text-orange-400 hover:bg-orange-400/10' : 'text-teal-400 hover:bg-teal-400/10'}`}
+                            title={reg.checkedIn ? 'Remover check-in' : 'Realizar check-in'}
+                            onClick={() => handleToggleCheckIn(reg.id, !!reg.checkedIn)}
+                          >
+                            {reg.checkedIn ? <XCircle className="h-4 w-4" /> : <QrCode className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="text-gray-400 hover:text-white h-8 w-8 p-0"
                             title="Ver detalhes"
                             onClick={() => setDetalhes(reg)}
@@ -441,6 +604,11 @@ export function AdminInscricoes() {
           </div>
         </div>
       </div>
+
+      <InscricaoMultiStepModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </>
   );
 }

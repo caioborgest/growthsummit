@@ -43,6 +43,7 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ 
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos').then(m => ({ default: m.AdminProjetos })));
 const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.AdminInscricoes })));
+const AdminEmpresasIncentivadoras = lazy(() => import('./pages/admin/AdminEmpresasIncentivadoras'));
 const AdminMentores = lazy(() => import('./pages/admin/AdminMentores').then(m => ({ default: m.AdminMentores })));
 const AdminMentorias = lazy(() => import('./pages/admin/AdminMentorias').then(m => ({ default: m.AdminMentorias })));
 const AdminB2B = lazy(() => import('./pages/admin/AdminB2B').then(m => ({ default: m.AdminB2B })));
@@ -271,6 +272,7 @@ function AppRoutes() {
           <Route index element={<AdminDashboard />} />
           <Route path="projetos" element={<AdminProjetos />} />
           <Route path="inscricoes" element={<AdminInscricoes />} />
+          <Route path="empresas-incentivadoras" element={<AdminEmpresasIncentivadoras />} />
           <Route path="mentores" element={<AdminMentores />} />
           <Route path="mentorias" element={<AdminMentorias />} />
           <Route path="rodada-negocios" element={<AdminB2B />} />
