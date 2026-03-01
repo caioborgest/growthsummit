@@ -27,23 +27,41 @@ export function Certificados() {
     const { data: sessions } = useSessions();
     const [searchTerm, setSearchTerm] = useState('');
     const [signatureBase64, setSignatureBase64] = useState<string | undefined>();
+    const [logoBase64, setLogoBase64] = useState<string | undefined>();
 
-    // Carregar assinatura do Supabase Storage uma vez na montagem
+    // Carregar logo + assinatura ao montar
     useEffect(() => {
-        const loadSignature = async () => {
+        const loadAssets = async () => {
+            // Logomarca local (fundo escuro = ideal para certificado escuro)
             try {
-                const { data } = supabase.storage
+                const logo = await imageUrlToBase64('/images/logomarca-GX-fundoescuro.png');
+                setLogoBase64(logo);
+            } catch { /* usa fallback texto */ }
+
+            // Assinatura do Supabase Storage
+            try {
+                // Tenta URL pública primeiro
+                const { data: pubData } = supabase.storage
                     .from('event-files')
-                    .getPublicUrl('assinatura/assinatura-caio.png');
-                if (data?.publicUrl) {
-                    const b64 = await imageUrlToBase64(data.publicUrl);
-                    setSignatureBase64(b64);
+                    .getPublicUrl('event-files/assinatura/assinatura-caio.png');
+
+                let sigUrl = pubData?.publicUrl;
+
+                // Se não for público, gera URL assinada (válida por 1 ano)
+                if (!sigUrl || sigUrl.includes('undefined')) {
+                    const { data: signData } = await supabase.storage
+                        .from('event-files')
+                        .createSignedUrl('event-files/assinatura/assinatura-caio.png', 31536000);
+                    sigUrl = signData?.signedUrl ?? '';
                 }
-            } catch {
-                // Falha silenciosa: certificado é gerado sem imagem
-            }
+
+                if (sigUrl) {
+                    const sig = await imageUrlToBase64(sigUrl);
+                    setSignatureBase64(sig);
+                }
+            } catch { /* certificado gerado sem imagem de assinatura */ }
         };
-        loadSignature();
+        loadAssets();
     }, []);
 
     const filteredCerts = (certificates || []).filter(cert => {
@@ -67,6 +85,7 @@ export function Certificados() {
                 certificateCode: cert.code,
                 type: cert.type as 'event' | 'course' | 'lecture' | 'workshop',
                 signatureBase64,
+                logoBase64,
                 totalHours: cert.metadata?.total_hours,
             });
 

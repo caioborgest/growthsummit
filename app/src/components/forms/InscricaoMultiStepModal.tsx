@@ -125,9 +125,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
                                     const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
 
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
-                                        .from('inscricoes_growth_experience') as any)
+                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
                                         .update({
                                             palestras_noturnas: true,
                                             valor_pago: valorComDesconto,
@@ -157,9 +156,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
-                                        .from('inscricoes_growth_experience') as any)
+                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
                                         .update({ palestras_noturnas: false, valor_pago: 0 })
                                         .eq('id', dados.inscricaoId);
                                 } catch (e) {
@@ -195,9 +193,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             if (dados.inscricaoId) {
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     await (supabase
-                                        .from('inscricoes_growth_experience') as any)
+                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
                                         .update({ app_instalado: true })
                                         .eq('id', dados.inscricaoId);
                                     updateDados({ appInstalado: true });

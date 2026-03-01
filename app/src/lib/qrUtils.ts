@@ -4,7 +4,7 @@
 
 export type QRType = 'registration' | 'session' | 'checkin' | 'feedback';
 
-interface QRData {
+export interface QRData {
     type: QRType;
     projectId: string;
     id: string; // registrationId or sessionId

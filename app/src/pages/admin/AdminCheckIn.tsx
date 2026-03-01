@@ -16,6 +16,7 @@ import { useRegistrations, useCheckIns } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
 import type { Registration } from '@/types';
+import type { QRData } from '@/lib/qrUtils';
 
 export function AdminCheckIn() {
   const { data: registrations, update } = useRegistrations();
@@ -23,8 +24,7 @@ export function AdminCheckIn() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isScanning, setIsScanning] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [lastCheckIn, setLastCheckIn] = useState<any>(null);
+  const [lastCheckIn, setLastCheckIn] = useState<Registration | null>(null);
 
   const handleManualCheckIn = useCallback(async (registration: Registration) => {
     try {
@@ -42,7 +42,7 @@ export function AdminCheckIn() {
         location: 'Entrada Principal',
         method: 'manual',
         checkInType: 'event',
-      } as any);
+      });
 
       setLastCheckIn(registration);
       setSearchQuery('');
@@ -53,7 +53,8 @@ export function AdminCheckIn() {
     }
   }, [update, create]);
 
-  const handleScannerSuccess = useCallback((res: any) => {
+  const handleScannerSuccess = useCallback((res: QRData | null) => {
+    if (!res) return;
     const registration = registrations.find(r => r.id === res.id);
     if (registration) {
       if (registration.checkedIn) {
@@ -239,7 +240,7 @@ export function AdminCheckIn() {
                 </div>
                 <div>
                   <p className="text-white font-medium">{checkIn.ticketNumber}</p>
-                  <p className="text-gray-400 text-sm">{checkIn.userName}</p>
+                  <p className="text-gray-400 text-sm">{checkIn.registrationId}</p>
                 </div>
               </div>
               <div className="text-right">

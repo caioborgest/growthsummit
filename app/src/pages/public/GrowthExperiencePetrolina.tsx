@@ -1,23 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import {
-    MapPin,
     Handshake,
-    Menu,
-    X,
     Mic2,
     Phone,
     Target,
-    Mail,
     Zap,
     Rocket,
-    ArrowRight,
     Users,
     CheckCircle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
@@ -44,12 +36,7 @@ const conselheiros = [
 ];
 
 
-const navItems = [
-    { label: 'Sobre', href: '#sobre' },
-    { label: 'Conselheiros', href: '#mentores' },
-    { label: 'Programação', href: '#programacao' },
-    { label: 'Inscrições', href: '#registro' },
-];
+
 
 
 
@@ -125,7 +112,7 @@ export function GrowthExperiencePetrolina() {
                             <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">O EVENTO PETROLINA</Badge>
                             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">O Vale do São Francisco entra na <span className="text-gradient">Nova Era</span></h2>
                             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                                Petrolina recebe a edição especial do Growth Experience. Um dia focado em transformar o potencial agrícola e comercial da região através da Inteligência Artificial e estratégias avançadas de Growth.
+                                Petrolina recebe a edição especial do Growth Experience. Um dia focado em transformar o potencial agrícola e comercial da região através da Inteligência Artificial e estratégias avançadas de Gestão e Growth.
                             </p>
                             <div className="grid sm:grid-cols-2 gap-8 mb-8">
                                 {[

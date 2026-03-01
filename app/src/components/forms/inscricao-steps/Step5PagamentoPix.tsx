@@ -5,10 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import {
     Copy,
     CheckCircle,
-    Smartphone,
     MessageCircle,
     ArrowRight,
-    Loader2,
     AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';

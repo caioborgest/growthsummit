@@ -148,7 +148,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         if (!signInError) {
                             userId = signInData.user.id;
                         } else {
-                            logger.warn('Login falhou:', signInError.message);
+                            logger.warn('Login falhou:', { message: signInError.message });
                             if (signInError.message.includes('Invalid login credentials')) {
                                 throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                             }
@@ -181,8 +181,10 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
                         const zombieUserTyped = zombieUser as { id: string } | null;
                         if (zombieUserTyped && zombieUserTyped.id !== userId) {
-                            logger.warn('Removendo registro de usuário zumbi para:', formData.email);
-                            await supabase.from('users').delete().eq('id', zombieUserTyped.id).catch(() => { });
+                            logger.warn('Removendo registro de usuário zumbi para:', { email: formData.email });
+                            try {
+                                await supabase.from('users').delete().eq('id', zombieUserTyped.id);
+                            } catch { /* ignorar falha silenciosa na limpeza do zumbi */ }
                         }
 
                         // Criar o registro (tabela public.users tem schema customizado não refletido nos tipos gerados)
