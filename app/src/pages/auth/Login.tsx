@@ -23,25 +23,26 @@ export function Login() {
     if (isAuthenticated && user && !user.requires2FA) {
       switch (user.role) {
         case 'admin':
-          navigate('/admin');
+          navigate('/admin', { replace: true });
           break;
         case 'mentor':
-          navigate('/mentor-area');
+          navigate('/mentor-area', { replace: true });
           break;
         case 'company':
-          navigate('/empresa-area');
+          navigate('/empresa-area', { replace: true });
           break;
         case 'startup':
-          navigate('/startup-area');
+          navigate('/startup-area', { replace: true });
           break;
         case 'sponsor':
-          navigate('/patrocinador-area');
+          navigate('/patrocinador-area', { replace: true });
           break;
         case 'participant':
-          navigate('/minha-area');
+        case 'participante':
+          navigate('/minha-area', { replace: true });
           break;
         default:
-          navigate('/');
+          navigate('/', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);

@@ -99,6 +99,8 @@ export interface Registration {
   // Growth Experience specific fields
   cursosSelecionados?: string[];
   palestrasNoturnas?: boolean;
+  couponCode?: string;
+  discountAmount?: number;
 }
 
 export interface Mentor {

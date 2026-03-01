@@ -68,14 +68,21 @@ function DetalhesModal({ reg, onClose }: { reg: Registration; onClose: () => voi
           {[
             { label: 'Nº Inscrição', value: reg.ticketNumber },
             { label: 'Status', value: statusLabels[reg.status] || reg.status },
-            { label: 'Valor Pago', value: `R$ ${reg.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}` },
+            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,99' : 'R$ 0,00' },
+            { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—' },
+            {
+              label: 'Valor Líquido',
+              value: `R$ ${(reg.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+              highlight: (reg.amount || 0) === 0 && reg.palestrasNoturnas && reg.discountAmount && reg.discountAmount > 0
+            },
+            { label: 'Cupom', value: reg.couponCode ? `🎟️ ${reg.couponCode}` : '—' },
             { label: 'Check-in', value: reg.checkedIn ? `✅ ${reg.checkInTime ? new Date(reg.checkInTime).toLocaleTimeString('pt-BR') : 'Feito'}` : '❌ Pendente' },
             { label: 'Passaporte Night', value: reg.palestrasNoturnas ? '✅ Sim' : '—' },
-            { label: 'Data', value: new Date(reg.createdAt).toLocaleDateString('pt-BR') },
-          ].map(({ label, value }) => (
-            <div key={label} className="p-3 bg-white/5 rounded-lg">
-              <p className="text-gray-500 text-xs mb-1">{label}</p>
-              <p className="text-white font-semibold">{value}</p>
+            { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR') },
+          ].map(({ label, value, highlight }) => (
+            <div key={label} className={`p-3 rounded-lg ${highlight ? 'bg-green-500/20 border border-green-500/30' : 'bg-white/5'}`}>
+              <p className="text-gray-500 text-[10px] uppercase mb-1">{label}</p>
+              <p className={`font-semibold ${highlight ? 'text-green-400' : 'text-white'}`}>{value}</p>
             </div>
           ))}
         </div>

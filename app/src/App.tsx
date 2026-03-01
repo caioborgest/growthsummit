@@ -121,7 +121,6 @@ function NotFound() {
   );
 }
 
-// ── Protected Route
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { isAuthenticated, user, isLoading } = useAuth();
 
@@ -130,6 +129,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   }
 
   if (!isAuthenticated) {
+    console.log('[ProtectedRoute] Usuário não autenticado, redirecionando para /login');
     return <Navigate to="/login" replace />;
   }
 
@@ -138,8 +138,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   const normalizedAllowedRoles = allowedRoles?.map(r => r.toLowerCase().trim()) || [];
 
   if (allowedRoles && !normalizedAllowedRoles.includes(userRole)) {
-    console.warn(`[ProtectedRoute] Acesso negado para role: ${userRole}. Permitidos: ${normalizedAllowedRoles}`);
-    // Se logado mas sem permissão, vai para a página inicial
+    console.warn(`[ProtectedRoute] Acesso negado para role: ${userRole}. Permitidos: ${normalizedAllowedRoles}. Redirecionando para Home.`);
     return <Navigate to="/" replace />;
   }
 
@@ -155,18 +154,24 @@ function AppRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
           <Route index element={
-            // Só redireciona automaticamente se estiver no modo standalone (PWA)
-            window.matchMedia('(display-mode: standalone)').matches && isAuthenticated ? (
-              user?.role === 'admin' ? <Navigate to="/admin" replace /> :
-                user?.role === 'mentor' ? <Navigate to="/mentor-area" replace /> :
-                  user?.role === 'company' ? <Navigate to="/empresa-area" replace /> :
-                    user?.role === 'startup' ? <Navigate to="/startup-area" replace /> :
-                      user?.role === 'sponsor' ? <Navigate to="/patrocinador-area" replace /> :
-                        (user?.role === 'participant' || (user?.role as string) === 'participante') ? <Navigate to="/minha-area" replace /> :
-                          (user?.role as string) === 'empresa' ? <Navigate to="/empresa-area" replace /> :
-                            (user?.role as string) === 'palestrante' ? <Navigate to="/mentor-area" replace /> :
-                              <GrowthExperience />
-            ) : <GrowthExperience />
+            (() => {
+              const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+              if (isStandalone && isAuthenticated && user) {
+                console.log(`[App] PWA Standalone détecté, redirecionando para área temática. Role: ${user.role}`);
+                const rolesToPaths: Record<string, string> = {
+                  'admin': '/admin',
+                  'mentor': '/mentor-area',
+                  'company': '/empresa-area',
+                  'startup': '/startup-area',
+                  'sponsor': '/patrocinador-area',
+                  'participant': '/minha-area',
+                  'participante': '/minha-area'
+                };
+                const path = rolesToPaths[user.role] || '/';
+                if (path !== '/') return <Navigate to={path} replace />;
+              }
+              return <GrowthExperience />;
+            })()
           } />
           <Route path="sobre" element={<Sobre />} />
           <Route path="programacao" element={<Programacao />} />

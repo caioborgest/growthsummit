@@ -35,6 +35,9 @@ import {
 } from '@/hooks/useData';
 import type { Mentor, Startup } from '@/types';
 
+const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
+
 interface StatCardProps {
   title: string;
   value: string;
@@ -141,9 +144,20 @@ export function AdminDashboard() {
 
 
   const stats = useMemo(() => {
-    const totalRevenue = transactions
-      .filter(t => t.type === 'income' && t.status === 'completed')
-      .reduce((sum, t) => sum + t.amount, 0);
+    // Para Growth Experience, priorizamos a receita líquida das inscrições
+    const isGE = selectedProject?.id?.startsWith('ge-') || selectedProject?.id === GE_TRIUNFO_ID;
+
+    const registrationRevenue = isGE
+      ? registrations
+        .filter(r => r.status === 'ativo' || r.status === 'pago')
+        .reduce((sum, r) => sum + (r.amount || 0), 0)
+      : 0;
+
+    const totalRevenue = isGE
+      ? registrationRevenue
+      : transactions
+        .filter(t => t.type === 'income' && t.status === 'completed')
+        .reduce((sum, t) => sum + t.amount, 0);
 
     const targets = {
       registrations: selectedProject?.settings?.maxRegistrations || 1500,

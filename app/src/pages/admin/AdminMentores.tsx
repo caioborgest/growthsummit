@@ -22,6 +22,12 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useMentors } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
@@ -32,9 +38,151 @@ import { Camera, User } from 'lucide-react';
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
+  aprovado: 'bg-green-500/20 text-green-400',
   pending: 'bg-yellow-500/20 text-yellow-400',
+  pendente: 'bg-yellow-500/20 text-yellow-400',
   rejected: 'bg-red-500/20 text-red-400',
+  rejeitado: 'bg-red-500/20 text-red-400',
 };
+
+const statusLabels: Record<string, string> = {
+  approved: 'Aprovado',
+  aprovado: 'Aprovado',
+  pending: 'Pendente',
+  pendente: 'Pendente',
+  rejected: 'Rejeitado',
+  rejeitado: 'Rejeitado',
+};
+
+// ── Modal de Detalhes do Mentor ─────────────────────────────────
+function MentorDetailsModal({ mentor, onClose, onApprove, onReject }: {
+  mentor: any;
+  onClose: () => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 rounded-3xl space-y-6 relative border-brand-orange-coral/20">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
+        >
+          <XCircle className="h-6 w-6" />
+        </button>
+
+        <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-orange-coral/20">
+            {mentor.photo ? (
+              <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover rounded-3xl" />
+            ) : (
+              mentor.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+            )}
+          </div>
+          <div className="text-center sm:text-left">
+            <h3 className="text-2xl font-black text-white mb-1">{mentor.name}</h3>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center">
+              <p className="text-brand-orange-coral font-bold">{mentor.position}</p>
+              <span className="text-gray-600">•</span>
+              <p className="text-gray-400">{mentor.company}</p>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
+                {statusLabels[mentor.status] || mentor.status}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Informações de Contato</h4>
+            <div className="space-y-3">
+              <div className="flex items-center text-gray-300">
+                <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />
+                <span className="text-sm">{mentor.email}</span>
+              </div>
+              {mentor.linkedin && (
+                <a
+                  href={mentor.linkedin.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center text-teal-400 hover:text-teal-300 transition-colors"
+                >
+                  <Briefcase className="h-4 w-4 mr-3" />
+                  <span className="text-sm font-bold">LinkedIn Profile</span>
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Estatísticas do Evento</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase font-black mb-1">Experiência</p>
+                <p className="text-white font-bold">{mentor.yearsExperience || 0} anos</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase font-black mb-1">Capacidade</p>
+                <p className="text-white font-bold">{mentor.maxMentories || 0} slots</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Biografia & Trajetória</h4>
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+              {mentor.bio || 'Nenhuma biografia fornecida.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Especialidades</h4>
+          <div className="flex flex-wrap gap-2">
+            {mentor.specialties?.length > 0 ? mentor.specialties.map((spec: string, i: number) => (
+              <Badge key={i} className="bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 px-3 py-1 font-bold">
+                {spec}
+              </Badge>
+            )) : <span className="text-gray-600 text-sm italic">Nenhuma especialidade listada.</span>}
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-6 border-t border-white/5">
+          {(mentor.status === 'pending' || mentor.status === 'pendente') ? (
+            <>
+              <Button
+                onClick={() => { onApprove(mentor.id); onClose(); }}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold h-12 rounded-2xl"
+              >
+                <CheckCircle className="h-5 w-5 mr-2" />
+                Aprovar Mentor
+              </Button>
+              <Button
+                onClick={() => { onReject(mentor.id); onClose(); }}
+                variant="outline"
+                className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10 font-bold h-12 rounded-2xl"
+              >
+                <XCircle className="h-5 w-5 mr-2" />
+                Rejeitar Candidatura
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={onClose}
+              className="w-full bg-white/5 hover:bg-white/10 text-white font-bold h-12 rounded-2xl border border-white/10"
+            >
+              Fechar Perfil
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AdminMentores() {
   const { projectId } = useProject();
@@ -42,6 +190,7 @@ export function AdminMentores() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -143,7 +292,7 @@ export function AdminMentores() {
 
   const handleApprove = async (id: string) => {
     try {
-      await update(id, { status: 'approved' });
+      await update(id, { status: 'aprovado' });
       toast.success('Mentor aprovado com sucesso!');
     } catch (err: any) {
       logger.error('Erro ao aprovar mentor:', err);
@@ -154,7 +303,7 @@ export function AdminMentores() {
   const handleReject = async (id: string) => {
     try {
       if (confirm('Tem certeza que deseja rejeitar este mentor?')) {
-        await update(id, { status: 'rejected' });
+        await update(id, { status: 'rejeitado' });
         toast.success('Mentor rejeitado com sucesso');
       }
     } catch (err: any) {
@@ -163,11 +312,19 @@ export function AdminMentores() {
     }
   };
 
-  const pendingCount = mentors.filter(m => m.status === 'pending').length;
-  const approvedCount = mentors.filter(m => m.status === 'approved').length;
+  const pendingCount = mentors.filter(m => m.status === 'pending' || m.status === 'pendente').length;
+  const approvedCount = mentors.filter(m => m.status === 'approved' || m.status === 'aprovado').length;
 
   return (
     <div className="space-y-6">
+      {selectedMentor && (
+        <MentorDetailsModal
+          mentor={selectedMentor}
+          onClose={() => setSelectedMentor(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -187,9 +344,9 @@ export function AdminMentores() {
             className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
           >
             <option value="all">Todos os status</option>
-            <option value="approved">Aprovado</option>
-            <option value="pending">Pendente</option>
-            <option value="rejected">Rejeitado</option>
+            <option value="approved">Aprovados</option>
+            <option value="pending">Pendentes</option>
+            <option value="rejected">Rejeitados</option>
           </select>
         </div>
 
@@ -397,11 +554,15 @@ export function AdminMentores() {
                   {mentor.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                 </span>
               </div>
-              <Badge className={statusColors[mentor.status]}>
-                {mentor.status === 'approved' && <CheckCircle className="h-3 w-3 mr-1" />}
-                {mentor.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-                {mentor.status === 'rejected' && <XCircle className="h-3 w-3 mr-1" />}
-                {mentor.status}
+              <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
+                {mentor.status === 'approved' || mentor.status === 'aprovado' ? (
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                ) : mentor.status === 'pending' || mentor.status === 'pendente' ? (
+                  <Clock className="h-3 w-3 mr-1" />
+                ) : (
+                  <XCircle className="h-3 w-3 mr-1" />
+                )}
+                {statusLabels[mentor.status] || mentor.status}
               </Badge>
             </div>
 
@@ -436,39 +597,51 @@ export function AdminMentores() {
             </div>
 
             <div className="flex space-x-2">
-              {mentor.status === 'pending' ? (
-                <>
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => handleApprove(mentor.id)}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Aprovar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
-                    onClick={() => handleReject(mentor.id)}
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Rejeitar
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button size="sm" variant="outline" className="flex-1 border-dark-300 text-gray-300">
-                    Ver perfil
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-gray-400">
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 border-dark-300 text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+                onClick={() => setSelectedMentor(mentor)}
+              >
+                Ver perfil
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
-                </>
-              )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-dark-200 border-dark-300 text-white p-2 rounded-xl">
+                  {(mentor.status === 'pending' || mentor.status === 'pendente') ? (
+                    <>
+                      <DropdownMenuItem onClick={() => handleApprove(mentor.id)} className="flex items-center gap-2 cursor-pointer text-green-400 hover:bg-green-500/10 rounded-lg">
+                        <CheckCircle className="h-4 w-4" /> Aprovar Mentor
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleReject(mentor.id)} className="flex items-center gap-2 cursor-pointer text-red-400 hover:bg-red-500/10 rounded-lg">
+                        <XCircle className="h-4 w-4" /> Rejeitar Mentor
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const link = mentor.linkedin?.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`;
+                        if (mentor.linkedin) window.open(link, '_blank');
+                        else toast.error('LinkedIn não cadastrado');
+                      }}
+                      className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg"
+                    >
+                      <Briefcase className="h-4 w-4" /> Abrir LinkedIn
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => setSelectedMentor(mentor)} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg">
+                    <User className="h-4 w-4" /> Ver Detalhes
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-        ))}
+        ))
+        }
       </div>
     </div>
   );

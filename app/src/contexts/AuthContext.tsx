@@ -100,6 +100,7 @@ interface UserDBMetadata {
   role?: string;
   avatar?: string;
   phone?: string;
+  department?: string;
   staff_role?: string;
   permissions?: string[];
   two_factor_enabled?: boolean;
@@ -107,7 +108,18 @@ interface UserDBMetadata {
 
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
-  const rawRole = (metadata?.role || supabaseUser.user_metadata?.role || 'participant').toLowerCase();
+  // 1. Tentar pegar role (Prioridade: Metadata do DB > Metadata do JWT > default)
+  let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
+
+  // Se não houver role no metadata nem no JWT, verificamos se é um email admin conhecido 
+  // ou se o metadata do DB existe mas a role está vazia
+  if (!rawRole && supabaseUser.email?.endsWith('@growthsummit.site')) {
+    rawRole = 'admin';
+  }
+
+  // Fallback final
+  if (!rawRole) rawRole = 'participant';
+
   const role = ROLE_MAPPING[rawRole] || rawRole;
 
   return {
@@ -156,12 +168,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const now = Date.now();
     const isSameUser = lastSyncedSessionIdRef.current === currentSession.user.id;
-    const isRecent = now - lastSyncTimeRef.current < 5000; // 5s throttle
+    const isRecent = now - lastSyncTimeRef.current < 4000; // 4s throttle
 
-    // 2. Prevenir sincronizações redundantes (mesmo usuário dentro de 5s)
+    // 2. Prevenir sincronizações redundantes (mesmo usuário dentro de 4s)
     if (isSyncingRef.current || (isSameUser && isRecent)) {
       if (isSameUser && isRecent) {
-        logger.debug('Ignorando atualização auth redundante (< 5s)');
+        logger.debug('Ignorando atualização auth redundante', { userId: currentSession.user.id });
+      } else if (isSyncingRef.current) {
+        logger.debug('Sincronização já em curso — aguardando...', { userId: currentSession.user.id });
+      }
+
+      // CRITICO: Garantir que o loader seja liberado se já temos o usuário
+      if (user && user.id === currentSession.user.id && isLoading) {
+        setIsLoading(false);
       }
       return;
     }
@@ -173,14 +192,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // --- ABORDAGEM OTIMISTA ---
     // Definimos o usuário IMEDIATAMENTE usando os metadados do JWT (Supabase Auth)
-    // Isso garante que a UI (Dashboard) carregue instantaneamente sem depender do banco.
+    // Se já tivermos um usuário no estado com os mesmos IDs, EVITAMOS o downgrade 
+    // para dados otimistas (evita piscar o nome/avatar que já foram carregados do DB).
     const optimisticUser = mapSupabaseUserToUser(currentSession.user);
-
-    // Se o usuário já tiver nome e role no JWT, já podemos liberar a UI
     const hasCoreData = !!(optimisticUser.name && optimisticUser.role);
 
     setSession(currentSession);
-    setUser(optimisticUser);
+
+    // Só definimos usuário otimista se não tivermos nenhum ou se for um usuário diferente
+    if (!user || user.id !== currentSession.user.id) {
+      setUser(optimisticUser);
+    }
 
     if (hasCoreData) {
       setIsLoading(false);
@@ -193,15 +215,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 4. Buscar metadados enriquecidos no banco em background
     try {
-      const { data: userData, error: fetchError } = await withTimeout(
+      const { data: userData, error: fetchError } = (await withTimeout(
         supabase
           .from('users')
           .select('id,name,email,role,avatar,phone')
           .eq('id', currentSession.user.id)
-          .maybeSingle(),
+          .maybeSingle() as any,
         5000,
         'AuthMetadataFetch'
-      );
+      )) as { data: UserDBMetadata | null; error: any };
 
       if (fetchError) {
         logger.warn(`DB metadata fetch failed (User: ${currentSession.user.id}):`, fetchError.message);
@@ -210,8 +232,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const finalUser = mapSupabaseUserToUser(currentSession.user, (userData as UserDBMetadata) || undefined);
 
       // Atualizar o estado com os dados finais do banco
-      setUser(finalUser);
-      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+      if (isMountedRef.current) {
+        setUser(finalUser);
+        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+      }
 
     } catch (err: any) {
       // Se der timeout (RLS recursion), avisamos mas NÃO quebramos o site
@@ -249,12 +273,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logAuditEvent('login_failed', undefined, { email, error: error.message } as any);
 
         // Log na tabela de Tentativas de Login
-        supabase.from('login_attempts').insert({
+        (supabase.from('login_attempts') as any).insert({
           email,
           ip_address: ip,
           success: false,
           attempted_at: new Date().toISOString()
-        }).then(({ error: err }) => { if (err) logger.debug('Silent login fail log (RLS):', err.message); });
+        }).then(({ error: err }: any) => { if (err) logger.debug('Silent login fail log (RLS):', err.message); });
 
         throw error;
       }
@@ -263,23 +287,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rateLimiter.clearAttempts(email);
 
         // Registrar Sucesso
-        supabase.from('login_attempts').insert({
+        (supabase.from('login_attempts') as any).insert({
           user_id: data.user.id,
           email,
           ip_address: ip,
           success: true,
           attempted_at: new Date().toISOString()
-        }).then(({ error: err }) => { if (err) logger.debug('Silent login success log (RLS):', err.message); });
+        }).then(({ error: err }: any) => { if (err) logger.debug('Silent login success log (RLS):', err.message); });
 
         // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
         // para garantir que o retorno da função tenha o usuário atualizado
         let userData: UserDBMetadata | null = null;
         try {
-          const { data: ud } = await withTimeout(
-            supabase.from('users').select('id,name,email,role,avatar,phone').eq('id', data.user.id).maybeSingle(),
+          const { data: ud } = (await withTimeout(
+            supabase.from('users').select('id,name,email,role,avatar,phone').eq('id', data.user.id).maybeSingle() as any,
             3000
-          );
-          userData = ud as UserDBMetadata;
+          )) as { data: UserDBMetadata | null };
+          userData = ud;
         } catch (e) {
           logger.warn('DB metadata fetch failed during login:', e);
         }
@@ -290,9 +314,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userObj.requires2FA = true;
         }
 
-        // Não chamamos mais setSession/setUser manualmente aqui
-        // O listener onAuthStateChange (linha 366+) já detectará o evento SIGNED_IN
-        // e chamará updateAuthState(data.session) automaticamente de forma robusta.
+        // Marcar sincronização manual para que o onAuthStateChange subsequente 
+        // respeite este estado estável e não tente re-sincronizar imediatamente.
+        lastSyncedSessionIdRef.current = data.user.id;
+        lastSyncTimeRef.current = Date.now();
+
+        setSession(data.session);
+        setUser(userObj);
+        setIsLoading(false); // Liberar UI imediatamente após o login bem sucedido
 
         logAuditEvent('login_success', data.user.id);
         return userObj;
@@ -365,7 +394,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Atualizar perfil
   const updateProfile = useCallback(async (data: Partial<User>) => {
     if (!user) throw new Error('Auth required');
-    const { error } = await supabase.from('users').update(data).eq('id', user.id);
+    const { error } = await (supabase.from('users') as any).update(data).eq('id', user.id);
     if (error) throw error;
     setUser({ ...user, ...data });
     logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
@@ -395,7 +424,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Desabilitar 2FA
   const disable2FA = useCallback(async () => {
     if (!user) throw new Error('Auth required');
-    const { error } = await supabase.from('users').update({ two_factor_enabled: false }).eq('id', user.id);
+    const { error } = await (supabase.from('users') as any).update({ two_factor_enabled: false }).eq('id', user.id);
     if (error) throw error;
     setUser({ ...user, twoFactorEnabled: false });
     logAuditEvent('2fa_disabled', user.id);
@@ -428,22 +457,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
 
     // Listener para mudanças de autenticação
+    let lastHandledEvent: { type: string, time: number, userId?: string } | null = null;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      logger.info(`🔔 Auth State Change: ${event}`, { userId: currentSession?.user?.id });
+      const now = Date.now();
+      const userId = currentSession?.user?.id;
+
+      // Deduplicação estrita de eventos idênticos em curto intervalo (1s)
+      if (lastHandledEvent &&
+        lastHandledEvent.type === event &&
+        lastHandledEvent.userId === userId &&
+        now - lastHandledEvent.time < 1000) {
+        return;
+      }
+
+      lastHandledEvent = { type: event, time: now, userId };
+      logger.info(`🔔 Auth State Change: ${event}`, { userId });
 
       if (isMountedRef.current) {
         if (event === 'SIGNED_OUT') {
           // Limpar imediatamente para evitar loop de redirecionamento
           isSyncingRef.current = false;
+          lastSyncedSessionIdRef.current = null;
           setSession(null);
           setUser(null);
+          setIsLoading(false);
         } else if (event === 'TOKEN_REFRESHED') {
-          // Token refresh é apenas uma rotação do JWT — não precisa re-sincronizar o perfil
-          // Basta atualizar a sessão na memória
           if (currentSession) setSession(currentSession);
-          logger.debug('TOKEN_REFRESHED: apenas sessão atualizada, sem re-sync do perfil');
         } else if (currentSession) {
-          // SIGNED_IN, INITIAL_SESSION, USER_UPDATED etc.
           updateAuthState(currentSession);
           logAuditEvent(event, currentSession.user.id);
         }

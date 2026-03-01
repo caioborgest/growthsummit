@@ -139,7 +139,7 @@ function getSelectFields(entity: string, projectId?: string): string {
   // If it's a Growth Experience project, use the specific table schema
   if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
     if (entity === 'registrations') {
-      return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,created_at';
+      return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,cupom_palestra,valor_desconto_palestra,created_at';
     }
     if (entity === 'sessions') {
       return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color,metadata';
@@ -257,6 +257,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
           mappedItem['valorPago'] = item['valor_pago'];
           mappedItem['amount'] = item['valor_pago'];
         }
+        if (item['cupom_palestra']) mappedItem['couponCode'] = item['cupom_palestra'];
+        if (item['valor_desconto_palestra'] !== undefined) mappedItem['discountAmount'] = item['valor_desconto_palestra'];
 
         // Specific for Startup
         if (item['nome_startup']) mappedItem['name'] = item['nome_startup'];
