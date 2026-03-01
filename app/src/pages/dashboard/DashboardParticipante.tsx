@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   QrCode,
   User,
@@ -14,14 +14,22 @@ import {
   Sparkles,
   Award,
   Loader2,
-  FolderOpen
+  FolderOpen,
+  CheckCircle2,
+  CreditCard,
+  Tag,
+  BookOpen,
+  Sun,
+  Moon,
+  XCircle,
+  ChevronRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRegistrations, useSessions, useMentoringSessions } from '@/hooks/useData';
+import { useRegistrations, useSessions } from '@/hooks/useData';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
@@ -29,42 +37,256 @@ import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
+// ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
+function UpgradeProModal({ registrationId, onClose, onSuccess }: {
+  registrationId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [cupom, setCupom] = useState('');
+  const [cupomValido, setCupomValido] = useState<null | { desconto: number; nome: string }>(null);
+  const [loadingCupom, setLoadingCupom] = useState(false);
+  const [loadingPagamento, setLoadingPagamento] = useState(false);
+
+  const PRECO_BASE = 179.90;
+  const precoFinal = cupomValido
+    ? PRECO_BASE * (1 - cupomValido.desconto / 100)
+    : PRECO_BASE;
+
+  const validarCupom = async () => {
+    if (!cupom.trim()) return;
+    setLoadingCupom(true);
+    try {
+      const { data, error } = await (supabase.from('cupons_parceria_social') as any)
+        .select('codigo,porcentagem_desconto,indicacao_nome,ativo,uso_limite,uso_atual,vencimento')
+        .eq('codigo', cupom.trim().toUpperCase())
+        .eq('ativo', true)
+        .maybeSingle();
+
+      if (error || !data) {
+        toast.error('Cupom não encontrado ou inativo.');
+        setCupomValido(null);
+        return;
+      }
+      if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+        toast.error('Cupom esgotado.');
+        setCupomValido(null);
+        return;
+      }
+      if (data.vencimento && new Date(data.vencimento) < new Date()) {
+        toast.error('Cupom expirado.');
+        setCupomValido(null);
+        return;
+      }
+
+      setCupomValido({ desconto: data.porcentagem_desconto, nome: data.indicacao_nome || cupom });
+      toast.success(`Cupom aplicado! ${data.porcentagem_desconto}% de desconto.`);
+    } catch {
+      toast.error('Erro ao validar cupom.');
+    } finally {
+      setLoadingCupom(false);
+    }
+  };
+
+  const handlePagamento = async () => {
+    setLoadingPagamento(true);
+    try {
+      // Atualizar inscrição com acesso noturno
+      const { error } = await (supabase.from('inscricoes_growth_experience') as any)
+        .update({
+          palestras_noturnas: true,
+          status_pagamento: 'pago',
+          status: 'ativo',
+          valor_pago: precoFinal,
+          paid_at: new Date().toISOString(),
+          cupom_palestra: cupomValido ? cupom.trim().toUpperCase() : null,
+          valor_desconto_palestra: cupomValido ? PRECO_BASE - precoFinal : 0,
+        })
+        .eq('id', registrationId);
+
+      if (error) throw error;
+
+      // Incrementar uso do cupom se aplicado
+      if (cupomValido && cupom) {
+        await (supabase.from('cupons_parceria_social') as any)
+          .rpc('increment_uso_cupom', { p_codigo: cupom.trim().toUpperCase() })
+          .catch(() => { }); // silently fail
+      }
+
+      toast.success('🎉 Acesso Pro ativado! Bem-vindo às palestras noturnas!');
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao processar pagamento. Tente novamente.');
+    } finally {
+      setLoadingPagamento(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+        {/* Header */}
+        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-orange-500/20 to-transparent">
+          <div>
+            <h2 className="text-white font-black text-xl">Upgrade para Pro</h2>
+            <p className="text-gray-400 text-sm mt-1">Palestras Noturnas + Mentorias Exclusivas</p>
+          </div>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+            <XCircle className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Benefícios */}
+          <div className="space-y-2">
+            {['Acesso às 2 Palestras Noturnas', 'Leandro Batista + Vanylton Matias', 'Networking exclusivo pós-evento', 'Certificado de participação completo'].map((b, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
+                <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                <span>{b}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Cupom */}
+          <div className="space-y-2">
+            <label className="text-gray-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              <Tag className="h-3 w-3" /> Cupom de Desconto (opcional)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Ex: GROWTH10"
+                value={cupom}
+                onChange={e => { setCupom(e.target.value.toUpperCase()); setCupomValido(null); }}
+                className="flex-1 bg-dark-300 border border-dark-400 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 uppercase font-mono"
+              />
+              <Button
+                variant="outline"
+                className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 px-4 rounded-xl"
+                onClick={validarCupom}
+                disabled={loadingCupom || !cupom.trim()}
+              >
+                {loadingCupom ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Aplicar'}
+              </Button>
+            </div>
+            {cupomValido && (
+              <p className="text-green-400 text-xs font-bold flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> {cupomValido.desconto}% de desconto aplicado!
+              </p>
+            )}
+          </div>
+
+          {/* Preço */}
+          <div className="bg-dark-300 rounded-2xl p-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Valor original</span>
+              <span className="text-gray-400">R$ {PRECO_BASE.toFixed(2).replace('.', ',')}</span>
+            </div>
+            {cupomValido && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-400">Desconto ({cupomValido.desconto}%)</span>
+                <span className="text-green-400">- R$ {(PRECO_BASE - precoFinal).toFixed(2).replace('.', ',')}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-black text-lg border-t border-dark-400 pt-2">
+              <span className="text-white">Total</span>
+              <span className="text-orange-400">R$ {precoFinal.toFixed(2).replace('.', ',')}</span>
+            </div>
+          </div>
+
+          {/* Pagamento */}
+          <Button
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-6 h-auto rounded-2xl text-base shadow-lg shadow-orange-500/30 flex items-center gap-3"
+            onClick={handlePagamento}
+            disabled={loadingPagamento}
+          >
+            {loadingPagamento ? (
+              <><Loader2 className="h-5 w-5 animate-spin" /> Processando...</>
+            ) : (
+              <><CreditCard className="h-5 w-5" /> GARANTIR ACESSO PRO</>
+            )}
+          </Button>
+          <p className="text-center text-gray-600 text-xs">Pagamento simulado para demonstração</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
+function CheckInModal({ registration, onClose }: { registration: any; onClose: () => void }) {
+  const qrValue = `GE-CHECKIN|${registration.id}|${registration.email || ''}|${Date.now()}`;
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-sm bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <h2 className="text-white font-black text-xl">Check-in no Evento</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+            <XCircle className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="p-8 flex flex-col items-center text-center gap-6">
+          <p className="text-gray-400 text-sm">Apresente este QR Code para o credenciamento na entrada do evento.</p>
+          <div className="bg-white p-6 rounded-3xl shadow-2xl shadow-teal-500/20">
+            <QRCode value={qrValue} size={200} />
+          </div>
+          <div>
+            <p className="text-gray-500 text-xs uppercase tracking-widest font-bold">Protocolo</p>
+            <p className="text-white font-black text-2xl mt-1">#{registration.id?.slice(0, 8).toUpperCase()}</p>
+          </div>
+          <Badge className="bg-teal-500/20 text-teal-400 border-teal-500/30 text-sm px-4 py-2">
+            {registration.palestrasNoturnas ? '🌙 Passe Completo' : '☀️ Free Morning'}
+          </Badge>
+          <p className="text-gray-600 text-xs">O staff vai escanear este QR Code para confirmar sua entrada.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Componente principal ──────────────────────────────────────────────────────
 export function DashboardParticipante() {
   const { selectedProject } = useProject();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data: registrations } = useRegistrations();
+  const { data: registrations, refetch: refetchRegistrations } = useRegistrations();
   const { data: sessions } = useSessions();
-  const { data: mentoringSessions } = useMentoringSessions();
   const [activeTab, setActiveTab] = useState('ingresso');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
 
-  // Find user's registration
+  // Inscrição do usuário
   const myRegistration = useMemo(() =>
-    registrations.find(r => r.userId === user?.id),
+    registrations.find(r => r.userId === user?.id || (r as any).user_id === user?.id),
     [registrations, user?.id]
   );
 
-  const myMentories = useMemo(() =>
-    mentoringSessions.filter(s => s.menteeId === user?.id),
-    [mentoringSessions, user?.id]
-  );
+  // ── STATUS FINANCEIRO ──────────────────────────────────────────────────────
+  // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
+  // Experience Pro pago: status = "Confirmado"
+  // Experience Pro não pago: status = "Pendente"
+  const statusFinanceiro = useMemo(() => {
+    if (!myRegistration?.palestrasNoturnas) {
+      // Gratuito: não há pendência financeira, mas não está "confirmado" — está em aberto
+      return { label: 'Em Aberto', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição gratuita' };
+    }
+    const pgto = (myRegistration as any)?.statusPagamento || (myRegistration as any)?.status_pagamento;
+    if (pgto === 'pago' || pgto === 'paid') {
+      return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
+    }
+    return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };
+  }, [myRegistration]);
 
-  // Filter sessions based on ticket type
-  const userSessions = useMemo(() => {
-    // Basic sessions always available
-    const basicSessions = sessions.filter(s => s.type === 'keynote' || s.type === 'networking');
-
-    // Day sessions if has cursos_selecionados
-    const daySessions = sessions.filter(s =>
-      s.day === 1 && (myRegistration?.cursosSelecionados || []).includes(s.id)
-    );
-
-    // Night sessions only if palestras_noturnas is true
-    const nightSessions = myRegistration?.palestrasNoturnas
-      ? sessions.filter(s => s.startTime >= '18:00')
-      : [];
-
-    return [...basicSessions, ...daySessions, ...nightSessions];
+  // Cursos selecionados
+  const cursosSelecionados = useMemo(() => {
+    const ids: string[] = (myRegistration as any)?.cursosSelecionados
+      || (myRegistration as any)?.cursos_selecionados
+      || [];
+    if (!ids.length) return [];
+    return sessions.filter(s => ids.includes(s.id));
   }, [sessions, myRegistration]);
 
   const handleLogout = () => {
@@ -72,62 +294,64 @@ export function DashboardParticipante() {
     navigate('/login');
   };
 
-  // ── Documentos do Storage ──────────────────────────────────
+  // ── Documentos do Storage ──────────────────────────────────────────────────
   const [documentos, setDocumentos] = useState<Array<{
     name: string; fullPath: string; size: string; updatedAt: string; url: string;
   }>>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
 
-  useEffect(() => {
-    const fetchDocumentos = async () => {
-      if (!selectedProject?.slug) return;
-      setLoadingDocs(true);
-      try {
-        const bucket = 'event-files';
-        const folder = selectedProject.slug;
-        const { data, error } = await supabase.storage.from(bucket).list(folder, {
-          limit: 20,
-          sortBy: { column: 'name', order: 'asc' },
-        });
+  const fetchDocumentos = useCallback(async () => {
+    if (!selectedProject?.slug) return;
+    setLoadingDocs(true);
+    try {
+      const bucket = 'event-files';
+      const folder = selectedProject.slug;
+      const { data, error } = await supabase.storage.from(bucket).list(folder, {
+        limit: 20,
+        sortBy: { column: 'name', order: 'asc' },
+      });
 
-        if (error || !data) {
-          setDocumentos([]);
-          return;
-        }
+      if (error || !data) { setDocumentos([]); return; }
 
-        // Filtrar apenas arquivos (excluir pastas/placeholder)
-        const files = data.filter(f => f.id && f.name !== '.emptyFolderPlaceholder');
-
-        const withUrls = files.map(f => {
-          const { data: urlData } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(`${folder}/${f.name}`);
-          const sizeMB = f.metadata?.size
-            ? `${(f.metadata.size / 1024 / 1024).toFixed(1)} MB`
-            : '—';
-          return {
-            name: f.name,
-            fullPath: `${folder}/${f.name}`,
-            size: sizeMB,
-            updatedAt: f.updated_at
-              ? new Date(f.updated_at).toLocaleDateString('pt-BR')
-              : '—',
-            url: urlData.publicUrl,
-          };
-        });
-
-        setDocumentos(withUrls);
-      } catch {
-        setDocumentos([]);
-      } finally {
-        setLoadingDocs(false);
-      }
-    };
-    fetchDocumentos();
+      const files = data.filter(f => f.id && f.name !== '.emptyFolderPlaceholder');
+      const withUrls = files.map(f => {
+        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(`${folder}/${f.name}`);
+        const sizeMB = f.metadata?.size ? `${(f.metadata.size / 1024 / 1024).toFixed(1)} MB` : '—';
+        return {
+          name: f.name,
+          fullPath: `${folder}/${f.name}`,
+          size: sizeMB,
+          updatedAt: f.updated_at ? new Date(f.updated_at).toLocaleDateString('pt-BR') : '—',
+          url: urlData.publicUrl,
+        };
+      });
+      setDocumentos(withUrls);
+    } catch {
+      setDocumentos([]);
+    } finally {
+      setLoadingDocs(false);
+    }
   }, [selectedProject?.slug]);
+
+  useEffect(() => { fetchDocumentos(); }, [fetchDocumentos]);
 
   return (
     <div className="bg-dark min-h-screen">
+      {/* Modals */}
+      {showUpgradeModal && myRegistration && (
+        <UpgradeProModal
+          registrationId={myRegistration.id}
+          onClose={() => setShowUpgradeModal(false)}
+          onSuccess={() => refetchRegistrations()}
+        />
+      )}
+      {showCheckInModal && myRegistration && (
+        <CheckInModal
+          registration={myRegistration}
+          onClose={() => setShowCheckInModal(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-dark-200 border-b border-dark-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -138,20 +362,18 @@ export function DashboardParticipante() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">{user?.name}</h1>
-                <p className="text-gray-400">Growth Experience Triunfo 2026</p>
+                <p className="text-gray-400">{selectedProject?.name || 'Growth Experience Triunfo 2026'}</p>
               </div>
             </div>
             <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30 px-3 py-1">
-                {myRegistration?.palestrasNoturnas ? 'Passe Completo' : 'Inscrição Básica'}
+              <Badge className={`px-3 py-1 ${myRegistration?.palestrasNoturnas ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-teal-500/10 text-teal-400 border-teal-500/30'}`}>
+                {myRegistration?.palestrasNoturnas ? '🌙 Passe Completo' : '☀️ Free Morning'}
               </Badge>
               <Button variant="ghost" size="sm" className="text-teal-400 hover:text-teal-300" onClick={() => navigate('/guia')}>
-                <HelpCircle className="h-4 w-4 mr-2" />
-                Acessar Manual
+                <HelpCircle className="h-4 w-4 mr-2" /> Guia
               </Button>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                <LogOut className="h-4 w-4 mr-2" /> Sair
               </Button>
             </div>
           </div>
@@ -161,47 +383,38 @@ export function DashboardParticipante() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-dark-200 mb-8 p-1">
             <TabsTrigger value="ingresso" className="data-[state=active]:bg-teal-500">
-              <QrCode className="h-4 w-4 mr-2" />
-              Ingresso
+              <QrCode className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Ingresso</span>
             </TabsTrigger>
             <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500">
-              <Calendar className="h-4 w-4 mr-2" />
-              Agenda
-            </TabsTrigger>
-            <TabsTrigger value="mentorias" className="data-[state=active]:bg-teal-500">
-              <Users className="h-4 w-4 mr-2" />
-              Mentorias
+              <Calendar className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Agenda</span>
             </TabsTrigger>
             <TabsTrigger value="documentos" className="data-[state=active]:bg-teal-500">
-              <FileText className="h-4 w-4 mr-2" />
-              Documentos
+              <FileText className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Docs</span>
             </TabsTrigger>
             <TabsTrigger value="dados" className="data-[state=active]:bg-teal-500">
-              <User className="h-4 w-4 mr-2" />
-              Perfil
+              <User className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="certificados" className="data-[state=active]:bg-teal-500">
-              <Award className="h-4 w-4 mr-2" />
-              Certificados
+              <Award className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Certs</span>
             </TabsTrigger>
             <TabsTrigger value="suporte" className="data-[state=active]:bg-teal-500">
-              <HelpCircle className="h-4 w-4 mr-2" />
-              Suporte
+              <HelpCircle className="h-4 w-4 mr-1 md:mr-2" /> <span className="hidden sm:inline">Ajuda</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Ingresso Tab */}
+          {/* ── INGRESSO TAB ── */}
           <TabsContent value="ingresso">
             <div className="grid lg:grid-cols-2 gap-8">
+              {/* QR Code */}
               <div className="glass-card p-10 text-center flex flex-col items-center border-teal-500/20">
                 <h2 className="text-xl font-bold text-white mb-8">Seu Acesso</h2>
                 <div className="bg-white p-6 rounded-3xl inline-block mb-8 shadow-2xl shadow-teal-500/20">
                   <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center">
                     {myRegistration?.id ? (
                       <QRCode
-                        value={myRegistration.id}
+                        value={`GE-CHECKIN|${myRegistration.id}|${user?.email || ''}|${myRegistration.id}`}
                         size={160}
                         viewBox={`0 0 256 256`}
                         style={{ height: "auto", maxWidth: "100%", width: "100%" }}
@@ -211,29 +424,40 @@ export function DashboardParticipante() {
                     )}
                   </div>
                 </div>
-                <p className="text-gray-400 mb-1 uppercase tracking-widest text-xs font-bold">Protocolo</p>
+                <p className="text-gray-400 mb-1 uppercase tracking-widest text-xs font-bold">Protocolo de Acesso</p>
                 <p className="text-3xl font-black text-white mb-8">#{myRegistration?.id?.slice(0, 8).toUpperCase() || 'GS2026-X'}</p>
 
-                <div className="flex gap-4">
+                <div className="flex gap-4 w-full">
                   <Button
                     variant="outline"
-                    className="border-dark-300 rounded-xl hover:bg-dark-300 transition-all"
-                    onClick={() => {
+                    className="border-dark-300 rounded-xl hover:bg-dark-300 transition-all flex-1"
+                    onClick={async () => {
                       if (!myRegistration) return;
-                      generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
-                      toast.success('Seu ingresso PDF foi gerado!');
+                      await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
+                      toast.success('Ingresso PDF gerado!');
                     }}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    PDF
+                    <Download className="h-4 w-4 mr-2" /> PDF
                   </Button>
-                  <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-8">
-                    <QrCode className="h-4 w-4 mr-2" />
-                    Validar
+                  <Button
+                    className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl px-8 flex-1"
+                    onClick={() => {
+                      if (!myRegistration) {
+                        toast.error('Nenhuma inscrição encontrada.');
+                        return;
+                      }
+                      setShowCheckInModal(true);
+                    }}
+                  >
+                    <QrCode className="h-4 w-4 mr-2" /> VALIDAR
                   </Button>
                 </div>
+                <p className="text-gray-600 text-xs mt-4 max-w-xs">
+                  Clique em VALIDAR para exibir seu QR Code de credenciamento. O staff vai escanear na entrada.
+                </p>
               </div>
 
+              {/* Status */}
               <div className="space-y-6">
                 <div className="glass-card p-8">
                   <h3 className="text-lg font-bold text-white mb-6 border-b border-dark-300 pb-4 flex items-center">
@@ -241,244 +465,361 @@ export function DashboardParticipante() {
                     Status da Inscrição
                   </h3>
                   <div className="space-y-4">
+                    {/* Tipo */}
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <span className="text-gray-400">Tipo de Ingresso</span>
+                      <div className="flex items-center gap-2 text-gray-400">
+                        {myRegistration?.palestrasNoturnas ? <Moon className="h-4 w-4 text-orange-400" /> : <Sun className="h-4 w-4 text-teal-400" />}
+                        Tipo de Ingresso
+                      </div>
                       <Badge className="bg-teal-500/20 text-teal-400 border-none uppercase text-[10px] font-black">
                         {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                       </Badge>
                     </div>
+
+                    {/* Status Financeiro */}
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <span className="text-gray-400">Status Financeiro</span>
-                      {myRegistration?.status === 'paid' ? (
-                        <Badge className="bg-green-500/20 text-green-400 border-none">Confirmado</Badge>
-                      ) : (
-                        <Badge className="bg-orange-500/20 text-orange-400 border-none uppercase text-[10px] font-black">
-                          Pendência de Pagamento
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <CreditCard className="h-4 w-4" />
+                        Status Financeiro
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <Badge className={statusFinanceiro.color}>
+                          {statusFinanceiro.label}
                         </Badge>
-                      )}
+                        <span className="text-[10px] text-gray-600">{statusFinanceiro.info}</span>
+                      </div>
                     </div>
+
+                    {/* Acesso noturno */}
                     <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <span className="text-gray-400">Acesso Noturno</span>
-                      <span className={myRegistration?.palestrasNoturnas ? "text-green-400 font-bold" : "text-gray-600"}>
-                        {myRegistration?.palestrasNoturnas ? 'Liberado ✓' : 'Não incluso'}
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <Moon className="h-4 w-4" />
+                        Acesso Noturno
+                      </div>
+                      <span className={myRegistration?.palestrasNoturnas ? "text-green-400 font-bold text-sm" : "text-gray-600 text-sm"}>
+                        {myRegistration?.palestrasNoturnas ? '✓ Liberado' : 'Não incluso'}
                       </span>
                     </div>
+
+                    {/* Cursos inscritos */}
+                    {cursosSelecionados.length > 0 && (
+                      <div className="p-3 bg-dark-100 rounded-xl space-y-2">
+                        <div className="flex items-center gap-2 text-gray-400 mb-3">
+                          <BookOpen className="h-4 w-4 text-teal-400" />
+                          <span className="text-sm font-semibold">Cursos/Oficinas Inscritos</span>
+                        </div>
+                        {cursosSelecionados.map((curso, i) => (
+                          <div key={i} className="flex items-center gap-2 text-sm text-white bg-dark-200 rounded-lg p-2">
+                            <ChevronRight className="h-3 w-3 text-teal-400 flex-shrink-0" />
+                            <span className="truncate">{(curso as any).title || (curso as any).titulo || 'Atividade'}</span>
+                            <span className="ml-auto text-gray-500 text-xs flex-shrink-0">{(curso as any).startTime || (curso as any).horario_inicio || ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
+                {/* Upgrade Pro */}
                 {!myRegistration?.palestrasNoturnas && (
                   <div className="glass-card p-8 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/30">
-                    <h3 className="text-lg font-bold text-white mb-2">Upgrade para Pro</h3>
-                    <p className="text-gray-400 text-sm mb-6">Assista as palestras noturnas e tenha acesso a mentorias exclusivas por apenas R$ 179,90.</p>
-                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Moon className="h-5 w-5 text-orange-400" />
+                      <h3 className="text-lg font-bold text-white">Upgrade para Pro</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-2">
+                      Assista às <strong className="text-white">palestras noturnas</strong> com Leandro Batista e Vanylton Matias + mentorias exclusivas.
+                    </p>
+                    <p className="text-orange-400 font-black text-2xl mb-5">R$ 179,90</p>
+                    <Button
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
+                      onClick={() => setShowUpgradeModal(true)}
+                    >
+                      <CreditCard className="h-5 w-5" />
                       GARANTIR ACESSO PRO
                     </Button>
                   </div>
                 )}
+
+                {/* Check-in confirmado se pro */}
+                {myRegistration?.palestrasNoturnas && statusFinanceiro.label === 'Confirmado' && (
+                  <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 flex items-center gap-4">
+                    <CheckCircle2 className="h-10 w-10 text-green-400 flex-shrink-0" />
+                    <div>
+                      <p className="text-white font-bold">Acesso Completo Ativo!</p>
+                      <p className="text-gray-400 text-sm">Você tem acesso a todas as atividades do evento.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
 
-          {/* Agenda Tab */}
+          {/* ── AGENDA TAB ── */}
           <TabsContent value="agenda">
             <div className="glass-card p-8">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-white">Minha Agenda Personalizada</h2>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="border-dark-300 text-gray-400">Hoje</Button>
-                  <Button size="sm" className="bg-teal-500 text-white">Ver Tudo</Button>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Minha Agenda</h2>
+                  <p className="text-gray-400 text-sm mt-1">Atividades {myRegistration?.palestrasNoturnas ? 'diurnas e noturnas' : 'diurnas (gratuitas)'}</p>
                 </div>
+                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => navigate('/ge-triunfo')}>
+                  Ver Programação
+                </Button>
               </div>
 
-              <div className="space-y-4">
-                {userSessions.length > 0 ? userSessions.map((item, i) => (
-                  <div key={i} className="flex items-center p-5 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all group">
-                    <div className="w-24 flex-shrink-0">
-                      <p className="text-teal-400 font-black text-xl">{item.startTime}</p>
-                      <p className="text-gray-500 text-xs uppercase tracking-widest">{item.track || 'Palco'}</p>
-                    </div>
-                    <div className="flex-1 ml-4 border-l border-dark-300 pl-6">
-                      <p className="text-white font-bold text-lg group-hover:text-teal-400 transition-colors">{item.title}</p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-gray-400 border-dark-400">
-                          {item.type}
-                        </Badge>
-                        <span className="text-xs text-gray-500 flex items-center">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {item.room || 'Arena Principal'}
-                        </span>
+              {/* Bloco Dia (Gratuito) */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sun className="h-5 w-5 text-teal-400" />
+                  <h3 className="text-white font-bold">Programação Diurna <span className="text-teal-400 text-sm font-normal ml-1">— Gratuito</span></h3>
+                </div>
+                {cursosSelecionados.length > 0 ? (
+                  <div className="space-y-3">
+                    {cursosSelecionados.map((item: any, i) => (
+                      <div key={i} className="flex items-center p-4 bg-dark-100 rounded-2xl border border-teal-500/20 hover:border-teal-500/40 transition-all group">
+                        <div className="w-20 flex-shrink-0">
+                          <p className="text-teal-400 font-black">{item.startTime || item.horario_inicio || '--:--'}</p>
+                          <p className="text-gray-600 text-xs">{item.endTime || item.horario_fim || ''}</p>
+                        </div>
+                        <div className="flex-1 ml-4 border-l border-dark-300 pl-4">
+                          <p className="text-white font-bold group-hover:text-teal-400 transition-colors">{item.title || item.titulo}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <Badge variant="outline" className="text-[10px] uppercase font-bold text-gray-500 border-dark-400">{item.type || item.tipo}</Badge>
+                            <span className="text-xs text-gray-500 flex items-center"><MapPin className="h-3 w-3 mr-1" />{item.room || item.local || 'Sala'}</span>
+                          </div>
+                        </div>
+                        <CheckCircle2 className="h-5 w-5 text-teal-400 flex-shrink-0" />
                       </div>
-                    </div>
-                    <Button variant="ghost" className="text-gray-400 hover:text-orange-400">
-                      <Sparkles className="h-5 w-5" />
-                    </Button>
+                    ))}
                   </div>
-                )) : (
-                  <div className="text-center py-20 border-2 border-dashed border-dark-300 rounded-3xl">
-                    <Calendar className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-500">Você ainda não selecionou nenhuma atividade.</p>
-                    <Button variant="link" className="text-teal-400 mt-2 font-bold" onClick={() => navigate('/programacao')}>
-                      Ver Programação Completa
+                ) : (
+                  <div className="text-center py-12 border-2 border-dashed border-dark-300 rounded-2xl">
+                    <BookOpen className="h-10 w-10 text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-500 text-sm">Você ainda não selecionou cursos/oficinas.</p>
+                    <Button variant="link" className="text-teal-400 mt-2 font-bold text-sm" onClick={() => navigate('/ge-triunfo')}>
+                      Escolher atividades →
                     </Button>
                   </div>
                 )}
               </div>
-            </div>
-          </TabsContent>
 
-          {/* Mentorias Tab */}
-          <TabsContent value="mentorias">
-            <div className="glass-card p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-white">Sessões 1:1 Agendadas</h2>
-                <Button size="sm" className="bg-teal-500 text-white font-bold">SOLICITAR NOVA</Button>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myMentories.map((mentoria) => (
-                  <div key={mentoria.id} className="p-6 bg-dark-100 rounded-2xl border border-teal-500/20 hover:bg-teal-500/5 transition-all">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center">
-                        <Users className="h-7 w-7 text-teal-400" />
-                      </div>
-                      <Badge className="bg-green-500/20 text-green-400 border-none uppercase text-[10px] font-black">
-                        {mentoria.status}
-                      </Badge>
-                    </div>
-                    <h3 className="text-white font-bold text-lg">{mentoria.mentorId || 'Mentor Growth'}</h3>
-                    <div className="flex items-center text-gray-400 text-sm mt-3">
-                      <Clock className="h-4 w-4 mr-2 text-teal-400" />
-                      {new Date(mentoria.scheduledAt).toLocaleDateString()} às {new Date(mentoria.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                    <div className="mt-6 pt-6 border-t border-dark-300 flex gap-2">
-                      <Button size="sm" variant="outline" className="border-dark-300 flex-1 hover:bg-dark-300">
-                        Chat
-                      </Button>
-                      <Button size="sm" className="bg-teal-500 flex-1 font-bold">
-                        Acessar
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                {myMentories.length === 0 && (
-                  <div className="col-span-full border-2 border-dashed border-dark-300 p-12 text-center rounded-3xl">
-                    <p className="text-gray-500 mb-4">Você ainda não tem mentorias agendadas.</p>
-                    <Button variant="outline" className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10 font-bold px-10">
-                      Explorar Mentores
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="documentos">
-            <div className="glass-card p-8">
-              <h2 className="text-xl font-bold text-white mb-2">Materiais do Evento</h2>
-              <p className="text-gray-400 text-sm mb-6">Arquivos disponibilizados pela organização do evento.</p>
-
-              {loadingDocs ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-8 w-8 text-teal-400 animate-spin" />
+              {/* Bloco Noturno */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Moon className="h-5 w-5 text-orange-400" />
+                  <h3 className="text-white font-bold">
+                    Programação Noturna
+                    <span className={`ml-2 text-sm font-normal ${myRegistration?.palestrasNoturnas ? 'text-orange-400' : 'text-gray-600'}`}>
+                      {myRegistration?.palestrasNoturnas ? '— Liberado ✓' : '— Requer Upgrade Pro'}
+                    </span>
+                  </h3>
                 </div>
-              ) : documentos.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-dark-300 rounded-2xl">
-                  <FolderOpen className="h-14 w-14 text-gray-600 mb-4" />
-                  <p className="text-gray-400 font-semibold">Nenhum arquivo disponível ainda</p>
-                  <p className="text-gray-600 text-sm mt-2 max-w-xs text-center">
-                    Os materiais do evento serão publicados aqui pela organização antes do dia do evento.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {documentos.map((doc) => (
-                    <div
-                      key={doc.fullPath}
-                      className="flex items-center justify-between p-5 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/40 transition-all group"
-                    >
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mr-4 flex-shrink-0">
-                          <FileText className="h-6 w-6 text-teal-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-white font-bold text-sm truncate max-w-[180px]">{doc.name}</p>
-                          <p className="text-gray-500 text-xs mt-0.5">{doc.size} · {doc.updatedAt}</p>
-                        </div>
+                <div className="space-y-3">
+                  {[
+                    { hora: '19:00', titulo: 'Palestra: Crescimento Exponencial em Mercado Competitivo', palestrante: 'Leandro Batista', info: 'CEO, Fitness Exclusive' },
+                    { hora: '21:10', titulo: 'Palestra: Inovação Corporativa', palestrante: 'Vanylton Matias', info: 'CEO, Grupo Núcleo' },
+                  ].map((item, i) => (
+                    <div key={i} className={`flex items-center p-4 rounded-2xl border transition-all ${myRegistration?.palestrasNoturnas ? 'bg-dark-100 border-orange-500/20 hover:border-orange-500/40' : 'bg-dark-100/40 border-dark-300 opacity-60'}`}>
+                      <div className="w-20 flex-shrink-0">
+                        <p className={`font-black ${myRegistration?.palestrasNoturnas ? 'text-orange-400' : 'text-gray-600'}`}>{item.hora}</p>
                       </div>
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download
-                        onClick={() => toast.success(`Baixando: ${doc.name}`)}
-                        className="ml-3 flex-shrink-0"
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-gray-400 hover:text-teal-400 group-hover:text-teal-400 transition-colors"
-                        >
-                          <Download className="h-5 w-5" />
-                        </Button>
-                      </a>
+                      <div className="flex-1 ml-4 border-l border-dark-300 pl-4">
+                        <p className="text-white font-bold text-sm">{item.titulo}</p>
+                        <p className="text-gray-500 text-xs mt-1">{item.palestrante} · {item.info}</p>
+                      </div>
+                      {myRegistration?.palestrasNoturnas
+                        ? <CheckCircle2 className="h-5 w-5 text-orange-400 flex-shrink-0" />
+                        : <CreditCard className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                      }
                     </div>
                   ))}
+                </div>
+                {!myRegistration?.palestrasNoturnas && (
+                  <Button
+                    className="w-full mt-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold rounded-xl py-3"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
+                    Fazer Upgrade Pro para desbloquer →
+                  </Button>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ── DOCUMENTOS TAB ── */}
+          <TabsContent value="documentos">
+            <div className="space-y-6">
+
+              {/* 1. Meus Documentos (PDFs pessoais) */}
+              <div className="glass-card p-8">
+                <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-teal-400" /> Meus Documentos
+                </h2>
+                <p className="text-gray-400 text-sm mb-5">Downloads personalizados com seus dados de inscrição.</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {/* Ingresso PDF */}
+                  <div className="flex items-center justify-between p-5 bg-dark-100 rounded-2xl border border-teal-500/20 hover:border-teal-500/40 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                        <QrCode className="h-6 w-6 text-teal-400" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm">Meu Ingresso</p>
+                        <p className="text-gray-500 text-xs mt-0.5">PDF com QR Code • #{myRegistration?.id?.slice(0, 8).toUpperCase() || '—'}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost" size="icon"
+                      className="text-gray-400 hover:text-teal-400 transition-colors"
+                      onClick={async () => {
+                        if (!myRegistration) { toast.error('Inscrição não encontrada.'); return; }
+                        await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
+                        toast.success('Ingresso gerado!');
+                      }}
+                    >
+                      <Download className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  {/* Certificado PDF */}
+                  <div className="flex items-center justify-between p-5 bg-dark-100 rounded-2xl border border-orange-500/20 hover:border-orange-500/40 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                        <Award className="h-6 w-6 text-orange-400" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm">Certificado de Participação</p>
+                        <p className="text-gray-500 text-xs mt-0.5">Disponível após o evento</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost" size="icon"
+                      className="text-gray-400 hover:text-orange-400 transition-colors"
+                      onClick={() => navigate('/meus-certificados')}
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Conteúdo do Evento (in-app) */}
+              <div className="glass-card p-8">
+                <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-teal-400" /> Conteúdo do Evento
+                </h2>
+                <p className="text-gray-400 text-sm mb-5">
+                  Informações atualizadas em tempo real pela organização. Sem PDF — tudo no app.
+                </p>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  {[
+                    { icon: Calendar, label: 'Programação Completa', desc: 'Grade e horários do evento', color: 'teal', route: '/ge-triunfo' },
+                    { icon: MapPin, label: 'Mapa do Evento', desc: 'Localização das salas', color: 'blue', route: '/guia' },
+                    { icon: HelpCircle, label: 'Guia do Participante', desc: 'Como aproveitar ao máximo', color: 'purple', route: '/guia' },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => navigate(item.route)}
+                      className={`flex flex-col items-start p-5 bg-dark-100 rounded-2xl border border-${item.color}-500/20 hover:border-${item.color}-500/40 hover:bg-${item.color}-500/5 transition-all text-left group`}
+                    >
+                      <div className={`w-11 h-11 rounded-xl bg-${item.color}-500/10 flex items-center justify-center mb-4`}>
+                        <item.icon className={`h-6 w-6 text-${item.color}-400`} />
+                      </div>
+                      <p className="text-white font-bold text-sm group-hover:text-teal-300 transition-colors">{item.label}</p>
+                      <p className="text-gray-500 text-xs mt-1">{item.desc}</p>
+                      <div className={`mt-3 flex items-center gap-1 text-${item.color}-400 text-xs font-bold`}>
+                        Acessar <ChevronRight className="h-3 w-3" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Materiais extras do Storage */}
+              {(loadingDocs || documentos.length > 0) && (
+                <div className="glass-card p-8">
+                  <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                    <FolderOpen className="h-5 w-5 text-teal-400" /> Materiais Extras
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-5">Arquivos adicionais enviados pela organização.</p>
+                  {loadingDocs ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="h-7 w-7 text-teal-400 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {documentos.map((doc) => (
+                        <div key={doc.fullPath} className="flex items-center justify-between p-4 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all group">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                              <FileText className="h-5 w-5 text-teal-400" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-white font-bold text-sm truncate max-w-[160px]">{doc.name}</p>
+                              <p className="text-gray-500 text-xs">{doc.size} · {doc.updatedAt}</p>
+                            </div>
+                          </div>
+                          <a href={doc.url} target="_blank" rel="noopener noreferrer" download onClick={() => toast.success(`Baixando: ${doc.name}`)} className="ml-2 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-teal-400 transition-colors">
+                              <Download className="h-5 w-5" />
+                            </Button>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </TabsContent>
 
-          {/* Perfil Tab */}
+          {/* ── PERFIL TAB ── */}
           <TabsContent value="dados">
             <ProfileForm />
           </TabsContent>
 
-          {/* Certificados Tab */}
+          {/* ── CERTIFICADOS TAB ── */}
           <TabsContent value="certificados">
             <div className="glass-card p-12 text-center border-teal-500/20">
               <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-6">
                 <Award className="h-10 w-10 text-teal-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Suas Conquistas Acadêmicas</h2>
-              <p className="text-gray-400 max-w-lg mx-auto mb-8">
-                Você pode acessar todos os seus certificados de participação e cursos na nossa galeria dedicada.
-              </p>
-              <Button
-                className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 py-6 h-auto rounded-xl shadow-xl"
-                onClick={() => navigate('/meus-certificados')}
-              >
-                <Award className="h-5 w-5 mr-2" />
-                IR PARA GALERIA DE CERTIFICADOS
+              <h2 className="text-2xl font-bold text-white mb-4">Suas Conquistas</h2>
+              <p className="text-gray-400 max-w-lg mx-auto mb-8">Certificados de participação e cursos disponíveis após o evento.</p>
+              <Button className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 py-6 h-auto rounded-xl" onClick={() => navigate('/meus-certificados')}>
+                <Award className="h-5 w-5 mr-2" /> VER CERTIFICADOS
               </Button>
             </div>
           </TabsContent>
 
-          {/* Suporte Tab */}
+          {/* ── SUPORTE TAB ── */}
           <TabsContent value="suporte">
             <div className="grid md:grid-cols-2 gap-8">
               <div className="glass-card p-8">
                 <h2 className="text-xl font-bold text-white mb-8 border-b border-dark-300 pb-4">Canais de Ajuda</h2>
-                <div className="space-y-6">
-                  <div className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
+                <div className="space-y-4">
+                  <a href="https://wa.me/5588999999999" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
                     <MessageCircle className="h-8 w-8 mr-5 text-teal-400" />
                     <div>
-                      <p className="text-white font-bold">Assistência WhatsApp</p>
-                      <p className="text-gray-500 text-sm">Fale com nosso time técnico</p>
+                      <p className="text-white font-bold">WhatsApp do Evento</p>
+                      <p className="text-gray-500 text-sm">Fale com a equipe de organização</p>
                     </div>
-                  </div>
-                  <div className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
+                    <ChevronRight className="ml-auto h-5 w-5 text-gray-600" />
+                  </a>
+                  <div className="flex items-center p-4 bg-dark-100 rounded-2xl">
                     <MapPin className="h-8 w-8 mr-5 text-teal-400" />
                     <div>
-                      <p className="text-white font-bold">Ponto de Apoio Presencial</p>
-                      <p className="text-gray-500 text-sm">Arena Triunfo - Balcão B2B</p>
+                      <p className="text-white font-bold">Ponto de Apoio</p>
+                      <p className="text-gray-500 text-sm">Arena Triunfo · Balcão de Credenciamento</p>
                     </div>
                   </div>
                 </div>
               </div>
-
               <div className="glass-card p-8 bg-teal-500/5 border-teal-500/20">
-                <h2 className="text-xl font-bold text-white mb-8">Central PWA</h2>
-                <p className="text-gray-400 mb-8 leading-relaxed">Instale nosso aplicativo em seu smartphone para receber notificações em tempo real sobre seus matches e palestras.</p>
+                <h2 className="text-xl font-bold text-white mb-4">App do Evento</h2>
+                <p className="text-gray-400 mb-6 leading-relaxed text-sm">Instale o app para receber notificações sobre sua agenda, matches e palestras em tempo real.</p>
                 <Button className="w-full bg-teal-500 text-white font-black py-4 rounded-xl shadow-lg shadow-teal-500/20">
                   INSTALAR APLICATIVO
                 </Button>

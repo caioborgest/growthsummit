@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     User as UserIcon,
     Mail,
@@ -14,7 +14,6 @@ import {
     Bell,
     Save,
     Loader2,
-    Check
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,7 @@ export function ProfileForm() {
     const { data: profile, update: updateProfileData, isLoading: isProfileLoading } = useProfile(user?.id);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
         name: user?.name || '',
@@ -87,8 +87,9 @@ export function ProfileForm() {
             });
 
             toast.success('Perfil atualizado com sucesso!');
-        } catch (error: any) {
-            toast.error('Erro ao atualizar perfil: ' + (error.message || 'Erro desconhecido'));
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : 'Erro desconhecido';
+            toast.error('Erro ao atualizar perfil: ' + errMsg);
             logger.error('Erro ao atualizar perfil:', error);
         } finally {
             setIsSaving(false);
@@ -113,32 +114,43 @@ export function ProfileForm() {
         setIsUploading(true);
         try {
             const fileExt = file.name.split('.').pop();
-            const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-            const filePath = `avatars/${fileName}`;
+            const fileName = `${user.id}-${Date.now()}.${fileExt}`;
 
-            const { error: uploadError } = await supabase.storage
-                .from('event-images')
-                .upload(filePath, file);
+            // Tenta no bucket 'avatars', se falhar tenta 'event-images/avatars'
+            let photoUrl = '';
+            const buckets = [
+                { bucket: 'avatars', path: fileName },
+                { bucket: 'event-images', path: `avatars/${fileName}` },
+            ];
 
-            if (uploadError) throw uploadError;
+            let uploadOk = false;
+            for (const { bucket, path } of buckets) {
+                const { error: uploadError } = await supabase.storage
+                    .from(bucket)
+                    .upload(path, file, { upsert: true });
 
-            const { data: urlData } = supabase.storage
-                .from('event-images')
-                .getPublicUrl(filePath);
+                if (!uploadError) {
+                    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+                    photoUrl = urlData.publicUrl;
+                    uploadOk = true;
+                    break;
+                }
+            }
 
-            const photoUrl = urlData.publicUrl;
+            if (!uploadOk || !photoUrl) {
+                throw new Error('Não foi possível fazer upload da imagem. Verifique as configurações do Storage.');
+            }
 
-            // Update Auth/User profile with new avatar
-            await updateProfile({
-                avatar: photoUrl
-            });
-
-            toast.success('Foto de perfil atualizada!');
-        } catch (error: any) {
+            await updateProfile({ avatar: photoUrl });
+            toast.success('✅ Foto de perfil atualizada!');
+        } catch (error: unknown) {
             logger.error('Erro no upload da foto:', error);
-            toast.error('Erro ao carregar a foto: ' + (error.message || 'Erro desconhecido'));
+            const msg = error instanceof Error ? error.message : 'Tente novamente.';
+            toast.error('Erro ao enviar foto: ' + msg);
         } finally {
             setIsUploading(false);
+            // Reset input so same file can be re-selected
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -154,20 +166,28 @@ export function ProfileForm() {
                                 alt={user?.name}
                                 className="w-32 h-32 rounded-3xl object-cover border-4 border-teal-500/20 shadow-2xl transition-transform group-hover:scale-105"
                             />
-                            <label className="absolute -bottom-2 -right-2 bg-teal-500 p-3 rounded-2xl text-white shadow-xl hover:bg-teal-600 transition-all cursor-pointer">
+                            {/* Input oculto com ref explícita para garantir abertura do file picker */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handlePhotoUpload}
+                                disabled={isUploading}
+                            />
+                            <button
+                                type="button"
+                                disabled={isUploading}
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute -bottom-2 -right-2 bg-brand-orange-coral p-3 rounded-2xl text-white shadow-xl hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Alterar foto de perfil"
+                            >
                                 {isUploading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                 ) : (
                                     <Camera className="h-5 w-5" />
                                 )}
-                                <input
-                                    type="file"
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handlePhotoUpload}
-                                    disabled={isUploading}
-                                />
-                            </label>
+                            </button>
                         </div>
                         <h3 className="text-xl font-bold text-white mb-1">{user?.name}</h3>
                         <p className="text-gray-400 text-sm mb-4 uppercase tracking-widest">{user?.role}</p>
