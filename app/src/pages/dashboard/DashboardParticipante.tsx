@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   QrCode,
   User,
@@ -12,7 +12,9 @@ import {
   MapPin,
   LogOut,
   Sparkles,
-  Award
+  Award,
+  Loader2,
+  FolderOpen
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +27,7 @@ import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
 import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 export function DashboardParticipante() {
   const { selectedProject } = useProject();
@@ -69,11 +72,59 @@ export function DashboardParticipante() {
     navigate('/login');
   };
 
-  const documentos = [
-    { name: "Programação Completa", type: "PDF", size: "2.4 MB" },
-    { name: "Mapa do Evento", type: "PDF", size: "1.8 MB" },
-    { name: "Guia do Participante", type: "PDF", size: "3.2 MB" },
-  ];
+  // ── Documentos do Storage ──────────────────────────────────
+  const [documentos, setDocumentos] = useState<Array<{
+    name: string; fullPath: string; size: string; updatedAt: string; url: string;
+  }>>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+
+  useEffect(() => {
+    const fetchDocumentos = async () => {
+      if (!selectedProject?.slug) return;
+      setLoadingDocs(true);
+      try {
+        const bucket = 'event-files';
+        const folder = selectedProject.slug;
+        const { data, error } = await supabase.storage.from(bucket).list(folder, {
+          limit: 20,
+          sortBy: { column: 'name', order: 'asc' },
+        });
+
+        if (error || !data) {
+          setDocumentos([]);
+          return;
+        }
+
+        // Filtrar apenas arquivos (excluir pastas/placeholder)
+        const files = data.filter(f => f.id && f.name !== '.emptyFolderPlaceholder');
+
+        const withUrls = files.map(f => {
+          const { data: urlData } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(`${folder}/${f.name}`);
+          const sizeMB = f.metadata?.size
+            ? `${(f.metadata.size / 1024 / 1024).toFixed(1)} MB`
+            : '—';
+          return {
+            name: f.name,
+            fullPath: `${folder}/${f.name}`,
+            size: sizeMB,
+            updatedAt: f.updated_at
+              ? new Date(f.updated_at).toLocaleDateString('pt-BR')
+              : '—',
+            url: urlData.publicUrl,
+          };
+        });
+
+        setDocumentos(withUrls);
+      } catch {
+        setDocumentos([]);
+      } finally {
+        setLoadingDocs(false);
+      }
+    };
+    fetchDocumentos();
+  }, [selectedProject?.slug]);
 
   return (
     <div className="bg-dark min-h-screen">
@@ -321,28 +372,59 @@ export function DashboardParticipante() {
             </div>
           </TabsContent>
 
-          {/* Documentos Tab */}
           <TabsContent value="documentos">
             <div className="glass-card p-8">
-              <h2 className="text-xl font-bold text-white mb-8">Materiais do Evento</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {documentos.map((doc, i) => (
-                  <div key={i} className="flex items-center justify-between p-6 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mr-4">
-                        <FileText className="h-6 w-6 text-teal-400" />
+              <h2 className="text-xl font-bold text-white mb-2">Materiais do Evento</h2>
+              <p className="text-gray-400 text-sm mb-6">Arquivos disponibilizados pela organização do evento.</p>
+
+              {loadingDocs ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 text-teal-400 animate-spin" />
+                </div>
+              ) : documentos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-dark-300 rounded-2xl">
+                  <FolderOpen className="h-14 w-14 text-gray-600 mb-4" />
+                  <p className="text-gray-400 font-semibold">Nenhum arquivo disponível ainda</p>
+                  <p className="text-gray-600 text-sm mt-2 max-w-xs text-center">
+                    Os materiais do evento serão publicados aqui pela organização antes do dia do evento.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {documentos.map((doc) => (
+                    <div
+                      key={doc.fullPath}
+                      className="flex items-center justify-between p-5 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/40 transition-all group"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mr-4 flex-shrink-0">
+                          <FileText className="h-6 w-6 text-teal-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-white font-bold text-sm truncate max-w-[180px]">{doc.name}</p>
+                          <p className="text-gray-500 text-xs mt-0.5">{doc.size} · {doc.updatedAt}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-bold">{doc.name}</p>
-                        <p className="text-gray-500 text-xs lowercase">{doc.type} · {doc.size}</p>
-                      </div>
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        onClick={() => toast.success(`Baixando: ${doc.name}`)}
+                        className="ml-3 flex-shrink-0"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-400 hover:text-teal-400 group-hover:text-teal-400 transition-colors"
+                        >
+                          <Download className="h-5 w-5" />
+                        </Button>
+                      </a>
                     </div>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
-                      <Download className="h-5 w-5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 

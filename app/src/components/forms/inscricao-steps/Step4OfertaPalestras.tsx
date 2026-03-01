@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket, Key, AlertCircle } from 'lucide-react';
-import { useSessions } from '@/hooks/useData';
+import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricaoTypes';
@@ -17,7 +16,6 @@ interface Step4OfertaPalestrasProps {
 }
 
 export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: Step4OfertaPalestrasProps) {
-    const { data: sessions, isLoading } = useSessions();
     const [cupom, setCupom] = useState(dados.cupomPalestra || '');
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState('');
@@ -143,7 +141,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
                                         </div>
                                     </>
                                 )}
-                                <p className="text-xs sm:text-sm text-green-500 font-bold mt-1">em até 12x no cartão</p>
+                                <p className="text-xs sm:text-sm text-green-500 font-bold mt-1">Pagamento via PIX</p>
                             </div>
 
                             {/* Ações */}

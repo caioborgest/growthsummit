@@ -15,14 +15,36 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useCertificates, useSessions } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateCertificatePDF } from '@/lib/certificateGenerator';
+import { generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
+import { useProject } from '@/contexts/ProjectContext';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export function Certificados() {
     const { user } = useAuth();
+    const { selectedProject } = useProject();
     const { data: certificates, isLoading } = useCertificates();
     const { data: sessions } = useSessions();
     const [searchTerm, setSearchTerm] = useState('');
+    const [signatureBase64, setSignatureBase64] = useState<string | undefined>();
+
+    // Carregar assinatura do Supabase Storage uma vez na montagem
+    useEffect(() => {
+        const loadSignature = async () => {
+            try {
+                const { data } = supabase.storage
+                    .from('event-files')
+                    .getPublicUrl('assinatura/assinatura-caio.png');
+                if (data?.publicUrl) {
+                    const b64 = await imageUrlToBase64(data.publicUrl);
+                    setSignatureBase64(b64);
+                }
+            } catch {
+                // Falha silenciosa: certificado é gerado sem imagem
+            }
+        };
+        loadSignature();
+    }, []);
 
     const filteredCerts = (certificates || []).filter(cert => {
         const sessionTitle = (cert.metadata?.session_title as string || '').toLowerCase();
@@ -38,11 +60,14 @@ export function Certificados() {
 
             await generateCertificatePDF({
                 userName: user?.name || 'Participante',
-                eventName: cert.metadata?.event_name || 'Growth Experience',
+                eventName: cert.metadata?.event_name || selectedProject?.name || 'Growth Experience',
+                eventCity: selectedProject?.city,
                 sessionTitle: cert.metadata?.session_title,
                 date: new Date(cert.issueDate).toLocaleDateString('pt-BR'),
                 certificateCode: cert.code,
-                type: cert.type as any
+                type: cert.type as 'event' | 'course' | 'lecture' | 'workshop',
+                signatureBase64,
+                totalHours: cert.metadata?.total_hours,
             });
 
             toast.success('Certificado baixado com sucesso!', { id: 'cert-gen' });

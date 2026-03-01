@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useRegistrations, useCheckIns } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
+import type { Registration } from '@/types';
 
 export function AdminCheckIn() {
   const { data: registrations, update } = useRegistrations();
@@ -25,7 +26,7 @@ export function AdminCheckIn() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lastCheckIn, setLastCheckIn] = useState<any>(null);
 
-  const handleManualCheckIn = useCallback(async (registration: any) => {
+  const handleManualCheckIn = useCallback(async (registration: Registration) => {
     try {
       await update(registration.id, {
         checkedIn: true,
@@ -33,20 +34,22 @@ export function AdminCheckIn() {
       });
 
       await create({
+        projectId: registration.projectId,
+        registrationId: registration.id,
         userId: registration.userId,
-        userName: registration.name || 'Participante',
         ticketNumber: registration.ticketNumber,
         timestamp: new Date().toISOString(),
         location: 'Entrada Principal',
         method: 'manual',
+        checkInType: 'event',
       } as any);
 
       setLastCheckIn(registration);
       setSearchQuery('');
       toast.success(`Check-in realizado: ${registration.ticketNumber}`);
-    } catch (err: any) {
-      console.error('Erro no check-in:', err);
-      toast.error(`Erro ao realizar check-in: ${err.message || 'Erro desconhecido'}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
   }, [update, create]);
 

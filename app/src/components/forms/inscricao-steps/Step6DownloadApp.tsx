@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon, Download, ArrowRight } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { usePWA } from '@/hooks/usePWA';
+import { toast } from 'sonner';
 
 interface Step6DownloadAppProps {
     onContinuar: () => void;
@@ -18,9 +19,15 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
         if (isInstallable && !isStandalone) {
             await promptInstall();
         } else if (isIOS) {
-            alert('No iPhone: Toque em Compartilhar e depois "Adicionar à Tela de Início"');
+            toast.info(
+                'No iPhone: abra no Safari, toque em Compartilhar 📤 e escolha "Adicionar à Tela de Início".',
+                { duration: 6000 }
+            );
         } else {
-            alert('Abra este site no Chrome do seu celular para instalar o app.');
+            toast.info(
+                'Abra este site no Chrome do seu celular e toque no menu (⋮) para instalar o app.',
+                { duration: 6000 }
+            );
         }
     };
 
@@ -153,7 +160,7 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
             </div>
 
             {/* Botão de Confirmação */}
-            <div className="sticky bottom-0 bg-dark-100 pt-4 border-t border-white/10">
+            <div className="mt-6 pt-4 border-t border-white/10">
                 <Button
                     size="lg"
                     onClick={onContinuar}
