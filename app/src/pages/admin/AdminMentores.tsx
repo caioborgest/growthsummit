@@ -174,7 +174,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
         </div>
 
         <div className="flex gap-3 pt-6 border-t border-white/5">
-          {(mentor.status === 'pending' || mentor.status === 'pendente') ? (
+          {['pending', 'pendente'].includes(mentor.status) ? (
             <>
               <Button
                 onClick={() => { onApprove(mentor.id); onClose(); }}
@@ -708,9 +708,9 @@ export function AdminMentores() {
                 )}
               </div>
               <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
-                {mentor.status === 'approved' || mentor.status === 'aprovado' ? (
+                {['approved', 'aprovado'].includes(mentor.status) ? (
                   <CheckCircle className="h-3 w-3 mr-1" />
-                ) : mentor.status === 'pending' || mentor.status === 'pendente' ? (
+                ) : ['pending', 'pendente'].includes(mentor.status) ? (
                   <Clock className="h-3 w-3 mr-1" />
                 ) : (
                   <XCircle className="h-3 w-3 mr-1" />
@@ -771,7 +771,7 @@ export function AdminMentores() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-dark-200 border-dark-300 text-white p-2 rounded-xl">
-                  {(mentor.status === 'pending' || mentor.status === 'pendente') ? (
+                  {['pending', 'pendente'].includes(mentor.status) ? (
                     <>
                       <DropdownMenuItem onClick={() => handleApprove(mentor.id)} className="flex items-center gap-2 cursor-pointer text-green-400 hover:bg-green-500/10 rounded-lg">
                         <CheckCircle className="h-4 w-4" /> Aprovar Mentor

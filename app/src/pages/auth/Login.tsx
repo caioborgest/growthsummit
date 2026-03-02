@@ -38,7 +38,6 @@ export function Login() {
           navigate('/patrocinador-area', { replace: true });
           break;
         case 'participant':
-        case 'participante':
           navigate('/minha-area', { replace: true });
           break;
         default:

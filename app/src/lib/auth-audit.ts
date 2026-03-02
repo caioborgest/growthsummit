@@ -1,35 +1,71 @@
 import { supabase } from './supabase';
 import { logger } from './logger';
 
-export async function getClientIP(): Promise<string> {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 2000); // 2 segundos timeout
+// Cache IP in memory — only fetch once per session to avoid repeated external requests
+let cachedIP: string | null = null;
+let ipFetchPromise: Promise<string> | null = null;
 
-    try {
-        const response = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        clearTimeout(id);
-        const data = (await response.json()) as { ip: string };
-        return data.ip;
-    } catch {
-        return 'unknown';
+export async function getClientIP(): Promise<string> {
+    if (cachedIP) return cachedIP;
+
+    // Deduplicate concurrent calls — reuse the same in-flight promise
+    if (!ipFetchPromise) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 2000);
+
+        ipFetchPromise = fetch('https://api.ipify.org?format=json', { signal: controller.signal })
+            .then(r => r.json() as Promise<{ ip: string }>)
+            .then(data => {
+                clearTimeout(id);
+                cachedIP = data.ip;
+                ipFetchPromise = null;
+                return data.ip;
+            })
+            .catch(() => {
+                ipFetchPromise = null;
+                return 'unknown';
+            });
     }
+
+    return ipFetchPromise;
 }
 
+// Deduplication map: avoid logging the same event+userId more than once within 5s
+const recentEvents = new Map<string, number>();
+const DEDUP_WINDOW_MS = 5000;
+
+// Events that fire automatically on page load and don't need to be audited
+const SKIP_AUDIT_EVENTS = new Set([
+    'INITIAL_SESSION',
+    'session_restored',
+    'TOKEN_REFRESHED',
+]);
+
 export function logAuditEvent(event: string, userId?: string, metadata?: unknown) {
+    // Skip noisy system events that fire on every page load
+    if (SKIP_AUDIT_EVENTS.has(event)) return;
+
+    // Deduplicate: skip if same event+user was logged in the last 5 seconds
+    const dedupKey = `${event}:${userId || 'anon'}`;
+    const lastLogged = recentEvents.get(dedupKey);
+    const now = Date.now();
+    if (lastLogged && now - lastLogged < DEDUP_WINDOW_MS) {
+        logger.debug(`[audit] Skipping duplicate event: ${event}`);
+        return;
+    }
+    recentEvents.set(dedupKey, now);
+
     // Fire and forget
     getClientIP().then(ip => {
-        // Only attempt to log if we have a userId to avoid 401 if RLS is strict
-        // If not, we still try, but catch the error silently if it's 401
         supabase.from('audit_logs').insert({
             event,
             user_id: userId,
             metadata: metadata || {},
             ip_address: ip,
             browser_agent: navigator.userAgent,
-            created_at: new Date().toISOString(), // Unificado para created_at
+            created_at: new Date().toISOString(),
         }).then(({ error }) => {
             if (error) {
-                // Silent fail on auditing if not an admin/logged in (RLS 42501)
                 if (error.code !== '42501' && error.code !== 'PGRST301') {
                     logger.debug('Auditoria info:', error.message);
                 }

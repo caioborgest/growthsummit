@@ -216,27 +216,45 @@ export interface B2BMeeting {
 export interface Startup {
   id: string;
   projectId: string;
-  userId: string;
+  userId?: string;
   name: string;
-  cnpj: string;
+  cnpj?: string;
   description: string;
   sector: string;
-  stage: 'idea' | 'mvp' | 'traction' | 'scale';
+  stage: 'idea' | 'mvp' | 'traction' | 'scale' | string;
   website?: string;
+  siteUrl?: string;
   logo?: string;
   pitchDeck?: string;
+  pitchDeckUrl?: string;
   videoPitch?: string;
+  videoPitchUrl?: string;
   foundingTeam: TeamMember[];
-  metrics: {
+
+  // Contato (campos do banco GE Triunfo)
+  email?: string;
+  phone?: string;
+
+  // Campos de pitch GE Triunfo
+  problema?: string;
+  solucao?: string;
+  modeloNegocio?: string;
+  diferencial?: string;
+  faturamentoMensal?: string;
+  investimentoBuscado?: string;
+
+  metrics?: {
     revenue?: number;
     users?: number;
     growth?: number;
   };
-  status: 'pending' | 'approved' | 'rejected';
-  packageType: 'expo' | 'pitch';
+  status: 'pending' | 'approved' | 'rejected' | string;
+  packageType?: 'expo' | 'pitch' | string;
   standNumber?: string;
+  linkedin?: string;
   createdAt: string;
 }
+
 
 export interface TeamMember {
   name: string;

@@ -2,15 +2,13 @@ import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
+import { useProject } from '@/contexts/ProjectContext';
 import type { Project } from '@/types';
 
 interface HeroSectionProps {
     onCTAClick: () => void;
     project?: Project;
 }
-
-import { useProject } from '@/contexts/ProjectContext';
 
 export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSectionProps) {
     const { selectedProject: contextProject } = useProject();
@@ -46,7 +44,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
         updateCountdown();
         const interval = setInterval(updateCountdown, 1000);
         return () => clearInterval(interval);
-    }, [selectedProject?.startDate, selectedProject?.slug]);
+    }, [selectedProject?.startDate, selectedProject?.slug, isTriunfo]);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

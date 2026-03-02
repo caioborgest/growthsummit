@@ -23,6 +23,8 @@ import {
 import { useSponsors } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
+
 
 const statusColors: Record<string, string> = {
   closed: 'bg-green-500/20 text-green-400',

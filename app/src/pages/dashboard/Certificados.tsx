@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     Award,
     Download,
-    ExternalLink,
     Search,
-    Filter,
     Calendar,
     CheckCircle2,
     Lock,
@@ -13,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useCertificates, useSessions } from '@/hooks/useData';
+import { useCertificates } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
 import { useProject } from '@/contexts/ProjectContext';
@@ -24,7 +22,6 @@ export function Certificados() {
     const { user } = useAuth();
     const { selectedProject } = useProject();
     const { data: certificates, isLoading } = useCertificates();
-    const { data: sessions } = useSessions();
     const [searchTerm, setSearchTerm] = useState('');
     const [signatureBase64, setSignatureBase64] = useState<string | undefined>();
     const [logoBase64, setLogoBase64] = useState<string | undefined>();
@@ -177,12 +174,12 @@ export function Certificados() {
                                             <span className="text-[10px] text-gray-600 font-bold">EMITIDO EM {new Date(cert.issueDate).toLocaleDateString()}</span>
                                         </div>
                                         <h3 className="text-white font-bold text-xl group-hover:text-brand-orange-coral transition-colors">
-                                            {cert.metadata?.session_title || cert.metadata?.event_name || 'Certificado de Participação'}
+                                            {String(cert.metadata?.session_title || cert.metadata?.event_name || 'Certificado de Participação')}
                                         </h3>
                                         <p className="text-gray-400 text-sm flex items-center gap-2">
                                             {cert.metadata?.room && (
                                                 <>
-                                                    <span className="font-bold text-gray-500 tracking-tighter">{cert.metadata?.room}</span>
+                                                    <span className="font-bold text-gray-500 tracking-tighter">{String(cert.metadata.room)}</span>
                                                     <span className="text-gray-700">•</span>
                                                 </>
                                             )}

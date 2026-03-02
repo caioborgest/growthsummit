@@ -44,20 +44,20 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
                 // Upsert no perfil público
-                await supabase.from('users').upsert({
+                await (supabase.from('users') as any).upsert({
                     id: authUser.id,
                     email: formData.email,
                     name: formData.nomeResponsavel,
                     phone: formData.telefone,
                     role: 'company',
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'id' }).then(({ error }) => {
-                    if (error) logger.warn('Sync users failed in EmpresaForm (expected if RLS):', error.message);
+                }, { onConflict: 'id' }).then(({ error }: { error: { message: string } | null }) => {
+                    if (error) logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: error.message });
                 });
             }
 
             // 2. Salvar na tabela de inscrições (UPSERT por email para permitir atualização)
-            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').upsert({
+            const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).upsert({
                 project_id: projectId,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,

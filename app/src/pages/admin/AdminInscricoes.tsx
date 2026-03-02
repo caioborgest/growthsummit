@@ -14,8 +14,6 @@ import {
   User,
   Loader2,
   X,
-  AlertTriangle,
-  ArrowRight,
   Plus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +47,8 @@ const statusLabels: Record<string, string> = {
 function DetalhesModal({
   reg,
   onClose,
-  onUpdateStatus
+  onUpdateStatus,
+  onToggleCheckIn
 }: {
   reg: Registration;
   onClose: () => void;
@@ -124,24 +123,23 @@ function DetalhesModal({
               : 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20'
               }`}
           >
-            {reg.checkedIn ? <XCircle className="h-5 w-5" /> : <QrCode className="h-5 w-5" />}
             {reg.checkedIn ? 'CANCELAR CREDENCIAMENTO' : 'REALIZAR CREDENCIAMENTO'}
           </Button>
 
           <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Gerenciar Status de Pagamento</p>
           <div className="flex flex-col gap-2">
-            {reg.status !== 'pago' && reg.status !== 'paid' && (
+            {(!['pago', 'paid'].includes(reg.status)) && (
               <Button
-                onClick={() => onUpdateStatus(reg.id, 'pago')}
+                onClick={() => onUpdateStatus(reg.id, 'paid')}
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Marcar como Pago
               </Button>
             )}
-            {reg.status !== 'pendente' && reg.status !== 'pending' && (
+            {(!['pendente', 'pending'].includes(reg.status)) && (
               <Button
-                onClick={() => onUpdateStatus(reg.id, 'pendente')}
+                onClick={() => onUpdateStatus(reg.id, 'pending')}
                 variant="outline"
                 className="w-full border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 font-bold"
               >
@@ -187,14 +185,14 @@ export function AdminInscricoes() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
 
-  const handleUpdateStatus = async (id: string, status: string) => {
+  const handleUpdateStatus = async (id: string, status: any) => {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await update(id, { status } as any);
+      await update(id, { status });
 
       // Se marcou como pago, registrar automaticamente no financeiro
-      if (status === 'pago') {
+      if (status === 'paid') {
         const registration = registrations.find(r => r.id === id);
         if (registration) {
           try {
@@ -202,8 +200,8 @@ export function AdminInscricoes() {
               projectId: registration.projectId || '',
               type: 'income',
               category: 'Inscrições',
-              description: `Inscrição: ${registration.nome}`,
-              amount: registration.valor_pago || 0,
+              description: `Inscrição: ${registration.name}`,
+              amount: registration.amount || 0,
               date: new Date().toISOString(),
               status: 'completed'
             } as any);
@@ -239,7 +237,11 @@ export function AdminInscricoes() {
       toast.success(currentStatus ? 'Credenciamento removido.' : 'Credenciamento realizado com sucesso!');
 
       if (detalhes && detalhes.id === id) {
-        setDetalhes(prev => prev ? { ...prev, checkedIn: !currentStatus, checkInTime: !currentStatus ? new Date().toISOString() : null } : null);
+        setDetalhes(prev => prev ? {
+          ...prev,
+          checkedIn: !currentStatus,
+          checkInTime: !currentStatus ? new Date().toISOString() : undefined
+        } : null);
       }
     } catch (error) {
       console.error('Erro ao atualizar check-in:', error);
@@ -439,7 +441,7 @@ export function AdminInscricoes() {
           <div className="glass-card p-4">
             <p className="text-gray-400 text-sm">Pagos</p>
             <p className="text-2xl font-bold text-green-400">
-              {registrations.filter(r => r.status === 'pago' || r.status === 'paid').length}
+              {registrations.filter(r => ['pago', 'paid'].includes(r.status)).length}
             </p>
           </div>
           <div className="glass-card p-4">
@@ -508,9 +510,9 @@ export function AdminInscricoes() {
                       </td>
                       <td className="p-4">
                         <Badge className={statusColors[reg.status] || 'bg-gray-500/20 text-gray-400'}>
-                          {reg.status === 'pago' || reg.status === 'paid'
+                          {['pago', 'paid'].includes(reg.status)
                             ? <CheckCircle className="h-3 w-3 mr-1" />
-                            : reg.status === 'pendente' || reg.status === 'pending'
+                            : ['pendente', 'pending'].includes(reg.status)
                               ? <Clock className="h-3 w-3 mr-1" />
                               : <XCircle className="h-3 w-3 mr-1" />}
                           {statusLabels[reg.status] || reg.status}

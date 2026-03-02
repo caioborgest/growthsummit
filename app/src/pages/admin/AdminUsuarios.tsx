@@ -90,7 +90,7 @@ const roleColors: Record<string, string> = {
 };
 
 export function AdminUsuarios() {
-    const { data: users, update, isLoading } = useUsers();
+    const { data: users, create, update, remove, isLoading } = useUsers();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [deptFilter, setDeptFilter] = useState('all');
@@ -137,22 +137,12 @@ export function AdminUsuarios() {
     };
 
     const handleCreate = async () => {
-        if (!newUserData.name || !newUserData.email) {
-            toast.error('Nome e email são obrigatórios');
-            return;
-        }
-
         try {
-            // No hook create provided for users in useData.ts?
-            // Let's assume there is one or use supabase directly
-            const { error } = await supabase.from('users').insert({
+            await create({
                 ...newUserData,
-                id: crypto.randomUUID(), // Temp ID
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-            });
-
-            if (error) throw error;
+            } as any);
 
             toast.success('Membro adicionado com sucesso!');
             setIsCreateDialogOpen(false);
@@ -163,10 +153,21 @@ export function AdminUsuarios() {
                 department: '',
                 staffRole: '',
             });
-            // Re-fetch handled by hook usually
         } catch (error: any) {
             logger.error('Erro ao adicionar membro:', error);
             toast.error('Erro ao adicionar membro: ' + (error.message || 'Erro desconhecido'));
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Tem certeza que deseja remover este usuário?')) return;
+
+        try {
+            await remove(id);
+            toast.success('Usuário removido com sucesso!');
+        } catch (error) {
+            logger.error('Erro ao remover usuário:', error);
+            toast.error('Erro ao remover usuário');
         }
     };
 
@@ -423,7 +424,10 @@ export function AdminUsuarios() {
                                                         <Mail className="h-4 w-4 mr-2" />
                                                         Enviar Mensagem
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-red-400 hover:bg-red-500/10 cursor-pointer">
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleDelete(user.id)}
+                                                        className="text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                                    >
                                                         <Trash2 className="h-4 w-4 mr-2" />
                                                         Remover Acesso
                                                     </DropdownMenuItem>

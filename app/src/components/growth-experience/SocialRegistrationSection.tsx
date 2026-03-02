@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionShare } from '../social/SectionShare';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface SocialRegistrationSectionProps {
     onInscrever: () => void;
 }
 
-import { useProject } from '@/contexts/ProjectContext';
 
 export function SocialRegistrationSection({ onInscrever }: SocialRegistrationSectionProps) {
     const { selectedProject } = useProject();

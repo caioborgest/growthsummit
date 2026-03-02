@@ -305,7 +305,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           )) as { data: UserDBMetadata | null };
           userData = ud;
         } catch (e) {
-          logger.warn('DB metadata fetch failed during login:', e);
+          logger.warn('DB metadata fetch failed during login:', { error: String(e) });
         }
 
         const userObj = mapSupabaseUserToUser(data.user, userData || undefined);
@@ -363,7 +363,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user) {
         const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
         setSession(data.session);
-        setUser(mapSupabaseUserToUser(data.user, userData as UserDBMetadata));
+        setUser(mapSupabaseUserToUser(data.user, (userData as unknown) as UserDBMetadata | undefined));
         logAuditEvent('otp_verified', data.user.id);
       }
     } finally {
@@ -403,7 +403,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Habilitar 2FA
   const enable2FA = useCallback(async (): Promise<{ qrCode: string; secret: string }> => {
     if (!user) throw new Error('Auth required');
-    const { data, error } = await supabase.rpc('generate_2fa_secret', { user_id: user.id });
+    const { data, error } = await (supabase.rpc as any)('generate_2fa_secret', { user_id: user.id });
     if (error) throw error;
     logAuditEvent('2fa_enabled', user.id);
     return data as { qrCode: string; secret: string };
@@ -412,7 +412,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Verificar código 2FA
   const verify2FA = useCallback(async (token: string): Promise<boolean> => {
     if (!user) throw new Error('Auth required');
-    const { data, error } = await supabase.rpc('verify_2fa_token', { user_id: user.id, token });
+    const { data, error } = await (supabase.rpc as any)('verify_2fa_token', { user_id: user.id, token });
     if (error) throw error;
     if (data) {
       setUser({ ...user, requires2FA: false });
@@ -445,7 +445,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (currentSession && isMountedRef.current) {
           await updateAuthState(currentSession);
-          logAuditEvent('session_restored', currentSession.user.id);
         }
       } catch (error) {
         logger.error('Fatal auth init error:', error);
@@ -482,11 +481,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setUser(null);
           setIsLoading(false);
+          logAuditEvent('logout_forced', userId); // só loga signout inesperado
         } else if (event === 'TOKEN_REFRESHED') {
           if (currentSession) setSession(currentSession);
         } else if (currentSession) {
           updateAuthState(currentSession);
-          logAuditEvent(event, currentSession.user.id);
+          // Não logar SIGNED_IN automático — já capturado no login() manual
         }
       }
     });

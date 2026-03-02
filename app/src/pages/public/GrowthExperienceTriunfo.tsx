@@ -1,26 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Project } from '@/types';
 import {
-  MapPin,
   TrendingUp,
   Handshake,
   Building2,
   GraduationCap,
-  Menu,
-  X,
   Mic2,
   Award,
-  Phone,
   Target,
-  Mail,
   Zap,
   Rocket,
   Trophy,
   ArrowRight,
   Sparkles,
-  Instagram,
-  Linkedin,
-  Facebook,
   CheckCircle,
   QrCode
 } from 'lucide-react';
@@ -146,18 +138,11 @@ const cotas = [
   }
 ];
 
-const navItems = [
-  { label: 'Sobre', href: '#sobre' },
-  { label: 'Mentores', href: '#mentores' },
-  { label: 'Programação', href: '#programacao' },
-  { label: 'Inscrições', href: '#inscricoes' },
-];
-
 
 
 // Main Component
 export function GrowthExperienceTriunfo() {
-  const { setSelectedProject, selectedProject: contextProject } = useProject();
+  const { setSelectedProject } = useProject();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
@@ -166,6 +151,9 @@ export function GrowthExperienceTriunfo() {
   const { data: userRegistrations } = useRegistrations();
   const { create: registerCheckIn } = useCheckIns();
   const { data: allSessions } = useSessions();
+
+  // initialized MUST be declared before initProject to avoid use-before-declaration
+  const initialized = useRef(false);
 
   const handleScanSuccess = async (qrData: any) => {
     setScannerAberto(false);
@@ -268,16 +256,12 @@ export function GrowthExperienceTriunfo() {
         };
 
         setCurrentProject(canonicalProject);
-        // Só atualiza o contexto se for realmente necessário
-        // Usamos uma verificação direta para evitar dependência do contextProject
         setSelectedProject(canonicalProject);
       }
     } catch (err) {
       console.error('[GrowthExperienceTriunfo] Erro init:', err);
     }
   }, [setSelectedProject]);
-
-  const initialized = useRef(false);
 
   useEffect(() => {
     initProject();

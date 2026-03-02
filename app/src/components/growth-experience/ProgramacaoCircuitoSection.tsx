@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Zap, Trophy } from 'lucide-react';
+import { BookOpen, Zap, Trophy, Briefcase, GraduationCap, Landmark } from 'lucide-react';
 import { ProgramacaoTabs, type ProgramacaoDiurna, type ProgramacaoTarde, type Estacao, type MomentoAncora } from './ProgramacaoTabs';
 import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
 import {
@@ -25,8 +25,6 @@ const getIcon = (nome: string) => {
     return Briefcase;
 };
 
-// Import needed icons that might be used
-import { Briefcase, GraduationCap, Landmark } from 'lucide-react';
 
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
     const { programacao } = useProgramacaoTriunfo();
@@ -53,7 +51,7 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
         circuitoExperiencias: programacao.circuitoExperiencias.map(est => ({
             ...est,
             icon: getIcon(est.nome)
-        }))
+        })) as Estacao[]
     } : {
             programacaoManha: programacaoManhaData,
             programacaoTarde: programacaoTardeData,

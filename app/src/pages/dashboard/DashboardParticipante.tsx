@@ -25,7 +25,8 @@ import {
   ChevronRight,
   ScanLine,
   Edit3,
-  RefreshCw
+  RefreshCw,
+  Lock
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -222,7 +223,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 
 // ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
 function CheckInModal({ registration, onClose }: { registration: any; onClose: () => void }) {
-  const qrValue = `GE-CHECKIN|${registration.id}|${registration.email || ''}|${Date.now()}`;
+  const qrValue = `GE - CHECKIN | ${registration.id}| ${registration.email || ''}| ${Date.now()} `;
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
@@ -352,7 +353,7 @@ export function DashboardParticipante() {
           issue_date: new Date().toISOString()
         }).catch(() => { });
 
-        toast.success(`Check-in em "${sessionTitle}" confirmado! Certificado gerado.`);
+        toast.success(`Check -in em "${sessionTitle}" confirmado! Certificado gerado.`);
         return;
       }
 

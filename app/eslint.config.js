@@ -19,5 +19,14 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Avisa sobre `any` — não quebra o build, mas fica visível no IDE
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // Avisa sobre console.log em produção (logger.ts deve ser usado)
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug', 'table', 'group', 'groupEnd', 'time', 'timeEnd'] }],
+      // Permite variáveis prefixadas com _ sem erro de "unused"
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
   },
 ])
+

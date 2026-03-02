@@ -65,7 +65,7 @@ export default function AdminProjetos() {
         slug: `${slug}-2026`,
         description: formData.description || '',
         settings: formData.settings || defaultSettings,
-      } as Omit<Project, 'id' | 'createdAt' | 'updatedAt'>);
+      } as any);
 
       toast.success('Projeto criado com sucesso!');
       setIsDialogOpen(false);
@@ -87,7 +87,6 @@ export default function AdminProjetos() {
     if (!editingProject) return;
 
     try {
-      // Sanitizar dados antes de enviar
       const updateData = {
         ...formData,
         settings: {

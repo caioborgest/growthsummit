@@ -88,6 +88,10 @@ export function Inscricoes() {
         status: 'active',
         settings: {
           maxRegistrations: edition.slug === 'ge-triunfo-2026' ? 1500 : 500,
+          enableB2B: true,
+          enableMentoring: true,
+          enableStartups: true,
+          enableCheckIn: true,
           ticketPrices: {
             standard: edition.price,
             pro: edition.proPrice,

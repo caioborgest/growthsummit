@@ -62,19 +62,21 @@ export function useProgramacaoTriunfo() {
             atividade: s.title
         }));
 
-        // Circuito
-        const circuito = filterByCategory('circuito').map(s => ({
-            nome: s.title,
-            subtitulo: s.description,
-            parceiro: s.partner || 'Growth Experience',
-            tempo: s.metadata?.tempo || '10-15 min',
-            temas: s.topics || [],
-            cor: s.color || 'orange',
-            icon: () => null, // Placeholder fixed below
-            formato: s.type,
-            capacidade: s.maxCapacity?.toString() || '300/dia',
-            totalDia: s.metadata?.totalDia || 'Contínuo',
-        }));
+        const circuito = filterByCategory('circuito').map(s => {
+            const meta = (s.metadata || {}) as Record<string, string>;
+            return {
+                nome: s.title,
+                subtitulo: s.description,
+                parceiro: s.partner || 'Growth Experience',
+                tempo: meta.tempo || '10-15 min',
+                temas: s.topics || [],
+                cor: s.color || 'orange',
+                icon: () => null, // Placeholder fixed below
+                formato: s.type,
+                capacidade: s.maxCapacity?.toString() || '300/dia',
+                totalDia: meta.totalDia || 'Contínuo',
+            };
+        });
 
         // Default structure to avoid crashes if empty
         return {

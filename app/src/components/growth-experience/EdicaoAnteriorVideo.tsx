@@ -1,4 +1,5 @@
 import { MapPin, Users, Sparkles, ChevronRight } from 'lucide-react';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface EdicaoAnteriorVideoProps {
     /** URL do vídeo story vertical */
@@ -7,7 +8,6 @@ interface EdicaoAnteriorVideoProps {
     showTriunfoTeaser?: boolean;
 }
 
-import { useProject } from '@/contexts/ProjectContext';
 
 export function EdicaoAnteriorVideo({
     videoSrc = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov',
