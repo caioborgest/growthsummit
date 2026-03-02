@@ -197,34 +197,47 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   const [error, setError] = useState<Error | null>(null);
   const { projectId } = useProject();
 
-  const fetchData = useCallback(async () => {
+  const isFetchingRef = useRef(false);
+  const lastFetchParamsRef = useRef({ projectId: '', entityName: '' });
+
+  const fetchData = useCallback(async (force = false) => {
     if (!projectId) return;
+
+    // Concorrência e redundância
+    if (isFetchingRef.current && !force) {
+      // logger.debug(`[useData] Já buscando ${entityName}...`);
+      return;
+    }
 
     const cacheKey = `${projectId}:${entityName}`;
     const cached = dataCache.get(cacheKey);
-    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+
+    // Se temos cache e não é force, usamos o cache e paramos
+    if (!force && cached && Date.now() - cached.ts < CACHE_TTL) {
       setData(cached.data as T[]);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    isFetchingRef.current = true;
+    lastFetchParamsRef.current = { projectId, entityName };
+
     try {
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
 
       // console.log(`[useData] Fetching ${entityName} for project ${projectId}`);
-      // console.log(`[useData] Using table: ${tableName}, fields: ${fields}`);
+      const query = supabase.from(tableName as never).select(fields) as any;
 
-      let query = (supabase.from(tableName as never).select(fields) as any);
-
-      // Filter by project for non-generic tables
+      // Filtro por projeto para tabelas não genéricas
+      let filteredQuery = query;
       if (tableName !== 'projects' && tableName !== 'users' && tableName !== 'profiles') {
-        query = query.eq('project_id', projectId);
+        filteredQuery = query.eq('project_id', projectId);
       }
 
       const result = await withTimeout(
-        query as unknown as Promise<any>,
+        filteredQuery as unknown as Promise<any>,
         15000,
         `FetchData:${entityName}`
       );
@@ -352,6 +365,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       logger.error(`Erro ao buscar ${entityName}:`, err);
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, [projectId, entityName]);
 
@@ -371,7 +385,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       if (error) throw error;
 
       invalidateCache(projectId!, entityName);
-      await fetchData();
+      await fetchData(true);
       return inserted as unknown as T;
     } catch (err) {
       logger.error(`Erro ao criar ${entityName}:`, err);
@@ -420,7 +434,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       if (error) throw error;
       invalidateCache(projectId!, entityName);
-      await fetchData();
+      await fetchData(true);
     } catch (err) {
       logger.error(`Erro ao atualizar ${entityName}:`, err);
       throw err;
@@ -442,7 +456,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       if (error) throw error;
       invalidateCache(projectId!, entityName);
-      await fetchData();
+      await fetchData(true);
     } catch (err) {
       logger.error(`Erro ao remover ${entityName}:`, err);
       throw err;
