@@ -3,9 +3,9 @@ import { logger } from './logger';
 
 export const config = {
   // App
-  appName: import.meta.env.VITE_APP_NAME || 'Growth Summit 2026',
-  appUrl: import.meta.env.VITE_APP_URL || 'https://www.growthsummit.site',
-  apiUrl: import.meta.env.VITE_API_URL || 'https://www.growthsummit.site/api',
+  appName: import.meta.env.VITE_APP_NAME || 'Growth Experience 2026',
+  appUrl: import.meta.env.VITE_APP_URL || 'https://www.growthexperience.site',
+  apiUrl: import.meta.env.VITE_API_URL || 'https://www.growthexperience.site/api',
   environment: import.meta.env.VITE_ENVIRONMENT || 'development',
 
   // Feature Flags
@@ -28,7 +28,7 @@ export const config = {
 
   // Evento
   event: {
-    name: import.meta.env.VITE_EVENT_NAME || 'Growth Summit 2026',
+    name: import.meta.env.VITE_EVENT_NAME || 'Growth Experience 2026',
     dateStart: import.meta.env.VITE_EVENT_DATE_START || '2026-04-16',
     dateEnd: import.meta.env.VITE_EVENT_DATE_END || '2026-04-16',
     location: import.meta.env.VITE_EVENT_LOCATION || 'Juazeiro do Norte, CE',

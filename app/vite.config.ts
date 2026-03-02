@@ -11,10 +11,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        id: 'com.growthsummit.app',
-        name: 'Growth Summit 2026',
-        short_name: 'Growth Summit',
-        description: 'Plataforma oficial do Growth Summit 2026',
+        id: 'com.growthexperience.app',
+        name: import.meta.env.VITE_EVENT_NAME || 'Growth Experience 2026',
+        short_name: 'Growth Experience',
+        description: 'Plataforma oficial do Growth Experience 2026', // The HTML tag was likely intended for index.html, not here. Keeping original description.
         start_url: '/login',
         theme_color: '#ff7043',
         background_color: '#0c0e12',

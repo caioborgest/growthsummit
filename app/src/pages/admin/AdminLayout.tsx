@@ -372,7 +372,7 @@ export function AdminLayout() {
           {/* Footer Copyright inside main content */}
           <footer className="px-8 py-6 border-t border-white/5 text-center sm:text-left">
             <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.2em]">
-              © 2026 Growth Summit • Advanced Management Ecosystem
+              © 2026 Growth Experience • Advanced Management Ecosystem
             </p>
           </footer>
         </div>
