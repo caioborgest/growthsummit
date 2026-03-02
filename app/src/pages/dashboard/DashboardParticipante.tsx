@@ -26,7 +26,10 @@ import {
   ScanLine,
   Edit3,
   RefreshCw,
-  Lock
+  Lock,
+  Copy,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +41,7 @@ import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -53,6 +57,10 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const [cupomValido, setCupomValido] = useState<null | { desconto: number; nome: string }>(null);
   const [loadingCupom, setLoadingCupom] = useState(false);
   const [loadingPagamento, setLoadingPagamento] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
+  const { selectedProject } = useProject();
+  const { registration } = useMyRegistration();
 
   const PRECO_BASE = 179.90;
   const precoFinal = cupomValido
@@ -97,7 +105,25 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const handlePagamento = async () => {
     setLoadingPagamento(true);
     try {
-      // Atualizar inscrição com acesso noturno
+      // 1. WhatsApp Message for human confirmation
+      const phoneInfo = registration?.phone ? `\n• *Telefone:* ${registration.phone}` : '';
+      const cupomInfo = cupomValido ? `\n• *Cupom:* ${cupom.trim().toUpperCase()}` : '';
+
+      // 2. Conditional WhatsApp Message or Immediate Confirmation
+      if (precoFinal > 0) {
+        const mensagem = encodeURIComponent(
+          `🚀 *COMPROVANTE DE PAGAMENTO - GROWTH EXPERIENCE*\n\n` +
+          `Olá! Acabo de realizar o pagamento do meu upgrade para o *Acesso Pro*.\n\n` +
+          `*DADOS DO PARTICIPANTE:*\n` +
+          `• *Nome:* ${user?.user_metadata?.full_name || user?.email}${phoneInfo}${cupomInfo}\n` +
+          `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
+          `• *Valor Pago:* R$ ${precoFinal.toFixed(2).replace('.', ',')}\n\n` +
+          `_Estou enviando o comprovante em anexo abaixo._`
+        );
+        window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
+      }
+
+      // 3. Mark in DB as "pago" (Marked as paid to unlock features)
       const { error } = await (supabase.from('inscricoes_growth_experience') as any)
         .update({
           palestras_noturnas: true,
@@ -119,7 +145,12 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
           .catch(() => { }); // silently fail
       }
 
-      toast.success('🎉 Acesso Pro ativado! Bem-vindo às palestras noturnas!');
+      if (precoFinal === 0) {
+        toast.success('🎉 Upgrade concluído com sucesso!');
+      } else {
+        toast.success('🎉 Comprovante enviado! Bem-vindo às palestras noturnas!');
+      }
+
       onSuccess();
       onClose();
     } catch (err) {
@@ -128,6 +159,14 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     } finally {
       setLoadingPagamento(false);
     }
+  };
+
+  const handleCopyPix = () => {
+    if (!EVENT_CONFIG.pix.cnpj) return;
+    navigator.clipboard.writeText(EVENT_CONFIG.pix.cnpj);
+    setCopied(true);
+    toast.success("Chave PIX (CNPJ) copiada!");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -202,6 +241,39 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
             </div>
           </div>
 
+          {/* Dados PIX (Ocultar se for 100% de desconto) */}
+          {precoFinal > 0 && (
+            <div className="bg-dark-300 rounded-2xl p-4 space-y-3 border border-orange-500/10">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <QrCode className="h-3.5 w-3.5 text-orange-400" /> Pagamento via PIX (CNPJ)
+                </h4>
+                <Badge className="bg-orange-500/10 text-orange-400 border-none text-[10px] px-2">LIBERAÇÃO IMEDIATA</Badge>
+              </div>
+
+              <div className="flex items-center gap-3 bg-dark-200 p-3 rounded-xl border border-white/5 relative group transition-all hover:border-orange-500/30">
+                <div className="flex-1">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">CUIDADO COM FRAUDES! FAVORECIDO:</p>
+                  <p className="text-xs text-white font-bold leading-none">{EVENT_CONFIG.pix.beneficiario}</p>
+                  <p className="text-sm font-mono text-white mt-1.5 font-bold">{EVENT_CONFIG.pix.cnpj}</p>
+                </div>
+                <button
+                  onClick={handleCopyPix}
+                  className="bg-orange-500 hover:bg-orange-600 p-2.5 rounded-lg text-white shadow-lg transition-all active:scale-95"
+                >
+                  {copied ? <CheckCircle className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                </button>
+              </div>
+
+              <div className="flex items-start gap-2 bg-orange-500/5 p-3 rounded-xl">
+                <AlertCircle className="h-3.5 w-3.5 text-orange-400 flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-gray-400 leading-tight">
+                  Após o pagamento, clique no botão botão abaixo para <strong className="text-white">enviar o comprovante pelo WhatsApp</strong>.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Pagamento */}
           <Button
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-6 h-auto rounded-2xl text-base shadow-lg shadow-orange-500/30 flex items-center gap-3"
@@ -210,8 +282,10 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
           >
             {loadingPagamento ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> Processando...</>
+            ) : precoFinal === 0 ? (
+              <><Sparkles className="h-5 w-5" /> Esperamos você em breve!</>
             ) : (
-              <><CreditCard className="h-5 w-5" /> GARANTIR ACESSO PRO</>
+              <><MessageCircle className="h-5 w-5" /> CONFIRMAR E ENVIAR COMPROVANTE</>
             )}
           </Button>
           <p className="text-center text-gray-600 text-xs">Pagamento simulado para demonstração</p>

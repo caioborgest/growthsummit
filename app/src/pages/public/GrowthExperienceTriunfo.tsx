@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { Project } from '@/types';
 import {
   TrendingUp,
@@ -142,6 +143,7 @@ const cotas = [
 
 // Main Component
 export function GrowthExperienceTriunfo() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { setSelectedProject } = useProject();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
@@ -267,6 +269,35 @@ export function GrowthExperienceTriunfo() {
     initProject();
   }, [initProject]);
 
+  // Sincronizar modais com a URL para facilitar compartilhamento
+  useEffect(() => {
+    const formParam = searchParams.get('form');
+    if (formParam === 'inscricao') setModalInscricaoAberto(true);
+    else if (['mentor', 'mentor-cadastro', 'startup', 'b2b', 'palestra', 'empresa'].includes(formParam || '')) {
+      setModalAberto(formParam as any);
+    }
+  }, [searchParams]);
+
+  const closeModals = () => {
+    setModalInscricaoAberto(false);
+    setModalAberto(null);
+    // Limpar parâmetro da URL de forma suave
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('form');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const handleOpenModal = (formName: string) => {
+    if (formName === 'inscricao') {
+      setModalInscricaoAberto(true);
+    } else {
+      setModalAberto(formName as any);
+    }
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('form', formName);
+    setSearchParams(newParams, { replace: true });
+  };
+
   const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
 
@@ -284,20 +315,20 @@ export function GrowthExperienceTriunfo() {
 
 
       {/* Modais */}
-      <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={() => setModalInscricaoAberto(false)} />
-      <MentoriaMultiStepModal isOpen={modalAberto === 'mentor'} onClose={() => setModalAberto(null)} />
-      <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={() => setModalAberto(null)} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
-      <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={() => setModalAberto(null)} />
-      <StartupFormModal isOpen={modalAberto === 'startup'} onClose={() => setModalAberto(null)} />
-      <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={() => setModalAberto(null)} />
-      <EmpresaIncentivadoraModal isOpen={modalAberto === 'empresa'} onClose={() => setModalAberto(null)} />
+      <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={closeModals} />
+      <MentoriaMultiStepModal isOpen={modalAberto === 'mentor'} onClose={closeModals} />
+      <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={closeModals} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
+      <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={closeModals} />
+      <StartupFormModal isOpen={modalAberto === 'startup'} onClose={closeModals} />
+      <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={closeModals} />
+      <EmpresaIncentivadoraModal isOpen={modalAberto === 'empresa'} onClose={closeModals} />
 
       <LotePromocionalPopUp />
 
       {/* Hero Section Refinada */}
       <HeroSectionRefined
         project={currentProject || undefined}
-        onCTAClick={() => setModalInscricaoAberto(true)}
+        onCTAClick={() => handleOpenModal('inscricao')}
       />
 
       {/* Stats Section Refinada */}
@@ -435,7 +466,7 @@ export function GrowthExperienceTriunfo() {
               <Button
                 variant="link"
                 className="text-brand-orange-coral mt-4 font-bold"
-                onClick={() => setModalAberto('mentor-cadastro')}
+                onClick={() => handleOpenModal('mentor-cadastro')}
               >
                 Quero ser um mentor confirmado
               </Button>
@@ -446,7 +477,7 @@ export function GrowthExperienceTriunfo() {
             <Button
               size="lg"
               className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white border border-brand-orange-coral/30 font-black px-12 py-8 text-lg rounded-2xl transition-all duration-300 h-auto"
-              onClick={() => setModalAberto('mentor-cadastro')}
+              onClick={() => handleOpenModal('mentor-cadastro')}
             >
               Candidatar-se como Mentor
             </Button>
@@ -481,7 +512,7 @@ export function GrowthExperienceTriunfo() {
                 horario={p.horario}
                 foto={getPalestranteImage(p.nome)}
                 destaque={true}
-                onInscricao={() => setModalAberto('palestra')}
+                onInscricao={() => handleOpenModal('palestra')}
               />
             ))}
           </div>
@@ -490,7 +521,7 @@ export function GrowthExperienceTriunfo() {
             <Button
               size="lg"
               className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 py-8 text-xl rounded-2xl shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300 h-auto"
-              onClick={() => setModalInscricaoAberto(true)}
+              onClick={() => handleOpenModal('inscricao')}
             >
               <Mic2 className="h-6 w-6 mr-3" />
               Garantir Ingresso VIP
@@ -501,7 +532,7 @@ export function GrowthExperienceTriunfo() {
 
       {/* Programação Completa */}
       {/* Programação - Circuito de Experiências */}
-      <ProgramacaoCircuitoSection onInscricao={() => setModalInscricaoAberto(true)} />
+      <ProgramacaoCircuitoSection onInscricao={() => handleOpenModal('inscricao')} />
 
       {/* Seção Inovadora: Incentivo de Equipe */}
       <section className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
@@ -541,7 +572,7 @@ export function GrowthExperienceTriunfo() {
               <Button
                 size="lg"
                 className="w-full sm:w-auto bg-white text-dark font-black px-10 py-7 rounded-2xl shadow-xl hover:bg-brand-orange-coral hover:text-white transition-all duration-300 h-auto group"
-                onClick={() => setModalAberto('empresa')}
+                onClick={() => handleOpenModal('empresa')}
               >
                 Inscrever minha Equipe
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
@@ -564,7 +595,7 @@ export function GrowthExperienceTriunfo() {
       </section>
 
       {/* Seção de Inscrição Social */}
-      <SocialRegistrationSection onInscrever={() => setModalInscricaoAberto(true)} />
+      <SocialRegistrationSection onInscrever={() => handleOpenModal('inscricao')} />
 
       {/* Seções de Inscrição */}
       <div id="inscricoes">

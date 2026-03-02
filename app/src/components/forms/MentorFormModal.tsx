@@ -14,6 +14,7 @@ interface MentorFormModalProps {
 import { areasMentoria } from '@/data/mentores';
 
 const ESPECIALIDADES = areasMentoria;
+const DRAFT_KEY = 'mentor_form_draft';
 
 export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [step, setStep] = useState(1);
@@ -37,6 +38,58 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
     const { projectId } = useProject();
+
+    // Auto-scroll to top when step changes
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [step]);
+
+    // Carregar rascunho ao iniciar
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setFormData(prev => ({ ...prev, ...parsed.data, foto: null })); // Files não persistem
+                if (parsed.data.fotoPreview) {
+                    setFormData(prev => ({ ...prev, fotoPreview: parsed.data.fotoPreview }));
+                }
+                setStep(parsed.step || 1);
+                logger.info('Rascunho de mentor carregado');
+            } catch (e) {
+                logger.warn('Erro ao carregar rascunho:', e);
+            }
+        }
+    }, []);
+
+    // Salvar rascunho periodicamente
+    useEffect(() => {
+        if (isOpen && !isSuccess) {
+            const draftData = {
+                data: {
+                    ...formData,
+                    foto: null, // Não salvar objeto File
+                    senha: '', // Higienizar
+                    confirmarSenha: ''
+                },
+                step,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        }
+    }, [formData, step, isOpen, isSuccess]);
+
+    const clearDraft = () => {
+        localStorage.removeItem(DRAFT_KEY);
+        setFormData({
+            nome: '', email: '', telefone: '', empresa: '', cargo: '',
+            bio: '', linkedin: '', especialidades: [], senha: '', confirmarSenha: '',
+            foto: null, fotoPreview: ''
+        });
+        setStep(1);
+    };
 
     if (!isOpen) return null;
 
@@ -64,13 +117,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         setTimeout(() => setIsProcessing(false), 500);
     };
 
-    // Auto-scroll to top when step changes
-    useEffect(() => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [step]);
-
     const prevStep = () => {
         if (isProcessing) return;
         setStep(prev => prev - 1);
@@ -91,42 +137,16 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 throw new Error('As senhas não coincidem');
             }
 
-            // 0. Upload Foto if exists
-            if (formData.foto) {
-                logger.info('Enviando foto...');
-                try {
-                    const file = formData.foto;
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Math.random()}.${fileExt}`;
-                    const filePath = `mentores/${fileName}`;
-
-                    const { error: uploadError } = await supabase.storage
-                        .from('event-images')
-                        .upload(filePath, file);
-
-                    if (uploadError) throw uploadError;
-
-                    const { data: urlData } = supabase.storage
-                        .from('event-images')
-                        .getPublicUrl(filePath);
-
-                    fotoUrl = urlData.publicUrl;
-                } catch (imgErr) {
-                    logger.warn('Erro ao enviar imagem (não fatal):', imgErr);
-                }
-            }
-
-            // 0. Verificar se já existe uma sessão ativa
+            // 1. Auth SignUp / SignIn (First step to have a valid session for Storage)
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== formData.email) {
                 userId = undefined;
             }
 
             if (!userId) {
-                // 1. Auth SignUp
+                logger.info('Tentando autenticação para:', formData.email);
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: formData.email,
                     password: formData.senha,
@@ -141,6 +161,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                 if (sError) {
                     if (sError.message.toLowerCase().includes('already registered')) {
+                        logger.info('Usuário já cadastrado, tentando login...');
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                             email: formData.email,
                             password: formData.senha
@@ -148,10 +169,11 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                         if (!signInError) {
                             userId = signInData.user.id;
+                            logger.info('Login efetuado com sucesso.');
                         } else {
                             logger.warn('Login automático falhou:', signInError.message);
                             if (signInError.message.includes('Invalid login credentials')) {
-                                throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
+                                throw new Error('Este e-mail já está cadastrado com outra senha. Por favor, use a senha correta ou outro e-mail.');
                             }
                             throw signInError;
                         }
@@ -160,63 +182,99 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                     }
                 } else {
                     userId = authData?.user?.id;
+                    logger.info('Conta criada com sucesso.');
                 }
             }
 
+            // 2. Photo Upload (Now authenticated)
+            if (formData.foto && formData.foto instanceof File) {
+                try {
+                    logger.info('Enviando foto (identidade autenticada)...');
+                    const file = formData.foto;
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${userId || Math.random()}-${Date.now()}.${fileExt}`;
+                    const filePath = `mentores/${fileName}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('event-images')
+                        .upload(filePath, file);
+
+                    if (uploadError) {
+                        logger.warn('Erro RLS/Storage, tentando upload após delay ou ignorando:', uploadError);
+                        // Se falhar upload, continuamos para não travar o cadastro
+                    } else {
+                        const { data: urlData } = supabase.storage
+                            .from('event-images')
+                            .getPublicUrl(filePath);
+                        fotoUrl = urlData.publicUrl;
+                        logger.info('Foto enviada:', fotoUrl);
+                    }
+                } catch (imgErr) {
+                    logger.warn('Erro ao processar imagem:', imgErr);
+                }
+            }
+
+            // 3. Sync with public.users (Conflict on email is more robust)
             if (userId) {
                 try {
-                    // Verificar se o metadado já existe no DB (opcional, para logging)
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, role')
-                        .eq('id', userId)
-                        .maybeSingle();
+                    logger.info('Sincronizando dados na tabela de usuários pública...');
+                    const { error: syncError } = await (supabase.from('users') as any).upsert({
+                        id: userId,
+                        email: formData.email,
+                        name: formData.nome,
+                        phone: formData.telefone,
+                        role: 'mentor',
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'email' });
 
-                    if (!userData) {
-                        logger.info('Aguardando sincronização do trigger de usuários...');
+                    if (syncError) {
+                        logger.warn('Sincronização falhou (pode ser restrição de banco):', syncError);
                     }
-                } catch (userTableCatch) {
-                    logger.warn('Aviso de sincronização (não fatal):', userTableCatch);
+                } catch (userSyncErr) {
+                    logger.warn('Erro de sincronização não fatal:', userSyncErr);
                 }
             }
 
-            // 2. Salvar inscrição no banco (usando UPSERT para evitar erro 409)
+            // 4. Save Record in mentores_growth_experience
+            logger.info('Salvando dados na tabela de mentores...');
+            const targetProjectId = projectId || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; // Fallback para Triunfo se não detectado
+
+            const mentorData = {
+                project_id: targetProjectId,
+                user_id: userId || null,
+                nome: formData.nome,
+                email: formData.email,
+                telefone: formData.telefone,
+                empresa: formData.empresa,
+                cargo: formData.cargo,
+                especialidades: formData.especialidades,
+                bio: formData.bio,
+                linkedin_url: formData.linkedin,
+                foto_url: fotoUrl || formData.fotoPreview || '',
+                status: 'pendente',
+                created_at: new Date().toISOString()
+            };
+
+            logger.info('Dados a serem salvos:', { ...mentorData, email: '***' });
+
             const { error: dbError } = await supabase
                 .from('mentores_growth_experience')
-                .upsert({
-                    project_id: projectId,
-                    user_id: userId || null,
-                    nome: formData.nome,
-                    email: formData.email,
-                    telefone: formData.telefone,
-                    empresa: formData.empresa,
-                    cargo: formData.cargo,
-                    especialidades: formData.especialidades,
-                    bio: formData.bio,
-                    linkedin_url: formData.linkedin,
-                    foto_url: fotoUrl,
-                    status: 'pendente',
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'email' });
+                .upsert(mentorData, { onConflict: 'email' });
 
             if (dbError) {
-                logger.error('Erro ao salvar no banco:', dbError);
+                logger.error('Erro ao salvar mentor no Supabase:', dbError);
                 throw dbError;
             }
 
             logger.info('Sucesso! Mentor registrado.');
             setIsSuccess(true);
+            localStorage.removeItem(DRAFT_KEY);
 
             // Limpeza após 5 segundos
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
-                setStep(1);
-                setFormData({
-                    nome: '', email: '', telefone: '', empresa: '', cargo: '',
-                    bio: '', linkedin: '', especialidades: [], senha: '', confirmarSenha: '',
-                    foto: null, fotoPreview: ''
-                });
+                clearDraft();
             }, 5000);
 
         } catch (err: unknown) {

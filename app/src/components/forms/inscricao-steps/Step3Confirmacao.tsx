@@ -120,7 +120,13 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
                     if (existingUser && existingUser.id !== userId) {
                         logger.warn(`Detectado usuário zumbi para o email ${dados.email}. Tentando remover...`);
-                        await supabase.from('users').delete().eq('email', dados.email).catch(() => { });
+                        try {
+                            // Removação sem .catch() no builder, tratando o resultado
+                            const { error: delError } = await supabase.from('users').delete().eq('email', dados.email);
+                            if (delError) logger.warn('Erro ao tentar remover usuário zumbi:', delError);
+                        } catch (e) {
+                            logger.warn('Falha na tentativa de remover usuário zumbi:', e);
+                        }
                     }
 
                     const usersTable = supabase.from('users') as any;

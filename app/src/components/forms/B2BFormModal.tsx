@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { X, Loader2, CheckCircle, Handshake, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ interface B2BFormModalProps {
 }
 
 export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
+    const DRAFT_KEY = 'b2b_form_draft';
     const [formData, setFormData] = useState({
         // Representante
         nome_representante: '',
@@ -47,6 +48,52 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const { projectId } = useProject();
+
+    // Carregar rascunho
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setFormData(prev => ({ ...prev, ...parsed.data }));
+                if (parsed.data.logoPreview) {
+                    setLogoPreview(parsed.data.logoPreview);
+                }
+                logger.info('Rascunho B2B carregado');
+            } catch (e) {
+                logger.warn('Erro ao carregar rascunho B2B:', e);
+            }
+        }
+    }, []);
+
+    // Salvar rascunho
+    useEffect(() => {
+        if (isOpen && !isSuccess) {
+            const draftData = {
+                data: {
+                    ...formData,
+                    senha: '', // Higienizar
+                    confirmarSenha: '',
+                    logoPreview // Tentar persistir base64 se disponível
+                },
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        }
+    }, [formData, logoPreview, isOpen, isSuccess]);
+
+    const clearDraft = () => {
+        localStorage.removeItem(DRAFT_KEY);
+        setFormData({
+            nome_representante: '', cargo: '', email: '', telefone: '', senha: '',
+            confirmarSenha: '', nome_empresa: '', cnpj: '', setor: '', porte: '',
+            faturamento_anual: '', numero_funcionarios: '', descricao_empresa: '',
+            produtos_servicos: '', site_url: '', linkedin_url: '', tipo_interesse: '',
+            areas_interesse: '', descricao_objetivos: '',
+        });
+        setLogoFile(null);
+        setLogoPreview(null);
+    };
 
     if (!isOpen) return null;
 
@@ -262,30 +309,11 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             }
 
             setIsSuccess(true);
+            localStorage.removeItem(DRAFT_KEY);
 
             // Resetar formulário após 3 segundos
             setTimeout(() => {
-                setFormData({
-                    nome_representante: '',
-                    cargo: '',
-                    email: '',
-                    telefone: '',
-                    senha: '',
-                    confirmarSenha: '',
-                    nome_empresa: '',
-                    cnpj: '',
-                    setor: '',
-                    porte: '',
-                    faturamento_anual: '',
-                    numero_funcionarios: '',
-                    descricao_empresa: '',
-                    produtos_servicos: '',
-                    site_url: '',
-                    linkedin_url: '',
-                    tipo_interesse: '',
-                    areas_interesse: '',
-                    descricao_objetivos: '',
-                });
+                clearDraft();
                 setIsSuccess(false);
                 onClose();
             }, 3000);

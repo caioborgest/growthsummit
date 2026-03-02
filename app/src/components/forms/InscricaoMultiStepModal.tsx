@@ -13,6 +13,8 @@ import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 
+const DRAFT_KEY = 'inscricao_form_draft';
+
 interface InscricaoMultiStepModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -36,23 +38,12 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     const handleClose = () => {
         if (currentStep === 7) {
-            // Pode fechar na conclusão
             onClose();
-            setCurrentStep(1);
-            setDados({
-                cursosSelecionados: [],
-                nome: '',
-                email: '',
-                telefone: '',
-                senha: '',
-                comprarPalestras: false
-            });
+            clearDraft();
         } else {
-            // Confirmar se quer sair
-            if (confirm('Deseja realmente sair? Seus dados serão perdidos.')) {
-                onClose();
-                setCurrentStep(1);
-            }
+            // No modo rascunho, podemos fechar sem medo de perder tudo, 
+            // mas ainda é bom ter um aviso se for uma ação brusca
+            onClose();
         }
     };
 
@@ -75,6 +66,49 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [currentStep]);
+
+    // Carregar rascunho ao iniciar
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setDados(prev => ({ ...prev, ...parsed.data }));
+                setCurrentStep(parsed.step || 1);
+                logger.info('Rascunho de inscrição carregado');
+            } catch (e) {
+                logger.warn('Erro ao carregar rascunho de inscrição:', e);
+            }
+        }
+    }, []);
+
+    // Salvar rascunho
+    useEffect(() => {
+        if (isOpen && currentStep < 7) {
+            const draftData = {
+                data: {
+                    ...dados,
+                    senha: '' // Higienizar
+                },
+                step: currentStep,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        }
+    }, [dados, currentStep, isOpen]);
+
+    const clearDraft = () => {
+        localStorage.removeItem(DRAFT_KEY);
+        setDados({
+            cursosSelecionados: [],
+            nome: '',
+            email: '',
+            telefone: '',
+            senha: '',
+            comprarPalestras: false
+        });
+        setCurrentStep(1);
+    };
 
     const prevStep = () => {
         if (isProcessing) return;

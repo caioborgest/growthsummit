@@ -32,31 +32,51 @@ const initialEmailTemplates = [
   {
     id: '1',
     name: 'Confirmação de Inscrição',
-    subject: 'Sua inscrição no Growth Summit 2026 foi confirmada!',
+    subject: 'Sua inscrição no Growth Experience 2026 foi confirmada! 🚀',
     category: 'Inscrições',
-    lastUsed: '2024-01-15',
+    lastUsed: '2024-03-02',
+    body: `<h1>Olá {{nome}}!</h1>
+<p>É uma alegria confirmar sua presença no <strong>Growth Experience 2026</strong>.</p>
+<p>Seu ingresso está garantido. Prepare-se para uma experiência transformadora de gestão e networking.</p>
+<p><strong>Detalhes do Acesso:</strong><br/>
+Tipo: {{ticket}}<br/>
+Data: {{data}}</p>
+<p>Nos vemos em breve!</p>`
   },
   {
     id: '2',
-    name: 'Lembrete de Evento',
-    subject: 'Faltam 7 dias para o Growth Summit 2026',
-    category: 'Lembretes',
-    lastUsed: '2024-01-10',
+    name: 'Convite para Mentor',
+    subject: 'Convite Especial: Mentoria no Growth Experience',
+    category: 'Mentorias',
+    lastUsed: '2024-03-02',
+    body: `<h1>Olá {{nome}},</h1>
+<p>Temos o prazer de convidá-lo para atuar como mentor no <strong>Growth Experience</strong>.</p>
+<p>Sua expertise será fundamental para impulsionar os negócios da nossa região.</p>
+<p>Por favor, confirme sua disponibilidade e complete seu perfil no nosso painel.</p>`
   },
   {
     id: '3',
-    name: 'Confirmação de Mentoria',
-    subject: 'Sua mentoria foi agendada',
-    category: 'Mentorias',
-    lastUsed: '2024-01-12',
+    name: 'Boas-vindas Patrocinador',
+    subject: 'Bem-vindo ao Growth Experience: Guia do Patrocinador',
+    category: 'Patrocinadores',
+    lastUsed: '2024-03-02',
+    body: `<h1>Parceiro Growth Experience,</h1>
+<p>Estamos entusiasmados em ter sua marca conosco nesta edição.</p>
+<p>Anexamos o manual da marca e o cronograma de montagem dos stands.</p>
+<p>Qualquer dúvida, nossa equipe de sucesso do parceiro está à disposição.</p>`
   },
   {
     id: '4',
-    name: 'QR Code de Acesso',
-    subject: 'Seu QR Code para o Growth Summit 2026',
-    category: 'Acesso',
-    lastUsed: '2024-01-14',
+    name: 'Inscrição de Equipe - Empresa',
+    subject: 'Confirmação de Inscrição em Grupo: Equipe {{empresa}}',
+    category: 'Empresas',
+    lastUsed: '2024-03-02',
+    body: `<h1>Olá {{nome}},</h1>
+<p>A inscrição da sua equipe da <strong>{{empresa}}</strong> no Growth Experience foi recebida.</p>
+<p><strong>🚨 Informação Importante:</strong> A empresa que apresentar a maior quantidade de colaboradores participando das programações diurna e noturna (paga) receberá o prêmio <strong>"Empresa incentivadora na educação empreendedora"</strong> durante o evento.</p>
+<p>Em breve enviaremos os códigos de acesso individual para cada colaborador.</p>`
   },
+
 ];
 
 const initialEmailCampaigns = [
@@ -185,6 +205,19 @@ export function AdminComunicacao() {
       } else if (composeData.recipients === 'startups') {
         const { data } = await supabase.from('startups_arena_pitch').select('email') as { data: { email: string }[] | null };
         emails = [...new Set(data?.map(i => i.email) || [])];
+      } else if (composeData.recipients === 'sponsors') {
+        const { data } = await supabase.from('sponsors').select('contact_email') as { data: { contact_email: string }[] | null };
+        emails = [...new Set(data?.map(i => i.contact_email) || [])];
+      } else if (composeData.recipients === 'companies') {
+        // Combinar emails de B2B e Incentivadoras
+        const [b2bRes, incentiveRes] = await Promise.all([
+          supabase.from('rodada_negocios_b2b').select('email'),
+          supabase.from('inscricoes_empresas_incentivadoras').select('email')
+        ]);
+        emails = [...new Set([
+          ...(b2bRes.data?.map(i => i.email) || []),
+          ...(incentiveRes.data?.map(i => i.email) || [])
+        ])];
       }
 
       if (emails.length === 0) {
@@ -271,7 +304,10 @@ export function AdminComunicacao() {
       {activeTab === 'templates' && (
         <>
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white">Templates de Email</h2>
+            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-3">
+              <Mail className="h-6 w-6 text-teal-400" />
+              Gestão de E-mail & Push
+            </h2>
             <Dialog open={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
@@ -305,6 +341,8 @@ export function AdminComunicacao() {
                         <option value="Inscrições">Inscrições</option>
                         <option value="Lembretes">Lembretes</option>
                         <option value="Mentorias">Mentorias</option>
+                        <option value="Patrocinadores">Patrocinadores</option>
+                        <option value="Empresas">Empresas</option>
                         <option value="Acesso">Acesso</option>
                         <option value="Outros">Outros</option>
                       </select>
@@ -434,6 +472,10 @@ export function AdminComunicacao() {
                       <option value="paid">Apenas pagos</option>
                       <option value="pending">Apenas pendentes</option>
                       <option value="vip">Apenas VIP</option>
+                      <option value="mentors">Mentores</option>
+                      <option value="startups">Startups</option>
+                      <option value="sponsors">Patrocinadores</option>
+                      <option value="companies">Empresas (Equipes/B2B)</option>
                     </select>
                   </div>
                   <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
@@ -546,6 +588,28 @@ export function AdminComunicacao() {
 
           <div className="space-y-4">
             <div>
+              <label className="block text-sm text-gray-400 mb-2">Usar Template (Opcional)</label>
+              <select
+                onChange={(e) => {
+                  const template = templates.find(t => t.id === e.target.value);
+                  if (template) {
+                    setComposeData({
+                      ...composeData,
+                      subject: template.subject,
+                      body: template.body || ''
+                    });
+                  }
+                }}
+                className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+              >
+                <option value="">Selecione um template para carregar...</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label className="block text-sm text-gray-400 mb-2">Destinatários</label>
               <select
                 value={composeData.recipients}
@@ -558,6 +622,8 @@ export function AdminComunicacao() {
                 <option value="vip">Apenas VIP</option>
                 <option value="mentors">Mentores</option>
                 <option value="startups">Startups</option>
+                <option value="sponsors">Patrocinadores</option>
+                <option value="companies">Empresas (Equipes/B2B)</option>
               </select>
             </div>
 
@@ -585,7 +651,7 @@ export function AdminComunicacao() {
             <div className="bg-dark-100 rounded-lg p-4">
               <p className="text-gray-400 text-sm mb-2">Variáveis disponíveis:</p>
               <div className="flex flex-wrap gap-2">
-                {['{{nome}}', '{{email}}', '{{ticket}}', '{{evento}}', '{{data}}'].map((variable) => (
+                {['{{nome}}', '{{email}}', '{{ticket}}', '{{evento}}', '{{data}}', '{{empresa}}'].map((variable) => (
                   <Badge
                     key={variable}
                     className="bg-dark-300 text-gray-300 cursor-pointer hover:bg-teal-500/20 hover:text-teal-400"

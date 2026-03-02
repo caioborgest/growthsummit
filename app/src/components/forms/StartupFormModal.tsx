@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Loader2, CheckCircle, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -11,6 +11,7 @@ interface StartupFormModalProps {
 }
 
 export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
+    const DRAFT_KEY = 'startup_form_draft';
     const [formData, setFormData] = useState({
         // Fundador
         nome_fundador: '',
@@ -41,6 +42,45 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
     const { projectId } = useProject();
+
+    // Carregar rascunho
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setFormData(prev => ({ ...prev, ...parsed.data }));
+                logger.info('Rascunho de startup carregado');
+            } catch (e) {
+                logger.warn('Erro ao carregar rascunho de startup:', e);
+            }
+        }
+    }, []);
+
+    // Salvar rascunho
+    useEffect(() => {
+        if (isOpen && !isSuccess) {
+            const draftData = {
+                data: {
+                    ...formData,
+                    senha: '', // Higienizar
+                    confirmarSenha: ''
+                },
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        }
+    }, [formData, isOpen, isSuccess]);
+
+    const clearDraft = () => {
+        localStorage.removeItem(DRAFT_KEY);
+        setFormData({
+            nome_fundador: '', email: '', telefone: '', senha: '', confirmarSenha: '',
+            nome_startup: '', descricao_startup: '', setor: '', estagio: '',
+            problema: '', solucao: '', diferencial: '', faturamento_mensal: '',
+            investimento_buscado: '', pitch_deck_url: '', video_pitch_url: '',
+        });
+    };
 
     if (!isOpen) return null;
 
@@ -217,27 +257,11 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             }
 
             setIsSuccess(true);
+            localStorage.removeItem(DRAFT_KEY);
 
             // Resetar formulário após 3 segundos
             setTimeout(() => {
-                setFormData({
-                    nome_fundador: '',
-                    email: '',
-                    telefone: '',
-                    senha: '',
-                    confirmarSenha: '',
-                    nome_startup: '',
-                    descricao_startup: '',
-                    setor: '',
-                    estagio: '',
-                    problema: '',
-                    solucao: '',
-                    diferencial: '',
-                    faturamento_mensal: '',
-                    investimento_buscado: '',
-                    pitch_deck_url: '',
-                    video_pitch_url: '',
-                });
+                clearDraft();
                 setIsSuccess(false);
                 onClose();
             }, 3000);

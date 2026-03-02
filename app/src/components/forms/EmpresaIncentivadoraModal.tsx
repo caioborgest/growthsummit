@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Loader2, CheckCircle, Users, Trophy, Building2, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,11 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 interface EmpresaIncentivadoraModalProps {
     isOpen: boolean;
     onClose: () => void;
+    isAdmin?: boolean;
 }
 
-export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivadoraModalProps) {
+export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: EmpresaIncentivadoraModalProps) {
+    const DRAFT_KEY = 'empresa_form_draft';
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -27,6 +29,39 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
         quantidadeEquipe: '',
         objetivo: ''
     });
+
+    // Carregar rascunho
+    useEffect(() => {
+        const saved = localStorage.getItem(DRAFT_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setFormData(prev => ({ ...prev, ...parsed.data }));
+                logger.info('Rascunho de empresa carregado');
+            } catch (e) {
+                logger.warn('Erro ao carregar rascunho de empresa:', e);
+            }
+        }
+    }, []);
+
+    // Salvar rascunho
+    useEffect(() => {
+        if (isOpen && !isSuccess) {
+            const draftData = {
+                data: formData,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+        }
+    }, [formData, isOpen, isSuccess]);
+
+    const clearDraft = () => {
+        localStorage.removeItem(DRAFT_KEY);
+        setFormData({
+            nomeResponsavel: '', email: '', telefone: '',
+            nomeEmpresa: '', quantidadeEquipe: '', objetivo: ''
+        });
+    };
 
     if (!isOpen) return null;
 
@@ -65,7 +100,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 nome_empresa: formData.nomeEmpresa,
                 quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
                 objetivo: formData.objetivo,
-                status: 'pendente',
+                status: isAdmin ? 'aprovado' : 'pendente',
                 updated_at: new Date().toISOString()
             }, { onConflict: 'email' });
 
@@ -81,35 +116,31 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
             const valorTotal = temDesconto ? (qtd * valorUnitario * 0.9) : (qtd * valorUnitario);
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            const mensagem = encodeURIComponent(
-                `🚀 *INSCRIÇÃO DE EQUIPE - GROWTH EXPERIENCE*\n\n` +
-                `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe.\n\n` +
-                `*DADOS DA EMPRESA:*\n` +
-                `• *Empresa:* ${formData.nomeEmpresa}\n` +
-                `• *Responsável:* ${formData.nomeResponsavel}\n` +
-                `• *WhatsApp:* ${formData.telefone}\n` +
-                `• *Equipe:* ${qtd} pessoas\n` +
-                `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe > 5)' : 'Nenhum'}\n` +
-                `• *Valor Total:* ${valorFormatado}\n\n` +
-                `_Pode me enviar a chave Pix para pagamento?_`
-            );
-
-            // Abrir WhatsApp em nova aba
-            window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
+            // Abrir WhatsApp em nova aba (apenas se não for admin)
+            if (!isAdmin) {
+                const mensagem = encodeURIComponent(
+                    `🚀 *INSCRIÇÃO DE EQUIPE - GROWTH EXPERIENCE*\n\n` +
+                    `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe.\n\n` +
+                    `*DADOS DA EMPRESA:*\n` +
+                    `• *Empresa:* ${formData.nomeEmpresa}\n` +
+                    `• *Responsável:* ${formData.nomeResponsavel}\n` +
+                    `• *WhatsApp:* ${formData.telefone}\n` +
+                    `• *Equipe:* ${qtd} pessoas\n` +
+                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe > 5)' : 'Nenhum'}\n` +
+                    `• *Valor Total:* ${valorFormatado}\n\n` +
+                    `_Pode me enviar a chave Pix para pagamento?_`
+                );
+                window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
+            }
 
             setIsSuccess(true);
+            localStorage.removeItem(DRAFT_KEY);
+
             // Agora mantemos o formulário aberto por 5s ou deixamos o usuário fechar
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
-                setFormData({
-                    nomeResponsavel: '',
-                    email: '',
-                    telefone: '',
-                    nomeEmpresa: '',
-                    quantidadeEquipe: '',
-                    objetivo: ''
-                });
+                clearDraft();
             }, 8000);
 
         } catch (err: any) {

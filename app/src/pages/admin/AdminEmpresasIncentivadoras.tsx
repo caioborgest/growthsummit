@@ -9,7 +9,10 @@ import {
     Users,
     Mail,
     Phone,
-    Plus
+    Plus,
+    Trash2,
+    Info,
+    AlertTriangle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +28,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminEmpresasIncentivadoras() {
-    const { data: empresas, update, isLoading } = useEmpresasIncentivadoras();
+    const { data: empresas, update, remove, isLoading } = useEmpresasIncentivadoras();
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -58,8 +61,47 @@ export default function AdminEmpresasIncentivadoras() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        try {
+            if (confirm('Deseja EXCLUIR permanentemente esta empresa? Esta ação não pode ser desfeita.')) {
+                await remove(id);
+                toast.success('Empresa excluída com sucesso');
+            }
+        } catch (err) {
+            toast.error('Erro ao excluir empresa');
+        }
+    };
+
     return (
         <div className="space-y-6">
+            {/* Banner de Premiação */}
+            <div className="bg-gradient-to-r from-teal-500/20 to-brand-orange-coral/20 border border-teal-500/30 rounded-3xl p-6 relative overflow-hidden group">
+                <div className="flex flex-col md:flex-row items-center gap-6 relative z-10 text-center md:text-left">
+                    <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
+                        <Trophy className="h-10 w-10 text-teal-400" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-white tracking-tight mb-2 uppercase italic">
+                            Prêmio Especial: Empresa Incentivadora na Educação Empreendedora
+                        </h2>
+                        <p className="text-gray-300 text-sm max-w-3xl leading-relaxed">
+                            A empresa que levar a <strong className="text-teal-400">maior quantidade de colaboradores</strong> para a programação diurna e noturna (paga) receberá o prêmio oficial
+                            por seu compromisso com a educação empreendedora de sua equipe.
+                        </p>
+                    </div>
+                    <div className="flex-1" />
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-12 px-6 rounded-2xl shadow-lg shadow-brand-orange-coral/20"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Inserir Empresa
+                    </Button>
+                </div>
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2" />
+            </div>
+
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
@@ -71,13 +113,6 @@ export default function AdminEmpresasIncentivadoras() {
                         className="pl-12 w-full sm:w-80 bg-dark-100 border-dark-300 text-white"
                     />
                 </div>
-                <Button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold"
-                >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova Empresa
-                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -87,9 +122,19 @@ export default function AdminEmpresasIncentivadoras() {
                             <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/20 flex items-center justify-center">
                                 <Trophy className="h-6 w-6 text-brand-orange-coral" />
                             </div>
-                            <Badge className={statusColors[emp.status] || 'bg-gray-500/20 text-gray-400'}>
-                                {emp.status}
-                            </Badge>
+                            <div className="flex gap-2">
+                                <Badge className={statusColors[emp.status] || 'bg-gray-500/20 text-gray-400'}>
+                                    {emp.status}
+                                </Badge>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(emp.id)}
+                                    className="h-8 w-8 p-0 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
 
                         <div>
@@ -154,9 +199,11 @@ export default function AdminEmpresasIncentivadoras() {
                 )}
             </div>
 
+
             <EmpresaIncentivadoraModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                isAdmin={true}
             />
         </div>
     );
