@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X } from 'lucide-react';
@@ -19,10 +19,12 @@ interface MentoriaMultiStepModalProps {
 
 export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepModalProps) {
     const [currentStep, setCurrentStep] = useState(1);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosMentoria>({
         area: '',
         mentorId: '',
+        descricaoProblema: '',
         nome: '',
         email: '',
         telefone: '',
@@ -55,6 +57,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         setTimeout(() => setIsProcessing(false), 500); // Guard to prevent double clicks
     };
 
+    // Auto-scroll to top when step changes
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [currentStep]);
+
     const prevStep = () => {
         if (isProcessing) return;
         setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -66,8 +75,9 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 return (
                     <Step1AreaMentoria
                         areaSelecionada={dados.area}
-                        onContinuar={(area) => {
-                            updateDados({ area });
+                        descricaoProblema={dados.descricaoProblema}
+                        onContinuar={(area, descricao) => {
+                            updateDados({ area, descricaoProblema: descricao });
                             nextStep();
                         }}
                     />
@@ -143,7 +153,10 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10 p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
+            <DialogContent
+                ref={scrollContainerRef}
+                className="max-w-4xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10 p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl"
+            >
                 <div className="sticky top-0 bg-dark-100 pb-4 sm:pb-6 border-b border-white/10 mb-4 sm:mb-6 z-10">
                     <div className="flex items-center justify-between mb-4">
                         <DialogTitle className="text-xl sm:text-2xl font-bold text-white">Agendar Mentoria 1:1</DialogTitle>

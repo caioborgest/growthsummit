@@ -148,6 +148,18 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
+                    // Verificação robusta para evitar conflito de email (usuário zumbi)
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id')
+                        .eq('email', formData.email)
+                        .maybeSingle();
+
+                    if (existingUser && existingUser.id !== userId) {
+                        logger.warn('Conflito de email detectado (zumbi) em StartupForm. Corrigindo...');
+                        await supabase.from('users').delete().eq('email', formData.email);
+                    }
+
                     await supabase
                         .from('users')
                         .upsert({
@@ -187,10 +199,10 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 status: 'pendente',
             };
 
-            // Inserir no Supabase
+            // Salvar no Supabase (usando UPSERT para permitir atualizações/corrigir conflitos)
             const { error: supabaseError } = await supabase
                 .from('startups_arena_pitch')
-                .insert(dataToInsert);
+                .upsert(dataToInsert, { onConflict: 'email' });
 
             if (supabaseError) throw supabaseError;
 

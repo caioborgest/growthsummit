@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { User, Mail, Phone, Briefcase, Loader2, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
@@ -106,6 +106,19 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
+                    // Verificação robusta para evitar conflito de email (usuário zumbi)
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id')
+                        .eq('email', dados.email)
+                        .maybeSingle();
+
+                    if (existingUser && existingUser.id !== userId) {
+                        logger.warn('Conflito de email detectado (zumbi) em Mentoria. Tentando remover...');
+                        // Tentamos deletar; se falhar (RLS), o upsert posterior por email deve resolver.
+                        await supabase.from('users').delete().eq('email', dados.email).catch(() => { });
+                    }
+
                     const usersTable = supabase.from('users') as any;
                     const { error: userTableError } = await usersTable
                         .upsert({
@@ -116,11 +129,35 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                             role: 'participant',
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'id' });
+
                     if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', { message: userTableError.message });
+                        logger.warn('Erro ao sincronizar tabela public.users (id conflict):', { message: userTableError.message });
+
+                        // Se falhou por conflito de email, tentamos upsert por email
+                        if (userTableError.message.includes('unique_email') || userTableError.message.includes('users_email_key')) {
+                            const { error: secondTryError } = await usersTable
+                                .upsert({
+                                    id: userId,
+                                    email: dados.email,
+                                    name: dados.nome,
+                                    phone: dados.telefone,
+                                    role: 'participant',
+                                    updated_at: new Date().toISOString()
+                                }, { onConflict: 'email' });
+
+                            if (secondTryError) {
+                                logger.error('Falha crítica na segunda tentativa de sincronização:', secondTryError);
+                                throw new Error('Não conseguimos vincular seus dados. Se você já tem uma conta, use o mesmo email e senha corretos.');
+                            }
+                        } else {
+                            throw userTableError;
+                        }
                     }
-                } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users', { error: userTableCatch as Error });
+                } catch (userTableCatch: any) {
+                    logger.warn('Erro na lógica de sincronização:', { error: userTableCatch });
+                    if (userTableCatch instanceof Error && userTableCatch.message.includes('vincular')) {
+                        throw userTableCatch;
+                    }
                 }
             }
 
@@ -135,6 +172,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     email_mentorado: dados.email,
                     telefone_mentorado: dados.telefone,
                     tema_interesse: dados.area,
+                    notes: dados.descricaoProblema,
                     status: 'pendente'
                 })
                 .select();
@@ -212,6 +250,18 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                             <p className="text-brand-orange-coral text-xs font-semibold">{dados.area}</p>
                         </div>
                     </div>
+                </Card>
+
+                <Card className="glass-card p-6 border-white/10 md:col-span-2">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <Target className="h-5 w-5 text-orange-400" />
+                        </div>
+                        <h4 className="font-bold text-white">Seu Desafio</h4>
+                    </div>
+                    <p className="text-gray-400 text-sm italic">
+                        "{dados.descricaoProblema}"
+                    </p>
                 </Card>
             </div>
 

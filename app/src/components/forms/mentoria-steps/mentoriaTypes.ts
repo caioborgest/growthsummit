@@ -2,6 +2,7 @@
 export interface DadosMentoria {
     area: string;
     mentorId: string;
+    descricaoProblema: string;
     nome: string;
     email: string;
     telefone: string;

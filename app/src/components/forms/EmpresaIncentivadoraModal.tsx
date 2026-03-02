@@ -40,8 +40,24 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
         try {
             logger.info('Iniciando inscrição de empresa incentivadora...');
 
-            // Salvar no banco de dados
-            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').insert({
+            // 1. Tentar sincronizar usuário se estiver logado
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (authUser) {
+                // Upsert no perfil público
+                await supabase.from('users').upsert({
+                    id: authUser.id,
+                    email: formData.email,
+                    name: formData.nomeResponsavel,
+                    phone: formData.telefone,
+                    role: 'company',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'id' }).then(({ error }) => {
+                    if (error) logger.warn('Sync users failed in EmpresaForm (expected if RLS):', error.message);
+                });
+            }
+
+            // 2. Salvar na tabela de inscrições (UPSERT por email para permitir atualização)
+            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').upsert({
                 project_id: projectId,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
@@ -49,8 +65,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose }: EmpresaIncentivad
                 nome_empresa: formData.nomeEmpresa,
                 quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
                 objetivo: formData.objetivo,
-                status: 'pendente'
-            });
+                status: 'pendente',
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'email' });
 
             if (dbError) {
                 logger.error('Erro ao salvar no banco (Empresa):', dbError);

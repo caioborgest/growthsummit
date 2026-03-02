@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Loader2, CheckCircle, Linkedin, Target, Camera, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -11,21 +11,13 @@ interface MentorFormModalProps {
     onClose: () => void;
 }
 
-const ESPECIALIDADES = [
-    'Gestão Empresarial',
-    'Marketing Digital',
-    'Vendas & Growth',
-    'Finanças',
-    'Tecnologia & IA',
-    'Recursos Humanos',
-    'Inovação',
-    'Operações & Processos',
-    'Coaching & Liderança',
-    'E-commerce'
-];
+import { areasMentoria } from '@/data/mentores';
+
+const ESPECIALIDADES = areasMentoria;
 
 export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [step, setStep] = useState(1);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
@@ -71,6 +63,13 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         setStep(prev => prev + 1);
         setTimeout(() => setIsProcessing(false), 500);
     };
+
+    // Auto-scroll to top when step changes
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [step]);
 
     const prevStep = () => {
         if (isProcessing) return;
@@ -166,6 +165,21 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             if (userId) {
                 try {
+                    // Verificação robusta para evitar conflito de email (usuário zumbi)
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id')
+                        .eq('email', formData.email)
+                        .maybeSingle();
+
+                    if (existingUser && existingUser.id !== userId) {
+                        logger.warn('Conflito de email detectado (zumbi). Tentando corrigir...');
+                        // Se o ID é diferente, tentamos remover o antigo (pode falhar por RLS)
+                        await supabase.from('users').delete().eq('email', formData.email);
+                    }
+
+                    // Usamos upsert com onConflict email para "roubar" o email se a deleção falhou
+                    // mas mantemos o ID como âncora principal.
                     const { error: userTableError } = await supabase.from('users').upsert({
                         id: userId,
                         email: formData.email,
@@ -174,20 +188,21 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         role: 'mentor',
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'id' });
+
                     if (userTableError) {
                         logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
                     }
                 } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', userTableCatch);
+                    logger.warn('Erro crítico na sincronização de usuários:', userTableCatch);
                 }
             }
 
-            // 2. Salvar inscrição no banco
+            // 2. Salvar inscrição no banco (usando UPSERT para evitar erro 409)
             const { error: dbError } = await supabase
                 .from('mentores_growth_experience')
-                .insert({
+                .upsert({
                     project_id: projectId,
-                    user_id: userId || null, // Se for nulo, salvamos como candidatura avulsa
+                    user_id: userId || null,
                     nome: formData.nome,
                     email: formData.email,
                     telefone: formData.telefone,
@@ -197,8 +212,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                     bio: formData.bio,
                     linkedin_url: formData.linkedin,
                     foto_url: fotoUrl,
-                    status: 'pendente'
-                });
+                    status: 'pendente',
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'email' });
 
             if (dbError) {
                 logger.error('Erro ao salvar no banco:', dbError);
@@ -238,7 +254,10 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-xl w-full max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
+            <div
+                ref={scrollContainerRef}
+                className="glass-card max-w-xl w-full max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl"
+            >
                 {/* Progress Bar */}
                 {!isSuccess && (
                     <div className="absolute top-0 left-0 w-full h-1 bg-white/5">

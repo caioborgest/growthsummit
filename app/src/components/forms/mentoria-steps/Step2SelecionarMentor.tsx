@@ -57,15 +57,12 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
         }
 
         fetchMentores();
-    }, []);
+    }, [projectId]);
 
     const mentoresSugeridos = mentores.filter(m =>
         m.especialidades?.some((e: string) => e.toLowerCase().includes(area.toLowerCase()))
     );
 
-    const outrosMentores = mentores.filter(m =>
-        !m.especialidades?.some((e: string) => e.toLowerCase().includes(area.toLowerCase()))
-    );
 
     const renderMentorCard = (mentor: Mentor) => (
         <Card
@@ -119,15 +116,6 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
         </Card>
     );
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-10 w-10 text-brand-orange-coral animate-spin" />
-                <p className="text-gray-400">Carregando mentores...</p>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
             <div className="text-center">
@@ -136,28 +124,32 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
             </div>
 
             <div className="space-y-4">
-                {mentores.length > 0 ? (
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="h-10 w-10 text-brand-orange-coral animate-spin" />
+                        <p className="text-gray-400">Buscando mentores especialistas...</p>
+                    </div>
+                ) : mentoresSugeridos.length > 0 ? (
                     <>
-                        {mentoresSugeridos.length > 0 ? (
-                            <>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-2">Sugestões para {area}</p>
-                                {mentoresSugeridos.map(renderMentorCard)}
-
-                                {outrosMentores.length > 0 && (
-                                    <>
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-2 pt-4">Outras Especialidades</p>
-                                        {outrosMentores.map(renderMentorCard)}
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            mentores.map(renderMentorCard)
-                        )}
+                        <p className="text-xs font-bold text-brand-orange-coral uppercase tracking-widest pl-2">
+                            {mentoresSugeridos.length} Especialistas Encontrados
+                        </p>
+                        {mentoresSugeridos.map(renderMentorCard)}
                     </>
                 ) : (
-                    <div className="text-center py-10 bg-dark-200 rounded-2xl border border-white/5">
-                        <User className="h-10 w-10 text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-400">Nenhum mentor disponível no momento.</p>
+                    <div className="text-center py-12 bg-dark-200 rounded-3xl border border-white/5 space-y-4">
+                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
+                            <User className="h-8 w-8 text-gray-600" />
+                        </div>
+                        <div>
+                            <p className="text-white font-bold text-lg">Nenhum mentor para "{area}"</p>
+                            <p className="text-gray-400 text-sm max-w-xs mx-auto">
+                                No momento não temos mentores disponíveis nesta área específica. Tente outra especialidade.
+                            </p>
+                        </div>
+                        <Button variant="link" onClick={onVoltar} className="text-brand-orange-coral">
+                            Alterar área de interesse
+                        </Button>
                     </div>
                 )}
             </div>

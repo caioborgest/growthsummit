@@ -42,9 +42,12 @@ export const mentoresTriunfo: Mentor[] = [
 export const areasMentoria = [
     'Growth Marketing',
     'Vendas',
-    'IA',
-    'Gestão',
+    'Inteligência Artificial',
+    'Gestão Empresarial',
     'Inovação',
     'Liderança',
-    'Escala'
+    'Escala',
+    'Marketing Digital',
+    'Operações & Processos',
+    'Finanças'
 ];

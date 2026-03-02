@@ -170,24 +170,31 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             }
 
             // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
-            if (userId) {
-                try {
-                    const { error: userTableError } = await supabase
-                        .from('users')
-                        .upsert({
-                            id: userId,
-                            email: formData.email,
-                            name: formData.nome_representante,
-                            phone: formData.telefone,
-                            role: 'b2b',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
-                    if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', { message: userTableError.message });
-                    }
-                } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', { error: userTableCatch });
+            try {
+                // Verificação robusta para evitar conflito de email (usuário zumbi)
+                const { data: existingUser } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('email', formData.email)
+                    .maybeSingle();
+
+                if (existingUser && existingUser.id !== userId) {
+                    logger.warn('Conflito de email detectado (zumbi) em B2BForm. Corrigindo...');
+                    await supabase.from('users').delete().eq('email', formData.email).catch(() => { });
                 }
+
+                await supabase
+                    .from('users')
+                    .upsert({
+                        id: userId,
+                        email: formData.email,
+                        name: formData.nome_representante,
+                        phone: formData.telefone,
+                        role: 'b2b',
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
+            } catch (userTableCatch) {
+                logger.warn('Erro crítico na sincronização de usuários:', userTableCatch);
             }
 
             // Prosseguimento (user_id opcional na tabela)
@@ -237,10 +244,10 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 status: 'pendente',
             };
 
-            // Inserir no Supabase
+            // Salvar no Supabase (usando UPSERT para permitir atualizações/corrigir conflitos)
             const { error: supabaseError } = await supabase
                 .from('rodada_negocios_b2b')
-                .insert(dataToInsert);
+                .upsert(dataToInsert, { onConflict: 'email' });
 
             if (supabaseError) throw supabaseError;
 

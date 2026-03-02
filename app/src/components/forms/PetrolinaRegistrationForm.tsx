@@ -71,14 +71,56 @@ export function PetrolinaRegistrationForm() {
 
             // 2. Sync to public.users
             if (userId) {
-                await (supabase.from('users') as any).upsert({
-                    id: userId,
-                    email: formData.email,
-                    name: formData.nome,
-                    phone: formData.whatsapp,
-                    role: 'participant',
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'id' });
+                try {
+                    // Verificação robusta para evitar conflito de email (usuário zumbi)
+                    const { data: existingUser } = await supabase
+                        .from('users')
+                        .select('id')
+                        .eq('email', formData.email)
+                        .maybeSingle();
+
+                    if (existingUser && existingUser.id !== userId) {
+                        logger.warn(`Detectado usuário zumbi em Petrolina para o email ${formData.email}. Tentando remover...`);
+                        await supabase.from('users').delete().eq('email', formData.email).catch(() => { });
+                    }
+
+                    const usersTable = supabase.from('users') as any;
+                    const { error: upsertError } = await usersTable.upsert({
+                        id: userId,
+                        email: formData.email,
+                        name: formData.nome,
+                        phone: formData.whatsapp,
+                        role: 'participant',
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'id' });
+
+                    if (upsertError) {
+                        logger.warn('Falha na sincronização Petrolina (id conflict):', upsertError);
+
+                        // Segunda tentativa por email
+                        if (upsertError.message.includes('unique_email') || upsertError.message.includes('users_email_key')) {
+                            const { error: secondTryError } = await usersTable.upsert({
+                                id: userId,
+                                email: formData.email,
+                                name: formData.nome,
+                                phone: formData.whatsapp,
+                                role: 'participant',
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'email' });
+
+                            if (secondTryError) {
+                                throw new Error('Erro ao vincular dados da conta. Por favor, tente novamente.');
+                            }
+                        } else {
+                            throw upsertError;
+                        }
+                    }
+                } catch (syncErr: any) {
+                    logger.warn('Erro na lógica de sincronização Petrolina:', syncErr);
+                    if (syncErr instanceof Error && syncErr.message.includes('vincular')) {
+                        throw syncErr;
+                    }
+                }
             }
 
             // 3. Insert Registration

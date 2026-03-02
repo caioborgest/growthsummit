@@ -111,50 +111,56 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // 1.5. Sincronização agressiva com public.users
             if (userId) {
                 try {
-                    // Primeiro, verificar se o registro já existe para este ID
+                    // Verificação robusta para evitar conflito de email (usuário zumbi)
                     const { data: existingUser } = await supabase
                         .from('users')
-                        .select('id, email')
-                        .eq('id', userId)
+                        .select('id')
+                        .eq('email', dados.email)
                         .maybeSingle();
 
-                    if (!existingUser) {
-                        // Se não existe pelo ID, verificar se existe pelo EMAIL (Zombie)
-                        const { data: zombieUser } = await supabase
-                            .from('users')
-                            .select('id, email')
-                            .eq('email', dados.email)
-                            .maybeSingle();
+                    if (existingUser && existingUser.id !== userId) {
+                        logger.warn(`Detectado usuário zumbi para o email ${dados.email}. Tentando remover...`);
+                        await supabase.from('users').delete().eq('email', dados.email).catch(() => { });
+                    }
 
-                        if (zombieUser && zombieUser.id !== userId) {
-                            logger.warn(`Detectado usuário zumbi para o email ${dados.email}. ID antigo: ${zombieUser.id}, ID novo: ${userId}.`);
-                            // Tentamos remover o zumbi. Como o usuário está logado com este email, 
-                            // as políticas de RLS podem permitir se estiverem baseadas em email (improvável).
-                            // Se falhar, tentaremos o upsert de qualquer forma.
-                            await supabase.from('users').delete().eq('id', zombieUser.id).catch(() => { });
-                        }
+                    const usersTable = supabase.from('users') as any;
+                    const { error: upsertError } = await usersTable
+                        .upsert({
+                            id: userId,
+                            email: dados.email,
+                            name: dados.nome,
+                            phone: dados.telefone,
+                            role: 'participant',
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'id' });
 
-                        // Tentar criar o registro
-                        const { error: upsertError } = await (supabase
-                            .from('users') as any)
-                            .upsert({
-                                id: userId,
-                                email: dados.email,
-                                name: dados.nome,
-                                phone: dados.telefone,
-                                role: 'participant',
-                                updated_at: new Date().toISOString()
-                            }, { onConflict: 'id' });
+                    if (upsertError) {
+                        logger.warn('Falha na sincronização de usuário (id conflict):', upsertError);
 
-                        if (upsertError) {
-                            logger.error('Falha crítica na sincronização de usuário:', upsertError);
-                            // Se falhar o upsert, a inscrição certamente falhará por FK.
-                            // Mas vamos dar um pequeno tempo para o trigger (se existir) agir.
-                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        // Segunda tentativa por email
+                        if (upsertError.message.includes('unique_email') || upsertError.message.includes('users_email_key')) {
+                            const { error: secondTryError } = await usersTable
+                                .upsert({
+                                    id: userId,
+                                    email: dados.email,
+                                    name: dados.nome,
+                                    phone: dados.telefone,
+                                    role: 'participant',
+                                    updated_at: new Date().toISOString()
+                                }, { onConflict: 'email' });
+
+                            if (secondTryError) {
+                                throw new Error('Erro ao vincular dados da conta. Verifique se o email e senha estão corretos.');
+                            }
+                        } else {
+                            throw upsertError;
                         }
                     }
-                } catch (syncErr) {
+                } catch (syncErr: any) {
                     logger.warn('Erro na lógica de sincronização:', syncErr);
+                    if (syncErr instanceof Error && syncErr.message.includes('vincular')) {
+                        throw syncErr;
+                    }
                 }
             } else {
                 throw new Error('Usuário não identificado para a inscrição.');
