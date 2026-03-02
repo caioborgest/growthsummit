@@ -198,12 +198,32 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   const { projectId } = useProject();
 
   const isFetchingRef = useRef(false);
-  const lastFetchParamsRef = useRef({ projectId: '', entityName: '' });
+  const consecutiveFetchCountRef = useRef(0);
+  const lastFetchTimeRef = useRef(0);
 
   const fetchData = useCallback(async (force = false) => {
-    if (!projectId) return;
+    if (!projectId) {
+      // logger.debug(`[useData] ${entityName}: No project ID, skipping fetch.`);
+      return;
+    }
 
-    // Concorrência e redundância
+    const now = Date.now();
+
+    // Circuit breaker para loops de re-render (mais de 10 fetches em 2 segundos)
+    if (now - lastFetchTimeRef.current < 2000) {
+      consecutiveFetchCountRef.current++;
+    } else {
+      consecutiveFetchCountRef.current = 0;
+    }
+
+    if (consecutiveFetchCountRef.current > 10) {
+      logger.error(`[useData] CRITICAL: Loop de busca detectado para ${entityName}. Abortando.`);
+      return;
+    }
+
+    lastFetchTimeRef.current = now;
+
+    // Concorrência e redundância (guardas)
     if (isFetchingRef.current && !force) {
       // logger.debug(`[useData] Já buscando ${entityName}...`);
       return;
@@ -214,20 +234,20 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     // Se temos cache e não é force, usamos o cache e paramos
     if (!force && cached && Date.now() - cached.ts < CACHE_TTL) {
+      // logger.debug(`[useData] ${entityName}: Usando cache para projeto ${projectId}`);
       setData(cached.data as T[]);
       return;
     }
 
+    // console.log(`[useData] Fetching ${entityName} for project ${projectId} (Force: ${force})`);
     setIsLoading(true);
     setError(null);
     isFetchingRef.current = true;
-    lastFetchParamsRef.current = { projectId, entityName };
 
     try {
       const tableName = getTableName(projectId, entityName);
       const fields = getSelectFields(entityName, projectId);
 
-      // console.log(`[useData] Fetching ${entityName} for project ${projectId}`);
       const query = supabase.from(tableName as never).select(fields) as any;
 
       // Filtro por projeto para tabelas não genéricas

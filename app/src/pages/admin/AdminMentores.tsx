@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Search,
   CheckCircle,
@@ -133,10 +133,10 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
                 >
                   <Briefcase className="h-4 w-4 mr-3" />
                   <span className="text-sm font-bold">LinkedIn Profile</span>
-                </a>
+                </a >
               )}
-            </div>
-          </div>
+            </div >
+          </div >
 
           <div className="space-y-4">
             <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Estatísticas do Evento</h4>
@@ -151,7 +151,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
               </div>
             </div>
           </div>
-        </div>
+        </div >
 
         <div className="space-y-4">
           <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Biografia & Trajetória</h4>
@@ -211,8 +211,8 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 
@@ -241,14 +241,18 @@ export function AdminMentores() {
     photoPreview: ''
   });
 
-  const filteredMentors = mentors.filter(mentor => {
-    const matchesSearch =
-      (mentor.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-      (mentor.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-      (mentor.company?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || mentor.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // console.log('[AdminMentores] Render', { mentorsCount: mentors.length, projectId });
+
+  const filteredMentors = useMemo(() => {
+    return mentors.filter(mentor => {
+      const matchesSearch =
+        (mentor.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (mentor.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (mentor.company?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || mentor.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [mentors, searchQuery, statusFilter]);
 
   // Auto-scroll to top when step changes
   useEffect(() => {
@@ -356,7 +360,7 @@ export function AdminMentores() {
     }));
   };
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = useCallback(async (id: string) => {
     try {
       await update(id, { status: 'approved' });
       toast.success('Mentor aprovado com sucesso!');
@@ -364,8 +368,9 @@ export function AdminMentores() {
       logger.error('Erro ao aprovar mentor:', err);
       toast.error(`Erro ao aprovar mentor: ${err.message || 'Erro desconhecido'}`);
     }
-  };
-  const handleDelete = async (id: string) => {
+  }, [update]);
+
+  const handleDelete = useCallback(async (id: string) => {
     try {
       if (confirm('Tem certeza que deseja excluir permanentemente este mentor?')) {
         await remove(id);
@@ -375,9 +380,9 @@ export function AdminMentores() {
       logger.error('Erro ao excluir mentor:', err);
       toast.error(`Erro ao excluir mentor: ${err.message || 'Erro desconhecido'}`);
     }
-  };
+  }, [remove]);
 
-  const handleReject = async (id: string) => {
+  const handleReject = useCallback(async (id: string) => {
     try {
       if (confirm('Tem certeza que deseja rejeitar este mentor?')) {
         await update(id, { status: 'rejected' });
@@ -387,10 +392,10 @@ export function AdminMentores() {
       logger.error('Erro ao rejeitar mentor:', err);
       toast.error(`Erro ao rejeitar mentor: ${err.message || 'Erro desconhecido'}`);
     }
-  };
+  }, [update]);
 
-  const pendingCount = mentors.filter(m => m.status === 'pending' || m.status === 'pendente').length;
-  const approvedCount = mentors.filter(m => m.status === 'approved' || m.status === 'aprovado').length;
+  const pendingCount = useMemo(() => mentors.filter(m => m.status === 'pending' || m.status === 'pendente').length, [mentors]);
+  const approvedCount = useMemo(() => mentors.filter(m => m.status === 'approved' || m.status === 'aprovado').length, [mentors]);
 
   return (
     <div className="space-y-6">

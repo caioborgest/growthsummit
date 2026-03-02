@@ -165,35 +165,18 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             if (userId) {
                 try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
-                    const { data: existingUser } = await supabase
+                    // Verificar se o metadado já existe no DB (opcional, para logging)
+                    const { data: userData } = await supabase
                         .from('users')
-                        .select('id')
-                        .eq('email', formData.email)
+                        .select('id, role')
+                        .eq('id', userId)
                         .maybeSingle();
 
-                    if (existingUser && existingUser.id !== userId) {
-                        logger.warn('Conflito de email detectado (zumbi). Tentando corrigir...');
-                        // Se o ID é diferente, tentamos remover o antigo (pode falhar por RLS)
-                        await supabase.from('users').delete().eq('email', formData.email);
-                    }
-
-                    // Usamos upsert com onConflict email para "roubar" o email se a deleção falhou
-                    // mas mantemos o ID como âncora principal.
-                    const { error: userTableError } = await supabase.from('users').upsert({
-                        id: userId,
-                        email: formData.email,
-                        name: formData.nome,
-                        phone: formData.telefone,
-                        role: 'mentor',
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id' });
-
-                    if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    if (!userData) {
+                        logger.info('Aguardando sincronização do trigger de usuários...');
                     }
                 } catch (userTableCatch) {
-                    logger.warn('Erro crítico na sincronização de usuários:', userTableCatch);
+                    logger.warn('Aviso de sincronização (não fatal):', userTableCatch);
                 }
             }
 

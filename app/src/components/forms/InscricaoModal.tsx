@@ -165,35 +165,18 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             // 1.5. Sincronização robusta com public.users (Zombie record cleanup)
             if (userId) {
                 try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
-                    const { data: existingUser } = await supabase
+                    // Verificação de sincronização (opcional, para logging)
+                    const { data: userData } = await supabase
                         .from('users')
-                        .select('id')
-                        .eq('email', formData.email)
+                        .select('id, role')
+                        .eq('id', userId)
                         .maybeSingle();
 
-                    if (existingUser && existingUser.id !== userId) {
-                        logger.warn(`Detectado usuário zumbi para o email ${formData.email}. Corrigindo...`);
-                        await supabase.from('users').delete().eq('email', formData.email);
-                    }
-
-                    // Tentar criar ou atualizar o registro
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const { error: userTableError } = await (supabase.from('users') as any).upsert({
-                        id: userId,
-                        email: formData.email,
-                        name: formData.nome,
-                        phone: formData.telefone,
-                        role: 'participant',
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id' });
-
-                    if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users:', userTableError.message);
+                    if (!userData) {
+                        logger.info('Aguardando sincronização automática do usuário...');
                     }
                 } catch (userTableCatch) {
-                    const syncError = userTableCatch instanceof Error ? userTableCatch.message : String(userTableCatch);
-                    logger.warn('Erro ao sincronizar tabela public.users:', { message: syncError });
+                    logger.debug('Aviso de sincronização (não fatal):', userTableCatch);
                 }
             }
 
