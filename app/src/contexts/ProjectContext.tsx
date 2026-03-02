@@ -28,15 +28,15 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setSelectedProject(project);
   }, []);
 
+  const value = React.useMemo(() => ({
+    selectedProject,
+    setSelectedProject: handleSetProject,
+    projectId: selectedProject?.id || null,
+    isProjectSelected: !!selectedProject,
+  }), [selectedProject, handleSetProject]);
+
   return (
-    <ProjectContext.Provider
-      value={{
-        selectedProject,
-        setSelectedProject: handleSetProject,
-        projectId: selectedProject?.id || null,
-        isProjectSelected: !!selectedProject,
-      }}
-    >
+    <ProjectContext.Provider value={value}>
       {children}
     </ProjectContext.Provider>
   );

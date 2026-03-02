@@ -69,57 +69,25 @@ export function PetrolinaRegistrationForm() {
                 }
             }
 
-            // 2. Sync to public.users
+            // 2. Sincronização robusta
             if (userId) {
                 try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
-                    const { data: existingUser } = await supabase
+                    // Apenas verifica se o perfil básico existe.
+                    // A trigger handle_new_user no Supabase cuida da criação automática na tabela public.users.
+                    const { data: userData, error: userError } = await supabase
                         .from('users')
-                        .select('id')
-                        .eq('email', formData.email)
+                        .select('id, role')
+                        .eq('id', userId)
                         .maybeSingle();
 
-                    if (existingUser && existingUser.id !== userId) {
-                        logger.warn(`Detectado usuário zumbi em Petrolina para o email ${formData.email}. Tentando remover...`);
-                        await supabase.from('users').delete().eq('email', formData.email).catch(() => { });
-                    }
+                    if (userError) logger.warn('Erro ao verificar usuário public:', userError);
 
-                    const usersTable = supabase.from('users') as any;
-                    const { error: upsertError } = await usersTable.upsert({
-                        id: userId,
-                        email: formData.email,
-                        name: formData.nome,
-                        phone: formData.whatsapp,
-                        role: 'participant',
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id' });
-
-                    if (upsertError) {
-                        logger.warn('Falha na sincronização Petrolina (id conflict):', upsertError);
-
-                        // Segunda tentativa por email
-                        if (upsertError.message.includes('unique_email') || upsertError.message.includes('users_email_key')) {
-                            const { error: secondTryError } = await usersTable.upsert({
-                                id: userId,
-                                email: formData.email,
-                                name: formData.nome,
-                                phone: formData.whatsapp,
-                                role: 'participant',
-                                updated_at: new Date().toISOString()
-                            }, { onConflict: 'email' });
-
-                            if (secondTryError) {
-                                throw new Error('Erro ao vincular dados da conta. Por favor, tente novamente.');
-                            }
-                        } else {
-                            throw upsertError;
-                        }
+                    // Se o usuário já existe mas a role está errada (raro), podemos tentar atualizar
+                    if (userData && userData.role !== 'participant' && userData.role !== 'admin') {
+                        await supabase.from('users').update({ role: 'participant' }).eq('id', userId);
                     }
                 } catch (syncErr: any) {
-                    logger.warn('Erro na lógica de sincronização Petrolina:', syncErr);
-                    if (syncErr instanceof Error && syncErr.message.includes('vincular')) {
-                        throw syncErr;
-                    }
+                    logger.warn('Erro na lógica de verificação Petrolina:', syncErr);
                 }
             }
 

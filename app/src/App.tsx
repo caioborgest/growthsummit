@@ -146,34 +146,35 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>;
 }
 
-function AppRoutes() {
+function Home() {
   const { isAuthenticated, user } = useAuth();
+  const isStandalone = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
 
+  if (isStandalone && isAuthenticated && user) {
+    console.log(`[App] PWA Standalone détecté, redirecionando para área temática. Role: ${user.role}`);
+    const rolesToPaths: Record<string, string> = {
+      'admin': '/admin',
+      'mentor': '/mentor-area',
+      'company': '/empresa-area',
+      'startup': '/startup-area',
+      'sponsor': '/patrocinador-area',
+      'participant': '/minha-area',
+      'participante': '/minha-area'
+    };
+    const path = rolesToPaths[user.role] || '/';
+    if (path !== '/') return <Navigate to={path} replace />;
+  }
+
+  return <GrowthExperience />;
+}
+
+function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
-          <Route index element={
-            (() => {
-              const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-              if (isStandalone && isAuthenticated && user) {
-                console.log(`[App] PWA Standalone détecté, redirecionando para área temática. Role: ${user.role}`);
-                const rolesToPaths: Record<string, string> = {
-                  'admin': '/admin',
-                  'mentor': '/mentor-area',
-                  'company': '/empresa-area',
-                  'startup': '/startup-area',
-                  'sponsor': '/patrocinador-area',
-                  'participant': '/minha-area',
-                  'participante': '/minha-area'
-                };
-                const path = rolesToPaths[user.role] || '/';
-                if (path !== '/') return <Navigate to={path} replace />;
-              }
-              return <GrowthExperience />;
-            })()
-          } />
+          <Route index element={<Home />} />
           <Route path="sobre" element={<Sobre />} />
           <Route path="programacao" element={<Programacao />} />
           <Route path="palestrantes" element={<Palestrantes />} />

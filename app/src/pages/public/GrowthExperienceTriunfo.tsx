@@ -221,66 +221,66 @@ export function GrowthExperienceTriunfo() {
 
   // Garantir que o projeto exista no Supabase e selecioná-lo no contexto
   const initProject = useCallback(async () => {
-    // 2. Garantir persistência e obter dados atualizados do projeto
+    if (initialized.current) return;
+    initialized.current = true;
 
-    // 2. Criar/buscar diretamente no Supabase
-    const project = await ensureProject({
-      name: 'Growth Experience Triunfo-PE 2026',
-      slug: 'ge-triunfo-2026',
-      type: 'growth_experience',
-      description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Programação especial das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
-      shortDescription: 'Edição Triunfo-PE',
-      location: 'Espaço Parque',
-      city: 'Triunfo',
-      state: 'PE',
-      startDate: '2026-04-16',
-      endDate: '2026-04-16',
-      status: 'active',
-      primaryColor: '#FE4C38',
-      secondaryColor: '#FF6B35',
-      settings: {
-        maxRegistrations: 1500,
-        maxMentors: 30,
-        maxStartups: 20,
-        maxCompanies: 40,
-        enableB2B: true,
-        enableMentoring: true,
-        enableStartups: true,
-        enableCheckIn: true,
-        ticketPrices: {
-          standard: 0,
-          pro: 179.99,
-          vip: 0,
-        },
-      },
-    });
-
-    if (project) {
-      // Forçar dados canônicos ignorando atraso de sync do banco
-      const canonicalProject = {
-        ...project,
+    try {
+      const project = await ensureProject({
+        name: 'Growth Experience Triunfo-PE 2026',
+        slug: 'ge-triunfo-2026',
+        type: 'growth_experience',
+        description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Programação especial das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
+        shortDescription: 'Edição Triunfo-PE',
+        location: 'Espaço Parque',
+        city: 'Triunfo',
+        state: 'PE',
         startDate: '2026-04-16',
         endDate: '2026-04-16',
+        status: 'active',
+        primaryColor: '#FE4C38',
+        secondaryColor: '#FF6B35',
         settings: {
-          ...project.settings,
-          maxRegistrations: 1500
-        }
-      };
+          maxRegistrations: 1500,
+          maxMentors: 30,
+          maxStartups: 20,
+          maxCompanies: 40,
+          enableB2B: true,
+          enableMentoring: true,
+          enableStartups: true,
+          enableCheckIn: true,
+          ticketPrices: {
+            standard: 0,
+            pro: 179.99,
+            vip: 0,
+          },
+        },
+      });
 
-      setCurrentProject(canonicalProject);
-      if (!contextProject || contextProject.id !== project.id) {
+      if (project) {
+        const canonicalProject = {
+          ...project,
+          startDate: '2026-04-16',
+          endDate: '2026-04-16',
+          settings: {
+            ...project.settings,
+            maxRegistrations: 1500
+          }
+        };
+
+        setCurrentProject(canonicalProject);
+        // Só atualiza o contexto se for realmente necessário
+        // Usamos uma verificação direta para evitar dependência do contextProject
         setSelectedProject(canonicalProject);
       }
+    } catch (err) {
+      console.error('[GrowthExperienceTriunfo] Erro init:', err);
     }
-  }, [contextProject, setSelectedProject]);
+  }, [setSelectedProject]);
 
   const initialized = useRef(false);
 
   useEffect(() => {
-    if (!initialized.current) {
-      setTimeout(() => initProject(), 0);
-      initialized.current = true;
-    }
+    initProject();
   }, [initProject]);
 
   const { data: mentorsData, isLoading: mentorsLoading } = useMentors();

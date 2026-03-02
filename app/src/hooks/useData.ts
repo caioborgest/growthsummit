@@ -497,7 +497,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     fetchData();
   }, [fetchData]);
 
-  return {
+  return useMemo(() => ({
     data,
     allData: data,
     isLoading,
@@ -508,7 +508,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     filter,
     refetch: fetchData,
     error,
-  };
+  }), [data, isLoading, create, update, remove, getById, filter, fetchData, error]);
 }
 
 // Hook for projects (no project filtering)
