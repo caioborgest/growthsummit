@@ -134,8 +134,8 @@ export function AdminLayout() {
         <div className="p-8 relative">
           <Link to="/admin" className="flex items-center justify-center">
             <img
-              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/growthsummit-fundoescuro.png"
-              alt="Growth Summit"
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/gx-fundo-escuro.png"
+              alt="Growth Experience"
               className="h-9 w-auto hover:scale-105 transition-transform duration-300"
             />
           </Link>
