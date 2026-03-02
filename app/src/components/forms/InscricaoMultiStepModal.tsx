@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, X, Loader2 } from 'lucide-react';
@@ -21,6 +21,7 @@ interface InscricaoMultiStepModalProps {
 export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepModalProps) {
     const { selectedProject } = useProject();
     const [currentStep, setCurrentStep] = useState(1);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosInscricao>({
         cursosSelecionados: [],
@@ -67,6 +68,13 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         // Reset processing after a short delay to prevent multiple clicks
         setTimeout(() => setIsProcessing(false), 300);
     };
+
+    // Auto-scroll to top when step changes
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [currentStep]);
 
     const prevStep = () => {
         if (isProcessing) return;
@@ -306,7 +314,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 </div>
 
                 {/* Content com Scrollbar Customizada */}
-                <div className="flex-1 px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto custom-scrollbar">
+                <div
+                    ref={scrollContainerRef}
+                    className="flex-1 px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto custom-scrollbar"
+                >
                     {renderStep()}
                 </div>
             </DialogContent>

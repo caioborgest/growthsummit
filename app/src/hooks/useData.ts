@@ -102,6 +102,10 @@ const mapToSupabase = (projectId: string, entity: string, data: Record<string, u
       if (data.phone) result.telefone = data.phone;
       if (data.company) result.empresa = data.company;
       if (data.position) result.cargo = data.position;
+      if (data.specialties) result.especialidades = data.specialties;
+      if (data.bio) result.bio = data.bio;
+      if (data.photo) result.foto_url = data.photo;
+      if (data.linkedin) result.linkedin_url = data.linkedin;
     }
 
     if (entity === 'mentoring_sessions') {
@@ -160,6 +164,9 @@ function getSelectFields(entity: string, projectId?: string): string {
     if (entity === 'empresas_incentivadoras') {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at';
     }
+    if (entity === 'mentoring_sessions') {
+      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,notes,status,created_at';
+    }
   }
 
   const fields: Record<string, string> = {
@@ -216,11 +223,12 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         query = query.eq('project_id', projectId);
       }
 
-      const { data: supabaseData, error: supabaseError } = await withTimeout(
-        query,
+      const result = await withTimeout(
+        query as unknown as Promise<any>,
         15000,
         `FetchData:${entityName}`
       );
+      const { data: supabaseData, error: supabaseError } = result as any;
 
       if (supabaseData) {
         // console.log(`[useData] Successfully fetched ${supabaseData.length} records for ${entityName}`);
@@ -293,7 +301,21 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         if (item['interest_level']) mappedItem['interestLevel'] = item['interest_level'];
         if (item['follow_up'] !== undefined) mappedItem['followUp'] = item['follow_up'];
 
-        // Mentoring Specific Mapping
+        // Mentoring & Mentors Specific Mapping
+        if (item['nome']) mappedItem['name'] = item['nome'];
+        if (item['telefone']) mappedItem['phone'] = item['telefone'];
+        if (item['empresa']) mappedItem['company'] = item['empresa'];
+        if (item['cargo']) mappedItem['position'] = item['cargo'];
+        if (item['especialidades']) mappedItem['specialties'] = item['especialidades'];
+        if (item['bio']) mappedItem['bio'] = item['bio'];
+        if (item['linkedin_url']) mappedItem['linkedin'] = item['linkedin_url'];
+        if (item['foto_url']) mappedItem['photo'] = item['foto_url'];
+
+        if (item['nome_mentorado']) mappedItem['menteeName'] = item['nome_mentorado'];
+        if (item['email_mentorado']) mappedItem['menteeEmail'] = item['email_mentorado'];
+        if (item['telefone_mentorado']) mappedItem['menteePhone'] = item['telefone_mentorado'];
+        if (item['tema_interesse']) mappedItem['topic'] = item['tema_interesse'];
+        if (item['notes']) mappedItem['notes'] = item['notes'];
         if (item['mentor_name']) mappedItem['mentorName'] = item['mentor_name'];
         if (item['mentee_name']) mappedItem['menteeName'] = item['mentee_name'];
         if (item['three_steps']) mappedItem['threeSteps'] = item['three_steps'];
@@ -301,8 +323,6 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         if (item['mentee_id']) mappedItem['menteeId'] = item['mentee_id'];
         if (item['years_experience']) mappedItem['yearsExperience'] = item['years_experience'];
         if (item['max_mentories']) mappedItem['maxMentories'] = item['max_mentories'];
-        if (item['foto_url']) mappedItem['photo'] = item['foto_url'];
-        if (item['telefone']) mappedItem['phone'] = item['telefone'];
 
         // Specific for Coupons
         if (item['indicacao_tipo']) mappedItem['indicacaoTipo'] = item['indicacao_tipo'];
@@ -711,13 +731,12 @@ export function useUsers() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data: supabaseData, error } = await withTimeout(
-        supabase
-          .from('users' as any)
-          .select('*'),
+      const result = await withTimeout(
+        supabase.from('users' as any).select('*') as unknown as Promise<any>,
         8000,
         'FetchUsers'
       );
+      const { data: supabaseData, error } = result as any;
 
       if (error) throw error;
 
@@ -728,7 +747,6 @@ export function useUsers() {
         name: item['name'] as string,
         role: item['role'] as any,
         department: item['department'] as string,
-        staffRole: item['staff_role'] as string,
         permissions: item['permissions'] as string[],
         createdAt: item['created_at'] as string,
       }));
@@ -844,6 +862,6 @@ export function useProfile(userId?: string) {
 }
 
 export function useEmpresasIncentivadoras() {
-  return useData<any>('empresas_incentivadoras');
+  return useData<any>([], 'empresas_incentivadoras');
 }
 

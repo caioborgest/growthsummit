@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Search,
   CheckCircle,
@@ -70,11 +70,12 @@ const statusLabels: Record<string, string> = {
 };
 
 // ── Modal de Detalhes do Mentor ─────────────────────────────────
-function MentorDetailsModal({ mentor, onClose, onApprove, onReject }: {
+function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: {
   mentor: any;
   onClose: () => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -192,12 +193,22 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject }: {
               </Button>
             </>
           ) : (
-            <Button
-              onClick={onClose}
-              className="w-full bg-white/5 hover:bg-white/10 text-white font-bold h-12 rounded-2xl border border-white/10"
-            >
-              Fechar Perfil
-            </Button>
+            <div className="flex w-full gap-2 font-black">
+              <Button
+                onClick={onClose}
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold h-12 rounded-2xl border border-white/10"
+              >
+                Fechar Perfil
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => { if (confirm('Excluir permanentemente este mentor?')) { onDelete(mentor.id); onClose(); } }}
+                className="text-red-500 hover:bg-red-500/10 h-12 w-12 rounded-2xl p-0 flex items-center justify-center"
+                title="Excluir Mentor"
+              >
+                <XCircle className="h-6 w-6" />
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -207,13 +218,14 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject }: {
 
 export function AdminMentores() {
   const { projectId } = useProject();
-  const { data: mentors, create, update, isLoading } = useMentors();
+  const { data: mentors, create, update, remove, isLoading } = useMentors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -237,6 +249,13 @@ export function AdminMentores() {
     const matchesStatus = statusFilter === 'all' || mentor.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Auto-scroll to top when step changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -339,18 +358,29 @@ export function AdminMentores() {
 
   const handleApprove = async (id: string) => {
     try {
-      await update(id, { status: 'aprovado' });
+      await update(id, { status: 'approved' });
       toast.success('Mentor aprovado com sucesso!');
     } catch (err: any) {
       logger.error('Erro ao aprovar mentor:', err);
       toast.error(`Erro ao aprovar mentor: ${err.message || 'Erro desconhecido'}`);
     }
   };
+  const handleDelete = async (id: string) => {
+    try {
+      if (confirm('Tem certeza que deseja excluir permanentemente este mentor?')) {
+        await remove(id);
+        toast.success('Mentor excluído com sucesso');
+      }
+    } catch (err: any) {
+      logger.error('Erro ao excluir mentor:', err);
+      toast.error(`Erro ao excluir mentor: ${err.message || 'Erro desconhecido'}`);
+    }
+  };
 
   const handleReject = async (id: string) => {
     try {
       if (confirm('Tem certeza que deseja rejeitar este mentor?')) {
-        await update(id, { status: 'rejeitado' });
+        await update(id, { status: 'rejected' });
         toast.success('Mentor rejeitado com sucesso');
       }
     } catch (err: any) {
@@ -370,6 +400,7 @@ export function AdminMentores() {
           onClose={() => setSelectedMentor(null)}
           onApprove={handleApprove}
           onReject={handleReject}
+          onDelete={handleDelete}
         />
       )}
       {/* Header */}
@@ -404,7 +435,10 @@ export function AdminMentores() {
               Adicionar Mentor
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-xl p-0 overflow-hidden rounded-[2rem]">
+          <DialogContent
+            ref={scrollContainerRef}
+            className="bg-dark-200 border-dark-300 text-white max-w-xl p-0 overflow-y-auto max-h-[90vh] rounded-[2rem]"
+          >
             {/* Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
               <div
@@ -753,15 +787,17 @@ export function AdminMentores() {
                       <Briefcase className="h-4 w-4" /> Abrir LinkedIn
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => setSelectedMentor(mentor)} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg">
+                  <DropdownMenuItem onClick={() => setSelectedMentor(mentor)} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg text-gray-400">
                     <User className="h-4 w-4" /> Ver Detalhes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(mentor.id)} className="flex items-center gap-2 cursor-pointer text-red-500 hover:bg-red-500/10 rounded-lg border-t border-white/5 mt-2">
+                    <XCircle className="h-4 w-4" /> Excluir Mentor
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-        ))
-        }
+        ))}
       </div>
     </div>
   );
