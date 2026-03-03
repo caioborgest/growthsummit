@@ -105,14 +105,12 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     rollupOptions: {
-      // These packages are loaded dynamically at runtime (QR scanner, PDF generation).
-      // Externalizing prevents Rollup from failing when they're not resolvable at build time.
-      external: ['html5-qrcode', 'jspdf', 'jspdf-autotable'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'supabase-vendor': ['@supabase/supabase-js'],
           'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          'utils-vendor': ['jspdf', 'jspdf-autotable', 'html5-qrcode'],
           'icons': ['lucide-react'], // ~500KB — isolated to avoid bloating other chunks
         }
       }

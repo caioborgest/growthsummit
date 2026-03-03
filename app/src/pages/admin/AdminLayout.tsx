@@ -208,9 +208,6 @@ export function AdminLayout() {
         {/* Navigation Groups Refined */}
         <nav className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
           {navigationGroups.map((group) => {
-            // Se for configurações, poderíamos filtrar aqui futuramente
-            const isSettings = group.title === 'Configurações';
-
             return (
               <div key={group.title} className="space-y-1">
                 <h3 className="text-[10px] text-gray-600 uppercase font-black tracking-[0.25em] mb-3 px-2 flex items-center">

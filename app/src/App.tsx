@@ -41,7 +41,7 @@ const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos').then(m => ({ default: m.AdminProjetos })));
+const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos'));
 const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.AdminInscricoes })));
 const AdminEmpresasIncentivadoras = lazy(() => import('./pages/admin/AdminEmpresasIncentivadoras'));
 const AdminMentores = lazy(() => import('./pages/admin/AdminMentores').then(m => ({ default: m.AdminMentores })));
@@ -80,7 +80,7 @@ function LegalPage({ title }: { title: string }) {
         <div className="prose prose-invert max-w-none text-gray-400 space-y-6">
           <section>
             <h3 className="text-white font-bold text-xl mb-4">1. Introdução</h3>
-            <p>O Growth Summit 2026 preza pela transparência e segurança de todos os participantes. Este documento estabelece as diretrizes para {title.toLowerCase()}.</p>
+            <p>O Growth Experience 2026 preza pela transparência e segurança de todos os participantes. Este documento estabelece as diretrizes para {title.toLowerCase()}.</p>
           </section>
 
           <section>
@@ -94,7 +94,7 @@ function LegalPage({ title }: { title: string }) {
           </section>
 
           <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-gray-500">Documento gerado automaticamente pela Plataforma Growth Summit.</p>
+            <p className="text-xs text-gray-500">Documento gerado automaticamente pela Plataforma Growth Experience.</p>
             <a href="/" className="text-brand-orange-coral hover:underline font-bold text-sm">Voltar para a página inicial</a>
           </div>
         </div>
