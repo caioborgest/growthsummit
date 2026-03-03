@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
 import type { Registration } from '@/types';
 import type { QRData } from '@/lib/qrUtils';
+import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 
 export function AdminCheckIn() {
   const { data: registrations, update } = useRegistrations();
@@ -25,14 +26,34 @@ export function AdminCheckIn() {
   const [isScanning, setIsScanning] = useState(false);
 
   const [lastCheckIn, setLastCheckIn] = useState<Registration | null>(null);
+  const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | null>(null);
+  const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
+
+  const triggerVibrate = (type: 'success' | 'error') => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (type === 'success') {
+        navigator.vibrate(200);
+      } else {
+        navigator.vibrate([100, 50, 100]);
+      }
+    }
+  };
 
   const handleManualCheckIn = useCallback(async (registration: Registration) => {
     try {
+      if (registration.checkedIn) {
+        setScanResult('duplicate');
+        setResultRegistration(registration);
+        triggerVibrate('error');
+        return;
+      }
+
       await update(registration.id, {
         checkedIn: true,
         checkInTime: new Date().toISOString()
-      });
+      } as any);
 
+      // Log check-in event in the table
       await create({
         projectId: registration.projectId,
         registrationId: registration.id,
@@ -45,10 +66,15 @@ export function AdminCheckIn() {
       });
 
       setLastCheckIn(registration);
+      setResultRegistration(registration);
+      setScanResult('success');
+      triggerVibrate('success');
       setSearchQuery('');
-      toast.success(`Check-in realizado: ${registration.ticketNumber}`);
+      // toast.success(`Check-in realizado: ${registration.ticketNumber}`); // Modal handles this now
     } catch (err: unknown) {
       const error = err as Error;
+      setScanResult('error');
+      triggerVibrate('error');
       toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
   }, [update, create]);
@@ -57,12 +83,11 @@ export function AdminCheckIn() {
     if (!res) return;
     const registration = registrations.find(r => r.id === res.id);
     if (registration) {
-      if (registration.checkedIn) {
-        toast.error(`Ingresso já utilizado: ${registration.ticketNumber}`);
-      } else {
-        handleManualCheckIn(registration);
-      }
+      handleManualCheckIn(registration);
     } else {
+      setScanResult('error');
+      setResultRegistration(null);
+      triggerVibrate('error');
       toast.error('Ingresso não encontrado no sistema.');
     }
     setIsScanning(false);
@@ -93,16 +118,39 @@ export function AdminCheckIn() {
     ) && !reg.checkedIn;
   });
 
-  // Pre-calculated stats for the graph (prevents Math.random lint error)
-  const hourlyStats = [42, 35, 68, 82, 54, 31];
+  // Calculate real hourly stats from checkIns (today only)
+  const HOURS = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h'];
+  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+  const hourlyStats = HOURS.map(hourStr => {
+    const hourInt = parseInt(hourStr);
+    return checkIns.filter(c => {
+      const date = new Date(c.timestamp);
+      return date.toLocaleDateString('en-CA') === today && date.getHours() === hourInt;
+    }).length;
+  });
+
+  const checkInsToday = checkIns.filter(c =>
+    new Date(c.timestamp).toLocaleDateString('en-CA') === today
+  ).length;
 
   return (
     <div className="space-y-6">
+      {scanResult && (
+        <CheckInResultModal
+          result={scanResult}
+          registration={resultRegistration}
+          onClose={() => {
+            setScanResult(null);
+            setResultRegistration(null);
+          }}
+        />
+      )}
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Check-ins Hoje</p>
-          <p className="text-2xl font-bold text-white">{checkIns.length}</p>
+          <p className="text-2xl font-bold text-white">{checkInsToday}</p>
         </div>
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Total Check-ins</p>
@@ -257,14 +305,14 @@ export function AdminCheckIn() {
       {/* Attendance by Hour */}
       <div className="glass-card p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Presença por Horário</h2>
-        <div className="grid grid-cols-6 gap-2">
-          {['08h', '09h', '10h', '11h', '12h', '13h'].map((hour, idx) => (
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
+          {HOURS.map((hour, idx) => (
             <div key={hour} className="text-center">
               <div className="bg-dark-100 rounded-lg p-3 mb-2">
-                <TrendingUp className="h-5 w-5 text-teal-400 mx-auto" />
+                <TrendingUp className="h-4 w-4 text-teal-400 mx-auto" />
               </div>
-              <p className="text-gray-400 text-xs">{hour}</p>
-              <p className="text-white font-medium">{hourlyStats[idx]}</p>
+              <p className="text-gray-400 text-[10px]">{hour}</p>
+              <p className="text-white font-bold">{hourlyStats[idx]}</p>
             </div>
           ))}
         </div>

@@ -255,7 +255,7 @@ export function getInstallInstructions(): { title: string; steps: string[] } {
       title: 'Instalar no Computador',
       steps: [
         'Clique no ícone de instalação na barra de endereço',
-        'Ou clique no menu e selecione "Instalar Growth Summit"',
+        'Ou clique no menu e selecione "Instalar Growth Experience"',
         'Confirme clicando em "Instalar"',
         'Pronto! O app foi instalado no seu computador',
       ],

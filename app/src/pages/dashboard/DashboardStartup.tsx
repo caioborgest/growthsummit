@@ -13,8 +13,15 @@ import {
   Edit3,
   HelpCircle,
   LogOut,
-  CheckCircle
+  CheckCircle,
+  Bell,
+  Sparkles
 } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +44,12 @@ export function DashboardStartup() {
   const { data: startups } = useStartups();
   const { data: leads } = useLeads();
   const [activeTab, setActiveTab] = useState('visao-geral');
+  const [unreadNotifications, setUnreadNotifications] = useState(1);
+
+  const notifications = [
+    { id: 1, title: 'Lead Capturado!', message: 'Um novo investidor solicitou seu pitch deck via QR Code.', time: '15 min atrás', read: false },
+    { id: 2, title: 'Arena Pitch', message: 'Faltam 2 horas para sua apresentação no palco principal.', time: '3 horas atrás', read: true },
+  ];
 
   const startupData = startups.find(s => s.userId === user?.id);
   const startupLeads = startupData
@@ -88,6 +101,38 @@ export function DashboardStartup() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-2 rounded-full transition-colors border border-white/10">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold">Notificações</h3>
+                    <button
+                      onClick={() => setUnreadNotifications(0)}
+                      className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-brand-orange-coral/5 border-brand-orange-coral/20'}`}>
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-white text-xs font-bold">{n.title}</p>
+                          <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
+                        </div>
+                        <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -97,46 +142,58 @@ export function DashboardStartup() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Total Leads</p>
-            <p className="text-2xl font-bold text-white">{stats.totalLeads}</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Total Leads</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.totalLeads}</p>
+              <Users className="h-6 w-6 text-orange-500/40" />
+            </div>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Alto Interesse</p>
-            <p className="text-2xl font-bold text-green-400">{stats.highInterest}</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Alto Interesse</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-green-400">{stats.highInterest}</p>
+              <Star className="h-6 w-6 text-green-500/40 fill-green-500/10" />
+            </div>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Interesse Médio</p>
-            <p className="text-2xl font-bold text-yellow-400">{stats.mediumInterest}</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Interesse Médio</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-yellow-500">{stats.mediumInterest}</p>
+              <Star className="h-6 w-6 text-yellow-500/40" />
+            </div>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Taxa de Conversão</p>
-            <p className="text-2xl font-bold text-teal-400">
-              {stats.totalLeads > 0 ? Math.round((stats.highInterest / stats.totalLeads) * 100) : 0}%
-            </p>
+          <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Conversão</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-teal-400">
+                {stats.totalLeads > 0 ? Math.round((stats.highInterest / stats.totalLeads) * 100) : 0}%
+              </p>
+              <TrendingUp className="h-6 w-6 text-teal-500/40" />
+            </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-dark-200 mb-8 p-1">
-            <TabsTrigger value="visao-geral" className="data-[state=active]:bg-orange-500">
-              <TrendingUp className="h-4 w-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+            <TabsTrigger value="visao-geral" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+              <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="leads" className="data-[state=active]:bg-orange-500">
-              <Users className="h-4 w-4 mr-2" />
+            <TabsTrigger value="leads" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+              <Users className="h-4 w-4 mr-1 md:mr-2" />
               Leads
             </TabsTrigger>
-            <TabsTrigger value="stand" className="data-[state=active]:bg-orange-500">
-              <QrCode className="h-4 w-4 mr-2" />
+            <TabsTrigger value="stand" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+              <QrCode className="h-4 w-4 mr-1 md:mr-2" />
               Stand
             </TabsTrigger>
-            <TabsTrigger value="recursos" className="data-[state=active]:bg-orange-500">
-              <FileText className="h-4 w-4 mr-2" />
+            <TabsTrigger value="recursos" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+              <FileText className="h-4 w-4 mr-1 md:mr-2" />
               Recursos
             </TabsTrigger>
-            <TabsTrigger value="perfil" className="data-[state=active]:bg-orange-500">
-              <UserIcon className="h-4 w-4 mr-2" />
+            <TabsTrigger value="perfil" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+              <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
               Perfil
             </TabsTrigger>
           </TabsList>
@@ -288,13 +345,18 @@ export function DashboardStartup() {
             <div className="grid lg:grid-cols-2 gap-6">
               <div className="glass-card p-6 text-center">
                 <h3 className="text-lg font-semibold text-white mb-6">QR Code do Stand</h3>
-                <div className="bg-white p-6 rounded-xl inline-block mb-6">
-                  <div className="w-48 h-48 bg-dark rounded-lg flex items-center justify-center">
-                    <QrCode className="h-32 w-32 text-white" />
+                <div className="relative p-3 rounded-2xl bg-gradient-to-br from-orange-500/20 to-teal-500/20 inline-block mb-6 group">
+                  <div className="bg-white p-6 rounded-xl shadow-2xl">
+                    <div className="w-48 h-48 bg-white rounded-lg flex items-center justify-center">
+                      <QrCode className="h-32 w-32 text-dark" />
+                    </div>
                   </div>
+                  {/* Decorative corners */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-orange-500 rounded-tl-xl transition-all group-hover:w-12 group-hover:h-12"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-teal-500 rounded-br-xl transition-all group-hover:w-12 group-hover:h-12"></div>
                 </div>
-                <p className="text-gray-400 mb-2">Os visitantes podem escanear este QR code</p>
-                <p className="text-teal-400 font-medium">para registrar interesse na sua startup</p>
+                <p className="text-gray-400 mb-2 font-medium">Capture leads automaticamente</p>
+                <p className="text-orange-400 font-black tracking-widest text-xs uppercase">Seu Stand Virtual Growth Experience</p>
                 <div className="flex justify-center space-x-3 mt-6">
                   <Button variant="outline" size="sm" className="border-dark-300 text-gray-300">
                     <Download className="h-4 w-4 mr-2" />

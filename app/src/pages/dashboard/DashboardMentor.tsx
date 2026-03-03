@@ -9,8 +9,15 @@ import {
   HelpCircle,
   FileText,
   LogOut,
-  Briefcase
+  Briefcase,
+  Bell,
+  Sparkles
 } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,6 +32,12 @@ export function DashboardMentor() {
   const { data: sessions } = useMentoringSessions();
   const { data: mentors } = useMentors();
   const [activeTab, setActiveTab] = useState('agenda');
+  const [unreadNotifications, setUnreadNotifications] = useState(1);
+
+  const notifications = [
+    { id: 1, title: 'Nova Mentoria!', message: 'Um novo participante se inscreveu para sua mentoria.', time: '5 min atrás', read: false },
+    { id: 2, title: 'Agenda Confirmada', message: 'Seu cronograma de mentorias para hoje está pronto.', time: '1 hora atrás', read: true },
+  ];
 
   const mentorData = mentors.find(m => m.userId === user?.id);
   const mentorSessions = sessions.filter(s => s.mentorId === mentorData?.id);
@@ -55,8 +68,8 @@ export function DashboardMentor() {
                 <User className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{user?.name}</h1>
-                <p className="text-teal-400">Mentor</p>
+                <h1 className="text-2xl font-black text-white">{user?.name}</h1>
+                <p className="text-teal-400 font-bold uppercase tracking-widest text-[10px]">Mentor Oficial 2026</p>
               </div>
             </div>
             <div className="mt-4 md:mt-0 flex items-center space-x-4">
@@ -72,6 +85,38 @@ export function DashboardMentor() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-2 rounded-full transition-colors border border-white/10">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-teal-500 rounded-full border border-dark-300"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold">Notificações</h3>
+                    <button
+                      onClick={() => setUnreadNotifications(0)}
+                      className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-teal-500/5 border-teal-500/20'}`}>
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-white text-xs font-bold">{n.title}</p>
+                          <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
+                        </div>
+                        <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -81,35 +126,35 @@ export function DashboardMentor() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Total Mentorias</p>
-            <p className="text-2xl font-bold text-white">{stats.total}</p>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-teal-500/10 hover:border-teal-500/30 transition-all">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Total Mentorias</p>
+            <p className="text-3xl font-black text-white">{stats.total}</p>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Concluídas</p>
-            <p className="text-2xl font-bold text-green-400">{stats.completed}</p>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-green-500/10 hover:border-green-500/30 transition-all">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Concluídas</p>
+            <p className="text-3xl font-black text-green-400">{stats.completed}</p>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Agendadas</p>
-            <p className="text-2xl font-bold text-blue-400">{stats.scheduled}</p>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-blue-500/10 hover:border-blue-500/30 transition-all">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Agendadas</p>
+            <p className="text-3xl font-black text-blue-400">{stats.scheduled}</p>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Avaliação Média</p>
-            <div className="flex items-center">
-              <p className="text-2xl font-bold text-yellow-400">{stats.avgRating.toFixed(1)}</p>
-              <Star className="h-5 w-5 text-yellow-400 ml-1 fill-yellow-400" />
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Avaliação Média</p>
+            <div className="flex items-center gap-2">
+              <p className="text-3xl font-black text-yellow-400">{stats.avgRating.toFixed(1)}</p>
+              <Star className="h-6 w-6 text-yellow-500 fill-yellow-500 animate-pulse" />
             </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-dark-200 mb-8 p-1">
-            <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500">
-              <Calendar className="h-4 w-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+            <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
+              <Calendar className="h-4 w-4 mr-1 md:mr-2" />
               Agenda
             </TabsTrigger>
-            <TabsTrigger value="historico" className="data-[state=active]:bg-teal-500">
-              <TrendingUp className="h-4 w-4 mr-2" />
+            <TabsTrigger value="historico" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
+              <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
               Histórico
             </TabsTrigger>
             <TabsTrigger value="perfil" className="data-[state=active]:bg-teal-500">

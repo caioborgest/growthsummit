@@ -14,8 +14,15 @@ import {
   Calendar,
   HelpCircle,
   MapPin,
-  User
+  User,
+  Bell,
+  Sparkles
 } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +44,13 @@ export function DashboardCompany() {
   const { data: matches } = useB2BMatches();
   const { data: sessions } = useSessions();
   const [activeTab, setActiveTab] = useState('discovery');
+  const [unreadNotifications, setUnreadNotifications] = useState(1);
+
+  const notifications = [
+    { id: 1, title: 'Combinação Localizada!', message: 'Uma nova empresa demonstrou interesse em seu perfil.', time: '10 min atrás', read: false },
+    { id: 2, title: 'Rodada de Negócios', message: 'Sua agenda de reuniões para amanhã já está disponível.', time: '2 horas atrás', read: true },
+  ];
+
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   const companyData = useMemo(() =>
@@ -138,6 +152,38 @@ export function DashboardCompany() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-2 rounded-full transition-colors border border-white/10">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold">Notificações</h3>
+                    <button
+                      onClick={() => setUnreadNotifications(0)}
+                      className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-brand-orange-coral/5 border-brand-orange-coral/20'}`}>
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-white text-xs font-bold">{n.title}</p>
+                          <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
+                        </div>
+                        <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -147,44 +193,44 @@ export function DashboardCompany() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <div className="glass-card p-6 border-teal-500/10">
-            <p className="text-gray-500 text-xs font-black uppercase tracking-widest mb-1">Empresas no Radar</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Empresas no Radar</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-black text-white">{discoveryCompanies.length}</p>
-              <Sparkles className="h-5 w-5 text-teal-500/30" />
+              <p className="text-3xl font-black text-white group-hover:text-teal-400 transition-colors">{discoveryCompanies.length}</p>
+              <Sparkles className="h-6 w-6 text-teal-500/40 animate-pulse" />
             </div>
           </div>
-          <div className="glass-card p-6 border-pink-500/10">
-            <p className="text-gray-500 text-xs font-black uppercase tracking-widest mb-1">Seus Matches</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-pink-500/10 to-transparent border-pink-500/20 hover:border-pink-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Seus Matches</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-black text-white">{stats.matches}</p>
-              <Heart className="h-5 w-5 text-pink-500/30 fill-pink-500/10" />
+              <p className="text-3xl font-black text-white group-hover:text-pink-400 transition-colors">{stats.matches}</p>
+              <Heart className="h-6 w-6 text-pink-500/40 fill-pink-500/10" />
             </div>
           </div>
-          <div className="glass-card p-6 border-blue-500/10">
-            <p className="text-gray-500 text-xs font-black uppercase tracking-widest mb-1">Reuniões Agendadas</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Reuniões Agendadas</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-black text-white">{stats.scheduled}</p>
-              <Calendar className="h-5 w-5 text-blue-500/30" />
+              <p className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{stats.scheduled}</p>
+              <Calendar className="h-6 w-6 text-blue-500/40" />
             </div>
           </div>
-          <div className="glass-card p-6 border-orange-500/10">
-            <p className="text-gray-500 text-xs font-black uppercase tracking-widest mb-1">Oportunidades</p>
+          <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Oportunidades</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-black text-white">{stats.highInterest}</p>
-              <TrendingUp className="h-5 w-5 text-orange-500/30" />
+              <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.highInterest}</p>
+              <TrendingUp className="h-6 w-6 text-orange-500/40" />
             </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 bg-dark-200 mb-10 p-1">
-            <TabsTrigger value="discovery" className="data-[state=active]:bg-teal-500">
-              <Sparkles className="h-4 w-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 bg-dark-200 mb-6 md:mb-10 p-1 h-auto min-h-[44px]">
+            <TabsTrigger value="discovery" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
+              <Sparkles className="h-4 w-4 mr-1 md:mr-2" />
               Discovery
             </TabsTrigger>
-            <TabsTrigger value="reunioes" className="data-[state=active]:bg-teal-500">
-              <Handshake className="h-4 w-4 mr-2" />
+            <TabsTrigger value="reunioes" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
+              <Handshake className="h-4 w-4 mr-1 md:mr-2" />
               Agenda
             </TabsTrigger>
             <TabsTrigger value="matches" className="data-[state=active]:bg-teal-500">
@@ -211,8 +257,8 @@ export function DashboardCompany() {
 
           {/* Discovery Tab */}
           <TabsContent value="discovery">
-            <div className="flex flex-col items-center justify-center py-6">
-              <div className="max-w-md w-full relative h-[520px]">
+            <div className="flex flex-col items-center justify-center py-4 md:py-6">
+              <div className="max-w-md w-full relative h-[480px] md:h-[520px]">
                 <AnimatePresence mode="popLayout">
                   {discoveryCompanies.length > 0 ? (
                     discoveryCompanies.slice(0, 1).map((company) => (
@@ -252,7 +298,7 @@ export function DashboardCompany() {
                                 company.tipoInteresse === 'vender' ? 'Oferece Soluções' : 'Parcerias'}
                             </Badge>
                           </div>
-                          <p className="text-gray-400 text-sm leading-relaxed line-clamp-4 italic mb-8">
+                          <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 italic mb-8 border-l-2 border-teal-500/30 pl-4">
                             "{company.description}"
                           </p>
 

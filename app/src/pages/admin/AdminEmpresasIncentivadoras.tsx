@@ -35,8 +35,8 @@ export default function AdminEmpresasIncentivadoras() {
     const filteredEmpresas = (empresas || []).filter(emp => {
         const q = searchQuery.toLowerCase();
         return (
-            (emp.nome_empresa?.toLowerCase() || '').includes(q) ||
-            (emp.nome_responsavel?.toLowerCase() || '').includes(q) ||
+            (emp.nomeEmpresa?.toLowerCase() || '').includes(q) ||
+            (emp.nomeResponsavel?.toLowerCase() || '').includes(q) ||
             (emp.email?.toLowerCase() || '').includes(q)
         );
     });
@@ -138,17 +138,17 @@ export default function AdminEmpresasIncentivadoras() {
                         </div>
 
                         <div>
-                            <h3 className="text-xl font-bold text-white">{emp.nome_empresa}</h3>
+                            <h3 className="text-xl font-bold text-white">{emp.nomeEmpresa}</h3>
                             <p className="text-gray-400 text-sm flex items-center mt-1">
                                 <Users className="h-4 w-4 mr-2 text-teal-400" />
-                                {emp.quantidade_equipe} colaboradores
+                                {emp.quantidadeEquipe} colaboradores
                             </p>
                         </div>
 
                         <div className="space-y-2 py-4 border-y border-white/5">
                             <div className="flex items-center text-sm text-gray-300">
                                 <Building2 className="h-4 w-4 mr-3 text-brand-orange-coral" />
-                                <span>{emp.nome_responsavel}</span>
+                                <span>{emp.nomeResponsavel}</span>
                             </div>
                             <div className="flex items-center text-sm text-gray-300">
                                 <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />

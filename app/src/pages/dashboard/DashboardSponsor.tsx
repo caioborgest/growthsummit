@@ -16,8 +16,15 @@ import {
   LogOut,
   Upload,
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  Bell,
+  Sparkles
 } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,10 +41,15 @@ export function DashboardSponsor() {
   const { logout } = useAuth();
   const { data: sponsors } = useSponsors();
   const [activeTab, setActiveTab] = useState('overview');
+  const [unreadNotifications, setUnreadNotifications] = useState(1);
+
+  const notifications = [
+    { id: 1, title: 'Logo Recebida!', message: 'Sua logomarca foi aprovada para os telões do palco principal.', time: '20 min atrás', read: false },
+    { id: 2, title: 'Briefing Enviado', message: 'O manual do patrocinador foi enviado para seu e-mail.', time: '4 horas atrás', read: true },
+  ];
 
   // Encontrar patrocinador vinculado ao usuário logado
-  // Na prática, isso viria de uma relação user_id na tabela sponsors
-  const sponsorData = sponsors[0]; // Mock: pegando o primeiro
+  const sponsorData = sponsors.find(s => s.userId === user?.id) || sponsors[0];
 
   const handleLogout = () => {
     logout();
@@ -107,6 +119,38 @@ export function DashboardSponsor() {
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-2 rounded-full transition-colors border border-white/10">
+                    <Bell className="h-4 w-4" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute top-0 right-0 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold">Notificações</h3>
+                    <button
+                      onClick={() => setUnreadNotifications(0)}
+                      className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-brand-orange-coral/5 border-brand-orange-coral/20'}`}>
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-white text-xs font-bold">{n.title}</p>
+                          <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
+                        </div>
+                        <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -116,74 +160,78 @@ export function DashboardSponsor() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Overview */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-dark-200 border-dark-300">
-            <CardContent className="p-4">
-              <p className="text-gray-400 text-sm">Total Entregáveis</p>
-              <p className="text-2xl font-bold text-white">{stats.totalDeliverables}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-dark-200 border-dark-300">
-            <CardContent className="p-4">
-              <p className="text-gray-400 text-sm">Concluídos</p>
-              <p className="text-2xl font-bold text-green-400">{stats.completed}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-dark-200 border-dark-300">
-            <CardContent className="p-4">
-              <p className="text-gray-400 text-sm">Em Andamento</p>
-              <p className="text-2xl font-bold text-yellow-400">{stats.inProgress}</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-dark-200 border-dark-300">
-            <CardContent className="p-4">
-              <p className="text-gray-400 text-sm">Pendentes</p>
-              <p className="text-2xl font-bold text-red-400">{stats.pending}</p>
-            </CardContent>
-          </Card>
+          <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-all group">
+            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Total Entregáveis</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-white group-hover:text-yellow-400 transition-colors">{stats.totalDeliverables}</p>
+              <FileCheck className="h-6 w-6 text-yellow-500/40" />
+            </div>
+          </div>
+          <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Concluídos</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-green-400">{stats.completed}</p>
+              <CheckCircle className="h-6 w-6 text-green-500/40" />
+            </div>
+          </div>
+          <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Em Andamento</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-blue-400">{stats.inProgress}</p>
+              <Clock className="h-6 w-6 text-blue-500/40" />
+            </div>
+          </div>
+          <div className="glass-card p-6 bg-gradient-to-br from-red-500/10 to-transparent border-red-500/20 hover:border-red-500/40 transition-all group">
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Pendentes</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-red-400">{stats.pending}</p>
+              <AlertCircle className="h-6 w-6 text-red-500/40" />
+            </div>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <Gem className="h-4 w-4 mr-2" />
+              <Gem className="h-4 w-4 mr-1 md:mr-2" />
               Visão Geral
             </TabsTrigger>
             <TabsTrigger
               value="deliverables"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <FileCheck className="h-4 w-4 mr-2" />
+              <FileCheck className="h-4 w-4 mr-1 md:mr-2" />
               Entregáveis
             </TabsTrigger>
             <TabsTrigger
               value="programacao"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <Calendar className="h-4 w-4 mr-2" />
-              Programação
+              <Calendar className="h-4 w-4 mr-1 md:mr-2" />
+              Agenda
             </TabsTrigger>
             <TabsTrigger
               value="materiais"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4 mr-1 md:mr-2" />
               Materiais
             </TabsTrigger>
             <TabsTrigger
               value="contato"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
+              <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
               Contato
             </TabsTrigger>
             <TabsTrigger
               value="perfil"
-              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
             >
-              <UserIcon className="h-4 w-4 mr-2" />
+              <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
               Perfil
             </TabsTrigger>
           </TabsList>

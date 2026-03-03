@@ -29,11 +29,23 @@ import {
   Lock,
   Copy,
   CheckCircle,
-  AlertCircle
+  CheckCircle,
+  AlertCircle,
+  Bell
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '@/components/ui/tabs';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSessions } from '@/hooks/useData';
@@ -354,6 +366,13 @@ export function DashboardParticipante() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
   const [showEditCursos, setShowEditCursos] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(2);
+
+  const notifications = [
+    { id: 1, title: 'Check-in Realizado!', message: 'Seu credenciamento diurno foi confirmado. Aproveite o evento!', time: '10 min atrás', read: false },
+    { id: 2, title: 'Próxima Palestra', message: 'Em 15 minutos começará "Crescimento Exponencial" na Arena Principal.', time: '1 hora atrás', read: false },
+    { id: 3, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '2 horas atrás', read: true },
+  ];
 
   // ── STATUS FINANCEIRO ──────────────────────────────────────────────────────
   // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
@@ -520,13 +539,16 @@ export function DashboardParticipante() {
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
                   {myRegistration?.nome || user?.name || 'Bem-vindo'}
-                  <Sparkles className="h-5 w-5 text-orange-400" />
+                  <Sparkles className="h-5 w-5 text-orange-400 animate-pulse" />
                 </h1>
-                <p className="text-gray-400 font-medium">{selectedProject?.name || 'Growth Experience'}</p>
+                <p className="text-gray-400 font-medium tracking-wide uppercase text-[10px] md:text-xs">{selectedProject?.name || 'Growth Experience 2026'}</p>
 
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/20 px-3 py-1 font-bold flex items-center gap-1.5">
-                    <Sun className="h-3 w-3" />
+                  <Badge className={`px-3 py-1 font-bold flex items-center gap-1.5 border ${myRegistration?.palestrasNoturnas
+                    ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                    : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+                    }`}>
+                    {myRegistration?.palestrasNoturnas ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
                     {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                   </Badge>
                   <button
@@ -541,6 +563,38 @@ export function DashboardParticipante() {
                   >
                     <LogOut className="h-3 w-3" /> Sair
                   </button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-1.5 rounded-full transition-colors">
+                        <Bell className="h-4 w-4" />
+                        {unreadNotifications > 0 && (
+                          <span className="absolute top-0 right-0 w-2 h-2 bg-orange-500 rounded-full border border-dark-300"></span>
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-white font-bold">Notificações</h3>
+                        <button
+                          onClick={() => setUnreadNotifications(0)}
+                          className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                        >
+                          Limpar
+                        </button>
+                      </div>
+                      <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                        {notifications.map(n => (
+                          <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-orange-500/5 border-orange-500/20'}`}>
+                            <div className="flex justify-between items-start gap-2">
+                              <p className="text-white text-xs font-bold">{n.title}</p>
+                              <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
+                            </div>
+                            <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </div>
@@ -561,23 +615,23 @@ export function DashboardParticipante() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap h-auto md:grid w-full md:grid-cols-6 bg-dark-200 mb-8 p-1 rounded-2xl shadow-inner shadow-black/20">
-            <TabsTrigger value="ingresso" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto bg-dark-200 mb-8 p-1 rounded-2xl shadow-inner shadow-black/20 overflow-hidden">
+            <TabsTrigger value="ingresso" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <QrCode className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Ingresso</span>
             </TabsTrigger>
-            <TabsTrigger value="agenda" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+            <TabsTrigger value="agenda" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <Calendar className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Agenda</span>
             </TabsTrigger>
-            <TabsTrigger value="documentos" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+            <TabsTrigger value="documentos" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <FileText className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Docs</span>
             </TabsTrigger>
-            <TabsTrigger value="dados" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+            <TabsTrigger value="dados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <User className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
-            <TabsTrigger value="certificados" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+            <TabsTrigger value="certificados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <Award className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Certs</span>
             </TabsTrigger>
-            <TabsTrigger value="suporte" className="flex-1 min-w-[30%] py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+            <TabsTrigger value="suporte" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <HelpCircle className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Ajuda</span>
             </TabsTrigger>
           </TabsList>
@@ -586,12 +640,13 @@ export function DashboardParticipante() {
           <TabsContent value="ingresso">
             <div className="grid lg:grid-cols-2 gap-8">
               {/* QR Code */}
-              <div className="glass-card p-8 md:p-12 text-center flex flex-col items-center border-teal-500/20 relative overflow-hidden group">
+              <div className="glass-card p-6 md:p-8 text-center flex flex-col items-center border-teal-500/20 relative overflow-hidden group">
                 {/* Decorative elements */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
 
                 <h2 className="text-2xl font-black text-white mb-2 italic">Seu Acesso</h2>
-                <p className="text-gray-500 text-xs uppercase tracking-[0.2em] font-bold mb-8">Growth Experience 2026</p>
+                <div className="h-1 w-12 bg-teal-500 mb-2 rounded-full"></div>
+                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-black mb-8">Growth Experience 2026</p>
 
                 <div className="relative p-2 rounded-[2.5rem] bg-gradient-to-br from-teal-500/20 to-orange-500/20 mb-8 group-hover:scale-[1.02] transition-transform duration-500">
                   <div className="bg-white p-6 rounded-[2rem] shadow-2xl shadow-teal-500/20">
@@ -633,7 +688,7 @@ export function DashboardParticipante() {
                     <Download className="h-4 w-4 mr-2" /> PDF
                   </Button>
                   <Button
-                    className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl px-8 flex-1"
+                    className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl px-4 md:px-8 flex-1 text-xs md:text-sm"
                     onClick={() => {
                       if (!myRegistration) {
                         toast.error('Nenhuma inscrição encontrada.');
@@ -642,7 +697,7 @@ export function DashboardParticipante() {
                       setShowCheckInModal(true);
                     }}
                   >
-                    <QrCode className="h-4 w-4 mr-2" /> VALIDAR
+                    <QrCode className="h-4 w-4 mr-1 md:mr-2" /> VALIDAR
                   </Button>
                 </div>
                 <p className="text-gray-600 text-xs mt-4 max-w-xs">
@@ -715,17 +770,17 @@ export function DashboardParticipante() {
 
                 {/* Upgrade Pro */}
                 {!myRegistration?.palestrasNoturnas && (
-                  <div className="glass-card p-8 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/30">
+                  <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Moon className="h-5 w-5 text-orange-400" />
                       <h3 className="text-lg font-bold text-white">Upgrade para Pro</h3>
                     </div>
-                    <p className="text-gray-400 text-sm mb-2">
-                      Assista às <strong className="text-white">palestras noturnas</strong> com Leandro Batista e Vanylton Matias + mentorias exclusivas.
+                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                      Assista às <strong className="text-white">palestras noturnas</strong> com experts do mercado + mentorias exclusivas e networking premium.
                     </p>
                     <p className="text-orange-400 font-black text-2xl mb-5">R$ 179,90</p>
                     <Button
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 text-xs md:text-base"
                       onClick={() => setShowUpgradeModal(true)}
                     >
                       <CreditCard className="h-5 w-5" />

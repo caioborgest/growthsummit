@@ -100,7 +100,14 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   start_time: 'startTime',
   end_time: 'endTime',
   max_capacity: 'maxCapacity',
-  registered_count: 'registeredCount'
+  registered_count: 'registeredCount',
+  mentorado_id: 'menteeId',
+  mentor_id: 'mentorId',
+  nome_mentorado: 'menteeName',
+  email_mentorado: 'menteeEmail',
+  telefone_mentorado: 'menteePhone',
+  tema_interesse: 'topic',
+  mentor_name: 'mentorName',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -108,8 +115,8 @@ const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_F
   return acc;
 }, {} as Record<string, string>);
 
-const mapFromSupabase = (item: Record<string, any>): Record<string, any> => {
-  const result: Record<string, any> = {};
+const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(item)) {
     // 1. Try semantic map first
     const semanticKey = SEMANTIC_MAP_FROM_DB[key];
@@ -147,7 +154,7 @@ const mapToSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> =
 };
 
 const mapToSupabase = (projectId: string | undefined, entity: string, data: Record<string, unknown>): Record<string, unknown> => {
-  const result: Record<string, any> = {};
+  const result: Record<string, unknown> = {};
 
   // First pass: map directly using semantic map and snake case
   for (const [key, value] of Object.entries(data)) {
@@ -157,14 +164,15 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
 
   // Handle nested/special structures
   if (entity === 'projects' && data.settings) {
-    const s = data.settings as any;
+    const s = data.settings as Record<string, unknown>;
     if (s.maxRegistrations !== undefined) result.max_registrations = s.maxRegistrations;
     if (s.maxMentors !== undefined) result.max_mentors = s.maxMentors;
     // ... continue other project specific mappings if they don't follow the rule
     if (s.ticketPrices) {
-      result.ticket_price_standard = Math.round((s.ticketPrices.standard || 0) * 100);
-      result.ticket_price_pro = Math.round((s.ticketPrices.pro || 0) * 100);
-      result.ticket_price_vip = Math.round((s.ticketPrices.vip || 0) * 100);
+      const tp = s.ticketPrices as Record<string, number>;
+      result.ticket_price_standard = Math.round((tp.standard || 0) * 100);
+      result.ticket_price_pro = Math.round((tp.pro || 0) * 100);
+      result.ticket_price_vip = Math.round((tp.vip || 0) * 100);
     }
   }
 
@@ -238,7 +246,7 @@ function getSelectFields(entity: string, projectId?: string): string {
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,foto_url,created_at,nome,telefone,empresa,cargo',
-    mentoring_sessions: 'id,project_id,mentor_id,mentor_name,mentee_id,mentee_name,scheduled_at,duration,status,topic,created_at',
+    mentoring_sessions: 'id,project_id,mentor_id,mentee_id,status,created_at,scheduled_at,duration,topic,notes,mentor_name,mentee_name',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
@@ -246,14 +254,15 @@ function getSelectFields(entity: string, projectId?: string): string {
     check_ins: 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at,short_description,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at,short_description',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
     empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at',
     users: 'id,email,name,role,department,permissions,created_at,staff_role',
-    profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in'
+    profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
+    notifications: 'id,project_id,user_id,title,message,type,is_read,created_at'
   };
   return fields[entity] ?? '*';
 }
@@ -321,17 +330,17 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         query = query.eq('project_id', projectId);
       }
 
-      const result = await withTimeout(
-        query as unknown as Promise<any>,
+      const resultRaw = await withTimeout(
+        query as unknown as Promise<{ data: Record<string, unknown>[] | null; error: Error | null }>,
         15000,
         `FetchData:${entityName}`
       );
-      const { data: supabaseData, error: supabaseError } = result as any;
+      const { data: supabaseData, error: supabaseError } = resultRaw;
 
       if (supabaseError) throw supabaseError;
 
       // Basic mapping from snake_case to CamelCase
-      const mappedData = (supabaseData || []).map((item: Record<string, any>) => {
+      const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => {
         const mappedItem = mapFromSupabase(item);
 
         // Project Specific Mapping for Projects Entity (Complex nested structure)
@@ -359,8 +368,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       setData(mappedData);
       // Store in cache
       dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
-    } catch (err: any) {
-      const errorObj = err instanceof Error ? err : new Error(err?.message || String(err));
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
       setError(errorObj);
       logger.error(`Erro ao buscar ${entityName}:`, err);
     } finally {
@@ -386,9 +395,11 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       if (error) throw error;
 
+      const mappedInserted = mapFromSupabase(inserted) as unknown as T;
+      setData(prev => [mappedInserted, ...prev]);
       invalidateCache(projectId!, entityName);
       await fetchData(true);
-      return inserted as unknown as T;
+      return mappedInserted;
     } catch (err) {
       logger.error(`Erro ao criar ${entityName}:`, err);
       throw err;
@@ -417,6 +428,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const { error } = await query;
 
       if (error) throw error;
+      // Update local state immediately
+      setData(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
       invalidateCache(projectId!, entityName);
       await fetchData(true);
     } catch (err) {
@@ -445,6 +458,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       const { error } = await query;
 
       if (error) throw error;
+      // Update local state immediately for snappy UI
+      setData(prev => prev.filter(item => item.id !== id));
       invalidateCache(projectId!, entityName);
       await fetchData(true);
     } catch (err) {
@@ -619,5 +634,9 @@ export function useProfile(userId?: string) {
 }
 
 export function useEmpresasIncentivadoras() {
-  return useData<any>([], 'empresas_incentivadoras');
+  return useData<EmpresaIncentivadora>([], 'empresas_incentivadoras');
+}
+
+export function useNotifications() {
+  return useData<Notification>([], 'notifications');
 }

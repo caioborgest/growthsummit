@@ -437,3 +437,17 @@ export interface Coupon {
   vencimento?: string;
   createdAt: string;
 }
+
+export interface EmpresaIncentivadora {
+  id: string;
+  projectId: string;
+  nomeResponsavel: string;
+  email: string;
+  telefone: string;
+  nomeEmpresa: string;
+  quantidadeEquipe: number;
+  objetivo: string;
+  status: 'pending' | 'approved' | 'rejected' | 'ativo' | 'cancelado';
+  createdAt: string;
+}
+

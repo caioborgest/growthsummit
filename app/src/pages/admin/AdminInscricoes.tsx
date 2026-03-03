@@ -14,12 +14,13 @@ import {
   User,
   Loader2,
   X,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRegistrations, useTransactions } from '@/hooks/useData';
+import { useRegistrations, useTransactions, useData } from '@/hooks/useData';
 import { toast } from 'sonner';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
@@ -48,12 +49,14 @@ function DetalhesModal({
   reg,
   onClose,
   onUpdateStatus,
-  onToggleCheckIn
+  onToggleCheckIn,
+  onDelete
 }: {
   reg: Registration;
   onClose: () => void;
   onUpdateStatus: (id: string, status: string) => Promise<void>;
   onToggleCheckIn: (id: string, current: boolean) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -164,6 +167,17 @@ function DetalhesModal({
             >
               Fechar Visualização
             </Button>
+
+            <div className="pt-4 mt-4 border-t border-red-500/10">
+              <Button
+                onClick={() => onDelete(reg.id)}
+                variant="ghost"
+                className="w-full text-red-500/50 hover:text-red-500 hover:bg-red-500/10 font-bold text-xs"
+              >
+                <Trash2 className="h-3 w-3 mr-2" />
+                EXCLUIR PERMANENTEMENTE
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -173,8 +187,9 @@ function DetalhesModal({
 
 // ── Componente Principal ──────────────────────────────────────
 export function AdminInscricoes() {
-  const { data: registrations, update } = useRegistrations();
-  const { create: createTransaction } = useTransactions();
+  const { data: registrations, update, remove } = useRegistrations();
+  const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
+  const { update: updateSession } = useData([], 'sessions');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [nightFilter, setNightFilter] = useState<string>('all');
@@ -189,27 +204,53 @@ export function AdminInscricoes() {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
+      const registration = registrations.find(r => r.id === id);
+      if (!registration) return;
+
+      const oldStatus = registration.status;
       await update(id, { status });
 
-      // Se marcou como pago, registrar automaticamente no financeiro
-      if (status === 'paid') {
-        const registration = registrations.find(r => r.id === id);
-        if (registration) {
-          try {
-            await createTransaction({
-              projectId: registration.projectId || '',
-              type: 'income',
-              category: 'Inscrições',
-              description: `Inscrição: ${registration.name}`,
-              amount: registration.amount || 0,
-              date: new Date().toISOString(),
-              status: 'completed'
-            } as any);
-            toast.success('Lançamento automático realizado no financeiro');
-          } catch (finErr) {
-            console.error('Erro ao registrar no financeiro:', finErr);
-            toast.error('Status atualizado, mas houve erro no lançamento financeiro');
+      // 1. Sincronização de Cancelamento
+      if (status === 'cancelled' && oldStatus !== 'cancelled') {
+        // A. Liberar vagas na programação
+        if (registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
+          const { supabase } = await import('@/lib/supabase');
+          for (const sessionId of registration.cursosSelecionados) {
+            try {
+              await supabase.rpc('decrement_session_count', { session_id: sessionId });
+            } catch (err) {
+              console.error(`Erro ao decrementar sessão ${sessionId}:`, err);
+            }
           }
+          toast.info('Vagas na programação liberadas.');
+        }
+
+        // B. Cancelar transação financeira relacionada
+        const relatedTransaction = transactions.find(t => t.relatedId === id || t.description.includes(registration.name || ''));
+        if (relatedTransaction && relatedTransaction.status !== 'cancelled') {
+          await updateTransaction(relatedTransaction.id, { status: 'cancelled' });
+          toast.info('Lançamento financeiro marcado como cancelado.');
+        }
+      }
+
+      // 2. Sincronização de Pagamento (Criar Lançamento)
+      if (status === 'paid' && oldStatus !== 'paid') {
+        try {
+          await createTransaction({
+            projectId: registration.projectId || '',
+            type: 'income',
+            category: 'Inscrições',
+            description: `Inscrição: ${registration.name}`,
+            amount: registration.amount || 0,
+            date: new Date().toISOString(),
+            status: 'completed',
+            relatedId: id,
+            relatedType: 'registration'
+          } as any);
+          toast.success('Lançamento automático realizado no financeiro');
+        } catch (finErr) {
+          console.error('Erro ao registrar no financeiro:', finErr);
+          toast.error('Status atualizado, mas houve erro no lançamento financeiro');
         }
       }
 
@@ -220,6 +261,46 @@ export function AdminInscricoes() {
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast.error('Erro ao atualizar status de pagamento.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteParticipant = async (id: string) => {
+    const registration = registrations.find(r => r.id === id);
+    if (!registration) return;
+
+    if (!confirm(`TEM CERTEZA? Isso excluirá ${registration.name} permanentemente e removerá os lançamentos financeiros vinculados.`)) {
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      // 1. Liberar vagas na programação se ainda não estiver cancelado
+      if (registration.status !== 'cancelled' && registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
+        const { supabase } = await import('@/lib/supabase');
+        for (const sessionId of registration.cursosSelecionados) {
+          await supabase.rpc('decrement_session_count', { session_id: sessionId });
+        }
+      }
+
+      // 2. Excluir transações financeiras relacionadas
+      const relatedTransactions = transactions.filter(t => t.relatedId === id);
+      for (const t of relatedTransactions) {
+        // Usando a API de transações se disponível, ou fallback para manual se necessário
+        // Aqui usamos hooks de dados genéricos
+        const { supabase } = await import('@/lib/supabase');
+        await supabase.from('transactions').delete().eq('id', t.id);
+      }
+
+      // 3. Excluir a inscrição
+      await remove(id);
+
+      toast.success('Participante e dados vinculados removidos com sucesso.');
+      setDetalhes(null);
+    } catch (error) {
+      console.error('Erro ao excluir participante:', error);
+      toast.error('Erro ao realizar exclusão completa.');
     } finally {
       setIsUpdating(false);
     }
@@ -348,6 +429,7 @@ export function AdminInscricoes() {
           onClose={() => setDetalhes(null)}
           onUpdateStatus={handleUpdateStatus}
           onToggleCheckIn={handleToggleCheckIn}
+          onDelete={handleDeleteParticipant}
         />
       )}
 
@@ -564,6 +646,15 @@ export function AdminInscricoes() {
                             onClick={() => { navigator.clipboard.writeText(reg.id); toast.success('ID copiado!'); }}
                           >
                             <QrCode className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-gray-400 hover:text-red-500 h-8 w-8 p-0"
+                            title="Excluir participante"
+                            onClick={() => handleDeleteParticipant(reg.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>

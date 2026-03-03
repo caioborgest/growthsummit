@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { usePWA, shouldShowInstallPrompt, getInstallInstructions } from '@/hooks/usePWA';
 import { Button } from '@/components/ui/button';
-import { 
-  X, 
-  Download, 
-  Share2, 
-  PlusSquare, 
+import {
+  X,
+  Download,
+  Share2,
+  PlusSquare,
   CheckCircle2,
   Smartphone,
   Monitor,
@@ -15,17 +15,17 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function PWAInstallPrompt() {
-  const { 
-    isInstallable, 
-    isInstalled, 
-    isStandalone, 
+  const {
+    isInstallable,
+    isInstalled,
+    isStandalone,
     isOffline,
-    promptInstall, 
+    promptInstall,
     dismissInstall,
     updateAvailable,
-    updateApp 
+    updateApp
   } = usePWA();
-  
+
   const [showPrompt, setShowPrompt] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
@@ -52,7 +52,7 @@ export function PWAInstallPrompt() {
   const handleInstall = async () => {
     // Check if it's iOS (which doesn't support beforeinstallprompt)
     const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-    
+
     if (isIOS) {
       setShowInstructions(true);
     } else {
@@ -110,16 +110,16 @@ export function PWAInstallPrompt() {
                     Uma atualização foi instalada. Reinicie para usar a versão mais recente.
                   </p>
                   <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="bg-teal-500 hover:bg-teal-600 text-white flex-1"
                       onClick={updateApp}
                     >
                       Atualizar agora
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="border-dark-300 text-gray-300"
                       onClick={() => setShowUpdatePrompt(false)}
                     >
@@ -152,18 +152,18 @@ export function PWAInstallPrompt() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg">
-                    <img 
-                      src="/icons/icon-72x72.png" 
-                      alt="Growth Summit" 
+                    <img
+                      src="/icons/icon-72x72.png"
+                      alt="Growth Experience"
                       className="w-8 h-8"
                     />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">Growth Summit</h3>
+                    <h3 className="text-white font-bold text-lg">Growth Experience</h3>
                     <p className="text-gray-400 text-sm">Instale nosso app</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={handleDismiss}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
@@ -206,7 +206,7 @@ export function PWAInstallPrompt() {
               </div>
 
               {/* Install Button */}
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-6 text-base font-semibold shadow-lg shadow-teal-500/25"
                 onClick={handleInstall}
               >
@@ -240,7 +240,7 @@ export function PWAInstallPrompt() {
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">{instructions.title}</h3>
-                <button 
+                <button
                   onClick={handleCloseInstructions}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
@@ -281,7 +281,7 @@ export function PWAInstallPrompt() {
                 </div>
               </div>
 
-              <Button 
+              <Button
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white"
                 onClick={handleCloseInstructions}
               >
@@ -347,7 +347,7 @@ export function IOSInstallBadge() {
       const ua = navigator.userAgent.toLowerCase();
       const iOS = /iphone|ipad|ipod/.test(ua);
       const standalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone === true;
+        (window.navigator as any).standalone === true;
       setIsIOS(iOS);
       setIsStandalone(standalone);
     };
@@ -379,7 +379,7 @@ export function IOSInstallBadge() {
             <p className="text-gray-400 text-xs">Toque em compartilhar e depois "Adicionar à Tela de Início"</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={handleDismiss}
           className="p-2 hover:bg-white/10 rounded-full transition-colors"
         >
