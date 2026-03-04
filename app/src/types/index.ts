@@ -443,7 +443,7 @@ export interface EmpresaIncentivadora {
   projectId: string;
   nomeResponsavel: string;
   email: string;
-  telefone: string;
+  phone: string;
   nomeEmpresa: string;
   quantidadeEquipe: number;
   objetivo: string;

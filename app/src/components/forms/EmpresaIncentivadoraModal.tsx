@@ -24,7 +24,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
     const [formData, setFormData] = useState({
         nomeResponsavel: '',
         email: '',
-        telefone: '',
+        phone: '',
         nomeEmpresa: '',
         quantidadeEquipe: '',
         objetivo: ''
@@ -58,7 +58,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
-            nomeResponsavel: '', email: '', telefone: '',
+            nomeResponsavel: '', email: '', phone: '',
             nomeEmpresa: '', quantidadeEquipe: '', objetivo: ''
         });
     };
@@ -83,7 +83,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                     id: authUser.id,
                     email: formData.email,
                     name: formData.nomeResponsavel,
-                    phone: formData.telefone,
+                    phone: formData.phone,
                     role: 'company',
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'id' }).then(({ error }: { error: { message: string } | null }) => {
@@ -91,18 +91,17 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 });
             }
 
-            // 2. Salvar na tabela de inscrições (UPSERT por email para permitir atualização)
-            const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).upsert({
+            // 2. Salvar na tabela de inscrições (INSERT para permitir múltiplas inscrições)
+            const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert([{
                 project_id: projectId,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
-                telefone: formData.telefone,
+                telefone: formData.phone,
                 nome_empresa: formData.nomeEmpresa,
                 quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
                 objetivo: formData.objetivo,
-                status: isAdmin ? 'aprovado' : 'pendente',
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'email' });
+                status: isAdmin ? 'aprovado' : 'pendente'
+            }]);
 
             if (dbError) {
                 logger.error('Erro ao salvar no banco (Empresa):', dbError);
@@ -122,7 +121,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                     `*DADOS DA EMPRESA:*\n` +
                     `• *Empresa:* ${formData.nomeEmpresa}\n` +
                     `• *Responsável:* ${formData.nomeResponsavel}\n` +
-                    `• *WhatsApp:* ${formData.telefone}\n` +
+                    `• *WhatsApp:* ${formData.phone}\n` +
                     `• *Equipe:* ${qtd} pessoas\n` +
                     `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe >= 10)' : 'Nenhum'}\n` +
                     `• *Valor Total:* ${valorFormatado}\n\n` +
@@ -234,8 +233,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                         <input
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
-                                            value={formData.telefone}
-                                            onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                                            value={formData.phone}
+                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                             placeholder="(00) 00000-0000"
                                         />
                                     </div>

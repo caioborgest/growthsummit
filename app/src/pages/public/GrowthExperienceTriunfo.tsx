@@ -688,7 +688,8 @@ export function GrowthExperienceTriunfo() {
                 destaque={cota.destaque}
                 imagemUrl={getStandImage(cota.nome)}
                 onContato={() => {
-                  window.location.href = 'mailto:projetos@cbxgrowth.com.br?subject=Interesse em Cota ' + cota.nome;
+                  const message = encodeURIComponent(`Olá! Tenho interesse na Cota ${cota.nome} para exposição no Growth Experience Triunfo-PE 2026. Poderia me enviar a proposta comercial?`);
+                  window.open(`https://api.whatsapp.com/send/?phone=5588988432310&text=${message}`, '_blank');
                 }}
               />
             ))}

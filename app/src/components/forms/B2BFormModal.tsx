@@ -272,10 +272,10 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 status: 'pendente',
             };
 
-            // Salvar no Supabase (usando UPSERT para permitir atualizações/corrigir conflitos)
+            // Salvar no Supabase (usando INSERT para evitar conflitos e permitir múltiplas inscrições)
             const { error: supabaseError } = await supabase
                 .from('rodada_negocios_b2b')
-                .upsert(dataToInsert, { onConflict: 'email' });
+                .insert([dataToInsert]);
 
             if (supabaseError) throw supabaseError;
 

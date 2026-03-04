@@ -218,10 +218,10 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 status: 'pendente',
             };
 
-            // Salvar no Supabase (usando UPSERT para permitir atualizações/corrigir conflitos)
+            // Salvar no Supabase (usando INSERT para evitar conflitos e permitir múltiplas inscrições)
             const { error: supabaseError } = await supabase
                 .from('startups_arena_pitch')
-                .upsert(dataToInsert, { onConflict: 'email' });
+                .insert([dataToInsert]);
 
             if (supabaseError) throw supabaseError;
 

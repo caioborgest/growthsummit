@@ -156,7 +156,7 @@ export default function AdminEmpresasIncentivadoras() {
                             </div>
                             <div className="flex items-center text-sm text-gray-300">
                                 <Phone className="h-4 w-4 mr-3 text-brand-orange-coral" />
-                                <span>{emp.telefone}</span>
+                                <span>{emp.phone}</span>
                             </div>
                         </div>
 
