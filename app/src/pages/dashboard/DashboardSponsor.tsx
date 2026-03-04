@@ -17,8 +17,7 @@ import {
   Upload,
   MessageSquare,
   ClipboardList,
-  Bell,
-  Sparkles
+  Bell
 } from 'lucide-react';
 import {
   Popover,

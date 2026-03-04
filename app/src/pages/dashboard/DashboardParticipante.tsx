@@ -8,7 +8,6 @@ import {
   FileText,
   HelpCircle,
   Download,
-  Clock,
   MapPin,
   LogOut,
   Sparkles,
@@ -24,8 +23,6 @@ import {
   XCircle,
   ChevronRight,
   ScanLine,
-  Edit3,
-  RefreshCw,
   Lock,
   Copy,
   CheckCircle,
@@ -48,7 +45,7 @@ import {
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSessions, useMentors, useMentoringSessions } from '@/hooks/useData';
-import { useMyRegistration } from '@/hooks/useMyRegistration';
+import { useMyRegistration, MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
@@ -82,7 +79,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     if (!cupom.trim()) return;
     setLoadingCupom(true);
     try {
-      const { data, error } = await (supabase.from('cupons_parceria_social') as any)
+      const { data, error } = await (supabase.from('cupons_parceria_social' as never) as any)
         .select('codigo,porcentagem_desconto,indicacao_nome,ativo,uso_limite,uso_atual,vencimento')
         .eq('codigo', cupom.trim().toUpperCase())
         .eq('ativo', true)
@@ -117,16 +114,16 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     setLoadingPagamento(true);
     try {
       // 1. WhatsApp Message for human confirmation
-      const phoneInfo = registration?.phone ? `\n• *Telefone:* ${registration.phone}` : '';
-      const cupomInfo = cupomValido ? `\n• *Cupom:* ${cupom.trim().toUpperCase()}` : '';
-
       // 2. Conditional WhatsApp Message or Immediate Confirmation
       if (precoFinal > 0) {
+        const phoneInfo = registration?.telefone ? `\n• *Telefone:* ${registration.telefone}` : '';
+        const cupomInfo = cupomValido ? `\n• *Cupom:* ${cupom.trim().toUpperCase()}` : '';
+
         const mensagem = encodeURIComponent(
           `🚀 *COMPROVANTE DE PAGAMENTO - GROWTH EXPERIENCE*\n\n` +
           `Olá! Acabo de realizar o pagamento do meu upgrade para o *Acesso Pro*.\n\n` +
           `*DADOS DO PARTICIPANTE:*\n` +
-          `• *Nome:* ${user?.user_metadata?.full_name || user?.email}${phoneInfo}${cupomInfo}\n` +
+          `• *Nome:* ${user?.name || user?.email}${phoneInfo}${cupomInfo}\n` +
           `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
           `• *Valor Pago:* R$ ${precoFinal.toFixed(2).replace('.', ',')}\n\n` +
           `_Estou enviando o comprovante em anexo abaixo._`
@@ -135,7 +132,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
       }
 
       // 3. Mark in DB as "pago" (Marked as paid to unlock features)
-      const { error } = await (supabase.from('inscricoes_growth_experience') as any)
+      const { error } = await (supabase.from('inscricoes_growth_experience' as never) as any)
         .update({
           palestras_noturnas: true,
           status_pagamento: 'pago',
@@ -151,8 +148,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 
       // Incrementar uso do cupom se aplicado
       if (cupomValido && cupom) {
-        await (supabase.from('cupons_parceria_social') as any)
-          .rpc('increment_uso_cupom', { p_codigo: cupom.trim().toUpperCase() })
+        await supabase.rpc('increment_uso_cupom', { p_codigo: cupom.trim().toUpperCase() })
           .catch(() => { }); // silently fail
       }
 
@@ -307,8 +303,9 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 }
 
 // ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
-function CheckInModal({ registration, onClose }: { registration: any; onClose: () => void }) {
-  const qrValue = `GE - CHECKIN | ${registration.id}| ${registration.email || ''}| ${Date.now()} `;
+function CheckInModal({ registration, onClose }: { registration: MyRegistration; onClose: () => void }) {
+  const [token] = useState(() => Date.now());
+  const qrValue = `GE - CHECKIN | ${registration.id}| ${registration.email || ''}| ${token} `;
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
@@ -358,16 +355,15 @@ export function DashboardParticipante() {
   const { selectedProject } = useProject();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { registration: myRegistration, refetch: refetchRegistration, updateCursos, checkInEntrada } = useMyRegistration();
+  const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
   const { data: sessions } = useSessions();
   const [activeTab, setActiveTab] = useState('ingresso');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
-  const [showEditCursos, setShowEditCursos] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(2);
   const { data: mentors } = useMentors();
-  const { data: mentoringSessions, update: updateMentoring, create: createMentoring } = useMentoringSessions();
+  const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
 
   const handleBookMentoring = async (slotId: string, topic: string) => {
     if (!myRegistration) return;
@@ -380,10 +376,10 @@ export function DashboardParticipante() {
     try {
       await updateMentoring(slotId, {
         menteeId: myRegistration.id,
-        menteeName: myRegistration.nome,
+        menteeName: myRegistration.nome || '',
         topic: topic || 'Mentoria Geral',
         status: 'scheduled'
-      } as any);
+      });
 
       // Envia notificação por e-mail para o mentor
       if (mentor?.email) {
@@ -411,7 +407,7 @@ export function DashboardParticipante() {
       }
 
       toast.success('Mentoria agendada! O mentor foi notificado por e-mail.');
-    } catch (err) {
+    } catch {
       toast.error('Erro ao agendar mentoria.');
     }
   };
@@ -447,12 +443,7 @@ export function DashboardParticipante() {
     return sessions.filter(s => ids.includes(s.id));
   }, [sessions, myRegistration]);
 
-  // Todos os cursos/workshops/oficinas disponíveis para troca
-  const cursosDisponiveis = useMemo(() => {
-    return sessions.filter(s =>
-      ['workshop', 'circuito', 'oficina', 'treinamento', 'curso'].includes((s.type as string))
-    );
-  }, [sessions]);
+
 
   const handleLogout = () => {
     logout();
@@ -1117,7 +1108,7 @@ export function DashboardParticipante() {
                               type: 'event'
                             });
                             toast.success('Certificado baixado!', { id: 'cert-main' });
-                          } catch (err) {
+                          } catch {
                             toast.error('Erro ao gerar certificado.', { id: 'cert-main' });
                           }
                         }}

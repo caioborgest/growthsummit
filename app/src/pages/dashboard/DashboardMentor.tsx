@@ -11,11 +11,9 @@ import {
   LogOut,
   Briefcase,
   Bell,
-  Sparkles,
   Plus,
   Trash2,
   Clock,
-  MoreVertical,
   CalendarDays
 } from 'lucide-react';
 import {
@@ -27,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMentoringSessions, useMentors } from '@/hooks/useData';
+import { MentoringSession } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -91,15 +90,15 @@ export function DashboardMentor() {
         duration: 30,
         topic: 'Disponibilidade de Mentoria',
         notes: ''
-      } as any);
+      });
       toast.success('Horário aberto com sucesso!');
       form.reset();
-    } catch (err) {
+    } catch {
       toast.error('Erro ao abrir horário.');
     }
   };
 
-  const generateGoogleCalendarLink = (session: any) => {
+  const generateGoogleCalendarLink = (session: MentoringSession) => {
     const start = new Date(session.scheduledAt).toISOString().replace(/-|:|\.\d\d\d/g, '');
     const end = new Date(new Date(session.scheduledAt).getTime() + 30 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
     const title = encodeURIComponent(`Mentoria Growth Experience: ${session.menteeName}`);
@@ -107,7 +106,7 @@ export function DashboardMentor() {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
   };
 
-  const generateICalLink = (session: any) => {
+  const generateICalLink = (session: MentoringSession) => {
     const start = new Date(session.scheduledAt).toISOString().replace(/-|:|\.\d\d\d/g, '');
     const end = new Date(new Date(session.scheduledAt).getTime() + 30 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
     const icsMsg = [

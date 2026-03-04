@@ -493,7 +493,7 @@ export function useWhatsAppStats(projectId?: string) {
 
       if (groupsError) throw groupsError;
 
-      const groupIds = groups?.map(g => g.id) || [];
+      const groupIds = groups?.map((g: any) => g.id) || [];
 
       // Buscar estatísticas de membros
       let membersQuery = (supabase as any)
@@ -510,11 +510,11 @@ export function useWhatsAppStats(projectId?: string) {
 
       setStats({
         totalGroups: groups?.length || 0,
-        activeGroups: groups?.filter(g => g.is_active).length || 0,
-        totalMembers: groups?.reduce((acc, g) => acc + g.current_participants, 0) || 0,
-        fullGroups: groups?.filter(g => g.is_full).length || 0,
-        pendingInvites: members?.filter(m => m.status === 'pending').length || 0,
-        acceptedInvites: members?.filter(m => m.status === 'joined').length || 0,
+        activeGroups: groups?.filter((g: any) => g.is_active).length || 0,
+        totalMembers: groups?.reduce((acc: number, g: any) => acc + (g.current_participants || 0), 0) || 0,
+        fullGroups: groups?.filter((g: any) => g.is_full).length || 0,
+        pendingInvites: members?.filter((m: any) => m.status === 'pending').length || 0,
+        acceptedInvites: members?.filter((m: any) => m.status === 'joined').length || 0,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

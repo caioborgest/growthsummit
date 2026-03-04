@@ -143,6 +143,11 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
   else if (result.paymentStatus === 'pendente') result.status = 'pending';
   else if (item.status === 'cancelado') result.status = 'cancelled';
 
+  // Handle projects specific is_active vs status
+  if (item.is_active !== undefined && result.status === undefined) {
+    result.status = item.is_active ? 'active' : 'paused';
+  }
+
   return result;
 };
 
@@ -224,7 +229,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,cupom_palestra,valor_desconto_palestra,created_at';
     }
     if (entity === 'sessions') {
-      return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color,metadata';
+      return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color';
     }
     if (entity === 'mentors') {
       return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
@@ -257,7 +262,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     check_ins: 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,banner,logo,primary_color,secondary_color,settings,created_at,updated_at,short_description',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,is_active,banner,logo,primary_color,secondary_color,settings,created_at,updated_at',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',

@@ -265,6 +265,7 @@ export interface TeamMember {
 export interface Sponsor {
   id: string;
   projectId: string;
+  userId?: string;
   companyName: string;
   contactName: string;
   contactEmail: string;
