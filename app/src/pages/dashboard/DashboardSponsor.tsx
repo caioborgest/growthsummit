@@ -38,7 +38,7 @@ import { User as UserIcon } from 'lucide-react';
 
 export function DashboardSponsor() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { data: sponsors } = useSponsors();
   const [activeTab, setActiveTab] = useState('overview');
   const [unreadNotifications, setUnreadNotifications] = useState(1);

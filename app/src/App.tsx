@@ -55,7 +55,6 @@ const AdminComunicacao = lazy(() => import('./pages/admin/AdminComunicacao').the
 const AdminRelatorios = lazy(() => import('./pages/admin/AdminRelatorios').then(m => ({ default: m.AdminRelatorios })));
 const AdminProgramacao = lazy(() => import('./pages/admin/AdminProgramacao').then(m => ({ default: m.AdminProgramacao })));
 const AdminSecurity = lazy(() => import('./pages/admin/AdminSecurity').then(m => ({ default: m.AdminSecurity })));
-const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
 const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ default: m.AdminCupons })));
 const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.AdminUsuarios })));
 const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
@@ -281,7 +280,6 @@ function AppRoutes() {
           <Route path="patrocinadores" element={<AdminPatrocinadores />} />
           <Route path="financeiro" element={<AdminFinanceiro />} />
           <Route path="check-in" element={<AdminCheckIn />} />
-          <Route path="whatsapp-groups" element={<AdminWhatsAppGroups />} />
           <Route path="comunicacao" element={<AdminComunicacao />} />
           <Route path="relatorios" element={<AdminRelatorios />} />
           <Route path="programacao" element={<AdminProgramacao />} />

@@ -11,7 +11,12 @@ import {
   LogOut,
   Briefcase,
   Bell,
-  Sparkles
+  Sparkles,
+  Plus,
+  Trash2,
+  Clock,
+  MoreVertical,
+  CalendarDays
 } from 'lucide-react';
 import {
   Popover,
@@ -24,7 +29,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMentoringSessions, useMentors } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ProfileForm } from './components/ProfileForm';
+import { toast } from 'sonner';
 
 export function DashboardMentor() {
   const navigate = useNavigate();
@@ -55,6 +67,61 @@ export function DashboardMentor() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const { create, remove, update } = useMentoringSessions();
+
+  const handleOpenSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mentorData) return;
+
+    const form = e.target as HTMLFormElement;
+    const date = form.slotDate.value;
+    const time = form.slotTime.value;
+    const dateTime = `${date}T${time}:00`;
+
+    try {
+      await create({
+        mentorId: mentorData.id,
+        mentorName: mentorData.name,
+        menteeId: '',
+        menteeName: '',
+        status: 'scheduled',
+        scheduledAt: dateTime,
+        duration: 30,
+        topic: 'Disponibilidade de Mentoria',
+        notes: ''
+      } as any);
+      toast.success('Horário aberto com sucesso!');
+      form.reset();
+    } catch (err) {
+      toast.error('Erro ao abrir horário.');
+    }
+  };
+
+  const generateGoogleCalendarLink = (session: any) => {
+    const start = new Date(session.scheduledAt).toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const end = new Date(new Date(session.scheduledAt).getTime() + 30 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const title = encodeURIComponent(`Mentoria Growth Experience: ${session.menteeName}`);
+    const details = encodeURIComponent(`Tópico: ${session.topic}`);
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&sf=true&output=xml`;
+  };
+
+  const generateICalLink = (session: any) => {
+    const start = new Date(session.scheduledAt).toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const end = new Date(new Date(session.scheduledAt).getTime() + 30 * 60000).toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const icsMsg = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:Mentoria Growth Experience: ${session.menteeName}`,
+      `DESCRIPTION:Tópico: ${session.topic}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\n');
+    return `data:text/calendar;charset=utf8,${encodeURIComponent(icsMsg)}`;
   };
 
   return (
@@ -153,6 +220,10 @@ export function DashboardMentor() {
               <Calendar className="h-4 w-4 mr-1 md:mr-2" />
               Agenda
             </TabsTrigger>
+            <TabsTrigger value="slots" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
+              <Clock className="h-4 w-4 mr-1 md:mr-2" />
+              Disponibilidade
+            </TabsTrigger>
             <TabsTrigger value="historico" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
               <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
               Histórico
@@ -165,22 +236,24 @@ export function DashboardMentor() {
               <Briefcase className="h-4 w-4 mr-2" />
               Currículo
             </TabsTrigger>
-            <TabsTrigger value="recursos" className="data-[state=active]:bg-teal-500">
-              <FileText className="h-4 w-4 mr-2" />
-              Recursos
-            </TabsTrigger>
           </TabsList>
 
           {/* Agenda Tab */}
           <TabsContent value="agenda" className="mt-0">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-xl font-bold text-white">Minha Agenda Personalizada</h2>
+                <p className="text-gray-400 text-sm mt-1">Sessões de mentoria agendadas com participantes confirmados.</p>
+              </div>
+            </div>
             <div className="space-y-4">
               {mentorSessions
-                .filter(s => s.status === 'scheduled')
+                .filter(s => s.status === 'scheduled' && s.menteeId)
                 .map((session) => (
-                  <div key={session.id} className="glass-card p-6">
+                  <div key={session.id} className="glass-card p-6 border-teal-500/20">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                       <div className="lg:w-32">
-                        <p className="text-teal-400 font-medium">
+                        <p className="text-teal-400 font-bold">
                           {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
                         </p>
                         <p className="text-gray-400 text-sm">
@@ -188,19 +261,40 @@ export function DashboardMentor() {
                         </p>
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">{session.menteeName}</p>
+                        <p className="text-white font-black text-lg">{session.menteeName}</p>
                         {session.topic && (
-                          <p className="text-gray-400 text-sm">{session.topic}</p>
+                          <p className="text-teal-400/80 text-sm font-medium">{session.topic}</p>
                         )}
                       </div>
                       <div className="flex space-x-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
+                              <CalendarDays className="h-4 w-4 mr-1" />
+                              Sincronizar
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-dark-200 border-white/10">
+                            <DropdownMenuItem className="text-white hover:bg-teal-500/20 cursor-pointer" asChild>
+                              <a href={generateGoogleCalendarLink(session)} target="_blank" rel="noopener noreferrer">
+                                Google Calendar
+                              </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-white hover:bg-teal-500/20 cursor-pointer" asChild>
+                              <a href={generateICalLink(session)} download="mentoria.ics">
+                                iCal / Outlook
+                              </a>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Chat
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-green-500 hover:bg-green-600 text-white"
+                          className="bg-green-500 hover:bg-green-600 text-white font-bold"
+                          onClick={() => update(session.id, { status: 'completed' })}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Concluir
@@ -210,12 +304,88 @@ export function DashboardMentor() {
                   </div>
                 ))}
 
-              {mentorSessions.filter(s => s.status === 'scheduled').length === 0 && (
-                <div className="glass-card p-12 text-center">
-                  <Calendar className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhuma mentoria agendada</p>
+              {mentorSessions.filter(s => s.status === 'scheduled' && s.menteeId).length === 0 && (
+                <div className="glass-card p-12 text-center border-white/5">
+                  <Calendar className="h-12 w-12 text-gray-700 mx-auto mb-4" />
+                  <p className="text-gray-500 font-medium">Você não tem mentorias agendadas com participantes no momento.</p>
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          {/* Slots Tab */}
+          <TabsContent value="slots" className="mt-0">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-1">
+                <div className="glass-card p-6 border-teal-500/30 bg-teal-500/5">
+                  <h3 className="text-white font-black mb-4 flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-teal-400" />
+                    Abrir Novo Horário
+                  </h3>
+                  <form onSubmit={handleOpenSlot} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Data</label>
+                      <input
+                        name="slotDate"
+                        type="date"
+                        required
+                        className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Início</label>
+                      <input
+                        name="slotTime"
+                        type="time"
+                        required
+                        className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold">
+                      DISPONIBILIZAR
+                    </Button>
+                  </form>
+                  <p className="text-[10px] text-gray-500 mt-4 leading-tight italic">
+                    * O horário ficará visível para inscritos "Experience Pro" na área do participante.
+                  </p>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-4">
+                <h3 className="text-white font-black flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-teal-400" />
+                  Meus Horários em Aberto
+                </h3>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {mentorSessions
+                    .filter(s => s.status === 'scheduled' && !s.menteeId)
+                    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                    .map(slot => (
+                      <div key={slot.id} className="glass-card p-4 border-white/5 bg-dark-200 flex items-center justify-between group">
+                        <div>
+                          <p className="text-white font-bold">{new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-teal-400 font-medium">{new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-600 hover:text-red-400 transition-colors"
+                          onClick={() => remove(slot.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+
+                {mentorSessions.filter(s => s.status === 'scheduled' && !s.menteeId).length === 0 && (
+                  <div className="glass-card p-12 text-center border-dashed border-dark-300">
+                    <Clock className="h-8 w-8 text-gray-700 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Nenhum horário em aberto.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 

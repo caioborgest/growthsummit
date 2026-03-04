@@ -257,30 +257,28 @@ export function AdminProgramacao() {
   return (
     <div className="space-y-6" >
       {/* View Tabs */}
-      < div className="flex space-x-4 border-b border-dark-300" >
-        {
-          [
-            { id: 'diurna', label: 'Diurna', icon: Clock },
-            { id: 'noturna', label: 'Noturna', icon: Mic },
-            { id: 'circuito', label: 'Circuito', icon: Zap },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
-              className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
-                ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
-                : 'text-gray-400 hover:text-white'
-                }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          ))
-        }
-      </div >
+      <div className="flex space-x-4 border-b border-dark-300">
+        {[
+          { id: 'diurna', label: 'Diurna', icon: Clock },
+          { id: 'noturna', label: 'Noturna', icon: Mic },
+          { id: 'circuito', label: 'Circuito', icon: Zap },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
+            className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
+              ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
+              : 'text-gray-400 hover:text-white'
+              }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* Header */}
-      < div className="flex justify-between items-center" >
+      <div className="flex justify-between items-center">
         <div>
           <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
             Gestão da Programação - {activeTab.toUpperCase()}
@@ -298,171 +296,177 @@ export function AdminProgramacao() {
           <Plus className="h-4 w-4 mr-2" />
           Adicionar Atividade
         </Button>
-      </div >
+      </div>
 
-      {/* Form */}
-      {
-        showForm && (
-          <div className="glass-card p-6 border-brand-orange-coral/30">
-            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-              {editingSession ? <Edit2 className="h-5 w-5 text-brand-orange-coral" /> : <Plus className="h-5 w-5 text-brand-orange-coral" />}
+      {/* Activity Form Dialog */}
+      <Dialog open={showForm} onOpenChange={(open) => {
+        if (!open) {
+          setShowForm(false);
+          setEditingSession(null);
+        }
+      }}>
+        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2rem]">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="text-2xl font-black flex items-center gap-2">
+              {editingSession ? <Edit2 className="h-6 w-6 text-brand-orange-coral" /> : <Plus className="h-6 w-6 text-brand-orange-coral" />}
               {editingSession ? 'Editar Atividade' : 'Nova Atividade'}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Título</label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="Ex: Do Improviso ao Plano"
-                      required
-                    />
-                  </div>
+            </DialogTitle>
+          </DialogHeader>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Categoria/Bloco</label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                        required
-                      >
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tipo</label>
-                      <select
-                        value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                        required
-                      >
-                        {Object.keys(typeLabels).map(key => (
-                          <option key={key} value={key}>{typeLabels[key]}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Início</label>
-                      <Input
-                        type="time"
-                        value={formData.startTime}
-                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                        className="bg-dark-100 border-dark-300 text-white h-12"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Fim</label>
-                      <Input
-                        type="time"
-                        value={formData.endTime}
-                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                        className="bg-dark-100 border-dark-300 text-white h-12"
-                        required
-                      />
-                    </div>
-                  </div>
+          <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Título</label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="bg-dark-100 border-dark-300 text-white h-12"
+                    placeholder="Ex: Do Improviso ao Plano"
+                    required
+                  />
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Local/Sala</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Categoria/Bloco</label>
                     <select
-                      value={formData.room}
-                      onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      required
                     >
-                      <option value="">Outro/Manual</option>
-                      {rooms.map(r => (
-                        <option key={r.id} value={r.name}>{r.name}</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
                       ))}
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Palestrantes / Responsáveis</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tipo</label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      required
+                    >
+                      {Object.keys(typeLabels).map(key => (
+                        <option key={key} value={key}>{typeLabels[key]}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Início</label>
                     <Input
-                      value={formData.speakers}
-                      onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="Nome 1, Nome 2 (opcional)"
+                      required
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Parceiro</label>
-                      <Input
-                        value={formData.partner}
-                        onChange={(e) => setFormData({ ...formData, partner: e.target.value })}
-                        className="bg-dark-100 border-dark-300 text-white h-12"
-                        placeholder="Ex: SEBRAE (opcional)"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacidade</label>
-                      <Input
-                        type="number"
-                        value={formData.maxCapacity}
-                        onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
-                        className="bg-dark-100 border-dark-300 text-white h-12"
-                        placeholder="0 = Ilimitado"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Fim</label>
+                    <Input
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12"
+                      required
+                    />
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tópicos / Pontos Chave (um por linha)</label>
-                <textarea
-                  value={formData.topics}
-                  onChange={(e) => setFormData({ ...formData, topics: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[100px]"
-                  placeholder="Tópico 1&#10;Tópico 2&#10;Tópico 3"
-                />
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Local/Sala</label>
+                  <select
+                    value={formData.room}
+                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="">Outro/Manual</option>
+                    {rooms.map(r => (
+                      <option key={r.id} value={r.name}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Descrição Curta</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[80px]"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Palestrantes / Responsáveis</label>
+                  <Input
+                    value={formData.speakers}
+                    onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
+                    className="bg-dark-100 border-dark-300 text-white h-12"
+                    placeholder="Nome 1, Nome 2 (opcional)"
+                  />
+                </div>
 
-              <div className="flex space-x-4 pt-4">
-                <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
-                  {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-dark-300 text-gray-300 px-8 py-6 h-auto font-black text-lg"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingSession(null);
-                  }}
-                >
-                  CANCELAR
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Parceiro</label>
+                    <Input
+                      value={formData.partner}
+                      onChange={(e) => setFormData({ ...formData, partner: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12"
+                      placeholder="Ex: SEBRAE (opcional)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacidade</label>
+                    <Input
+                      type="number"
+                      value={formData.maxCapacity}
+                      onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12"
+                      placeholder="0 = Ilimitado"
+                    />
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
-        )
-      }
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tópicos / Pontos Chave (um por linha)</label>
+              <textarea
+                value={formData.topics}
+                onChange={(e) => setFormData({ ...formData, topics: e.target.value })}
+                className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[100px]"
+                placeholder="Tópico 1&#10;Tópico 2&#10;Tópico 3"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Descrição Curta</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[80px]"
+              />
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
+                {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-dark-300 text-gray-300 px-8 py-6 h-auto font-black text-lg"
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingSession(null);
+                }}
+              >
+                CANCELAR
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* List */}
       <div className="space-y-4">

@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/popover';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
@@ -366,6 +366,58 @@ export function DashboardParticipante() {
   const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
   const [showEditCursos, setShowEditCursos] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(2);
+  const { data: mentors } = useMentors();
+  const { data: mentoringSessions, update: updateMentoring, create: createMentoring } = useMentoringSessions();
+
+  const handleBookMentoring = async (slotId: string, topic: string) => {
+    if (!myRegistration) return;
+
+    const slot = mentoringSessions.find(s => s.id === slotId);
+    if (!slot) return;
+
+    const mentor = mentors.find(m => m.id === slot.mentorId);
+
+    try {
+      await updateMentoring(slotId, {
+        menteeId: myRegistration.id,
+        menteeName: myRegistration.nome,
+        topic: topic || 'Mentoria Geral',
+        status: 'scheduled'
+      } as any);
+
+      // Envia notificação por e-mail para o mentor
+      if (mentor?.email) {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            to: [mentor.email],
+            subject: `🚀 Novo Agendamento de Mentoria: ${myRegistration.nome}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h1 style="color: #14b8a6;">Olá, ${mentor.name}!</h1>
+                <p>Você tem um novo agendamento de mentoria confirmado na plataforma <strong>Growth Experience</strong>.</p>
+                <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
+                  <p style="margin: 0 0 10px 0;"><strong>Mentorado:</strong> ${myRegistration.nome}</p>
+                  <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                  <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p style="margin: 0;"><strong>Assunto/Tópico:</strong> ${topic || 'Mentoria Geral'}</p>
+                </div>
+                <p>Acesse seu painel para ver mais detalhes e preparar sua mentoria.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+                <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+              </div>
+            `
+          }
+        });
+      }
+
+      toast.success('Mentoria agendada! O mentor foi notificado por e-mail.');
+    } catch (err) {
+      toast.error('Erro ao agendar mentoria.');
+    }
+  };
+
+  const myMentorships = mentoringSessions.filter(s => s.menteeId === myRegistration?.id);
+  const availableSlots = mentoringSessions.filter(s => !s.menteeId && s.status === 'scheduled');
 
   const notifications = [
     { id: 1, title: 'Check-in Realizado!', message: 'Seu credenciamento diurno foi confirmado. Aproveite o evento!', time: '10 min atrás', read: false },
@@ -621,17 +673,17 @@ export function DashboardParticipante() {
             <TabsTrigger value="agenda" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <Calendar className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Agenda</span>
             </TabsTrigger>
+            <TabsTrigger value="mentorias" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300 text-orange-400">
+              <Users className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Mentorias</span>
+            </TabsTrigger>
             <TabsTrigger value="documentos" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <FileText className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Docs</span>
-            </TabsTrigger>
-            <TabsTrigger value="dados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <User className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="certificados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
               <Award className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Certs</span>
             </TabsTrigger>
-            <TabsTrigger value="suporte" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <HelpCircle className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Ajuda</span>
+            <TabsTrigger value="dados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
+              <User className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
           </TabsList>
 
@@ -802,6 +854,87 @@ export function DashboardParticipante() {
             </div>
           </TabsContent>
 
+          {/* ── MENTORIAS TAB ── */}
+          <TabsContent value="mentorias">
+            {!myRegistration?.palestrasNoturnas ? (
+              <div className="glass-card p-12 text-center border-orange-500/20">
+                <Lock className="h-12 w-12 text-orange-400 mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-white mb-2">Mentorias Exclusivas</h2>
+                <p className="text-gray-400 max-w-md mx-auto mb-6">As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe <strong className="text-orange-400">Experience Pro</strong>.</p>
+                <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black" onClick={() => setShowUpgradeModal(true)}>
+                  FAZER UPGRADE AGORA
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Minhas Agendadas */}
+                <div className="glass-card p-8 bg-gradient-to-br from-teal-500/5 to-transparent">
+                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-teal-400" /> Minhas Mentorias
+                  </h2>
+                  <div className="space-y-3">
+                    {myMentorships.map(mentor => (
+                      <div key={mentor.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-dark-100 rounded-2xl border border-teal-500/20">
+                        <div className="flex-1">
+                          <p className="text-white font-black">{mentor.mentorName}</p>
+                          <p className="text-teal-400 text-sm">{mentor.topic}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold">{new Date(mentor.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-gray-400 text-sm">{new Date(mentor.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-400 justify-center">Confirmado</Badge>
+                      </div>
+                    ))}
+                    {myMentorships.length === 0 && (
+                      <p className="text-gray-500 text-sm italic py-4 text-center">Você ainda não agendou nenhuma mentoria.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Disponíveis */}
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-orange-400" /> Horários Disponíveis
+                  </h2>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {availableSlots.map(slot => (
+                      <div key={slot.id} className="glass-card p-5 border-white/5 bg-dark-200 flex flex-col justify-between group hover:border-orange-500/30 transition-all">
+                        <div>
+                          <p className="text-white font-black mb-1">{slot.mentorName}</p>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Badge variant="outline" className="text-[10px] text-orange-400 border-orange-500/20">
+                              {new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] text-teal-400 border-teal-500/20">
+                              {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full bg-dark-300 hover:bg-orange-500 text-white font-bold transition-all py-2 h-auto"
+                          onClick={() => {
+                            const topic = prompt('Qual o tema que deseja tratar na mentoria?');
+                            if (topic) handleBookMentoring(slot.id, topic);
+                          }}
+                        >
+                          SOLICITAR AGORA
+                        </Button>
+                      </div>
+                    ))}
+                    {availableSlots.length === 0 && (
+                      <div className="md:col-span-3 py-12 text-center border-2 border-dashed border-dark-300 rounded-3xl">
+                        <Users className="h-10 w-10 text-gray-700 mx-auto mb-3" />
+                        <p className="text-gray-500">Nenhum horário disponível no momento.</p>
+                        <p className="text-gray-600 text-xs">Aguarde a abertura oficial dos horários pelos mentores.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
           {/* ── AGENDA TAB ── */}
           <TabsContent value="agenda">
             <div className="glass-card p-8">
@@ -850,6 +983,31 @@ export function DashboardParticipante() {
                   </div>
                 )}
               </div>
+
+              {/* Bloco Mentorias */}
+              {myRegistration?.palestrasNoturnas && myMentorships.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="h-5 w-5 text-orange-400" />
+                    <h3 className="text-white font-bold">Minhas Mentorias <span className="text-orange-400 text-sm font-normal ml-1">— 1-on-1</span></h3>
+                  </div>
+                  <div className="space-y-3">
+                    {myMentorships.map((mentor) => (
+                      <div key={mentor.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-orange-500/5 rounded-2xl border border-orange-500/20 hover:border-orange-500/40 transition-all group">
+                        <div className="w-20 flex-shrink-0">
+                          <p className="text-orange-400 font-black">{new Date(mentor.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-gray-600 text-xs">{new Date(mentor.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                        <div className="flex-1 md:ml-4 md:border-l md:border-dark-300 md:pl-4">
+                          <p className="text-white font-black group-hover:text-orange-400 transition-colors">Mentoria com {mentor.mentorName}</p>
+                          <p className="text-teal-400/80 text-sm font-medium">{mentor.topic}</p>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-400 justify-center h-fit">Confirmado</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Bloco Noturno */}
               <div>

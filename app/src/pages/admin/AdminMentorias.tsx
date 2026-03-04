@@ -92,7 +92,8 @@ export function AdminMentorias() {
   };
 
   const stats = {
-    scheduled: sessions.filter(s => s.status === 'scheduled').length,
+    scheduled: sessions.filter(s => s.status === 'scheduled' && s.menteeId).length,
+    available: sessions.filter(s => s.status === 'scheduled' && !s.menteeId).length,
     completed: sessions.filter(s => s.status === 'completed').length,
     cancelled: sessions.filter(s => s.status === 'cancelled').length,
     avgRating: sessions
@@ -221,14 +222,18 @@ export function AdminMentorias() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Total</p>
           <p className="text-2xl font-bold text-white">{sessions.length}</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Agendadas</p>
+          <p className="text-gray-400 text-sm font-bold text-blue-400">Agendadas</p>
           <p className="text-2xl font-bold text-blue-400">{stats.scheduled}</p>
+        </div>
+        <div className="glass-card p-4">
+          <p className="text-gray-400 text-sm font-bold text-orange-400">Slots Abertos</p>
+          <p className="text-2xl font-bold text-orange-400">{stats.available}</p>
         </div>
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Concluídas</p>
@@ -274,7 +279,9 @@ export function AdminMentorias() {
                       <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center mr-3">
                         <User className="h-4 w-4 text-orange-400" />
                       </div>
-                      <span className="text-white">{session.menteeName}</span>
+                      <span className={session.menteeName ? "text-white" : "text-gray-600 italic"}>
+                        {session.menteeName || 'Disponível / Aberto'}
+                      </span>
                     </div>
                   </td>
                   <td className="p-4">
@@ -288,8 +295,8 @@ export function AdminMentorias() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <Badge className={statusColors[session.status]}>
-                      {session.status}
+                    <Badge className={!session.menteeId ? 'bg-orange-500/20 text-orange-400' : statusColors[session.status]}>
+                      {!session.menteeId ? 'Disponível' : session.status}
                     </Badge>
                   </td>
                   <td className="p-4 text-gray-300">

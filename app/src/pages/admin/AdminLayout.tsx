@@ -79,7 +79,6 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'financeiro', name: 'Financeiro', icon: DollarSign, path: '/admin/financeiro' },
       { id: 'patrocinadores', name: 'Patrocinadores', icon: Gem, path: '/admin/patrocinadores' },
       { id: 'cupons', name: 'Vouchers & Cupons', icon: Ticket, path: '/admin/cupons' },
-      { id: 'whatsapp-groups', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp-groups' },
       { id: 'comunicacao', name: 'E-mail & Push', icon: Mail, path: '/admin/comunicacao' },
     ]
   },
