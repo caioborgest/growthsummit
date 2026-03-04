@@ -3,7 +3,7 @@
   "short_name": "GE 2026",
   "description": "Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA do Nordeste. Gerencie sua inscrição, agenda e networking.",
   "id": "com.growthexperience.app",
-  "start_url": "/minha-area",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0c0e12",
   "theme_color": "#21808D",

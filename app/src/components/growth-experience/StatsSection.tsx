@@ -60,12 +60,12 @@ function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatIte
     return (
         <div
             ref={ref}
-            className="group relative p-8 glass-card border-brand-orange-coral/10 hover:border-brand-orange-coral/30 transition-all duration-300 hover:scale-105 hover:shadow-glow"
+            className="group relative p-6 sm:p-8 glass-card border-brand-orange-coral/10 hover:border-brand-orange-coral/30 transition-all duration-300 hover:scale-105 hover:shadow-glow"
             style={{ animationDelay: `${delay}s` }}
         >
             {/* Ícone de fundo */}
             <div className="absolute top-4 right-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Icon className="h-24 w-24 text-brand-orange-coral" />
+                <Icon className="h-16 w-16 sm:h-24 sm:w-24 text-brand-orange-coral" />
             </div>
 
             {/* Conteúdo */}

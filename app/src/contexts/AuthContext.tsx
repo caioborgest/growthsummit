@@ -5,6 +5,7 @@ import type { User } from '@/types';
 import { logger } from '@/lib/logger';
 import { logAuditEvent, getClientIP } from '@/lib/auth-audit';
 import { withTimeout } from '@/lib/promiseUtils';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -28,7 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Constantes de segurança
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutos
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos de inatividade
+const SESSION_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 dias de inatividade
 const LAST_ACTIVITY_KEY = 'growth_summit_last_activity';
 const LOGIN_ATTEMPTS_KEY = 'growth_summit_login_attempts';
 const LOCKOUT_UNTIL_KEY = 'growth_summit_lockout_until';
@@ -256,12 +257,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticating(true);
 
     try {
-      if (rateLimiter.isRateLimited(email)) {
+      const cleanEmail = email.trim().toLowerCase();
+
+      if (rateLimiter.isRateLimited(cleanEmail)) {
         const remainingTime = Math.ceil(rateLimiter.getRemainingLockoutTime() / 60000);
         throw new Error(`Muitas tentativas. Tente novamente em ${remainingTime} min.`);
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password
+      });
 
       // Registrar tentativa (Sucesso ou Falha)
       const ip = await getClientIP().catch(() => 'unknown');
@@ -524,7 +530,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
         if (timeSinceLastActivity > SESSION_TIMEOUT) {
           await logout();
-          alert('Sua sessão expirou por inatividade.');
+          toast.info('Sua sessão expirou por inatividade. Faça login novamente.');
         }
       }
     }, 60000); // Verificar a cada minuto

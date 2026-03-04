@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Growth Experience 2026',
         short_name: 'GE 2026',
         description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA.',
-        start_url: '/minha-area',
+        start_url: '/',
         theme_color: '#21808D',
         background_color: '#0c0e12',
         display: 'standalone',

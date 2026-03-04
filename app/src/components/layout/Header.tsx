@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -181,92 +181,124 @@ export function Header() {
           </div>
 
           {/* Mobile Menu Button Premium */}
-          <button
-            className="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="lg:hidden flex items-center gap-2">
+            {isAuthenticated && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="relative w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark"></span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80 bg-[#161920]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl" align="end">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-white font-bold text-sm">Notificações</h3>
+                    <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[9px] uppercase font-black">1 Nova</Badge>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-brand-orange-coral/5 border border-brand-orange-coral/10">
+                      <p className="text-white text-xs font-bold font-montserrat">Bem-vindo(a) ao Growth Experience!</p>
+                      <p className="text-gray-400 text-[11px] mt-1 leading-tight">Complete seu perfil para aproveitar ao máximo o evento.</p>
+                      <span className="text-[9px] text-gray-500 mt-2 block">Agora mesmo</span>
+                    </div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <button
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all focus:ring-2 focus:ring-brand-orange-coral/50"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu Refined */}
+      {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-full bg-dark/95 backdrop-blur-3xl border-t border-white/5 shadow-2xl animate-in slide-in-from-top duration-300">
-          <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-            <div className="grid grid-cols-1 gap-2">
-              <p className="px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Navegação Principal</p>
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className={`flex items-center px-4 py-4 rounded-2xl text-lg font-black tracking-tight transition-all ${isActive(link.href)
-                    ? 'text-white bg-brand-orange-coral/20 border border-brand-orange-coral/30'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-dark/60 backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
-            <div className="grid grid-cols-1 gap-2 pt-6 border-t border-white/5">
-              <p className="px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Ecosistema GS</p>
-              {moreLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="flex items-center px-4 py-3 rounded-2xl text-base font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-all"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
+      <div className={`lg:hidden fixed inset-x-0 bottom-0 top-0 z-40 bg-[#0c0e12] transition-all duration-500 ease-in-out transform ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}`}>
+        <div className="pt-24 pb-10 px-6 space-y-6 h-full overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-1 gap-2">
+            <p className="px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Navegação Principal</p>
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`flex items-center px-4 py-4 rounded-2xl text-lg font-black tracking-tight transition-all ${isActive(link.href)
+                  ? 'text-white bg-brand-orange-coral shadow-lg shadow-brand-orange-coral/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
 
-            <div className="pt-8 space-y-3">
-              {isAuthenticated ? (
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-14 border-white/10 bg-white/5 text-white rounded-2xl font-black"
-                    asChild
-                  >
-                    <Link to={getDashboardLink()} onClick={() => setIsMobileMenuOpen(false)}>Meu Painel</Link>
-                  </Button>
-                  <Button
-                    className="h-14 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl font-black"
-                    onClick={() => {
-                      logout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <LogOut className="h-5 w-5 mr-2" />
-                    Sair
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-14 border-white/10 bg-white/5 text-white rounded-2xl font-black"
-                    asChild
-                  >
-                    <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Fazer Login</Link>
-                  </Button>
-                  <Button
-                    className="h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-lg shadow-brand-orange-coral/20"
-                    asChild
-                  >
-                    <Link to="/inscricoes" onClick={() => setIsMobileMenuOpen(false)}>Tickets Growth 2026</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className="grid grid-cols-1 gap-2 pt-6 border-t border-white/5">
+            <p className="px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Ecosistema GS</p>
+            {moreLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className="flex items-center px-4 py-3 rounded-2xl text-base font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          <div className="pt-8 space-y-3">
+            {isAuthenticated ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-14 border-white/10 bg-white/5 text-white rounded-2xl font-black w-full"
+                  asChild
+                >
+                  <Link to={getDashboardLink()} onClick={() => setIsMobileMenuOpen(false)}>Meu Painel</Link>
+                </Button>
+                <Button
+                  className="h-14 bg-red-500/10 text-red-500 border border-red-500/20 rounded-2xl font-black w-full"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  Sair
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                <Button
+                  variant="outline"
+                  className="h-14 border-white/10 bg-white/5 text-white rounded-2xl font-black w-full"
+                  asChild
+                >
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>Fazer Login</Link>
+                </Button>
+                <Button
+                  className="h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-lg shadow-brand-orange-coral/20 w-full"
+                  asChild
+                >
+                  <Link to="/inscricoes" onClick={() => setIsMobileMenuOpen(false)}>Tickets Growth 2026</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProject } from '@/contexts/ProjectContext';
@@ -93,56 +93,50 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         </span>
                     </div>
 
-                    {/* Título principal */}
+                    {/* TITLE REFINED FOR MOBILE */}
                     <h1
-                        className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up"
+                        className="text-3xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up px-2"
                         style={{ animationDelay: '0.2s' }}
                     >
-                        <span className="block mb-2 text-3xl sm:text-6xl lg:text-7xl">Growth Experience</span>
-                        <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent">
+                        <span className="block mb-2 text-2xl sm:text-6xl lg:text-7xl uppercase tracking-tighter">Growth Experience</span>
+                        <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent block sm:inline">
                             {selectedProject?.city}-{selectedProject?.state} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
                         </span>
                     </h1>
 
                     {/* Subtítulo */}
                     <p
-                        className="text-xl sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-12 animate-fade-in-up"
+                        className="text-lg sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 animate-fade-in-up px-4"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior evento de empreendedorismo e inovação do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}.
-                        <span className="block mt-2 text-brand-orange-coral font-semibold">
-                            Networking, Mentorias e Oportunidades de Negócios
+                        O maior evento de empreendedorismo do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}.
+                        <span className="block mt-2 text-brand-orange-coral font-bold text-base sm:text-xl">
+                            Networking, Mentorias e Negócios
                         </span>
                     </p>
 
                     {/* Informações do evento */}
                     <div
-                        className="flex flex-wrap items-center justify-center gap-6 mb-12 animate-fade-in-up"
+                        className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-6 mb-12 animate-fade-in-up px-2"
                         style={{ animationDelay: '0.4s' }}
                     >
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <Calendar className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">
+                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
+                            <Calendar className="h-4 w-4 text-brand-orange-coral" />
+                            <span className="font-semibold text-xs sm:text-sm">
                                 {isTriunfo
-                                    ? '16 de abril de 2026'
+                                    ? '16 abr 2026'
                                     : (selectedProject?.startDate
-                                        ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+                                        ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
                                         : 'Data a definir')}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <Clock className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">08:00 - 23:00</span>
+                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
+                            <Clock className="h-4 w-4 text-brand-orange-coral" />
+                            <span className="font-semibold text-xs sm:text-sm">08:00 - 23:00</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <MapPin className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">{selectedProject?.location ? `${selectedProject.location}, ${selectedProject.city}-${selectedProject.state}` : 'Local a definir'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-300">
-                            <Users className="h-5 w-5 text-brand-orange-coral" />
-                            <span className="font-semibold">
-                                {isTriunfo ? '1500' : (selectedProject?.settings?.maxRegistrations || 500)}+ Participantes
-                            </span>
+                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
+                            <MapPin className="h-4 w-4 text-brand-orange-coral" />
+                            <span className="font-semibold text-xs sm:text-sm truncate max-w-[150px]">{selectedProject?.city || 'Local a definir'}</span>
                         </div>
                     </div>
                 </div>
@@ -176,13 +170,13 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
                 {/* CTAs */}
                 <div
-                    className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up"
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up px-4"
                     style={{ animationDelay: '0.6s' }}
                 >
                     <Button
                         size="lg"
                         onClick={onCTAClick}
-                        className="group bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white px-8 py-6 text-lg font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto group bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white px-8 py-6 text-lg font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
                     >
                         Garantir Minha Vaga
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -191,7 +185,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     <Button
                         size="lg"
                         variant="outline"
-                        className="border-2 border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 px-8 py-6 text-lg font-bold hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto border-2 border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 px-8 py-6 text-lg font-bold hover:scale-105 transition-all duration-300"
                         onClick={() => {
                             document.getElementById('programacao')?.scrollIntoView({ behavior: 'smooth' });
                         }}

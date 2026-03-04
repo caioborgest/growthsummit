@@ -29,7 +29,6 @@ import {
   Lock,
   Copy,
   CheckCircle,
-  CheckCircle,
   AlertCircle,
   Bell
 } from 'lucide-react';

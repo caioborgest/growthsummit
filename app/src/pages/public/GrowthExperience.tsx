@@ -125,24 +125,24 @@ export function GrowthExperience() {
               Estratégias avançadas para empresas que buscam <span className="text-white font-bold">alavancar o crescimento</span> e acelerar a <span className="text-white font-bold">expansão de negócios</span> no interior.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-16">
-              <div className="flex items-center gap-3 text-gray-300">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
-                  <TrendingUp className="h-5 w-5" />
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-16 px-2">
+              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <span className="font-medium">Growth Estructural</span>
+                <span className="font-medium text-sm sm:text-base">Growth Estrutural</span>
               </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 text-teal-400">
-                  <BrainCircuit className="h-5 w-5" />
+              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 text-teal-400">
+                  <BrainCircuit className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <span className="font-medium">Inteligência Artificial</span>
+                <span className="font-medium text-sm sm:text-base">Inteligência Artificial</span>
               </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
-                  <Target className="h-5 w-5" />
+              <div className="flex items-center gap-2 sm:gap-3 text-gray-300">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-400">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <span className="font-medium">Vendas Consultivas</span>
+                <span className="font-medium text-sm sm:text-base">Vendas Consultivas</span>
               </div>
             </div>
 
@@ -242,7 +242,7 @@ export function GrowthExperience() {
 
               <Button
                 asChild
-                className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-16 rounded-2xl text-lg transition-transform hover:scale-105"
+                className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-6 sm:px-12 h-16 rounded-2xl text-base sm:text-lg transition-transform hover:scale-105"
               >
                 <Link to="/growth-experience-triunfo">
                   QUERO PARTICIPAR EM TRIUNFO
@@ -349,7 +349,7 @@ export function GrowthExperience() {
 
               <Button
                 asChild
-                className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black px-12 h-16 rounded-2xl text-lg transition-transform hover:scale-105"
+                className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black px-6 sm:px-12 h-16 rounded-2xl text-base sm:text-lg transition-transform hover:scale-105"
               >
                 <Link to="/growth-experience-petrolina">
                   CONHECER EDIÇÃO PETROLINA
@@ -505,35 +505,37 @@ export function GrowthExperience() {
           </div>
 
           <div className="glass-card overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-300">
-                  <th className="text-left p-4 text-gray-400 font-medium">Benefício</th>
-                  <th className="text-center p-4 text-gray-400 font-medium">Standard</th>
-                  <th className="text-center p-4 text-gray-400 font-medium">Pro</th>
-                  <th className="text-center p-4 text-teal-400 font-medium">VIP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { benefit: "Acesso ao evento", std: "✓", pro: "✓", vip: "✓" },
-                  { benefit: "Coffee breaks", std: "✓", pro: "✓", vip: "✓" },
-                  { benefit: "Almoço", std: "—", pro: "✓", vip: "VIP" },
-                  { benefit: "Mentorias", std: "1 (sorteio)", pro: "2", vip: "2 premium" },
-                  { benefit: "Grupo VIP", std: "—", pro: "—", vip: "✓" },
-                  { benefit: "Coffee com speakers", std: "—", pro: "—", vip: "✓" },
-                  { benefit: "Follow-up", std: "—", pro: "—", vip: "3 meses" },
-                  { benefit: "Gravações", std: "—", pro: "30 dias", vip: "30 dias" },
-                ].map((row, i) => (
-                  <tr key={i} className="border-b border-dark-300 last:border-0">
-                    <td className="p-4 text-gray-300">{row.benefit}</td>
-                    <td className="p-4 text-center text-gray-500">{row.std}</td>
-                    <td className="p-4 text-center text-gray-500">{row.pro}</td>
-                    <td className="p-4 text-center text-teal-400 font-medium">{row.vip}</td>
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-dark-300">
+                    <th className="text-left p-4 text-gray-400 font-medium whitespace-nowrap">Benefício</th>
+                    <th className="text-center p-4 text-gray-400 font-medium whitespace-nowrap">Standard</th>
+                    <th className="text-center p-4 text-gray-400 font-medium whitespace-nowrap">Pro</th>
+                    <th className="text-center p-4 text-teal-400 font-medium whitespace-nowrap">VIP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {[
+                    { benefit: "Acesso ao evento", std: "✓", pro: "✓", vip: "✓" },
+                    { benefit: "Coffee breaks", std: "✓", pro: "✓", vip: "✓" },
+                    { benefit: "Almoço", std: "—", pro: "✓", vip: "VIP" },
+                    { benefit: "Mentorias", std: "1 (sorteio)", pro: "2", vip: "2 premium" },
+                    { benefit: "Grupo VIP", std: "—", pro: "—", vip: "✓" },
+                    { benefit: "Coffee com speakers", std: "—", pro: "—", vip: "✓" },
+                    { benefit: "Follow-up", std: "—", pro: "—", vip: "3 meses" },
+                    { benefit: "Gravações", std: "—", pro: "30 dias", vip: "30 dias" },
+                  ].map((row, i) => (
+                    <tr key={i} className="border-b border-dark-300 last:border-0 hover:bg-white/5 transition-colors">
+                      <td className="p-4 text-gray-300 font-medium whitespace-nowrap">{row.benefit}</td>
+                      <td className="p-4 text-center text-gray-500">{row.std}</td>
+                      <td className="p-4 text-center text-gray-500">{row.pro}</td>
+                      <td className="p-4 text-center text-teal-400 font-bold">{row.vip}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -545,32 +547,32 @@ export function GrowthExperience() {
       <section className="py-24 lg:py-32 relative overflow-hidden bg-dark-200/50 border-y border-white/5">
         <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 blur-[120px] rounded-full -translate-x-1/2" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="glass-card p-10 lg:p-20 border-white/5 bg-gradient-to-br from-white/5 to-transparent flex flex-col lg:flex-row items-center gap-16 rounded-[3rem]">
+          <div className="glass-card p-5 sm:p-10 lg:p-20 border-white/5 bg-gradient-to-br from-white/5 to-transparent flex flex-col lg:flex-row items-center gap-8 lg:gap-16 rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden">
             <div className="flex-1 text-center lg:text-left">
               <Badge className="mb-6 bg-orange-500/10 text-orange-400 border-orange-500/30 px-6 py-2 uppercase font-black tracking-widest">
                 Expansão & Parceria
               </Badge>
-              <h2 className="text-4xl sm:text-6xl font-black text-white mb-8 uppercase tracking-tight leading-[1.1]">
+              <h2 className="text-2xl sm:text-4xl lg:text-6xl font-black text-white mb-6 uppercase tracking-tight leading-[1.2] px-1 sm:px-2">
                 Leve este <span className="text-orange-500">Impacto</span> para sua cidade
               </h2>
-              <p className="text-xl text-gray-400 mb-10 leading-relaxed max-w-2xl">
+              <p className="text-sm sm:text-xl text-gray-400 mb-8 leading-relaxed max-w-2xl px-2 sm:px-4">
                 Nossa missão é democratizar as estratégias de Growth e IA para o interior do país. Seja o parceiro que levará esta transformação para sua região em 2026/2027.
               </p>
 
-              <div className="grid sm:grid-cols-2 gap-8 mb-12 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 mb-10 text-left px-2 sm:px-4">
                 {[
                   { title: "Metodologia Provada", desc: "Processo estruturado de escala para negócios regionais." },
                   { title: "Impacto Local Real", desc: "Transformação do ecossistema e networking de alto nível." },
                   { title: "Modelo de Parceria", desc: "Suporte total da nossa equipe na organização e curadoria." },
                   { title: "Novas Fronteiras", desc: "Oportunidade de posicionamento como líder regional." }
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 border border-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange-coral group-hover:text-white transition-all">
-                      <Zap className="h-6 w-6 text-brand-orange-coral group-hover:text-white" />
+                  <div key={i} className="flex gap-3 sm:gap-4 group">
+                    <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-brand-orange-coral/10 border border-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange-coral group-hover:text-white transition-all">
+                      <Zap className="h-4 w-4 sm:h-6 sm:w-6 text-brand-orange-coral group-hover:text-white" />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-lg mb-1">{item.title}</h4>
-                      <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                      <h4 className="text-white font-bold text-sm sm:text-lg mb-0.5">{item.title}</h4>
+                      <p className="text-[10px] sm:text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -578,7 +580,7 @@ export function GrowthExperience() {
 
               <Button
                 asChild
-                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-18 rounded-2xl text-xl transition-all hover:scale-105 shadow-2xl shadow-orange-500/20"
+                className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-6 sm:px-12 h-16 sm:h-18 rounded-2xl text-base sm:text-xl transition-all hover:scale-105 shadow-2xl shadow-orange-500/20"
               >
                 <a
                   href="https://wa.me/5588988432310?text=Olá! Falamos da [Nome da Cidade]. Temos interesse em levar o Growth Experience para nossa região."
@@ -586,7 +588,7 @@ export function GrowthExperience() {
                   rel="noopener noreferrer"
                 >
                   Falar com nosso Time de Expansão
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <ArrowRight className="ml-3 h-5 w-5 sm:h-6 sm:w-6" />
                 </a>
               </Button>
             </div>
@@ -656,11 +658,11 @@ export function GrowthExperience() {
         href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl shadow-green-500/40 transition-all hover:scale-110 flex items-center justify-center group animate-bounce"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 bg-green-500 hover:bg-green-600 text-white p-3.5 sm:p-4 rounded-full shadow-2xl shadow-green-500/40 transition-all hover:scale-110 flex items-center justify-center group"
         aria-label="Falar com consultor"
       >
-        <MessageCircle className="h-6 w-6" />
-        <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-3 transition-all duration-500 font-bold whitespace-nowrap">
+        <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-3 transition-all duration-500 font-bold whitespace-nowrap hidden sm:inline">
           Falar com consultor
         </span>
       </a>
@@ -678,28 +680,28 @@ export function GrowthExperience() {
           <div className="grid gap-4 py-4">
             <button
               onClick={() => handleEventChoose('growth-experience-triunfo')}
-              className="flex items-center gap-4 p-5 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all text-left group"
+              className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all text-left group"
             >
               <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold text-white">Triunfo-PE</h4>
-                <p className="text-sm text-gray-400">16 de Abril - Edição Flagship</p>
+                <h4 className="font-bold text-white text-sm sm:text-base">Triunfo-PE</h4>
+                <p className="text-xs text-gray-400">16 de Abril - Edição Flagship</p>
               </div>
               <ArrowRight className="ml-auto h-5 w-5 text-orange-500 opacity-0 group-hover:opacity-100 transition-all" />
             </button>
 
             <button
               onClick={() => handleEventChoose('growth-experience-petrolina')}
-              className="flex items-center gap-4 p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all text-left group"
+              className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all text-left group"
             >
               <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold text-white">Petrolina-PE</h4>
-                <p className="text-sm text-gray-400">30 de Abril - Edição Vale</p>
+                <h4 className="font-bold text-white text-sm sm:text-base">Petrolina-PE</h4>
+                <p className="text-xs text-gray-400">30 de Abril - Edição Vale</p>
               </div>
               <ArrowRight className="ml-auto h-5 w-5 text-teal-500 opacity-0 group-hover:opacity-100 transition-all" />
             </button>
