@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { FileText } from 'lucide-react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { FileText, Home as HomeIcon, ArrowLeft } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
@@ -105,17 +105,44 @@ function LegalPage({ title }: { title: string }) {
 // ── 404 Not Found
 function NotFound() {
   return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-4">
-      <div className="text-center">
-        <h1 className="text-9xl font-bold text-brand-orange-coral mb-4">404</h1>
-        <h2 className="text-3xl font-bold text-white mb-4">Página não encontrada</h2>
-        <p className="text-gray-400 mb-8">A página que você está procurando não existe.</p>
-        <a
-          href="/"
-          className="inline-block bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 font-bold px-8 py-3 rounded-lg transition-colors"
-        >
-          Voltar para Home
-        </a>
+    <div className="min-h-screen bg-[#0c0e12] flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/10 rounded-full blur-[120px] -z-10 -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] -z-10 translate-y-1/2 -translate-x-1/2" />
+
+      <div className="max-w-md w-full text-center relative z-10">
+        <div className="mb-8 relative inline-block">
+          <h1 className="text-[12rem] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-brand-orange-coral to-brand-orange-intense opacity-20 select-none">
+            404
+          </h1>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-24 h-24 bg-brand-orange-coral/20 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/10 rotate-12 animate-float">
+              <HomeIcon className="h-12 w-12 text-brand-orange-coral -rotate-12" />
+            </div>
+          </div>
+        </div>
+
+        <h2 className="text-4xl font-black text-white mb-4 tracking-tight uppercase">Página Perdida</h2>
+        <p className="text-gray-400 mb-10 text-lg leading-relaxed">
+          O conteúdo que você procura foi movido ou não existe mais no ecossistema Growth Experience.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to="/"
+            className="flex items-center justify-center gap-3 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-8 py-4 rounded-2xl transition-all shadow-xl shadow-brand-orange-coral/20 hover:scale-105 active:scale-95 group"
+          >
+            <HomeIcon className="h-5 w-5 transition-transform group-hover:scale-110" />
+            Voltar para Home
+          </Link>
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 px-8 py-4 rounded-2xl transition-all backdrop-blur-md"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Voltar
+          </button>
+        </div>
       </div>
     </div>
   );

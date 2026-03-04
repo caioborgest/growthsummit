@@ -363,7 +363,7 @@ export interface Session {
   category: string;
   title: string;
   description?: string;
-  type: 'keynote' | 'talk' | 'panel' | 'workshop' | 'networking' | 'circuito';
+  type: 'palestra' | 'talk' | 'panel' | 'workshop' | 'networking' | 'circuito' | 'curso' | 'oficina' | 'mentoria' | 'startup' | 'b2b';
   track?: string;
   day?: 1 | 2;
   startTime: string;

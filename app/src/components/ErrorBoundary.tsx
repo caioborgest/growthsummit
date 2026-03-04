@@ -113,19 +113,27 @@ export class ErrorBoundary extends Component<Props, State> {
                             </div>
                         )}
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={this.handleReset}
-                                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={this.handleReset}
+                                    className="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-6 py-3 rounded-xl transition-all font-bold text-sm"
+                                >
+                                    Tentar Novamente
+                                </button>
+                                <button
+                                    onClick={this.handleReload}
+                                    className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-6 py-3 rounded-xl transition-all font-bold text-sm shadow-lg shadow-brand-orange-coral/20"
+                                >
+                                    Recarregar
+                                </button>
+                            </div>
+                            <a
+                                href="/"
+                                className="w-full text-center py-3 text-sm font-bold text-gray-500 hover:text-white transition-colors"
                             >
-                                Tentar Novamente
-                            </button>
-                            <button
-                                onClick={this.handleReload}
-                                className="flex-1 bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
-                            >
-                                Recarregar Página
-                            </button>
+                                Voltar para a Home do App
+                            </a>
                         </div>
                     </div>
                 </div>

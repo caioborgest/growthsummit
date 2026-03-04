@@ -112,7 +112,7 @@ export function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
-  const activeProjects = projects.filter(p => p.status === 'active');
+  const activeProjects = projects.filter(p => p.status === 'active' || p.is_active === true);
 
   return (
     <div className="h-screen bg-[#0c0e12] flex overflow-hidden relative">
@@ -133,7 +133,7 @@ export function AdminLayout() {
         <div className="p-8 relative">
           <Link to="/admin" className="flex items-center justify-center">
             <img
-              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/gx-fundo-escuro.png"
+              src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png"
               alt="Growth Experience"
               className="h-9 w-auto hover:scale-105 transition-transform duration-300"
             />

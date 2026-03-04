@@ -31,30 +31,39 @@ import { Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 const typeIcons: Record<string, React.ElementType> = {
-  keynote: Mic,
-  talk: Mic,
-  panel: Users2,
+  palestra: Mic,
   workshop: Wrench,
+  curso: Wrench,
+  oficina: Wrench,
   networking: Coffee,
   circuito: Zap,
+  mentoria: Users2,
+  startup: Rocket,
+  b2b: Briefcase,
 };
 
 const typeLabels: Record<string, string> = {
-  keynote: 'Palestra',
-  talk: 'Talk',
-  panel: 'Painel',
+  palestra: 'Palestra / Painel',
   workshop: 'Workshop',
+  curso: 'Curso',
+  oficina: 'Oficina',
   networking: 'Networking',
-  circuito: 'Circuito/Estação',
+  circuito: 'Circuito / Estação',
+  mentoria: 'Mentoria',
+  startup: 'Startup / Pitch',
+  b2b: 'Rodada B2B',
 };
 
 const typeColors: Record<string, string> = {
-  keynote: 'bg-teal-500/20 text-teal-400',
-  talk: 'bg-blue-500/20 text-blue-400',
-  panel: 'bg-purple-500/20 text-purple-400',
-  workshop: 'bg-orange-500/20 text-orange-400',
-  networking: 'bg-green-500/20 text-green-400',
+  palestra: 'bg-teal-500/20 text-teal-400',
+  workshop: 'bg-purple-500/20 text-purple-400',
+  curso: 'bg-blue-500/20 text-blue-400',
+  oficina: 'bg-green-500/20 text-green-400',
+  networking: 'bg-orange-500/20 text-orange-400',
   circuito: 'bg-brand-orange-coral/20 text-brand-orange-coral',
+  mentoria: 'bg-yellow-500/20 text-yellow-500',
+  startup: 'bg-red-500/20 text-red-400',
+  b2b: 'bg-indigo-500/20 text-indigo-400',
 };
 
 const categories = [
@@ -92,7 +101,7 @@ export function AdminProgramacao() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'talk',
+    type: 'palestra',
     category: 'manha_bloco_1',
     startTime: '',
     endTime: '',
@@ -158,7 +167,7 @@ export function AdminProgramacao() {
     setFormData({
       title: '',
       description: '',
-      type: 'talk',
+      type: 'palestra',
       category: 'manha_bloco_1',
       startTime: '',
       endTime: '',
@@ -311,6 +320,9 @@ export function AdminProgramacao() {
               {editingSession ? <Edit2 className="h-6 w-6 text-brand-orange-coral" /> : <Plus className="h-6 w-6 text-brand-orange-coral" />}
               {editingSession ? 'Editar Atividade' : 'Nova Atividade'}
             </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              {editingSession ? 'Altere os detalhes da atividade selecionada.' : 'Preencha os dados para criar uma nova atividade na programação.'}
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-6">
@@ -346,11 +358,11 @@ export function AdminProgramacao() {
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white font-bold"
                       required
                     >
-                      {Object.keys(typeLabels).map(key => (
-                        <option key={key} value={key}>{typeLabels[key]}</option>
+                      {Object.entries(typeLabels).map(([id, label]) => (
+                        <option key={id} value={id}>{label}</option>
                       ))}
                     </select>
                   </div>
