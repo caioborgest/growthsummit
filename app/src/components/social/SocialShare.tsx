@@ -78,7 +78,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 {/* LinkedIn */}
                 <Button
                     onClick={() => handleShare('linkedin')}
-                    className="flex-1 min-w-[120px] bg-[#0A66C2] hover:bg-[#0A66C2]/90 text-white"
+                    className="flex-1 min-w-[100px] bg-[#0A66C2] hover:bg-[#0A66C2]/90 text-white"
                     size="sm"
                 >
                     <Linkedin className="h-4 w-4 mr-2" />
@@ -88,7 +88,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 {/* Instagram */}
                 <Button
                     onClick={() => handleShare('instagram')}
-                    className="flex-1 min-w-[120px] bg-gradient-to-tr from-[#FFB700] via-[#FF006B] to-[#D300C5] hover:opacity-90 text-white border-0"
+                    className="flex-1 min-w-[100px] bg-gradient-to-tr from-[#FFB700] via-[#FF006B] to-[#D300C5] hover:opacity-90 text-white border-0"
                     size="sm"
                 >
                     <Instagram className="h-4 w-4 mr-2" />
@@ -98,7 +98,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 {/* WhatsApp */}
                 <Button
                     onClick={() => handleShare('whatsapp')}
-                    className="flex-1 min-w-[120px] bg-[#25D366] hover:bg-[#25D366]/90 text-white"
+                    className="flex-1 min-w-[100px] bg-[#25D366] hover:bg-[#25D366]/90 text-white"
                     size="sm"
                 >
                     <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 <Button
                     onClick={handleCopyLink}
                     variant="outline"
-                    className="flex-1 min-w-[120px] border-dark-300 text-gray-300 hover:text-white"
+                    className="flex-1 min-w-[100px] border-dark-300 text-gray-300 hover:text-white"
                     size="sm"
                 >
                     {copied ? (

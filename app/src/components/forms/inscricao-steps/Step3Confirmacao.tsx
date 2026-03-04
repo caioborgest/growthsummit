@@ -56,6 +56,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
     const nivelAtividade = (primeiraAtividade as any)?.nivel || '';
 
     const handleConfirmar = async () => {
+        if (isProcessing) return;
+        setIsProcessing(true);
+        // Limpeza de email
+        const cleanEmail = dados.email.trim().toLowerCase();
+
         setLoading(true);
         setError('');
 
@@ -73,7 +78,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // 1. Tentar criar usuário apenas se não estiver logado com o email correto
             if (!userId) {
                 const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: dados.email,
+                    email: cleanEmail,
                     password: dados.senha,
                     options: {
                         data: {
@@ -88,7 +93,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     // Se já existe, tentamos login automático para validar a senha
                     if (sError.message.toLowerCase().includes('already registered')) {
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: dados.email,
+                            email: cleanEmail,
                             password: dados.senha
                         });
 
@@ -108,66 +113,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 }
             }
 
-            // 1.5. Sincronização agressiva com public.users
+            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
+            await new Promise(r => setTimeout(r, 1500));
+
+            // 1.5. Sincronização com public.users (Agora via trigger)
             if (userId) {
-                try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
-                    const { data: existingUser } = await supabase
-                        .from('users')
-                        .select('id')
-                        .eq('email', dados.email)
-                        .maybeSingle();
-
-                    if (existingUser && existingUser.id !== userId) {
-                        logger.warn(`Detectado usuário zumbi para o email ${dados.email}. Tentando remover...`);
-                        try {
-                            // Removação sem .catch() no builder, tratando o resultado
-                            const { error: delError } = await supabase.from('users').delete().eq('email', dados.email);
-                            if (delError) logger.warn('Erro ao tentar remover usuário zumbi:', delError);
-                        } catch (e) {
-                            logger.warn('Falha na tentativa de remover usuário zumbi:', e);
-                        }
-                    }
-
-                    const usersTable = supabase.from('users') as any;
-                    const { error: upsertError } = await usersTable
-                        .upsert({
-                            id: userId,
-                            email: dados.email,
-                            name: dados.nome,
-                            phone: dados.telefone,
-                            role: 'participant',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
-
-                    if (upsertError) {
-                        logger.warn('Falha na sincronização de usuário (id conflict):', upsertError);
-
-                        // Segunda tentativa por email
-                        if (upsertError.message.includes('unique_email') || upsertError.message.includes('users_email_key')) {
-                            const { error: secondTryError } = await usersTable
-                                .upsert({
-                                    id: userId,
-                                    email: dados.email,
-                                    name: dados.nome,
-                                    phone: dados.telefone,
-                                    role: 'participant',
-                                    updated_at: new Date().toISOString()
-                                }, { onConflict: 'email' });
-
-                            if (secondTryError) {
-                                throw new Error('Erro ao vincular dados da conta. Verifique se o email e senha estão corretos.');
-                            }
-                        } else {
-                            throw upsertError;
-                        }
-                    }
-                } catch (syncErr: any) {
-                    logger.warn('Erro na lógica de sincronização:', syncErr);
-                    if (syncErr instanceof Error && syncErr.message.includes('vincular')) {
-                        throw syncErr;
-                    }
-                }
+                logger.info('Vínculo de usuário identificado para a inscrição.', { userId });
             } else {
                 throw new Error('Usuário não identificado para a inscrição.');
             }
@@ -184,7 +135,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     project_id: projectId,
                     user_id: userId || null,
                     nome: dados.nome,
-                    email: dados.email,
+                    email: cleanEmail,
                     telefone: dados.telefone,
                     cursos_selecionados: dados.cursosSelecionados,
                     tipo_atividade_selecionada: tipoAtividade,

@@ -188,7 +188,7 @@ export function Inscricoes() {
                     {edition.description}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                     <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-widest mb-1">Ingresso Social</p>
                       <p className="text-2xl font-black text-white">Grátis</p>

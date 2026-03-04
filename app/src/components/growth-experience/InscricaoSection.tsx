@@ -120,7 +120,7 @@ export function InscricaoSection({
                                     <Award className="h-5 w-5 text-brand-orange-coral flex-shrink-0" />
                                     Premiação:
                                 </h3>
-                                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                     {premios.map((premio, idx) => (
                                         <Card key={idx} className="glass-card p-3 sm:p-4 border-brand-orange-coral/30 text-center">
                                             <div className="text-2xl sm:text-3xl mb-2">

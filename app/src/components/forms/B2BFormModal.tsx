@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { X, Loader2, CheckCircle, Handshake, Upload, Camera } from 'lucide-react';
+import { X, Loader2, CheckCircle, Handshake, Upload, Camera, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
@@ -137,33 +137,34 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         setError('');
 
         try {
-            // Validação de Logo (Obrigatória agora que o usuário pediu)
-            if (!logoFile) {
-                throw new Error('Por favor, anexe a logomarca da sua empresa.');
-            }
-            // Validação básica
-            if (!formData.nome_representante || !formData.cargo || !formData.email ||
-                !formData.telefone || !formData.senha || !formData.confirmarSenha ||
-                !formData.nome_empresa || !formData.setor ||
-                !formData.porte || !formData.descricao_empresa || !formData.produtos_servicos ||
-                !formData.tipo_interesse || !formData.areas_interesse || !formData.descricao_objetivos) {
-                throw new Error('Por favor, preencha todos os campos obrigatórios');
-            }
+            // Limpeza de email
+            const cleanEmail = formData.email.trim().toLowerCase();
 
-            // Validação de senhas
-            if (formData.senha !== formData.confirmarSenha) {
-                throw new Error('As senhas não coincidem');
-            }
+            // Validação de Logo
+            if (!logoFile) throw new Error('A logomarca da empresa é obrigatória');
 
-            if (formData.senha.length < 6) {
-                throw new Error('A senha deve ter pelo menos 6 caracteres');
-            }
-
-            // Validação de email
+            // Validações específicas do Representante
+            if (!formData.nome_representante.trim()) throw new Error('Nome do representante é obrigatório');
+            if (!formData.cargo.trim()) throw new Error('Seu cargo é obrigatório');
+            if (!formData.email.trim()) throw new Error('E-mail é obrigatório');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email)) {
-                throw new Error('Por favor, insira um email válido');
-            }
+            if (!emailRegex.test(cleanEmail)) throw new Error('E-mail inválido');
+            if (!formData.telefone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
+            if (!formData.senha) throw new Error('Senha é obrigatória');
+            if (formData.senha.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres');
+            if (formData.senha !== formData.confirmarSenha) throw new Error('As senhas não coincidem');
+
+            // Validações da Empresa
+            if (!formData.nome_empresa.trim()) throw new Error('Nome da empresa é obrigatório');
+            if (!formData.cnpj.trim()) throw new Error('CNPJ é obrigatório');
+            if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
+            if (!formData.porte) throw new Error('Porte da empresa é obrigatório');
+            if (!formData.descricao_empresa.trim()) throw new Error('Descrição da empresa é obrigatória');
+
+            // Validações de Interesse
+            if (!formData.tipo_interesse) throw new Error('Seu tipo de interesse é obrigatório');
+            if (!formData.areas_interesse.trim()) throw new Error('Áreas de interesse são obrigatórias');
+            if (!formData.descricao_objetivos.trim()) throw new Error('Descrição dos objetivos é obrigatória');
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
@@ -171,14 +172,14 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             let authError = null;
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (existingSession && existingSession.user.email !== formData.email) {
+            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
                 userId = undefined;
             }
 
             if (!userId) {
                 // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: formData.email,
+                    email: cleanEmail,
                     password: formData.senha,
                     options: {
                         data: {
@@ -197,7 +198,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 if (authError.message.includes('already registered')) {
                     logger.info('Usuário já registrado, tentando login...');
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email: formData.email,
+                        email: cleanEmail,
                         password: formData.senha
                     });
 
@@ -216,32 +217,12 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
-            try {
-                // Verificação robusta para evitar conflito de email (usuário zumbi)
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('id')
-                    .eq('email', formData.email)
-                    .maybeSingle();
+            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
+            await new Promise(r => setTimeout(r, 1500));
 
-                if (existingUser && existingUser.id !== userId) {
-                    logger.warn('Conflito de email detectado (zumbi) em B2BForm. Corrigindo...');
-                    await supabase.from('users').delete().eq('email', formData.email).catch(() => { });
-                }
-
-                await supabase
-                    .from('users')
-                    .upsert({
-                        id: userId,
-                        email: formData.email,
-                        name: formData.nome_representante,
-                        phone: formData.telefone,
-                        role: 'b2b',
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id' });
-            } catch (userTableCatch) {
-                logger.warn('Erro crítico na sincronização de usuários:', userTableCatch);
+            // 1.5. Sincronização com public.users (Agora via trigger)
+            if (userId) {
+                logger.info('Vínculo de usuário identificado para B2B.', { userId });
             }
 
             // Prosseguimento (user_id opcional na tabela)
@@ -272,7 +253,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 user_id: userId || null,
                 nome_representante: formData.nome_representante,
                 cargo: formData.cargo,
-                email: formData.email,
+                email: cleanEmail,
                 telefone: formData.telefone,
                 nome_empresa: formData.nome_empresa,
                 cnpj: formData.cnpj || null,
@@ -747,8 +728,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                             </div>
 
                             {error && (
-                                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                    <p className="text-red-400 text-xs sm:text-sm">{error}</p>
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <AlertCircle className="h-5 w-5 shrink-0" />
+                                    <span>{error}</span>
                                 </div>
                             )}
 

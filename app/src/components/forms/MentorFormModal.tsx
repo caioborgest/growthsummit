@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, CheckCircle, Linkedin, Target, Camera, User } from 'lucide-react';
+import { X, Loader2, CheckCircle, Linkedin, Target, Camera, User, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         senha: '',
         confirmarSenha: '',
         foto: null as File | null,
-        fotoPreview: ''
+        fotoPreview: '',
+        anosExperiencia: 0,
+        capacidadeSlots: 3
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -86,7 +88,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         setFormData({
             nome: '', email: '', telefone: '', empresa: '', cargo: '',
             bio: '', linkedin: '', especialidades: [], senha: '', confirmarSenha: '',
-            foto: null, fotoPreview: ''
+            foto: null, fotoPreview: '', anosExperiencia: 0, capacidadeSlots: 3
         });
         setStep(1);
     };
@@ -102,12 +104,33 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         }));
     };
 
-    const nextStep = (force = false) => {
-        if (isProcessing && !force) return;
+    const validateStep = (currentStep: number) => {
+        if (currentStep === 1) {
+            if (!formData.foto && !formData.fotoPreview) return 'Por favor, anexe uma foto de perfil.';
+            if (!formData.nome.trim()) return 'O nome completo é obrigatório.';
+            if (!formData.email.trim()) return 'O e-mail é obrigatório.';
+            if (!formData.telefone.trim()) return 'O WhatsApp é obrigatório.';
+            if (!formData.empresa.trim()) return 'A empresa/instituição é obrigatória.';
+            if (!formData.cargo.trim()) return 'O cargo/função é obrigatório.';
+            if (!formData.senha.trim()) return 'A senha é obrigatória.';
+            if (formData.senha.length < 6) return 'A senha deve ter pelo menos 6 caracteres.';
+            if (formData.senha !== formData.confirmarSenha) return 'As senhas não coincidem.';
+        } else if (currentStep === 2) {
+            if (formData.especialidades.length === 0) return 'Selecione pelo menos uma especialidade.';
+            if (!formData.bio.trim()) return 'A bio/experiência é obrigatória.';
+            if (formData.bio.length < 50) return 'Sua bio deve ter pelo menos 50 caracteres para uma boa apresentação.';
+            const wordCount = formData.bio.trim().split(/\s+/).length;
+            if (wordCount > 100) return `Sua bio deve ter no máximo 100 palavras (atual: ${wordCount}).`;
+        }
+        return null;
+    };
 
-        // Validação obrigatória da foto no Step 1
-        if (step === 1 && !formData.foto) {
-            setError('Por favor, anexe uma foto de perfil. Ela é necessária para identificação no evento.');
+    const nextStep = () => {
+        if (isProcessing) return;
+
+        const errorMsg = validateStep(step);
+        if (errorMsg) {
+            setError(errorMsg);
             return;
         }
 
@@ -133,22 +156,27 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
         try {
             logger.info('Iniciando submissão de mentor...');
 
-            if (formData.senha !== formData.confirmarSenha) {
-                throw new Error('As senhas não coincidem');
-            }
+            // Validação final de todos os passos
+            const step1Err = validateStep(1);
+            if (step1Err) throw new Error(step1Err);
+            const step2Err = validateStep(2);
+            if (step2Err) throw new Error(step2Err);
+
+            // Limpeza de email
+            const cleanEmail = formData.email.trim().toLowerCase();
 
             // 1. Auth SignUp / SignIn (First step to have a valid session for Storage)
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
 
-            if (existingSession && existingSession.user.email !== formData.email) {
+            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
                 userId = undefined;
             }
 
             if (!userId) {
-                logger.info('Tentando autenticação para:', formData.email);
+                logger.info('Tentando autenticação para:', cleanEmail);
                 const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: formData.email,
+                    email: cleanEmail,
                     password: formData.senha,
                     options: {
                         data: {
@@ -163,7 +191,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                     if (sError.message.toLowerCase().includes('already registered')) {
                         logger.info('Usuário já cadastrado, tentando login...');
                         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: formData.email,
+                            email: cleanEmail,
                             password: formData.senha
                         });
 
@@ -186,7 +214,11 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 }
             }
 
+            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
+            await new Promise(r => setTimeout(r, 1500));
+
             // 2. Photo Upload (Now authenticated)
+            // ... (keep photo upload logic as is)
             if (formData.foto && formData.foto instanceof File) {
                 try {
                     logger.info('Enviando foto (identidade autenticada)...');
@@ -201,7 +233,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
                     if (uploadError) {
                         logger.warn('Erro RLS/Storage, tentando upload após delay ou ignorando:', uploadError);
-                        // Se falhar upload, continuamos para não travar o cadastro
                     } else {
                         const { data: urlData } = supabase.storage
                             .from('event-images')
@@ -214,36 +245,20 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 }
             }
 
-            // 3. Sync with public.users (Conflict on email is more robust)
+            // 3. Sync with public.users (Agora via trigger)
             if (userId) {
-                try {
-                    logger.info('Sincronizando dados na tabela de usuários pública...');
-                    const { error: syncError } = await (supabase.from('users') as any).upsert({
-                        id: userId,
-                        email: formData.email,
-                        name: formData.nome,
-                        phone: formData.telefone,
-                        role: 'mentor',
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'email' });
-
-                    if (syncError) {
-                        logger.warn('Sincronização falhou (pode ser restrição de banco):', syncError);
-                    }
-                } catch (userSyncErr) {
-                    logger.warn('Erro de sincronização não fatal:', userSyncErr);
-                }
+                logger.info('ID de usuário identificado para mentor:', { userId });
             }
 
             // 4. Save Record in mentores_growth_experience
             logger.info('Salvando dados na tabela de mentores...');
-            const targetProjectId = projectId || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'; // Fallback para Triunfo se não detectado
+            const targetProjectId = projectId || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
             const mentorData = {
                 project_id: targetProjectId,
                 user_id: userId || null,
                 nome: formData.nome,
-                email: formData.email,
+                email: cleanEmail,
                 telefone: formData.telefone,
                 empresa: formData.empresa,
                 cargo: formData.cargo,
@@ -251,19 +266,29 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 bio: formData.bio,
                 linkedin_url: formData.linkedin,
                 foto_url: fotoUrl || formData.fotoPreview || '',
+                years_experience: formData.anosExperiencia,
+                max_mentories: formData.capacidadeSlots,
                 status: 'pendente',
                 created_at: new Date().toISOString()
             };
-
-            logger.info('Dados a serem salvos:', { ...mentorData, email: '***' });
 
             const { error: dbError } = await supabase
                 .from('mentores_growth_experience')
                 .upsert(mentorData, { onConflict: 'email' });
 
             if (dbError) {
-                logger.error('Erro ao salvar mentor no Supabase:', dbError);
-                throw dbError;
+                // FALLBACK: Se der erro de Foreign Key (usuário ainda não sincronizado), tenta sem user_id
+                if (dbError.code === '23503') {
+                    logger.warn('Sincronização de usuário atrasada. Salvando mentor sem vínculo direto temporariamente...');
+                    delete mentorData.user_id;
+                    const { error: retryError } = await supabase
+                        .from('mentores_growth_experience')
+                        .upsert(mentorData, { onConflict: 'email' });
+
+                    if (retryError) throw retryError;
+                } else {
+                    throw dbError;
+                }
             }
 
             logger.info('Sucesso! Mentor registrado.');
@@ -276,7 +301,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 setIsSuccess(false);
                 clearDraft();
             }, 5000);
-
         } catch (err: unknown) {
             logger.error('Erro na inscrição de mentor:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
@@ -342,6 +366,12 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                             </div>
 
                             <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">
+                                {error && (
+                                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <AlertCircle className="h-5 w-5 shrink-0" />
+                                        <span>{error}</span>
+                                    </div>
+                                )}
                                 {step === 1 && (
                                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                                         {/* Foto de Perfil */}
@@ -484,8 +514,36 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                             </div>
                                         </div>
 
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Anos de Experiência</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.anosExperiencia}
+                                                    onChange={e => setFormData({ ...formData, anosExperiencia: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Capacidade (Sessões/Slots)</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                                    value={formData.capacidadeSlots}
+                                                    onChange={e => setFormData({ ...formData, capacidadeSlots: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-300">Breve Bio / Experiência Profissional</label>
+                                            <div className="flex justify-between items-end">
+                                                <label className="text-sm font-medium text-gray-300">Breve Bio / Experiência Profissional</label>
+                                                <span className={`text-[10px] ${formData.bio.trim().split(/\s+/).filter(Boolean).length > 100 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                                    {formData.bio.trim().split(/\s+/).filter(Boolean).length}/100 palavras
+                                                </span>
+                                            </div>
                                             <textarea
                                                 required
                                                 rows={4}
@@ -522,11 +580,6 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                             </p>
                                         </div>
 
-                                        {error && (
-                                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-                                                {error}
-                                            </div>
-                                        )}
                                     </div>
                                 )}
 

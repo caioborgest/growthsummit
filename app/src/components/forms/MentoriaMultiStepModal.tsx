@@ -168,23 +168,40 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         </Button>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mb-6 sm:mb-8">
                         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-                            <div key={step} className="flex-1 h-2 rounded-full transition-all bg-gray-700 overflow-hidden">
-                                <div className={`h-full transition-all ${step < currentStep ? 'bg-green-500' : step === currentStep ? 'bg-brand-orange-coral' : 'bg-transparent'}`} />
+                            <div key={step} className="flex-1">
+                                <div className="h-1.5 sm:h-2 rounded-full bg-white/5 overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-700 ease-out ${step < currentStep ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]' :
+                                                step === currentStep ? 'bg-brand-orange-coral shadow-[0_0_15px_rgba(255,112,67,0.4)]' :
+                                                    'bg-transparent'
+                                            }`}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="flex justify-between mt-4 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar scroll-smooth">
+                    <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-4 sm:pb-0 px-1 hide-scrollbar">
                         {['Área', 'Mentor', 'Dados', 'Confirmar', 'Oferta', 'App', 'Fim'].map((label, idx) => {
                             const step = idx + 1;
+                            const isActive = step === currentStep;
+                            const isCompleted = step < currentStep;
+
                             return (
-                                <div key={step} className="flex flex-col items-center gap-1 min-w-[50px] sm:min-w-fit">
-                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold ${step < currentStep ? 'bg-green-500' : step === currentStep ? 'bg-brand-orange-coral' : 'bg-gray-800 text-gray-500'}`}>
-                                        {step < currentStep ? <CheckCircle size={12} /> : step}
+                                <div key={step} className="flex flex-col items-center gap-2 min-w-[55px] sm:min-w-[80px]">
+                                    <div className={`
+                                        w-8 h-8 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center transition-all duration-500
+                                        ${isCompleted ? 'bg-green-500/20 text-green-500 border border-green-500/20' :
+                                            isActive ? 'bg-brand-orange-coral text-white shadow-glow-orange border border-brand-orange-coral/50 scale-110' :
+                                                'bg-white/5 text-gray-600 border border-white/5'}
+                                    `}>
+                                        {isCompleted ? <CheckCircle size={16} className="sm:size-5" /> : <span className="text-xs sm:text-sm font-black">{step}</span>}
                                     </div>
-                                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${step === currentStep ? 'text-brand-orange-coral' : 'text-gray-500'}`}>{label}</span>
+                                    <span className={`text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-center transition-colors duration-500 ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500/70' : 'text-gray-600'}`}>
+                                        {label}
+                                    </span>
                                 </div>
                             )
                         })}

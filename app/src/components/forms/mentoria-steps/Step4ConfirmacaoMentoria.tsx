@@ -116,7 +116,11 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     if (existingUser && existingUser.id !== userId) {
                         logger.warn('Conflito de email detectado (zumbi) em Mentoria. Tentando remover...');
                         // Tentamos deletar; se falhar (RLS), o upsert posterior por email deve resolver.
-                        await supabase.from('users').delete().eq('email', dados.email).catch(() => { });
+                        try {
+                            await supabase.from('users').delete().eq('email', dados.email);
+                        } catch (e) {
+                            // Ignorar erro de delete se for RLS
+                        }
                     }
 
                     const usersTable = supabase.from('users') as any;
@@ -172,7 +176,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     email_mentorado: dados.email,
                     telefone_mentorado: dados.telefone,
                     tema_interesse: dados.area,
-                    notes: dados.descricaoProblema,
+                    anotacoes: dados.descricaoProblema,
                     status: 'pendente'
                 })
                 .select();

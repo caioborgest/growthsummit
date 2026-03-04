@@ -238,7 +238,9 @@ export function AdminMentores() {
     password: '',
     confirmPassword: '',
     photo: null as File | null,
-    photoPreview: ''
+    photoPreview: '',
+    yearsExperience: 5,
+    maxMentories: 10
   });
 
   // console.log('[AdminMentores] Render', { mentorsCount: mentors.length, projectId });
@@ -309,8 +311,8 @@ export function AdminMentores() {
         company: formData.company,
         position: formData.position,
         bio: formData.bio,
-        yearsExperience: 5, // Default for manual admin creation
-        maxMentories: 10,   // Default for manual admin creation
+        yearsExperience: formData.yearsExperience,
+        maxMentories: formData.maxMentories,
         specialties: formData.specialties,
         tracks: ['Geral'],
         linkedin: formData.linkedin,
@@ -345,7 +347,9 @@ export function AdminMentores() {
       password: '',
       confirmPassword: '',
       photo: null,
-      photoPreview: ''
+      photoPreview: '',
+      yearsExperience: 5,
+      maxMentories: 10
     });
   };
 
@@ -591,8 +595,36 @@ export function AdminMentores() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Anos de Experiência</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={formData.yearsExperience}
+                        onChange={e => setFormData({ ...formData, yearsExperience: parseInt(e.target.value) || 0 })}
+                        className="bg-dark-100 border-dark-300 h-10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Capacidade (Slots)</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={formData.maxMentories}
+                        onChange={e => setFormData({ ...formData, maxMentories: parseInt(e.target.value) || 0 })}
+                        className="bg-dark-100 border-dark-300 h-10"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label>Bio / Experiência</Label>
+                    <div className="flex justify-between items-end">
+                      <Label>Bio / Experiência</Label>
+                      <span className={`text-[10px] ${formData.bio.trim().split(/\s+/).filter(Boolean).length > 100 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                        {formData.bio.trim().split(/\s+/).filter(Boolean).length}/100 palavras
+                      </span>
+                    </div>
                     <Textarea
                       required
                       value={formData.bio}

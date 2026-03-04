@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Target, ArrowRight } from 'lucide-react';
@@ -73,5 +73,3 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContin
         </div>
     );
 }
-
-import { useState } from 'react';

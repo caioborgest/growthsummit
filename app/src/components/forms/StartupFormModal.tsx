@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, CheckCircle, Rocket } from 'lucide-react';
+import { X, Loader2, CheckCircle, Rocket, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
@@ -114,27 +114,28 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
         setError('');
 
         try {
-            // Validação básica
-            if (!formData.nome_fundador || !formData.email || !formData.telefone || !formData.senha || !formData.confirmarSenha ||
-                !formData.nome_startup || !formData.descricao_startup || !formData.setor ||
-                !formData.estagio || !formData.problema || !formData.solucao || !formData.diferencial) {
-                throw new Error('Por favor, preencha todos os campos obrigatórios');
-            }
+            // Limpeza de email
+            const cleanEmail = formData.email.trim().toLowerCase();
 
-            // Validação de senhas
-            if (formData.senha !== formData.confirmarSenha) {
-                throw new Error('As senhas não coincidem');
-            }
-
-            if (formData.senha.length < 6) {
-                throw new Error('A senha deve ter pelo menos 6 caracteres');
-            }
-
-            // Validação de email
+            // Validações específicas
+            if (!formData.nome_fundador.trim()) throw new Error('Nome do fundador é obrigatório');
+            if (!formData.email.trim()) throw new Error('E-mail é obrigatório');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email)) {
-                throw new Error('Por favor, insira um email válido');
-            }
+            if (!emailRegex.test(cleanEmail)) throw new Error('Por favor, insira um email válido');
+
+            if (!formData.telefone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
+            if (!formData.senha) throw new Error('Senha é obrigatória');
+            if (formData.senha.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres');
+            if (formData.senha !== formData.confirmarSenha) throw new Error('As senhas não coincidem');
+
+            if (!formData.nome_startup.trim()) throw new Error('Nome da Startup é obrigatório');
+            if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
+            if (!formData.estagio) throw new Error('Estágio da Startup é obrigatório');
+            if (!formData.descricao_startup.trim()) throw new Error('Descrição da Startup é obrigatória');
+
+            if (!formData.problema.trim()) throw new Error('O problema que você resolve é obrigatório');
+            if (!formData.solucao.trim()) throw new Error('Sua solução é obrigatória');
+            if (!formData.diferencial.trim()) throw new Error('Seu diferencial competitivo é obrigatório');
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
@@ -142,14 +143,14 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             let authError = null;
 
             // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (existingSession && existingSession.user.email !== formData.email) {
+            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
                 userId = undefined;
             }
 
             if (!userId) {
                 // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: formData.email,
+                    email: cleanEmail,
                     password: formData.senha,
                     options: {
                         data: {
@@ -167,7 +168,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 // Se já existe, tentamos login automático
                 if (authError.message.includes('already registered')) {
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email: formData.email,
+                        email: cleanEmail,
                         password: formData.senha
                     });
 
@@ -185,34 +186,12 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
+            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
+            await new Promise(r => setTimeout(r, 1500));
+
+            // 1.5. Sincronização com public.users (Agora tratado pelo trigger DB)
             if (userId) {
-                try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
-                    const { data: existingUser } = await supabase
-                        .from('users')
-                        .select('id')
-                        .eq('email', formData.email)
-                        .maybeSingle();
-
-                    if (existingUser && existingUser.id !== userId) {
-                        logger.warn('Conflito de email detectado (zumbi) em StartupForm. Corrigindo...');
-                        await supabase.from('users').delete().eq('email', formData.email);
-                    }
-
-                    await supabase
-                        .from('users')
-                        .upsert({
-                            id: userId,
-                            email: formData.email,
-                            name: formData.nome_fundador,
-                            phone: formData.telefone,
-                            role: 'startup',
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'id' });
-                } catch (userTableCatch) {
-                    logger.warn('Erro ao sincronizar tabela public.users:', { error: userTableCatch });
-                }
+                logger.info('Vínculo de usuário identificado, sincronização via trigger aguardada.', { userId });
             }
 
             // Se ainda não temos userId, prosseguimos sem vincular ID se possível
@@ -223,7 +202,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 project_id: projectId,
                 user_id: userId || null,
                 nome_fundador: formData.nome_fundador,
-                email: formData.email,
+                email: cleanEmail,
                 telefone: formData.telefone,
                 nome_startup: formData.nome_startup,
                 descricao_startup: formData.descricao_startup,
@@ -616,8 +595,9 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                             </div>
 
                             {error && (
-                                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                    <p className="text-red-400 text-xs sm:text-sm">{error}</p>
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <AlertCircle className="h-5 w-5 shrink-0" />
+                                    <span>{error}</span>
                                 </div>
                             )}
 

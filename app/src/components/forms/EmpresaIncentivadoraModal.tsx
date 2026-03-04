@@ -109,25 +109,24 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 throw dbError;
             }
 
-            // Calcular valores para o WhatsApp
             const valorUnitario = 179.99;
             const qtd = parseInt(formData.quantidadeEquipe) || 0;
-            const temDesconto = qtd > 5;
+            const temDesconto = qtd >= 10;
             const valorTotal = temDesconto ? (qtd * valorUnitario * 0.9) : (qtd * valorUnitario);
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            // Abrir WhatsApp em nova aba (apenas se não for admin)
             if (!isAdmin) {
                 const mensagem = encodeURIComponent(
                     `🚀 *INSCRIÇÃO DE EQUIPE - GROWTH EXPERIENCE*\n\n` +
-                    `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe.\n\n` +
+                    `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe e oficializar nossa participação no prêmio *Melhor empresa incentivadora da educação empreendedora*.\n\n` +
                     `*DADOS DA EMPRESA:*\n` +
                     `• *Empresa:* ${formData.nomeEmpresa}\n` +
                     `• *Responsável:* ${formData.nomeResponsavel}\n` +
                     `• *WhatsApp:* ${formData.telefone}\n` +
                     `• *Equipe:* ${qtd} pessoas\n` +
-                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe > 5)' : 'Nenhum'}\n` +
+                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe >= 10)' : 'Nenhum'}\n` +
                     `• *Valor Total:* ${valorFormatado}\n\n` +
+                    `*MOTIVO DA INSCRIÇÃO:* ${formData.objetivo}\n\n` +
                     `_Pode me enviar a chave Pix para pagamento?_`
                 );
                 window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
@@ -167,10 +166,10 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
                                 <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-400" />
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">Inscrição Confirmada!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">Inscrição Enviada!</h2>
                             <p className="text-sm sm:text-lg text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-                                Sua empresa está oficialmente inscrita para o prêmio **"Melhor Empresa Incentivadora ao Empreendedorismo"**.<br className="hidden sm:block" />
-                                Nossa equipe entrará em contato para alinhar os detalhes da premiação e os ingressos da equipe.
+                                Sua empresa foi pré-inscrita para o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.<br className="hidden sm:block" />
+                                <strong>Estamos te redirecionando para o nosso WhatsApp Business</strong> para confirmarmos as vagas da equipe e os detalhes do pagamento.
                             </p>
                             <Button onClick={onClose} className="bg-brand-orange-coral text-white px-8 h-12">
                                 Voltar ao Site
@@ -266,9 +265,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                 </div>
 
                                 <div className="bg-brand-orange-coral/10 p-4 rounded-xl border border-brand-orange-coral/20 flex gap-3">
-                                    <Ticket className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
+                                    <Trophy className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
                                     <p className="text-xs text-gray-300 leading-relaxed">
-                                        Empresas que levam equipes acima de 5 pessoas ganham **10% de desconto adicional** e concorrem ao prêmio de empresa que mais investe no empreendedorismo.
+                                        Empresas que levam equipes acima de **10 pessoas** para programação a noite, ganham **10% de desconto adicional** e concorrem ao prêmio de empresa que mais investe no empreendedorismo. A empresa que mais investir ganha o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.
                                     </p>
                                 </div>
 

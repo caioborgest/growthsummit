@@ -15,8 +15,7 @@ import {
   HelpCircle,
   MapPin,
   User,
-  Bell,
-  Sparkles
+  Bell
 } from 'lucide-react';
 import {
   Popover,

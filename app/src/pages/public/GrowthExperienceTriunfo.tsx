@@ -49,6 +49,7 @@ import { ensureProject } from '@/lib/ensureProject';
 import { CertificateService } from '@/lib/certificateService';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
+import { MentorCard } from '@/components/growth-experience/MentorCard';
 
 // Dados do evento
 const palestrantes = [
@@ -421,38 +422,7 @@ export function GrowthExperienceTriunfo() {
           {!mentorsLoading && approvedMentors.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 animate-fade-in-up">
               {approvedMentors.map((mentor) => (
-                <div key={mentor.id} className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2">
-                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
-                    <img
-                      src={mentor.photo || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
-                      alt={mentor.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-white group-hover:text-brand-orange-coral transition-colors">
-                      {mentor.name}
-                    </h3>
-                    <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest lines-clamp-1">
-                      {mentor.position} @ {mentor.company}
-                    </p>
-                    <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
-                      {mentor.bio}
-                    </p>
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {(mentor.specialties || []).slice(0, 2).map((spec, sIdx) => (
-                      <Badge key={sIdx} variant="outline" className="bg-white/5 border-white/10 text-[10px] sm:text-[9px] uppercase tracking-wider text-gray-400">
-                        {spec}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Glow Hover */}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity bg-brand-orange-gradient pointer-events-none" />
-                </div>
+                <MentorCard key={mentor.id} mentor={mentor as any} />
               ))}
             </div>
           ) : mentorsLoading ? (

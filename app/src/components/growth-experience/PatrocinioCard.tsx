@@ -75,7 +75,7 @@ export function PatrocinioCard({
             {/* Conteúdo */}
             <div className="relative z-10">
                 {/* Header */}
-                <div className="flex items-start justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                     <div>
                         <Badge className={`${cores.badge} text-lg px-4 py-2 mb-3 font-bold`}>
                             {nome}

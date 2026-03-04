@@ -107,7 +107,10 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   email_mentorado: 'menteeEmail',
   telefone_mentorado: 'menteePhone',
   tema_interesse: 'topic',
+  anotacoes: 'notes',
   mentor_name: 'mentorName',
+  years_experience: 'yearsExperience',
+  max_mentories: 'maxMentories',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -224,7 +227,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color,metadata';
     }
     if (entity === 'mentors') {
-      return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at';
+      return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
     }
     if (entity === 'check_ins') {
       return 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method';
@@ -239,7 +242,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,notes,status,created_at';
+      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at';
     }
   }
 
