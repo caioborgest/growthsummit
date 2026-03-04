@@ -2,7 +2,7 @@ export const EVENT_CONFIG = {
     whatsapp: {
         number: "5588988432310",
         display: "(88) 98843-2310",
-        message: "Olá! Gostaria de mais informações sobre o Growth Experience 2026."
+        message: "Olá, quero me inscrever no Growth Experience Triunfo"
     },
     email: "projetos@cbxgrowth.com.br",
     pix: {

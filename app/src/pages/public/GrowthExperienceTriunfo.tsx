@@ -50,6 +50,7 @@ import { CertificateService } from '@/lib/certificateService';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { MentorCard } from '@/components/growth-experience/MentorCard';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 // Dados do evento
 const palestrantes = [
@@ -689,7 +690,7 @@ export function GrowthExperienceTriunfo() {
                 imagemUrl={getStandImage(cota.nome)}
                 onContato={() => {
                   const message = encodeURIComponent(`Olá! Tenho interesse na Cota ${cota.nome} para exposição no Growth Experience Triunfo-PE 2026. Poderia me enviar a proposta comercial?`);
-                  window.open(`https://api.whatsapp.com/send/?phone=5588988432310&text=${message}`, '_blank');
+                  window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${message}`, '_blank');
                 }}
               />
             ))}

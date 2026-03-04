@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useProject } from '@/contexts/ProjectContext';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 export function LotePromocionalPopUp() {
     const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +37,7 @@ export function LotePromocionalPopUp() {
     const handleWhatsApp = () => {
         const projectName = selectedProject?.name || 'Growth Experience';
         const message = encodeURIComponent(`Olá! Tenho interesse na Oferta de Lote Promocional (Compre 2, Leve 3) para o ${projectName}.`);
-        window.open(`https://wa.me/5588988432310?text=${message}`, '_blank');
+        window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${message}`, '_blank');
         handleClose();
     };
 

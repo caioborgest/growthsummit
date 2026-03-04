@@ -186,7 +186,7 @@ function DetalhesModal({
 }
 
 // ── Componente Principal ──────────────────────────────────────
-export function AdminInscricoes() {
+export default function AdminInscricoes() {
   const { data: registrations, update, remove } = useRegistrations();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
   const { update: updateSession } = useData([], 'sessions');

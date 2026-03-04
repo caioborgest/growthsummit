@@ -29,6 +29,7 @@ import {
   AlertCircle,
   Bell
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -541,7 +542,11 @@ export function DashboardParticipante() {
   useEffect(() => { fetchDocumentos(); }, [fetchDocumentos]);
 
   return (
-    <div className="min-h-screen bg-dark-400 pb-20">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-dark-400 pb-20 mesh-gradient"
+    >
       {/* Modals */}
       {showUpgradeModal && myRegistration && (
         <UpgradeProModal
@@ -594,7 +599,7 @@ export function DashboardParticipante() {
                     {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                   </Badge>
                   <button
-                    onClick={() => navigate('/ge-triunfo')}
+                    onClick={() => navigate('/growth-experience-triunfo')}
                     className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
                   >
                     <HelpCircle className="h-3 w-3" /> Guia
@@ -934,7 +939,7 @@ export function DashboardParticipante() {
                   <h2 className="text-xl font-bold text-white">Minha Agenda</h2>
                   <p className="text-gray-400 text-sm mt-1">Atividades {myRegistration?.palestrasNoturnas ? 'diurnas e noturnas' : 'diurnas (gratuitas)'}</p>
                 </div>
-                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => navigate('/ge-triunfo')}>
+                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => navigate('/growth-experience-triunfo')}>
                   Ver Programação
                 </Button>
               </div>
@@ -968,7 +973,7 @@ export function DashboardParticipante() {
                   <div className="text-center py-12 border-2 border-dashed border-dark-300 rounded-2xl">
                     <BookOpen className="h-10 w-10 text-gray-600 mx-auto mb-3" />
                     <p className="text-gray-500 text-sm">Você ainda não selecionou cursos/oficinas.</p>
-                    <Button variant="link" className="text-teal-400 mt-2 font-bold text-sm" onClick={() => navigate('/ge-triunfo')}>
+                    <Button variant="link" className="text-teal-400 mt-2 font-bold text-sm" onClick={() => navigate('/growth-experience-triunfo')}>
                       Escolher atividades →
                     </Button>
                   </div>
@@ -1246,6 +1251,6 @@ export function DashboardParticipante() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </motion.div>
   );
 }

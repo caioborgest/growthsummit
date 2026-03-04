@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { useProject } from '@/contexts/ProjectContext';
 import { ensureProject } from '@/lib/ensureProject';
@@ -291,7 +292,7 @@ export function Inscricoes() {
                 className="bg-white hover:bg-brand-orange-coral text-dark hover:text-white font-black px-12 h-16 rounded-2xl text-lg transition-all hover:scale-105"
               >
                 <a
-                  href="https://wa.me/5588988432310?text=Olá! Gostaria de saber mais sobre como levar o Growth Experience para minha cidade."
+                  href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent("Olá! Temos interesse em discutir a expansão do Growth Experience para nossa cidade.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

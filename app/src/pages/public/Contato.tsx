@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const contactInfo = [
   {
@@ -26,8 +27,8 @@ const contactInfo = [
   {
     icon: Phone,
     title: "WhatsApp",
-    value: "(88) 98843-2310",
-    href: "https://wa.me/5588988432310"
+    value: EVENT_CONFIG.whatsapp.display,
+    href: `https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`
   },
   {
     icon: MapPin,
@@ -74,7 +75,7 @@ export function Contato() {
       // Redirecionar para WhatsApp como fallback.
       if (!import.meta.env.PROD) {
         const msg = encodeURIComponent(`Olá! Mensagem de contato via site:\n\nNome: ${formData.name}\nEmail: ${formData.email}\nAssunto: ${formData.subject}\n\n${formData.message}`);
-        window.open(`https://wa.me/5588988432310?text=${msg}`, '_blank');
+        window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${msg}`, '_blank');
         toast.success('Redirecionando para WhatsApp (modo desenvolvimento)');
         setFormData({ name: '', email: '', department: 'geral', subject: '', message: '' });
         return;

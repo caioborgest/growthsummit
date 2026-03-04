@@ -47,7 +47,7 @@ const levelLabels: Record<string, string> = {
   bronze: 'Bronze',
 };
 
-export function AdminPatrocinadores() {
+export default function AdminPatrocinadores() {
   const { projectId } = useProject();
   const { data: sponsors, create, update, isLoading } = useSponsors();
   const [searchQuery, setSearchQuery] = useState('');

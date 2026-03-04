@@ -574,6 +574,6 @@ export function DashboardCompany() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </motion.div>
   );
 }

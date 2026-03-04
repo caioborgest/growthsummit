@@ -89,7 +89,7 @@ const roleColors: Record<string, string> = {
     participant: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
 };
 
-export function AdminUsuarios() {
+export default function AdminUsuarios() {
     const { data: users, create, update, remove, isLoading } = useUsers();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');

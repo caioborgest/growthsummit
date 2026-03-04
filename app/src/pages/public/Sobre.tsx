@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 
 const values = [
@@ -266,7 +267,7 @@ export function Sobre() {
                   className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-12 h-16 rounded-2xl text-lg transition-all hover:scale-105"
                 >
                   <a
-                    href="https://wa.me/5588988432310?text=Olá! Temos interesse em discutir a expansão do Growth Experience para nossa cidade."
+                    href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent("Olá! Temos interesse em discutir a expansão do Growth Experience para nossa cidade.")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

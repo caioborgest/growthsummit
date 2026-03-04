@@ -101,37 +101,44 @@
 
 @layer components {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border rounded-xl;
+    @apply bg-card/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
-  .glow-teal {
-    box-shadow: 0 0 20px rgba(255, 112, 67, 0.5);
-    /* Laranja Coral */
+  .glass-card-hover {
+    @apply transition-all duration-300 hover:bg-card/80 hover:border-brand-orange-coral/30 hover:shadow-brand-orange-coral/10 hover:shadow-2xl;
+  }
+
+  .mesh-gradient {
+    background-color: #0c0e12;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(14, 100%, 63%, 0.15) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(11, 100%, 60%, 0.1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(19, 100%, 68%, 0.15) 0, transparent 50%);
+  }
+
+  .mesh-gradient-footer {
+    background-color: #0c0e12;
+    background-image:
+      radial-gradient(at 0% 100%, hsla(14, 100%, 63%, 0.15) 0, transparent 50%),
+      radial-gradient(at 50% 100%, hsla(11, 100%, 60%, 0.1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(19, 100%, 68%, 0.15) 0, transparent 50%);
   }
 
   .glow-orange {
-    box-shadow: 0 0 20px rgba(255, 64, 53, 0.5);
-    /* Laranja Intenso */
+    filter: drop-shadow(0 0 15px rgba(255, 112, 67, 0.4));
+  }
+
+  .glow-orange-intense {
+    filter: drop-shadow(0 0 20px rgba(255, 64, 53, 0.5));
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense;
   }
 
-  .btn-primary {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-primary/90 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .btn-secondary {
-    @apply bg-transparent border border-primary text-primary px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-primary/10;
-  }
-
-  .section-padding {
-    @apply py-16 md:py-20 lg:py-24;
-  }
-
-  .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  .btn-premium {
+    @apply relative overflow-hidden bg-brand-orange-coral text-white font-black py-4 px-8 rounded-2xl shadow-lg shadow-brand-orange-coral/20 transition-all active:scale-95 hover:shadow-brand-orange-coral/40 hover:-translate-y-0.5;
   }
 }
 

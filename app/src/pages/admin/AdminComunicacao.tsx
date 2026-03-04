@@ -101,7 +101,7 @@ const initialEmailCampaigns = [
   },
 ];
 
-export function AdminComunicacao() {
+export default function AdminComunicacao() {
   const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose'>('templates');
   const [templates, setTemplates] = useState(initialEmailTemplates);
   const [campaigns, setCampaigns] = useState(initialEmailCampaigns);

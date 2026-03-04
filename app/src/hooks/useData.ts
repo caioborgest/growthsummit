@@ -5,7 +5,8 @@ import { logger } from '@/lib/logger';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
-  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate
+  B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
+  EmpresaIncentivadora, Notification
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 
@@ -143,23 +144,24 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
   else if (result.paymentStatus === 'pendente') result.status = 'pending';
   else if (item.status === 'cancelado') result.status = 'cancelled';
 
-  // Handle projects specific is_active vs status
-  if (item.is_active !== undefined && result.status === undefined) {
-    result.status = item.is_active ? 'active' : 'paused';
+  // Handle projects specific status mapping
+  if (item.status !== undefined) {
+    result.status = item.status;
   }
 
   return result;
 };
 
-const mapToSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> => {
-  const result: Record<string, unknown> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      result[toSnakeCase(key)] = obj[key];
-    }
-  }
-  return result;
-};
+// mapToSnakeCase is currently unused but kept for parity with mapFromSupabase if needed in future
+// const mapToSnakeCase = (obj: Record<string, unknown>): Record<string, unknown> => {
+//   const result: Record<string, unknown> = {};
+//   for (const key in obj) {
+//     if (Object.prototype.hasOwnProperty.call(obj, key)) {
+//       result[toSnakeCase(key)] = obj[key];
+//     }
+//   }
+//   return result;
+// };
 
 const mapToSupabase = (projectId: string | undefined, entity: string, data: Record<string, unknown>): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
@@ -201,11 +203,6 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
   // Project isolation
   if (!isGlobalEntity(entity) && projectId) {
     result.project_id = projectId;
-  }
-
-  // Handle projects specific status vs is_active mapping
-  if (entity === 'projects' && result.status !== undefined) {
-    result.is_active = result.status === 'active';
   }
 
   return result;
@@ -267,7 +264,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     check_ins: 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,is_active,created_at,updated_at,short_description',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
@@ -333,8 +330,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     isFetchingRef.current = true;
 
     try {
-      const tableName = getTableName(projectId, entityName);
-      const fields = getSelectFields(entityName, projectId);
+      const tableName = getTableName(projectId || undefined, entityName);
+      const fields = getSelectFields(entityName, projectId || undefined);
 
       let query = supabase.from(tableName as never).select(fields) as any;
 
@@ -601,7 +598,7 @@ export function useProfile(userId?: string) {
       if (error) throw error;
 
       if (supabaseData) {
-        setData(mapFromSupabase(supabaseData) as Profile);
+        setData(mapFromSupabase(supabaseData) as unknown as Profile);
       }
     } catch (err) {
       logger.error('Erro ao buscar perfil:', err);

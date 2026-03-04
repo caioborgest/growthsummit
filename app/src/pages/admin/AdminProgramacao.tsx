@@ -10,7 +10,9 @@ import {
   Zap,
   LayoutGrid,
   QrCode,
-  Printer
+  Printer,
+  Rocket,
+  Briefcase
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import {

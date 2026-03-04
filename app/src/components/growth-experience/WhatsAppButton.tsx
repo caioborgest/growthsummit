@@ -1,7 +1,8 @@
 import { MessageCircle } from 'lucide-react';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 export function WhatsAppButton() {
-    const whatsappUrl = 'https://api.whatsapp.com/send/?phone=5588988432310&text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20as%20propostas%20de%20stand%20no%20Growth%20Experience%20Triunfo-PE%202026&type=phone_number&app_absent=0';
+    const whatsappUrl = `https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`;
 
     return (
         <a

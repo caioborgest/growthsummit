@@ -35,7 +35,7 @@ const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string
     outro: { label: 'Outro', color: 'bg-gray-500/20 text-gray-400' },
 };
 
-export function AdminCupons() {
+export default function AdminCupons() {
     const { projectId, isProjectSelected } = useProject();
     const navigate = useNavigate();
     const { data: cupons, create, update, remove, isLoading } = useCoupons();
