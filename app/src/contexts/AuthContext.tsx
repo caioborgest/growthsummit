@@ -306,7 +306,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userData: UserDBMetadata | null = null;
         try {
           const { data: ud } = (await withTimeout(
-            supabase.from('users').select('id,name,email,role,avatar,phone').eq('id', data.user.id).maybeSingle() as any,
+            supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle() as any,
             3000
           )) as { data: UserDBMetadata | null };
           userData = ud;

@@ -20,6 +20,7 @@ interface Step3ConfirmacaoProps {
 
 export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3ConfirmacaoProps) {
     const [loading, setLoading] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const { projectId, selectedProject } = useProject();
     const { data: sessions, isLoading: sessionsLoading } = useSessions();
@@ -233,7 +234,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             const error = err as Error;
             logger.error('Erro crítico na inscrição:', error);
             setError(error.message || 'Erro ao processar inscrição. Tente novamente.');
-            setLoading(false); // Only reset on error
+        } finally {
+            setLoading(false);
+            setIsProcessing(false);
         }
     };
 

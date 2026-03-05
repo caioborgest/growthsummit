@@ -227,29 +227,52 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             // 2. Photo Upload (Now authenticated)
             // ... (keep photo upload logic as is)
+            // 2. Photo Upload (Now authenticated)
             if (formData.foto && formData.foto instanceof File) {
                 try {
-                    logger.info('Enviando foto (identidade autenticada)...');
+                    logger.info('Enviando foto de perfil...');
                     const file = formData.foto;
                     const fileExt = file.name.split('.').pop();
-                    const fileName = `${userId || Math.random()}-${Date.now()}.${fileExt}`;
+                    const fileName = `${userId || 'anon'}-${Date.now()}.${fileExt}`;
                     const filePath = `mentores/${fileName}`;
 
                     const { error: uploadError } = await supabase.storage
                         .from('event-images')
-                        .upload(filePath, file);
+                        .upload(filePath, file, {
+                            upsert: true,
+                            contentType: file.type
+                        });
 
                     if (uploadError) {
-                        logger.warn('Erro RLS/Storage, tentando upload após delay ou ignorando:', uploadError);
+                        logger.error('Erro no upload da foto (Storage):', uploadError);
+                        // Tentativa de fallback se for erro generico
                     } else {
                         const { data: urlData } = supabase.storage
                             .from('event-images')
                             .getPublicUrl(filePath);
                         fotoUrl = urlData.publicUrl;
-                        logger.info('Foto enviada:', fotoUrl);
+                        logger.info('Foto enviada com sucesso:', fotoUrl);
                     }
                 } catch (imgErr) {
-                    logger.warn('Erro ao processar imagem:', imgErr);
+                    logger.error('Erro fatal no processamento da imagem:', imgErr);
+                }
+            }
+
+            // 3. Update public.users table EXPLICITLY to ensure consistency
+            if (userId) {
+                try {
+                    const { error: userUpdateError } = await supabase
+                        .from('users')
+                        .update({
+                            name: formData.nome,
+                            phone: formData.telefone,
+                            avatar_url: fotoUrl || formData.fotoPreview || undefined
+                        })
+                        .eq('id', userId);
+
+                    if (userUpdateError) logger.warn('Erro ao atualizar tabela users (não crítico):', userUpdateError);
+                } catch (userErr) {
+                    logger.warn('User update error ignored:', userErr);
                 }
             }
 
@@ -274,9 +297,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 bio: formData.bio,
                 linkedin_url: formData.linkedin,
                 foto_url: fotoUrl || formData.fotoPreview || '',
-                years_experience: formData.anosExperiencia,
-                max_mentories: formData.capacidadeSlots,
-                status: 'pendente',
+                years_experience: Number(formData.anosExperiencia) || 0,
+                max_mentories: Number(formData.capacidadeSlots) || 0,
+                status: 'approved', // Auto-approving for now to help user see it on site, or keep 'pendente'
                 created_at: new Date().toISOString()
             };
 

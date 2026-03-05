@@ -11,17 +11,17 @@ import {
 
 interface Mentor {
     id: string;
-    nome: string;
+    name: string;
     email: string;
-    telefone?: string;
-    empresa: string;
-    cargo: string;
+    phone?: string;
+    company: string;
+    position: string;
     bio: string;
-    especialidades: string[];
-    linkedin_url?: string;
-    foto_url?: string;
-    years_experience?: number;
-    max_mentories?: number;
+    specialties: string[];
+    linkedin?: string;
+    photo?: string;
+    yearsExperience?: number;
+    maxMentories?: number;
 }
 
 interface MentorCardProps {
@@ -43,8 +43,8 @@ export function MentorCard({ mentor }: MentorCardProps) {
             <div className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
                 <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
                     <img
-                        src={mentor.foto_url || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
-                        alt={mentor.nome}
+                        src={mentor.photo || 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png'}
+                        alt={mentor.name}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
                     />
                     <div className="absolute bottom-3 right-3 p-1.5 bg-dark-300/60 backdrop-blur-md rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -54,10 +54,10 @@ export function MentorCard({ mentor }: MentorCardProps) {
 
                 <div className="space-y-2 flex-grow">
                     <h3 className="text-xl font-bold text-white group-hover:text-brand-orange-coral transition-colors">
-                        {mentor.nome}
+                        {mentor.name}
                     </h3>
                     <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest line-clamp-1">
-                        {mentor.cargo} @ {mentor.empresa}
+                        {mentor.position} @ {mentor.company}
                     </p>
                     <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
                         {limitWords(mentor.bio, 100)}
@@ -66,7 +66,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
 
                 <div className="mt-6 space-y-4">
                     <div className="flex flex-wrap gap-2">
-                        {(mentor.especialidades || []).slice(0, 2).map((spec, sIdx) => (
+                        {(mentor.specialties || []).slice(0, 2).map((spec, sIdx) => (
                             <Badge key={sIdx} variant="outline" className="bg-white/5 border-white/10 text-[10px] uppercase tracking-wider text-gray-400">
                                 {spec}
                             </Badge>
@@ -107,17 +107,17 @@ export function MentorCard({ mentor }: MentorCardProps) {
                         <div className="flex flex-col sm:flex-row items-center gap-8 mb-10 border-b border-white/5 pb-10">
                             <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-2 border-brand-orange-coral/30 shadow-2xl shadow-brand-orange-coral/20 shrink-0">
                                 <img
-                                    src={mentor.foto_url || ''}
+                                    src={mentor.photo || ''}
                                     className="w-full h-full object-cover"
-                                    alt={mentor.nome}
+                                    alt={mentor.name}
                                 />
                             </div>
                             <div className="text-center sm:text-left">
-                                <h2 className="text-3xl font-black mb-2">{mentor.nome}</h2>
-                                <p className="text-brand-orange-coral font-bold text-lg mb-4">{mentor.cargo} <span className="text-gray-500 mx-2">•</span> {mentor.empresa}</p>
+                                <h2 className="text-3xl font-black mb-2">{mentor.name}</h2>
+                                <p className="text-brand-orange-coral font-bold text-lg mb-4">{mentor.position} <span className="text-gray-500 mx-2">•</span> {mentor.company}</p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-                                    {mentor.linkedin_url && (
-                                        <a href={mentor.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors">
+                                    {mentor.linkedin && (
+                                        <a href={mentor.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors">
                                             <Linkedin className="h-4 w-4" />
                                             LinkedIn
                                         </a>
@@ -138,20 +138,20 @@ export function MentorCard({ mentor }: MentorCardProps) {
                                         <p className="text-[10px] text-gray-500 uppercase font-black mb-1 flex items-center gap-1">
                                             <Clock className="h-3 w-3" /> Experiência
                                         </p>
-                                        <p className="text-white font-bold">{mentor.years_experience || 0} anos</p>
+                                        <p className="text-white font-bold">{mentor.yearsExperience || 0} anos</p>
                                     </div>
                                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                         <p className="text-[10px] text-gray-500 uppercase font-black mb-1 flex items-center gap-1">
                                             <Target className="h-3 w-3" /> Capacidade
                                         </p>
-                                        <p className="text-white font-bold">{mentor.max_mentories || 0} slots</p>
+                                        <p className="text-white font-bold">{mentor.maxMentories || 0} slots</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="space-y-6">
                                 <h4 className="text-xs font-black text-gray-500 uppercase tracking-widest">Especialidades</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {mentor.especialidades?.map((spec, i) => (
+                                    {mentor.specialties?.map((spec, i) => (
                                         <Badge key={i} className="bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 px-3 py-1 font-bold">
                                             {spec}
                                         </Badge>
@@ -174,7 +174,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
                                 <Calendar className="h-4 w-4" /> Mentor oficial Growth Experience 2026
                             </p>
                             <Button className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-6 rounded-2xl text-lg h-auto shadow-glow-orange">
-                                Agendar Mentoria com {mentor.nome?.split(' ')[0] || 'Mentor'}
+                                Agendar Mentoria com {mentor.name?.split(' ')[0] || 'Mentor'}
                             </Button>
                         </div>
                     </div>

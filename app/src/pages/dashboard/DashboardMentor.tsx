@@ -25,7 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useMentoringSessions, useMentors } from '@/hooks/useData';
+import { useMentoringSessions, useMentors, useNotifications } from '@/hooks/useData';
 import { MentoringSession } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -44,13 +44,8 @@ export function DashboardMentor() {
   const { user, logout } = useAuth();
   const { data: sessions } = useMentoringSessions();
   const { data: mentors } = useMentors();
-  const [activeTab, setActiveTab] = useState('agenda');
-  const [unreadNotifications, setUnreadNotifications] = useState(1);
-
-  const notifications = [
-    { id: 1, title: 'Nova Mentoria!', message: 'Um novo participante se inscreveu para sua mentoria.', time: '5 min atrás', read: false },
-    { id: 2, title: 'Agenda Confirmada', message: 'Seu cronograma de mentorias para hoje está pronto.', time: '1 hora atrás', read: true },
-  ];
+  const { data: notificationsData, update: updateNotification } = useNotifications();
+  const unreadNotifications = notificationsData?.filter(n => !n.isRead).length || 0;
 
   const mentorData = mentors.find(m => m.userId === user?.id);
   const mentorSessions = sessions.filter(s => s.mentorId === mentorData?.id);
@@ -72,31 +67,55 @@ export function DashboardMentor() {
 
   const { create, remove, update } = useMentoringSessions();
 
-  const handleOpenSlot = async (e: React.FormEvent) => {
+  const handleOpenSlots = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mentorData) return;
 
     const form = e.target as HTMLFormElement;
     const date = form.slotDate.value;
-    const time = form.slotTime.value;
-    const dateTime = `${date}T${time}:00`;
+    const startTime = form.slotTime.value;
+    const endTime = form.slotEndTime.value;
+
+    if (!date || !startTime || !endTime) {
+      toast.error('Preencha os horários corretamente.');
+      return;
+    }
 
     try {
-      await create({
-        mentorId: mentorData.id,
-        mentorName: mentorData.name,
-        menteeId: '',
-        menteeName: '',
-        status: 'scheduled',
-        scheduledAt: dateTime,
-        duration: 30,
-        topic: 'Disponibilidade de Mentoria',
-        notes: ''
-      });
-      toast.success('Horário aberto com sucesso!');
+      const startDateTime = new Date(`${date}T${startTime}:00`);
+      const endDateTime = new Date(`${date}T${endTime}:00`);
+
+      if (endDateTime <= startDateTime) {
+        toast.error('O horário de encerramento deve ser após o de início.');
+        return;
+      }
+
+      const slotsToCreate = [];
+      let current = new Date(startDateTime);
+      while (current < endDateTime) {
+        slotsToCreate.push({
+          mentorId: mentorData.id,
+          mentorName: mentorData.name,
+          menteeId: '',
+          menteeName: '',
+          status: 'scheduled',
+          scheduledAt: current.toISOString(),
+          duration: 30,
+          topic: 'Disponibilidade de Mentoria',
+          notes: ''
+        });
+        current = new Date(current.getTime() + 30 * 60000);
+      }
+
+      const loadingToast = toast.loading(`Abrindo ${slotsToCreate.length} horários...`);
+      for (const slot of slotsToCreate) {
+        await create(slot);
+      }
+      toast.dismiss(loadingToast);
+      toast.success(`${slotsToCreate.length} horários abertos com sucesso!`);
       form.reset();
     } catch {
-      toast.error('Erro ao abrir horário.');
+      toast.error('Erro ao abrir horários.');
     }
   };
 
@@ -123,6 +142,18 @@ export function DashboardMentor() {
       'END:VCALENDAR'
     ].join('\n');
     return `data:text/calendar;charset=utf8,${encodeURIComponent(icsMsg)}`;
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInMin = Math.floor((now.getTime() - date.getTime()) / 60000);
+
+    if (diffInMin < 1) return 'Agora';
+    if (diffInMin < 60) return `${diffInMin} min atrás`;
+    const diffInHours = Math.floor(diffInMin / 60);
+    if (diffInHours < 24) return `${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'} atrás`;
+    return date.toLocaleDateString('pt-BR');
   };
 
   return (
@@ -178,15 +209,34 @@ export function DashboardMentor() {
                     )}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
-                  <h3 className="text-white font-bold mb-4">Notificações</h3>
-                  <div className="space-y-3">
-                    {notifications.map(n => (
-                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-brand-orange-coral/5 border-brand-orange-coral/20'}`}>
-                        <p className="text-white text-xs font-bold">{n.title}</p>
-                        <p className="text-gray-400 text-[10px] mt-1">{n.message}</p>
+                <PopoverContent className="w-96 bg-[#1a1c1e] border-white/5 p-5 rounded-[2rem] shadow-3xl">
+                  <div className="flex items-center justify-between mb-6 px-1">
+                    <h3 className="text-white font-black text-lg tracking-tight">Notificações</h3>
+                    <button className="text-[10px] text-brand-orange-coral hover:brightness-125 uppercase tracking-[0.2em] font-black transition-all">
+                      LIMPAR
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-[450px] overflow-y-auto pr-1 custom-scrollbar">
+                    {notificationsData && notificationsData.length > 0 ? (
+                      notificationsData.map(n => (
+                        <div
+                          key={n.id}
+                          onClick={() => !n.isRead && handleMarkAsRead(n.id)}
+                          className={`p-5 rounded-[1.5rem] border transition-all cursor-pointer group ${n.isRead ? 'bg-white/[0.02] border-transparent opacity-50' : 'bg-[#251b18] border-brand-orange-coral/20 hover:border-brand-orange-coral/40'}`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="text-white text-sm font-black group-hover:text-brand-orange-coral transition-colors">{n.title}</p>
+                            <span className="text-gray-500 text-[9px] font-bold uppercase tracking-wider">{formatRelativeTime(n.createdAt)}</span>
+                          </div>
+                          <p className="text-gray-400 text-xs leading-relaxed font-medium">{n.message}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-12 text-center">
+                        <Bell className="h-8 w-8 text-gray-800 mx-auto mb-3 opacity-20" />
+                        <p className="text-gray-600 font-bold text-xs uppercase tracking-widest">Nenhuma notificação</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </PopoverContent>
               </Popover>
@@ -331,7 +381,7 @@ export function DashboardMentor() {
                     <Plus className="h-5 w-5 text-teal-400" />
                     Abrir Novo Horário
                   </h3>
-                  <form onSubmit={handleOpenSlot} className="space-y-4">
+                  <form onSubmit={handleOpenSlots} className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Data</label>
                       <input
@@ -341,17 +391,28 @@ export function DashboardMentor() {
                         className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Início</label>
-                      <input
-                        name="slotTime"
-                        type="time"
-                        required
-                        className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Início</label>
+                        <input
+                          name="slotTime"
+                          type="time"
+                          required
+                          className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Término</label>
+                        <input
+                          name="slotEndTime"
+                          type="time"
+                          required
+                          className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
+                        />
+                      </div>
                     </div>
                     <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold">
-                      DISPONIBILIZAR
+                      GERAR SPOTS 30min
                     </Button>
                   </form>
                   <p className="text-[10px] text-gray-500 mt-4 leading-tight italic">

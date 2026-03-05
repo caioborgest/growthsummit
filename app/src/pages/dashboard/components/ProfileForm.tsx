@@ -1,32 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import {
-    User as UserIcon,
-    Mail,
-    Phone,
-    Building2,
-    Briefcase,
-    Globe,
-    Linkedin,
-    MapPin,
-    Calendar,
-    Camera,
-    Shield,
-    Bell,
-    Save,
-    Loader2,
-} from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/hooks/useData';
+import { User as UserIcon, Mail, Phone, Building2, Briefcase, Globe, Linkedin, MapPin, Calendar, Camera, Shield, Bell, Save, Loader2, Target } from 'lucide-react';
+import { useProfile, useMentors, useData } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
+import { ProjectContext } from '@/contexts/ProjectContext';
+import { useContext } from 'react';
 
 export function ProfileForm() {
     const { user, updateProfile } = useAuth();
     const { data: profile, update: updateProfileData, isLoading: isProfileLoading } = useProfile(user?.id);
+    const { data: mentors } = useMentors();
+    const { projectId } = useContext(ProjectContext);
+
+    // Find mentor record if exists
+    const mentorRecord = mentors?.find(m => m.userId === user?.id);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +30,9 @@ export function ProfileForm() {
         city: '',
         state: '',
         birthDate: '',
-        newsletterOptIn: true
+        newsletterOptIn: true,
+        yearsExperience: 0,
+        maxMentories: 3
     });
 
     useEffect(() => {
@@ -57,10 +47,12 @@ export function ProfileForm() {
                 city: profile.city || '',
                 state: profile.state || '',
                 birthDate: profile.birthDate || '',
-                newsletterOptIn: profile.newsletterOptIn ?? true
+                newsletterOptIn: profile.newsletterOptIn ?? true,
+                yearsExperience: mentorRecord?.yearsExperience || 0,
+                maxMentories: mentorRecord?.maxMentories || 3
             }));
         }
-    }, [profile]);
+    }, [profile, mentorRecord]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -73,18 +65,49 @@ export function ProfileForm() {
                 phone: formData.phone
             });
 
-            // Update Profile table
-            await updateProfileData({
-                company: formData.company,
-                position: formData.position,
-                bio: formData.bio,
-                website: formData.website,
-                linkedin: formData.linkedin,
-                city: formData.city,
-                state: formData.state,
-                birthDate: formData.birthDate,
-                newsletterOptIn: formData.newsletterOptIn
-            });
+            // Update Profile table - wrapped in try/catch to not block other updates if table is missing
+            try {
+                await updateProfileData({
+                    company: formData.company,
+                    position: formData.position,
+                    bio: formData.bio,
+                    website: formData.website,
+                    linkedin: formData.linkedin,
+                    city: formData.city,
+                    state: formData.state,
+                    birthDate: formData.birthDate,
+                    newsletterOptIn: formData.newsletterOptIn
+                });
+            } catch (profileError) {
+                logger.warn('Erro ao atualizar tabela profiles (pode não existir):', profileError);
+                // Non-fatal error
+            }
+
+            // SYNC with Mentor table if user is mentor
+            if (user?.role === 'mentor' && mentorRecord) {
+                try {
+                    // We use the raw supabase client here to ensure we hit the right table with project slug if needed
+                    // or we could use the update function from useData if it was exposed correctly.
+                    // For now, let's use direct supabase to be sure about the mapping.
+                    const { error: mentorError } = await supabase
+                        .from('mentores_growth_experience')
+                        .update({
+                            nome: formData.name,
+                            telefone: formData.phone,
+                            empresa: formData.company,
+                            cargo: formData.position,
+                            bio: formData.bio,
+                            linkedin_url: formData.linkedin,
+                            years_experience: Number(formData.yearsExperience) || 0,
+                            max_mentories: Number(formData.maxMentories) || 0
+                        })
+                        .eq('id', mentorRecord.id);
+
+                    if (mentorError) logger.error('Erro ao sincronizar dados do mentor:', mentorError);
+                } catch (e) {
+                    logger.error('Sync mentor error:', e);
+                }
+            }
 
             toast.success('Perfil atualizado com sucesso!');
         } catch (error: unknown) {
@@ -141,7 +164,15 @@ export function ProfileForm() {
                 throw new Error('Não foi possível fazer upload da imagem. Verifique as configurações do Storage.');
             }
 
-            await updateProfile({ avatar: photoUrl });
+            await updateProfile({ avatar_url: photoUrl });
+
+            // Also sync mentor photo if needed
+            if (user?.role === 'mentor' && mentorRecord) {
+                await supabase
+                    .from('mentores_growth_experience')
+                    .update({ foto_url: photoUrl })
+                    .eq('id', mentorRecord.id);
+            }
             toast.success('✅ Foto de perfil atualizada!');
         } catch (error: unknown) {
             logger.error('Erro no upload da foto:', error);
@@ -162,7 +193,7 @@ export function ProfileForm() {
                     <div className="glass-card p-8 flex flex-col items-center text-center">
                         <div className="relative mb-6 group">
                             <img
-                                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=21808D&color=fff&size=128`}
+                                src={user?.avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=21808D&color=fff&size=128`}
                                 alt={user?.name}
                                 className="w-32 h-32 rounded-3xl object-cover border-4 border-teal-500/20 shadow-2xl transition-transform group-hover:scale-105"
                             />
@@ -296,6 +327,33 @@ export function ProfileForm() {
                         className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none"
                     />
                 </div>
+
+                {user?.role === 'mentor' && (
+                    <div className="grid sm:grid-cols-2 gap-6 mt-8 pt-8 border-t border-white/5">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                <Calendar className="h-3 w-3" /> Anos de Experiência
+                            </label>
+                            <Input
+                                type="number"
+                                value={formData.yearsExperience}
+                                onChange={e => setFormData({ ...formData, yearsExperience: parseInt(e.target.value) || 0 })}
+                                className="bg-dark-100 border-dark-300"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                <Target className="h-3 w-3" /> Capacidade de Mentorias (Slots)
+                            </label>
+                            <Input
+                                type="number"
+                                value={formData.maxMentories}
+                                onChange={e => setFormData({ ...formData, maxMentories: parseInt(e.target.value) || 0 })}
+                                className="bg-dark-100 border-dark-300"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Links & Location */}
