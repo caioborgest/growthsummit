@@ -267,16 +267,16 @@ interface WithId {
 // Dados estáticos (programação, projetos) têm TTL maior para reduzir queries
 // Dados do usuário (inscrições, notificações) têm TTL curto para manter frescor
 const CACHE_TTL_MAP: Record<string, number> = {
-  sessions: 5 * 60 * 1000,  // 5 min — programação raramente muda
-  projects: 10 * 60 * 1000,  // 10 min — projetos muito estáveis
-  sponsors: 5 * 60 * 1000,  // 5 min
-  mentors: 2 * 60 * 1000,  // 2 min — aprovações mudam esporadicamente
-  startups: 2 * 60 * 1000,
-  companies: 2 * 60 * 1000,
-  cupons: 2 * 60 * 1000,
+  sessions: 30 * 60 * 1000,   // 30 min — programação raramente muda
+  projects: 60 * 60 * 1000,   // 60 min — projetos são quase estáticos
+  sponsors: 15 * 60 * 1000,   // 15 min
+  mentors: 5 * 60 * 1000,     // 5 min
+  startups: 5 * 60 * 1000,
+  companies: 5 * 60 * 1000,
+  cupons: 5 * 60 * 1000,
   registrations: 30 * 1000,       // 30s — dados sensíveis do usuário
-  notifications: 15 * 1000,       // 15s — devem ser quase em tempo real
-  check_ins: 15 * 1000,       // 15s — eventos de check-in são instantâneos
+  notifications: 10 * 1000,       // 10s — quase tempo real
+  check_ins: 15 * 1000,           // 15s
   mentoring_sessions: 30 * 1000,
   b2b_meetings: 30 * 1000,
 };
@@ -411,7 +411,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       }
 
       const resultRaw = await withTimeout(
-        query as unknown as Promise<{ data: Record<string, unknown>[] | null; error: Error | null }>,
+        (signal) => (query as any).abortSignal(signal) as Promise<{ data: Record<string, unknown>[] | null; error: Error | null }>,
         15000,
         `FetchData:${entityName}`
       );

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 
 interface InscricaoModalProps {
     isOpen: boolean;
@@ -124,51 +125,15 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 throw new Error('Preencha os campos obrigatórios');
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
-            let userId = session?.user?.id;
+            const { userId } = await getOrCreateUser({
+                email: formData.email,
+                password: formData.senha,
+                name: formData.nome,
+                phone: formData.telefone,
+                role: 'participant'
+            });
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (session && session.user.email !== formData.email) {
-                userId = undefined;
-            }
-
-            if (!userId) {
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: formData.email,
-                    password: formData.senha,
-                    options: { data: { name: formData.nome, phone: formData.telefone, role: 'participant' } }
-                });
-
-                if (sError) {
-                    if (sError.message.toLowerCase().includes('already registered')) {
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: formData.email,
-                            password: formData.senha
-                        });
-                        if (!signInError) {
-                            userId = signInData.user.id;
-                        } else {
-                            logger.warn('Login falhou:', { message: signInError.message });
-                            if (signInError.message.includes('Invalid login credentials')) {
-                                throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
-                            }
-                            throw signInError;
-                        }
-                    } else {
-                        throw sError;
-                    }
-                } else {
-                    userId = authData?.user?.id || undefined;
-
-                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
-                    if (!authData?.session) {
-                        await supabase.auth.signInWithPassword({
-                            email: formData.email,
-                            password: formData.senha
-                        }).catch(e => logger.warn('Auto-login skip InscricaoModal (confirmation required?):', e.message));
-                    }
-                }
-            }
+            if (!userId) throw new Error('Falha ao identificar usuário');
 
             // 1.5. Sincronização robusta com public.users (Zombie record cleanup)
             if (userId) {

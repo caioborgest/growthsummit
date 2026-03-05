@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser } from '@/lib/auth-helpers';
+import { mentorService } from '@/services/mentorService';
 
 interface MentorFormModalProps {
     isOpen: boolean;
@@ -165,62 +167,16 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             // Limpeza de email
             const cleanEmail = formData.email.trim().toLowerCase();
 
-            // 1. Auth SignUp / SignIn (First step to have a valid session for Storage)
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let userId = existingSession?.user?.id;
+            // 1. Auth SignUp / SignIn (Centralized)
+            const { userId } = await getOrCreateUser({
+                email: cleanEmail,
+                password: formData.senha,
+                name: formData.nome,
+                phone: formData.telefone,
+                role: 'mentor'
+            });
 
-            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
-                userId = undefined;
-            }
-
-            if (!userId) {
-                logger.info('Tentando autenticação para:', cleanEmail);
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: cleanEmail,
-                    password: formData.senha,
-                    options: {
-                        data: {
-                            name: formData.nome,
-                            phone: formData.telefone,
-                            role: 'mentor'
-                        }
-                    }
-                });
-
-                if (sError) {
-                    if (sError.message.toLowerCase().includes('already registered')) {
-                        logger.info('Usuário já cadastrado, tentando login...');
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: cleanEmail,
-                            password: formData.senha
-                        });
-
-                        if (!signInError) {
-                            userId = signInData.user.id;
-                            logger.info('Login efetuado com sucesso.');
-                        } else {
-                            logger.warn('Login automático falhou:', signInError.message);
-                            if (signInError.message.includes('Invalid login credentials')) {
-                                throw new Error('Este e-mail já está cadastrado com outra senha. Por favor, use a senha correta ou outro e-mail.');
-                            }
-                            throw signInError;
-                        }
-                    } else {
-                        throw sError;
-                    }
-                } else {
-                    userId = authData?.user?.id;
-                    logger.info('Conta criada com sucesso.');
-
-                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
-                    if (!authData?.session) {
-                        await supabase.auth.signInWithPassword({
-                            email: cleanEmail,
-                            password: formData.senha
-                        }).catch(e => logger.warn('Auto-login skip (confirmation required?):', e.message));
-                    }
-                }
-            }
+            if (!userId) throw new Error('Não foi possível identificar o usuário para o registro.');
 
             // Pequeno delay para garantir propagação do Trigger de sincronização no backend
             await new Promise(r => setTimeout(r, 1500));
@@ -281,13 +237,10 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 logger.info('ID de usuário identificado para mentor:', { userId });
             }
 
-            // 4. Save Record in mentores_growth_experience
-            logger.info('Salvando dados na tabela de mentores...');
-            const targetProjectId = projectId || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-
-            const mentorData = {
-                project_id: targetProjectId,
-                user_id: userId || null,
+            // 4. Save Record in mentores_growth_experience via Service Layer
+            await mentorService.apply({
+                projectId: projectId || '',
+                userId: userId, // Agora retornamos garantido
                 nome: formData.nome,
                 email: cleanEmail,
                 telefone: formData.telefone,
@@ -295,32 +248,11 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 cargo: formData.cargo,
                 especialidades: formData.especialidades,
                 bio: formData.bio,
-                linkedin_url: formData.linkedin,
-                foto_url: fotoUrl || formData.fotoPreview || '',
-                years_experience: Number(formData.anosExperiencia) || 0,
-                max_mentories: Number(formData.capacidadeSlots) || 0,
-                status: 'approved', // Auto-approving for now to help user see it on site, or keep 'pendente'
-                created_at: new Date().toISOString()
-            };
-
-            const { error: dbError } = await supabase
-                .from('mentores_growth_experience')
-                .upsert(mentorData, { onConflict: 'email' });
-
-            if (dbError) {
-                // FALLBACK: Se der erro de Foreign Key (usuário ainda não sincronizado), tenta sem user_id
-                if (dbError.code === '23503') {
-                    logger.warn('Sincronização de usuário atrasada. Salvando mentor sem vínculo direto temporariamente...');
-                    delete mentorData.user_id;
-                    const { error: retryError } = await supabase
-                        .from('mentores_growth_experience')
-                        .upsert(mentorData, { onConflict: 'email' });
-
-                    if (retryError) throw retryError;
-                } else {
-                    throw dbError;
-                }
-            }
+                linkedinUrl: formData.linkedin,
+                fotoUrl: fotoUrl || formData.fotoPreview || '',
+                yearsExperience: Number(formData.anosExperiencia) || 0,
+                maxMentories: Number(formData.capacidadeSlots) || 3
+            });
 
             logger.info('Sucesso! Mentor registrado.');
             setIsSuccess(true);

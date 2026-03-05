@@ -1,6 +1,7 @@
 import { useSessions } from '@/hooks/useData';
 import { useMemo } from 'react';
 import type { Session } from '@/types';
+import { formatEventTime, compareEventTimes } from '@/lib/formatTime';
 
 export function useProgramacaoTriunfo() {
     const { data: sessions, isLoading, error } = useSessions();
@@ -8,7 +9,7 @@ export function useProgramacaoTriunfo() {
     const programacao = useMemo(() => {
         const transformAtividade = (s: Session) => ({
             id: s.id,
-            horario: s.startTime,
+            horario: formatEventTime(s.startTime),  // Formata 'HH:MM:SS' → 'HH:MM' (fuso Recife/UTC-3)
             titulo: s.title,
             tipo: s.type,
             capacidade: s.maxCapacity,
@@ -17,17 +18,17 @@ export function useProgramacaoTriunfo() {
             local: s.room
         });
 
-        const filterByCategory = (cat: string) => sessions.filter(s => s.category === cat).sort((a, b) => a.startTime.localeCompare(b.startTime));
+        const filterByCategory = (cat: string) => sessions.filter(s => s.category === cat).sort((a, b) => compareEventTimes(a.startTime, b.startTime));
 
         // Momentos Âncora
         const manhaAncora = filterByCategory('manha_ancora').map(s => ({
-            horario: s.startTime,
+            horario: formatEventTime(s.startTime),
             atividade: s.title,
             local: s.room || 'Espaço Parque'
         }));
 
         const tardeAncora = filterByCategory('tarde_ancora').map(s => ({
-            horario: s.startTime,
+            horario: formatEventTime(s.startTime),
             atividade: s.title,
             local: s.room || 'Espaço Parque'
         }));
@@ -58,7 +59,7 @@ export function useProgramacaoTriunfo() {
 
         // Noturna
         const noturna = filterByCategory('noturna').map(s => ({
-            horario: s.startTime,
+            horario: formatEventTime(s.startTime),
             atividade: s.title
         }));
 
@@ -82,16 +83,16 @@ export function useProgramacaoTriunfo() {
         return {
             momentosAncora: { manha: manhaAncora, tarde: tardeAncora },
             programacaoManha: {
-                bloco1: { horario: b1_salao?.startTime || '08:30', titulo: b1_salao?.title || 'Bloco 1', salao: b1_salao ? transformAtividade(b1_salao) : undefined, salas: b1_salas },
-                circulacao1: { horario: circ1?.startTime || '10:00', atividade: circ1?.title || 'Networking' },
-                bloco2: { horario: b2_salao?.startTime || '10:15', titulo: b2_salao?.title || 'Bloco 2', salao: b2_salao ? transformAtividade(b2_salao) : undefined, salas: b2_salas },
-                encerramento: { horario: enc_manha?.startTime || '11:45', atividade: enc_manha?.title || 'Almoço' }
+                bloco1: { horario: formatEventTime(b1_salao?.startTime) || '08:30', titulo: b1_salao?.title || 'Bloco 1', salao: b1_salao ? transformAtividade(b1_salao) : undefined, salas: b1_salas },
+                circulacao1: { horario: formatEventTime(circ1?.startTime) || '10:00', atividade: circ1?.title || 'Networking' },
+                bloco2: { horario: formatEventTime(b2_salao?.startTime) || '10:15', titulo: b2_salao?.title || 'Bloco 2', salao: b2_salao ? transformAtividade(b2_salao) : undefined, salas: b2_salas },
+                encerramento: { horario: formatEventTime(enc_manha?.startTime) || '11:45', atividade: enc_manha?.title || 'Almoço' }
             },
             programacaoTarde: {
-                bloco3: { horario: b3_salao?.startTime || '14:00', titulo: b3_salao?.title || 'Bloco 3', salao: b3_salao ? transformAtividade(b3_salao) : undefined, salas: b3_salas },
-                circulacao2: { horario: circ2?.startTime || '15:30', atividade: circ2?.title || 'Networking' },
-                bloco4: { horario: b4_salao?.startTime || '15:45', titulo: b4_salao?.title || 'Bloco 4', salao: b4_salao ? transformAtividade(b4_salao) : undefined, salas: b4_salas },
-                encerramento: { horario: enc_tarde?.startTime || '17:15', atividade: enc_tarde?.title || 'Finalização' }
+                bloco3: { horario: formatEventTime(b3_salao?.startTime) || '14:00', titulo: b3_salao?.title || 'Bloco 3', salao: b3_salao ? transformAtividade(b3_salao) : undefined, salas: b3_salas },
+                circulacao2: { horario: formatEventTime(circ2?.startTime) || '15:30', atividade: circ2?.title || 'Networking' },
+                bloco4: { horario: formatEventTime(b4_salao?.startTime) || '15:45', titulo: b4_salao?.title || 'Bloco 4', salao: b4_salao ? transformAtividade(b4_salao) : undefined, salas: b4_salas },
+                encerramento: { horario: formatEventTime(enc_tarde?.startTime) || '17:15', atividade: enc_tarde?.title || 'Finalização' }
             },
             programacaoNoturna: noturna,
             circuitoExperiencias: circuito

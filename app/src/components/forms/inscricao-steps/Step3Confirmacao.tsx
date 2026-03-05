@@ -5,11 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, Landmark } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
-import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
-import { toast } from 'sonner';
+import { registrationService } from '@/services/registrationService';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser } from '@/lib/auth-helpers';
 
@@ -24,7 +23,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const { projectId, selectedProject } = useProject();
-    const { data: sessions, isLoading: sessionsLoading } = useSessions();
+    const { data: sessions } = useSessions();
 
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => {
@@ -88,41 +87,33 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 : 0;
             const statusPagamento = (dados.comprarPalestras && valorPago > 0) ? 'pendente' : 'pago';
 
-            // ── ETAPA 3: Inscrição atômica via RPC (verifica vagas + insere + incrementa)
+            // ── ETAPA 3: Inscrição atômica via Service Layer (verifica vagas + insere + incrementa)
             const sessionIds = dados.cursosSelecionados
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((id: any) => id && id.length === 36); // apenas UUIDs válidos
 
-            const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
-                'register_participant_with_slots',
-                {
-                    p_project_id: projectId,
-                    p_user_id: userId,
-                    p_nome: dados.nome,
-                    p_email: cleanEmail,
-                    p_telefone: dados.telefone,
-                    p_session_ids: sessionIds.length > 0 ? sessionIds : null,
-                    p_tipo_inscricao: 'standard',
-                    p_valor_pago: valorPago,
-                    p_status_pagamento: statusPagamento,
-                    p_status: 'ativo',
-                    p_evento: selectedProject?.name || 'Growth Experience',
-                    p_palestras_noturnas: dados.comprarPalestras ?? false,
-                    p_tipo_atividade: tipoAtividade || null,
-                    p_sala_atividade: salaAtividade || null,
-                    p_horario_atividade: horarioAtividade || null,
-                    p_nivel_atividade: nivelAtividade || null,
-                    p_indicacao_tipo: dados.indicacaoTipo || 'nenhum',
-                    p_indicacao_nome: dados.indicacaoNome || null,
-                    p_codigo_social: dados.codigo || null,
-                    p_codigo_palestra: dados.cupomPalestra || null,
-                }
-            );
-
-            if (rpcError) {
-                logger.error('Erro na RPC register_participant_with_slots:', rpcError);
-                throw new Error(rpcError.message || 'Erro ao processar inscrição.');
-            }
+            const rpcResult = await registrationService.registerWithSlots({
+                projectId: projectId || '',
+                userId: userId || '',
+                nome: dados.nome,
+                email: cleanEmail,
+                telefone: dados.telefone,
+                sessionIds: sessionIds.length > 0 ? sessionIds : [],
+                tipoInscricao: 'standard',
+                valorPago,
+                statusPagamento,
+                status: 'ativo',
+                evento: selectedProject?.name || 'Growth Experience',
+                palestrasNoturnas: dados.comprarPalestras ?? false,
+                tipoAtividade: tipoAtividade || null,
+                salaAtividade: salaAtividade || null,
+                horarioAtividade: horarioAtividade || null,
+                nivelAtividade: nivelAtividade || null,
+                indicacaoTipo: dados.indicacaoTipo || 'nenhum',
+                indicacaoNome: dados.indicacaoNome || null,
+                codigoSocial: dados.codigo || null,
+                codigoPalestra: dados.cupomPalestra || null,
+            });
 
             // Verificar retorno da RPC
             if (!rpcResult?.success) {

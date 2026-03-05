@@ -83,25 +83,31 @@ export function useMyRegistration() {
             const fields = 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,status_pagamento,valor_pago,palestras_noturnas,cursos_selecionados,checked_in,created_at';
 
             // 1) Tenta por user_id
-            let { data, error: err } = await withTimeout(
-                (supabase.from(table as never).select(fields) as any)
-                    .eq('project_id', projectId)
-                    .eq('user_id', user.id)
-                    .maybeSingle(),
+            let { data, error: err } = (await withTimeout(
+                async (signal) => {
+                    const q = (supabase.from(table as never).select(fields) as any)
+                        .eq('project_id', projectId)
+                        .eq('user_id', user.id)
+                        .maybeSingle();
+                    return await (q as any).abortSignal(signal);
+                },
                 10000,
                 'FetchMyRegistration_userId'
-            );
+            )) as { data: any; error: any };
 
             // 2) Fallback por email
             if (!data && user.email) {
-                const result = await withTimeout(
-                    (supabase.from(table as never).select(fields) as any)
-                        .eq('project_id', projectId)
-                        .eq('email', user.email)
-                        .maybeSingle(),
+                const result = (await withTimeout(
+                    async (signal) => {
+                        const q = (supabase.from(table as never).select(fields) as any)
+                            .eq('project_id', projectId)
+                            .eq('email', user.email)
+                            .maybeSingle();
+                        return await (q as any).abortSignal(signal);
+                    },
                     10000,
                     'FetchMyRegistration_email'
-                );
+                )) as { data: any; error: any };
                 data = result.data;
                 err = result.error;
 

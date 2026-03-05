@@ -217,11 +217,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 4. Buscar metadados enriquecidos no banco em background
     try {
       const { data: userData, error: fetchError } = (await withTimeout(
-        supabase
-          .from('users')
-          .select('id,name,email,role,avatar_url,phone')
-          .eq('id', currentSession.user.id)
-          .maybeSingle() as any,
+        async (signal) => {
+          const q = supabase
+            .from('users')
+            .select('id,name,email,role,avatar_url,phone')
+            .eq('id', currentSession.user.id)
+            .maybeSingle();
+          return await (q as any).abortSignal(signal);
+        },
         5000,
         'AuthMetadataFetch'
       )) as { data: UserDBMetadata | null; error: any };
@@ -306,7 +309,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userData: UserDBMetadata | null = null;
         try {
           const { data: ud } = (await withTimeout(
-            supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle() as any,
+            async (signal) => {
+              const q = supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle();
+              return await (q as any).abortSignal(signal);
+            },
             3000
           )) as { data: UserDBMetadata | null };
           userData = ud;

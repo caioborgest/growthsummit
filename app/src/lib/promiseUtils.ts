@@ -1,18 +1,23 @@
 /**
- * Executa uma promise com um limite de tempo (timeout).
+ * Executa uma operação assíncrona com um limite de tempo (timeout).
+ * Utiliza AbortController para cancelar a operação original se o tempo esgotar.
  */
-export async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000, context: string = 'Promise'): Promise<T> {
-    let timeoutId: any;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error(`TIMEOUT_EXCEEDED:${context}`)), timeoutMs);
-    });
+export async function withTimeout<T>(
+    fn: (signal: AbortSignal) => Promise<T>,
+    timeoutMs: number = 5000,
+    context: string = 'Promise'
+): Promise<T> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-        const result = await Promise.race([promise, timeoutPromise]);
-        clearTimeout(timeoutId);
-        return result;
-    } catch (err) {
-        clearTimeout(timeoutId);
+        return await fn(controller.signal);
+    } catch (err: any) {
+        if (controller.signal.aborted || err?.name === 'AbortError') {
+            throw new Error(`TIMEOUT_EXCEEDED:${context}`);
+        }
         throw err;
+    } finally {
+        clearTimeout(timer);
     }
 }
