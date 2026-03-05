@@ -263,8 +263,24 @@ interface WithId {
   projectId?: string;
 }
 
-// ── In-memory cache (TTL: 30s) ──────────────────────────────────────────────
-const CACHE_TTL = 30_000;
+// ── In-memory cache (TTL dinâmico por entidade) ─────────────────────────────
+// Dados estáticos (programação, projetos) têm TTL maior para reduzir queries
+// Dados do usuário (inscrições, notificações) têm TTL curto para manter frescor
+const CACHE_TTL_MAP: Record<string, number> = {
+  sessions: 5 * 60 * 1000,  // 5 min — programação raramente muda
+  projects: 10 * 60 * 1000,  // 10 min — projetos muito estáveis
+  sponsors: 5 * 60 * 1000,  // 5 min
+  mentors: 2 * 60 * 1000,  // 2 min — aprovações mudam esporadicamente
+  startups: 2 * 60 * 1000,
+  companies: 2 * 60 * 1000,
+  cupons: 2 * 60 * 1000,
+  registrations: 30 * 1000,       // 30s — dados sensíveis do usuário
+  notifications: 15 * 1000,       // 15s — devem ser quase em tempo real
+  check_ins: 15 * 1000,       // 15s — eventos de check-in são instantâneos
+  mentoring_sessions: 30 * 1000,
+  b2b_meetings: 30 * 1000,
+};
+const DEFAULT_CACHE_TTL = 30_000; // fallback para entidades não mapeadas
 const dataCache = new Map<string, { data: unknown[]; ts: number }>();
 
 function invalidateCache(projectId: string | undefined, entityName: string) {
@@ -346,15 +362,19 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     const now = Date.now();
 
-    // Circuit breaker para loops de re-render (mais de 10 fetches em 2 segundos)
+    // Circuit breaker: detecta loops de re-render (>10 fetches em 2s)
     if (now - lastFetchTimeRef.current < 2000) {
       consecutiveFetchCountRef.current++;
     } else {
+      // Resetar contador após 2s de inatividade para permitir recuperação
       consecutiveFetchCountRef.current = 0;
     }
 
     if (consecutiveFetchCountRef.current > 10) {
       logger.error(`[useData] CRITICAL: Loop de busca detectado para ${entityName}. Abortando.`);
+      // Informar o usuário com uma mensagem de erro visível
+      setError(new Error('Muitas tentativas de carregamento. Por favor, recarregue a página.'));
+      setIsLoading(false);
       return;
     }
 
@@ -368,8 +388,9 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     const cacheKey = projectId ? `${projectId}:${entityName}` : `global:${entityName}`;
     const cached = dataCache.get(cacheKey);
 
-    // Se temos cache e não é force, usamos o cache e paramos
-    if (!force && cached && Date.now() - cached.ts < CACHE_TTL) {
+    // TTL dinâmico: entidades estáticas ficam mais tempo em cache
+    const ttl = CACHE_TTL_MAP[entityName] ?? DEFAULT_CACHE_TTL;
+    if (!force && cached && Date.now() - cached.ts < ttl) {
       setData(cached.data as T[]);
       return;
     }

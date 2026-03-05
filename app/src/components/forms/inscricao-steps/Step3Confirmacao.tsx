@@ -11,6 +11,7 @@ import { useSessions } from '@/hooks/useData';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
@@ -59,122 +60,84 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
     const handleConfirmar = async () => {
         if (isProcessing) return;
         setIsProcessing(true);
-        // Limpeza de email
-        const cleanEmail = dados.email.trim().toLowerCase();
-
         setLoading(true);
         setError('');
 
+        // Limpeza de email
+        const cleanEmail = dados.email.trim().toLowerCase();
+
         try {
-            // 0. Verificar se já existe uma sessão ativa
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let userId = existingSession?.user?.id;
+            // ── ETAPA 1: Autenticar / criar usuário (lógica centralizada)
+            const { userId } = await getOrCreateUser({
+                email: cleanEmail,
+                password: dados.senha,
+                name: dados.nome,
+                phone: dados.telefone,
+                role: 'participant',
+            });
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (existingSession && existingSession.user.email !== dados.email) {
-                userId = undefined;
-            }
+            if (!userId) throw new Error('Usuário não identificado para a inscrição.');
 
-
-            // 1. Tentar criar usuário apenas se não estiver logado com o email correto
-            if (!userId) {
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: cleanEmail,
-                    password: dados.senha,
-                    options: {
-                        data: {
-                            name: dados.nome,
-                            phone: dados.telefone,
-                            role: 'participant'
-                        }
-                    }
-                });
-
-                if (sError) {
-                    // Se já existe, tentamos login automático para validar a senha
-                    if (sError.message.toLowerCase().includes('already registered')) {
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: cleanEmail,
-                            password: dados.senha
-                        });
-
-                        if (!signInError) {
-                            userId = signInData.user.id;
-                        } else {
-                            logger.error('Falha na validação de usuário existente:', signInError);
-                            throw new Error('Este email já está cadastrado, mas a senha informada está incorreta. Se você já possui uma conta, use a senha anterior ou recupere-a.');
-                        }
-                    } else {
-                        throw sError;
-                    }
-                } else if (authData.user) {
-                    userId = authData.user.id;
-                } else {
-                    throw new Error('Não foi possível processar o cadastro do usuário.');
-                }
-            }
-
-            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
-            await new Promise(r => setTimeout(r, 1500));
-
-            // 1.5. Sincronização com public.users (Agora via trigger)
-            if (userId) {
-                logger.info('Vínculo de usuário identificado para a inscrição.', { userId });
-            } else {
-                throw new Error('Usuário não identificado para a inscrição.');
-            }
-
-            // 2. Salvar inscrição no banco (user_id opcional se já existir conta)
+            // ── ETAPA 2: Calcular valor
             const valorOriginal = 179.99;
-            const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
-            const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
+            const descontoEfetivo = dados.descontoPalestra !== undefined
+                ? dados.descontoPalestra
+                : (dados.descontoSocial || 0);
+            const valorPago = dados.comprarPalestras
+                ? valorOriginal * (1 - descontoEfetivo / 100)
+                : 0;
+            const statusPagamento = (dados.comprarPalestras && valorPago > 0) ? 'pendente' : 'pago';
 
-            const { data: inscricaoData, error: inscricaoError } = await (supabase
+            // ── ETAPA 3: Inscrição atômica via RPC (verifica vagas + insere + incrementa)
+            const sessionIds = dados.cursosSelecionados
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('inscricoes_growth_experience') as any)
-                .insert({
-                    project_id: projectId,
-                    user_id: userId || null,
-                    nome: dados.nome,
-                    email: cleanEmail,
-                    telefone: dados.telefone,
-                    cursos_selecionados: dados.cursosSelecionados,
-                    tipo_atividade_selecionada: tipoAtividade,
-                    sala_atividade: salaAtividade,
-                    horario_atividade: horarioAtividade,
-                    nivel_atividade: nivelAtividade,
-                    palestras_noturnas: dados.comprarPalestras,
-                    tipo_inscricao: 'standard', // Adicionado para compatibilidade com Admin
-                    evento: selectedProject?.name || 'Growth Experience',
-                    valor_pago: dados.comprarPalestras ? valorComDesconto : 0,
-                    status_pagamento: (dados.comprarPalestras && valorComDesconto > 0) ? 'pendente' : 'pago',
-                    status: 'ativo',
-                    app_instalado: false,
-                    indicacao_tipo: dados.indicacaoTipo || 'nenhum',
-                    indicacao_nome: dados.indicacaoNome || null,
-                    codigo_social: dados.codigo || null,
-                    codigo_palestra: dados.cupomPalestra || null,
-                    cupom_palestra: dados.cupomPalestra || null
-                })
-                .select();
+                .filter((id: any) => id && id.length === 36); // apenas UUIDs válidos
 
-            if (inscricaoError) {
-                logger.error('Erro no Supabase Insert:', inscricaoError);
-                throw new Error(inscricaoError.message);
+            const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
+                'register_participant_with_slots',
+                {
+                    p_project_id: projectId,
+                    p_user_id: userId,
+                    p_nome: dados.nome,
+                    p_email: cleanEmail,
+                    p_telefone: dados.telefone,
+                    p_session_ids: sessionIds.length > 0 ? sessionIds : null,
+                    p_tipo_inscricao: 'standard',
+                    p_valor_pago: valorPago,
+                    p_status_pagamento: statusPagamento,
+                    p_status: 'ativo',
+                    p_evento: selectedProject?.name || 'Growth Experience',
+                    p_palestras_noturnas: dados.comprarPalestras ?? false,
+                    p_tipo_atividade: tipoAtividade || null,
+                    p_sala_atividade: salaAtividade || null,
+                    p_horario_atividade: horarioAtividade || null,
+                    p_nivel_atividade: nivelAtividade || null,
+                    p_indicacao_tipo: dados.indicacaoTipo || 'nenhum',
+                    p_indicacao_nome: dados.indicacaoNome || null,
+                    p_codigo_social: dados.codigo || null,
+                    p_codigo_palestra: dados.cupomPalestra || null,
+                }
+            );
+
+            if (rpcError) {
+                logger.error('Erro na RPC register_participant_with_slots:', rpcError);
+                throw new Error(rpcError.message || 'Erro ao processar inscrição.');
             }
 
-            // 2.5 Incrementar contador de inscritos nas sessões (Real-time)
-            if (dados.cursosSelecionados && dados.cursosSelecionados.length > 0) {
-                for (const sessionId of dados.cursosSelecionados) {
-                    const { error: rpcError } = await supabase.rpc('increment_session_count', { session_id: sessionId });
-                    if (rpcError) logger.warn('Erro ao incrementar contador:', rpcError);
+            // Verificar retorno da RPC
+            if (!rpcResult?.success) {
+                if (rpcResult?.error === 'SESSION_FULL') {
+                    throw new Error(`Vagas esgotadas para: ${rpcResult.full_sessions?.join(', ') || 'atividade selecionada'}. Escolha outra atividade.`);
+                } else if (rpcResult?.error === 'ALREADY_REGISTERED') {
+                    throw new Error('Este email já está inscrito neste evento.');
+                } else {
+                    throw new Error(rpcResult?.message || 'Erro ao processar inscrição.');
                 }
             }
 
-            const finalInscricaoId = inscricaoData && inscricaoData.length > 0 ? inscricaoData[0].id : null;
+            const finalInscricaoId = rpcResult.inscricao_id || null;
 
-            // 3. Auto-convite para grupos WhatsApp (NÃO BLOQUEANTE)
-            // Em desenvolvimento (localhost), as Edge Functions são bloqueadas por CORS — skip automático.
+            // ── ETAPA 4: Auto-convite WhatsApp (não bloqueante, apenas em produção)
             if (finalInscricaoId && import.meta.env.PROD) {
                 const projectSlug = selectedProject?.slug || 'growth-experience-triunfo';
                 autoInviteOnRegistration(
@@ -182,53 +145,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     projectSlug,
                     'standard'
                 ).catch(e => {
-                    // Log as info/warn since this is non-blocking and often blocked by CORS in dev
                     logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
                 });
-
-                /* 
-                // 3.5 Send Confirmation Email (Async, non-blocking) - DESATIVADO A PEDIDO DO USUÁRIO
-                supabase.functions.invoke('send-email', {
-                    body: {
-                        to: dados.email,
-                        subject: `Sua inscrição no ${selectedProject?.name || 'Growth Experience'} está confirmada!`,
-                        html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; color: #ffffff; padding: 40px; border-radius: 20px;">
-                            <h2 style="color: #fe4c38;">Olá, ${dados.nome}!</h2>
-                            <p>Sua inscrição no <strong>${selectedProject?.name || 'Growth Experience'}</strong> foi confirmada com sucesso!</p>
-                            <p>Sua atividade "<strong>${cursosSelecionados[0]?.titulo || 'Palestras'}</strong>" já está reservada para você.</p>
-                            
-                            <div style="background: rgba(254, 76, 56, 0.1); border: 1px solid rgba(254, 76, 56, 0.2); padding: 20px; border-radius: 12px; margin: 20px 0;">
-                                <h3 style="margin-top: 0; color: #fe4c38;">Detalhes da Reserva:</h3>
-                                <ul style="list-style: none; padding: 0;">
-                                    <li>🕒 <strong>Horário:</strong> ${cursosSelecionados[0]?.horario_inicio || ''}</li>
-                                    <li>📍 <strong>Local:</strong> ${cursosSelecionados[0]?.local || ''}</li>
-                                    <li>🎫 <strong>Status:</strong> Confirmado</li>
-                                </ul>
-                            </div>
-                            
-                            <p>Para acessar sua credencial, ver a programação completa e fazer networking com outros participantes, baixe agora o app do evento:</p>
-                            <div style="margin: 20px 0;">
-                                <a href="#" style="display: inline-block; background: #fe4c38; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-right: 10px;">Baixar para iOS</a>
-                                <a href="#" style="display: inline-block; background: #fe4c38; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Baixar para Android</a>
-                            </div>
-                            
-                            <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Nos vemos no evento!<br/>Equipe Growth Summit</p>
-                        </div>
-                        `
-                    }
-                }).catch(e => {
-                    // Non-blocking: email failure shouldn't prevent registration completion
-                    logger.warn('Email confirmation not sent (likely CORS or service limit):', e.message || e);
-                });
-                */
             }
 
-            // 4. Sucesso - Avisar o componente pai
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const finalStatusPagamento = (inscricaoData as any)?.[0]?.status_pagamento || 'pago';
-            onConfirmar(userId || '', finalInscricaoId || '', finalStatusPagamento);
-            setLoading(false); // Reset loading on success too
+            // ── ETAPA 5: Sucesso
+            onConfirmar(userId, finalInscricaoId || '', statusPagamento);
 
         } catch (err: unknown) {
             const error = err as Error;
