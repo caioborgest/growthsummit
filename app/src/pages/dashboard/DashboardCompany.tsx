@@ -122,55 +122,60 @@ export function DashboardCompany() {
   };
 
   return (
-    <div className="min-h-screen bg-dark">
-      {/* Header */}
-      <div className="bg-dark-200 border-b border-dark-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center mr-5 shadow-lg shadow-teal-500/20">
-                <Building2 className="h-7 w-7 text-white" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-dark-400 mesh-gradient pb-10"
+    >
+      {/* Header Premium */}
+      <div className="bg-dark-300 border-b border-white/5 relative overflow-hidden">
+        {/* Glow background effects consistent with other dashboards */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[120px] rounded-full -mr-32 -mt-32"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/5 blur-[120px] rounded-full -ml-32 -mb-32"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-5">
+              <div className="relative group">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center overflow-hidden shadow-xl shadow-teal-500/20 group-hover:scale-105 transition-transform duration-300 p-0.5">
+                  <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center">
+                    <Building2 className="h-8 w-8 text-teal-400" />
+                  </div>
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-dark-300 rounded-full"></div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white leading-tight">{companyData?.name || user?.name}</h1>
-                <p className="text-teal-400 font-medium text-sm">
+                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                  {companyData?.name || user?.name}
+                </h1>
+                <p className="text-teal-400 font-bold tracking-widest uppercase text-[10px] md:text-xs">
                   {companyData?.type === 'anchor' ? 'Empresa Âncora' : 'Fornecedor Qualificado'}
                 </p>
+
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30 font-bold px-3 py-1">
+                    <CheckCircle className="h-3 w-3 mr-1.5" /> Empresa Validada
+                  </Badge>
+                  <button onClick={() => navigate('/guia')} className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors">
+                    Manual B2B
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30 px-3 py-1">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Empresa Validada
-              </Badge>
-              <Button variant="ghost" size="sm" className="text-teal-400 hover:text-teal-300" onClick={() => navigate('/guia')}>
-                <HelpCircle className="h-4 w-4 mr-2" />
-                Acessar Manual
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
+
+            <div className="flex items-center gap-4">
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-2 rounded-full transition-colors border border-white/10">
-                    <Bell className="h-4 w-4" />
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-3 rounded-2xl transition-all border border-white/5">
+                    <Bell className="h-5 w-5" />
                     {unreadNotifications > 0 && (
-                      <span className="absolute top-0 right-0 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
+                      <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
                     )}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-bold">Notificações</h3>
-                    <button
-                      onClick={() => setUnreadNotifications(0)}
-                      className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
-                    >
-                      Limpar
-                    </button>
-                  </div>
-                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                  <h3 className="text-white font-bold mb-4">Notificações</h3>
+                  <div className="space-y-3">
                     {notifications.map(n => (
                       <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-brand-orange-coral/5 border-brand-orange-coral/20'}`}>
                         <div className="flex justify-between items-start gap-2">
@@ -183,6 +188,9 @@ export function DashboardCompany() {
                   </div>
                 </PopoverContent>
               </Popover>
+              <Button onClick={handleLogout} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-2xl px-6">
+                Sair
+              </Button>
             </div>
           </div>
         </div>

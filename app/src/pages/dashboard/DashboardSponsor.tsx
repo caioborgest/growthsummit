@@ -12,15 +12,12 @@ import {
   FileText,
   MapPin,
   ExternalLink,
-  HelpCircle,
-  LogOut,
   Upload,
   MessageSquare,
   ClipboardList,
   Bell,
-  Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Popover,
   PopoverContent,
@@ -42,7 +39,7 @@ export function DashboardSponsor() {
   const { user, logout } = useAuth();
   const { data: sponsors } = useSponsors();
   const [activeTab, setActiveTab] = useState('overview');
-  const [unreadNotifications, setUnreadNotifications] = useState(1);
+  const [unreadNotifications] = useState(1);
 
   const notifications = [
     { id: 1, title: 'Logo Recebida!', message: 'Sua logomarca foi aprovada para os telões do palco principal.', time: '20 min atrás', read: false },
@@ -95,6 +92,7 @@ export function DashboardSponsor() {
     >
       {/* Header Premium */}
       <div className="bg-dark-300 border-b border-white/5 relative overflow-hidden">
+        {/* Glow background effects consistent with other dashboards */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[120px] rounded-full -mr-32 -mt-32"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/5 blur-[120px] rounded-full -ml-32 -mb-32"></div>
 
@@ -155,474 +153,473 @@ export function DashboardSponsor() {
           </div>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* Content */}
-        < div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" >
-          {/* Stats Overview */}
-          < div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" >
-            <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-all group">
-              <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Total Entregáveis</p>
-              <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-white group-hover:text-yellow-400 transition-colors">{stats.totalDeliverables}</p>
-                <FileCheck className="h-6 w-6 text-yellow-500/40" />
-              </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all group">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Total Entregáveis</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-white group-hover:text-yellow-400 transition-colors">{stats.totalDeliverables}</p>
+              <FileCheck className="h-6 w-6 text-yellow-500/40" />
             </div>
-            <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-all group">
-              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Concluídos</p>
-              <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-green-400">{stats.completed}</p>
-                <CheckCircle className="h-6 w-6 text-green-500/40" />
-              </div>
+          </div>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-green-500/10 hover:border-green-500/30 transition-all group">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Concluídos</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-green-400">{stats.completed}</p>
+              <CheckCircle className="h-6 w-6 text-green-500/40" />
             </div>
-            <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-all group">
-              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Em Andamento</p>
-              <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-blue-400">{stats.inProgress}</p>
-                <Clock className="h-6 w-6 text-blue-500/40" />
-              </div>
+          </div>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-blue-500/10 hover:border-blue-500/30 transition-all group">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Em Andamento</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-blue-400">{stats.inProgress}</p>
+              <Clock className="h-6 w-6 text-blue-500/40" />
             </div>
-            <div className="glass-card p-6 bg-gradient-to-br from-red-500/10 to-transparent border-red-500/20 hover:border-red-500/40 transition-all group">
-              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Pendentes</p>
-              <div className="flex items-end justify-between">
-                <p className="text-3xl font-black text-red-400">{stats.pending}</p>
-                <AlertCircle className="h-6 w-6 text-red-500/40" />
-              </div>
+          </div>
+          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-red-500/10 hover:border-red-500/30 transition-all group">
+            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Pendentes</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-black text-red-400">{stats.pending}</p>
+              <AlertCircle className="h-6 w-6 text-red-500/40" />
             </div>
-          </div >
+          </div>
+        </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
-              <TabsTrigger
-                value="overview"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <Gem className="h-4 w-4 mr-1 md:mr-2" />
-                Visão Geral
-              </TabsTrigger>
-              <TabsTrigger
-                value="deliverables"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <FileCheck className="h-4 w-4 mr-1 md:mr-2" />
-                Entregáveis
-              </TabsTrigger>
-              <TabsTrigger
-                value="programacao"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <Calendar className="h-4 w-4 mr-1 md:mr-2" />
-                Agenda
-              </TabsTrigger>
-              <TabsTrigger
-                value="materiais"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <Download className="h-4 w-4 mr-1 md:mr-2" />
-                Materiais
-              </TabsTrigger>
-              <TabsTrigger
-                value="contato"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
-                Contato
-              </TabsTrigger>
-              <TabsTrigger
-                value="perfil"
-                className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-              >
-                <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
-                Perfil
-              </TabsTrigger>
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <Gem className="h-4 w-4 mr-1 md:mr-2" />
+              Visão Geral
+            </TabsTrigger>
+            <TabsTrigger
+              value="deliverables"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <FileCheck className="h-4 w-4 mr-1 md:mr-2" />
+              Entregáveis
+            </TabsTrigger>
+            <TabsTrigger
+              value="programacao"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <Calendar className="h-4 w-4 mr-1 md:mr-2" />
+              Agenda
+            </TabsTrigger>
+            <TabsTrigger
+              value="materiais"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <Download className="h-4 w-4 mr-1 md:mr-2" />
+              Materiais
+            </TabsTrigger>
+            <TabsTrigger
+              value="contato"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
+              Contato
+            </TabsTrigger>
+            <TabsTrigger
+              value="perfil"
+              className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+            >
+              <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
+              Perfil
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="mt-0 space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                {/* Benefícios do Patrocínio */}
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <Star className="h-5 w-5 mr-2 text-yellow-400" />
-                      Seus Benefícios
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {[
-                        'Logo em todos os materiais oficiais do evento',
-                        'Stand 6x4m premium na área de exposição',
-                        'Palestra de 20 min no palco principal',
-                        'Acesso VIP ao lounge de networking',
-                        '10 ingressos cortesia para clientes',
-                        'Mencionado em todas as redes sociais',
-                        'Banco de dados de participantes (opt-in)',
-                        'Exposição na newsletter do evento',
-                      ].map((benefit, i) => (
-                        <li key={i} className="flex items-start text-gray-300">
-                          <CheckCircle className="h-5 w-5 mr-3 text-green-400 flex-shrink-0 mt-0.5" />
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                {/* Próximos Passos */}
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <ClipboardList className="h-5 w-5 mr-2 text-teal-400" />
-                      Próximos Passos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {deliverables
-                        .filter(d => d.status !== 'completed')
-                        .map((deliverable) => (
-                          <div key={deliverable.id} className="flex items-start p-3 bg-dark-100 rounded-lg">
-                            <div className="flex-1">
-                              <p className="text-white font-medium">{deliverable.item}</p>
-                              <p className="text-gray-400 text-sm">Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}</p>
-                              {deliverable.notes && (
-                                <p className="text-gray-500 text-sm mt-1">{deliverable.notes}</p>
-                              )}
-                            </div>
-                            {getStatusBadge(deliverable.status)}
-                          </div>
-                        ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Resumo do Investimento */}
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="mt-0 space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Benefícios do Patrocínio */}
               <Card className="bg-dark-200 border-dark-300">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-teal-400" />
-                    Resumo do Patrocínio
+                    <Star className="h-5 w-5 mr-2 text-yellow-400" />
+                    Seus Benefícios
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-gray-400 text-sm mb-1">Investimento Total</p>
-                      <p className="text-2xl font-bold text-white">
-                        R$ {(sponsorData?.investment || 60000).toLocaleString('pt-BR')}
-                      </p>
+                  <ul className="space-y-3">
+                    {[
+                      'Logo em todos os materiais oficiais do evento',
+                      'Stand 6x4m premium na área de exposição',
+                      'Palestra de 20 min no palco principal',
+                      'Acesso VIP ao lounge de networking',
+                      '10 ingressos cortesia para clientes',
+                      'Mencionado em todas as redes sociais',
+                      'Banco de dados de participantes (opt-in)',
+                      'Exposição na newsletter do evento',
+                    ].map((benefit, i) => (
+                      <li key={i} className="flex items-start text-gray-300">
+                        <CheckCircle className="h-5 w-5 mr-3 text-green-400 flex-shrink-0 mt-0.5" />
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Próximos Passos */}
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <ClipboardList className="h-5 w-5 mr-2 text-teal-400" />
+                    Próximos Passos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {deliverables
+                      .filter(d => d.status !== 'completed')
+                      .map((deliverable) => (
+                        <div key={deliverable.id} className="flex items-start p-3 bg-dark-100 rounded-lg">
+                          <div className="flex-1">
+                            <p className="text-white font-medium">{deliverable.item}</p>
+                            <p className="text-gray-400 text-sm">Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}</p>
+                            {deliverable.notes && (
+                              <p className="text-gray-500 text-sm mt-1">{deliverable.notes}</p>
+                            )}
+                          </div>
+                          {getStatusBadge(deliverable.status)}
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Resumo do Investimento */}
+            <Card className="bg-dark-200 border-dark-300">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-teal-400" />
+                  Resumo do Patrocínio
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Investimento Total</p>
+                    <p className="text-2xl font-bold text-white">
+                      R$ {(sponsorData?.investment || 60000).toLocaleString('pt-BR')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Data de Fechamento</p>
+                    <p className="text-lg text-white">
+                      {sponsorData?.createdAt
+                        ? new Date(sponsorData.createdAt).toLocaleDateString('pt-BR')
+                        : '10/01/2026'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Status do Contrato</p>
+                    <Badge className="bg-green-500/20 text-green-400">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Assinado
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Deliverables Tab */}
+          <TabsContent value="deliverables" className="mt-0">
+            <Card className="bg-dark-200 border-dark-300">
+              <CardHeader>
+                <CardTitle className="text-white">Entregáveis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {deliverables.map((deliverable) => (
+                    <div key={deliverable.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="text-white font-medium">{deliverable.item}</p>
+                          {getStatusBadge(deliverable.status)}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <span className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1" />
+                            Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}
+                          </span>
+                          {deliverable.completedAt && (
+                            <span className="flex items-center text-green-400">
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Concluído em: {new Date(deliverable.completedAt).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                        </div>
+                        {deliverable.notes && (
+                          <p className="text-gray-500 text-sm mt-2">{deliverable.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex space-x-2">
+                        {deliverable.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                            onClick={() => toast.success('Upload iniciado')}
+                          >
+                            <Upload className="h-4 w-4 mr-1" />
+                            Enviar
+                          </Button>
+                        )}
+                        {deliverable.status === 'completed' && (
+                          <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                            <Download className="h-4 w-4 mr-1" />
+                            Baixar
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-400 text-sm mb-1">Data de Fechamento</p>
-                      <p className="text-lg text-white">
-                        {sponsorData?.createdAt
-                          ? new Date(sponsorData.createdAt).toLocaleDateString('pt-BR')
-                          : '10/01/2026'}
-                      </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Programação Tab */}
+          <TabsContent value="programacao" className="mt-0">
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Calendar className="h-5 w-5 mr-2 text-teal-400" />
+                    Programação do Evento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-dark-100 rounded-lg border-l-4 border-yellow-500">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge className="bg-yellow-500/20 text-yellow-400">Seu Horário</Badge>
+                        <span className="text-gray-400 text-sm">21/05 - 09:00</span>
+                      </div>
+                      <p className="text-white font-semibold">Palestra: Growth na Prática</p>
+                      <p className="text-gray-400 text-sm">Palco Principal - 20 minutos</p>
                     </div>
-                    <div>
-                      <p className="text-gray-400 text-sm mb-1">Status do Contrato</p>
-                      <Badge className="bg-green-500/20 text-green-400">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Assinado
-                      </Badge>
+
+                    <div className="p-4 bg-dark-100 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge className="bg-blue-500/20 text-blue-400">Montagem</Badge>
+                        <span className="text-gray-400 text-sm">20/05 - 14:00</span>
+                      </div>
+                      <p className="text-white font-semibold">Montagem do Stand</p>
+                      <p className="text-gray-400 text-sm">Área de Exposição</p>
+                    </div>
+
+                    <div className="p-4 bg-dark-100 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge className="bg-teal-500/20 text-teal-400">Networking</Badge>
+                        <span className="text-gray-400 text-sm">21/05 - 18:00</span>
+                      </div>
+                      <p className="text-white font-semibold">Coquetel de Abertura</p>
+                      <p className="text-gray-400 text-sm">Lounge VIP</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            {/* Deliverables Tab */}
-            <TabsContent value="deliverables" className="mt-0">
               <Card className="bg-dark-200 border-dark-300">
                 <CardHeader>
-                  <CardTitle className="text-white">Entregáveis</CardTitle>
+                  <CardTitle className="text-white flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 text-red-400" />
+                    Informações do Local
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {deliverables.map((deliverable) => (
-                      <div key={deliverable.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <p className="text-white font-medium">{deliverable.item}</p>
-                            {getStatusBadge(deliverable.status)}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
-                            <span className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}
-                            </span>
-                            {deliverable.completedAt && (
-                              <span className="flex items-center text-green-400">
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Concluído em: {new Date(deliverable.completedAt).toLocaleDateString('pt-BR')}
-                              </span>
-                            )}
-                          </div>
-                          {deliverable.notes && (
-                            <p className="text-gray-500 text-sm mt-2">{deliverable.notes}</p>
-                          )}
+                    <div>
+                      <p className="text-gray-400 text-sm">Local</p>
+                      <p className="text-white font-medium">Boulevard Hotel & Convention</p>
+                      <p className="text-gray-400 text-sm">Rua São Pedro, 1200, Centro</p>
+                      <p className="text-gray-400 text-sm">Juazeiro do Norte - CE</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Seu Stand</p>
+                      <p className="text-white font-medium text-lg">Stand 01 (6x4m)</p>
+                      <p className="text-gray-400 text-sm">Área Premium - Entrada principal</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Credenciamento</p>
+                      <p className="text-white">A partir das 07:30 nos dias 21 e 22/05</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Materiais Tab */}
+          <TabsContent value="materiais" className="mt-0">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Documentos */}
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center text-base">
+                    <FileText className="h-5 w-5 mr-2 text-blue-400" />
+                    Documentos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Contrato de Patrocínio', type: 'PDF' },
+                      { name: 'Manual do Patrocinador', type: 'PDF' },
+                      { name: 'Guia de Montagem do Stand', type: 'PDF' },
+                      { name: 'Regras de Branding', type: 'PDF' },
+                    ].map((doc, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
+                        <div className="flex items-center">
+                          <FileText className="h-5 w-5 text-yellow-400 mr-3" />
+                          <span className="text-white text-sm">{doc.name}</span>
                         </div>
-                        <div className="flex space-x-2">
-                          {deliverable.status === 'pending' && (
-                            <Button
-                              size="sm"
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                              onClick={() => toast.success('Upload iniciado')}
-                            >
-                              <Upload className="h-4 w-4 mr-1" />
-                              Enviar
-                            </Button>
-                          )}
-                          {deliverable.status === 'completed' && (
-                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
-                              <Download className="h-4 w-4 mr-1" />
-                              Baixar
-                            </Button>
-                          )}
-                        </div>
+                        <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                          <Download className="h-4 w-4" />
+                        </Button>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            {/* Programação Tab */}
-            <TabsContent value="programacao" className="mt-0">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <Calendar className="h-5 w-5 mr-2 text-teal-400" />
-                      Programação do Evento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-dark-100 rounded-lg border-l-4 border-yellow-500">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className="bg-yellow-500/20 text-yellow-400">Seu Horário</Badge>
-                          <span className="text-gray-400 text-sm">21/05 - 09:00</span>
+              {/* Templates */}
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center text-base">
+                    <FileText className="h-5 w-5 mr-2 text-teal-400" />
+                    Templates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Template Apresentação', type: 'PPT' },
+                      { name: 'Logo do Evento (vetor)', type: 'AI' },
+                      { name: 'Release para Imprensa', type: 'DOC' },
+                      { name: 'Lista de Participantes', type: 'XLS' },
+                    ].map((doc, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
+                        <div className="flex items-center">
+                          <FileText className="h-5 w-5 text-teal-400 mr-3" />
+                          <span className="text-white text-sm">{doc.name}</span>
                         </div>
-                        <p className="text-white font-semibold">Palestra: Growth na Prática</p>
-                        <p className="text-gray-400 text-sm">Palco Principal - 20 minutos</p>
+                        <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                          <Download className="h-4 w-4" />
+                        </Button>
                       </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-                      <div className="p-4 bg-dark-100 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className="bg-blue-500/20 text-blue-400">Montagem</Badge>
-                          <span className="text-gray-400 text-sm">20/05 - 14:00</span>
-                        </div>
-                        <p className="text-white font-semibold">Montagem do Stand</p>
-                        <p className="text-gray-400 text-sm">Área de Exposição</p>
-                      </div>
-
-                      <div className="p-4 bg-dark-100 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className="bg-teal-500/20 text-teal-400">Networking</Badge>
-                          <span className="text-gray-400 text-sm">21/05 - 18:00</span>
-                        </div>
-                        <p className="text-white font-semibold">Coquetel de Abertura</p>
-                        <p className="text-gray-400 text-sm">Lounge VIP</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <MapPin className="h-5 w-5 mr-2 text-red-400" />
-                      Informações do Local
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-gray-400 text-sm">Local</p>
-                        <p className="text-white font-medium">Boulevard Hotel & Convention</p>
-                        <p className="text-gray-400 text-sm">Rua São Pedro, 1200, Centro</p>
-                        <p className="text-gray-400 text-sm">Juazeiro do Norte - CE</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Seu Stand</p>
-                        <p className="text-white font-medium text-lg">Stand 01 (6x4m)</p>
-                        <p className="text-gray-400 text-sm">Área Premium - Entrada principal</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Credenciamento</p>
-                        <p className="text-white">A partir das 07:30 nos dias 21 e 22/05</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Materiais Tab */}
-            <TabsContent value="materiais" className="mt-0">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Documentos */}
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center text-base">
-                      <FileText className="h-5 w-5 mr-2 text-blue-400" />
-                      Documentos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        { name: 'Contrato de Patrocínio', type: 'PDF' },
-                        { name: 'Manual do Patrocinador', type: 'PDF' },
-                        { name: 'Guia de Montagem do Stand', type: 'PDF' },
-                        { name: 'Regras de Branding', type: 'PDF' },
-                      ].map((doc, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-yellow-400 mr-3" />
-                            <span className="text-white text-sm">{doc.name}</span>
-                          </div>
-                          <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Templates */}
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center text-base">
-                      <FileText className="h-5 w-5 mr-2 text-teal-400" />
-                      Templates
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        { name: 'Template Apresentação', type: 'PPT' },
-                        { name: 'Logo do Evento (vetor)', type: 'AI' },
-                        { name: 'Release para Imprensa', type: 'DOC' },
-                        { name: 'Lista de Participantes', type: 'XLS' },
-                      ].map((doc, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-teal-400 mr-3" />
-                            <span className="text-white text-sm">{doc.name}</span>
-                          </div>
-                          <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Links Úteis */}
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center text-base">
-                      <ExternalLink className="h-5 w-5 mr-2 text-orange-400" />
-                      Links Úteis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {[
-                        { name: 'Site do Evento', url: '#' },
-                        { name: 'Área de Imprensa', url: '#' },
-                        { name: 'Resultados Anteriores', url: '#' },
-                        { name: 'Fotos do Evento', url: '#' },
-                      ].map((link, i) => (
-                        <a
-                          key={i}
-                          href={link.url}
-                          className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
-                        >
-                          <span className="text-yellow-400 text-sm">{link.name}</span>
-                          <ExternalLink className="h-4 w-4 text-gray-400" />
-                        </a>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Contato Tab */}
-            <TabsContent value="contato" className="mt-0">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white">Contato do Evento</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-gray-400 text-sm">Responsável pelo Patrocínio</p>
-                        <p className="text-white font-medium">Caio Borges</p>
-                        <p className="text-gray-400 text-sm">contato@growthsummit.site</p>
-                        <p className="text-gray-400 text-sm">(88) 98843-2310</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Suporte Técnico</p>
-                        <p className="text-white font-medium">contato@growthsummit.site</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">WhatsApp</p>
-                        <p className="text-white font-medium">(88) 98843-2310</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-dark-200 border-dark-300">
-                  <CardHeader>
-                    <CardTitle className="text-white">Enviar Sugestão</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form className="space-y-4">
-                      <div>
-                        <label className="block text-sm text-gray-400 mb-2">Assunto</label>
-                        <input
-                          type="text"
-                          className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
-                          placeholder="Sobre o que é sua sugestão?"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-400 mb-2">Mensagem</label>
-                        <textarea
-                          rows={4}
-                          className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
-                          placeholder="Descreva sua sugestão ou dúvida..."
-                        />
-                      </div>
-                      <Button
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
-                        onClick={() => toast.success('Mensagem enviada com sucesso!')}
+              {/* Links Úteis */}
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center text-base">
+                    <ExternalLink className="h-5 w-5 mr-2 text-orange-400" />
+                    Links Úteis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Site do Evento', url: '#' },
+                      { name: 'Área de Imprensa', url: '#' },
+                      { name: 'Resultados Anteriores', url: '#' },
+                      { name: 'Fotos do Evento', url: '#' },
+                    ].map((link, i) => (
+                      <a
+                        key={i}
+                        href={link.url}
+                        className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
                       >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Enviar Mensagem
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+                        <span className="text-yellow-400 text-sm">{link.name}</span>
+                        <ExternalLink className="h-4 w-4 text-gray-400" />
+                      </a>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-            {/* Perfil Tab */}
-            <TabsContent value="perfil" className="mt-0">
-              <ProfileForm />
-            </TabsContent>
-        </div>
+          {/* Contato Tab */}
+          <TabsContent value="contato" className="mt-0">
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Contato do Evento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Responsável pelo Patrocínio</p>
+                      <p className="text-white font-medium">Caio Borges</p>
+                      <p className="text-gray-400 text-sm">contato@growthsummit.site</p>
+                      <p className="text-gray-400 text-sm">(88) 98843-2310</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Suporte Técnico</p>
+                      <p className="text-white font-medium">contato@growthsummit.site</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">WhatsApp</p>
+                      <p className="text-white font-medium">(88) 98843-2310</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-dark-200 border-dark-300">
+                <CardHeader>
+                  <CardTitle className="text-white">Enviar Sugestão</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Assunto</label>
+                      <input
+                        type="text"
+                        className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
+                        placeholder="Sobre o que é sua sugestão?"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Mensagem</label>
+                      <textarea
+                        rows={4}
+                        className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
+                        placeholder="Descreva sua sugestão ou dúvida..."
+                      />
+                    </div>
+                    <Button
+                      className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                      onClick={() => toast.success('Mensagem enviada com sucesso!')}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Enviar Mensagem
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Perfil Tab */}
+          <TabsContent value="perfil" className="mt-0">
+            <ProfileForm />
+          </TabsContent>
+        </Tabs>
+      </div>
     </motion.div>
   );
 }
