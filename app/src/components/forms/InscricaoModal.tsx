@@ -159,6 +159,14 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     }
                 } else {
                     userId = authData?.user?.id || undefined;
+
+                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                    if (!authData?.session) {
+                        await supabase.auth.signInWithPassword({
+                            email: formData.email,
+                            password: formData.senha
+                        }).catch(e => logger.warn('Auto-login skip InscricaoModal (confirmation required?):', e.message));
+                    }
                 }
             }
 
@@ -235,6 +243,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             setTimeout(() => {
                 setIsSuccess(false);
                 onClose();
+                window.location.href = '/minha-area';
             }, 3000);
 
         } catch (err: unknown) {
@@ -276,7 +285,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         <p className="text-gray-400">
                             {tipo === 'palestra'
                                 ? 'Você será redirecionado para o WhatsApp para finalizar o pagamento.'
-                                : 'Você receberá um email de confirmação em breve.'
+                                : 'Sua inscrição foi confirmada. Estamos te redirecionando para a sua área...'
                             }
                         </p>
                     </div>

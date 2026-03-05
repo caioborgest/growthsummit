@@ -211,6 +211,14 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 } else {
                     userId = authData?.user?.id;
                     logger.info('Conta criada com sucesso.');
+
+                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                    if (!authData?.session) {
+                        await supabase.auth.signInWithPassword({
+                            email: cleanEmail,
+                            password: formData.senha
+                        }).catch(e => logger.warn('Auto-login skip (confirmation required?):', e.message));
+                    }
                 }
             }
 
@@ -295,12 +303,11 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             setIsSuccess(true);
             localStorage.removeItem(DRAFT_KEY);
 
-            // Limpeza após 5 segundos
+            // Redirecionar para o app após 3 segundos
             setTimeout(() => {
                 onClose();
-                setIsSuccess(false);
-                clearDraft();
-            }, 5000);
+                window.location.href = '/mentor-area';
+            }, 3000);
         } catch (err: unknown) {
             logger.error('Erro na inscrição de mentor:', err);
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
@@ -349,7 +356,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                             <h2 className="text-3xl font-bold text-white mb-4">Candidatura Enviada!</h2>
                             <p className="text-gray-400 text-lg mb-8 leading-relaxed">
                                 Obrigado por se candidatar para ser mentor no Growth Experience.<br />
-                                Nossa equipe analisará seu perfil e entrará em contato via email ou WhatsApp em até 48 horas.
+                                Estamos te redirecionando para a sua área de mentor...
                             </p>
                             <Button onClick={onClose} className="bg-brand-orange-coral text-white px-8">
                                 Voltar ao Evento

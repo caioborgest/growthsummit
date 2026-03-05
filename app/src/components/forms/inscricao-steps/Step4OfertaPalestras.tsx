@@ -87,7 +87,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
                 {/* Glow Effects */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
 
-                <Card className="relative glass-card border-white/5 bg-dark-200/50 backdrop-blur-3xl overflow-hidden rounded-[2rem] p-6 sm:p-10 shadow-2xl">
+                <Card className="relative glass-card border-white/5 bg-dark-200/50 backdrop-blur-3xl overflow-hidden rounded-[2rem] p-4 sm:p-10 shadow-2xl">
                     <div className="grid grid-cols-1 gap-8">
                         {/* Benefícios com layout melhorado */}
                         <div className="space-y-4">

@@ -66,6 +66,14 @@ export function PetrolinaRegistrationForm() {
                     }
                 } else {
                     userId = authData?.user?.id;
+
+                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                    if (!authData?.session) {
+                        await supabase.auth.signInWithPassword({
+                            email: formData.email,
+                            password: formData.senha
+                        }).catch(e => logger.warn('Auto-login skip Petrolina (confirmation required?):', e.message));
+                    }
                 }
             }
 
@@ -120,7 +128,8 @@ export function PetrolinaRegistrationForm() {
                 ).catch(e => logger.info('WhatsApp invite info (CORS/SKIP):', e.message || e));
             }
 
-            // 4. Send Confirmation Email (Async, non-blocking)
+            /* 
+            // 4. Send Confirmation Email (Async, non-blocking) - DESATIVADO A PEDIDO DO USUÁRIO
             supabase.functions.invoke('send-email', {
                 body: {
                     to: formData.email,
@@ -148,14 +157,14 @@ export function PetrolinaRegistrationForm() {
                     `
                 }
             }).catch(e => logger.warn('Email confirmation not sent (CORS/SKIP):', e.message || e));
+            */
 
             setIsSuccess(true);
             toast.success('Inscrição confirmada com sucesso!');
 
-            // 4. Redirect to WhatsApp after delay
+            // 4. Redirect to Dashboard after delay
             setTimeout(() => {
-                const whatsappUrl = "https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9";
-                window.open(whatsappUrl, '_blank');
+                window.location.href = '/minha-area';
             }, 2000);
 
         } catch (err: any) {
@@ -174,7 +183,7 @@ export function PetrolinaRegistrationForm() {
                 </div>
                 <h3 className="text-3xl font-extrabold text-white mb-4">Inscrição Confirmada!</h3>
                 <p className="text-gray-400 mb-8 max-w-sm mx-auto">
-                    Você já está garantido no evento. Estamos te redirecionando para o grupo exclusivo do WhatsApp...
+                    Você já está garantido no evento. Estamos te redirecionando para a sua área...
                 </p>
                 <Button
                     className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-6 rounded-xl"

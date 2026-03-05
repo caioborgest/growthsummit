@@ -162,6 +162,14 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 });
                 userId = authData?.user?.id;
                 authError = sError;
+
+                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                if (!authError && !authData?.session) {
+                    await supabase.auth.signInWithPassword({
+                        email: cleanEmail,
+                        password: formData.senha
+                    }).catch(e => logger.warn('Auto-login skip startup (confirmation required?):', e.message));
+                }
             }
 
             if (authError) {
@@ -193,9 +201,6 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             if (userId) {
                 logger.info('Vínculo de usuário identificado, sincronização via trigger aguardada.', { userId });
             }
-
-            // Se ainda não temos userId, prosseguimos sem vincular ID se possível
-            // (A tabela startups_arena_pitch permite user_id null)
 
             // Preparar dados para inserção
             const dataToInsert = {
@@ -238,11 +243,12 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             setIsSuccess(true);
             localStorage.removeItem(DRAFT_KEY);
 
-            // Resetar formulário após 3 segundos
+            // Redirecionar para o app após 3 segundos
             setTimeout(() => {
                 clearDraft();
                 setIsSuccess(false);
                 onClose();
+                window.location.href = '/startup-area';
             }, 3000);
         } catch (err: unknown) {
             logger.error('Erro na inscrição de startup:', { error: err });
@@ -289,7 +295,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">Inscrição Enviada!</h3>
                         <p className="text-gray-400">
-                            Sua startup foi inscrita na Arena Pitch. Você receberá um email com mais informações em breve.
+                            Sua startup foi inscrita na Arena Pitch. Estamos te redirecionando para a sua área...
                         </p>
                     </div>
                 ) : (

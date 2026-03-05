@@ -16,6 +16,7 @@ import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { useProject } from '@/contexts/ProjectContext';
 import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
+import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 
 
 const conselheiros = [
@@ -280,6 +281,9 @@ export function GrowthExperiencePetrolina() {
                     </div>
                 </div>
             </section>
+
+
+            <AppDownloadSection />
 
 
             <WhatsAppButton />

@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function ResetPassword() {
     const navigate = useNavigate();
+    const { isLoading: authLoading, session } = useAuth();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -17,13 +19,16 @@ export function ResetPassword() {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        // Verificar se temos o hash na URL que indica que viemos de um link de reset
+        // Log para debug de token
         const hash = window.location.hash;
-        if (!hash && !window.location.search.includes('type=recovery')) {
-            // Se não houver token, redireciona para login
-            // navigate('/login');
+        const query = window.location.search;
+        logger.debug('ResetPassword Mount:', { hasHash: !!hash, hasQuery: !!query });
+
+        if (!authLoading && !session && !hash.includes('access_token')) {
+            logger.warn('ResetPassword: Sem sessão ou token detectado');
+            // Opcional: Redirecionar se realmente não tiver nada
         }
-    }, [navigate]);
+    }, [authLoading, session]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,11 +47,31 @@ export function ResetPassword() {
         setError('');
 
         try {
+            logger.info('Tentando atualizar senha...', { hasSession: !!session });
+
+            // Garantir que temos uma sessão ativa antes de tentar o update
+            const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError) {
+                logger.error('Erro ao buscar sessão:', sessionError);
+                throw sessionError;
+            }
+
+            if (!currentSession) {
+                logger.warn('ResetPassword: Nenhuma sessão ativa encontrada via getSession()');
+                throw new Error('Sessão expirada ou link inválido. Por favor, solicite um novo link de recuperação de senha.');
+            }
+
+            logger.info('Sessão validada. Chamando auth.updateUser...');
+
             const { error: updateError } = await supabase.auth.updateUser({
                 password: password
             });
 
-            if (updateError) throw updateError;
+            if (updateError) {
+                logger.error('Erro retornado pelo supabase.auth.updateUser:', updateError);
+                throw updateError;
+            }
 
             setSuccess(true);
             toast.success('Senha atualizada com sucesso!');
@@ -133,11 +158,14 @@ export function ResetPassword() {
 
                                 <Button
                                     type="submit"
-                                    disabled={loading}
+                                    disabled={loading || authLoading}
                                     className="w-full h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-xl shadow-lg shadow-brand-orange-coral/20 transition-all mt-4"
                                 >
-                                    {loading ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    {loading || authLoading ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                            <span>{authLoading ? 'Validando link...' : 'Atualizando...'}</span>
+                                        </div>
                                     ) : (
                                         'Redefinir Senha'
                                     )}

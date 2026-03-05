@@ -54,7 +54,7 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
                 <p className="text-gray-400 text-lg">Crie sua conta para agendar sua mentoria</p>
             </div>
 
-            <Card className="glass-card p-8 border-white/10">
+            <Card className="glass-card p-4 sm:p-8 border-white/10">
                 <div className="space-y-6">
                     <div>
                         <Label htmlFor="nome" className="text-white mb-2 flex items-center gap-2">

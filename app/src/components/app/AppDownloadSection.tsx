@@ -1,52 +1,32 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Smartphone, Zap, Shield, Share2, Chrome, Calendar, Users, Bell } from 'lucide-react';
-import { useState, useEffect } from 'react';
-
-interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { Download, Smartphone, Zap, Shield, Share2, Chrome, Calendar, Users, Bell, ArrowRight } from 'lucide-react';
+import { usePWA } from '@/hooks/usePWA';
+import { toast } from 'sonner';
 
 export function AppDownloadSection() {
-    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isInstallable, setIsInstallable] = useState(false);
-    const [, setIsInstalled] = useState(false);
-
-    useEffect(() => {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            setIsInstalled(true);
-        }
-
-        const handler = (e: Event) => {
-            e.preventDefault();
-            setDeferredPrompt(e as BeforeInstallPromptEvent);
-            setIsInstallable(true);
-        };
-
-        window.addEventListener('beforeinstallprompt', handler);
-        window.addEventListener('appinstalled', () => {
-            setIsInstalled(true);
-            setIsInstallable(false);
-        });
-
-        return () => window.removeEventListener('beforeinstallprompt', handler);
-    }, []);
-
-    const handleInstallPWA = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            // Success
-        }
-        setDeferredPrompt(null);
-        setIsInstallable(false);
-    };
-
+    const { isInstallable, isStandalone, promptInstall } = usePWA();
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
+
+    const handleDownload = async () => {
+        if (isInstallable && !isStandalone) {
+            await promptInstall();
+        } else if (isIOS) {
+            toast.info(
+                'No iPhone: abra no Safari, toque em Compartilhar 📤 e escolha "Adicionar à Tela de Início".',
+                { duration: 6000 }
+            );
+        } else if (isStandalone) {
+            toast.success('O app já está instalado e pronto para uso!');
+        } else {
+            toast.info(
+                'Abra este site no Chrome do seu celular e toque no menu (⋮) para instalar o app.',
+                { duration: 6000 }
+            );
+        }
+    };
 
     return (
         <section className="relative py-24 overflow-hidden bg-gradient-to-b from-dark via-dark-100 to-dark">
@@ -174,88 +154,73 @@ export function AppDownloadSection() {
                     </div>
 
                     {/* Installation Guide - COMPACTO */}
-                    <div className="space-y-4">
-                        {/* iOS */}
-                        <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isIOS ? 'ring-2 ring-brand-orange-coral' : ''}`}>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-                                    <Share2 className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-white">iPhone / iPad</h3>
-                                    <p className="text-xs text-gray-400">Safari → Compartilhar → Adicionar</p>
-                                </div>
-                            </div>
-                            {isIOS && (
-                                <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs">
-                                    Ver Instruções
-                                </Button>
-                            )}
-                        </Card>
+                    <div className="space-y-6">
+                        {/* Download CTA Button */}
+                        <div className="pb-4">
+                            <Button
+                                size="lg"
+                                onClick={handleDownload}
+                                className="w-full bg-white text-dark hover:bg-gray-200 font-black h-16 sm:h-20 text-lg sm:text-xl rounded-2xl shadow-xl flex items-center justify-center gap-3 transition-all active:scale-95 group"
+                            >
+                                <Download className="h-6 w-6 text-brand-orange-coral group-hover:scale-110 transition-transform" />
+                                BAIXAR APP AGORA
+                                <ArrowRight className="h-5 w-5 ml-2 opacity-30" />
+                            </Button>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black text-center mt-3">
+                                Instalação Instantânea • Sem ocupar memória • Acesso Offline
+                            </p>
+                        </div>
 
-                        {/* Android */}
-                        <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isAndroid ? 'ring-2 ring-brand-orange-coral' : ''}`}>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
-                                    <Chrome className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-white">Android</h3>
-                                    <p className="text-xs text-gray-400">Chrome → Menu → Instalar app</p>
-                                </div>
-                            </div>
-                            {isAndroid && isInstallable && (
-                                <Button
-                                    size="sm"
-                                    className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:shadow-lg text-white text-xs font-bold"
-                                    onClick={handleInstallPWA}
-                                >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Instalar Agora
-                                </Button>
-                            )}
-                        </Card>
-
-                        {/* Desktop */}
-                        {!isIOS && !isAndroid && isInstallable && (
-                            <Card className="glass-card p-6 border-brand-orange-coral/30 bg-brand-orange-coral/5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-gradient flex items-center justify-center">
-                                        <Download className="w-6 h-6 text-white" />
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            {/* iOS */}
+                            <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isIOS ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shrink-0">
+                                        <Share2 className="w-6 h-6 text-white" />
                                     </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-bold text-white mb-1">Desktop</h3>
-                                        <Button
-                                            size="sm"
-                                            className="bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:shadow-lg text-white text-xs font-bold"
-                                            onClick={handleInstallPWA}
-                                        >
-                                            Instalar App
-                                        </Button>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white leading-tight">No iPhone</h3>
+                                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Safari → Compartilhar → Adicionar</p>
                                     </div>
                                 </div>
                             </Card>
-                        )}
+
+                            {/* Android */}
+                            <Card className={`glass-card p-6 border-white/10 hover:border-brand-orange-coral/30 transition-all ${isAndroid ? 'ring-2 ring-brand-orange-coral' : ''}`}>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center shrink-0">
+                                        <Chrome className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white leading-tight">No Android</h3>
+                                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Chrome → Menu → Instalar</p>
+                                    </div>
+                                </div>
+                            </Card>
+                        </div>
 
                         {/* Recursos - COMPACTO */}
                         <div className="grid grid-cols-3 gap-3 pt-4">
                             <div className="text-center">
-                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
-                                    <Smartphone className="h-5 w-5 text-brand-orange-coral" />
+                                <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-3">
+                                    <Smartphone className="h-6 w-6 text-brand-orange-coral" />
                                 </div>
-                                <p className="text-white text-xs font-semibold">Offline</p>
+                                <p className="text-white text-sm font-bold">Offline</p>
+                                <p className="text-[10px] text-gray-500">Acesse sem sinal</p>
                             </div>
                             <div className="text-center">
-                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
-                                    <Zap className="h-5 w-5 text-brand-orange-coral" />
+                                <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-3">
+                                    <Zap className="h-6 w-6 text-brand-orange-coral" />
                                 </div>
-                                <p className="text-white text-xs font-semibold">Rápido</p>
+                                <p className="text-white text-sm font-bold">Rápido</p>
+                                <p className="text-[10px] text-gray-500">Sem travamentos</p>
                             </div>
                             <div className="text-center">
-                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-2">
-                                    <Shield className="h-5 w-5 text-brand-orange-coral" />
+                                <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center mx-auto mb-3">
+                                    <Shield className="h-6 w-6 text-brand-orange-coral" />
                                 </div>
-                                <p className="text-white text-xs font-semibold">Seguro</p>
+                                <p className="text-white text-sm font-bold">Seguro</p>
+                                <p className="text-[10px] text-gray-500">Dados protegidos</p>
                             </div>
                         </div>
                     </div>
@@ -264,3 +229,4 @@ export function AppDownloadSection() {
         </section>
     );
 }
+

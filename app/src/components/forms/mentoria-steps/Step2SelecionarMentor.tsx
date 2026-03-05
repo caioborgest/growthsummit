@@ -68,7 +68,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, onContinuar, 
         <Card
             key={mentor.id}
             onClick={() => onContinuar(mentor.id)}
-            className={`p-6 cursor-pointer transition-all hover:scale-105 border-white/10 relative overflow-hidden ${mentorSelecionadoId === mentor.id
+            className={`p-4 sm:p-6 cursor-pointer transition-all hover:scale-105 border-white/10 relative overflow-hidden ${mentorSelecionadoId === mentor.id
                 ? 'bg-brand-orange-coral/20 border-brand-orange-coral shadow-glow-orange'
                 : 'bg-dark-200 hover:bg-dark-300'
                 }`}

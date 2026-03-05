@@ -155,7 +155,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent
                 ref={scrollContainerRef}
-                className="max-w-4xl max-h-[96vh] sm:max-h-[90vh] overflow-y-auto bg-dark-100 border-white/10 p-4 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl"
+                className="max-w-4xl max-h-[96vh] sm:max-h-[85vh] overflow-y-auto overflow-x-hidden bg-dark-100 border-white/10 p-3 sm:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl"
             >
                 <div className="sticky top-0 bg-dark-100 pb-4 sm:pb-6 border-b border-white/10 mb-4 sm:mb-6 z-10">
                     <div className="flex items-center justify-between mb-4">
@@ -174,8 +174,8 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                                 <div className="h-1.5 sm:h-2 rounded-full bg-white/5 overflow-hidden">
                                     <div
                                         className={`h-full transition-all duration-700 ease-out ${step < currentStep ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)]' :
-                                                step === currentStep ? 'bg-brand-orange-coral shadow-[0_0_15px_rgba(255,112,67,0.4)]' :
-                                                    'bg-transparent'
+                                            step === currentStep ? 'bg-brand-orange-coral shadow-[0_0_15px_rgba(255,112,67,0.4)]' :
+                                                'bg-transparent'
                                             }`}
                                     />
                                 </div>
@@ -183,7 +183,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-4 sm:pb-0 px-1 hide-scrollbar">
+                    <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-4 sm:pb-0 px-1 scrollbar-hide">
                         {['Área', 'Mentor', 'Dados', 'Confirmar', 'Oferta', 'App', 'Fim'].map((label, idx) => {
                             const step = idx + 1;
                             const isActive = step === currentStep;

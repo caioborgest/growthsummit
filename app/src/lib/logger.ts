@@ -49,15 +49,8 @@ class Logger {
         if (isDevelopment) {
             console.error(`❌ ${message}`, error || '', context || '');
         } else if (isProduction) {
-            // Em produção, você pode integrar com Sentry, LogRocket, etc.
-            // Exemplo com Sentry:
-            // Sentry.captureException(error, {
-            //   tags: { message },
-            //   extra: context
-            // });
-
-            // Por enquanto, apenas registra no console em produção para debugging crítico
-            console.error(message);
+            // Temporariamente mostrando erro completo para depuração
+            console.error(`❌ ${message}`, error || '');
         }
     }
 

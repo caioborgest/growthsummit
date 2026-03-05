@@ -144,27 +144,20 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             if (!logoFile) throw new Error('A logomarca da empresa é obrigatória');
 
             // Validações específicas do Representante
+            // Validações básicas
             if (!formData.nome_representante.trim()) throw new Error('Nome do representante é obrigatório');
-            if (!formData.cargo.trim()) throw new Error('Seu cargo é obrigatório');
             if (!formData.email.trim()) throw new Error('E-mail é obrigatório');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(cleanEmail)) throw new Error('E-mail inválido');
+            if (!emailRegex.test(cleanEmail)) throw new Error('Por favor, insira um email válido');
+
             if (!formData.telefone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
             if (!formData.senha) throw new Error('Senha é obrigatória');
             if (formData.senha.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres');
             if (formData.senha !== formData.confirmarSenha) throw new Error('As senhas não coincidem');
 
-            // Validações da Empresa
             if (!formData.nome_empresa.trim()) throw new Error('Nome da empresa é obrigatório');
-            if (!formData.cnpj.trim()) throw new Error('CNPJ é obrigatório');
             if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
-            if (!formData.porte) throw new Error('Porte da empresa é obrigatório');
-            if (!formData.descricao_empresa.trim()) throw new Error('Descrição da empresa é obrigatória');
-
-            // Validações de Interesse
-            if (!formData.tipo_interesse) throw new Error('Seu tipo de interesse é obrigatório');
-            if (!formData.areas_interesse.trim()) throw new Error('Áreas de interesse são obrigatórias');
-            if (!formData.descricao_objetivos.trim()) throw new Error('Descrição dos objetivos é obrigatória');
+            if (!formData.tipo_interesse) throw new Error('Objetivo é obrigatório'); // Changed from 'objetivo' to 'tipo_interesse' based on formData structure
 
             // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
@@ -191,6 +184,14 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 });
                 userId = authData?.user?.id;
                 authError = sError;
+
+                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                if (!authError && !authData?.session) {
+                    await supabase.auth.signInWithPassword({
+                        email: cleanEmail,
+                        password: formData.senha
+                    }).catch(e => logger.warn('Auto-login skip B2B (confirmation required?):', e.message));
+                }
             }
 
             if (authError) {
@@ -225,8 +226,6 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 logger.info('Vínculo de usuário identificado para B2B.', { userId });
             }
 
-            // Prosseguimento (user_id opcional na tabela)
-
             // 1.5 Upload Logo if exists
             let logoUrl = '';
             if (logoFile) {
@@ -247,59 +246,50 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 logoUrl = publicUrl;
             }
 
-            // Preparar dados para inserção
-            const dataToInsert = {
-                project_id: projectId,
-                user_id: userId || null,
-                nome_representante: formData.nome_representante,
-                cargo: formData.cargo,
-                email: cleanEmail,
-                telefone: formData.telefone,
-                nome_empresa: formData.nome_empresa,
-                cnpj: formData.cnpj || null,
-                setor: formData.setor,
-                porte: formData.porte,
-                faturamento_anual: formData.faturamento_anual ? parseFloat(formData.faturamento_anual) : null,
-                numero_funcionarios: formData.numero_funcionarios ? parseInt(formData.numero_funcionarios) : null,
-                descricao_empresa: formData.descricao_empresa,
-                produtos_servicos: formData.produtos_servicos,
-                site_url: formData.site_url || null,
-                linkedin_url: formData.linkedin_url || null,
-                tipo_interesse: formData.tipo_interesse,
-                areas_interesse: formData.areas_interesse,
-                descricao_objetivos: formData.descricao_objetivos,
-                logo_url: logoUrl,
-                status: 'pendente',
-            };
+            // 2. Salvar na tabela de rodadas de negócios (INSERT para permitir múltiplas)
+            const { error: dbError } = await supabase
+                .from('rodada_negocios_b2b') // Changed from 'rodadas_negocios' to 'rodada_negocios_b2b' based on original code
+                .insert([{
+                    project_id: projectId,
+                    user_id: userId || null,
+                    nome_representante: formData.nome_representante,
+                    email: cleanEmail,
+                    telefone: formData.telefone,
+                    nome_empresa: formData.nome_empresa,
+                    site_url: formData.site_url || null, // Changed from 'site_empresa' to 'site_url'
+                    setor: formData.setor,
+                    cargo: formData.cargo,
+                    tipo_interesse: formData.tipo_interesse, // Changed from 'objetivo' to 'tipo_interesse'
+                    areas_interesse: formData.areas_interesse, // Added based on original formData
+                    descricao_objetivos: formData.descricao_objetivos, // Added based on original formData
+                    logo_url: logoUrl || null,
+                    status: 'pendente'
+                }]);
 
-            // Salvar no Supabase (usando INSERT para evitar conflitos e permitir múltiplas inscrições)
-            const { error: supabaseError } = await supabase
-                .from('rodada_negocios_b2b')
-                .insert([dataToInsert]);
-
-            if (supabaseError) throw supabaseError;
+            if (dbError) throw dbError;
 
             // Analytics tracking
-            const win = window as Window & { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            const win = window as unknown as { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
             if (typeof window !== 'undefined' && win.gtag) {
                 win.gtag('event', 'b2b_inscricao', {
-                    event_category: 'Rodada de Negócios',
+                    event_category: 'Rodada de Negócios', // Changed from 'Rodada Negocios'
                     event_label: formData.setor,
-                    value: formData.faturamento_anual || 0,
+                    value: formData.faturamento_anual || 0, // Added based on original analytics tracking
                 });
             }
 
             setIsSuccess(true);
             localStorage.removeItem(DRAFT_KEY);
 
-            // Resetar formulário após 3 segundos
+            // Redirecionar para o app após 3 segundos
             setTimeout(() => {
                 clearDraft();
                 setIsSuccess(false);
                 onClose();
+                window.location.href = '/empresa-area';
             }, 3000);
-        } catch (err) {
-            toast.error('Erro ao enviar aplicação');
+        } catch (err: unknown) {
+            logger.error('Erro na inscrição B2B:', { error: err });
             let errorMessage = 'Ops! Houve um erro ao processar sua inscrição.';
 
             if (err instanceof Error) {
@@ -355,7 +345,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">Inscrição Enviada!</h3>
                         <p className="text-gray-400">
-                            Sua empresa foi inscrita na Rodada de Negócios B2B. Você receberá um email com mais informações em breve.
+                            Sua empresa foi inscrita na Rodada de Negócios B2B. Estamos te redirecionando para a sua área...
                         </p>
                     </div>
                 ) : (

@@ -185,7 +185,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
                 });
 
-                // 3.5 Send Confirmation Email (Async, non-blocking)
+                /* 
+                // 3.5 Send Confirmation Email (Async, non-blocking) - DESATIVADO A PEDIDO DO USUÁRIO
                 supabase.functions.invoke('send-email', {
                     body: {
                         to: dados.email,
@@ -219,6 +220,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     // Non-blocking: email failure shouldn't prevent registration completion
                     logger.warn('Email confirmation not sent (likely CORS or service limit):', e.message || e);
                 });
+                */
             }
 
             // 4. Sucesso - Avisar o componente pai
@@ -369,7 +371,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         <h4 className="font-bold text-white text-sm mb-1">O que acontece agora?</h4>
                         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] sm:text-xs text-gray-400">
                             <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Conta criada automaticamente</li>
-                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Email de confirmação enviado</li>
+                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Inscrição validada</li>
                             <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Atividade reservada</li>
                             <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Acesso ao app liberado</li>
                         </ul>

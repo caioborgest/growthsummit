@@ -77,6 +77,14 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 });
                 userId = authData?.user?.id;
                 authError = sError;
+
+                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
+                if (!authError && !authData?.session) {
+                    await supabase.auth.signInWithPassword({
+                        email: dados.email,
+                        password: dados.senha
+                    }).catch(e => logger.warn('Auto-login skip mentoria (confirmation required?):', e.message));
+                }
             }
 
             if (authError) {
@@ -220,7 +228,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-                <Card className="glass-card p-6 border-white/10">
+                <Card className="glass-card p-4 sm:p-6 border-white/10">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
                             <User className="h-5 w-5 text-brand-orange-coral" />
@@ -234,7 +242,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     </div>
                 </Card>
 
-                <Card className="glass-card p-6 border-white/10">
+                <Card className="glass-card p-4 sm:p-6 border-white/10">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
                             <Briefcase className="h-5 w-5 text-teal-400" />
@@ -256,7 +264,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     </div>
                 </Card>
 
-                <Card className="glass-card p-6 border-white/10 md:col-span-2">
+                <Card className="glass-card p-4 sm:p-6 border-white/10 md:col-span-2">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
                             <Target className="h-5 w-5 text-orange-400" />
