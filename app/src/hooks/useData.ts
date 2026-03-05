@@ -125,6 +125,9 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   mentor_name: 'mentorName',
   years_experience: 'yearsExperience',
   max_mentories: 'maxMentories',
+  // Notifications
+  is_read: 'read',
+  read_at: 'readAt',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -152,14 +155,26 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
     result.ticketNumber = (item.id as string).split('-')[0].toUpperCase();
   }
 
-  // Semantic status value translation
-  if (result.paymentStatus === 'pago') result.status = 'paid';
-  else if (result.paymentStatus === 'pendente') result.status = 'pending';
-  else if (item.status === 'cancelado') result.status = 'cancelled';
-
-  // Handle projects specific status mapping
-  if (item.status !== undefined) {
-    result.status = item.status;
+  // Semantic status value translation (GE inscricoes use Portuguese status)
+  // This block runs AFTER the loop, so we set status based on payment status or raw status.
+  // IMPORTANT: Priority order matters — paymentStatus wins for GE registrations.
+  if (result.paymentStatus === 'pago') {
+    result.status = 'paid';
+  } else if (result.paymentStatus === 'pendente') {
+    result.status = 'pending';
+  } else if (item.status !== undefined) {
+    // Only apply raw status if paymentStatus didn't already set it
+    // Translate Portuguese statuses from GE tables to English equivalents
+    const statusMap: Record<string, string> = {
+      'ativo': 'paid',
+      'pendente': 'pending',
+      'cancelado': 'cancelled',
+      'aprovado': 'approved',
+      'rejeitado': 'rejected',
+      'inactive': 'inactive',
+    };
+    const rawStatus = String(item.status);
+    result.status = statusMap[rawStatus] ?? rawStatus;
   }
 
   return result;

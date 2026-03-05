@@ -444,6 +444,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
+          // AbortError is triggered by React StrictMode double-mount or HMR — not a real error
+          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            logger.debug('[Auth] getSession aborted (StrictMode/HMR) — ignorando');
+            if (isMountedRef.current) setIsLoading(false);
+            return;
+          }
           logger.error('Erro inicial getSession:', error.message);
           if (isMountedRef.current) setIsLoading(false);
           return;
@@ -452,8 +458,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (currentSession && isMountedRef.current) {
           await updateAuthState(currentSession);
         }
-      } catch (error) {
-        logger.error('Fatal auth init error:', error);
+      } catch (error: any) {
+        // AbortError can also surface as a thrown exception
+        if (error?.name === 'AbortError' || error?.message?.includes('aborted without reason')) {
+          logger.debug('[Auth] Init aborted (React lifecycle) — ignorando AbortError');
+        } else {
+          logger.error('Fatal auth init error:', error);
+        }
       } finally {
         if (isMountedRef.current) setIsLoading(false);
       }

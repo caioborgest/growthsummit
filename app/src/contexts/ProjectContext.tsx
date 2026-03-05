@@ -12,8 +12,14 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(() => {
-    const saved = localStorage.getItem('selectedProject');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('selectedProject');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      // localStorage corrompido ou JSON inválido — limpar e iniciar sem projeto selecionado
+      localStorage.removeItem('selectedProject');
+      return null;
+    }
   });
 
   useEffect(() => {
