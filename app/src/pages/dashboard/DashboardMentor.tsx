@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Calendar,
   Star,
@@ -15,7 +15,13 @@ import {
   Trash2,
   Clock,
   CalendarDays,
-  Sparkles
+  Sparkles,
+  Pencil,
+  Save,
+  X,
+  Loader2,
+  Camera,
+  Linkedin
 } from 'lucide-react';
 import {
   Popover,
@@ -37,7 +43,282 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ProfileForm } from './components/ProfileForm';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+
+import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/ui/input';
+import { logger } from '@/lib/logger';
+
+const ESPECIALIDADES_MENTOR = [
+  'Gestão Empresarial', 'Marketing Digital', 'Vendas & Growth',
+  'Finanças', 'Tecnologia & IA', 'Recursos Humanos',
+  'Inovação', 'Operações & Processos', 'Coaching & Liderança', 'E-commerce'
+];
+
+// ── MentorDataTab: Edição inline de dados do mentor ──────────────────────────
+function MentorDataTab({ mentorData }: { mentorData: any }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [form, setForm] = useState({
+    name: mentorData?.name || '',
+    company: mentorData?.company || '',
+    position: mentorData?.position || '',
+    bio: mentorData?.bio || '',
+    linkedin: mentorData?.linkedin || '',
+    yearsExperience: mentorData?.yearsExperience || 0,
+    maxMentories: mentorData?.maxMentories || 5,
+    specialties: (mentorData?.specialties || []) as string[],
+    photoPreview: mentorData?.photo || '',
+    photoFile: null as File | null,
+  });
+
+  if (!mentorData) {
+    return (
+      <div className="glass-card p-12 text-center border-white/5">
+        <Briefcase className="h-10 w-10 text-gray-700 mx-auto mb-3" />
+        <p className="text-gray-500 font-medium">Perfil de mentor não encontrado para sua conta.</p>
+      </div>
+    );
+  }
+
+  const toggleSpec = (spec: string) => {
+    setForm(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(spec)
+        ? prev.specialties.filter(s => s !== spec)
+        : prev.specialties.length < 5
+          ? [...prev.specialties, spec]
+          : prev.specialties
+    }));
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem válida.'); return; }
+    if (file.size > 3 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 3MB.'); return; }
+    setForm(prev => ({ ...prev, photoFile: file, photoPreview: URL.createObjectURL(file) }));
+  };
+
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      let photoUrl = mentorData?.photo || '';
+      if (form.photoFile) {
+        setIsUploading(true);
+        const ext = form.photoFile.name.split('.').pop();
+        const path = `mentores/${mentorData.id}-${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('event-images').upload(path, form.photoFile, { upsert: true });
+        if (error) throw error;
+        const { data } = supabase.storage.from('event-images').getPublicUrl(path);
+        photoUrl = data.publicUrl;
+        setIsUploading(false);
+      }
+
+      const { error: updateError } = await (supabase.from('mentores_growth_experience' as any) as any)
+        .update({
+          nome: form.name,
+          empresa: form.company,
+          cargo: form.position,
+          bio: form.bio,
+          linkedin_url: form.linkedin,
+          years_experience: Number(form.yearsExperience),
+          max_mentories: Number(form.maxMentories),
+          especialidades: form.specialties,
+          foto_url: photoUrl,
+        })
+        .eq('id', mentorData.id);
+
+      if (updateError) throw updateError;
+
+      toast.success('Perfil de mentor atualizado com sucesso!');
+      setIsEditing(false);
+    } catch (err: any) {
+      logger.error('Erro ao salvar perfil mentor:', err);
+      toast.error('Erro ao salvar: ' + (err.message || 'Tente novamente.'));
+    } finally {
+      setIsSaving(false);
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="glass-card p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-dark-300">
+        <div>
+          <h2 className="text-xl font-bold text-white">Informações de Mentor</h2>
+          <p className="text-gray-500 text-xs mt-1">Dados visíveis para os participantes na plataforma</p>
+        </div>
+        {isEditing ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 text-sm font-bold transition-all"
+            >
+              <X className="h-4 w-4" /> Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-sm font-black transition-all disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isSaving ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 text-sm font-black transition-all border border-teal-500/20 hover:border-teal-500/40"
+          >
+            <Pencil className="h-4 w-4" /> Editar Perfil
+          </button>
+        )}
+      </div>
+
+      {isEditing ? (
+        <div className="space-y-8">
+          {/* Foto */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-teal-500/20 to-teal-700/20 border-2 border-dashed border-teal-500/30 overflow-hidden flex items-center justify-center">
+                {form.photoPreview ? (
+                  <img src={form.photoPreview} alt="Foto" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="h-10 w-10 text-gray-500" />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute -bottom-2 -right-2 bg-teal-500 hover:bg-teal-600 p-2 rounded-xl text-white shadow-lg transition-all"
+              >
+                {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+              </button>
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
+            </div>
+            <p className="text-xs text-gray-500">Clique no ícone para alterar • Máx. 3MB</p>
+          </div>
+
+          {/* Dados */}
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nome</label>
+              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-dark-100 border-dark-300" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Empresa</label>
+              <Input value={form.company} onChange={e => setForm(p => ({ ...p, company: e.target.value }))} className="bg-dark-100 border-dark-300" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Cargo</label>
+              <Input value={form.position} onChange={e => setForm(p => ({ ...p, position: e.target.value }))} className="bg-dark-100 border-dark-300" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1"><Linkedin className="h-3 w-3" /> LinkedIn</label>
+              <Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} className="bg-dark-100 border-dark-300" placeholder="linkedin.com/in/..." />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Anos de Experiência</label>
+              <Input type="number" min={0} max={60} value={form.yearsExperience} onChange={e => setForm(p => ({ ...p, yearsExperience: parseInt(e.target.value) || 0 }))} className="bg-dark-100 border-dark-300" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Vagas de Mentoria</label>
+              <Input type="number" min={1} max={50} value={form.maxMentories} onChange={e => setForm(p => ({ ...p, maxMentories: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bio</label>
+            <textarea
+              value={form.bio}
+              onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+              rows={4}
+              className="w-full bg-dark-100 border border-dark-300 rounded-xl p-3 text-white text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none"
+              placeholder="Sua trajetória profissional..."
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Especialidades ({form.specialties.length}/5)</label>
+            <div className="flex flex-wrap gap-2">
+              {ESPECIALIDADES_MENTOR.map(spec => (
+                <button
+                  key={spec}
+                  type="button"
+                  onClick={() => toggleSpec(spec)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${form.specialties.includes(spec)
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
+                    }`}
+                >
+                  {spec}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* View mode */}
+          <div className="flex items-center gap-5">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-lg shadow-orange-500/20 flex-shrink-0">
+              <div className="w-full h-full bg-dark-300 rounded-[calc(1.5rem-2px)] flex items-center justify-center overflow-hidden">
+                {mentorData?.photo ? (
+                  <img src={mentorData.photo} alt={mentorData.name} className="w-full h-full object-cover" />
+                ) : (
+                  <User className="h-8 w-8 text-orange-400" />
+                )}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-white">{mentorData.name}</h3>
+              <p className="text-orange-400 font-bold">{mentorData.position}</p>
+              <p className="text-gray-400 text-sm">{mentorData.company}</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              { label: 'Email', value: mentorData.email },
+              { label: 'LinkedIn', value: mentorData.linkedin || 'Não informado' },
+              { label: 'Anos de Experiência', value: `${mentorData.yearsExperience || 0} anos` },
+              { label: 'Vagas de Mentoria', value: `${mentorData.maxMentories || 0} slots` },
+            ].map(({ label, value }) => (
+              <div key={label} className="p-4 bg-white/[0.02] rounded-2xl border border-white/5">
+                <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1">{label}</p>
+                <p className="text-white font-bold text-sm">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500 uppercase font-black tracking-wider mb-2">Bio</p>
+            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap text-sm">{mentorData.bio || 'Não informado.'}</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-500 uppercase font-black tracking-wider mb-3">Especialidades</p>
+            <div className="flex flex-wrap gap-2">
+              {(mentorData.specialties || []).map((spec: string, i: number) => (
+                <Badge key={i} className="bg-teal-500/20 text-teal-400 border border-teal-500/20 px-3 py-1">
+                  {spec}
+                </Badge>
+              ))}
+              {(!mentorData.specialties?.length) && <p className="text-gray-600 text-sm italic">Nenhuma especialidade cadastrada.</p>}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export function DashboardMentor() {
   const navigate = useNavigate();
@@ -65,7 +346,16 @@ export function DashboardMentor() {
     navigate('/login');
   };
 
+  const [activeTab, setActiveTab] = useState<string>('agenda');
+
+  const handleMarkAsRead = async (notifId: string) => {
+    if (!notifId) return;
+    try { await updateNotification(notifId, { read: true } as any); } catch { /* silent */ }
+  };
+
+
   const { create, remove, update } = useMentoringSessions();
+
 
   const handleOpenSlots = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -516,63 +806,9 @@ export function DashboardMentor() {
 
           {/* Mentor Data Tab */}
           <TabsContent value="mentor_data" className="mt-0 text-left">
-            <div className="glass-card p-10">
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-dark-300">
-                <h2 className="text-xl font-bold text-white">Informações de Mentor</h2>
-                <Button variant="outline" className="border-teal-500/30 text-teal-400">Solicitar Alteração</Button>
-              </div>
-
-              {mentorData && (
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Nome</label>
-                      <p className="text-white">{mentorData.name}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Email</label>
-                      <p className="text-white">{mentorData.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Empresa</label>
-                      <p className="text-white">{mentorData.company}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Cargo</label>
-                      <p className="text-white">{mentorData.position}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-1">Bio</label>
-                    <p className="text-gray-300">{mentorData.bio}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-1">Especialidades</label>
-                    <div className="flex flex-wrap gap-2">
-                      {mentorData.specialties.map((spec, i) => (
-                        <Badge key={i} className="bg-teal-500/20 text-teal-400">
-                          {spec}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Anos de Experiência</label>
-                      <p className="text-white">{mentorData.yearsExperience} anos</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400 mb-1">Máx. Mentorias</label>
-                      <p className="text-white">{mentorData.maxMentories}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <MentorDataTab mentorData={mentorData} />
           </TabsContent>
+
 
           {/* Recursos Tab */}
           <TabsContent value="recursos" className="mt-0">

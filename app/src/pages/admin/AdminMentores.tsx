@@ -10,7 +10,9 @@ import {
   Phone,
   UserPlus,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  Pencil,
+  Save
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,7 +37,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
-import { Camera, User, Target, Linkedin, Sparkles, LogOut, Briefcase as BriefcaseIcon, GraduationCap, X } from 'lucide-react';
+import { Camera, User, GraduationCap, Linkedin, Briefcase as BriefcaseIcon } from 'lucide-react';
+
 
 const ESPECIALIDADES = [
   'Gestão Empresarial',
@@ -216,6 +219,246 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
   );
 }
 
+// ── Modal de Edição do Mentor ─────────────────────────────────────────────────
+function MentorEditModal({ mentor, onClose, onSave }: {
+  mentor: any;
+  onClose: () => void;
+  onSave: (id: string, data: any) => Promise<void>;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [form, setForm] = useState({
+    name: mentor.name || '',
+    email: mentor.email || '',
+    phone: mentor.phone || '',
+    company: mentor.company || '',
+    position: mentor.position || '',
+    bio: mentor.bio || '',
+    linkedin: mentor.linkedin || '',
+    yearsExperience: mentor.yearsExperience || 0,
+    maxMentories: mentor.maxMentories || 5,
+    specialties: (mentor.specialties || []) as string[],
+    photoPreview: mentor.photo || '',
+    photoFile: null as File | null,
+  });
+
+  const toggleSpec = (spec: string) => {
+    setForm(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(spec)
+        ? prev.specialties.filter(s => s !== spec)
+        : prev.specialties.length < 5
+          ? [...prev.specialties, spec]
+          : prev.specialties
+    }));
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Selecione uma imagem válida.'); return; }
+    if (file.size > 3 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 3MB.'); return; }
+    setForm(prev => ({ ...prev, photoFile: file, photoPreview: URL.createObjectURL(file) }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      let photoUrl = mentor.photo || '';
+
+      // Upload nova foto se selecionada
+      if (form.photoFile) {
+        setIsUploading(true);
+        const ext = form.photoFile.name.split('.').pop();
+        const path = `mentores/${mentor.id}-${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(path, form.photoFile, { upsert: true });
+        if (uploadError) throw new Error('Erro no upload da foto: ' + uploadError.message);
+        const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
+        setIsUploading(false);
+      }
+
+      await onSave(mentor.id, {
+        name: form.name,
+        phone: form.phone,
+        company: form.company,
+        position: form.position,
+        bio: form.bio,
+        linkedin: form.linkedin,
+        yearsExperience: Number(form.yearsExperience),
+        maxMentories: Number(form.maxMentories),
+        specialties: form.specialties,
+        photo: photoUrl,
+      });
+
+      toast.success('Mentor atualizado com sucesso!');
+      onClose();
+    } catch (err: any) {
+      logger.error('Erro ao editar mentor:', err);
+      toast.error('Erro ao salvar: ' + (err.message || 'Tente novamente.'));
+    } finally {
+      setIsSaving(false);
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+      <div className="glass-card max-w-2xl w-full max-h-[92vh] overflow-y-auto rounded-3xl border-teal-500/20 relative">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-dark-200/95 backdrop-blur-xl px-8 py-6 border-b border-white/5 flex items-center justify-between rounded-t-3xl">
+          <div>
+            <h2 className="text-xl font-black text-white flex items-center gap-3">
+              <Pencil className="h-5 w-5 text-teal-400" />
+              Editar Mentor
+            </h2>
+            <p className="text-gray-500 text-xs mt-0.5">{mentor.name}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 p-2.5 rounded-xl">
+            <XCircle className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* Foto */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative group">
+              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-teal-500/20 to-teal-700/20 border-2 border-dashed border-teal-500/30 overflow-hidden flex items-center justify-center group-hover:border-teal-500/60 transition-all">
+                {form.photoPreview ? (
+                  <img src={form.photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="h-12 w-12 text-gray-500" />
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute -bottom-2 -right-2 bg-teal-500 hover:bg-teal-600 p-2.5 rounded-2xl text-white shadow-lg transition-all hover:scale-105 disabled:opacity-50"
+                title="Alterar foto"
+              >
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
+            </div>
+            <p className="text-xs text-gray-500">Clique no ícone para alterar a foto • JPEG, PNG, WebP • Máx. 3MB</p>
+          </div>
+
+          {/* Dados pessoais */}
+          <div className="space-y-5">
+            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <User className="h-4 w-4 text-teal-400" /> Dados Pessoais
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Nome Completo *</label>
+                <Input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome do mentor" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">E-mail (não editável)</label>
+                <Input value={form.email} disabled className="bg-dark-100 border-dark-300 h-11 opacity-50 cursor-not-allowed" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">WhatsApp</label>
+                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="(88) 99999-9999" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">LinkedIn</label>
+                <Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="linkedin.com/in/..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Carreira */}
+          <div className="space-y-5">
+            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <BriefcaseIcon className="h-4 w-4 text-teal-400" /> Carreira
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Empresa</label>
+                <Input value={form.company} onChange={e => setForm(p => ({ ...p, company: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome da empresa" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Cargo</label>
+                <Input value={form.position} onChange={e => setForm(p => ({ ...p, position: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Ex: CEO, Diretor..." />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Anos de Experiência</label>
+                <Input type="number" min={0} max={60} value={form.yearsExperience} onChange={e => setForm(p => ({ ...p, yearsExperience: parseInt(e.target.value) || 0 }))} className="bg-dark-100 border-dark-300 h-11" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Capacidade de Mentorias</label>
+                <Input type="number" min={1} max={50} value={form.maxMentories} onChange={e => setForm(p => ({ ...p, maxMentories: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300 h-11" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Bio / Trajetória Profissional</label>
+              <textarea
+                value={form.bio}
+                onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+                rows={4}
+                placeholder="Conte um pouco sobre a trajetória deste mentor..."
+                className="w-full bg-dark-100 border border-dark-300 rounded-xl p-3 text-white text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Especialidades */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-teal-400" /> Especialidades
+              <span className="text-gray-600 font-normal normal-case tracking-normal">({form.specialties.length}/5 selecionadas)</span>
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {ESPECIALIDADES.map(spec => (
+                <button
+                  key={spec}
+                  type="button"
+                  onClick={() => toggleSpec(spec)}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${form.specialties.includes(spec)
+                    ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20 hover:text-white'
+                    }`}
+                >
+                  {spec}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ações */}
+          <div className="flex gap-3 pt-4 border-t border-white/5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex-1 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</>
+              ) : (
+                <><Save className="h-4 w-4" /> Salvar Alterações</>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function AdminMentores() {
   const { projectId } = useProject();
   const { data: mentors, create, update, remove, isLoading } = useMentors();
@@ -223,6 +466,7 @@ export function AdminMentores() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState<any>(null);
+  const [editingMentor, setEditingMentor] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -242,6 +486,7 @@ export function AdminMentores() {
     yearsExperience: 5,
     maxMentories: 10
   });
+
 
   // console.log('[AdminMentores] Render', { mentorsCount: mentors.length, projectId });
 
@@ -410,6 +655,15 @@ export function AdminMentores() {
           onApprove={handleApprove}
           onReject={handleReject}
           onDelete={handleDelete}
+        />
+      )}
+      {editingMentor && (
+        <MentorEditModal
+          mentor={editingMentor}
+          onClose={() => setEditingMentor(null)}
+          onSave={async (id, data) => {
+            await update(id, data);
+          }}
         />
       )}
       {/* Header */}
@@ -826,6 +1080,12 @@ export function AdminMentores() {
                   )}
                   <DropdownMenuItem onClick={() => setSelectedMentor(mentor)} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg text-gray-400">
                     <User className="h-4 w-4" /> Ver Detalhes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setEditingMentor(mentor)}
+                    className="flex items-center gap-2 cursor-pointer hover:bg-teal-500/10 rounded-lg text-teal-400"
+                  >
+                    <Pencil className="h-4 w-4" /> Editar Mentor
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleDelete(mentor.id)} className="flex items-center gap-2 cursor-pointer text-red-500 hover:bg-red-500/10 rounded-lg border-t border-white/5 mt-2">
                     <XCircle className="h-4 w-4" /> Excluir Mentor
