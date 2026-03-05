@@ -15,8 +15,10 @@ import {
   LogOut,
   CheckCircle,
   Bell,
-  Sparkles
+  Sparkles,
+  User as UserIcon,
 } from 'lucide-react';
+
 import {
   Popover,
   PopoverContent,
@@ -29,7 +31,6 @@ import { useStartups, useLeads } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
-import { User as UserIcon, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const stageLabels: Record<string, string> = {

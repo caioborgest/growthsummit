@@ -10,28 +10,44 @@ import type {
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 
-// Table Mapping based on project and entity
-const GE_TRIUNFO = 'ge-triunfo-2026';
-const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const GE_PETROLINA = 'ge-petrolina-2026';
-const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
+// Table Mapping based on project slug prefix
+// All GE projects (ge-*) use the standardized Growth Experience tables
+// ProjectId can be either a UUID (from DB) or a slug (from config)
+// The isGEProject() function handles both cases by reading selectedProject from context
+
+/**
+ * Returns true if the projectId belongs to a Growth Experience edition.
+ * Checks both slug patterns (ge-*) AND matches the selectedProject slug.
+ */
+const isGEProject = (projectId: string | undefined): boolean => {
+  if (!projectId) return false;
+  // Slug-based detection (works when slug is stored as projectId)
+  if (projectId.startsWith('ge-')) return true;
+  // If projectId is a UUID, we check the cached selectedProject slug from localStorage
+  try {
+    const saved = localStorage.getItem('selectedProject');
+    if (saved) {
+      const project = JSON.parse(saved);
+      if (project?.id === projectId && project?.slug?.startsWith('ge-')) return true;
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return false;
+};
 
 const getTableName = (projectId: string | undefined, entity: string) => {
-  // Global table mappings
+  // Global table mappings (not project-scoped)
   if (entity === 'cupons') return 'cupons_parceria_social';
   if (entity === 'projects') return 'projects';
   if (entity === 'users') return 'users';
   if (entity === 'profiles') return 'profiles';
   if (entity === 'certificates') return 'certificates';
+  if (entity === 'notifications') return 'notifications';
+  if (entity === 'audit_logs') return 'audit_logs';
 
-  // Specific mappings for Growth Experience projects
-  if (projectId && (
-    projectId === GE_TRIUNFO ||
-    projectId === GE_TRIUNFO_ID ||
-    projectId === GE_PETROLINA ||
-    projectId === GE_PETROLINA_ID ||
-    projectId.startsWith('ge-')
-  )) {
+  // Specific mappings for Growth Experience projects (ge-*)
+  if (isGEProject(projectId)) {
     switch (entity) {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
@@ -39,16 +55,13 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'mentoring_sessions': return 'mentorias_agendadas';
       case 'mentors': return 'mentores_growth_experience';
       case 'sessions': return 'programacao_evento';
-      case 'b2b_meetings': return 'b2b_appointments_triunfo';
-      case 'b2b_swipes': return 'b2b_swipes';
-      case 'b2b_matches': return 'b2b_matches';
-      case 'b2b_appointments': return 'b2b_appointments_triunfo';
+      case 'b2b_meetings': return 'rodada_negocios_b2b'; // B2B companies serve as meetings for GE
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       default: return entity;
     }
   }
 
-  // Default to entity name for other projects
+  // Default to entity name for other project types
   return entity;
 };
 
@@ -226,7 +239,7 @@ function invalidateCache(projectId: string | undefined, entityName: string) {
 // ── Minimal column selection per entity (avoids SELECT *) ───────────────────
 function getSelectFields(entity: string, projectId?: string): string {
   // If it's a Growth Experience project, use the specific table schema
-  if (projectId && (projectId === GE_TRIUNFO || projectId === GE_TRIUNFO_ID || projectId.startsWith('ge-'))) {
+  if (isGEProject(projectId)) {
     if (entity === 'registrations') {
       return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,cupom_palestra,valor_desconto_palestra,created_at';
     }

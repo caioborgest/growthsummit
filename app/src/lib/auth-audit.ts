@@ -59,14 +59,18 @@ export function logAuditEvent(event: string, userId?: string, metadata?: unknown
     getClientIP().then(ip => {
         supabase.from('audit_logs').insert({
             event,
-            user_id: userId,
+            user_id: userId || null,
             metadata: metadata || {},
             ip_address: ip,
             browser_agent: navigator.userAgent,
             created_at: new Date().toISOString(),
         }).then(({ error }) => {
             if (error) {
-                if (error.code !== '42501' && error.code !== 'PGRST301') {
+                // Ignorar 23503 (FK violation - user ainda não existe no DB público)
+                // Ignorar 42501 (RLS permission denied)
+                // Ignorar PGRST301 (schema cache outdated)
+                const ignoredCodes = ['23503', '42501', 'PGRST301'];
+                if (!ignoredCodes.includes(error.code)) {
                     logger.debug('Auditoria info:', error.message);
                 }
             }

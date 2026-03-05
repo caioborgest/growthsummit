@@ -99,7 +99,7 @@ interface UserDBMetadata {
   name?: string;
   email?: string;
   role?: string;
-  avatar?: string;
+  avatar_url?: string;  // nome real da coluna no banco
   phone?: string;
   department?: string;
   staff_role?: string;
@@ -128,7 +128,7 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
     email: supabaseUser.email || '',
     name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
     role,
-    avatar: metadata?.avatar || supabaseUser.user_metadata?.avatar || undefined,
+    avatar: metadata?.avatar_url || supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatar || undefined,
     phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
     department: metadata?.department || undefined,
     staffRole: metadata?.staff_role || undefined,
@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: userData, error: fetchError } = (await withTimeout(
         supabase
           .from('users')
-          .select('id,name,email,role,avatar,phone')
+          .select('id,name,email,role,avatar_url,phone')
           .eq('id', currentSession.user.id)
           .maybeSingle() as any,
         5000,

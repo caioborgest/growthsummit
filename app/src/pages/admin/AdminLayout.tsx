@@ -79,7 +79,13 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'financeiro', name: 'Financeiro', icon: DollarSign, path: '/admin/financeiro' },
       { id: 'patrocinadores', name: 'Patrocinadores', icon: Gem, path: '/admin/patrocinadores' },
       { id: 'cupons', name: 'Vouchers & Cupons', icon: Ticket, path: '/admin/cupons' },
+    ]
+  },
+  {
+    title: 'Comunicação',
+    items: [
       { id: 'comunicacao', name: 'E-mail & Push', icon: Mail, path: '/admin/comunicacao' },
+      { id: 'whatsapp', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp' },
     ]
   },
   {
@@ -112,7 +118,7 @@ export function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
-  const activeProjects = projects.filter(p => p.status === 'active' || p.is_active === true);
+  const activeProjects = projects.filter(p => p.status === 'active');
 
   return (
     <div className="h-screen bg-[#0c0e12] flex overflow-hidden relative">
