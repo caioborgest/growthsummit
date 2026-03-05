@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { User as UserIcon, Mail, Phone, Building2, Briefcase, Globe, Linkedin, MapPin, Calendar, Camera, Shield, Bell, Save, Loader2, Target } from 'lucide-react';
-import { useProfile, useMentors, useData } from '@/hooks/useData';
+import { useProfile, useMentors } from '@/hooks/useData';
+
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 import { ProjectContext } from '@/contexts/ProjectContext';
 import { useContext } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+
 
 export function ProfileForm() {
     const { user, updateProfile } = useAuth();

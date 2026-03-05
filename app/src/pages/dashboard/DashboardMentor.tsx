@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Calendar,
   Star,
@@ -74,14 +74,33 @@ function MentorDataTab({ mentorData }: { mentorData: any }) {
     photoFile: null as File | null,
   });
 
+  // Sincroniza form quando mentorData chegar (dados assíncronos)
+  useEffect(() => {
+    if (!mentorData) return;
+    setForm(prev => ({
+      ...prev,
+      name: mentorData.name || '',
+      company: mentorData.company || '',
+      position: mentorData.position || '',
+      bio: mentorData.bio || '',
+      linkedin: mentorData.linkedin || '',
+      yearsExperience: mentorData.yearsExperience || 0,
+      maxMentories: mentorData.maxMentories || 5,
+      specialties: mentorData.specialties || [],
+      photoPreview: mentorData.photo || '',
+    }));
+  }, [mentorData?.id]); // só resincroniza se mudar de mentor
+
+  // Early return APÓS todos os hooks (regra dos hooks do React)
   if (!mentorData) {
     return (
       <div className="glass-card p-12 text-center border-white/5">
         <Briefcase className="h-10 w-10 text-gray-700 mx-auto mb-3" />
-        <p className="text-gray-500 font-medium">Perfil de mentor não encontrado para sua conta.</p>
+        <p className="text-gray-500 font-medium">Carregando dados do mentor...</p>
       </div>
     );
   }
+
 
   const toggleSpec = (spec: string) => {
     setForm(prev => ({
