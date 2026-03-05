@@ -4,7 +4,7 @@ import type { Project, ProjectType, ProjectStatus } from '@/types';
 import type { Database } from '@/types/supabase';
 
 type ProjectRow = Database['public']['Tables']['projects']['Row'];
-type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
+
 
 /**
  * ensures a project exists in the database based on its config.
@@ -43,7 +43,8 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             return null;
         }
 
-        const projectDataToUpsert: ProjectInsert = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projectDataToUpsert: any = {
             ...mapToSupabaseFormat(projectConfig),
             updated_at: new Date().toISOString(),
         };
@@ -53,6 +54,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             projectDataToUpsert.id = (existing as any).id;
         }
+
 
         // 2. Create if doesn't exist
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,25 +83,26 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
     }
 }
 
-function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): ProjectInsert {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): any {
     const s = p.settings || {};
     const tp = s.ticketPrices || {};
 
     return {
-        id: p.id,
+        ...(p.id ? { id: p.id } : {}),
         name: p.name,
         slug: p.slug,
-        type: p.type as Database['public']['Tables']['projects']['Insert']['type'],
-        description: p.description,
+        type: p.type,
+        description: p.description || null,
         short_description: p.shortDescription || null,
-        location: p.location,
-        city: p.city,
-        state: p.state,
+        location: p.location || null,
+        city: p.city || null,
+        state: p.state || null,
         country: p.country || 'BR',
-        address: p.address || p.location,
-        start_date: p.startDate,
-        end_date: p.endDate,
-        status: (p.status || 'active') as Database['public']['Tables']['projects']['Insert']['status'],
+        address: p.address || p.location || null,
+        start_date: p.startDate || null,
+        end_date: p.endDate || null,
+        status: p.status || 'active',
         primary_color: p.primaryColor || '#FE4C38',
         secondary_color: p.secondaryColor || '#FF6B35',
         max_registrations: s.maxRegistrations || null,
@@ -115,10 +118,22 @@ function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> 
         ticket_price_vip: Math.round((tp.vip || 0) * 100),
         target_registrations: s.targetRegistrations || 500,
         target_revenue: s.targetRevenue || 0,
+        settings: {
+            maxRegistrations: s.maxRegistrations,
+            maxMentors: s.maxMentors,
+            maxStartups: s.maxStartups,
+            maxCompanies: s.maxCompanies,
+            enableB2B: s.enableB2B ?? false,
+            enableMentoring: s.enableMentoring ?? false,
+            enableStartups: s.enableStartups ?? false,
+            enableCheckIn: s.enableCheckIn ?? true,
+            ticketPrices: tp,
+        },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
     };
 }
+
 
 function rowToProject(row: ProjectRow): Project {
     return {
