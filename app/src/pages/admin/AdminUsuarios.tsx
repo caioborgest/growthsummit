@@ -100,12 +100,15 @@ export default function AdminUsuarios() {
     const [newUserData, setNewUserData] = useState({
         name: '',
         email: '',
-        role: 'participant' as User['role'],
+        role: 'staff' as User['role'],
         department: '',
         staffRole: '',
     });
 
     const filteredUsers = users.filter(user => {
+        // Base filtering: Internal team and partners only
+        if (user.role === 'participant' || user.role === 'visitor') return false;
+
         const matchesSearch =
             user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             user.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -179,8 +182,8 @@ export default function AdminUsuarios() {
         <div className="space-y-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Gestão de Equipe e Usuários</h1>
-                    <p className="text-gray-400">Gerencie permissões, departamentos e responsabilidades.</p>
+                    <h1 className="text-2xl font-bold text-white">Equipe e Parceiros</h1>
+                    <p className="text-gray-400">Gestão de membros da equipe, mentores, palestrantes e administradores.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" className="border-dark-300 text-gray-300">
@@ -232,11 +235,11 @@ export default function AdminUsuarios() {
                                         onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value as User['role'] })}
                                         className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
                                     >
-                                        <option value="participant">Participante</option>
                                         <option value="staff">Staff</option>
                                         <option value="admin">Administrador</option>
                                         <option value="mentor">Mentor</option>
                                         <option value="speaker">Palestrante</option>
+                                        <option value="sponsor">Patrocinador</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
@@ -296,10 +299,10 @@ export default function AdminUsuarios() {
                 <div className="glass-card p-4 hidden lg:block">
                     <div className="flex items-center justify-between mb-2">
                         <CheckCircle className="h-5 w-5 text-green-400" />
-                        <Badge variant="outline" className="border-green-500/30 text-green-400">Ativos</Badge>
+                        <Badge variant="outline" className="border-green-500/30 text-green-400">Membros</Badge>
                     </div>
-                    <p className="text-2xl font-bold text-white">{users.length}</p>
-                    <p className="text-xs text-gray-500 mt-1">Sessões recentes</p>
+                    <p className="text-2xl font-bold text-white">{filteredUsers.length}</p>
+                    <p className="text-xs text-gray-500 mt-1">Total filtrado</p>
                 </div>
             </div>
 
@@ -326,7 +329,8 @@ export default function AdminUsuarios() {
                             <option value="admin">Administrador</option>
                             <option value="staff">Staff</option>
                             <option value="mentor">Mentor</option>
-                            <option value="participant">Participante</option>
+                            <option value="speaker">Palestrante</option>
+                            <option value="sponsor">Patrocinador</option>
                         </select>
                     </div>
                     <div className="flex items-center gap-2 bg-dark-300 px-3 py-1 rounded-lg border border-dark-400">
@@ -461,11 +465,11 @@ export default function AdminUsuarios() {
                                 onChange={(e) => setEditingUser(prev => prev ? { ...prev, role: e.target.value as User['role'] } : null)}
                                 className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
                             >
-                                <option value="participant">Participante</option>
                                 <option value="staff">Staff</option>
                                 <option value="admin">Administrador</option>
                                 <option value="mentor">Mentor</option>
                                 <option value="speaker">Palestrante</option>
+                                <option value="sponsor">Patrocinador</option>
                             </select>
                         </div>
 

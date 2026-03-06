@@ -43,6 +43,9 @@ export interface ProjectSettings {
     pro: number;
     vip: number;
   };
+  goalRevenue?: number;
+  goalSponsorship?: number;
+  goalRegistrations?: number;
   targetRegistrations?: number;
   targetRevenue?: number;
 }
@@ -427,6 +430,8 @@ export interface EmpresaIncentivadora {
   phone: string;
   nomeEmpresa: string;
   quantidadeEquipe: number;
+  quantidadeDia: number;
+  quantidadeNoite: number;
   objetivo: string;
   status: 'pending' | 'approved' | 'rejected' | 'ativo' | 'cancelado';
   createdAt: string;

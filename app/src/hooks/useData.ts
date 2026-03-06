@@ -141,6 +141,8 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   // Notifications
   is_read: 'read',
   read_at: 'readAt',
+  quantidade_dia: 'quantidadeDia',
+  quantidade_noite: 'quantidadeNoite',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -263,6 +265,9 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       result.ticket_price_pro = Math.round((tp.pro || 0) * 100);
       result.ticket_price_vip = Math.round((tp.vip || 0) * 100);
     }
+    if (s.goalRevenue !== undefined) result.goal_revenue = s.goalRevenue;
+    if (s.goalSponsorship !== undefined) result.goal_sponsorship = s.goalSponsorship;
+    if (s.goalRegistrations !== undefined) result.goal_registrations = s.goalRegistrations;
     // Remove the raw settings object — it was expanded above into flat columns
     delete result.settings;
   }
@@ -369,12 +374,12 @@ function getSelectFields(entity: string, projectId?: string): string {
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
-    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at',
+    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,created_at',
     users: 'id,email,name,role,department,permissions,created_at,staff_role',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
     notifications: 'id,project_id,user_id,title,message,type,is_read,created_at'
@@ -478,7 +483,10 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
               standard: (item['ticket_price_standard'] as number || 0) / 100,
               pro: (item['ticket_price_pro'] as number || 0) / 100,
               vip: (item['ticket_price_vip'] as number || 0) / 100,
-            }
+            },
+            goalRevenue: item['goal_revenue'],
+            goalSponsorship: item['goal_sponsorship'],
+            goalRegistrations: item['goal_registrations'],
           };
         }
 

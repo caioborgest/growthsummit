@@ -27,6 +27,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         phone: '',
         nomeEmpresa: '',
         quantidadeEquipe: '',
+        quantidadeDia: '',
+        quantidadeNoite: '',
         objetivo: ''
     });
 
@@ -59,7 +61,11 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
             nomeResponsavel: '', email: '', phone: '',
-            nomeEmpresa: '', quantidadeEquipe: '', objetivo: ''
+            nomeEmpresa: '',
+            quantidadeEquipe: '',
+            quantidadeDia: '',
+            quantidadeNoite: '',
+            objetivo: ''
         });
     };
 
@@ -99,6 +105,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 telefone: formData.phone,
                 nome_empresa: formData.nomeEmpresa,
                 quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
+                quantidade_dia: parseInt(formData.quantidadeDia) || 0,
+                quantidade_noite: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
                 status: isAdmin ? 'aprovado' : 'pendente'
             }]);
@@ -108,10 +116,11 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 throw dbError;
             }
 
+            const qtdDia = parseInt(formData.quantidadeDia) || 0;
+            const qtdNoite = parseInt(formData.quantidadeNoite) || 0;
             const valorUnitario = 179.99;
-            const qtd = parseInt(formData.quantidadeEquipe) || 0;
-            const temDesconto = qtd >= 10;
-            const valorTotal = temDesconto ? (qtd * valorUnitario * 0.9) : (qtd * valorUnitario);
+            const temDesconto = qtdNoite >= 10;
+            const valorTotal = temDesconto ? (qtdNoite * valorUnitario * 0.9) : (qtdNoite * valorUnitario);
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             if (!isAdmin) {
@@ -122,8 +131,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                     `• *Empresa:* ${formData.nomeEmpresa}\n` +
                     `• *Responsável:* ${formData.nomeResponsavel}\n` +
                     `• *WhatsApp:* ${formData.phone}\n` +
-                    `• *Equipe:* ${qtd} pessoas\n` +
-                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Equipe >= 10)' : 'Nenhum'}\n` +
+                    `• *Equipe (Dia):* ${qtdDia} pessoas\n` +
+                    `• *Equipe (Noite):* ${qtdNoite} pessoas\n` +
+                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Noite >= 10)' : 'Nenhum'}\n` +
                     `• *Valor Total:* ${valorFormatado}\n\n` +
                     `*MOTIVO DA INSCRIÇÃO:* ${formData.objetivo}\n\n` +
                     `_Pode me enviar a chave Pix para pagamento?_`
@@ -142,7 +152,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             }, 8000);
 
         } catch (err: any) {
-            logger.error('Erro crítico no formulário de empresa:', err);
+            logger.error('Erro crítico no formulário de empresa:', err as Error);
             setError(err.message || 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);
@@ -201,17 +211,46 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Quantos colaboradores levará?</label>
+                                        <label className="text-sm font-medium text-gray-300">Colaboradores (Dia)</label>
                                         <div className="relative">
                                             <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                             <input
                                                 required
                                                 type="number"
-                                                min="1"
+                                                min="0"
                                                 className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
-                                                value={formData.quantidadeEquipe}
-                                                onChange={e => setFormData({ ...formData, quantidadeEquipe: e.target.value })}
-                                                placeholder="Ex: 5, 10, 20..."
+                                                value={formData.quantidadeDia}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        quantidadeDia: val,
+                                                        quantidadeEquipe: Math.max(parseInt(val) || 0, parseInt(prev.quantidadeNoite) || 0).toString()
+                                                    }));
+                                                }}
+                                                placeholder="Arena/Networking"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">Colaboradores (Noite)</label>
+                                        <div className="relative">
+                                            <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <input
+                                                required
+                                                type="number"
+                                                min="0"
+                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                                value={formData.quantidadeNoite}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        quantidadeNoite: val,
+                                                        quantidadeEquipe: Math.max(parseInt(prev.quantidadeDia) || 0, parseInt(val) || 0).toString()
+                                                    }));
+                                                }}
+                                                placeholder="Programação Paga"
                                             />
                                         </div>
                                     </div>
@@ -266,7 +305,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                 <div className="bg-brand-orange-coral/10 p-4 rounded-xl border border-brand-orange-coral/20 flex gap-3">
                                     <Trophy className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
                                     <p className="text-xs text-gray-300 leading-relaxed">
-                                        Empresas que levam equipes acima de **10 pessoas** para programação a noite, ganham **10% de desconto adicional** e concorrem ao prêmio de empresa que mais investe no empreendedorismo. A empresa que mais investir ganha o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.
+                                        Empresas que levam equipes acima de **10 pessoas** para a **programação a noite**, ganham **10% de desconto adicional** no valor das inscrições e concorrem ao prêmio oficial. A empresa com maior engajamento total (Dia + Noite) ganha o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.
                                     </p>
                                 </div>
 

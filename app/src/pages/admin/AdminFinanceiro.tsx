@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTransactions, useRegistrations } from '@/hooks/useData';
+import { useTransactions, useRegistrations, useProjects } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
+import { toast } from 'react-hot-toast';
 
 const categoryColors: Record<string, string> = {
   'Inscrições': 'bg-teal-500/20 text-teal-400',
@@ -33,8 +35,42 @@ const statusColors: Record<string, string> = {
 export function AdminFinanceiro() {
   const { data: transactions } = useTransactions();
   const { data: registrations } = useRegistrations();
+  const { update: updateProject } = useProjects();
+  const { selectedProject } = useProject();
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [activeView, setActiveView] = useState<'overview' | 'transactions'>('overview');
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [isUpdatingGoals, setIsUpdatingGoals] = useState(false);
+
+  // Get goals from project settings or fallback to defaults
+  const goals = {
+    revenue: selectedProject?.settings?.goalRevenue || 616000,
+    sponsorship: selectedProject?.settings?.goalSponsorship || 200000,
+    registrations: selectedProject?.settings?.goalRegistrations || 300
+  };
+
+  const [tempGoals, setTempGoals] = useState(goals);
+
+  const handleUpdateGoals = async () => {
+    if (!selectedProject?.id) return;
+    setIsUpdatingGoals(true);
+    try {
+      await updateProject(selectedProject.id, {
+        settings: {
+          ...selectedProject.settings,
+          goalRevenue: tempGoals.revenue,
+          goalSponsorship: tempGoals.sponsorship,
+          goalRegistrations: tempGoals.registrations
+        }
+      } as any);
+      toast.success('Metas atualizadas com sucesso!');
+      setShowGoalModal(false);
+    } catch (error) {
+      toast.error('Erro ao atualizar metas');
+    } finally {
+      setIsUpdatingGoals(false);
+    }
+  };
 
   const filteredTransactions = transactions.filter(t => {
     return typeFilter === 'all' || t.type === typeFilter;
@@ -212,49 +248,127 @@ export function AdminFinanceiro() {
 
           {/* Financial Goals */}
           <div className="glass-card p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Metas Financeiras</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white">Metas Financeiras</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-dark-300 text-gray-300 hover:text-white"
+                onClick={() => {
+                  setTempGoals(goals);
+                  setShowGoalModal(true);
+                }}
+              >
+                Editar Metas
+              </Button>
+            </div>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-400 text-sm">Receita</span>
-                  <span className="text-teal-400 text-sm">{Math.round((income / 616000) * 100)}%</span>
+                  <span className="text-teal-400 text-sm">{Math.round((income / goals.revenue) * 100)}%</span>
                 </div>
                 <div className="w-full bg-dark-300 rounded-full h-3">
                   <div
                     className="bg-teal-500 h-3 rounded-full"
-                    style={{ width: `${Math.min((income / 616000) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((income / goals.revenue) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {income.toLocaleString()} / R$ 616.000</p>
+                <p className="text-gray-500 text-xs mt-1">R$ {income.toLocaleString()} / R$ {goals.revenue.toLocaleString()}</p>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-400 text-sm">Patrocínio</span>
-                  <span className="text-blue-400 text-sm">{Math.round((incomeByCategory['Patrocínio'] || 0) / 200000 * 100)}%</span>
+                  <span className="text-blue-400 text-sm">{Math.round((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship * 100)}%</span>
                 </div>
                 <div className="w-full bg-dark-300 rounded-full h-3">
                   <div
                     className="bg-blue-500 h-3 rounded-full"
-                    style={{ width: `${Math.min(((incomeByCategory['Patrocínio'] || 0) / 200000) * 100, 100)}%` }}
+                    style={{ width: `${Math.min(((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Patrocínio'] || 0).toLocaleString()} / R$ 200.000</p>
+                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Patrocínio'] || 0).toLocaleString()} / R$ {goals.sponsorship.toLocaleString()}</p>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-400 text-sm">Inscrições</span>
-                  <span className="text-green-400 text-sm">{Math.round((incomeByCategory['Inscrições'] || 0) / 300000 * 100)}%</span>
+                  <span className="text-green-400 text-sm">{Math.round((incomeByCategory['Inscrições'] || 0) / goals.registrations * 100)}%</span>
                 </div>
                 <div className="w-full bg-dark-300 rounded-full h-3">
                   <div
                     className="bg-green-500 h-3 rounded-full"
-                    style={{ width: `${Math.min(((incomeByCategory['Inscrições'] || 0) / 300000) * 100, 100)}%` }}
+                    style={{ width: `${Math.min(((incomeByCategory['Inscrições'] || 0) / goals.registrations) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Inscrições'] || 0).toLocaleString()} / R$ 300.000</p>
+                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Inscrições'] || 0).toLocaleString()} / R$ {goals.registrations.toLocaleString()}</p>
               </div>
             </div>
           </div>
+
+          {/* Edit Goals Modal */}
+          {showGoalModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+              <div className="glass-card max-w-md w-full p-6 rounded-2xl space-y-4 relative">
+                <h3 className="text-xl font-bold text-white mb-4">Editar Metas Financeiras</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Meta de Receita Total (R$)
+                    </label>
+                    <input
+                      type="number"
+                      value={tempGoals.revenue}
+                      onChange={(e) => setTempGoals({ ...tempGoals, revenue: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Meta de Patrocínio (R$)
+                    </label>
+                    <input
+                      type="number"
+                      value={tempGoals.sponsorship}
+                      onChange={(e) => setTempGoals({ ...tempGoals, sponsorship: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Meta de Inscrições (R$)
+                    </label>
+                    <input
+                      type="number"
+                      value={tempGoals.registrations}
+                      onChange={(e) => setTempGoals({ ...tempGoals, registrations: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-green-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 mt-6">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-dark-300 text-gray-400 hover:text-white"
+                    onClick={() => setShowGoalModal(false)}
+                    disabled={isUpdatingGoals}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                    onClick={handleUpdateGoals}
+                    disabled={isUpdatingGoals}
+                  >
+                    {isUpdatingGoals ? 'Salvando...' : 'Salvar Metas'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )
       }
