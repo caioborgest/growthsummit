@@ -479,8 +479,8 @@ export function DashboardMentor() {
               <div className="relative group">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-xl shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
                   <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
-                    {(mentorData as any)?.avatarUrl ? (
-                      <img src={(mentorData as any).avatarUrl} alt={mentorData?.name} className="w-full h-full object-cover" />
+                    {mentorData?.photo ? (
+                      <img src={mentorData.photo} alt={mentorData?.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="h-8 w-8 text-orange-400" />
                     )}

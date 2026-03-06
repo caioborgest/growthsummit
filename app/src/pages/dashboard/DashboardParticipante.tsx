@@ -182,8 +182,8 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-md bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl my-auto">
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div className="w-full max-w-md bg-dark-200 rounded-3xl border border-white/10 shadow-2xl my-auto relative overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-orange-500/20 to-transparent">
           <div>
@@ -195,7 +195,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Benefícios */}
           <div className="space-y-2">
             {['Acesso às 2 Palestras Noturnas', 'Leandro Batista + Vanylton Matias', 'Networking exclusivo pós-evento', 'Certificado de participação completo'].map((b, i) => (

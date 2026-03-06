@@ -198,7 +198,7 @@ export function ProfileForm() {
                     <div className="glass-card p-8 flex flex-col items-center text-center">
                         <div className="relative mb-6 group">
                             <img
-                                src={user?.avatarUrl || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=21808D&color=fff&size=128`}
+                                src={user?.avatar || (user as any)?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=21808D&color=fff&size=128`}
                                 alt={user?.name}
                                 className="w-32 h-32 rounded-3xl object-cover border-4 border-teal-500/20 shadow-2xl transition-transform group-hover:scale-105"
                             />

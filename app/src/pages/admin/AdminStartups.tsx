@@ -213,6 +213,9 @@ export function AdminStartups() {
           <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Nova Startup</DialogTitle>
+              <DialogDescription>
+                Cadastre os dados da startup, fundadores e informações de pitch para o evento.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-6 py-4">
               {/* Seção: Informações do Fundador */}

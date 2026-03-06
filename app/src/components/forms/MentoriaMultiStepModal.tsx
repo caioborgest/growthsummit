@@ -157,6 +157,10 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 ref={scrollContainerRef}
                 className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-dark-100 border-white/10 p-4 sm:p-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[2.5rem] custom-scrollbar selection:bg-brand-orange-coral/30"
             >
+                <div className="sr-only">
+                    <DialogTitle>Solicitação de Mentoria</DialogTitle>
+                    <DialogDescription>Formulário de agendamento de mentoria em múltiplas etapas.</DialogDescription>
+                </div>
                 <div className="sticky top-0 bg-dark-100/95 backdrop-blur-2xl pb-8 border-b border-white/5 mb-10 z-30 -mx-4 sm:-mx-10 px-4 sm:px-10 pt-2">
                     <div className="flex items-center justify-between mb-8">
                         <div className="space-y-1">

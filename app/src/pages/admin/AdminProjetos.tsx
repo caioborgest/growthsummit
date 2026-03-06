@@ -400,40 +400,58 @@ export default function AdminProjetos() {
                 </div>
               </div>
 
-              <div className="border-t border-[#334155] pt-4">
-                <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Limites e Vagas</h4>
+              <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Metas, Limites e Vagas</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Meta de Público (Quantidade) *</Label>
+                  <Input
+                    type="number"
+                    required
+                    value={formData.settings?.goalRegistrations || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      settings: {
+                        ...defaultSettings,
+                        ...formData.settings,
+                        goalRegistrations: parseInt(e.target.value) || 0
+                      }
+                    })}
+                    className="bg-[#0F172A] border-[#334155]"
+                    placeholder="Ex: 1500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Limite Máximo (Físico)</Label>
+                  <Input
+                    type="number"
+                    value={formData.settings?.maxRegistrations || ''}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      settings: {
+                        ...defaultSettings,
+                        ...formData.settings,
+                        maxRegistrations: parseInt(e.target.value) || undefined
+                      }
+                    })}
+                    className="bg-[#0F172A] border-[#334155]"
+                  />
+                </div>
+              </div>
+              {/* Calculadora de Receita */}
+              <div className="mt-4 p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                <p className="text-xs uppercase font-black text-teal-400 mb-2">Simulador de Faturamento (Baseado na Meta)</p>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Max Inscrições</Label>
-                    <Input
-                      type="number"
-                      value={formData.settings?.maxRegistrations || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        settings: {
-                          ...defaultSettings,
-                          ...formData.settings,
-                          maxRegistrations: parseInt(e.target.value) || undefined
-                        }
-                      })}
-                      className="bg-[#0F172A] border-[#334155]"
-                    />
+                  <div>
+                    <p className="text-sm text-gray-400">Receita Prevista (Média):</p>
+                    <p className="text-xl font-bold text-white">
+                      {(((formData.settings?.goalRegistrations || 0) *
+                        ((formData.settings?.ticketPrices?.standard || 0) + (formData.settings?.ticketPrices?.pro || 0) + (formData.settings?.ticketPrices?.vip || 0)) / 3)
+                      ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Max Mentores</Label>
-                    <Input
-                      type="number"
-                      value={formData.settings?.maxMentors || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        settings: {
-                          ...defaultSettings,
-                          ...formData.settings,
-                          maxMentors: parseInt(e.target.value) || undefined
-                        }
-                      })}
-                      className="bg-[#0F172A] border-[#334155]"
-                    />
+                  <div>
+                    <p className="text-sm text-gray-400">Total de Pessoas:</p>
+                    <p className="text-xl font-bold text-white">{formData.settings?.goalRegistrations || 0}</p>
                   </div>
                 </div>
               </div>

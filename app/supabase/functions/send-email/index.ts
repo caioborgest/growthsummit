@@ -18,12 +18,13 @@ interface EmailRequest {
 serve(async (req: Request) => {
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-auth',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Max-Age': '86400',
     };
 
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders, status: 200 });
+        return new Response('ok', { status: 200, headers: corsHeaders });
     }
 
     try {

@@ -6,8 +6,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { mentorService } from '@/services/mentorService';
+import { useProject } from '@/contexts/ProjectContext';
+import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 
 export function SejaMentor() {
+  const { projectId } = useProject();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,18 +21,86 @@ export function SejaMentor() {
     company: '',
     position: '',
     expertise: '',
+    bio: '',
     linkedin: '',
     photo: null as File | null,
     photoPreview: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.photo) {
-      toast.error('Por favor, anexe uma foto de perfil.');
+    if (isSubmitting) return;
+
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast.error('Preencha os campos obrigatórios.');
       return;
     }
-    toast.success('Inscrição enviada! Entraremos em contato em breve.');
+
+    if (!projectId) {
+      toast.error('Nenhum projeto selecionado. Selecione um evento no topo da página.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let photoUrl = '';
+
+      // 1. Upload da foto se houver
+      if (formData.photo) {
+        const file = formData.photo;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `candidaturas_mentores/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          logger.error('Erro no upload da foto do mentor:', uploadError);
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(filePath);
+          photoUrl = urlData.publicUrl;
+        }
+      }
+
+      // 2. Enviar candidatura
+      await mentorService.apply({
+        projectId,
+        nome: formData.name,
+        email: formData.email,
+        telefone: formData.phone,
+        empresa: formData.company,
+        cargo: formData.position,
+        especialidades: formData.expertise.split(',').map(s => s.trim()),
+        bio: formData.bio || formData.expertise,
+        linkedinUrl: formData.linkedin,
+        fotoUrl: photoUrl
+      });
+
+      toast.success('Sua candidatura foi enviada com sucesso! Analisaremos seu perfil e entraremos em contato.');
+
+      // Limpar formulário
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        position: '',
+        expertise: '',
+        bio: '',
+        linkedin: '',
+        photo: null,
+        photoPreview: ''
+      });
+    } catch (error: any) {
+      logger.error('Erro ao enviar candidatura de mentor:', error);
+      toast.error('Erro ao enviar candidatura: ' + (error.message || 'Erro de conexão'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const benefits = [
     {

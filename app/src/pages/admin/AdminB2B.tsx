@@ -318,6 +318,9 @@ export function AdminB2B() {
               <DialogContent className="bg-dark-200 border-dark-300 text-white">
                 <DialogHeader>
                   <DialogTitle>Agendar Reunião B2B</DialogTitle>
+                  <DialogDescription>
+                    Defina as empresas e o horário para a nova rodada de negócios.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateMeeting} className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -391,6 +394,9 @@ export function AdminB2B() {
               <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Cadastrar Nova Empresa B2B</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados do representante e da empresa para participação no B2B.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateCompany} className="space-y-6 py-4">
                   {/* Seção: Representante */}

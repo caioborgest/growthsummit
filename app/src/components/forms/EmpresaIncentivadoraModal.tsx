@@ -248,29 +248,34 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                                 value={formData.quantidadeNoite}
                                                 onChange={e => {
                                                     const val = e.target.value;
+                                                    const qNoite = parseInt(val) || 0;
+                                                    const calculatedAmount = qNoite * 497;
                                                     setFormData(prev => ({
                                                         ...prev,
                                                         quantidadeNoite: val,
-                                                        quantidadeEquipe: Math.max(parseInt(prev.quantidadeDia) || 0, parseInt(val) || 0).toString()
+                                                        quantidadeEquipe: Math.max(parseInt(prev.quantidadeDia) || 0, qNoite).toString(),
+                                                        amount: calculatedAmount.toString()
                                                     }));
                                                 }}
                                                 placeholder="Programação Paga"
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Valor Investido (R$)</label>
+                                    <div className="space-y-2 col-span-1 sm:col-span-2">
+                                        <label className="text-sm font-medium text-gray-300">Investimento Total (R$)</label>
                                         <div className="relative">
-                                            <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                             <input
                                                 required
                                                 type="number"
-                                                step="0.01"
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-teal-500 outline-none text-sm sm:text-base font-bold"
                                                 value={formData.amount}
                                                 onChange={e => setFormData({ ...formData, amount: e.target.value })}
                                                 placeholder="0.00"
                                             />
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-teal-400 uppercase font-black tracking-widest hidden sm:block">
+                                                Cálculo: R$ 497/unid. Noite
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

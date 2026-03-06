@@ -153,6 +153,9 @@ export default function AdminPatrocinadores() {
           <DialogContent className="bg-dark-200 border-dark-300 text-white">
             <DialogHeader>
               <DialogTitle>Adicionar Novo Patrocinador</DialogTitle>
+              <DialogDescription>
+                Informe os detalhes da empresa e contato para o novo patrocínio.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">

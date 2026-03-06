@@ -140,7 +140,18 @@ function DetalhesModal({
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Marcar como Pago
+                Confirmar Pagamento
+              </Button>
+            )}
+
+            {(reg.status !== 'pago' && reg.amount > 0) && (
+              <Button
+                onClick={() => onUpdateStatus(reg.id, 'free')}
+                variant="outline"
+                className="w-full border-blue-500/50 text-blue-400 hover:bg-blue-500/10 font-bold"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                Converter para Grátis
               </Button>
             )}
             {(!['pendente', 'pending'].includes(reg.status)) && (
@@ -211,11 +222,19 @@ export default function AdminInscricoes() {
       if (!registration) return;
 
       const oldStatus = registration.status;
-      await update(id, { status });
+      const updates: any = { status };
+
+      // Se mudar para Grátis, zerar o valor
+      if (status === 'free') {
+        updates.amount = 0;
+        updates.status = 'pago'; // No banco tratamos como pago com valor 0
+      }
+
+      await update(id, updates);
 
       // 1. Sincronização de Cancelamento
       if (status === 'cancelled' && oldStatus !== 'cancelled') {
-        // A. Liberar vagas na programação
+        // ... (lógica existente de liberar vagas)
         if (registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
           const { supabase } = await import('@/lib/supabase');
           for (const sessionId of registration.cursosSelecionados) {
@@ -225,41 +244,40 @@ export default function AdminInscricoes() {
               console.error(`Erro ao decrementar sessão ${sessionId}:`, err);
             }
           }
-          toast.info('Vagas na programação liberadas.');
         }
 
-        // B. Cancelar transação financeira relacionada
-        const relatedTransaction = transactions.find(t => t.relatedId === id || t.description.includes(registration.name || ''));
+        // Cancelar transação financeira
+        const relatedTransaction = transactions.find(t => t.relatedId === id);
         if (relatedTransaction && relatedTransaction.status !== 'cancelled') {
           await updateTransaction(relatedTransaction.id, { status: 'cancelled' });
-          toast.info('Lançamento financeiro marcado como cancelado.');
+          toast.info('Lançamento financeiro cancelado.');
         }
       }
 
       // 2. Sincronização de Pagamento (Criar Lançamento)
-      if (status === 'paid' && oldStatus !== 'paid') {
+      if ((status === 'paid' || status === 'free' || status === 'pago') && !['pago', 'paid'].includes(oldStatus)) {
         try {
+          const amount = status === 'free' ? 0 : (registration.amount || 0);
           await createTransaction({
             projectId: registration.projectId || '',
             type: 'income',
             category: 'Inscrições',
-            description: `Inscrição: ${registration.name}`,
-            amount: registration.amount || 0,
+            description: `Inscrição (${status === 'free' ? 'Cortesia' : 'Manual'}): ${registration.name}${registration.palestrasNoturnas ? ' + Night Experience' : ''}`,
+            amount: amount,
             date: new Date().toISOString(),
             status: 'completed',
             relatedId: id,
             relatedType: 'registration'
           } as any);
-          toast.success('Lançamento automático realizado no financeiro');
+          toast.success('Lançamento registrado no financeiro');
         } catch (finErr) {
           console.error('Erro ao registrar no financeiro:', finErr);
-          toast.error('Status atualizado, mas houve erro no lançamento financeiro');
         }
       }
 
-      toast.success(`Status atualizado para ${statusLabels[status] || status}`);
+      toast.success(`Status atualizado com sucesso!`);
       if (detalhes && detalhes.id === id) {
-        setDetalhes(prev => prev ? { ...prev, status } : null);
+        setDetalhes(prev => prev ? { ...prev, ...updates } : null);
       }
     } catch (error) {
       console.error('Erro ao atualizar status:', error);

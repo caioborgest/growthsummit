@@ -78,34 +78,75 @@ export function Login() {
     setError('');
 
     try {
-      const loggedInUser = await login(email, password);
+      if (loginMethod === 'password') {
+        const loggedInUser = await login(email, password);
 
-      if (loggedInUser) {
-        // Se precisar de 2FA, o AuthContext já terá atualizado o estado
-        if (loggedInUser.requires2FA) {
-          toast.info('Autenticação de dois fatores necessária');
-          return;
+        if (loggedInUser) {
+          if (loggedInUser.requires2FA) {
+            toast.info('Autenticação de dois fatores necessária');
+            return;
+          }
+
+          const rolesToPaths: Record<string, string> = {
+            'admin': '/admin',
+            'mentor': '/mentor-area',
+            'company': '/empresa-area',
+            'startup': '/startup-area',
+            'sponsor': '/patrocinador-area',
+            'participant': '/minha-area',
+            'participante': '/minha-area'
+          };
+
+          const targetPath = rolesToPaths[loggedInUser.role] || '/';
+          navigate(targetPath, { replace: true });
         }
-
-        // Redirecionamento baseado na role real do usuário com replace: true
-        const rolesToPaths: Record<string, string> = {
-          'admin': '/admin',
-          'mentor': '/mentor-area',
-          'company': '/empresa-area',
-          'startup': '/startup-area',
-          'sponsor': '/patrocinador-area',
-          'participant': '/minha-area',
-          'participante': '/minha-area'
-        };
-
-        const targetPath = rolesToPaths[loggedInUser.role] || '/';
-        navigate(targetPath, { replace: true });
+      } else {
+        await loginWithOTP(email);
+        setOtpSent(true);
+        toast.success(`Link de acesso enviado para ${email}! Verifique sua caixa de entrada.`);
       }
-    } catch (err) {
-      const error = err as Error;
-      setError(error?.message || 'Email ou senha inválidos');
+    } catch (err: any) {
+      const msg = err?.message || '';
+      logger.error('Login error:', err);
+
+      if (msg.includes('Email logins are disabled')) {
+        setError('O login por senha está desativado. Por favor, use a opção "Entrar sem Senha" abaixo.');
+        setLoginMethod('otp');
+      } else {
+        setError(msg || 'Email ou senha inválidos');
+      }
     }
   };
+
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+  const [otpSent, setOtpSent] = useState(false);
+  const { loginWithOTP } = useAuth();
+
+  if (otpSent) {
+    return (
+      <div className="h-screen h-[100dvh] bg-dark flex items-center justify-center p-4 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
+        <div className="relative z-10 w-full max-w-md flex flex-col items-center">
+          <div className="glass-card p-8 w-full border-teal-500/30 text-center animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-teal-500/10">
+              <Mail className="h-10 w-10 text-teal-400" />
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Verifique seu E-mail</h2>
+            <p className="text-gray-400 mb-8">
+              Enviamos um link de acesso para <strong>{email}</strong>. Clique no link para entrar automaticamente.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setOtpSent(false)}
+              className="w-full border-white/10 text-gray-400 hover:text-white"
+            >
+              Voltar ao Login
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen h-[100dvh] bg-dark flex items-center justify-center p-4 overflow-hidden relative">
@@ -185,11 +226,28 @@ export function Login() {
           </div>
         ) : (
           <div className="glass-card p-6 sm:p-8 w-full border-brand-orange-coral/10">
+            <div className="flex justify-center mb-6">
+              <div className="flex p-1 bg-dark-300 rounded-xl">
+                <button
+                  onClick={() => setLoginMethod('password')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${loginMethod === 'password' ? 'bg-brand-orange-coral text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  Com Senha
+                </button>
+                <button
+                  onClick={() => setLoginMethod('otp')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${loginMethod === 'otp' ? 'bg-teal-500 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  Sem Senha
+                </button>
+              </div>
+            </div>
+
             <h1 className="text-xl sm:text-2xl font-bold text-white text-center mb-1">
-              Bem-vindo de volta
+              {loginMethod === 'password' ? 'Bem-vindo de volta' : 'Entrar via E-mail'}
             </h1>
             <p className="text-gray-400 text-center mb-4 sm:mb-6 text-sm sm:text-base font-medium">
-              Entre com suas credenciais para acessar
+              {loginMethod === 'password' ? 'Entre com suas credenciais para acessar' : 'Receba um link mágico na sua caixa de entrada'}
             </p>
 
             {error && (
@@ -200,14 +258,14 @@ export function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2">
-                  Email
+                <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2 text-left w-full">
+                  Seu E-mail registrado
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                   <Input
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder="exemplo@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-11 bg-dark-100/50 border-dark-300 text-white placeholder:text-gray-500 h-10 sm:h-12 rounded-xl focus:border-brand-orange-coral/50 transition-all"
@@ -216,54 +274,60 @@ export function Login() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2">
-                  Senha
-                </label>
-                <div className="relative border-2 border-brand-orange-coral/20 rounded-xl focus-within:border-brand-orange-coral transition-all">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-11 pr-11 bg-transparent border-none text-white placeholder:text-gray-500 h-10 sm:h-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
+              {loginMethod === 'password' && (
+                <div>
+                  <div className="flex items-center justify-between mb-1 sm:mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-400">
+                      Senha
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotModalOpen(true)}
+                      className="text-[10px] text-brand-orange-coral hover:underline font-bold"
+                    >
+                      Esqueceu?
+                    </button>
+                  </div>
+                  <div className="relative border-2 border-brand-orange-coral/20 rounded-xl focus-within:border-brand-orange-coral transition-all">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-11 pr-11 bg-transparent border-none text-white placeholder:text-gray-500 h-10 sm:h-12"
+                      required={loginMethod === 'password'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer group">
-                  <input type="checkbox" className="rounded bg-dark-100 border-dark-300 text-teal-500" />
-                  <span className="ml-2 text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Lembrar-me</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setIsForgotModalOpen(true)}
-                  className="text-xs text-brand-orange-coral hover:text-brand-orange-intense font-bold transition-all"
-                >
-                  Esqueceu a senha?
-                </button>
-              </div>
+              {loginMethod === 'password' && (
+                <div className="flex items-center justify-between py-1">
+                  <label className="flex items-center cursor-pointer group">
+                    <input type="checkbox" className="rounded bg-dark-100 border-dark-300 text-teal-500 mr-2" />
+                    <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Lembrar-me</span>
+                  </label>
+                </div>
+              )}
 
               <Button
                 type="submit"
-                className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white py-5 sm:py-6 mt-2 rounded-xl font-black text-lg shadow-lg shadow-brand-orange-coral/20 transition-all hover:scale-[1.02]"
+                className={`w-full py-5 sm:py-6 mt-2 rounded-xl font-black text-lg shadow-lg transition-all hover:scale-[1.02] ${loginMethod === 'password' ? 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-brand-orange-coral/20' : 'bg-teal-500 hover:bg-teal-600 text-white shadow-teal-500/20'}`}
                 disabled={isAuthenticating}
               >
                 {isAuthenticating ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                 ) : (
                   <>
-                    Entrar
+                    {loginMethod === 'password' ? 'Acessar Painel' : 'Enviar Link de Acesso'}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}

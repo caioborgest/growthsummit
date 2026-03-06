@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useMentoringSessions, useMentors, useRegistrations } from '@/hooks/useData';
@@ -65,16 +66,22 @@ export function AdminMentorias() {
       const mentor = mentors.find(m => m.id === formData.mentorId);
       const registration = registrations.find(r => r.id === formData.menteeId);
 
-      await create({
+      const payload: any = {
         mentorId: formData.mentorId,
-        menteeId: registration?.userId || '', // Assuming menteeId in session is userId
-        mentorName: mentor?.name || '',
-        menteeName: registration?.name || '',
         scheduledAt: formData.scheduledAt,
         status: 'scheduled',
         topic: formData.topic,
-        duration: formData.duration
-      } as Parameters<typeof create>[0]);
+        duration: Number(formData.duration) || 30,
+        mentorName: mentor?.name || '',
+        menteeName: registration?.name || 'Participante'
+      };
+
+      // Só envia menteeId se for um UUID válido (não vazio)
+      if (registration?.userId) {
+        payload.menteeId = registration.userId;
+      }
+
+      await create(payload);
 
       toast.success('Mentoria agendada com sucesso!');
       setIsModalOpen(false);
@@ -140,6 +147,9 @@ export function AdminMentorias() {
           <DialogContent className="bg-dark-200 border-dark-300 text-white">
             <DialogHeader>
               <DialogTitle>Agendar Nova Mentoria</DialogTitle>
+              <DialogDescription>
+                Selecione o mentor, o participante e o horário para o novo agendamento.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-4">
               <div className="space-y-2">

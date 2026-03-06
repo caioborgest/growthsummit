@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { useUsers } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { createAuthUserWithoutSession } from '@/lib/auth-helpers';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -100,6 +101,7 @@ export default function AdminUsuarios() {
     const [newUserData, setNewUserData] = useState({
         name: '',
         email: '',
+        password: '',
         role: 'staff' as User['role'],
         department: '',
         staffRole: '',
@@ -140,19 +142,48 @@ export default function AdminUsuarios() {
     };
 
     const handleCreate = async () => {
+        if (!newUserData.email || !newUserData.name) {
+            toast.error('Preencha os campos obrigatórios');
+            return;
+        }
+
         try {
+            // ── STEP 1: Criar no Supabase Auth
+            let authUserId: string | undefined;
+            try {
+                const authUser = await createAuthUserWithoutSession({
+                    email: newUserData.email,
+                    password: newUserData.password || 'Growth@2026',
+                    name: newUserData.name,
+                    role: newUserData.role
+                });
+                authUserId = authUser?.id;
+            } catch (authErr: any) {
+                const msg = authErr.message?.toLowerCase() || '';
+                if (!msg.includes('already registered') && !msg.includes('email matching')) {
+                    throw authErr;
+                }
+            }
+
+            // ── STEP 2: Criar na tabela public.users (via create do useUsers)
             await create({
-                ...newUserData,
+                id: authUserId,
+                name: newUserData.name,
+                email: newUserData.email,
+                role: newUserData.role,
+                department: newUserData.department,
+                staffRole: newUserData.staffRole,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             } as any);
 
-            toast.success('Membro adicionado com sucesso!');
+            toast.success('Membro adicionado com sucesso e conta criada!');
             setIsCreateDialogOpen(false);
             setNewUserData({
                 name: '',
                 email: '',
-                role: 'participant',
+                password: '',
+                role: 'staff',
                 department: '',
                 staffRole: '',
             });
@@ -225,6 +256,17 @@ export default function AdminUsuarios() {
                                         onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
                                         className="bg-dark-300 border-dark-400 text-white"
                                         placeholder="email@exemplo.com"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-password">Senha Provisória</Label>
+                                    <Input
+                                        id="create-password"
+                                        type="password"
+                                        value={newUserData.password}
+                                        onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                                        className="bg-dark-300 border-dark-400 text-white"
+                                        placeholder="Deixe em branco para 'Growth@2026'"
                                     />
                                 </div>
                                 <div className="space-y-2">

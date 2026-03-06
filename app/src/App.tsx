@@ -176,10 +176,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
 function Home() {
   const { isAuthenticated, user } = useAuth();
-  const isStandalone = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
-
-  if (isStandalone && isAuthenticated && user) {
-    console.log(`[App] PWA Standalone détecté, redirecionando para área temática. Role: ${user.role}`);
+  if (isAuthenticated && user) {
     const rolesToPaths: Record<string, string> = {
       'admin': '/admin',
       'mentor': '/mentor-area',

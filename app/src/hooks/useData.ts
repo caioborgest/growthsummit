@@ -252,7 +252,13 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       dbKey = toSnakeCase(key);
     }
 
-    result[dbKey] = value;
+    // Clean up: convert empty strings to null for ID/foreign key fields to avoid UUID errors
+    const isIdField = key.toLowerCase().includes('id') || key.toLowerCase().includes('uid');
+    if (isIdField && typeof value === 'string' && value.trim() === '') {
+      result[dbKey] = null;
+    } else {
+      result[dbKey] = value;
+    }
   }
 
   // Handle nested/special structures
@@ -734,11 +740,14 @@ export function useProfile(userId?: string) {
 
       const { error } = await supabase
         .from('profiles' as any)
-        .upsert({
-          user_id: userId,
-          ...dataToUpdate,
-          updated_at: new Date().toISOString()
-        } as any);
+        .upsert(
+          {
+            user_id: userId,
+            ...dataToUpdate,
+            updated_at: new Date().toISOString()
+          } as any,
+          { onConflict: 'user_id' }
+        );
 
       if (error) throw error;
       await fetchData();

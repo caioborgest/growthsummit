@@ -148,7 +148,7 @@ export async function waitForUserSync(userId: string): Promise<string> {
             .from('users')
             .select('id')
             .eq('id', userId)
-            .maybeSingle();
+            .maybeSingle() as { data: { id: string } | null };
 
         if (data?.id) {
             logger.debug(`[auth-helpers] Usuário sincronizado após ${attempt} tentativa(s):`, userId);
@@ -160,6 +160,48 @@ export async function waitForUserSync(userId: string): Promise<string> {
 
     // Mesmo sem confirmar a sincronia, retornar o userId — o insert de inscrição vai funcionar
     // pois o Supabase propaga o trigger assincronicamente
-    logger.warn('[auth-helpers] Timeout aguardando sync do usuário. Prosseguindo com userId:', userId);
+    logger.warn('[auth-helpers] Timeout aguardando sync do usuário. Prosseguindo...', { userId });
     return userId;
+}
+
+/**
+ * Cria um usuário no Supabase Auth sem afetar a sessão atual.
+ * Útil para administradores criando contas para outros.
+ */
+export async function createAuthUserWithoutSession({
+    email,
+    password,
+    name = '',
+    phone = '',
+    role = 'participant',
+}: GetOrCreateUserOptions) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Criar um cliente temporário COM persistência DESATIVADA
+    const tempSupabase = (await import('@supabase/supabase-js')).createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY,
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
+            }
+        }
+    );
+
+    const { data, error } = await tempSupabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+            data: { name, phone, role },
+        },
+    });
+
+    if (error) {
+        logger.error('[auth-helpers] Erro ao criar usuário admin-side:', error);
+        throw error;
+    }
+
+    return data.user;
 }

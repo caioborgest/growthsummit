@@ -37,8 +37,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
-import { Camera, User, GraduationCap, Linkedin, Briefcase as BriefcaseIcon } from 'lucide-react';
 import { areasMentoria } from '@/data/mentores';
+import { createAuthUserWithoutSession } from '@/lib/auth-helpers';
 
 
 const ESPECIALIDADES = areasMentoria;
@@ -519,6 +519,29 @@ export function AdminMentores() {
         return;
       }
 
+      // ── STEP 1: Garantir conta no Supabase Auth
+      let authUserId: string | undefined;
+      try {
+        const authUser = await createAuthUserWithoutSession({
+          email: formData.email,
+          password: formData.password || 'Growth@2026', // Senha padrão se não informada
+          name: formData.name,
+          phone: formData.phone,
+          role: 'mentor'
+        });
+        authUserId = authUser?.id;
+        logger.info('[AdminMentores] Conta Auth criada/verificada para mentor:', { email: formData.email, authUserId });
+      } catch (authErr: any) {
+        // Se o erro for "usuário já existe", apenas ignoramos e prosseguimos para criar o perfil
+        const msg = authErr.message?.toLowerCase() || '';
+        if (msg.includes('already registered') || msg.includes('email matching')) {
+          logger.info('[AdminMentores] Usuário já existe no Auth, prosseguindo com criação de perfil.');
+        } else {
+          throw authErr;
+        }
+      }
+
+      // ── STEP 2: Upload da Foto
       let photoUrl = '';
       if (formData.photo) {
         const file = formData.photo;
@@ -539,7 +562,9 @@ export function AdminMentores() {
         photoUrl = urlData.publicUrl;
       }
 
+      // ── STEP 3: Criar perfil de Mentor
       await create({
+        userId: authUserId, // Vincula ao ID do Auth
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -556,7 +581,7 @@ export function AdminMentores() {
         projectId: projectId || 'manual',
       } as any);
 
-      toast.success('Mentor adicionado com sucesso!');
+      toast.success('Mentor adicionado com sucesso e conta criada!');
       setIsModalOpen(false);
       resetForm();
     } catch (err: unknown) {
@@ -600,14 +625,53 @@ export function AdminMentores() {
   };
 
   const handleApprove = useCallback(async (id: string) => {
+    const mentor = mentors.find(m => m.id === id);
+    if (!mentor) return;
+
     try {
+      // Se o mentor não tem vínculo com Auth, tentamos criar a conta agora
+      if (!mentor.userId) {
+        logger.info('[AdminMentores] Mentor sem userId detectado ao aprovar. Criando conta Auth...', { email: mentor.email });
+
+        try {
+          const authUser = await createAuthUserWithoutSession({
+            email: mentor.email,
+            password: 'Growth@2026', // Senha padrão (usuário deve mudar no primeiro acesso)
+            name: mentor.name,
+            role: 'mentor'
+          });
+
+          if (authUser?.id) {
+            await update(id, { userId: authUser.id, status: 'approved' } as any);
+            toast.success('Mentor aprovado e conta de acesso criada!');
+            return;
+          }
+        } catch (authErr: any) {
+          const msg = authErr.message?.toLowerCase() || '';
+          if (msg.includes('already registered') || msg.includes('email matching')) {
+            logger.warn('[AdminMentores] Usuário já existe no Auth mas não estava vinculado ao perfil de mentor.');
+
+            // Buscar o ID desse usuário existente pelo email
+            const { data: existingUser } = await supabase.from('users').select('id').eq('email', mentor.email).maybeSingle();
+            if (existingUser) {
+              await supabase.from('users').update({ role: 'mentor' }).eq('id', existingUser.id);
+              await update(id, { userId: existingUser.id, status: 'approved' } as any);
+              toast.success('Mentor aprovado e permissões de acesso atualizadas!');
+              return;
+            }
+          } else {
+            throw authErr;
+          }
+        }
+      }
+
       await update(id, { status: 'approved' });
       toast.success('Mentor aprovado com sucesso!');
     } catch (err: any) {
       logger.error('Erro ao aprovar mentor:', err);
       toast.error(`Erro ao aprovar mentor: ${err.message || 'Erro desconhecido'}`);
     }
-  }, [update]);
+  }, [update, mentors]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -702,7 +766,7 @@ export function AdminMentores() {
 
             <DialogHeader className="p-8 pb-0">
               <DialogTitle className="text-2xl font-black">Adicionar Novo Mentor</DialogTitle>
-              <p className="text-gray-400 text-sm">Sincronizado com o formulário do site</p>
+              <DialogDescription className="text-gray-400 text-sm">Sincronizado com o formulário do site</DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleCreate} className="p-8 space-y-6">
