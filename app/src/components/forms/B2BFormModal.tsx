@@ -248,7 +248,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // 2. Salvar na tabela de rodadas de negócios (INSERT para permitir múltiplas)
             const { error: dbError } = await supabase
-                .from('rodada_negocios_b2b') // Changed from 'rodadas_negocios' to 'rodada_negocios_b2b' based on original code
+                .from('rodada_negocios_b2b')
                 .insert([{
                     project_id: projectId,
                     user_id: userId || null,
@@ -256,12 +256,19 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     email: cleanEmail,
                     telefone: formData.telefone,
                     nome_empresa: formData.nome_empresa,
-                    site_url: formData.site_url || null, // Changed from 'site_empresa' to 'site_url'
+                    cnpj: formData.cnpj || null,
+                    porte: formData.porte || null,
+                    faturamento_anual: formData.faturamento_anual ? parseFloat(formData.faturamento_anual) : null,
+                    numero_funcionarios: formData.numero_funcionarios ? parseInt(formData.numero_funcionarios) : null,
+                    descricao_empresa: formData.descricao_empresa,
+                    produtos_servicos: formData.produtos_servicos,
+                    site_url: formData.site_url || null,
+                    linkedin_url: formData.linkedin_url || null,
                     setor: formData.setor,
                     cargo: formData.cargo,
-                    tipo_interesse: formData.tipo_interesse, // Changed from 'objetivo' to 'tipo_interesse'
-                    areas_interesse: formData.areas_interesse, // Added based on original formData
-                    descricao_objetivos: formData.descricao_objetivos, // Added based on original formData
+                    tipo_interesse: formData.tipo_interesse,
+                    areas_interesse: formData.areas_interesse,
+                    descricao_objetivos: formData.descricao_objetivos,
                     logo_url: logoUrl || null,
                     status: 'pendente'
                 }]);

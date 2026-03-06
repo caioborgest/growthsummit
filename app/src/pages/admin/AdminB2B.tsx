@@ -108,8 +108,8 @@ export function AdminB2B() {
         projectId: projectId || '',
         companyAnchorId: meetingFormData.companyAnchorId,
         companyVendorId: meetingFormData.companyVendorId,
-        companyAnchorName: anchor?.name || '',
-        companyVendorName: vendor?.name || '',
+        companyAnchorName: anchor?.companyName || '',
+        companyVendorName: vendor?.companyName || '',
         scheduledAt: meetingFormData.scheduledAt,
         status: 'scheduled',
         duration: meetingFormData.duration,
@@ -145,7 +145,7 @@ export function AdminB2B() {
 
       await createCompany({
         projectId: projectId || '',
-        name: companyFormData.nome_empresa,
+        companyName: companyFormData.nome_empresa,
         contactName: companyFormData.nome_representante,
         contactEmail: companyFormData.email,
         phone: companyFormData.telefone,
@@ -153,21 +153,18 @@ export function AdminB2B() {
         type: companyFormData.type,
         maxMeetings: companyFormData.maxMeetings,
         status: 'approved',
-        // Outros campos integrados
-        metadata: {
-          position: companyFormData.cargo,
-          cnpj: companyFormData.cnpj,
-          companySize: companyFormData.porte,
-          annualRevenue: companyFormData.faturamento_anual,
-          employeeCount: companyFormData.numero_funcionarios,
-          description: companyFormData.descricao_empresa,
-          productsServices: companyFormData.produtos_servicos,
-          website: companyFormData.site_url,
-          linkedin: companyFormData.linkedin_url,
-          interestType: companyFormData.tipo_interesse,
-          interestAreas: companyFormData.areas_interesse,
-          objectives: companyFormData.descricao_objetivos
-        }
+        companyDescription: companyFormData.descricao_empresa,
+        productsServices: companyFormData.produtos_servicos,
+        website: companyFormData.site_url,
+        linkedin: companyFormData.linkedin_url,
+        interestType: companyFormData.tipo_interesse,
+        interestAreas: companyFormData.areas_interesse,
+        objectives: companyFormData.descricao_objetivos,
+        position: companyFormData.cargo,
+        cnpj: companyFormData.cnpj,
+        companySize: companyFormData.porte,
+        annualRevenue: companyFormData.faturamento_anual,
+        employeeCount: companyFormData.numero_funcionarios
       } as any);
 
       toast.success('Empresa cadastrada com sucesso!');
@@ -233,14 +230,14 @@ export function AdminB2B() {
     const companyA = companies.find(c => c.id === match.companyAId);
     const companyB = companies.find(c => c.id === match.companyBId);
     return (
-      companyA?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      companyB?.name.toLowerCase().includes(searchQuery.toLowerCase())
+      companyA?.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      companyB?.companyName.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
   const filteredCompanies = companies.filter(company => {
     return (
-      company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      company.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       company.sector.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
@@ -727,7 +724,7 @@ export function AdminB2B() {
                           <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center mr-3">
                             <Building2 className="h-4 w-4 text-teal-400" />
                           </div>
-                          <span className="text-white">{companyA?.name || '---'}</span>
+                          <span className="text-white">{companyA?.companyName || '---'}</span>
                         </div>
                       </td>
                       <td className="p-4">
@@ -741,7 +738,7 @@ export function AdminB2B() {
                           <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center mr-3">
                             <Building2 className="h-4 w-4 text-teal-400" />
                           </div>
-                          <span className="text-white">{companyB?.name || '---'}</span>
+                          <span className="text-white">{companyB?.companyName || '---'}</span>
                         </div>
                       </td>
                       <td className="p-4">
@@ -778,7 +775,7 @@ export function AdminB2B() {
                 </Badge>
               </div>
 
-              <h3 className="text-lg font-semibold text-white mb-1">{company.name}</h3>
+              <h3 className="text-lg font-semibold text-white mb-1">{company.companyName}</h3>
               <p className="text-teal-400 text-sm mb-1">{company.sector}</p>
               <p className="text-gray-400 text-sm mb-4">{company.contactName}</p>
 

@@ -23,15 +23,18 @@ const isGEProject = (projectId: string | undefined): boolean => {
   if (!projectId) return false;
   // Slug-based detection (works when slug is stored as projectId)
   if (projectId.startsWith('ge-')) return true;
-  // If projectId is a UUID, we check the cached selectedProject slug from localStorage
+
+  // If projectId is a UUID, we check the global selectedProject from localStorage
+  // This is a common pattern in this app to distinguish GE from and others
   try {
     const saved = localStorage.getItem('selectedProject');
     if (saved) {
-      const project = JSON.parse(saved);
-      if (project?.id === projectId && project?.slug?.startsWith('ge-')) return true;
+      const p = JSON.parse(saved);
+      // If the ID matches the current projectId and the slug starts with ge-, it's GE
+      if ((p.id === projectId || p.slug === projectId) && p.slug?.startsWith('ge-')) return true;
     }
-  } catch {
-    // ignore parse errors
+  } catch (e) {
+    // ignore
   }
   return false;
 };
@@ -93,11 +96,12 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   linkedin_url: 'linkedin',
   setor: 'sector',
   estagio: 'stage',
-  descricao_startup: 'description',
-  nome_startup: 'name',
+  descricao_startup: 'startupDescription',
+  nome_startup: 'startupName',
   nome_fundador: 'founderName',
   nome_representante: 'contactName',
-  descricao_empresa: 'description',
+  descricao_empresa: 'companyDescription',
+  nome_empresa: 'companyName',
   tipo_inscricao: 'ticketType',
   status_pagamento: 'paymentStatus',
   palestras_noturnas: 'palestrasNoturnas',
@@ -125,6 +129,13 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   mentor_name: 'mentorName',
   years_experience: 'yearsExperience',
   max_mentories: 'maxMentories',
+  porte: 'companySize',
+  faturamento_anual: 'annualRevenue',
+  numero_funcionarios: 'employeeCount',
+  produtos_servicos: 'productsServices',
+  tipo_interesse: 'interestType',
+  areas_interesse: 'interestAreas',
+  descricao_objetivos: 'objectives',
   // Notifications
   is_read: 'read',
   read_at: 'readAt',
@@ -214,7 +225,28 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
   // First pass: map directly using semantic map and snake case — skip virtual fields
   for (const [key, value] of Object.entries(data)) {
     if (VIRTUAL_FIELDS.has(key)) continue;
-    const dbKey = (useSemanticMap && SEMANTIC_MAP_TO_DB[key]) || toSnakeCase(key);
+
+    // Resolve semantic map collisions based on entity type
+    let dbKey: string;
+
+    if (useSemanticMap) {
+      // Priority overrides for specific entities to resolve app-to-db collisions
+      if (entity === 'mentors' && key === 'name') dbKey = 'nome';
+      else if (entity === 'mentors' && key === 'description') dbKey = 'bio';
+      else if (entity === 'mentors' && key === 'specialties') dbKey = 'especialidades';
+      else if (entity === 'startups' && key === 'name') dbKey = 'nome_startup';
+      else if (entity === 'startups' && key === 'description') dbKey = 'descricao_startup';
+      else if (entity === 'companies' && key === 'name') dbKey = 'nome_empresa';
+      else if (entity === 'companies' && key === 'description') dbKey = 'descricao_empresa';
+      else if (entity === 'registrations' && key === 'name') dbKey = 'nome';
+      else {
+        // Use generic semantic map or snake_case fallback
+        dbKey = SEMANTIC_MAP_TO_DB[key] || toSnakeCase(key);
+      }
+    } else {
+      dbKey = toSnakeCase(key);
+    }
+
     result[dbKey] = value;
   }
 
@@ -302,7 +334,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
     }
     if (entity === 'check_ins') {
-      return 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method';
+      return 'id,project_id,registration_id,user_id,timestamp,location,method';
     }
     if (entity === 'companies') {
       return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,faturamento_anual,numero_funcionarios,descricao_empresa,produtos_servicos,site_url,linkedin_url,logo_url,tipo_interesse,areas_interesse,descricao_objetivos,status,created_at';
@@ -316,6 +348,11 @@ function getSelectFields(entity: string, projectId?: string): string {
     if (entity === 'mentoring_sessions') {
       return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at';
     }
+    if (entity === 'b2b_meetings') {
+      // In Growth Experience, we don't have a separate matches table yet, 
+      // but if we do, it should match the registration columns if queried as registrations
+      return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,status,created_at';
+    }
   }
 
   const fields: Record<string, string> = {
@@ -326,7 +363,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
-    check_ins: 'id,project_id,registration_id,user_id,ticket_number,timestamp,location,method',
+    check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description',

@@ -78,7 +78,7 @@ export function AdminStartups() {
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch =
-      (startup.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (startup.startupName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.sector?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.foundingTeam?.[0]?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || startup.status === statusFilter;
@@ -100,9 +100,9 @@ export function AdminStartups() {
 
       await create({
         projectId: projectId || '',
-        name: formData.nome_startup,
+        startupName: formData.nome_startup,
         sector: formData.setor,
-        description: formData.descricao_startup,
+        startupDescription: formData.descricao_startup,
         stage: formData.estagio,
         status: 'approved',
         foundingTeam: [{ name: formData.nome_fundador, role: 'Founder', email: formData.email, phone: formData.telefone }],
@@ -492,9 +492,9 @@ export function AdminStartups() {
               </div>
             </div>
 
-            <h3 className="text-lg font-semibold text-white mb-1">{startup.name}</h3>
+            <h3 className="text-lg font-semibold text-white mb-1">{startup.startupName}</h3>
             <p className="text-teal-400 text-sm mb-1">{startup.sector}</p>
-            <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.description}</p>
+            <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startupDescription}</p>
 
             {/* Metrics */}
             {startup.metrics && (
