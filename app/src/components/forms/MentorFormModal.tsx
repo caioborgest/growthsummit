@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
-import { getOrCreateUser } from '@/lib/auth-helpers';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 import { mentorService } from '@/services/mentorService';
 
 interface MentorFormModalProps {
@@ -178,8 +178,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             if (!userId) throw new Error('Não foi possível identificar o usuário para o registro.');
 
-            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
-            await new Promise(r => setTimeout(r, 1500));
+            // Wait for user record to appear in public.users via DB trigger (with timeout safety)
+            await waitForUserSync(userId);
 
             // 2. Photo Upload (Now authenticated)
             // ... (keep photo upload logic as is)

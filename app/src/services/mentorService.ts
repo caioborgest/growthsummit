@@ -73,7 +73,7 @@ export const mentorService = {
                 foto_url: params.fotoUrl || null,
                 years_experience: params.yearsExperience || 0,
                 max_mentories: params.maxMentories || 5,
-                status: 'pending'
+                status: 'pendente'
             }])
             .select()
             .single();

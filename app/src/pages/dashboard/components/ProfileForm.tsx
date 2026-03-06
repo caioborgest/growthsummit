@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
-import { ProjectContext } from '@/contexts/ProjectContext';
-import { useContext } from 'react';
+import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
@@ -17,7 +16,7 @@ export function ProfileForm() {
     const { user, updateProfile } = useAuth();
     const { data: profile, update: updateProfileData, isLoading: isProfileLoading } = useProfile(user?.id);
     const { data: mentors } = useMentors();
-    const { projectId } = useContext(ProjectContext);
+    const { projectId } = useProject();
 
     // Find mentor record if exists
     const mentorRecord = mentors?.find(m => m.userId === user?.id);

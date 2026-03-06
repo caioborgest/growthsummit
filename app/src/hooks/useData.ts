@@ -22,7 +22,7 @@ import { withTimeout } from '@/lib/promiseUtils';
 const isGEProject = (projectId: string | undefined): boolean => {
   if (!projectId) return false;
   // Slug-based detection (works when slug is stored as projectId)
-  if (projectId.startsWith('ge-')) return true;
+  if (projectId.startsWith('ge-') || projectId.startsWith('growth-experience')) return true;
 
   // If projectId is a UUID, we check the global selectedProject from localStorage
   // This is a common pattern in this app to distinguish GE from and others
@@ -30,8 +30,9 @@ const isGEProject = (projectId: string | undefined): boolean => {
     const saved = localStorage.getItem('selectedProject');
     if (saved) {
       const p = JSON.parse(saved);
-      // If the ID matches the current projectId and the slug starts with ge-, it's GE
-      if ((p.id === projectId || p.slug === projectId) && p.slug?.startsWith('ge-')) return true;
+      // If the ID matches the current projectId and the slug starts with ge- or growth-experience, it's GE
+      if ((p.id === projectId || p.slug === projectId) &&
+        (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-experience'))) return true;
     }
   } catch (e) {
     // ignore
@@ -58,7 +59,8 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'mentoring_sessions': return 'mentorias_agendadas';
       case 'mentors': return 'mentores_growth_experience';
       case 'sessions': return 'programacao_evento';
-      case 'b2b_meetings': return 'rodada_negocios_b2b'; // B2B companies serve as meetings for GE
+      case 'b2b_meetings': return 'b2b_meetings';
+      case 'b2b_matches': return 'b2b_matches';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       default: return entity;
     }
@@ -325,7 +327,7 @@ function getSelectFields(entity: string, projectId?: string): string {
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId)) {
     if (entity === 'registrations') {
-      return 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,valor_pago,status_pagamento,palestras_noturnas,cursos_selecionados,cupom_palestra,valor_desconto_palestra,created_at';
+      return '*';
     }
     if (entity === 'sessions') {
       return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color';
@@ -334,13 +336,13 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
     }
     if (entity === 'check_ins') {
-      return 'id,project_id,registration_id,user_id,timestamp,location,method';
+      return '*';
     }
     if (entity === 'companies') {
       return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,faturamento_anual,numero_funcionarios,descricao_empresa,produtos_servicos,site_url,linkedin_url,logo_url,tipo_interesse,areas_interesse,descricao_objetivos,status,created_at';
     }
     if (entity === 'startups') {
-      return 'id,project_id,user_id,nome_fundador,email,telefone,nome_startup,setor,estagio,descricao_startup,problema,solucao,modelo_negocio,diferencial,site_url,linkedin_url,faturamento_mensal,investimento_buscado,pitch_deck_url,video_pitch_url,status,created_at';
+      return '*';
     }
     if (entity === 'empresas_incentivadoras') {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at';
@@ -349,9 +351,10 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at';
     }
     if (entity === 'b2b_meetings') {
-      // In Growth Experience, we don't have a separate matches table yet, 
-      // but if we do, it should match the registration columns if queried as registrations
-      return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,status,created_at';
+      return 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';
+    }
+    if (entity === 'b2b_matches') {
+      return 'id,project_id,company_a_id,company_b_id,status,created_at';
     }
   }
 
