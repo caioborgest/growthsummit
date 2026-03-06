@@ -377,6 +377,50 @@ export interface Database {
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
       };
+      inscricoes_empresas_incentivadoras: {
+        Row: {
+          id: string;
+          project_id: string | null;
+          nome_responsavel: string;
+          email: string;
+          telefone: string;
+          nome_empresa: string;
+          quantidade_equipe: number;
+          quantidade_dia: number;
+          quantidade_noite: number;
+          objetivo: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id?: string | null;
+          nome_responsavel: string;
+          email: string;
+          telefone: string;
+          nome_empresa: string;
+          quantidade_equipe?: number;
+          quantidade_dia?: number;
+          quantidade_noite?: number;
+          objetivo?: string;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string | null;
+          nome_responsavel?: string;
+          email?: string;
+          telefone?: string;
+          nome_empresa?: string;
+          quantidade_equipe?: number;
+          quantidade_dia?: number;
+          quantidade_noite?: number;
+          objetivo?: string;
+          status?: string;
+          created_at?: string;
+        };
+      };
       audit_logs: {
         Row: {
           id: string;

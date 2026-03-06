@@ -4,8 +4,6 @@ import {
   TrendingDown,
   DollarSign,
   Download,
-  ArrowUpRight,
-  ArrowDownRight,
   BarChart3,
   PieChart
 } from 'lucide-react';
@@ -13,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const categoryColors: Record<string, string> = {
   'Inscrições': 'bg-teal-500/20 text-teal-400',
@@ -62,10 +60,10 @@ export function AdminFinanceiro() {
           goalSponsorship: tempGoals.sponsorship,
           goalRegistrations: tempGoals.registrations
         }
-      } as any);
+      });
       toast.success('Metas atualizadas com sucesso!');
       setShowGoalModal(false);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao atualizar metas');
     } finally {
       setIsUpdatingGoals(false);
@@ -101,7 +99,7 @@ export function AdminFinanceiro() {
     }, {} as Record<string, number>);
 
   const registrationRevenue = registrations
-    .filter(r => r.status === 'ativo' || r.status === 'pago')
+    .filter(r => r.status === 'paid')
     .reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const registrationDiscounts = registrations

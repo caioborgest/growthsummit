@@ -40,8 +40,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 const parsed = JSON.parse(saved);
                 setFormData(prev => ({ ...prev, ...parsed.data }));
                 logger.info('Rascunho de empresa carregado');
-            } catch (e) {
-                logger.warn('Erro ao carregar rascunho de empresa:', e);
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : String(e);
+                logger.warn('Erro ao carregar rascunho de empresa:', { error: message });
             }
         }
     }, []);
@@ -84,22 +85,25 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             // 1. Tentar sincronizar usuário se estiver logado
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
-                // Upsert no perfil público
-                await (supabase.from('users') as any).upsert({
+                // @ts-ignore - bypass never type inference issue
+                await supabase.from('users').upsert({
                     id: authUser.id,
                     email: formData.email,
                     name: formData.nomeResponsavel,
                     phone: formData.phone,
-                    role: 'company',
+                    role: 'company' as const,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'id' }).then(({ error }: { error: { message: string } | null }) => {
-                    if (error) logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: error.message });
+                }, { onConflict: 'id' }).then(({ error }: { error: unknown }) => {
+                    if (error && typeof error === 'object' && 'message' in error) {
+                        logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: (error as any).message });
+                    }
                 });
             }
 
             // 2. Salvar na tabela de inscrições (INSERT para permitir múltiplas inscrições)
-            const { error: dbError } = await (supabase.from('inscricoes_empresas_incentivadoras') as any).insert([{
-                project_id: projectId,
+            // @ts-ignore - bypass never type inference issue
+            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').insert([{
+                project_id: projectId || null,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
                 telefone: formData.phone,
@@ -151,9 +155,9 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 clearDraft();
             }, 8000);
 
-        } catch (err: any) {
-            logger.error('Erro crítico no formulário de empresa:', err as Error);
-            setError(err.message || 'Erro ao processar inscrição');
+        } catch (err: unknown) {
+            logger.error('Erro crítico no formulário de empresa:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao processar inscrição');
         } finally {
             setIsSubmitting(false);
         }

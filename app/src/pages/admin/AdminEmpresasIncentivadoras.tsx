@@ -57,7 +57,7 @@ export default function AdminEmpresasIncentivadoras() {
         try {
             await update(id, { status: 'approved' });
             toast.success('Empresa aprovada!');
-        } catch (err) {
+        } catch {
             toast.error('Erro ao aprovar empresa');
         }
     };
@@ -68,7 +68,7 @@ export default function AdminEmpresasIncentivadoras() {
                 await update(id, { status: 'rejected' });
                 toast.success('Empresa rejeitada');
             }
-        } catch (err) {
+        } catch {
             toast.error('Erro ao rejeitar empresa');
         }
     };
@@ -79,7 +79,7 @@ export default function AdminEmpresasIncentivadoras() {
                 await remove(id);
                 toast.success('Empresa excluída com sucesso');
             }
-        } catch (err) {
+        } catch {
             toast.error('Erro ao excluir empresa');
         }
     };
