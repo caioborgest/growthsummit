@@ -85,7 +85,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             // 1. Tentar sincronizar usuário se estiver logado
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
-                // @ts-ignore - bypass never type inference issue
+                // @ts-expect-error - bypass never type inference issue
                 await supabase.from('users').upsert({
                     id: authUser.id,
                     email: formData.email,
@@ -95,13 +95,13 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'id' }).then(({ error }: { error: unknown }) => {
                     if (error && typeof error === 'object' && 'message' in error) {
-                        logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: (error as any).message });
+                        logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: (error as { message: string }).message });
                     }
                 });
             }
 
             // 2. Salvar na tabela de inscrições (INSERT para permitir múltiplas inscrições)
-            // @ts-ignore - bypass never type inference issue
+            // @ts-expect-error - bypass never type inference issue
             const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').insert([{
                 project_id: projectId || null,
                 nome_responsavel: formData.nomeResponsavel,
