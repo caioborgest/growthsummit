@@ -16,10 +16,11 @@ serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -60,10 +61,10 @@ serve(async (req) => {
 
     if (!groups || groups.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'No groups configured for auto-invite',
-          invited: 0 
+          invited: 0
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -79,7 +80,7 @@ serve(async (req) => {
         .select('*, users(*)')
         .eq('id', registration_id)
         .single();
-      
+
       if (reg) {
         registrationData = reg;
         userData = reg.users;
@@ -90,7 +91,7 @@ serve(async (req) => {
         .select('*')
         .eq('id', user_id)
         .single();
-      
+
       userData = user;
     }
 
@@ -153,7 +154,7 @@ serve(async (req) => {
             .from('whatsapp_group_members')
             .update(memberData)
             .eq('id', existingMember.id);
-          
+
           if (updateError) throw updateError;
           memberId = existingMember.id;
         } else {
@@ -162,7 +163,7 @@ serve(async (req) => {
             .insert(memberData)
             .select()
             .single();
-          
+
           if (insertError) throw insertError;
           memberId = newMember.id;
         }
@@ -177,7 +178,7 @@ serve(async (req) => {
 
         if (inviteResult.success) {
           invitedGroups.push(group.id);
-          
+
           // Log de sucesso
           await supabaseClient.from('whatsapp_invite_logs').insert({
             group_id: group.id,
@@ -185,15 +186,15 @@ serve(async (req) => {
             user_id: userData.id,
             action: 'invite_sent',
             method: 'auto',
-            details: { 
-              trigger, 
+            details: {
+              trigger,
               user_type,
-              timestamp: new Date().toISOString() 
+              timestamp: new Date().toISOString()
             },
           });
         } else {
           failedGroups.push(group.id);
-          
+
           // Log de erro
           await supabaseClient.from('whatsapp_invite_logs').insert({
             group_id: group.id,
@@ -230,7 +231,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro na Edge Function whatsapp-auto-invite:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Internal server error',

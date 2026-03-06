@@ -38,10 +38,11 @@ serve(async (req: Request) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -198,7 +199,7 @@ serve(async (req: Request) => {
             return { success: true };
           } else {
             result.errors.push(`Member ${member.id}: ${sendResult.message}`);
-            
+
             // Registrar erro
             await supabaseClient.from('whatsapp_invite_logs').insert({
               group_id,
@@ -253,7 +254,7 @@ serve(async (req: Request) => {
 
   } catch (error) {
     console.error('Erro na Edge Function whatsapp-bulk-invite:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Internal server error',
@@ -271,7 +272,7 @@ async function sendInvite(
   customMessage?: string,
   method: string = 'link'
 ): Promise<{ success: boolean; message: string }> {
-  const message = customMessage || 
+  const message = customMessage ||
     `Olá! Você foi convidado(a) para o grupo "${group.group_name}".\n\n` +
     (group.invite_link ? `Clique aqui para entrar: ${group.invite_link}` : 'Entre em contato para receber o link.');
 

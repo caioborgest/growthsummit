@@ -16,10 +16,11 @@ serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -120,17 +121,17 @@ serve(async (req) => {
         // Enviar link de convite via SMS/WhatsApp (implementação simulada)
         sendResult = await sendLinkInvite(member.phone_number, group.invite_link, message);
         break;
-      
+
       case 'api':
         // Enviar via API oficial do WhatsApp (requer integração com provedor)
         sendResult = await sendAPIInvite(member.phone_number, group, message);
         break;
-      
+
       case 'qr':
         // Gerar e enviar QR code
         sendResult = await sendQRInvite(member.phone_number, group.qr_code_url, message);
         break;
-      
+
       default:
         return new Response(
           JSON.stringify({ error: 'Invalid method', success: false }),
@@ -199,7 +200,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro na Edge Function:', error);
-    
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Internal server error',
@@ -222,13 +223,13 @@ async function sendLinkInvite(
 
   // Aqui você integraria com um serviço de SMS/WhatsApp
   // Como Z-API, Evolution API, Twilio, etc.
-  
-  const message = customMessage || 
+
+  const message = customMessage ||
     `Olá! Você foi convidado(a) para participar do nosso grupo no WhatsApp.\n\nClique no link para entrar: ${inviteLink}\n\nAtenciosamente, Equipe Growth Summit`;
 
   // Simulação de envio bem-sucedido
   console.log(`[SIMULAÇÃO] Enviando para ${phoneNumber}: ${message}`);
-  
+
   // Em produção, descomente e configure:
   // const response = await fetch('https://api.z-api.io/...', {
   //   method: 'POST',
@@ -247,11 +248,11 @@ async function sendAPIInvite(
   customMessage?: string
 ): Promise<{ success: boolean; message: string }> {
   // Integração com WhatsApp Business API Cloud
-  const message = customMessage || 
+  const message = customMessage ||
     `Olá! Você foi convidado(a) para o grupo "${group.group_name}" do Growth Summit.\n\nLink: ${group.invite_link}`;
 
   console.log(`[SIMULAÇÃO API] Enviando template para ${phoneNumber}`);
-  
+
   return { success: true, message: 'API invite sent (simulated)' };
 }
 
@@ -265,10 +266,10 @@ async function sendQRInvite(
     return { success: false, message: 'QR code not available' };
   }
 
-  const message = customMessage || 
+  const message = customMessage ||
     `Olá! Escaneie este QR code para entrar no grupo do WhatsApp: ${qrCodeUrl}`;
 
   console.log(`[SIMULAÇÃO QR] Enviando QR para ${phoneNumber}`);
-  
+
   return { success: true, message: 'QR invite sent (simulated)' };
 }

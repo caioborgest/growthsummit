@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useRegistrations } from '@/hooks/useData';
@@ -318,6 +319,9 @@ export default function AdminComunicacao() {
               <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
                 <DialogHeader>
                   <DialogTitle>Criar Novo Template</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Formulário para definir um novo modelo de email ou push.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateTemplate} className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -435,6 +439,9 @@ export default function AdminComunicacao() {
               <DialogContent className="bg-dark-200 border-dark-300 text-white">
                 <DialogHeader>
                   <DialogTitle>Criar Nova Campanha</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Configure os detalhes da nova campanha de comunicação.
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateCampaign} className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -686,6 +693,9 @@ export default function AdminComunicacao() {
         <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle>Visualizar Template: {selectedTemplate?.name}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Pré-visualização do conteúdo do template selecionado.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
