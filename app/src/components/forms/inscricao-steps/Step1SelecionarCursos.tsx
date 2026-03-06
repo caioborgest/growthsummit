@@ -16,10 +16,16 @@ export function Step1SelecionarCursos({
     const { data: sessions, isLoading } = useSessions();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
 
-    // Filtrar sessões que são cursos/oficinas (tipo 'workshop' ou 'circuito')
-    const cursosDisponiveis = sessions.filter(s =>
-        (s.type as string) === 'workshop' || (s.type as string) === 'circuito'
-    );
+    // Mostrar toda a programação diurna disponível no banco
+    const cursosDisponiveis = sessions.filter(s => {
+        const category = (s.category as string)?.toLowerCase();
+
+        // Excluir apenas atividades noturnas (que possuem fluxo de upgrade próprio no passo 4)
+        if (category === 'noturna') return false;
+
+        // Inclui tudo que for diurno (Salão Principal, Salas 1, 2, 3, etc)
+        return true;
+    });
 
     const selectCurso = (cursoId: string) => {
         // Apenas 1 seleção permitida
@@ -103,8 +109,10 @@ export function Step1SelecionarCursos({
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                             <div className="flex items-center gap-2">
                                                 <Badge className={`px-2 py-0 text-[10px] uppercase font-black tracking-tighter ${curso.type === 'workshop' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                                    curso.type === 'circuito' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                                                        'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                                    curso.type === 'circuito' ? 'bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20' :
+                                                        curso.type === 'palestra' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                            curso.type === 'curso' ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' :
+                                                                'bg-gray-500/10 text-gray-400 border-gray-500/20'
                                                     }`}>
                                                     {(curso.type || 'CURSO').toUpperCase()}
                                                 </Badge>

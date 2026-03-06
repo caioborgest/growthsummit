@@ -123,26 +123,6 @@ export interface Mentor {
   createdAt: string;
 }
 
-export interface MentoringSession {
-  id: string;
-  projectId: string;
-  mentorId: string;
-  mentorName: string;
-  menteeId: string;
-  menteeName: string;
-  scheduledAt: string;
-  duration: number;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
-  topic?: string;
-  notes?: string;
-  feedback?: {
-    rating: number;
-    comment: string;
-  };
-  threeSteps?: string[];
-  createdAt: string;
-}
-
 export interface Company {
   id: string;
   projectId: string;
@@ -452,3 +432,23 @@ export interface EmpresaIncentivadora {
   createdAt: string;
 }
 
+
+export interface MentoringSession {
+  id: string;
+  projectId: string;
+  mentorId: string;
+  mentorName: string;
+  menteeId: string;
+  menteeName: string;
+  scheduledAt: string;
+  duration: number;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  topic?: string;
+  notes?: string;
+  feedback?: {
+    rating: number;
+    comment: string;
+  };
+  threeSteps?: string[];
+  createdAt: string;
+}

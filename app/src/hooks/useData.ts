@@ -301,18 +301,18 @@ interface WithId {
 // Dados estáticos (programação, projetos) têm TTL maior para reduzir queries
 // Dados do usuário (inscrições, notificações) têm TTL curto para manter frescor
 const CACHE_TTL_MAP: Record<string, number> = {
-  sessions: 30 * 60 * 1000,   // 30 min — programação raramente muda
-  projects: 60 * 60 * 1000,   // 60 min — projetos são quase estáticos
-  sponsors: 15 * 60 * 1000,   // 15 min
-  mentors: 5 * 60 * 1000,     // 5 min
-  startups: 5 * 60 * 1000,
-  companies: 5 * 60 * 1000,
-  cupons: 5 * 60 * 1000,
-  registrations: 30 * 1000,       // 30s — dados sensíveis do usuário
-  notifications: 10 * 1000,       // 10s — quase tempo real
-  check_ins: 15 * 1000,           // 15s
-  mentoring_sessions: 30 * 1000,
-  b2b_meetings: 30 * 1000,
+  sessions: 30 * 1000,        // 30s — programação precisa ser fresca
+  projects: 10 * 60 * 1000,   // 10 min — reduzido de 60 min
+  sponsors: 5 * 60 * 1000,    // 5 min — reduzido de 15 min
+  mentors: 60 * 1000,         // 1 min — reduzido de 5 min
+  startups: 60 * 1000,
+  companies: 60 * 1000,
+  cupons: 2 * 60 * 1000,
+  registrations: 15 * 1000,       // 15s — reduzido de 30s
+  notifications: 5 * 1000,        // 5s — quase tempo real
+  check_ins: 10 * 1000,           // 10s
+  mentoring_sessions: 15 * 1000,
+  b2b_meetings: 15 * 1000,
 };
 const DEFAULT_CACHE_TTL = 30_000; // fallback para entidades não mapeadas
 const dataCache = new Map<string, { data: unknown[]; ts: number }>();

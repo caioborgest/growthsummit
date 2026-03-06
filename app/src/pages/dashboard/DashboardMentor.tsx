@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMentoringSessions, useMentors, useNotifications } from '@/hooks/useData';
-import { MentoringSession } from '@/types';
+import type { MentoringSession } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
