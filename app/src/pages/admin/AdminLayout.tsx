@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileModal } from '@/components/profile/ProfileModal';
-import { useAuth } from '@/contexts/Auth/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjects } from '@/hooks/useData';
 import {

@@ -176,7 +176,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                             {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
                                 <div key={step} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
                                     <div
-                                        className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 ease-[cubic-bezier(0.2,0,0,1)] ${step < currentStep ? 'bg-green-500 translate-x-0' :
+                                        className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${step < currentStep ? 'bg-green-500 translate-x-0' :
                                             step === currentStep ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
                                                 '-translate-x-full'
                                             }`}
