@@ -17,7 +17,7 @@ export const mentoresTriunfo: Mentor[] = [
         empresa: 'Fitness Exclusive',
         bio: 'Estrategista em escala e expansão de negócios físicos. Fundou e escalou a maior rede de academias do interior do Nordeste.',
         foto: 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/palestrantes/Leandro%20Batista.png',
-        especialidades: ['Gestão', 'Escala', 'Franquias']
+        especialidades: ['Gestão Empresarial', 'Escala', 'Marketing Digital']
     },
     {
         id: 'vanylton-matias',
@@ -26,7 +26,7 @@ export const mentoresTriunfo: Mentor[] = [
         empresa: 'Grupo Núcleo',
         bio: 'Especialista em inovação corporativa e gestão de grupos empresariais de alto desempenho.',
         foto: 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/palestrantes/Vanylton%20Matias.png',
-        especialidades: ['Inovação', 'Liderança', 'Processos']
+        especialidades: ['Inovação', 'Liderança', 'Operações & Processos']
     },
     {
         id: 'cristiano-borges',
@@ -35,7 +35,7 @@ export const mentoresTriunfo: Mentor[] = [
         empresa: 'Growth Summit',
         bio: 'Especialista em Growth Marketing e estratégias de aquisição acelerada de clientes.',
         foto: 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/palestrantes/Cristiano%20Borges.png',
-        especialidades: ['Growth Marketing', 'Vendas', 'IA']
+        especialidades: ['Growth Marketing', 'Vendas', 'Inteligência Artificial']
     }
 ];
 
@@ -49,5 +49,6 @@ export const areasMentoria = [
     'Escala',
     'Marketing Digital',
     'Operações & Processos',
-    'Finanças'
+    'Finanças',
+    'Mentoria Especializada'
 ];

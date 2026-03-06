@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { Badge } from '@/components/ui/badge';
 
 interface Step4ConfirmacaoMentoriaProps {
     dados: DadosMentoria;
@@ -48,22 +49,20 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
     const { projectId } = useProject();
 
     const handleConfirmar = async () => {
+        if (loading) return;
         setLoading(true);
         setError('');
 
         try {
-            // 0. Verificar se já existe uma sessão ativa
             const { data: { session: existingSession } } = await supabase.auth.getSession();
             let userId = existingSession?.user?.id;
             let authError = null;
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
             if (existingSession && existingSession.user.email !== dados.email) {
                 userId = undefined;
             }
 
             if (!userId) {
-                // 1. Criar usuário no Supabase Auth se não houver sessão
                 const { data: authData, error: sError } = await supabase.auth.signUp({
                     email: dados.email,
                     password: dados.senha,
@@ -78,7 +77,6 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 userId = authData?.user?.id;
                 authError = sError;
 
-                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
                 if (!authError && !authData?.session) {
                     await supabase.auth.signInWithPassword({
                         email: dados.email,
@@ -88,7 +86,6 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             }
 
             if (authError) {
-                // Se já existe, tentamos fazer login automático
                 if (authError.message.includes('already registered')) {
                     logger.info('Usuário já registrado, tentando login...');
                     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -98,9 +95,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
                     if (!signInError) {
                         userId = signInData.user.id;
-                        logger.info('Login automático realizado', { userId });
                     } else {
-                        logger.warn('Login automático falhou:', { message: signInError.message });
                         if (signInError.message.includes('Invalid login credentials')) {
                             throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
                         }
@@ -111,10 +106,8 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 }
             }
 
-            // 1.5. Garantir que o registro exista na tabela public.users (para sincronização)
             if (userId) {
                 try {
-                    // Verificação robusta para evitar conflito de email (usuário zumbi)
                     const { data: existingUser } = await supabase
                         .from('users')
                         .select('id')
@@ -122,13 +115,9 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         .maybeSingle();
 
                     if (existingUser && existingUser.id !== userId) {
-                        logger.warn('Conflito de email detectado (zumbi) em Mentoria. Tentando remover...');
-                        // Tentamos deletar; se falhar (RLS), o upsert posterior por email deve resolver.
                         try {
                             await supabase.from('users').delete().eq('email', dados.email);
-                        } catch (e) {
-                            // Ignorar erro de delete se for RLS
-                        }
+                        } catch (e) { }
                     }
 
                     const usersTable = supabase.from('users') as any;
@@ -143,9 +132,6 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         }, { onConflict: 'id' });
 
                     if (userTableError) {
-                        logger.warn('Erro ao sincronizar tabela public.users (id conflict):', { message: userTableError.message });
-
-                        // Se falhou por conflito de email, tentamos upsert por email
                         if (userTableError.message.includes('unique_email') || userTableError.message.includes('users_email_key')) {
                             const { error: secondTryError } = await usersTable
                                 .upsert({
@@ -158,7 +144,6 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                                 }, { onConflict: 'email' });
 
                             if (secondTryError) {
-                                logger.error('Falha crítica na segunda tentativa de sincronização:', secondTryError);
                                 throw new Error('Não conseguimos vincular seus dados. Se você já tem uma conta, use o mesmo email e senha corretos.');
                             }
                         } else {
@@ -166,14 +151,12 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         }
                     }
                 } catch (userTableCatch: any) {
-                    logger.warn('Erro na lógica de sincronização:', { error: userTableCatch });
                     if (userTableCatch instanceof Error && userTableCatch.message.includes('vincular')) {
                         throw userTableCatch;
                     }
                 }
             }
 
-            // 2. Salvar agendamento de mentoria no banco
             const mentoriasTable = supabase.from('mentorias_agendadas') as any;
             const { data: mentoriaData, error: mentoriaError } = await mentoriasTable
                 .insert({
@@ -191,7 +174,6 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
             if (mentoriaError) throw new Error(mentoriaError.message);
 
-            // 3. Sucesso - continuar
             onConfirmar(userId || '', mentoriaData?.[0]?.id || '');
 
         } catch (err: unknown) {
@@ -200,98 +182,179 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
             if (err instanceof Error) {
                 if (err.message.includes('rate limit exceeded')) {
-                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos e tente confirmar novamente.';
+                    errorMessage = 'Muitas tentativas em pouco tempo. Por favor, aguarde 60 segundos.';
                 } else {
                     errorMessage = err.message;
                 }
             }
 
             setError(errorMessage);
-            setLoading(false); // Only reset on error
+            setLoading(false);
         }
     };
 
     if (fetchingMentor) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-10 w-10 text-brand-orange-coral animate-spin" />
-                <p className="text-gray-400 font-medium">Preparando seu agendamento...</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-6">
+                <div className="w-16 h-16 rounded-full border-4 border-brand-orange-coral/10 border-t-brand-orange-coral animate-spin" />
+                <p className="text-gray-500 font-bold uppercase tracking-widest text-sm animate-pulse">Preparando seu agendamento...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h3 className="text-3xl font-bold text-white mb-3">Resumo do Agendamento</h3>
-                <p className="text-gray-400 text-lg">Confirme os detalhes da sua sessão 1:1</p>
+        <div className="space-y-10">
+            <div className="text-left sm:text-center max-w-2xl mx-auto">
+                <h3 className="text-3xl sm:text-4xl font-black text-white mb-3 tracking-tight">Revise os <span className="text-brand-orange-coral">Detalhes</span></h3>
+                <p className="text-gray-400 text-sm sm:text-lg">Confirme as informações antes de finalizar o seu agendamento 1:1.</p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-                <Card className="glass-card p-4 sm:p-6 border-white/10">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
-                            <User className="h-5 w-5 text-brand-orange-coral" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20 sm:pb-0">
+                {/* Meus Dados */}
+                <Card className="glass-card p-6 border-white/5 bg-dark-200/40 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <User size={80} />
+                    </div>
+                    <div className="flex items-center gap-3 mb-6 relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                            <User className="h-6 w-6 text-brand-orange-coral" />
                         </div>
-                        <h4 className="font-bold text-white">Seus Dados</h4>
-                    </div>
-                    <div className="space-y-3 text-sm">
-                        <p className="text-gray-400 flex items-center gap-2"><User size={14} /> {dados.nome}</p>
-                        <p className="text-gray-400 flex items-center gap-2"><Mail size={14} /> {dados.email}</p>
-                        <p className="text-gray-400 flex items-center gap-2"><Phone size={14} /> {dados.telefone}</p>
-                    </div>
-                </Card>
-
-                <Card className="glass-card p-4 sm:p-6 border-white/10">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                            <Briefcase className="h-5 w-5 text-teal-400" />
-                        </div>
-                        <h4 className="font-bold text-white">Mentor Escolhido</h4>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {mentor?.foto_url ? (
-                            <img src={mentor.foto_url} className="w-12 h-12 rounded-full object-cover border border-white/10" alt={mentor.nome} />
-                        ) : (
-                            <div className="w-12 h-12 rounded-full bg-dark-200 flex items-center justify-center border border-white/10">
-                                <User className="h-6 w-6 text-gray-500" />
-                            </div>
-                        )}
                         <div>
-                            <p className="text-white font-bold">{mentor?.nome || 'Mentor Selecionado'}</p>
-                            <p className="text-brand-orange-coral text-xs font-semibold">{dados.area}</p>
+                            <h4 className="font-black text-white uppercase tracking-wider text-sm">Meus Dados</h4>
+                            <p className="text-gray-500 text-xs">Informações cadastrais</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 px-2 relative z-10">
+                        <div className="flex items-center gap-4 group/item">
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/item:bg-white/10 transition-colors">
+                                <User size={14} className="text-gray-400 group-hover/item:text-brand-orange-coral" />
+                            </div>
+                            <span className="text-white font-medium text-sm sm:text-base">{dados.nome}</span>
+                        </div>
+                        <div className="flex items-center gap-4 group/item">
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/item:bg-white/10 transition-colors">
+                                <Mail size={14} className="text-gray-400 group-hover/item:text-brand-orange-coral" />
+                            </div>
+                            <span className="text-gray-400 text-sm sm:text-base truncate">{dados.email}</span>
+                        </div>
+                        <div className="flex items-center gap-4 group/item">
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/item:bg-white/10 transition-colors">
+                                <Phone size={14} className="text-gray-400 group-hover/item:text-brand-orange-coral" />
+                            </div>
+                            <span className="text-gray-400 text-sm sm:text-base">{dados.telefone}</span>
                         </div>
                     </div>
                 </Card>
 
-                <Card className="glass-card p-4 sm:p-6 border-white/10 md:col-span-2">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                            <Target className="h-5 w-5 text-orange-400" />
-                        </div>
-                        <h4 className="font-bold text-white">Seu Desafio</h4>
+                {/* Mentor Escolhido */}
+                <Card className="glass-card p-6 border-white/5 bg-dark-200/40 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Star size={80} className="text-brand-orange-coral" />
                     </div>
-                    <p className="text-gray-400 text-sm italic">
-                        "{dados.descricaoProblema}"
-                    </p>
+                    <div className="flex items-center gap-3 mb-6 relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                            <Briefcase className="h-6 w-6 text-teal-400" />
+                        </div>
+                        <div>
+                            <h4 className="font-black text-white uppercase tracking-wider text-sm">Mentor Escolhido</h4>
+                            <p className="text-gray-500 text-xs">Especialista disponível</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-5 px-2 relative z-10">
+                        <div className="relative">
+                            {mentor?.foto_url ? (
+                                <img
+                                    src={mentor.foto_url}
+                                    className="w-20 h-20 rounded-2xl object-cover border-2 border-teal-500/30 shadow-lg"
+                                    alt={mentor.nome}
+                                />
+                            ) : (
+                                <div className="w-20 h-20 rounded-2xl bg-dark-100 flex items-center justify-center border-2 border-white/5">
+                                    <User className="h-10 w-10 text-gray-700" />
+                                </div>
+                            )}
+                            <div className="absolute -bottom-2 -right-2 bg-teal-500 rounded-lg p-1 shadow-lg">
+                                <CheckCircle2 size={16} className="text-dark-100" />
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-white font-black text-lg sm:text-xl tracking-tight">{mentor?.nome || 'Especialista'}</p>
+                            <Badge variant="outline" className="mt-2 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 font-bold uppercase text-[10px] py-1">
+                                {dados.area}
+                            </Badge>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Meu Desafio */}
+                <Card className="glass-card p-6 border-white/5 bg-dark-200/40 relative overflow-hidden group md:col-span-2">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Target size={80} className="text-brand-orange-coral" />
+                    </div>
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                            <Target className="h-6 w-6 text-orange-400" />
+                        </div>
+                        <div>
+                            <h4 className="font-black text-white uppercase tracking-wider text-sm">Cenário Desejado</h4>
+                            <p className="text-gray-500 text-xs">Objetivo detalhado para a mentoria</p>
+                        </div>
+                    </div>
+                    <div className="bg-dark-100/50 p-5 rounded-2xl border border-white/5 relative z-10">
+                        <p className="text-white/80 text-sm sm:text-base leading-relaxed italic">
+                            "{dados.descricaoProblema}"
+                        </p>
+                    </div>
                 </Card>
             </div>
 
             {error && (
-                <Card className="glass-card p-4 border-red-500/30 bg-red-500/10">
-                    <div className="flex items-center gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-500" />
-                        <p className="text-red-400 text-sm">{error}</p>
+                <Card className="glass-card p-4 border-red-500/40 bg-red-500/10 animate-in shake duration-500">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <AlertCircle className="h-6 w-6 text-red-500" />
+                        </div>
+                        <div>
+                            <h4 className="text-red-500 font-bold text-sm">Falha no processamento</h4>
+                            <p className="text-red-400/80 text-xs">{error}</p>
+                        </div>
                     </div>
                 </Card>
             )}
 
-            <div className="flex gap-4">
-                <Button variant="outline" size="lg" onClick={onVoltar} disabled={loading} className="flex-1 border-white/20 text-white">Voltar</Button>
-                <Button size="lg" onClick={handleConfirmar} disabled={loading} className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient text-white font-bold">
-                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Confirmar Agendamento'}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 sticky bottom-0 bg-dark-100/10 backdrop-blur-sm -mx-4 pb-2">
+                <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onVoltar}
+                    disabled={loading}
+                    className="flex-1 border-white/10 text-white hover:bg-white/10 font-bold h-14 sm:h-16 rounded-2xl"
+                >
+                    Ajustar Detalhes
+                </Button>
+                <Button
+                    size="lg"
+                    onClick={handleConfirmar}
+                    disabled={loading}
+                    className="flex-[2] bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-14 sm:h-16 text-xl rounded-2xl shadow-glow-orange transition-all hover:scale-[1.02] flex items-center justify-center gap-3 group"
+                >
+                    {loading ? (
+                        <Loader2 className="h-7 w-7 animate-spin" />
+                    ) : (
+                        <>
+                            Confirmar Agendamento
+                            <ShieldCheck className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                        </>
+                    )}
                 </Button>
             </div>
+
+            <p className="text-center text-gray-600 text-[10px] uppercase font-bold tracking-[0.2em] pt-4">
+                Segurança garantida via <span className="text-brand-orange-coral">Growth Experience 2026</span>
+            </p>
         </div>
     );
 }
+

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface StartupFormModalProps {
     isOpen: boolean;
@@ -137,75 +138,22 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             if (!formData.solucao.trim()) throw new Error('Sua solução é obrigatória');
             if (!formData.diferencial.trim()) throw new Error('Seu diferencial competitivo é obrigatório');
 
-            // 0. Verificar se já existe uma sessão ativa
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let userId = existingSession?.user?.id;
-            let authError = null;
+            // 1. Garantir Usuário (Auth)
+            const { userId } = await getOrCreateUser({
+                email: cleanEmail,
+                password: formData.senha,
+                name: formData.nome_fundador,
+                phone: formData.telefone,
+                role: 'startup-founder'
+            });
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
-                userId = undefined;
-            }
-
-            if (!userId) {
-                // 1. Criar usuário no Supabase Auth se não houver sessão
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: cleanEmail,
-                    password: formData.senha,
-                    options: {
-                        data: {
-                            name: formData.nome_fundador,
-                            phone: formData.telefone,
-                            role: 'startup'
-                        }
-                    }
-                });
-                userId = authData?.user?.id;
-                authError = sError;
-
-                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
-                if (!authError && !authData?.session) {
-                    await supabase.auth.signInWithPassword({
-                        email: cleanEmail,
-                        password: formData.senha
-                    }).catch(e => logger.warn('Auto-login skip startup (confirmation required?):', e.message));
-                }
-            }
-
-            if (authError) {
-                // Se já existe, tentamos login automático
-                if (authError.message.includes('already registered')) {
-                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email: cleanEmail,
-                        password: formData.senha
-                    });
-
-                    if (!signInError) {
-                        userId = signInData.user.id;
-                    } else {
-                        logger.warn('Login automático falhou:', { message: signInError.message });
-                        if (signInError.message.includes('Invalid login credentials')) {
-                            throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
-                        }
-                        throw signInError;
-                    }
-                } else {
-                    throw authError;
-                }
-            }
-
-            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
-            await new Promise(r => setTimeout(r, 1500));
-
-            // 1.5. Sincronização com public.users (Agora tratado pelo trigger DB)
-            if (userId) {
-                logger.info('Vínculo de usuário identificado, sincronização via trigger aguardada.', { userId });
-            }
+            // 1.1. Aguardar sincronização
+            await waitForUserSync(userId);
 
             // Preparar dados para inserção
             const dataToInsert = {
                 project_id: projectId,
-                user_id: userId || null,
+                user_id: userId,
                 nome_fundador: formData.nome_fundador,
                 email: cleanEmail,
                 telefone: formData.telefone,
@@ -223,7 +171,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 status: 'pendente',
             };
 
-            // Salvar no Supabase (usando INSERT para evitar conflitos e permitir múltiplas inscrições)
+            // Salvar no Supabase
             const { error: supabaseError } = await supabase
                 .from('startups_arena_pitch')
                 .insert([dataToInsert]);

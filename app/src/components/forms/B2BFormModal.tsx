@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface B2BFormModalProps {
     isOpen: boolean;
@@ -159,99 +160,53 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
             if (!formData.tipo_interesse) throw new Error('Objetivo é obrigatório'); // Changed from 'objetivo' to 'tipo_interesse' based on formData structure
 
-            // 0. Verificar se já existe uma sessão ativa
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let userId = existingSession?.user?.id;
-            let authError = null;
+            // 1. Garantir Usuário (Auth)
+            const { userId } = await getOrCreateUser({
+                email: cleanEmail,
+                password: formData.senha,
+                name: formData.nome_representante,
+                phone: formData.telefone,
+                role: 'b2b-matchmaking'
+            });
 
-            // Se estiver logado com um email DIFERENTE do que está tentando registrar, ignorar sessão
-            if (existingSession && existingSession.user.email?.toLowerCase() !== cleanEmail) {
-                userId = undefined;
-            }
+            // 1.1. Aguardar sincronização do usuário para evitar erro de FK
+            await waitForUserSync(userId);
 
-            if (!userId) {
-                // 1. Criar usuário no Supabase Auth se não houver sessão
-                const { data: authData, error: sError } = await supabase.auth.signUp({
-                    email: cleanEmail,
-                    password: formData.senha,
-                    options: {
-                        data: {
-                            name: formData.nome_representante,
-                            phone: formData.telefone,
-                            role: 'b2b'
-                        }
-                    }
-                });
-                userId = authData?.user?.id;
-                authError = sError;
-
-                // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
-                if (!authError && !authData?.session) {
-                    await supabase.auth.signInWithPassword({
-                        email: cleanEmail,
-                        password: formData.senha
-                    }).catch(e => logger.warn('Auto-login skip B2B (confirmation required?):', e.message));
-                }
-            }
-
-            if (authError) {
-                // Se já existe, tentamos login automático
-                if (authError.message.includes('already registered')) {
-                    logger.info('Usuário já registrado, tentando login...');
-                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email: cleanEmail,
-                        password: formData.senha
-                    });
-
-                    if (!signInError) {
-                        userId = signInData.user.id;
-                        logger.info('Login automático realizado:', { userId });
-                    } else {
-                        logger.warn('Login automático falhou:', { message: signInError.message });
-                        if (signInError.message.includes('Invalid login credentials')) {
-                            throw new Error('Este email já está cadastrado com outra senha. Por favor, use a senha correta ou outro email.');
-                        }
-                        throw signInError;
-                    }
-                } else {
-                    throw authError;
-                }
-            }
-
-            // Pequeno delay para garantir propagação do Trigger de sincronização no backend
-            await new Promise(r => setTimeout(r, 1500));
-
-            // 1.5. Sincronização com public.users (Agora via trigger)
-            if (userId) {
-                logger.info('Vínculo de usuário identificado para B2B.', { userId });
-            }
-
-            // 1.5 Upload Logo if exists
+            // 1.5 Upload Logo do B2B
             let logoUrl = '';
             if (logoFile) {
                 const fileExt = logoFile.name.split('.').pop();
-                const fileName = `${userId || 'anon'}-${Math.random()}.${fileExt}`;
-                const filePath = `b2b-logos/${fileName}`;
+                const fileName = `b2b-${userId}-${Date.now()}.${fileExt}`;
+                const filePath = `logos/${fileName}`;
+
+                logger.info('Iniciando upload do logo B2B...', { filePath });
 
                 const { error: uploadError } = await supabase.storage
-                    .from('event-assets')
-                    .upload(filePath, logoFile);
+                    .from('event-images') // Usando event-images que é o padrão verificado
+                    .upload(filePath, logoFile, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    logger.error('Erro no upload do logo:', uploadError);
+                    throw new Error(`Erro ao enviar logo: ${uploadError.message}`);
+                }
 
                 const { data: { publicUrl } } = supabase.storage
-                    .from('event-assets')
+                    .from('event-images')
                     .getPublicUrl(filePath);
 
                 logoUrl = publicUrl;
+                logger.info('Logo B2B enviado com sucesso:', { logoUrl });
             }
 
-            // 2. Salvar na tabela de rodadas de negócios (INSERT para permitir múltiplas)
+            // 2. Salvar na tabela de rodadas de negócios
             const { error: dbError } = await supabase
                 .from('rodada_negocios_b2b')
                 .insert([{
                     project_id: projectId,
-                    user_id: userId || null,
+                    user_id: userId,
                     nome_representante: formData.nome_representante,
                     email: cleanEmail,
                     telefone: formData.telefone,
@@ -273,15 +228,18 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     status: 'pendente'
                 }]);
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                logger.error('Erro ao salvar B2B no Banco:', dbError);
+                throw dbError;
+            }
 
             // Analytics tracking
-            const win = window as unknown as { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
+            const win = window as any;
             if (typeof window !== 'undefined' && win.gtag) {
                 win.gtag('event', 'b2b_inscricao', {
-                    event_category: 'Rodada de Negócios', // Changed from 'Rodada Negocios'
+                    event_category: 'Rodada de Negócios',
                     event_label: formData.setor,
-                    value: formData.faturamento_anual || 0, // Added based on original analytics tracking
+                    value: formData.faturamento_anual || 0,
                 });
             }
 

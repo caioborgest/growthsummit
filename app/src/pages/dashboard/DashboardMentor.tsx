@@ -48,12 +48,9 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { logger } from '@/lib/logger';
+import { areasMentoria } from '@/data/mentores';
 
-const ESPECIALIDADES_MENTOR = [
-  'Gestão Empresarial', 'Marketing Digital', 'Vendas & Growth',
-  'Finanças', 'Tecnologia & IA', 'Recursos Humanos',
-  'Inovação', 'Operações & Processos', 'Coaching & Liderança', 'E-commerce'
-];
+const ESPECIALIDADES_MENTOR = areasMentoria;
 
 // ── MentorDataTab: Edição inline de dados do mentor ──────────────────────────
 function MentorDataTab({ mentorData }: { mentorData: any }) {

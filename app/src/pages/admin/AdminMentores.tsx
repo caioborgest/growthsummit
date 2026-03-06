@@ -38,20 +38,10 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
 import { Camera, User, GraduationCap, Linkedin, Briefcase as BriefcaseIcon } from 'lucide-react';
+import { areasMentoria } from '@/data/mentores';
 
 
-const ESPECIALIDADES = [
-  'Gestão Empresarial',
-  'Marketing Digital',
-  'Vendas & Growth',
-  'Finanças',
-  'Tecnologia & IA',
-  'Recursos Humanos',
-  'Inovação',
-  'Operações & Processos',
-  'Coaching & Liderança',
-  'E-commerce'
-];
+const ESPECIALIDADES = areasMentoria;
 
 
 const statusColors: Record<string, string> = {
