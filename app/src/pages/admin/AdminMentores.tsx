@@ -12,7 +12,12 @@ import {
   MoreHorizontal,
   Loader2,
   Pencil,
-  Save
+  Save,
+  User,
+  Camera,
+  Linkedin,
+  Target,
+  GraduationCap
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -367,7 +373,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
           {/* Carreira */}
           <div className="space-y-5">
             <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-              <BriefcaseIcon className="h-4 w-4 text-teal-400" /> Carreira
+              <Briefcase className="h-4 w-4 text-teal-400" /> Carreira
             </h3>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
