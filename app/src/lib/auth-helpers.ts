@@ -61,7 +61,37 @@ export async function getOrCreateUser({
         };
     }
 
-    // ── STEP 2: Tentar criar novo usuário via signUp
+    // ── STEP 2: Tentar LOGIN primeiro (mais rápido e evita rate-limit de signUp para existentes)
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+    });
+
+    if (!signInError) {
+        logger.info('[auth-helpers] Login de usuário existente (via bypass):', { email: cleanEmail });
+        return {
+            userId: signInData.user.id,
+            isNew: false,
+            sessionCreated: true
+        };
+    }
+
+    // Se falhou por senha incorreta (e o usuário existe), lançamos o erro imediatamente
+    // Supabase geralmente retorna 'Invalid login credentials' tanto para user não existe qto senha errada
+    // mas se a politica de enumeracao estiver desativada, ele pode ser específico.
+    const isInvalidCredentials =
+        signInError.message.toLowerCase().includes('invalid login credentials') ||
+        signInError.message.toLowerCase().includes('invalid_credentials');
+
+    // Se NÃO for erro de credenciais (ex: erro de rede, rate limit de login), lançamos
+    if (!isInvalidCredentials) {
+        if (signInError.message.includes('429') || signInError.message.toLowerCase().includes('too many requests')) {
+            throw new Error('Muitas tentativas de login. Aguarde um momento e tente novamente.');
+        }
+        throw signInError;
+    }
+
+    // ── STEP 3: Se o login falhou (provavelmente não existe), tentamos o SignUp
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
@@ -71,63 +101,33 @@ export async function getOrCreateUser({
     });
 
     if (!signUpError) {
-        // signUp bem-sucedido (novo usuário)
         const userId = authData?.user?.id;
-        if (!userId) {
-            throw new Error('Não foi possível identificar o usuário criado. Tente novamente.');
-        }
-
-        // Se o Supabase não criou sessão automaticamente (ex: confirmação de email desativada),
-        // tenta login automático
-        if (!authData.session) {
-            await supabase.auth.signInWithPassword({ email: cleanEmail, password }).catch((e) => {
-                logger.warn('[auth-helpers] Auto-login após signUp falhou (normal se email confirmation ativo):', e.message);
-            });
-        }
+        if (!userId) throw new Error('Não foi possível identificar o usuário criado.');
 
         logger.info('[auth-helpers] Novo usuário criado:', { userId, email: cleanEmail });
         return { userId, isNew: true, sessionCreated: !!authData.session };
     }
 
-    // ── STEP 3: Email já existente → tentar signIn
-    const isAlreadyRegistered =
-        signUpError.message.toLowerCase().includes('already registered') ||
-        signUpError.message.toLowerCase().includes('user already registered');
+    // ── STEP 4: Tratar erros do SignUp
+    const msg = signUpError.message.toLowerCase();
 
-    if (isAlreadyRegistered) {
-        logger.debug('[auth-helpers] Email já cadastrado, tentando signIn:', cleanEmail);
-
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: cleanEmail,
-            password,
-        });
-
-        if (signInError) {
-            // Senha incorreta → erro claro para o usuário
-            if (
-                signInError.message.includes('Invalid login credentials') ||
-                signInError.message.includes('invalid_credentials')
-            ) {
-                throw new Error(
-                    'Este email já está cadastrado, mas a senha informada está incorreta. ' +
-                    'Use a senha da sua conta ou clique em "Esqueci minha senha".'
-                );
-            }
-            // Outro erro de signIn
-            throw signInError;
-        }
-
-        const userId = signInData?.user?.id;
-        if (!userId) {
-            throw new Error('Login bem-sucedido mas usuário não identificado. Tente recarregar a página.');
-        }
-
-        logger.info('[auth-helpers] Login de usuário existente:', { userId, email: cleanEmail });
-        return { userId, isNew: false, sessionCreated: !!signInData.session };
+    // Usuário já existe mas a senha no Step 2 estava errada?
+    if (msg.includes('already registered') || msg.includes('user already registered')) {
+        throw new Error(
+            'Este email já está cadastrado, mas a senha informada está incorreta. ' +
+            'Use sua senha cadastrada ou recupere-a caso tenha esquecido.'
+        );
     }
 
-    // ── STEP 4: Erro desconhecido no signUp
-    logger.error('[auth-helpers] Erro inesperado no signUp:', signUpError);
+    // Erro de Rate Limit do Supabase (muito comum em signups repetidos)
+    if (msg.includes('security purposes') || msg.includes('rate limit') || signUpError.status === 429) {
+        // Tenta extrair os segundos da mensagem
+        const secondsMatch = signUpError.message.match(/(\d+)\s+seconds/);
+        const seconds = secondsMatch ? secondsMatch[1] : '60';
+        throw new Error(`Por segurança, o Supabase bloqueou novas tentativas temporariamente. Tente novamente em ${seconds} segundos.`);
+    }
+
+    logger.error('[auth-helpers] Erro inesperado no processo de auth:', signUpError);
     throw signUpError;
 }
 
