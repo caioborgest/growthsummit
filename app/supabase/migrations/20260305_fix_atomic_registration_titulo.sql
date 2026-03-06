@@ -1,32 +1,7 @@
 -- ============================================================
--- FASE 2: ITEM 7 — Inscrição Atômica com Controle de Vagas
--- Data: 2026-03-05 | Auditoria 360°
--- Objetivo: Eliminar race condition no registro de vagas
--- A função faz INSERT + UPDATE do contador em uma única transação,
--- evitando overbooking quando duas inscrições simultâneas chegam
--- ============================================================
--- ============================================================
--- 1. FUNÇÃO: increment_session_count (corrigir/garantir existência)
---    Usada por Step3Confirmacao.tsx após o insert
--- ============================================================
-CREATE OR REPLACE FUNCTION public.increment_session_count(session_id UUID) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public AS $$ BEGIN
-UPDATE public.programacao_evento
-SET registered_count = COALESCE(registered_count, 0) + 1
-WHERE id = session_id;
-END;
-$$;
-ALTER FUNCTION public.increment_session_count(UUID) OWNER TO postgres;
-GRANT EXECUTE ON FUNCTION public.increment_session_count(UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.increment_session_count(UUID) TO anon;
-GRANT EXECUTE ON FUNCTION public.increment_session_count(UUID) TO service_role;
--- ============================================================
--- 2. FUNÇÃO ATÔMICA: register_participant_with_slots
---    Faz tudo em uma única transação:
---    a) Verifica se as sessões ainda têm vagas (com SELECT FOR UPDATE)
---    b) Insere a inscrição
---    c) Incrementa os contadores atomicamente
---    Retorna JSON com resultado
+-- FIX: register_participant_with_slots (column "titulo" error)
+-- Data: 2026-03-05
+-- Objetivo: Corrigir o nome da coluna de 'titulo' para 'title'
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
         p_project_id UUID,
@@ -61,6 +36,7 @@ IF p_session_ids IS NOT NULL
 AND array_length(p_session_ids, 1) > 0 THEN FOREACH v_session_id IN ARRAY p_session_ids LOOP
 SELECT id,
     title,
+    -- CORREÇÃO: era titulo
     max_vagas,
     registered_count INTO v_session
 FROM public.programacao_evento
@@ -71,6 +47,7 @@ UPDATE;
 IF FOUND
 AND v_session.max_vagas IS NOT NULL
 AND v_session.max_vagas > 0 THEN IF COALESCE(v_session.registered_count, 0) >= v_session.max_vagas THEN v_full_sessions := array_append(v_full_sessions, v_session.title);
+-- CORREÇÃO: era titulo
 END IF;
 END IF;
 END LOOP;
@@ -178,68 +155,3 @@ WHEN OTHERS THEN RETURN jsonb_build_object(
 );
 END;
 $$;
-ALTER FUNCTION public.register_participant_with_slots OWNER TO postgres;
--- Grants: authenticated e anon (formulário público)
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO authenticated;
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO anon;
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO service_role;
--- ============================================================
--- 3. GARANTIR COLUNA max_vagas em programacao_evento
---    (pode ter sido nomeada max_capacity em algumas migrações)
--- ============================================================
-DO $$ BEGIN -- Adicionar max_vagas se não existir
-IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_name = 'programacao_evento'
-        AND column_name = 'max_vagas'
-        AND table_schema = 'public'
-) THEN -- Verificar se existe max_capacity e criar alias
-IF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_name = 'programacao_evento'
-        AND column_name = 'max_capacity'
-        AND table_schema = 'public'
-) THEN -- Criar coluna max_vagas como cópia de max_capacity
-ALTER TABLE public.programacao_evento
-ADD COLUMN max_vagas INTEGER;
-UPDATE public.programacao_evento
-SET max_vagas = max_capacity
-WHERE max_capacity IS NOT NULL;
-RAISE NOTICE 'Coluna max_vagas criada a partir de max_capacity';
-ELSE
-ALTER TABLE public.programacao_evento
-ADD COLUMN max_vagas INTEGER;
-RAISE NOTICE 'Coluna max_vagas criada (vazia)';
-END IF;
-ELSE RAISE NOTICE 'Coluna max_vagas ja existe em programacao_evento';
-END IF;
--- Garantir coluna registered_count
-IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_name = 'programacao_evento'
-        AND column_name = 'registered_count'
-        AND table_schema = 'public'
-) THEN
-ALTER TABLE public.programacao_evento
-ADD COLUMN registered_count INTEGER DEFAULT 0;
-RAISE NOTICE 'Coluna registered_count criada em programacao_evento';
-END IF;
-END $$;
--- ============================================================
--- 4. VERIFICAÇÃO
--- ============================================================
-SELECT routine_name,
-    routine_type,
-    security_type
-FROM information_schema.routines
-WHERE routine_schema = 'public'
-    AND routine_name IN (
-        'register_participant_with_slots',
-        'increment_session_count',
-        'is_admin',
-        'current_user_role'
-    )
-ORDER BY routine_name;
