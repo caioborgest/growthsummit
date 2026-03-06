@@ -353,7 +353,7 @@ export function DashboardMentor() {
     scheduled: mentorSessions.filter(s => s.status === 'scheduled').length,
     avgRating: mentorSessions
       .filter(s => s.feedback)
-      .reduce((acc, s) => acc + (s.feedback?.rating || 0), 0) /
+      .reduce((acc, s) => acc + (s.feedback?.avaliacaoMentoria || s.feedback?.rating || 0), 0) /
       mentorSessions.filter(s => s.feedback).length || 0,
   };
 
@@ -777,9 +777,25 @@ export function DashboardMentor() {
                         <div className="flex items-center gap-2 mb-2">
                           <Badge className="bg-green-500/20 text-green-400">Concluída</Badge>
                           {session.feedback && (
-                            <div className="flex items-center">
-                              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                              <span className="text-white">{session.feedback.rating}</span>
+                            <div className="flex flex-col gap-1">
+                              {session.feedback.avaliacaoMentoria && (
+                                <div className="flex items-center">
+                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
+                                  <span className="text-white text-xs">Mentoria: {session.feedback.avaliacaoMentoria}/5</span>
+                                </div>
+                              )}
+                              {session.feedback.indicacaoMentor && (
+                                <div className="flex items-center">
+                                  <Star className="h-3 w-3 text-orange-400 fill-orange-400 mr-1" />
+                                  <span className="text-white text-xs">Indicação: {session.feedback.indicacaoMentor}/5</span>
+                                </div>
+                              )}
+                              {!session.feedback.avaliacaoMentoria && session.feedback.rating && (
+                                <div className="flex items-center">
+                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
+                                  <span className="text-white text-xs">{session.feedback.rating}/5</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

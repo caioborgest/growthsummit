@@ -29,8 +29,10 @@ import {
   AlertCircle,
   Bell,
   BellRing,
-  X
+  X,
+  Star
 } from 'lucide-react';
+import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -366,6 +368,19 @@ export function DashboardParticipante() {
   const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
   const { data: mentors } = useMentors();
   const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
+  const [ratingModal, setRatingModal] = useState<{
+    isOpen: boolean;
+    sessionId: string;
+    mentorName: string;
+    alreadyRated: boolean;
+    avaliacao?: number;
+    indicacao?: number;
+  }>({
+    isOpen: false,
+    sessionId: '',
+    mentorName: '',
+    alreadyRated: false
+  });
 
   const handleBookMentoring = async (slotId: string, topic: string) => {
     if (!myRegistration) return;
@@ -411,6 +426,26 @@ export function DashboardParticipante() {
       toast.success('Mentoria agendada! O mentor foi notificado por e-mail.');
     } catch {
       toast.error('Erro ao agendar mentoria.');
+    }
+  };
+
+  const handleRatingSubmit = async (sessionId: string, avaliacao: number, indicacao: number) => {
+    try {
+      await updateMentoring(sessionId, {
+        status: 'completed',
+        feedback: {
+          rating: avaliacao, // Manter o rating legado para compatibilidade visual básica
+          comment: '',
+          avaliacaoMentoria: avaliacao,
+          indicacaoMentor: indicacao,
+          avaliadoEm: new Date().toISOString()
+        }
+      });
+      toast.success('Avaliação enviada com sucesso!');
+    } catch (err: any) {
+      logger.error('Erro ao enviar avaliação:', err);
+      toast.error('Erro ao salvar avaliação. Tente novamente.');
+      throw err;
     }
   };
 
@@ -516,7 +551,7 @@ export function DashboardParticipante() {
   // Experience Pro não pago: status = "Pendente"
   const statusFinanceiro = useMemo(() => {
     if (!myRegistration?.palestrasNoturnas) {
-      return { label: 'Em Aberto', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição gratuita — grátis' };
+      return { label: 'Grátis', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição diurna gratuita' };
     }
     const pgto = myRegistration?.statusPagamento;
     if (pgto === 'pago' || pgto === 'paid') {
@@ -957,7 +992,7 @@ export function DashboardParticipante() {
                   </h2>
                   <div className="space-y-3">
                     {myMentorships.map(session => (
-                      <div key={session.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-dark-100 rounded-2xl border border-teal-500/20">
+                      <div key={session.id} className={`flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border ${session.status === 'completed' ? 'bg-dark-200 border-white/5 opacity-80' : 'bg-dark-100 border-teal-500/20'}`}>
                         <div className="flex-1">
                           <p className="text-white font-black">{session.mentorName}</p>
                           <p className="text-teal-400 text-sm">{session.topic || 'Mentoria Geral'}</p>
@@ -967,14 +1002,43 @@ export function DashboardParticipante() {
                           <p className="text-gray-400 text-sm">{new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-green-500/20 text-green-400">Confirmado</Badge>
-                          <button
-                            onClick={() => handleCancelMentoring(session.id)}
-                            title="Cancelar mentoria"
-                            className="p-1.5 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                          {session.status === 'completed' ? (
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-dark-300 text-gray-400">Concluído</Badge>
+                              {!session.feedback?.avaliadoEm ? (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setRatingModal({
+                                    isOpen: true,
+                                    sessionId: session.id,
+                                    mentorName: session.mentorName,
+                                    alreadyRated: false
+                                  })}
+                                  className="h-8 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase px-3 rounded-lg"
+                                >
+                                  <Star className="h-3 w-3 mr-1.5 fill-current" />
+                                  Avaliar
+                                </Button>
+                              ) : (
+                                <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
+                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                                  <span className="text-white text-xs font-bold">{session.feedback.avaliacaoMentoria}</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              <Badge className="bg-green-500/20 text-green-400">Confirmado</Badge>
+                              <button
+                                onClick={() => handleCancelMentoring(session.id)}
+                                title="Cancelar mentoria"
+                                className="p-1.5 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1347,6 +1411,17 @@ export function DashboardParticipante() {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Modal de Avaliação */}
+      <MentorRatingModal
+        isOpen={ratingModal.isOpen}
+        onClose={() => setRatingModal(p => ({ ...p, isOpen: false }))}
+        mentorName={ratingModal.mentorName}
+        sessionId={ratingModal.sessionId}
+        alreadyRated={ratingModal.alreadyRated}
+        existingAvaliacaoMentoria={ratingModal.avaliacao}
+        existingIndicacaoMentor={ratingModal.indicacao}
+        onSubmit={handleRatingSubmit}
+      />
     </motion.div>
   );
 }

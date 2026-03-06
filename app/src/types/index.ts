@@ -448,6 +448,11 @@ export interface MentoringSession {
   feedback?: {
     rating: number;
     comment: string;
+    /** 1-5 — "Como você avalia a mentoria realizada?" */
+    avaliacaoMentoria?: number;
+    /** 1-5 — "Quanto você indicaria este mentor a um empresário?" */
+    indicacaoMentor?: number;
+    avaliadoEm?: string;
   };
   threeSteps?: string[];
   createdAt: string;

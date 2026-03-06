@@ -60,7 +60,7 @@ function DetalhesModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="glass-card max-w-lg w-full p-6 rounded-2xl space-y-4 relative">
+      <div className="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 rounded-2xl space-y-4 relative scrollbar-hide">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -82,7 +82,10 @@ function DetalhesModal({
         <div className="grid grid-cols-2 gap-3 text-sm">
           {[
             { label: 'Nº Inscrição', value: reg.ticketNumber },
-            { label: 'Status', value: statusLabels[reg.status] || reg.status },
+            {
+              label: 'Status',
+              value: (reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis' : (statusLabels[reg.status] || reg.status)
+            },
             { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00' },
             {
               label: 'Desconto',
@@ -311,8 +314,8 @@ export default function AdminInscricoes() {
     setIsUpdating(true);
     try {
       await update(id, {
-        checked_in: !currentStatus,
-        check_in_at: !currentStatus ? new Date().toISOString() : null
+        checkedIn: !currentStatus,
+        checkInTime: !currentStatus ? new Date().toISOString() : null
       } as any);
 
       toast.success(currentStatus ? 'Credenciamento removido.' : 'Credenciamento realizado com sucesso!');
@@ -321,7 +324,7 @@ export default function AdminInscricoes() {
         setDetalhes(prev => prev ? {
           ...prev,
           checkedIn: !currentStatus,
-          checkInTime: !currentStatus ? new Date().toISOString() : undefined
+          checkInTime: !currentStatus ? new Date().toISOString() : null
         } : null);
       }
     } catch (error) {
@@ -597,7 +600,7 @@ export default function AdminInscricoes() {
                             : ['pendente', 'pending'].includes(reg.status)
                               ? <Clock className="h-3 w-3 mr-1" />
                               : <XCircle className="h-3 w-3 mr-1" />}
-                          {statusLabels[reg.status] || reg.status}
+                          {(reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis' : (statusLabels[reg.status] || reg.status)}
                         </Badge>
                       </td>
                       <td className="p-4 text-white text-sm">
