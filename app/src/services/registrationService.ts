@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
-import type { Registration } from '@/types';
 
 export interface RegistrationParams {
     projectId: string;
@@ -23,7 +22,7 @@ export interface RegistrationParams {
     indicacaoNome?: string | null;
     codigoSocial?: string | null;
     codigoPalestra?: string | null;
-    extraData?: any;
+    extraData?: Record<string, unknown>;
 }
 
 export const registrationService = {
@@ -33,7 +32,7 @@ export const registrationService = {
      */
     async registerWithSlots(params: RegistrationParams) {
         try {
-            const { data, error } = await (supabase.rpc as any)(
+            const { data, error } = await supabase.rpc(
                 'register_participant_with_slots',
                 {
                     p_project_id: params.projectId,
@@ -75,7 +74,7 @@ export const registrationService = {
     /**
      * Busca inscrições por projeto e filtro opcional
      */
-    async listByProject(projectId: string, filters: any = {}) {
+    async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
         let query = supabase
             .from('inscricoes_growth_experience')
             .select('*')
