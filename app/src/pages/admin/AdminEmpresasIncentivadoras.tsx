@@ -190,6 +190,12 @@ export default function AdminEmpresasIncentivadoras() {
                                     <p className="text-lg font-bold text-white leading-none">{emp.quantidadeNoite || 0}</p>
                                 </div>
                             </div>
+                            <div className="bg-teal-500/10 rounded-lg p-3 border border-teal-500/20 mt-2">
+                                <p className="text-[10px] uppercase font-black text-teal-400 mb-1 leading-none">Investimento</p>
+                                <p className="text-xl font-bold text-white leading-none">
+                                    {(emp.amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </p>
+                            </div>
                             <p className="text-gray-500 text-[10px] uppercase font-black tracking-widest mt-3 flex items-center">
                                 <Users className="h-3 w-3 mr-1 text-teal-400" />
                                 Engajamento Total: {(emp.quantidadeDia || 0) + (emp.quantidadeNoite || 0)}

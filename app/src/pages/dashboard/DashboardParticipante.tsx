@@ -182,8 +182,8 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div className="w-full max-w-md bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl my-auto">
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-orange-500/20 to-transparent">
           <div>
@@ -300,7 +300,11 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
               <><MessageCircle className="h-5 w-5" /> CONFIRMAR E ENVIAR COMPROVANTE</>
             )}
           </Button>
-          <p className="text-center text-gray-600 text-xs">Pagamento simulado para demonstração</p>
+          <div className="flex items-center gap-2 bg-dark-400/50 p-3 rounded-xl border border-white/5">
+            <MapPin className="h-3.5 w-3.5 text-orange-400" />
+            <p className="text-[10px] text-gray-500 font-medium">Local: Arena Triunfo · Balcão de Credenciamento</p>
+          </div>
+          <p className="text-center text-gray-600 text-[10px] uppercase font-bold tracking-[0.2em]">Pagamento via PIX • Liberação Imediata</p>
         </div>
       </div>
     </div>
@@ -701,7 +705,11 @@ export function DashboardParticipante() {
               <div className="relative group">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-xl shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
                   <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
-                    <User className="h-8 w-8 text-orange-400" />
+                    {(user?.avatar || (user as any)?.avatarUrl) ? (
+                      <img src={user.avatar || (user as any)?.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-8 w-8 text-orange-400" />
+                    )}
                   </div>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-dark-300 rounded-full"></div>
@@ -722,7 +730,7 @@ export function DashboardParticipante() {
                     {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                   </Badge>
                   <button
-                    onClick={() => navigate('/growth-experience-triunfo')}
+                    onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
                     className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
                   >
                     <HelpCircle className="h-3 w-3" /> Guia
@@ -974,13 +982,13 @@ export function DashboardParticipante() {
 
           {/* ── MENTORIAS TAB ── */}
           <TabsContent value="mentorias">
-            {!myRegistration?.palestrasNoturnas ? (
+            {!myRegistration?.palestrasNoturnas || (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid') ? (
               <div className="glass-card p-12 text-center border-orange-500/20">
                 <Lock className="h-12 w-12 text-orange-400 mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-white mb-2">Mentorias Exclusivas</h2>
-                <p className="text-gray-400 max-w-md mx-auto mb-6">As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe <strong className="text-orange-400">Experience Pro</strong>.</p>
+                <p className="text-gray-400 max-w-md mx-auto mb-6">As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe <strong className="text-orange-400">Experience Pro</strong> com status <strong className="text-green-400">PAGO</strong>.</p>
                 <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black" onClick={() => setShowUpgradeModal(true)}>
-                  FAZER UPGRADE AGORA
+                  {(myRegistration?.palestrasNoturnas && (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid')) ? 'VERIFICAR PAGAMENTO' : 'FAZER UPGRADE AGORA'}
                 </Button>
               </div>
             ) : (
@@ -1099,7 +1107,7 @@ export function DashboardParticipante() {
                   <h2 className="text-xl font-bold text-white">Minha Agenda</h2>
                   <p className="text-gray-400 text-sm mt-1">Atividades {myRegistration?.palestrasNoturnas ? 'diurnas e noturnas' : 'diurnas (gratuitas)'}</p>
                 </div>
-                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => navigate('/growth-experience-triunfo')}>
+                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}>
                   Ver Programação
                 </Button>
               </div>
@@ -1297,13 +1305,13 @@ export function DashboardParticipante() {
                 </p>
                 <div className="grid sm:grid-cols-3 gap-4">
                   {[
-                    { icon: Calendar, label: 'Programação Completa', desc: 'Grade e horários do evento', color: 'teal', route: '/ge-triunfo' },
-                    { icon: MapPin, label: 'Mapa do Evento', desc: 'Localização das salas', color: 'blue', route: '/guia' },
-                    { icon: HelpCircle, label: 'Guia do Participante', desc: 'Como aproveitar ao máximo', color: 'purple', route: '/guia' },
+                    { icon: Calendar, label: 'Programação Completa', desc: 'Grade e horários do evento', color: 'teal', route: 'https://www.growthsummit.site/guia' },
+                    { icon: MapPin, label: 'Mapa do Evento', desc: 'Localização das salas', color: 'blue', route: 'https://www.growthsummit.site/guia' },
+                    { icon: HelpCircle, label: 'Guia do Participante', desc: 'Como aproveitar ao máximo', color: 'purple', route: 'https://www.growthsummit.site/guia' },
                   ].map((item) => (
                     <button
                       key={item.label}
-                      onClick={() => navigate(item.route)}
+                      onClick={() => item.route.startsWith('http') ? window.open(item.route, '_blank') : navigate(item.route)}
                       className={`flex flex-col items-start p-5 bg-dark-100 rounded-2xl border border-${item.color}-500/20 hover:border-${item.color}-500/40 hover:bg-${item.color}-500/5 transition-all text-left group`}
                     >
                       <div className={`w-11 h-11 rounded-xl bg-${item.color}-500/10 flex items-center justify-center mb-4`}>

@@ -160,7 +160,7 @@ export function AdminDashboard() {
         .reduce((sum, t) => sum + t.amount, 0);
 
     const targets = {
-      registrations: selectedProject?.settings?.maxRegistrations || 1500,
+      registrations: selectedProject?.settings?.goalRegistrations || selectedProject?.settings?.maxRegistrations || 1500,
       revenue: (selectedProject?.settings?.ticketPrices?.vip || 0) * 10 || 616000,
       mentorias: selectedProject?.settings?.maxMentors ? selectedProject.settings.maxMentors * 5 : 100,
       b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,

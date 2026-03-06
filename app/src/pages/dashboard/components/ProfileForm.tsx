@@ -169,7 +169,7 @@ export function ProfileForm() {
                 throw new Error('Não foi possível fazer upload da imagem. Verifique as configurações do Storage.');
             }
 
-            await updateProfile({ avatar_url: photoUrl });
+            await updateProfile({ avatar: photoUrl });
 
             // Also sync mentor photo if needed
             if (user?.role === 'mentor' && mentorRecord) {

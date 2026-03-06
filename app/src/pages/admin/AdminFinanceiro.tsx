@@ -5,13 +5,15 @@ import {
   DollarSign,
   Download,
   BarChart3,
-  PieChart
+  PieChart,
+  Building2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTransactions, useRegistrations, useProjects } from '@/hooks/useData';
+import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import type { EmpresaIncentivadora } from '@/types';
 
 const categoryColors: Record<string, string> = {
   'Inscrições': 'bg-teal-500/20 text-teal-400',
@@ -34,6 +36,7 @@ export function AdminFinanceiro() {
   const { data: transactions } = useTransactions();
   const { data: registrations } = useRegistrations();
   const { update: updateProject } = useProjects();
+  const { data: companies } = useEmpresasIncentivadoras();
   const { selectedProject } = useProject();
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [activeView, setActiveView] = useState<'overview' | 'transactions'>('overview');
@@ -98,12 +101,21 @@ export function AdminFinanceiro() {
       return acc;
     }, {} as Record<string, number>);
 
-  const registrationRevenue = registrations
-    .filter(r => r.status === 'paid')
-    .reduce((sum, r) => sum + (r.amount || 0), 0);
+  const paidRegistrations = registrations.filter(r => r.status === 'paid');
+  const paidRegistrationsCount = paidRegistrations.length;
+  const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const registrationDiscounts = registrations
     .reduce((sum, r) => sum + (r.discountAmount || 0), 0);
+
+  const incentiveCompanyRevenue = (companies || [])
+    .filter(c => c.status === 'approved' || c.status === 'aprovado')
+    .reduce((sum: number, c: EmpresaIncentivadora) => sum + (c.amount || 0), 0);
+
+  // Calculator state
+  const [calcQty, setCalcQty] = useState(0);
+  const [calcPrice, setCalcPrice] = useState(0);
+  const calcTotal = calcQty * calcPrice;
 
   return (
     <div className="space-y-6">
@@ -191,6 +203,19 @@ export function AdminFinanceiro() {
                   <span className="text-white">Líquido:</span>
                   <span className="text-green-400">R$ {registrationRevenue.toLocaleString('pt-BR')}</span>
                 </div>
+              </div>
+            </div>
+
+            <div className="glass-card p-6 border-l-4 border-teal-500">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-teal-400" />
+                </div>
+                <Badge className="bg-teal-500/20 text-teal-400">Empresas Incentivadoras</Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-3xl font-bold text-white">R$ {incentiveCompanyRevenue.toLocaleString('pt-BR')}</p>
+                <p className="text-gray-400 text-sm mt-1">Total investido (Aprovadas)</p>
               </div>
             </div>
           </div>
@@ -289,16 +314,16 @@ export function AdminFinanceiro() {
               </div>
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-400 text-sm">Inscrições</span>
-                  <span className="text-green-400 text-sm">{Math.round((incomeByCategory['Inscrições'] || 0) / goals.registrations * 100)}%</span>
+                  <span className="text-gray-400 text-sm">Inscrições (Qtd)</span>
+                  <span className="text-green-400 text-sm">{Math.round((paidRegistrationsCount / goals.registrations) * 100)}%</span>
                 </div>
                 <div className="w-full bg-dark-300 rounded-full h-3">
                   <div
                     className="bg-green-500 h-3 rounded-full"
-                    style={{ width: `${Math.min(((incomeByCategory['Inscrições'] || 0) / goals.registrations) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((paidRegistrationsCount / goals.registrations) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Inscrições'] || 0).toLocaleString()} / R$ {goals.registrations.toLocaleString()}</p>
+                <p className="text-gray-500 text-xs mt-1">{paidRegistrationsCount} / {goals.registrations} inscritos</p>
               </div>
             </div>
           </div>
@@ -336,7 +361,7 @@ export function AdminFinanceiro() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Meta de Inscrições (R$)
+                      Meta de Inscrições (Unidades)
                     </label>
                     <input
                       type="number"
@@ -344,6 +369,49 @@ export function AdminFinanceiro() {
                       onChange={(e) => setTempGoals({ ...tempGoals, registrations: Number(e.target.value) })}
                       className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-green-500"
                     />
+                  </div>
+
+                  <div className="p-4 bg-dark-400/50 rounded-xl border border-white/5 space-y-3">
+                    <p className="text-xs font-bold text-teal-400 uppercase tracking-widest flex items-center gap-2">
+                      <TrendingUp className="h-3 w-3" /> Calculadora de Receita
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-500 uppercase">Qtd</label>
+                        <input
+                          type="number"
+                          placeholder="Ex: 300"
+                          value={calcQty === 0 ? '' : calcQty}
+                          onChange={(e) => setCalcQty(Number(e.target.value))}
+                          className="w-full px-3 py-1.5 bg-dark-200 border border-dark-300 rounded text-sm text-white focus:outline-none focus:border-teal-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-500 uppercase">Preço Unitário (R$)</label>
+                        <input
+                          type="number"
+                          placeholder="Ex: 497"
+                          value={calcPrice === 0 ? '' : calcPrice}
+                          onChange={(e) => setCalcPrice(Number(e.target.value))}
+                          className="w-full px-3 py-1.5 bg-dark-200 border border-dark-300 rounded text-sm text-white focus:outline-none focus:border-teal-500"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                      <span className="text-xs text-gray-400">Total Estimado:</span>
+                      <span className="text-sm font-bold text-white">R$ {calcTotal.toLocaleString('pt-BR')}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-[10px] text-teal-400 hover:bg-teal-500/10 h-7"
+                      onClick={() => {
+                        setTempGoals({ ...tempGoals, revenue: calcTotal, registrations: calcQty });
+                        toast.info('Valores aplicados às metas acima');
+                      }}
+                    >
+                      APLICAR ÀS METAS
+                    </Button>
                   </div>
                 </div>
 

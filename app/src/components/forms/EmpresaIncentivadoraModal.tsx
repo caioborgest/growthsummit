@@ -29,7 +29,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         quantidadeEquipe: '',
         quantidadeDia: '',
         quantidadeNoite: '',
-        objetivo: ''
+        objetivo: '',
+        amount: ''
     });
 
     // Carregar rascunho
@@ -66,7 +67,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             quantidadeEquipe: '',
             quantidadeDia: '',
             quantidadeNoite: '',
-            objetivo: ''
+            objetivo: '',
+            amount: ''
         });
     };
 
@@ -112,6 +114,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 quantidade_dia: parseInt(formData.quantidadeDia) || 0,
                 quantidade_noite: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
+                valor_investido: parseFloat(formData.amount) || 0,
                 status: isAdmin ? 'aprovado' : 'pendente'
             }]);
 
@@ -122,9 +125,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
 
             const qtdDia = parseInt(formData.quantidadeDia) || 0;
             const qtdNoite = parseInt(formData.quantidadeNoite) || 0;
-            const valorUnitario = 179.99;
-            const temDesconto = qtdNoite >= 10;
-            const valorTotal = temDesconto ? (qtdNoite * valorUnitario * 0.9) : (qtdNoite * valorUnitario);
+            const valorTotal = parseFloat(formData.amount) || 0;
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             if (!isAdmin) {
@@ -137,8 +138,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                     `• *WhatsApp:* ${formData.phone}\n` +
                     `• *Equipe (Dia):* ${qtdDia} pessoas\n` +
                     `• *Equipe (Noite):* ${qtdNoite} pessoas\n` +
-                    `• *Desconto Aplicado:* ${temDesconto ? '10% (Noite >= 10)' : 'Nenhum'}\n` +
-                    `• *Valor Total:* ${valorFormatado}\n\n` +
+                    `• *Valor do Investimento:* ${valorFormatado}\n\n` +
                     `*MOTIVO DA INSCRIÇÃO:* ${formData.objetivo}\n\n` +
                     `_Pode me enviar a chave Pix para pagamento?_`
                 );
@@ -255,6 +255,21 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                                     }));
                                                 }}
                                                 placeholder="Programação Paga"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-300">Valor Investido (R$)</label>
+                                        <div className="relative">
+                                            <Trophy className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <input
+                                                required
+                                                type="number"
+                                                step="0.01"
+                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                                value={formData.amount}
+                                                onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                                                placeholder="0.00"
                                             />
                                         </div>
                                     </div>

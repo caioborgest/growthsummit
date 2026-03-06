@@ -143,6 +143,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   read_at: 'readAt',
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
+  valor_investido: 'amount',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -350,7 +351,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return '*';
     }
     if (entity === 'empresas_incentivadoras') {
-      return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,objetivo,status,created_at';
+      return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
     }
     if (entity === 'mentoring_sessions') {
       return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at';
@@ -379,7 +380,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
-    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,created_at',
+    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
     users: 'id,email,name,role,department,permissions,created_at,staff_role',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
     notifications: 'id,project_id,user_id,title,message,type,is_read,created_at'

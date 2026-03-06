@@ -433,7 +433,8 @@ export interface EmpresaIncentivadora {
   quantidadeDia: number;
   quantidadeNoite: number;
   objetivo: string;
-  status: 'pending' | 'approved' | 'rejected' | 'ativo' | 'cancelado';
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected' | 'ativo' | 'cancelado' | 'aprovado' | 'pendente' | 'rejeitado';
   createdAt: string;
 }
 
