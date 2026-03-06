@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 interface ProfileModalProps {
     isOpen: boolean;
@@ -265,135 +266,136 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                         />
                                     </div>
                                 </div>
+                            </div>
                         )}
 
-                                {activeTab === 'profissional' && (
-                                    <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                                    <Building2 className="h-3.5 w-3.5 text-brand-orange-coral" /> Empresa
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
-                                                    value={formData.company}
-                                                    onChange={e => setFormData({ ...formData, company: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                                    <Briefcase className="h-3.5 w-3.5 text-brand-orange-coral" /> Cargo
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
-                                                    value={formData.position}
-                                                    onChange={e => setFormData({ ...formData, position: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-400">Mini Biografia</label>
-                                            <textarea
-                                                rows={4}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all resize-none text-sm leading-relaxed"
-                                                placeholder="Conte um pouco sobre sua trajetória profissional..."
-                                                value={formData.bio}
-                                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                                            />
-                                        </div>
+                        {activeTab === 'profissional' && (
+                            <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                                            <Building2 className="h-3.5 w-3.5 text-brand-orange-coral" /> Empresa
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
+                                            value={formData.company}
+                                            onChange={e => setFormData({ ...formData, company: e.target.value })}
+                                        />
                                     </div>
-                                )}
-
-                                {activeTab === 'social' && (
-                                    <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                                <Linkedin className="h-3.5 w-3.5 text-brand-orange-coral" /> LinkedIn URL
-                                            </label>
-                                            <input
-                                                type="url"
-                                                placeholder="https://linkedin.com/in/seu-perfil"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
-                                                value={formData.linkedin}
-                                                onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                                <Globe className="h-3.5 w-3.5 text-brand-orange-coral" /> Website / Portfólio
-                                            </label>
-                                            <input
-                                                type="url"
-                                                placeholder="https://suaempresa.com.br"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
-                                                value={formData.website}
-                                                onChange={e => setFormData({ ...formData, website: e.target.value })}
-                                            />
-                                        </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                                            <Briefcase className="h-3.5 w-3.5 text-brand-orange-coral" /> Cargo
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
+                                            value={formData.position}
+                                            onChange={e => setFormData({ ...formData, position: e.target.value })}
+                                        />
                                     </div>
-                                )}
-
-                                {activeTab === 'endereco' && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-bottom-2 duration-300">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                                                <MapPin className="h-3.5 w-3.5 text-brand-orange-coral" /> Cidade
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
-                                                value={formData.city}
-                                                onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-400">Estado (UF)</label>
-                                            <input
-                                                type="text"
-                                                maxLength={2}
-                                                placeholder="EX: PE"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all uppercase"
-                                                value={formData.state}
-                                                onChange={e => setFormData({ ...formData, state: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-400">Mini Biografia</label>
+                                    <textarea
+                                        rows={4}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all resize-none text-sm leading-relaxed"
+                                        placeholder="Conte um pouco sobre sua trajetória profissional..."
+                                        value={formData.bio}
+                                        onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                    />
+                                </div>
                             </div>
+                        )}
+
+                        {activeTab === 'social' && (
+                            <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                                        <Linkedin className="h-3.5 w-3.5 text-brand-orange-coral" /> LinkedIn URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://linkedin.com/in/seu-perfil"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
+                                        value={formData.linkedin}
+                                        onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                                        <Globe className="h-3.5 w-3.5 text-brand-orange-coral" /> Website / Portfólio
+                                    </label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://suaempresa.com.br"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
+                                        value={formData.website}
+                                        onChange={e => setFormData({ ...formData, website: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'endereco' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-in slide-in-from-bottom-2 duration-300">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-400 flex items-center gap-2">
+                                        <MapPin className="h-3.5 w-3.5 text-brand-orange-coral" /> Cidade
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all"
+                                        value={formData.city}
+                                        onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-400">Estado (UF)</label>
+                                    <input
+                                        type="text"
+                                        maxLength={2}
+                                        placeholder="EX: PE"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all uppercase"
+                                        value={formData.state}
+                                        onChange={e => setFormData({ ...formData, state: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                    {/* Footer */}
-                    <div className="p-6 sm:p-8 border-t border-white/5 bg-white/[0.02] flex items-center justify-between gap-4">
-                        <p className="hidden sm:block text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
-                            Suas informações estão protegidas por RLS
-                        </p>
-                        <div className="flex gap-3 w-full sm:w-auto">
-                            <Button
-                                variant="ghost"
-                                onClick={onClose}
-                                className="flex-1 sm:flex-none h-12 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-bold"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                onClick={handleSave}
-                                disabled={isSaving || isProfileLoading}
-                                className="flex-1 sm:flex-none h-12 rounded-2xl bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-8 shadow-lg shadow-brand-orange-coral/20 min-w-[140px]"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Salvar Alterações
-                                    </>
-                                )}
-                            </Button>
-                        </div>
+                {/* Footer */}
+                <div className="p-6 sm:p-8 border-t border-white/5 bg-white/[0.02] flex items-center justify-between gap-4">
+                    <p className="hidden sm:block text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">
+                        Suas informações estão protegidas por RLS
+                    </p>
+                    <div className="flex gap-3 w-full sm:w-auto">
+                        <Button
+                            variant="ghost"
+                            onClick={onClose}
+                            className="flex-1 sm:flex-none h-12 rounded-2xl border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-bold"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleSave}
+                            disabled={isSaving || isProfileLoading}
+                            className="flex-1 sm:flex-none h-12 rounded-2xl bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-8 shadow-lg shadow-brand-orange-coral/20 min-w-[140px]"
+                        >
+                            {isSaving ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Salvar Alterações
+                                </>
+                            )}
+                        </Button>
                     </div>
                 </div>
             </div>
-            );
+        </div>
+    );
 }
