@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileModal } from '@/components/profile/ProfileModal';
 
 const navLinks = [
   { name: 'Início', href: '/' },
@@ -27,6 +28,7 @@ export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -148,6 +150,13 @@ export function Header() {
                       <Link to={getDashboardLink()} className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 cursor-pointer">
                         Ir para o Painel
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setIsProfileOpen(true)}
+                      className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 cursor-pointer mt-1"
+                    >
+                      <User className="h-4 w-4 mr-2 text-brand-orange-coral" />
+                      Meu Perfil
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={logout}
@@ -299,6 +308,11 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
     </header>
   );
 }

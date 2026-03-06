@@ -404,12 +404,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   // Atualizar perfil
-  const updateProfile = useCallback(async (data: Partial<User>) => {
+  const updateProfile = useCallback(async (updates: Partial<User>) => {
     if (!user) throw new Error('Auth required');
-    const { error } = await (supabase.from('users') as any).update(data).eq('id', user.id);
-    if (error) throw error;
-    setUser({ ...user, ...data });
-    logAuditEvent('profile_updated', user.id, { fields: Object.keys(data) });
+
+    // 1. Atualizar metadados no Supabase Auth (JWT)
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        name: updates.name,
+        avatar_url: updates.avatar,
+        phone: updates.phone
+      }
+    });
+
+    if (authError) throw authError;
+
+    // 2. Atualizar tabela 'users' no banco de dados
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name = updates.name;
+    if (updates.avatar) dbUpdates.avatar_url = updates.avatar;
+    if (updates.phone) dbUpdates.phone = updates.phone;
+    if (updates.department) dbUpdates.department = updates.department;
+
+    if (Object.keys(dbUpdates).length > 0) {
+      const { error: dbError } = await (supabase.from('users') as any)
+        .update(dbUpdates)
+        .eq('id', user.id);
+
+      if (dbError) {
+        logger.warn('Erro ao atualizar tabela users (ignorado pois Auth funcionou):', dbError.message);
+      }
+    }
+
+    // 3. Atualizar estado local
+    setUser({ ...user, ...updates });
+    logAuditEvent('profile_updated', user.id, { fields: Object.keys(updates) });
   }, [user]);
 
   // Habilitar 2FA

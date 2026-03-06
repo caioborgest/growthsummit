@@ -20,10 +20,12 @@ import {
   AlertCircle,
   BookOpen,
   ChevronDown,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { ProfileModal } from '@/components/profile/ProfileModal';
+import { useAuth } from '@/contexts/Auth/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjects } from '@/hooks/useData';
 import {
@@ -105,6 +107,7 @@ export function AdminLayout() {
   const { selectedProject, setSelectedProject } = useProject();
   const { data: projects } = useProjects();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -257,7 +260,10 @@ export function AdminLayout() {
 
         {/* User Profile Section Premium */}
         <div className="p-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-4 transition-all hover:bg-white/10 hover:border-white/20 group">
+          <div
+            onClick={() => setIsProfileOpen(true)}
+            className="bg-white/5 border border-white/10 rounded-3xl p-4 transition-all hover:bg-white/10 hover:border-white/20 group cursor-pointer"
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">
                 <img
@@ -276,7 +282,10 @@ export function AdminLayout() {
               <Button
                 variant="ghost"
                 className="flex-1 bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-400 border border-white/5 rounded-xl h-10 px-2 text-xs font-bold transition-all"
-                onClick={handleLogout}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLogout();
+                }}
               >
                 <LogOut className="h-3.5 w-3.5 mr-2" />
                 Sair
@@ -285,7 +294,7 @@ export function AdminLayout() {
                 variant="ghost"
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 rounded-xl flex items-center justify-center p-0"
               >
-                <Bell className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -383,6 +392,11 @@ export function AdminLayout() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/5 rounded-full blur-[120px] -z-10 -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px] -z-10 translate-y-1/2 -translate-x-1/2 pointer-events-none" />
       </main>
+
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+      />
     </div>
   );
 }
