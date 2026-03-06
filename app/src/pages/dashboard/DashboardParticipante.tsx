@@ -27,7 +27,9 @@ import {
   Copy,
   CheckCircle,
   AlertCircle,
-  Bell
+  Bell,
+  BellRing,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -362,7 +364,6 @@ export function DashboardParticipante() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(2);
   const { data: mentors } = useMentors();
   const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
 
@@ -413,14 +414,101 @@ export function DashboardParticipante() {
     }
   };
 
+  const handleCancelMentoring = async (sessionId: string) => {
+    if (!window.confirm('Tem certeza que deseja cancelar esta mentoria? O horário ficará disponível para outros participantes.')) return;
+
+    const session = mentoringSessions.find(s => s.id === sessionId);
+    const mentor = session ? mentors.find(m => m.id === session.mentorId) : null;
+
+    try {
+      // Libera o slot: zera mentorado e marca como disponível novamente
+      await updateMentoring(sessionId, {
+        menteeId: '' as any,
+        menteeName: '' as any,
+        topic: undefined as any,
+        status: 'scheduled'
+      });
+
+      // Notifica o mentor por e-mail sobre o cancelamento
+      if (mentor?.email && session) {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            to: [mentor.email],
+            subject: `❌ Cancelamento de Mentoria — ${myRegistration?.nome || 'Participante'}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h1 style="color: #ef4444;">Cancelamento de Mentoria</h1>
+                <p>Olá, <strong>${mentor.name}</strong>!</p>
+                <p>O participante <strong>${myRegistration?.nome || 'Participante'}</strong> cancelou a mentoria agendada.</p>
+                <div style="background: #fef2f2; padding: 25px; border-radius: 12px; border: 1px solid #fecaca; margin: 25px 0;">
+                  <p style="margin: 0 0 10px 0;"><strong>Data/Hora:</strong> ${new Date(session.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                  <p style="margin: 0;"><strong>Tópico cancelado:</strong> ${session.topic || 'Mentoria Geral'}</p>
+                </div>
+                <p>O horário voltou a ficar <strong style="color: #16a34a;">disponível</strong> e pode ser agendado por outro participante — inclusive presencialmente.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+                <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+              </div>
+            `
+          }
+        });
+      }
+
+      toast.success('Mentoria cancelada. O horário está disponível novamente.');
+    } catch {
+      toast.error('Erro ao cancelar mentoria. Tente novamente.');
+    }
+  };
+
   const myMentorships = mentoringSessions.filter(s => s.menteeId === myRegistration?.id);
   const availableSlots = mentoringSessions.filter(s => !s.menteeId && s.status === 'scheduled');
 
-  const notifications = [
-    { id: 1, title: 'Check-in Realizado!', message: 'Seu credenciamento diurno foi confirmado. Aproveite o evento!', time: '10 min atrás', read: false },
-    { id: 2, title: 'Próxima Palestra', message: 'Em 15 minutos começará "Crescimento Exponencial" na Arena Principal.', time: '1 hora atrás', read: false },
-    { id: 3, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '2 horas atrás', read: true },
-  ];
+  // ── Notificações dinâmicas ─────────────────────────────────────────────────
+  const notifications = useMemo(() => {
+    const items: { id: number; title: string; message: string; time: string; read: boolean; type?: 'info' | 'warning' | 'alert' }[] = [
+      { id: 1, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '', read: true, type: 'info' },
+    ];
+
+    const now = new Date();
+
+    // Alerta 24h antes do evento
+    if (selectedProject?.startDate) {
+      const eventStart = new Date(selectedProject.startDate);
+      const diffMs = eventStart.getTime() - now.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+      if (diffHours > 0 && diffHours <= 24) {
+        const hoursLeft = Math.round(diffHours);
+        items.unshift({
+          id: 10,
+          title: '🎉 O evento começa amanhã!',
+          message: `Faltam aproximadamente ${hoursLeft}h para o ${selectedProject.name || 'Growth Experience'}. Prepare-se!`,
+          time: `${hoursLeft}h restantes`,
+          read: false,
+          type: 'alert'
+        });
+      }
+    }
+
+    // Alertas 60 min antes de cada mentoria agendada
+    myMentorships.forEach((session, idx) => {
+      if (!session.scheduledAt) return;
+      const sessionTime = new Date(session.scheduledAt);
+      const diffMs = sessionTime.getTime() - now.getTime();
+      const diffMinutes = diffMs / (1000 * 60);
+      if (diffMinutes > 0 && diffMinutes <= 60) {
+        const minutesLeft = Math.round(diffMinutes);
+        items.unshift({
+          id: 100 + idx,
+          title: '⏰ Mentoria em breve!',
+          message: `Sua mentoria com ${session.mentorName} começa em ${minutesLeft} minuto${minutesLeft !== 1 ? 's' : ''}. Prepare-se para a sessão!`,
+          time: `${minutesLeft} min`,
+          read: false,
+          type: 'warning'
+        });
+      }
+    });
+
+    return items;
+  }, [selectedProject, myMentorships]);
 
   // ── STATUS FINANCEIRO ──────────────────────────────────────────────────────
   // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
@@ -614,7 +702,7 @@ export function DashboardParticipante() {
                     <PopoverTrigger asChild>
                       <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-1.5 rounded-full transition-colors">
                         <Bell className="h-4 w-4" />
-                        {unreadNotifications > 0 && (
+                        {notifications.some(n => !n.read) && (
                           <span className="absolute top-0 right-0 w-2 h-2 bg-orange-500 rounded-full border border-dark-300"></span>
                         )}
                       </button>
@@ -623,10 +711,9 @@ export function DashboardParticipante() {
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-white font-bold">Notificações</h3>
                         <button
-                          onClick={() => setUnreadNotifications(0)}
-                          className="text-[10px] text-teal-400 font-bold uppercase tracking-wider"
+                          className="text-[10px] text-teal-400 font-bold uppercase tracking-wider opacity-40 cursor-default"
                         >
-                          Limpar
+                          {notifications.filter(n => !n.read).length} nova{notifications.filter(n => !n.read).length !== 1 ? 's' : ''}
                         </button>
                       </div>
                       <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
@@ -869,17 +956,26 @@ export function DashboardParticipante() {
                     <CheckCircle2 className="h-5 w-5 text-teal-400" /> Minhas Mentorias
                   </h2>
                   <div className="space-y-3">
-                    {myMentorships.map(mentor => (
-                      <div key={mentor.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-dark-100 rounded-2xl border border-teal-500/20">
+                    {myMentorships.map(session => (
+                      <div key={session.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-dark-100 rounded-2xl border border-teal-500/20">
                         <div className="flex-1">
-                          <p className="text-white font-black">{mentor.mentorName}</p>
-                          <p className="text-teal-400 text-sm">{mentor.topic}</p>
+                          <p className="text-white font-black">{session.mentorName}</p>
+                          <p className="text-teal-400 text-sm">{session.topic || 'Mentoria Geral'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-white font-bold">{new Date(mentor.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                          <p className="text-gray-400 text-sm">{new Date(mentor.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <p className="text-white font-bold">{new Date(session.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-gray-400 text-sm">{new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
-                        <Badge className="bg-green-500/20 text-green-400 justify-center">Confirmado</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-500/20 text-green-400">Confirmado</Badge>
+                          <button
+                            onClick={() => handleCancelMentoring(session.id)}
+                            title="Cancelar mentoria"
+                            className="p-1.5 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                     {myMentorships.length === 0 && (
