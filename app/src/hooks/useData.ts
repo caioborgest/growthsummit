@@ -222,7 +222,6 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     'createdAt',     // snake_case version created_at is sent explicitly
     'updatedAt',     // same
     'projectId',     // project_id is added separately below
-    'paymentStatus', // mapped to status_pagamento in registrations
     'staffRole',     // not stored as a separate column  
     'permissions',   // stored in metadata/jwt
     'twoFactorEnabled', // stored in auth
@@ -245,6 +244,10 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'companies' && key === 'name') dbKey = 'nome_empresa';
       else if (entity === 'companies' && key === 'description') dbKey = 'descricao_empresa';
       else if (entity === 'registrations' && key === 'name') dbKey = 'nome';
+      else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
+      else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
+      else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';
+      else if (entity === 'transactions' && key === 'amount') dbKey = 'amount';
       else {
         // Use generic semantic map or snake_case fallback
         dbKey = SEMANTIC_MAP_TO_DB[key] || toSnakeCase(key);
@@ -282,13 +285,14 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
 
   // Special status mapping for registrations
   if (entity === 'registrations' && data.status) {
-    if (data.status === 'paid') {
+    const s = String(data.status).toLowerCase();
+    if (s === 'paid' || s === 'pago') {
       result.status_pagamento = 'pago';
       result.status = 'ativo';
-    } else if (data.status === 'pending') {
+    } else if (s === 'pending' || s === 'pendente') {
       result.status_pagamento = 'pendente';
       result.status = 'pendente';
-    } else if (data.status === 'cancelled') {
+    } else if (s === 'cancelled' || s === 'cancelado') {
       result.status_pagamento = 'pendente';
       result.status = 'cancelado';
     }

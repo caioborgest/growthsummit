@@ -172,6 +172,34 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
           </div>
         </div>
 
+        {['approved', 'aprovado'].includes(mentor.status) && (
+          <div className="p-4 bg-teal-500/10 border border-teal-500/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-white font-bold text-sm">Acesso do Mentor</p>
+              <p className="text-gray-400 text-[10px] uppercase font-black">Enviar link de acesso direto via e-mail</p>
+            </div>
+            <Button
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600 text-white font-black text-xs h-10 px-6 rounded-xl shadow-lg shadow-teal-500/20"
+              onClick={async () => {
+                try {
+                  const { error } = await supabase.auth.signInWithOtp({
+                    email: mentor.email,
+                    options: { emailRedirectTo: `${window.location.origin}/login` }
+                  });
+                  if (error) throw error;
+                  toast.success('Link mágico enviado com sucesso para o e-mail do mentor!');
+                } catch (err: any) {
+                  logger.error('Erro ao enviar link mágico:', err);
+                  toast.error('Erro ao enviar link mágico: ' + err.message);
+                }
+              }}
+            >
+              <Mail className="h-4 w-4 mr-2" /> ENVIAR LINK MÁGICO
+            </Button>
+          </div>
+        )}
+
         <div className="flex gap-3 pt-6 border-t border-white/5">
           {['pending', 'pendente'].includes(mentor.status) ? (
             <>
@@ -193,6 +221,17 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
             </>
           ) : (
             <div className="flex w-full gap-2 font-black">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const url = `${window.location.origin}/login?email=${encodeURIComponent(mentor.email)}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success('Link de login copiado (o mentor precisará do OTP/Email)');
+                }}
+                className="flex-1 border-white/10 text-gray-400 hover:text-white font-bold h-12 rounded-2xl"
+              >
+                Copiado Link de Login
+              </Button>
               <Button
                 onClick={onClose}
                 className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold h-12 rounded-2xl border border-white/10"
