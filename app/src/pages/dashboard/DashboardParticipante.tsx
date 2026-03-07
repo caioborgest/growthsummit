@@ -759,122 +759,157 @@ export function DashboardParticipante() {
         />
       )}
 
-      {/* Header Premium */}
+      {/* Header Premium Refined */}
       <div className="bg-dark-300 border-b border-white/5 shadow-xl relative overflow-hidden">
-        {/* Glow background effect */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 blur-[120px] rounded-full -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/5 blur-[120px] rounded-full -ml-32 -mb-32"></div>
+        {/* Glow background effects */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/5 blur-[120px] rounded-full -ml-48 -mb-48 pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="relative group">
-                <div className="w-16 h-16 md:w-24 md:h-24 rounded-[1.5rem] bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-xl shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 relative">
+          {/* Top Utility Bar */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-0.5">Growth Summit</span>
+              <span className="text-white/40 font-bold text-[9px] uppercase tracking-widest">{selectedProject?.name || 'Growth Experience 2026'}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
+                className="bg-white/5 hover:bg-white/10 text-gray-400 h-8 px-3 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 border border-white/5"
+              >
+                <HelpCircle className="h-3 w-3" /> GUIA
+              </button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-white/5">
+                    <Bell className="h-3.5 w-3.5" />
+                    {notifications.some(n => !n.read) && (
+                      <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+                    <h3 className="text-white font-bold text-sm">Notificações</h3>
+                    <Badge className="bg-teal-500/10 text-teal-400 text-[9px] font-black border-none px-2 h-5">
+                      {notifications.filter(n => !n.read).length} NOVAS
+                    </Badge>
+                  </div>
+                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                    {notifications.map(n => (
+                      <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-orange-500/5 border-orange-500/20'}`}>
+                        <div className="flex justify-between items-start gap-2 mb-1">
+                          <p className="text-white text-[11px] font-bold leading-tight">{n.title}</p>
+                          <span className="text-[8px] text-gray-500 font-bold">{n.time}</span>
+                        </div>
+                        <p className="text-gray-400 text-[10px] leading-tight opacity-70">{n.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <button
+                onClick={handleLogout}
+                className="bg-red-500/5 hover:bg-red-500/10 text-red-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-red-500/10"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            {/* Primary Info */}
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-gradient-to-br from-orange-500/20 to-orange-500/5 p-1 backdrop-blur-sm border border-white/10 shadow-2xl overflow-hidden group">
+                  <div className="w-full h-full bg-dark-400 rounded-[1.8rem] flex items-center justify-center overflow-hidden relative">
                     {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
-                      <div className="text-2xl md:text-3xl font-black text-orange-400">
-                        {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || <User className="h-8 w-8" />}
+                      <div className="text-3xl md:text-4xl font-black text-orange-400 drop-shadow-lg">
+                        {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || <User className="h-10 w-10" />}
                       </div>
                     )}
+                    {/* Status dot integrated */}
+                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-dark-400 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                   </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-dark-300 rounded-full shadow-lg"></div>
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-                  {myRegistration?.nome || user?.name || 'Bem-vindo'}
-                  <Sparkles className="h-5 w-5 text-orange-400 animate-pulse" />
-                </h1>
-                <p className="text-gray-400 font-medium tracking-wide uppercase text-[10px] md:text-xs">{selectedProject?.name || 'Growth Experience 2026'}</p>
 
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <Badge className={`px-3 py-1 font-bold flex items-center gap-1.5 border shadow-sm ${myRegistration?.palestrasNoturnas
-                    ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                    : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter flex items-center gap-3 italic">
+                    {myRegistration?.nome?.split(' ')[0] || user?.name?.split(' ')[0] || 'Bem-vindo'}
+                    <span className="text-orange-500 not-italic">.</span>
+                  </h1>
+                  <p className="text-gray-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] opacity-60">
+                    {myRegistration?.nome || user?.name || 'PARTICIPANTE'}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest flex items-center gap-1.5 ${myRegistration?.palestrasNoturnas
+                      ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                      : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
                     }`}>
-                    {myRegistration?.palestrasNoturnas ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
-                    {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
+                    {myRegistration?.palestrasNoturnas ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
+                    {myRegistration?.palestrasNoturnas ? 'Exp. Pro' : 'Free Morning'}
                   </Badge>
 
                   {myRegistration?.palestrasNoturnas && (
-                    <Badge className={`px-3 py-1 font-bold border shadow-sm ${statusFinanceiro.label === 'Confirmado' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-orange-600/20 text-orange-500 border-orange-600/30'
+                    <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${statusFinanceiro.label === 'Confirmado'
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                        : 'bg-orange-500/5 text-orange-500 border-orange-500/20'
                       }`}>
-                      {statusFinanceiro.label === 'Confirmado' ? 'PAGO' : 'PAGAMENTO PENDENTE'}
+                      {statusFinanceiro.label === 'Confirmado' ? 'Acesso Ativo' : 'Pagamento Pendente'}
                     </Badge>
                   )}
-
-                  <Button
-                    onClick={() => setIsSelfCheckInOpen(true)}
-                    size="sm"
-                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-4 rounded-full text-[10px] md:text-xs shadow-lg shadow-brand-orange-coral/20 border-none h-7"
-                  >
-                    <QrCode className="h-3 w-3 mr-1.5" /> CONFIRMAR PRESENÇA
-                  </Button>
-                  <button
-                    onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
-                    className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
-                  >
-                    <HelpCircle className="h-3 w-3" /> Guia
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-500/5 hover:bg-red-500/10 text-red-400 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
-                  >
-                    <LogOut className="h-3 w-3" /> Sair
-                  </button>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-1.5 rounded-full transition-colors ml-2">
-                        <Bell className="h-4 w-4" />
-                        {notifications.some(n => !n.read) && (
-                          <span className="absolute top-0 right-0 w-2 h-2 bg-orange-500 rounded-full border border-dark-300"></span>
-                        )}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-bold">Notificações</h3>
-                        <div className="text-[10px] text-teal-400 font-bold uppercase tracking-wider opacity-40">
-                          {notifications.filter(n => !n.read).length} novas
-                        </div>
-                      </div>
-                      <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
-                        {notifications.map(n => (
-                          <div key={n.id} className={`p-3 rounded-xl border transition-all ${n.read ? 'bg-white/5 border-transparent' : 'bg-orange-500/5 border-orange-500/20'}`}>
-                            <div className="flex justify-between items-start gap-2">
-                              <p className="text-white text-xs font-bold">{n.title}</p>
-                              <span className="text-[9px] text-gray-500 whitespace-nowrap">{n.time}</span>
-                            </div>
-                            <p className="text-gray-400 text-[11px] mt-1 leading-tight">{n.message}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
                 </div>
-
-                {/* Minha Programação do Card */}
-                {cursosSelecionados.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-white/5 space-y-3">
-                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <BookOpen className="h-3 w-3 text-teal-400" /> Sua Programação Selecionada
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      {cursosSelecionados.map((curso: any, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-dark-200/50 border border-teal-500/10 rounded-lg px-3 py-1.5 group/item hover:border-teal-500/30 transition-all">
-                          <span className="text-teal-400 font-black text-[10px]">{curso.startTime || curso.horario_inicio || '00:00'}</span>
-                          <span className="text-gray-300 text-[10px] font-bold truncate">{curso.title || curso.titulo}</span>
-                          <ChevronRight className="h-2 w-2 text-gray-700 group-hover/item:text-teal-500 transition-colors ml-auto" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
+
+            {/* Quick Actions */}
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => setIsSelfCheckInOpen(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 h-14 rounded-2xl text-sm shadow-xl shadow-orange-500/20 border-none group transition-all hover:scale-[1.02] active:scale-95"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mr-3 group-hover:rotate-12 transition-transform">
+                  <QrCode className="h-4 w-4" />
+                </div>
+                CONFIRMAR PRESENÇA
+              </Button>
+            </div>
           </div>
+
+          {/* Programming Preview integrated better */}
+          {cursosSelecionados.length > 0 && (
+            <div className="mt-10 pt-6 border-t border-white/5">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                  <BookOpen className="h-3 w-3 text-teal-400" /> Sua Programação do Dia
+                </p>
+                <span className="text-[10px] text-teal-400/40 font-bold uppercase">{cursosSelecionados.length} atividades</span>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {cursosSelecionados.map((curso: any, i) => (
+                  <div key={i} className="flex-shrink-0 flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl px-4 py-3 group hover:border-teal-500/20 transition-all cursor-default min-w-[200px]">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex flex-col items-center justify-center border border-teal-500/10">
+                      <span className="text-teal-400 font-black text-[9px] leading-none">{curso.startTime?.split(':')[0] || '00'}</span>
+                      <span className="text-teal-400/50 font-bold text-[7px] leading-none">{curso.startTime?.split(':')[1] || '00'}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white font-bold text-[11px] truncate leading-tight group-hover:text-teal-400 transition-colors">{curso.title || curso.titulo}</p>
+                      <p className="text-gray-500 text-[9px] font-medium uppercase tracking-tighter mt-0.5">{curso.room || 'Auditório'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -122,13 +122,26 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   end_time: 'endTime',
   max_capacity: 'maxCapacity',
   registered_count: 'registeredCount',
-  mentorado_id: 'menteeId',
+  // Mentorship (standard)
+  mentee_id: 'menteeId',
   mentor_id: 'mentorId',
+  mentee_name: 'menteeName',
+  scheduled_at: 'scheduledAt',
+  topic: 'topic',
+  notes: 'notes',
+  // Mentorship (GE semantic mapping)
+  mentorado_id: 'menteeId',
+  // mentor_id: 'mentorId', // Already defined above
   nome_mentorado: 'menteeName',
   email_mentorado: 'menteeEmail',
   telefone_mentorado: 'menteePhone',
   tema_interesse: 'topic',
   anotacoes: 'notes',
+  data_mentoria: 'scheduledAt',
+  avaliacao_mentoria: 'mentoringRating',
+  indicacao_mentor: 'mentorIndicationRating',
+  avaliado_em: 'evaluatedAt',
+  // Other GE fields
   mentor_name: 'mentorName',
   years_experience: 'yearsExperience',
   max_mentories: 'maxMentories',
@@ -144,14 +157,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   read_at: 'readAt',
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
-  valor_investido: 'amount',
-  data_mentoria: 'scheduledAt',
-  mentorado_id: 'menteeId',
-  nome_mentorado: 'menteeName',
-  email_mentorado: 'menteeEmail',
-  telefone_mentorado: 'menteePhone',
-  tema_interesse: 'topic',
-  anotacoes: 'notes',
+  valor_investido: 'investmentAmount',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -250,7 +256,12 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'startups' && key === 'description') dbKey = 'descricao_startup';
       else if (entity === 'companies' && key === 'name') dbKey = 'nome_empresa';
       else if (entity === 'companies' && key === 'description') dbKey = 'descricao_empresa';
-      else if (entity === 'registrations' && key === 'name') dbKey = 'nome';
+      else if (entity === 'mentoring_sessions' && key === 'scheduledAt') dbKey = isGEProject(projectId) ? 'data_mentoria' : 'scheduled_at';
+      else if (entity === 'mentoring_sessions' && key === 'topic') dbKey = isGEProject(projectId) ? 'tema_interesse' : 'topic';
+      else if (entity === 'mentoring_sessions' && key === 'notes') dbKey = isGEProject(projectId) ? 'anotacoes' : 'notes';
+      else if (entity === 'mentoring_sessions' && key === 'menteeId') dbKey = isGEProject(projectId) ? 'mentorado_id' : 'mentee_id';
+      else if (entity === 'mentoring_sessions' && key === 'menteeName') dbKey = isGEProject(projectId) ? 'nome_mentorado' : 'mentee_name';
+      else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
       else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
       else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';

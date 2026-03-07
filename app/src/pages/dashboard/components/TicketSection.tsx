@@ -1,4 +1,4 @@
-import { QrCode, Sparkles, Download, Moon, Sun, CreditCard, ChevronRight } from 'lucide-react';
+import { QrCode, Sparkles, Download, Moon, Sun, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import QRCode from 'react-qr-code';
@@ -88,8 +88,8 @@ export function TicketSection({
                                 <div className={`px-2 py-1 rounded-md text-[8px] font-black uppercase ${myRegistration?.palestrasNoturnas ? 'bg-orange-500/20 text-orange-400' : 'bg-teal-500/20 text-teal-400'}`}>
                                     {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                                 </div>
-                                <div className={`px-2 py-1 rounded-md text-[8px] font-black uppercase ${statusFinanceiro.label === 'Confirmado' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                                    {statusFinanceiro.label === 'Confirmado' ? 'Validado' : 'Pendente'}
+                                <div className={`px-2 py-1 rounded-md text-[8px] font-black uppercase ${statusFinanceiro.label === 'Confirmado' ? 'bg-green-500/20 text-green-400' : statusFinanceiro.label === 'Grátis' ? 'bg-teal-500/20 text-teal-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                                    {statusFinanceiro.label}
                                 </div>
                             </div>
                         </div>
@@ -172,11 +172,23 @@ export function TicketSection({
 
                         {/* Palestras Noturnas Logic */}
                         {myRegistration?.palestrasNoturnas ? (
-                            <div className="p-4 bg-green-500/5 rounded-2xl border border-green-500/10 mt-6">
-                                <p className="text-green-400 text-xs font-bold leading-relaxed">
-                                    ✅ Seu acesso PRO está ativo! Você tem entrada liberada nas palestras noturnas e agendamento de mentorias.
-                                </p>
-                            </div>
+                            statusFinanceiro.label === 'Confirmado' ? (
+                                <div className="p-4 bg-green-500/5 rounded-2xl border border-green-500/10 mt-6">
+                                    <p className="text-green-400 text-xs font-bold leading-relaxed">
+                                        ✅ Seu acesso PRO está ativo! Você tem entrada liberada nas palestras noturnas e agendamento de mentorias.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-orange-500/5 rounded-2xl border border-orange-500/10 mt-6">
+                                    <h4 className="text-orange-400 font-bold mb-1 flex items-center gap-2">
+                                        <CreditCard className="h-4 w-4" /> Pagamento Pendente
+                                    </h4>
+                                    <p className="text-gray-400 text-xs leading-relaxed">
+                                        Seu acesso <strong>Experience Pro</strong> está aguardando a confirmação do pagamento pelo sistema.
+                                        Assim que validado, suas mentorias e acesso noturno serão liberados.
+                                    </p>
+                                </div>
+                            )
                         ) : (
                             <div className="p-6 bg-orange-500/5 rounded-2xl border border-orange-500/10 mt-6 relative overflow-hidden group">
                                 <div className="relative z-10">
