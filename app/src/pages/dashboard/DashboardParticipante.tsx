@@ -885,7 +885,12 @@ export function DashboardParticipante() {
               <Award className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Certificados</span>
             </TabsTrigger>
             <TabsTrigger value="dados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <User className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Perfil</span>
+              {user?.avatar ? (
+                <img src={user.avatar} className="w-5 h-5 rounded-full md:mr-2 border border-white/20" alt="" />
+              ) : (
+                <User className="h-4 w-4 md:mr-2" />
+              )}
+              <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
           </TabsList>
 

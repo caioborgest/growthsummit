@@ -79,9 +79,21 @@ function DetalhesModal({
             <h3 className="text-white font-bold text-lg">{reg.name || 'Participante'}</h3>
             <p className="text-gray-400 text-sm">{reg.email}</p>
           </div>
+          {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
+            <div className="col-span-2 space-y-2 pt-2 border-t border-white/5">
+              <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Programação Escolhida</p>
+              <div className="flex flex-wrap gap-2">
+                {reg.cursosSelecionados.map((c, i) => (
+                  <Badge key={i} variant="outline" className="text-xs border-teal-500/30 text-teal-400 bg-teal-500/5">
+                    {c}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
           {[
             { label: 'Nº Inscrição', value: reg.ticketNumber },
             {
@@ -228,6 +240,7 @@ function DetalhesModal({
 export default function AdminInscricoes() {
   const { data: registrations, update, remove } = useRegistrations();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
+  const { data: allSessions } = useData<any>([], 'programacao_evento');
   const { update: updateSession } = useData([], 'sessions');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -249,11 +262,12 @@ export default function AdminInscricoes() {
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
 
-      // Se mudar para Grátis, zerar o valor
+      // Se mudar para Grátis, zerar o valor e desativar palestras noturnas (tier Free Morning)
       if (updates.status === 'free') {
         updates.amount = 0;
-        updates.status = 'pago'; // No banco tratamos como pago com valor 0
-        updates.palestrasNoturnas = true; // Converter para grátis garante o Pro
+        updates.status = 'pago'; // Financeiramente resolvido
+        updates.palestrasNoturnas = false; // Grátis = Free Morning
+        updates.statusPagamento = 'pago';
       }
 
       await update(id, updates);
@@ -638,11 +652,14 @@ export default function AdminInscricoes() {
                         <p className="text-gray-500 text-xs truncate max-w-[200px]">{reg.email || '-'}</p>
                         {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
-                            {reg.cursosSelecionados.map((c, i) => (
-                              <Badge key={i} variant="outline" className="text-[9px] py-0 px-1 border-teal-500/20 text-teal-400 bg-teal-500/5">
-                                {c}
-                              </Badge>
-                            ))}
+                            {reg.cursosSelecionados.map((id, i) => {
+                              const session = allSessions?.find(s => s.id === id);
+                              return (
+                                <Badge key={i} variant="outline" className="text-[9px] py-0 px-1 border-teal-500/20 text-teal-400 bg-teal-500/5">
+                                  {session?.title || session?.titulo || id}
+                                </Badge>
+                              );
+                            })}
                           </div>
                         )}
                       </td>

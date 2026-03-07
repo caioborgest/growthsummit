@@ -148,6 +148,8 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   data_mentoria: 'scheduledAt',
   mentorado_id: 'menteeId',
   nome_mentorado: 'menteeName',
+  email_mentorado: 'menteeEmail',
+  telefone_mentorado: 'menteePhone',
   tema_interesse: 'topic',
   anotacoes: 'notes',
 };
