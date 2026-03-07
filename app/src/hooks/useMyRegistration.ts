@@ -132,8 +132,32 @@ export function useMyRegistration() {
     }, [user, projectId]);
 
     useEffect(() => {
+        if (!user || !projectId) return;
         fetchRegistration();
-    }, [fetchRegistration]);
+
+        // Subscrição em tempo real para mudanças na inscrição
+        const table = getTable(projectId);
+        const channel = supabase.channel(`my_registration_${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: table,
+                    filter: `id=eq.${registration?.id}`
+                },
+                (payload) => {
+                    if (payload.new) {
+                        setRegistration(mapRow(payload.new as Record<string, unknown>));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, projectId, registration?.id]);
 
     /** Atualiza os cursos selecionados */
     const updateCursos = useCallback(async (cursoIds: string[]) => {

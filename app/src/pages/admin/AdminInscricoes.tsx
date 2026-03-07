@@ -115,12 +115,35 @@ function DetalhesModal({
           ))}
         </div>
 
-        {(reg.cursosSelecionados && reg.cursosSelecionados.length > 0) && (
-          <div className="p-3 bg-white/5 rounded-lg">
-            <p className="text-gray-500 text-xs mb-1">Atividades</p>
-            <p className="text-white font-semibold text-xs">{reg.cursosSelecionados.join(', ')}</p>
+        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-gray-500 text-[10px] uppercase font-black tracking-widest">Atividades Selecionadas</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[10px] text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/20 font-black px-2 uppercase"
+              onClick={() => {
+                const novo = prompt('Insira os nomes das atividades separados por vírgula:', reg.cursosSelecionados?.join(', ') || '');
+                if (novo !== null) {
+                  onUpdateStatus(reg.id, { cursosSelecionados: novo.split(',').map(s => s.trim()).filter(Boolean) } as any);
+                }
+              }}
+            >
+              Editar
+            </Button>
           </div>
-        )}
+          {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {reg.cursosSelecionados.map((c, i) => (
+                <Badge key={i} variant="outline" className="bg-dark-300 text-white border-white/10 text-[10px] py-0.5">
+                  {c}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600 text-[10px] italic">Nenhuma atividade selecionada</p>
+          )}
+        </div>
 
         <div className="pt-6 border-t border-white/10">
           <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Ações de Credenciamento</p>
@@ -224,10 +247,10 @@ export default function AdminInscricoes() {
       if (!registration) return;
 
       const oldStatus = registration.status;
-      const updates: any = { status };
+      const updates: any = typeof status === 'object' ? status : { status };
 
       // Se mudar para Grátis, zerar o valor
-      if (status === 'free') {
+      if (updates.status === 'free') {
         updates.amount = 0;
         updates.status = 'pago'; // No banco tratamos como pago com valor 0
       }

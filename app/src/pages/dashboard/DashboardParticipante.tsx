@@ -59,6 +59,7 @@ import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
+import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
 function UpgradeProModal({ registrationId, onClose, onSuccess }: {
@@ -136,14 +137,15 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
         window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
       }
 
-      // 3. Mark in DB as "pago" (Marked as paid to unlock features)
+      // 3. Mark in DB
+      const isPaid = precoFinal === 0;
       const { error } = await (supabase.from('inscricoes_growth_experience' as never) as any)
         .update({
           palestras_noturnas: true,
-          status_pagamento: 'pago',
-          status: 'ativo',
+          status_pagamento: isPaid ? 'pago' : 'pendente',
+          status: isPaid ? 'ativo' : 'pendente',
           valor_pago: precoFinal,
-          paid_at: new Date().toISOString(),
+          paid_at: isPaid ? new Date().toISOString() : null,
           cupom_palestra: cupomValido ? cupom.trim().toUpperCase() : null,
           valor_desconto_palestra: cupomValido ? PRECO_BASE - precoFinal : 0,
         })
@@ -160,7 +162,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
       if (precoFinal === 0) {
         toast.success('🎉 Upgrade concluído com sucesso!');
       } else {
-        toast.success('🎉 Comprovante enviado! Bem-vindo às palestras noturnas!');
+        toast.success('🎉 Comprovante enviado! Aguarde a confirmação do admin para liberar as mentorias.');
       }
 
       onSuccess();
@@ -369,7 +371,8 @@ export function DashboardParticipante() {
   const [activeTab, setActiveTab] = useState('ingresso');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
-  const [showSelfCheckIn, setShowSelfCheckIn] = useState(false);
+  const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
+  const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
   const { data: mentors } = useMentors();
   const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
   const [ratingModal, setRatingModal] = useState<{
@@ -446,7 +449,7 @@ export function DashboardParticipante() {
         }
       });
       toast.success('Avaliação enviada com sucesso!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Erro ao enviar avaliação:', err);
       toast.error('Erro ao salvar avaliação. Tente novamente.');
       throw err;
@@ -986,9 +989,15 @@ export function DashboardParticipante() {
               <div className="glass-card p-12 text-center border-orange-500/20">
                 <Lock className="h-12 w-12 text-orange-400 mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-white mb-2">Mentorias Exclusivas</h2>
-                <p className="text-gray-400 max-w-md mx-auto mb-6">As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe <strong className="text-orange-400">Experience Pro</strong> com status <strong className="text-green-400">PAGO</strong>.</p>
+                <p className="text-gray-400 max-w-md mx-auto mb-6">
+                  {myRegistration?.statusPagamento === 'pendente'
+                    ? 'Recebemos seu comprovante! Nossa equipe está revisando seu pagamento para liberar as mentorias 1-on-1.'
+                    : 'As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe ' +
+                    'Experience Pro com status PAGO.'
+                  }
+                </p>
                 <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black" onClick={() => setShowUpgradeModal(true)}>
-                  {(myRegistration?.palestrasNoturnas && (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid')) ? 'VERIFICAR PAGAMENTO' : 'FAZER UPGRADE AGORA'}
+                  {(myRegistration?.palestrasNoturnas && (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid')) ? 'AGUARDANDO REVISÃO' : 'FAZER UPGRADE AGORA'}
                 </Button>
               </div>
             ) : (
@@ -997,6 +1006,14 @@ export function DashboardParticipante() {
                 <div className="glass-card p-8 bg-gradient-to-br from-teal-500/5 to-transparent">
                   <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-teal-400" /> Minhas Mentorias
+                    <div className="flex-1" />
+                    <Button
+                      size="sm"
+                      className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black text-[10px] sm:text-xs h-9 px-4 rounded-xl shadow-lg shadow-brand-orange-coral/20"
+                      onClick={() => setIsMentoriaModalOpen(true)}
+                    >
+                      <Sparkles className="h-3 w-3 mr-2" /> AGENDAR NOVA MENTORIA
+                    </Button>
                   </h2>
                   <div className="space-y-3">
                     {myMentorships.map(session => (
@@ -1429,6 +1446,11 @@ export function DashboardParticipante() {
         existingAvaliacaoMentoria={ratingModal.avaliacao}
         existingIndicacaoMentor={ratingModal.indicacao}
         onSubmit={handleRatingSubmit}
+      />
+
+      <MentoriaMultiStepModal
+        isOpen={isMentoriaModalOpen}
+        onClose={() => setIsMentoriaModalOpen(false)}
       />
     </motion.div>
   );

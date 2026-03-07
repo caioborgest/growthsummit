@@ -129,8 +129,14 @@ export function Header() {
                       size="sm"
                       className="rounded-xl px-4 text-xs font-bold text-gray-300 hover:text-white h-10 gap-2"
                     >
-                      <User className="h-4 w-4 text-brand-orange-coral" />
-                      <span className="max-w-[100px] truncate">{user?.name?.split(' ')[0] || 'Meu Painel'}</span>
+                      {user?.avatar ? (
+                        <div className="h-6 w-6 rounded-full overflow-hidden border border-white/10 shadow-inner">
+                          <img src={user.avatar} className="h-full w-full object-cover" alt="" />
+                        </div>
+                      ) : (
+                        <User className="h-4 w-4 text-brand-orange-coral" />
+                      )}
+                      <span className="max-w-[100px] truncate leading-none">{user?.name?.split(' ')[0] || 'Meu Painel'}</span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
