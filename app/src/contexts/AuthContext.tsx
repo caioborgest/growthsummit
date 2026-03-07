@@ -408,12 +408,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error('Auth required');
 
     // 1. Atualizar metadados no Supabase Auth (JWT)
+    const authMetadata: any = {};
+    if (updates.name !== undefined) authMetadata.name = updates.name;
+    if (updates.avatar !== undefined) authMetadata.avatar_url = updates.avatar;
+    if (updates.phone !== undefined) authMetadata.phone = updates.phone;
+
     const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        name: updates.name,
-        avatar_url: updates.avatar,
-        phone: updates.phone
-      }
+      data: authMetadata
     });
 
     if (authError) throw authError;

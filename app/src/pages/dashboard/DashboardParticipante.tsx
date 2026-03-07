@@ -53,6 +53,11 @@ import { useSessions, useMentors, useMentoringSessions } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import type { MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
+import { MentorshipSection } from './components/MentorshipSection';
+import { AgendaSection } from './components/AgendaSection';
+import { TicketSection } from './components/TicketSection';
+import { DocsSection } from './components/DocsSection';
+import { CertificatesSection } from './components/CertificatesSection';
 import { ProfileForm } from './components/ProfileForm';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
@@ -374,6 +379,14 @@ export function DashboardParticipante() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
+
+  // Auto-refetch registration to keep status in sync with backoffice
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchRegistration();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [refetchRegistration]);
   const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
   const { data: mentors } = useMentors();
   const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
@@ -865,713 +878,114 @@ export function DashboardParticipante() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto bg-dark-200 mb-8 p-1 rounded-2xl shadow-inner shadow-black/20 overflow-hidden">
-            <TabsTrigger value="ingresso" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <QrCode className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Ingresso</span>
-            </TabsTrigger>
-            <TabsTrigger value="agenda" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <Calendar className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Agenda</span>
-            </TabsTrigger>
-            <TabsTrigger value="mentorias" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <Users className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Mentorias</span>
-            </TabsTrigger>
-            <TabsTrigger value="documentos" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <FileText className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Docs</span>
-            </TabsTrigger>
-            <TabsTrigger value="certificados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              <Award className="h-4 w-4 md:mr-2" /> <span className="hidden sm:inline">Certificados</span>
-            </TabsTrigger>
-            <TabsTrigger value="dados" className="py-3 md:py-4 data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl transition-all duration-300">
-              {user?.avatar ? (
-                <img src={user.avatar} className="w-5 h-5 rounded-full md:mr-2 border border-white/20" alt="" />
-              ) : (
-                <User className="h-4 w-4 md:mr-2" />
-              )}
-              <span className="hidden sm:inline">Perfil</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === 'ingresso' && (
+              <TicketSection
+                myRegistration={myRegistration}
+                user={user}
+                selectedProject={selectedProject}
+                statusFinanceiro={statusFinanceiro}
+                generateTicketPDF={generateTicketPDF}
+                setShowCheckInModal={setShowCheckInModal}
+              />
+            )}
 
-          {/* ── INGRESSO TAB ── */}
-          <TabsContent value="ingresso">
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* QR Code */}
-              <div className="glass-card p-6 md:p-8 text-center flex flex-col items-center border-teal-500/20 relative overflow-hidden group">
-                {/* Decorative elements */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500/50 to-transparent"></div>
+            {activeTab === 'agenda' && (
+              <AgendaSection
+                myRegistration={myRegistration}
+                cursosSelecionados={cursosSelecionados}
+                setIsSelfCheckInOpen={setIsSelfCheckInOpen}
+                navigate={navigate}
+              />
+            )}
 
-                <h2 className="text-2xl font-black text-white mb-2 italic">Seu Acesso</h2>
-                <div className="h-1 w-12 bg-teal-500 mb-2 rounded-full"></div>
-                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-black mb-8">Growth Experience 2026</p>
+            {activeTab === 'mentorias' && (
+              <MentorshipSection
+                myRegistration={myRegistration}
+                myMentorships={myMentorships}
+                availableSlots={availableSlots}
+                handleCancelMentoring={handleCancelMentoring}
+                handleBookMentoring={handleBookMentoring}
+                setRatingModal={setRatingModal}
+                setIsMentoriaModalOpen={setIsMentoriaModalOpen}
+                setShowUpgradeModal={setShowUpgradeModal}
+              />
+            )}
 
-                <div className="relative p-2 rounded-[2.5rem] bg-gradient-to-br from-teal-500/20 to-orange-500/20 mb-8 group-hover:scale-[1.02] transition-transform duration-500">
-                  <div className="bg-white p-6 rounded-[2rem] shadow-2xl shadow-teal-500/20">
-                    <div className="w-44 h-44 md:w-56 md:h-56 bg-white flex items-center justify-center">
-                      {myRegistration?.id ? (
-                        <QRCode
-                          value={`GE-CHECKIN|${myRegistration.id}|${user?.email || ''}|${myRegistration.id}`}
-                          size={220}
-                          viewBox={`0 0 256 256`}
-                          style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                        />
+            {activeTab === 'documentos' && (
+              <DocsSection
+                documentos={documentos}
+                loadingDocs={loadingDocs}
+              />
+            )}
+
+            {activeTab === 'certificados' && (
+              <CertificatesSection
+                certificados={certificados}
+                loadingCerts={loadingCerts}
+                fetchCertificados={fetchCertificados}
+              />
+            )}
+
+            {activeTab === 'dados' && (
+              <ProfileForm />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Modern High-End Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
+        <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
+            {[
+              { id: 'ingresso', icon: QrCode, label: 'Ticket' },
+              { id: 'agenda', icon: Calendar, label: 'Agenda' },
+              { id: 'mentorias', icon: Users, label: 'Mentor' },
+              { id: 'documentos', icon: FileText, label: 'Docs' },
+              { id: 'certificados', icon: Award, label: 'Certs' },
+              { id: 'dados', icon: User, label: 'Perfil' },
+            ].map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`relative flex flex-col items-center justify-center py-2 px-1 min-w-[50px] transition-all duration-500 ${isActive ? 'text-teal-400' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 bg-teal-500/10 rounded-2xl -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  {item.id === 'dados' ? (
+                    <div className={`h-5 w-5 mb-1 rounded-full overflow-hidden border ${isActive ? 'border-teal-400 scale-110' : 'border-gray-600 grayscale'}`}>
+                      {user?.avatar ? (
+                        <img src={user.avatar} className="w-full h-full object-cover" />
                       ) : (
-                        <QrCode className="h-32 w-32 text-gray-200" />
+                        <User className="w-full h-full p-0.5" />
                       )}
                     </div>
-                  </div>
-                  {/* Decorative corner markers */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-teal-500 rounded-tl-3xl"></div>
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-orange-500 rounded-br-3xl"></div>
-                </div>
-
-                <div className="space-y-1 mb-8">
-                  <p className="text-gray-600 text-[10px] uppercase tracking-widest font-black">Protocolo de Acesso</p>
-                  <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                    #{myRegistration?.id?.slice(0, 8).toUpperCase() || 'GS2026-X'}
-                  </p>
-                </div>
-
-                <div className="flex gap-4 w-full">
-                  <Button
-                    variant="outline"
-                    className="border-dark-300 rounded-xl hover:bg-dark-300 transition-all flex-1"
-                    onClick={async () => {
-                      if (!myRegistration) return;
-                      await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
-                      toast.success('Ingresso PDF gerado!');
-                    }}
-                  >
-                    <Download className="h-4 w-4 mr-2" /> PDF
-                  </Button>
-                  <Button
-                    className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl px-4 md:px-8 flex-1 text-xs md:text-sm"
-                    onClick={() => {
-                      if (!myRegistration) {
-                        toast.error('Nenhuma inscrição encontrada.');
-                        return;
-                      }
-                      setShowCheckInModal(true);
-                    }}
-                  >
-                    <QrCode className="h-4 w-4 mr-1 md:mr-2" /> VALIDAR
-                  </Button>
-                </div>
-                <p className="text-gray-600 text-xs mt-4 max-w-xs">
-                  Clique em VALIDAR para exibir seu QR Code de credenciamento. O staff vai escanear na entrada.
-                </p>
-              </div>
-
-              {/* Status */}
-              <div className="space-y-6">
-                <div className="glass-card p-8">
-                  <h3 className="text-lg font-bold text-white mb-6 border-b border-dark-300 pb-4 flex items-center">
-                    <Sparkles className="h-5 w-5 mr-3 text-teal-400" />
-                    Status da Inscrição
-                  </h3>
-                  <div className="space-y-4">
-                    {/* Tipo */}
-                    <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <div className="flex items-center gap-2 text-gray-400">
-                        {myRegistration?.palestrasNoturnas ? <Moon className="h-4 w-4 text-orange-400" /> : <Sun className="h-4 w-4 text-teal-400" />}
-                        Tipo de Ingresso
-                      </div>
-                      <Badge className="bg-teal-500/20 text-teal-400 border-none uppercase text-[10px] font-black">
-                        {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
-                      </Badge>
-                    </div>
-
-                    {/* Status Financeiro */}
-                    <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <CreditCard className="h-4 w-4" />
-                        Status Financeiro
-                      </div>
-                      <div className="flex flex-col items-end gap-0.5">
-                        <Badge className={statusFinanceiro.color}>
-                          {statusFinanceiro.label}
-                        </Badge>
-                        <span className="text-[10px] text-gray-600">{statusFinanceiro.info}</span>
-                      </div>
-                    </div>
-
-                    {/* Acesso noturno */}
-                    <div className="flex justify-between items-center p-3 bg-dark-100 rounded-xl">
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <Moon className="h-4 w-4" />
-                        Acesso Noturno
-                      </div>
-                      <span className={myRegistration?.palestrasNoturnas ? "text-green-400 font-bold text-sm" : "text-gray-600 text-sm"}>
-                        {myRegistration?.palestrasNoturnas ? '✓ Liberado' : 'Não incluso'}
-                      </span>
-                    </div>
-
-                    {/* Cursos inscritos */}
-                    {cursosSelecionados.length > 0 && (
-                      <div className="p-3 bg-dark-100 rounded-xl space-y-2">
-                        <div className="flex items-center gap-2 text-gray-400 mb-3">
-                          <BookOpen className="h-4 w-4 text-teal-400" />
-                          <span className="text-sm font-semibold">Cursos/Oficinas Inscritos</span>
-                        </div>
-                        {cursosSelecionados.map((curso, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm text-white bg-dark-200 rounded-lg p-2">
-                            <ChevronRight className="h-3 w-3 text-teal-400 flex-shrink-0" />
-                            <span className="truncate">{(curso as any).title || (curso as any).titulo || 'Atividade'}</span>
-                            <span className="ml-auto text-gray-500 text-xs flex-shrink-0">{(curso as any).startTime || (curso as any).horario_inicio || ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Upgrade Pro */}
-                {!myRegistration?.palestrasNoturnas && (
-                  <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/30">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Moon className="h-5 w-5 text-orange-400" />
-                      <h3 className="text-lg font-bold text-white">Upgrade para Pro</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                      Assista às <strong className="text-white">palestras noturnas</strong> com experts do mercado + mentorias exclusivas e networking premium.
-                    </p>
-                    <p className="text-orange-400 font-black text-2xl mb-5">R$ 179,90</p>
-                    <Button
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 text-xs md:text-base"
-                      onClick={() => setShowUpgradeModal(true)}
-                    >
-                      <CreditCard className="h-5 w-5" />
-                      GARANTIR ACESSO PRO
-                    </Button>
-                  </div>
-                )}
-
-                {/* Check-in confirmado se pro */}
-                {myRegistration?.palestrasNoturnas && statusFinanceiro.label === 'Confirmado' && (
-                  <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 flex items-center gap-4">
-                    <CheckCircle2 className="h-10 w-10 text-green-400 flex-shrink-0" />
-                    <div>
-                      <p className="text-white font-bold">Acesso Completo Ativo!</p>
-                      <p className="text-gray-400 text-sm">Você tem acesso a todas as atividades do evento.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ── MENTORIAS TAB ── */}
-          <TabsContent value="mentorias">
-            {!myRegistration?.palestrasNoturnas || (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid') ? (
-              <div className="glass-card p-12 text-center border-orange-500/20">
-                <Lock className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">Mentorias Exclusivas</h2>
-                <p className="text-gray-400 max-w-md mx-auto mb-6">
-                  {myRegistration?.statusPagamento === 'pendente'
-                    ? 'Recebemos seu comprovante! Nossa equipe está revisando seu pagamento para liberar as mentorias 1-on-1.'
-                    : 'As sessões de mentoria 1-on-1 com os palestrantes e convidados são exclusivas para inscritos no passe ' +
-                    'Experience Pro com status PAGO.'
-                  }
-                </p>
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white font-black" onClick={() => setShowUpgradeModal(true)}>
-                  {(myRegistration?.palestrasNoturnas && (myRegistration?.statusPagamento !== 'pago' && myRegistration?.statusPagamento !== 'paid')) ? 'AGUARDANDO REVISÃO' : 'FAZER UPGRADE AGORA'}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* Minhas Agendadas */}
-                <div className="glass-card p-8 bg-gradient-to-br from-teal-500/5 to-transparent">
-                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-teal-400" /> Minhas Mentorias
-                    <div className="flex-1" />
-                    <Button
-                      size="sm"
-                      className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black text-[10px] sm:text-xs h-9 px-4 rounded-xl shadow-lg shadow-brand-orange-coral/20"
-                      onClick={() => setIsMentoriaModalOpen(true)}
-                    >
-                      <Sparkles className="h-3 w-3 mr-2" /> AGENDAR NOVA MENTORIA
-                    </Button>
-                  </h2>
-                  <div className="space-y-3">
-                    {myMentorships.map(session => (
-                      <div key={session.id} className={`flex flex-col md:flex-row md:items-center gap-4 p-4 rounded-2xl border ${session.status === 'completed' ? 'bg-dark-200 border-white/5 opacity-80' : 'bg-dark-100 border-teal-500/20'}`}>
-                        <div className="flex-1">
-                          <p className="text-white font-black">{session.mentorName}</p>
-                          <p className="text-teal-400 text-sm">{session.topic || 'Mentoria Geral'}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-white font-bold">{new Date(session.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                          <p className="text-gray-400 text-sm">{new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {session.status === 'completed' ? (
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-dark-300 text-gray-400">Concluído</Badge>
-                              {!session.feedback?.avaliadoEm ? (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setRatingModal({
-                                    isOpen: true,
-                                    sessionId: session.id,
-                                    mentorName: session.mentorName,
-                                    alreadyRated: false
-                                  })}
-                                  className="h-8 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase px-3 rounded-lg"
-                                >
-                                  <Star className="h-3 w-3 mr-1.5 fill-current" />
-                                  Avaliar
-                                </Button>
-                              ) : (
-                                <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
-                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                                  <span className="text-white text-xs font-bold">{session.feedback.avaliacaoMentoria}</span>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              <Badge className="bg-green-500/20 text-green-400">Confirmado</Badge>
-                              <button
-                                onClick={() => handleCancelMentoring(session.id)}
-                                title="Cancelar mentoria"
-                                className="p-1.5 rounded-lg text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {myMentorships.length === 0 && (
-                      <p className="text-gray-500 text-sm italic py-4 text-center">Você ainda não agendou nenhuma mentoria.</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Disponíveis */}
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-orange-400" /> Horários Disponíveis
-                  </h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {availableSlots.map(slot => (
-                      <div key={slot.id} className="glass-card p-5 border-white/5 bg-dark-200 flex flex-col justify-between group hover:border-orange-500/30 transition-all">
-                        <div>
-                          <p className="text-white font-black mb-1">{slot.mentorName}</p>
-                          <div className="flex items-center gap-2 mb-4">
-                            <Badge variant="outline" className="text-[10px] text-orange-400 border-orange-500/20">
-                              {new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}
-                            </Badge>
-                            <Badge variant="outline" className="text-[10px] text-teal-400 border-teal-500/20">
-                              {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Button
-                          className="w-full bg-dark-300 hover:bg-orange-500 text-white font-bold transition-all py-2 h-auto"
-                          onClick={() => {
-                            const topic = prompt('Qual o tema que deseja tratar na mentoria?');
-                            if (topic) handleBookMentoring(slot.id, topic);
-                          }}
-                        >
-                          SOLICITAR AGORA
-                        </Button>
-                      </div>
-                    ))}
-                    {availableSlots.length === 0 && (
-                      <div className="md:col-span-3 py-12 text-center border-2 border-dashed border-dark-300 rounded-3xl">
-                        <Users className="h-10 w-10 text-gray-700 mx-auto mb-3" />
-                        <p className="text-gray-500">Nenhum horário disponível no momento.</p>
-                        <p className="text-gray-600 text-xs">Aguarde a abertura oficial dos horários pelos mentores.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── AGENDA TAB ── */}
-          <TabsContent value="agenda">
-            <div className="glass-card p-8">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-xl font-bold text-white">Minha Agenda</h2>
-                  <p className="text-gray-400 text-sm mt-1">Atividades {myRegistration?.palestrasNoturnas ? 'diurnas e noturnas' : 'diurnas (gratuitas)'}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => setIsSelfCheckInOpen(true)}
-                    size="sm"
-                    className="bg-teal-500 hover:bg-teal-600 text-white font-black px-4 rounded-xl shadow-lg shadow-teal-500/20"
-                  >
-                    <QrCode className="h-4 w-4 mr-2" /> SCAN QR CODE
-                  </Button>
-                  <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}>
-                    Ver Programação
-                  </Button>
-                </div>
-              </div>
-
-              {/* Bloco Dia (Gratuito) */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sun className="h-5 w-5 text-teal-400" />
-                  <h3 className="text-white font-bold">Programação Diurna <span className="text-teal-400 text-sm font-normal ml-1">— Gratuito</span></h3>
-                </div>
-                {cursosSelecionados.length > 0 ? (
-                  <div className="space-y-3">
-                    {cursosSelecionados.map((item: any, i) => (
-                      <div key={i} className="flex items-center p-4 bg-dark-100 rounded-2xl border border-teal-500/20 hover:border-teal-500/40 transition-all group">
-                        <div className="w-20 flex-shrink-0">
-                          <p className="text-teal-400 font-black">{item.startTime || item.horario_inicio || '--:--'}</p>
-                          <p className="text-gray-600 text-xs">{item.endTime || item.horario_fim || ''}</p>
-                        </div>
-                        <div className="flex-1 ml-4 border-l border-dark-300 pl-4">
-                          <p className="text-white font-bold group-hover:text-teal-400 transition-colors">{item.title || item.titulo}</p>
-                          <div className="flex items-center gap-3 mt-1">
-                            <Badge variant="outline" className="text-[10px] uppercase font-bold text-gray-500 border-dark-400">{item.type || item.tipo}</Badge>
-                            <span className="text-xs text-gray-500 flex items-center"><MapPin className="h-3 w-3 mr-1" />{item.room || item.local || 'Sala'}</span>
-                          </div>
-                        </div>
-                        <CheckCircle2 className="h-5 w-5 text-teal-400 flex-shrink-0" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 border-2 border-dashed border-dark-300 rounded-2xl">
-                    <BookOpen className="h-10 w-10 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-500 text-sm">Você ainda não selecionou cursos/oficinas.</p>
-                    <Button variant="link" className="text-teal-400 mt-2 font-bold text-sm" onClick={() => navigate('/growth-experience-triunfo')}>
-                      Escolher atividades →
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Bloco Mentorias */}
-              {myRegistration?.palestrasNoturnas && myMentorships.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="h-5 w-5 text-orange-400" />
-                    <h3 className="text-white font-bold">Minhas Mentorias <span className="text-orange-400 text-sm font-normal ml-1">— 1-on-1</span></h3>
-                  </div>
-                  <div className="space-y-3">
-                    {myMentorships.map((mentor) => (
-                      <div key={mentor.id} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-orange-500/5 rounded-2xl border border-orange-500/20 hover:border-orange-500/40 transition-all group">
-                        <div className="w-20 flex-shrink-0">
-                          <p className="text-orange-400 font-black">{new Date(mentor.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                          <p className="text-gray-600 text-xs">{new Date(mentor.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                        </div>
-                        <div className="flex-1 md:ml-4 md:border-l md:border-dark-300 md:pl-4">
-                          <p className="text-white font-black group-hover:text-orange-400 transition-colors">Mentoria com {mentor.mentorName}</p>
-                          <p className="text-teal-400/80 text-sm font-medium">{mentor.topic}</p>
-                        </div>
-                        <Badge className="bg-green-500/20 text-green-400 justify-center h-fit">Confirmado</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Bloco Noturno */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Moon className="h-5 w-5 text-orange-400" />
-                  <h3 className="text-white font-bold">
-                    Programação Noturna
-                    <span className={`ml-2 text-sm font-normal ${myRegistration?.palestrasNoturnas ? 'text-orange-400' : 'text-gray-600'}`}>
-                      {myRegistration?.palestrasNoturnas ? '— Liberado ✓' : '— Requer Upgrade Pro'}
-                    </span>
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { hora: '19:00', titulo: 'Palestra: Crescimento Exponencial em Mercado Competitivo', palestrante: 'Leandro Batista', info: 'CEO, Fitness Exclusive' },
-                    { hora: '21:10', titulo: 'Palestra: Inovação Corporativa', palestrante: 'Vanylton Matias', info: 'CEO, Grupo Núcleo' },
-                  ].map((item, i) => (
-                    <div key={i} className={`flex items-center p-4 rounded-2xl border transition-all ${myRegistration?.palestrasNoturnas ? 'bg-dark-100 border-orange-500/20 hover:border-orange-500/40' : 'bg-dark-100/40 border-dark-300 opacity-60'}`}>
-                      <div className="w-20 flex-shrink-0">
-                        <p className={`font-black ${myRegistration?.palestrasNoturnas ? 'text-orange-400' : 'text-gray-600'}`}>{item.hora}</p>
-                      </div>
-                      <div className="flex-1 ml-4 border-l border-dark-300 pl-4">
-                        <p className="text-white font-bold text-sm">{item.titulo}</p>
-                        <p className="text-gray-500 text-xs mt-1">{item.palestrante} · {item.info}</p>
-                      </div>
-                      {myRegistration?.palestrasNoturnas
-                        ? <CheckCircle2 className="h-5 w-5 text-orange-400 flex-shrink-0" />
-                        : <CreditCard className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                      }
-                    </div>
-                  ))}
-                </div>
-                {!myRegistration?.palestrasNoturnas && (
-                  <Button
-                    className="w-full mt-4 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold rounded-xl py-3"
-                    onClick={() => setShowUpgradeModal(true)}
-                  >
-                    Fazer Upgrade Pro para desbloquer →
-                  </Button>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ── DOCUMENTOS TAB ── */}
-          <TabsContent value="documentos">
-            <div className="space-y-6">
-
-              {/* 1. Meus Documentos (PDFs pessoais) */}
-              <div className="glass-card p-8">
-                <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-teal-400" /> Meus Documentos
-                </h2>
-                <p className="text-gray-400 text-sm mb-5">Downloads personalizados com seus dados de inscrição.</p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {/* Ingresso PDF */}
-                  <div className="flex items-center justify-between p-5 bg-dark-100 rounded-2xl border border-teal-500/20 hover:border-teal-500/40 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
-                        <QrCode className="h-6 w-6 text-teal-400" />
-                      </div>
-                      <div>
-                        <p className="text-white font-bold text-sm">Meu Ingresso</p>
-                        <p className="text-gray-500 text-xs mt-0.5">PDF com QR Code • #{myRegistration?.id?.slice(0, 8).toUpperCase() || '—'}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost" size="icon"
-                      className="text-gray-400 hover:text-teal-400 transition-colors"
-                      onClick={async () => {
-                        if (!myRegistration) { toast.error('Inscrição não encontrada.'); return; }
-                        await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
-                        toast.success('Ingresso gerado!');
-                      }}
-                    >
-                      <Download className="h-5 w-5" />
-                    </Button>
-                  </div>
-
-                  {/* Certificado PDF */}
-                  <div className={`flex items-center justify-between p-5 rounded-2xl border transition-all group ${myRegistration?.checkedIn ? 'bg-dark-100 border-orange-500/20 hover:border-orange-500/40' : 'bg-dark-100/40 border-white/5 opacity-60'}`}>
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${myRegistration?.checkedIn ? 'bg-orange-500/10' : 'bg-white/5'}`}>
-                      <Award className={`h-6 w-6 ${myRegistration?.checkedIn ? 'text-orange-400' : 'text-gray-600'}`} />
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-sm">Certificado de Participação</p>
-                      <p className="text-gray-500 text-xs mt-0.5">
-                        {myRegistration?.checkedIn ? '✓ Pronto para baixar' : 'Disponível após o check-in'}
-                      </p>
-                    </div>
-                    {myRegistration?.checkedIn ? (
-                      <Button
-                        variant="ghost" size="icon"
-                        className="text-gray-400 hover:text-orange-400 transition-colors"
-                        onClick={async () => {
-                          try {
-                            toast.loading('Gerando certificado...', { id: 'cert-main' });
-                            const { generateCertificatePDF } = await import('@/lib/certificateGenerator');
-                            await generateCertificatePDF({
-                              userName: myRegistration?.nome || user?.name || 'Participante',
-                              eventName: selectedProject?.name || 'Growth Experience',
-                              eventCity: selectedProject?.city || 'Triunfo',
-                              date: new Date().toLocaleDateString('pt-BR'),
-                              certificateCode: `EV-${myRegistration?.id.slice(0, 8).toUpperCase()}`,
-                              type: 'event'
-                            });
-                            toast.success('Certificado baixado!', { id: 'cert-main' });
-                          } catch {
-                            toast.error('Erro ao gerar certificado.', { id: 'cert-main' });
-                          }
-                        }}
-                      >
-                        <Download className="h-5 w-5" />
-                      </Button>
-                    ) : (
-                      <Lock className="h-5 w-5 text-gray-700 mr-2" />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Conteúdo do Evento (in-app) */}
-              <div className="glass-card p-8">
-                <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-teal-400" /> Conteúdo do Evento
-                </h2>
-                <p className="text-gray-400 text-sm mb-5">
-                  Informações atualizadas em tempo real pela organização. Sem PDF - tudo no app.
-                </p>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  {[
-                    { icon: Calendar, label: 'Programação Completa', desc: 'Grade e horários do evento', color: 'teal', route: 'https://www.growthsummit.site/guia' },
-                    { icon: MapPin, label: 'Mapa do Evento', desc: 'Localização das salas', color: 'blue', route: 'https://www.growthsummit.site/guia' },
-                    { icon: HelpCircle, label: 'Guia do Participante', desc: 'Como aproveitar ao máximo', color: 'purple', route: 'https://www.growthsummit.site/guia' },
-                  ].map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => item.route.startsWith('http') ? window.open(item.route, '_blank') : navigate(item.route)}
-                      className={`flex flex-col items-start p-5 bg-dark-100 rounded-2xl border border-${item.color}-500/20 hover:border-${item.color}-500/40 hover:bg-${item.color}-500/5 transition-all text-left group`}
-                    >
-                      <div className={`w-11 h-11 rounded-xl bg-${item.color}-500/10 flex items-center justify-center mb-4`}>
-                        <item.icon className={`h-6 w-6 text-${item.color}-400`} />
-                      </div>
-                      <p className="text-white font-bold text-sm group-hover:text-teal-300 transition-colors">{item.label}</p>
-                      <p className="text-gray-500 text-xs mt-1">{item.desc}</p>
-                      <div className={`mt-3 flex items-center gap-1 text-${item.color}-400 text-xs font-bold`}>
-                        Acessar <ChevronRight className="h-3 w-3" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 3. Materiais extras do Storage */}
-              {(loadingDocs || documentos.length > 0) && (
-                <div className="glass-card p-8">
-                  <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                    <FolderOpen className="h-5 w-5 text-teal-400" /> Materiais Extras
-                  </h2>
-                  <p className="text-gray-400 text-sm mb-5">Arquivos adicionais enviados pela organização.</p>
-                  {loadingDocs ? (
-                    <div className="flex items-center justify-center py-10">
-                      <Loader2 className="h-7 w-7 text-teal-400 animate-spin" />
-                    </div>
                   ) : (
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      {documentos.map((doc) => (
-                        <div key={doc.fullPath} className="flex items-center justify-between p-4 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all group">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
-                              <FileText className="h-5 w-5 text-teal-400" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-white font-bold text-sm truncate max-w-[160px]">{doc.name}</p>
-                              <p className="text-gray-500 text-xs">{doc.size} · {doc.updatedAt}</p>
-                            </div>
-                          </div>
-                          <a href={doc.url} target="_blank" rel="noopener noreferrer" download onClick={() => toast.success(`Baixando: ${doc.name}`)} className="ml-2 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-teal-400 transition-colors">
-                              <Download className="h-5 w-5" />
-                            </Button>
-                          </a>
-                        </div>
-                      ))}
-                    </div>
+                    <item.icon className={`h-5 w-5 mb-1 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]' : 'scale-100'}`} />
                   )}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── PERFIL TAB ── */}
-          <TabsContent value="dados">
-            <ProfileForm />
-          </TabsContent>
-
-          {/* ── CERTIFICADOS TAB ── */}
-          <TabsContent value="certificados">
-            <div className="glass-card p-8 border-teal-500/20">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Award className="h-6 w-6 text-teal-400" /> Meus Certificados
-                  </h2>
-                  <p className="text-gray-400 text-sm mt-1">Conquistas reconhecidas no Growth Experience</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
-                  onClick={fetchCertificados}
-                  disabled={loadingCerts}
-                >
-                  {loadingCerts ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Atualizar Listagem'}
-                </Button>
-              </div>
-
-              {certificados.length > 0 ? (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {certificados.map((cert) => (
-                    <div key={cert.id} className="relative p-6 bg-dark-100 rounded-[2rem] border border-white/5 hover:border-teal-500/40 transition-all group overflow-hidden">
-                      <div className="absolute -top-4 -right-4 w-16 h-16 bg-teal-500/5 group-hover:bg-teal-500/10 rounded-full blur-xl transition-all"></div>
-
-                      <div className="flex items-start gap-4 relative z-10">
-                        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                          <Award className="h-6 w-6 text-teal-400" />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-white font-bold text-sm leading-tight mb-1 group-hover:text-teal-400 transition-colors uppercase italic truncate">
-                            {cert.activity_name || 'Participação'}
-                          </h3>
-                          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
-                            SÉRIE: GS2026-{cert.id.split('-')[0].toUpperCase()}
-                          </p>
-                          <div className="flex items-center gap-2 mb-4">
-                            <Badge className="bg-green-500/10 text-green-500 border-none text-[8px] py-0 px-1.5 font-black">VALIDADO</Badge>
-                            <span className="text-[10px] text-gray-600">{new Date(cert.issue_date).toLocaleDateString('pt-BR')}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            className="w-full bg-white hover:bg-gray-100 text-black font-black text-[10px] rounded-xl h-8"
-                            onClick={() => window.open(`/certificado/${cert.id}`, '_blank')}
-                          >
-                            DOWNLOAD PDF
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-20 text-center border-2 border-dashed border-dark-300 rounded-3xl">
-                  <Award className="h-16 w-16 text-gray-700 mx-auto mb-4 opacity-20" />
-                  <h3 className="text-white font-bold text-lg mb-2 tracking-tight">Nenhum certificado disponível</h3>
-                  <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
-                    Você ainda não confirmou presença em nenhuma atividade. Use o botão <strong className="text-teal-400">Scanner QR Code</strong> nas salas para confirmar participação e gerar seu certificado.
-                  </p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── SUPORTE TAB ── */}
-          <TabsContent value="suporte">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="glass-card p-8">
-                <h2 className="text-xl font-bold text-white mb-8 border-b border-dark-300 pb-4">Canais de Ajuda</h2>
-                <div className="space-y-4">
-                  <a href="https://wa.me/5588999999999" target="_blank" rel="noopener noreferrer"
-                    className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
-                    <MessageCircle className="h-8 w-8 mr-5 text-teal-400" />
-                    <div>
-                      <p className="text-white font-bold">WhatsApp do Evento</p>
-                      <p className="text-gray-500 text-sm">Fale com a equipe de organização</p>
-                    </div>
-                    <ChevronRight className="ml-auto h-5 w-5 text-gray-600" />
-                  </a>
-                  <div className="flex items-center p-4 bg-dark-100 rounded-2xl">
-                    <MapPin className="h-8 w-8 mr-5 text-teal-400" />
-                    <div>
-                      <p className="text-white font-bold">Ponto de Apoio</p>
-                      <p className="text-gray-500 text-sm">Arena Triunfo · Balcão de Credenciamento</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="glass-card p-8 bg-teal-500/5 border-teal-500/20">
-                <h2 className="text-xl font-bold text-white mb-4">App do Evento</h2>
-                <p className="text-gray-400 mb-6 leading-relaxed text-sm">Instale o app para receber notificações sobre sua agenda, matches e palestras em tempo real.</p>
-                <Button className="w-full bg-teal-500 text-white font-black py-4 rounded-xl shadow-lg shadow-teal-500/20">
-                  INSTALAR APLICATIVO
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+                  <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Modal de Avaliação */}
@@ -1590,6 +1004,6 @@ export function DashboardParticipante() {
         isOpen={isMentoriaModalOpen}
         onClose={() => setIsMentoriaModalOpen(false)}
       />
-    </motion.div >
+    </motion.div>
   );
 }

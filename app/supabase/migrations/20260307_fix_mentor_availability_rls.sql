@@ -89,8 +89,6 @@ CREATE POLICY "mentorias_delete_policy" ON public.mentorias_agendadas FOR DELETE
         AND mentorado_id IS NULL
     )
 );
-DO $$ BEGIN RAISE NOTICE 'RLS e colunas de mentorias_agendadas atualizados com sucesso.';
-END $$;
 -- 4. Garantir Buckets de Storage e Políticas (para Avatar e Imagens)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO NOTHING;
@@ -112,5 +110,3 @@ CREATE POLICY "Public Access Event Images" ON storage.objects FOR
 SELECT USING (bucket_id = 'event-images');
 DROP POLICY IF EXISTS "Auth All Event Images" ON storage.objects;
 CREATE POLICY "Auth All Event Images" ON storage.objects FOR ALL TO authenticated USING (bucket_id = 'event-images');
-DO $$ BEGIN RAISE NOTICE 'Buckets de storage e políticas configurados.';
-END $$;
