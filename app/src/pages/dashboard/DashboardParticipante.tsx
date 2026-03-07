@@ -1420,161 +1420,161 @@ export function DashboardParticipante() {
                         <item.icon className={`h-6 w-6 text-${item.color}-400`} />
                       </div>
                       <p className="text-white font-bold text-sm group-hover:text-teal-300 transition-colors">{item.label}</p>
-                      <p className="text-gray-500 text-xs mt-1}>{item.desc}</p>
+                      <p className="text-gray-500 text-xs mt-1">{item.desc}</p>
                       <div className={`mt-3 flex items-center gap-1 text-${item.color}-400 text-xs font-bold`}>
                         Acessar <ChevronRight className="h-3 w-3" />
-                    </div>
+                      </div>
                     </button>
                   ))}
+                </div>
               </div>
-            </div>
 
-            {/* 3. Materiais extras do Storage */}
-            {(loadingDocs || documentos.length > 0) && (
-              <div className="glass-card p-8">
-                <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                  <FolderOpen className="h-5 w-5 text-teal-400" /> Materiais Extras
-                </h2>
-                <p className="text-gray-400 text-sm mb-5">Arquivos adicionais enviados pela organização.</p>
-                {loadingDocs ? (
-                  <div className="flex items-center justify-center py-10">
-                    <Loader2 className="h-7 w-7 text-teal-400 animate-spin" />
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {documentos.map((doc) => (
-                      <div key={doc.fullPath} className="flex items-center justify-between p-4 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all group">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
-                            <FileText className="h-5 w-5 text-teal-400" />
+              {/* 3. Materiais extras do Storage */}
+              {(loadingDocs || documentos.length > 0) && (
+                <div className="glass-card p-8">
+                  <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                    <FolderOpen className="h-5 w-5 text-teal-400" /> Materiais Extras
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-5">Arquivos adicionais enviados pela organização.</p>
+                  {loadingDocs ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="h-7 w-7 text-teal-400 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {documentos.map((doc) => (
+                        <div key={doc.fullPath} className="flex items-center justify-between p-4 bg-dark-100 rounded-2xl border border-dark-300 hover:border-teal-500/30 transition-all group">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                              <FileText className="h-5 w-5 text-teal-400" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-white font-bold text-sm truncate max-w-[160px]">{doc.name}</p>
+                              <p className="text-gray-500 text-xs">{doc.size} · {doc.updatedAt}</p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-white font-bold text-sm truncate max-w-[160px]">{doc.name}</p>
-                            <p className="text-gray-500 text-xs">{doc.size} · {doc.updatedAt}</p>
-                          </div>
+                          <a href={doc.url} target="_blank" rel="noopener noreferrer" download onClick={() => toast.success(`Baixando: ${doc.name}`)} className="ml-2 flex-shrink-0">
+                            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-teal-400 transition-colors">
+                              <Download className="h-5 w-5" />
+                            </Button>
+                          </a>
                         </div>
-                        <a href={doc.url} target="_blank" rel="noopener noreferrer" download onClick={() => toast.success(`Baixando: ${doc.name}`)} className="ml-2 flex-shrink-0">
-                          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-teal-400 transition-colors">
-                            <Download className="h-5 w-5" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* ── PERFIL TAB ── */}
+          <TabsContent value="dados">
+            <ProfileForm />
+          </TabsContent>
+
+          {/* ── CERTIFICADOS TAB ── */}
+          <TabsContent value="certificados">
+            <div className="glass-card p-8 border-teal-500/20">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Award className="h-6 w-6 text-teal-400" /> Meus Certificados
+                  </h2>
+                  <p className="text-gray-400 text-sm mt-1">Conquistas reconhecidas no Growth Experience</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
+                  onClick={fetchCertificados}
+                  disabled={loadingCerts}
+                >
+                  {loadingCerts ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Atualizar Listagem'}
+                </Button>
+              </div>
+
+              {certificados.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {certificados.map((cert) => (
+                    <div key={cert.id} className="relative p-6 bg-dark-100 rounded-[2rem] border border-white/5 hover:border-teal-500/40 transition-all group overflow-hidden">
+                      <div className="absolute -top-4 -right-4 w-16 h-16 bg-teal-500/5 group-hover:bg-teal-500/10 rounded-full blur-xl transition-all"></div>
+
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Award className="h-6 w-6 text-teal-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-white font-bold text-sm leading-tight mb-1 group-hover:text-teal-400 transition-colors uppercase italic truncate">
+                            {cert.activity_name || 'Participação'}
+                          </h3>
+                          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
+                            SÉRIE: GS2026-{cert.id.split('-')[0].toUpperCase()}
+                          </p>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Badge className="bg-green-500/10 text-green-500 border-none text-[8px] py-0 px-1.5 font-black">VALIDADO</Badge>
+                            <span className="text-[10px] text-gray-600">{new Date(cert.issue_date).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="w-full bg-white hover:bg-gray-100 text-black font-black text-[10px] rounded-xl h-8"
+                            onClick={() => window.open(`/certificado/${cert.id}`, '_blank')}
+                          >
+                            DOWNLOAD PDF
                           </Button>
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* ── PERFIL TAB ── */}
-        <TabsContent value="dados">
-          <ProfileForm />
-        </TabsContent>
-
-        {/* ── CERTIFICADOS TAB ── */}
-        <TabsContent value="certificados">
-          <div className="glass-card p-8 border-teal-500/20">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Award className="h-6 w-6 text-teal-400" /> Meus Certificados
-                </h2>
-                <p className="text-gray-400 text-sm mt-1">Conquistas reconhecidas no Growth Experience</p>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
-                onClick={fetchCertificados}
-                disabled={loadingCerts}
-              >
-                {loadingCerts ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Atualizar Listagem'}
-              </Button>
-            </div>
-
-            {certificados.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {certificados.map((cert) => (
-                  <div key={cert.id} className="relative p-6 bg-dark-100 rounded-[2rem] border border-white/5 hover:border-teal-500/40 transition-all group overflow-hidden">
-                    <div className="absolute -top-4 -right-4 w-16 h-16 bg-teal-500/5 group-hover:bg-teal-500/10 rounded-full blur-xl transition-all"></div>
-
-                    <div className="flex items-start gap-4 relative z-10">
-                      <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Award className="h-6 w-6 text-teal-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-white font-bold text-sm leading-tight mb-1 group-hover:text-teal-400 transition-colors uppercase italic truncate">
-                          {cert.activity_name || 'Participação'}
-                        </h3>
-                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
-                          SÉRIE: GS2026-{cert.id.split('-')[0].toUpperCase()}
-                        </p>
-                        <div className="flex items-center gap-2 mb-4">
-                          <Badge className="bg-green-500/10 text-green-500 border-none text-[8px] py-0 px-1.5 font-black">VALIDADO</Badge>
-                          <span className="text-[10px] text-gray-600">{new Date(cert.issue_date).toLocaleDateString('pt-BR')}</span>
                         </div>
-                        <Button
-                          size="sm"
-                          className="w-full bg-white hover:bg-gray-100 text-black font-black text-[10px] rounded-xl h-8"
-                          onClick={() => window.open(`/certificado/${cert.id}`, '_blank')}
-                        >
-                          DOWNLOAD PDF
-                        </Button>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-20 text-center border-2 border-dashed border-dark-300 rounded-3xl">
-                <Award className="h-16 w-16 text-gray-700 mx-auto mb-4 opacity-20" />
-                <h3 className="text-white font-bold text-lg mb-2 tracking-tight">Nenhum certificado disponível</h3>
-                <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
-                  Você ainda não confirmou presença em nenhuma atividade. Use o botão <strong className="text-teal-400">Scanner QR Code</strong> nas salas para confirmar participação e gerar seu certificado.
-                </p>
-              </div>
-            )}
-          </div>
-        </TabsContent>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 text-center border-2 border-dashed border-dark-300 rounded-3xl">
+                  <Award className="h-16 w-16 text-gray-700 mx-auto mb-4 opacity-20" />
+                  <h3 className="text-white font-bold text-lg mb-2 tracking-tight">Nenhum certificado disponível</h3>
+                  <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
+                    Você ainda não confirmou presença em nenhuma atividade. Use o botão <strong className="text-teal-400">Scanner QR Code</strong> nas salas para confirmar participação e gerar seu certificado.
+                  </p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
 
-        {/* ── SUPORTE TAB ── */}
-        <TabsContent value="suporte">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="glass-card p-8">
-              <h2 className="text-xl font-bold text-white mb-8 border-b border-dark-300 pb-4">Canais de Ajuda</h2>
-              <div className="space-y-4">
-                <a href="https://wa.me/5588999999999" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
-                  <MessageCircle className="h-8 w-8 mr-5 text-teal-400" />
-                  <div>
-                    <p className="text-white font-bold">WhatsApp do Evento</p>
-                    <p className="text-gray-500 text-sm">Fale com a equipe de organização</p>
-                  </div>
-                  <ChevronRight className="ml-auto h-5 w-5 text-gray-600" />
-                </a>
-                <div className="flex items-center p-4 bg-dark-100 rounded-2xl">
-                  <MapPin className="h-8 w-8 mr-5 text-teal-400" />
-                  <div>
-                    <p className="text-white font-bold">Ponto de Apoio</p>
-                    <p className="text-gray-500 text-sm">Arena Triunfo · Balcão de Credenciamento</p>
+          {/* ── SUPORTE TAB ── */}
+          <TabsContent value="suporte">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="glass-card p-8">
+                <h2 className="text-xl font-bold text-white mb-8 border-b border-dark-300 pb-4">Canais de Ajuda</h2>
+                <div className="space-y-4">
+                  <a href="https://wa.me/5588999999999" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center p-4 bg-dark-100 rounded-2xl hover:bg-teal-500/5 transition-all cursor-pointer">
+                    <MessageCircle className="h-8 w-8 mr-5 text-teal-400" />
+                    <div>
+                      <p className="text-white font-bold">WhatsApp do Evento</p>
+                      <p className="text-gray-500 text-sm">Fale com a equipe de organização</p>
+                    </div>
+                    <ChevronRight className="ml-auto h-5 w-5 text-gray-600" />
+                  </a>
+                  <div className="flex items-center p-4 bg-dark-100 rounded-2xl">
+                    <MapPin className="h-8 w-8 mr-5 text-teal-400" />
+                    <div>
+                      <p className="text-white font-bold">Ponto de Apoio</p>
+                      <p className="text-gray-500 text-sm">Arena Triunfo · Balcão de Credenciamento</p>
+                    </div>
                   </div>
                 </div>
               </div>
+              <div className="glass-card p-8 bg-teal-500/5 border-teal-500/20">
+                <h2 className="text-xl font-bold text-white mb-4">App do Evento</h2>
+                <p className="text-gray-400 mb-6 leading-relaxed text-sm">Instale o app para receber notificações sobre sua agenda, matches e palestras em tempo real.</p>
+                <Button className="w-full bg-teal-500 text-white font-black py-4 rounded-xl shadow-lg shadow-teal-500/20">
+                  INSTALAR APLICATIVO
+                </Button>
+              </div>
             </div>
-            <div className="glass-card p-8 bg-teal-500/5 border-teal-500/20">
-              <h2 className="text-xl font-bold text-white mb-4">App do Evento</h2>
-              <p className="text-gray-400 mb-6 leading-relaxed text-sm">Instale o app para receber notificações sobre sua agenda, matches e palestras em tempo real.</p>
-              <Button className="w-full bg-teal-500 text-white font-black py-4 rounded-xl shadow-lg shadow-teal-500/20">
-                INSTALAR APLICATIVO
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-      {/* Modal de Avaliação */ }
+      {/* Modal de Avaliação */}
       <MentorRatingModal
         isOpen={ratingModal.isOpen}
         onClose={() => setRatingModal(p => ({ ...p, isOpen: false }))}
