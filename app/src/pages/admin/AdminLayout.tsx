@@ -21,7 +21,8 @@ import {
   BookOpen,
   ChevronDown,
   Bell,
-  Settings
+  Settings,
+  Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileModal } from '@/components/profile/ProfileModal';
@@ -64,6 +65,7 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'empresas-incentivadoras', name: 'Empresas Incentivadoras', icon: Gem, path: '/admin/empresas-incentivadoras' },
       { id: 'check-in', name: 'Check-in (QR)', icon: QrCode, path: '/admin/check-in' },
       { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },
+      { id: 'certificados', name: 'Certificados', icon: Award, path: '/admin/certificados' },
     ]
   },
   {

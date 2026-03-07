@@ -31,6 +31,15 @@ export interface CertificateTemplateData {
     signatureBase64?: string;
     /** Base64 PNG da logomarca Growth Experience */
     logoBase64?: string;
+    /** Overrides configuráveis via Admin */
+    templateOverrides?: {
+        title?: string;
+        description?: string;
+        ceoName?: string;
+        ceoRole?: string;
+        primaryColor?: string; // hex #ff7043
+        secondaryColor?: string; // hex #21808d
+    };
 }
 
 // ── Paleta (SEM DOURADO) ──────────────────────────────────────
@@ -100,6 +109,14 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
     const cx = W / 2;
     const BAND = 12; // largura das faixas laterais em mm
 
+    // --- Template Overrides Logic ---
+    const primaryRGB = data.templateOverrides?.primaryColor
+        ? _hexToRgb(data.templateOverrides.primaryColor)
+        : C.orange;
+    const secondaryRGB = data.templateOverrides?.secondaryColor
+        ? _hexToRgb(data.templateOverrides.secondaryColor)
+        : C.teal;
+
     // 1. FUNDO PRINCIPAL
     // ════════════════════════════════════════════════════════════
     doc.setFillColor(...C.bg);
@@ -126,25 +143,25 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
     // ════════════════════════════════════════════════════════════
     // 2. FAIXAS LATERAIS
     // ════════════════════════════════════════════════════════════
-    // Esquerda — laranja
-    doc.setFillColor(...C.orange);
+    // Esquerda — cor primária
+    doc.setFillColor(...primaryRGB);
     doc.rect(0, 0, BAND, H, 'F');
-    // Linha divisória interna laranja (mais escura)
-    doc.setDrawColor(...C.orangeMid);
+    // Linha divisória interna
+    doc.setDrawColor(primaryRGB[0] * 0.7, primaryRGB[1] * 0.7, primaryRGB[2] * 0.7);
     doc.setLineWidth(0.3);
     doc.line(BAND, 0, BAND, H);
 
-    // Direita — teal
-    doc.setFillColor(...C.teal);
+    // Direita — cor secundária
+    doc.setFillColor(...secondaryRGB);
     doc.rect(W - BAND, 0, BAND, H, 'F');
-    doc.setDrawColor(...C.tealMid);
+    doc.setDrawColor(secondaryRGB[0] * 0.7, secondaryRGB[1] * 0.7, secondaryRGB[2] * 0.7);
     doc.setLineWidth(0.3);
     doc.line(W - BAND, 0, W - BAND, H);
 
     // ════════════════════════════════════════════════════════════
-    // 3. BORDA INTERNA (teal, sem dourado)
+    // 3. BORDA INTERNA
     // ════════════════════════════════════════════════════════════
-    doc.setDrawColor(...C.tealDim);
+    doc.setDrawColor(secondaryRGB[0] * 0.5, secondaryRGB[1] * 0.5, secondaryRGB[2] * 0.5);
     doc.setLineWidth(0.4);
     doc.rect(BAND + 4, 6, W - (BAND + 4) * 2, H - 12, 'D');
 
@@ -182,7 +199,7 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
     doc.setFontSize(15);
     doc.setFont('helvetica', 'bold');
     doc.text(
-        `CERTIFICADO DE ${TIPO_TITULO[data.type] || 'PARTICIPAÇÃO'}`,
+        data.templateOverrides?.title || `CERTIFICADO DE ${TIPO_TITULO[data.type] || 'PARTICIPAÇÃO'}`,
         cx, 44, { align: 'center', charSpace: 0.6 }
     );
 
@@ -252,8 +269,9 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
         doc.setTextColor(...C.gray);
         doc.setFontSize(9.5);
         doc.setFont('helvetica', 'normal');
+        const defaultDesc = `participou ${artigo} ${data.eventName}${data.eventCity ? ', ' + data.eventCity : ''}`;
         doc.text(
-            `participou ${artigo} ${data.eventName}${data.eventCity ? ', ' + data.eventCity : ''}`,
+            data.templateOverrides?.description || defaultDesc,
             cx, actY, { align: 'center' }
         );
         doc.text(
@@ -306,12 +324,12 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
     doc.setTextColor(...C.white);
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
-    doc.text('Caio Diniz Borges', sigAreaX + sigAreaW / 2, infoY, { align: 'center' });
+    doc.text(data.templateOverrides?.ceoName || 'Caio Diniz Borges', sigAreaX + sigAreaW / 2, infoY, { align: 'center' });
 
     doc.setTextColor(...C.gray);
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
-    doc.text('CEO Growth & IA', sigAreaX + sigAreaW / 2, infoY + 5, { align: 'center' });
+    doc.text(data.templateOverrides?.ceoRole || 'CEO Growth & IA', sigAreaX + sigAreaW / 2, infoY + 5, { align: 'center' });
 
     doc.setTextColor(...C.dim);
     doc.setFontSize(6.5);
@@ -426,6 +444,16 @@ export function generateCertificateCode(userId: string, ref: string): string {
         hash |= 0;
     }
     return Math.abs(hash).toString(36).toUpperCase().padStart(8, '0').slice(0, 8);
+}
+
+// Auxiliar para converter hex (#ffffff) para RGB [r, g, b]
+function _hexToRgb(hex: string): [number, number, number] {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [0, 0, 0];
 }
 
 /**

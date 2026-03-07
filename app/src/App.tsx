@@ -60,6 +60,7 @@ const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ 
 const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.default })));
 const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
 const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
+const AdminCertificados = lazy(() => import('./pages/admin/AdminCertificados').then(m => ({ default: m.AdminCertificados })));
 const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
 const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));
 
@@ -315,6 +316,7 @@ function AppRoutes() {
           <Route path="cupons" element={<AdminCupons />} />
           <Route path="growth-experience" element={<AdminGrowthExperienceTriunfo />} />
           <Route path="whatsapp" element={<AdminWhatsAppGroups />} />
+          <Route path="certificados" element={<AdminCertificados />} />
         </Route>
 
         {/* 404 */}

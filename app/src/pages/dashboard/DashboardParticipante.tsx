@@ -60,6 +60,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
+import { generateCertificateCode } from '@/lib/certificateGenerator';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
 function UpgradeProModal({ registrationId, onClose, onSuccess }: {
@@ -611,15 +612,34 @@ export function DashboardParticipante() {
         if (error) throw error;
 
         // Gerar placeholder de certificado
+        const certCode = generateCertificateCode(myRegistration.id, sessionId);
         await (supabase.from('certificados' as any) as any).insert({
           project_id: selectedProject?.id,
           registration_id: myRegistration.id,
           activity_name: sessionTitle,
           status: 'disponivel',
+          type: 'lecture', // ou workshop dependendo do contexto, mas lecture é o padrão
+          code: certCode,
           issue_date: new Date().toISOString()
         }).catch(() => { });
 
         toast.success(`Check -in em "${sessionTitle}" confirmado! Certificado gerado.`);
+        return;
+      }
+
+      // Caso 3: Check-in em Mentorias (GE-MENTORIA|ID|MENTOR)
+      if (decodedText.startsWith('GE-MENTORING')) {
+        const parts = decodedText.split('|');
+        const mentoringId = parts[1];
+        const mentorName = parts[2] || 'Mentor';
+
+        const { error } = await supabase.from('mentorias_agendadas').update({
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        }).eq('id', mentoringId);
+
+        if (error) throw error;
+        toast.success(`Mentoria com ${mentorName} confirmada!`);
         return;
       }
 
@@ -629,6 +649,35 @@ export function DashboardParticipante() {
       throw error;
     }
   };
+
+  // ── Certificados ──────────────────────────────────────────────────────────
+  const [certificados, setCertificados] = useState<any[]>([]);
+  const [loadingCerts, setLoadingCerts] = useState(false);
+
+  const fetchCertificados = useCallback(async () => {
+    if (!myRegistration?.id) return;
+    setLoadingCerts(true);
+    try {
+      const { data, error } = await supabase
+        .from('certificados' as any)
+        .select('*')
+        .eq('registration_id', myRegistration.id)
+        .order('issue_date', { ascending: false });
+
+      if (error) throw error;
+      setCertificados(data || []);
+    } catch (err) {
+      logger.error('Erro ao buscar certificados:', err);
+    } finally {
+      setLoadingCerts(false);
+    }
+  }, [myRegistration?.id]);
+
+  useEffect(() => {
+    if (activeTab === 'certificados') {
+      fetchCertificados();
+    }
+  }, [activeTab, fetchCertificados]);
 
   // ── Documentos do Storage ──────────────────────────────────────────────────
   const [documentos, setDocumentos] = useState<Array<{
@@ -688,10 +737,10 @@ export function DashboardParticipante() {
       {showCheckInModal && myRegistration && (
         <CheckInModal registration={myRegistration} onClose={() => setShowCheckInModal(false)} />
       )}
-      {showSelfCheckIn && myRegistration && (
+      {isSelfCheckInOpen && myRegistration && (
         <SelfCheckInModal
           registration={myRegistration}
-          onClose={() => setShowSelfCheckIn(false)}
+          onClose={() => setIsSelfCheckInOpen(false)}
           onScanSuccess={handleScanSuccess}
         />
       )}
@@ -732,6 +781,13 @@ export function DashboardParticipante() {
                     {myRegistration?.palestrasNoturnas ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
                     {myRegistration?.palestrasNoturnas ? 'Experience Pro' : 'Free Morning'}
                   </Badge>
+                  <Button
+                    onClick={() => setIsSelfCheckInOpen(true)}
+                    size="sm"
+                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-4 rounded-full text-[10px] md:text-xs shadow-lg shadow-brand-orange-coral/20 border-none h-7 animate-bounce-subtle"
+                  >
+                    <QrCode className="h-3 w-3 mr-1.5" /> CONFIRMAR PRESENÇA
+                  </Button>
                   <button
                     onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
                     className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5"
@@ -1124,9 +1180,18 @@ export function DashboardParticipante() {
                   <h2 className="text-xl font-bold text-white">Minha Agenda</h2>
                   <p className="text-gray-400 text-sm mt-1">Atividades {myRegistration?.palestrasNoturnas ? 'diurnas e noturnas' : 'diurnas (gratuitas)'}</p>
                 </div>
-                <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}>
-                  Ver Programação
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsSelfCheckInOpen(true)}
+                    size="sm"
+                    className="bg-teal-500 hover:bg-teal-600 text-white font-black px-4 rounded-xl shadow-lg shadow-teal-500/20"
+                  >
+                    <QrCode className="h-4 w-4 mr-2" /> SCAN QR CODE
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-dark-300 text-teal-400 hover:bg-teal-500/10" onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}>
+                    Ver Programação
+                  </Button>
+                </div>
               </div>
 
               {/* Bloco Dia (Gratuito) */}
@@ -1389,15 +1454,67 @@ export function DashboardParticipante() {
 
           {/* ── CERTIFICADOS TAB ── */}
           <TabsContent value="certificados">
-            <div className="glass-card p-12 text-center border-teal-500/20">
-              <div className="w-20 h-20 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-6">
-                <Award className="h-10 w-10 text-teal-400" />
+            <div className="glass-card p-8 border-teal-500/20">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Award className="h-6 w-6 text-teal-400" /> Meus Certificados
+                  </h2>
+                  <p className="text-gray-400 text-sm mt-1">Conquistas reconhecidas no Growth Experience</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
+                  onClick={fetchCertificados}
+                  disabled={loadingCerts}
+                >
+                  {loadingCerts ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Atualizar Listagem'}
+                </Button>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Suas Conquistas</h2>
-              <p className="text-gray-400 max-w-lg mx-auto mb-8">Certificados de participação e cursos disponíveis após o evento.</p>
-              <Button className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 py-6 h-auto rounded-xl" onClick={() => navigate('/meus-certificados')}>
-                <Award className="h-5 w-5 mr-2" /> VER CERTIFICADOS
-              </Button>
+
+              {certificados.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {certificados.map((cert) => (
+                    <div key={cert.id} className="relative p-6 bg-dark-100 rounded-[2rem] border border-white/5 hover:border-teal-500/40 transition-all group overflow-hidden">
+                      <div className="absolute -top-4 -right-4 w-16 h-16 bg-teal-500/5 group-hover:bg-teal-500/10 rounded-full blur-xl transition-all"></div>
+
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Award className="h-6 w-6 text-teal-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-white font-bold text-sm leading-tight mb-1 group-hover:text-teal-400 transition-colors uppercase italic truncate">
+                            {cert.activity_name || 'Participação'}
+                          </h3>
+                          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">
+                            SÉRIE: GS2026-{cert.id.split('-')[0].toUpperCase()}
+                          </p>
+                          <div className="flex items-center gap-2 mb-4">
+                            <Badge className="bg-green-500/10 text-green-500 border-none text-[8px] py-0 px-1.5 font-black">VALIDADO</Badge>
+                            <span className="text-[10px] text-gray-600">{new Date(cert.issue_date).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="w-full bg-white hover:bg-gray-100 text-black font-black text-[10px] rounded-xl h-8"
+                            onClick={() => window.open(`/certificado/${cert.id}`, '_blank')}
+                          >
+                            DOWNLOAD PDF
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 text-center border-2 border-dashed border-dark-300 rounded-3xl">
+                  <Award className="h-16 w-16 text-gray-700 mx-auto mb-4 opacity-20" />
+                  <h3 className="text-white font-bold text-lg mb-2 tracking-tight">Nenhum certificado disponível</h3>
+                  <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
+                    Você ainda não confirmou presença em nenhuma atividade. Use o botão <strong className="text-teal-400">Scanner QR Code</strong> nas salas para confirmar participação e gerar seu certificado.
+                  </p>
+                </div>
+              )}
             </div>
           </TabsContent>
 

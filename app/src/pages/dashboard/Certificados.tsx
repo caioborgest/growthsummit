@@ -84,6 +84,14 @@ export function Certificados() {
                 signatureBase64,
                 logoBase64,
                 totalHours: cert.metadata?.total_hours,
+                templateOverrides: selectedProject?.metadata?.certificate_template ? {
+                    title: selectedProject.metadata.certificate_template.title,
+                    description: selectedProject.metadata.certificate_template.description,
+                    ceoName: selectedProject.metadata.certificate_template.ceo_name,
+                    ceoRole: selectedProject.metadata.certificate_template.ceo_role,
+                    primaryColor: selectedProject.metadata.certificate_template.primary_color,
+                    secondaryColor: selectedProject.metadata.certificate_template.secondary_color,
+                } : undefined
             });
 
             toast.success('Certificado baixado com sucesso!', { id: 'cert-gen' });
