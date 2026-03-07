@@ -10,6 +10,7 @@ import { Step3DadosPessoaisMentoria } from './mentoria-steps/Step3DadosPessoaisM
 import { Step4ConfirmacaoMentoria } from './mentoria-steps/Step4ConfirmacaoMentoria';
 import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
+import { useAuth } from '@/contexts/AuthContext';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 
 interface MentoriaMultiStepModalProps {
@@ -18,6 +19,7 @@ interface MentoriaMultiStepModalProps {
 }
 
 export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepModalProps) {
+    const { user, isAuthenticated } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -32,7 +34,21 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         comprarPalestras: false
     });
 
+    // Efeito para preencher dados se o usuário estiver logado
+    useEffect(() => {
+        if (isAuthenticated && user && isOpen) {
+            setDados(prev => ({
+                ...prev,
+                nome: user.name || prev.nome,
+                email: user.email || prev.email,
+                telefone: user.phone || prev.phone,
+                userId: user.id
+            }));
+        }
+    }, [isAuthenticated, user, isOpen]);
+
     const totalSteps = 7;
+    const stepsToSkip = isAuthenticated ? [3, 6] : [];
 
     const handleClose = () => {
         if (currentStep === totalSteps) {
@@ -53,8 +69,15 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
     const nextStep = async () => {
         if (isProcessing) return;
         setIsProcessing(true);
-        setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-        setTimeout(() => setIsProcessing(false), 500); // Guard to prevent double clicks
+
+        // Calcular próximo passo pulando os desnecessários
+        let next = currentStep + 1;
+        while (stepsToSkip.includes(next) && next < totalSteps) {
+            next++;
+        }
+
+        setCurrentStep(Math.min(next, totalSteps));
+        setTimeout(() => setIsProcessing(false), 500);
     };
 
     // Auto-scroll to top when step changes
@@ -66,7 +89,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
 
     const prevStep = () => {
         if (isProcessing) return;
-        setCurrentStep(prev => Math.max(prev - 1, 1));
+
+        let prev = currentStep - 1;
+        while (stepsToSkip.includes(prev) && prev > 1) {
+            prev--;
+        }
+
+        setCurrentStep(Math.max(prev, 1));
     };
 
     const renderStep = () => {
@@ -177,23 +206,27 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                     {/* Enhanced Progress Tracker */}
                     <div className="relative mb-10 overflow-hidden px-1">
                         <div className="flex items-center gap-2">
-                            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-                                <div key={step} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
-                                    <div
-                                        className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${step < currentStep ? 'bg-green-500 translate-x-0' :
-                                            step === currentStep ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
-                                                '-translate-x-full'
-                                            }`}
-                                    />
-                                </div>
-                            ))}
+                            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
+                                if (stepsToSkip.includes(step)) return null;
+                                return (
+                                    <div key={step} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
+                                        <div
+                                            className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${step < currentStep ? 'bg-green-500 translate-x-0' :
+                                                step === currentStep ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
+                                                    '-translate-x-full'
+                                                }`}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
                     {/* Polished Stepper Labels */}
-                    <div className="flex justify-between items-start gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                    <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                         {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão'].map((label, idx) => {
                             const step = idx + 1;
+                            if (stepsToSkip.includes(step)) return null;
                             const isActive = step === currentStep;
                             const isCompleted = step < currentStep;
 

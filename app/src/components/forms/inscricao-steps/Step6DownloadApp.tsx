@@ -143,7 +143,7 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
             <div className="hidden md:flex justify-center my-6">
                 <Card className="p-4 bg-white rounded-xl shadow-lg flex items-center gap-6">
                     <QRCode
-                        value="https://www.growthsummit.site"
+                        value="https://www.growthsummit.site/login"
                         size={100}
                         level="H"
                     />

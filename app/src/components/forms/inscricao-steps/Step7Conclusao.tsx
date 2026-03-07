@@ -100,12 +100,12 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                     size="lg"
                     onClick={() => {
                         onFechar();
-                        window.location.href = '/minha-area';
+                        window.location.href = '/login';
                     }}
                     className="flex-1 border-white/10 text-gray-300 hover:text-white hover:bg-white/5 h-14 rounded-xl font-bold"
                 >
                     <Home className="h-5 w-5 mr-2" />
-                    Área do Participante
+                    Página de Login
                 </Button>
 
                 <Button

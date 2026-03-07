@@ -208,7 +208,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             setTimeout(() => {
                 setIsSuccess(false);
                 onClose();
-                window.location.href = '/minha-area';
+                window.location.href = '/login';
             }, 3000);
 
         } catch (err: unknown) {
@@ -250,7 +250,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         <p className="text-gray-400">
                             {tipo === 'palestra'
                                 ? 'Você será redirecionado para o WhatsApp para finalizar o pagamento.'
-                                : 'Sua inscrição foi confirmada. Estamos te redirecionando para a sua área...'
+                                : 'Sua inscrição foi confirmada. Estamos te redirecionando para o login...'
                             }
                         </p>
                     </div>

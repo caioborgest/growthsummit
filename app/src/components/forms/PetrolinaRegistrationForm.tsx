@@ -162,9 +162,9 @@ export function PetrolinaRegistrationForm() {
             setIsSuccess(true);
             toast.success('Inscrição confirmada com sucesso!');
 
-            // 4. Redirect to Dashboard after delay
+            // 4. Redirect to Login after delay
             setTimeout(() => {
-                window.location.href = '/minha-area';
+                window.location.href = '/login';
             }, 2000);
 
         } catch (err: any) {
@@ -183,7 +183,7 @@ export function PetrolinaRegistrationForm() {
                 </div>
                 <h3 className="text-3xl font-extrabold text-white mb-4">Inscrição Confirmada!</h3>
                 <p className="text-gray-400 mb-8 max-w-sm mx-auto">
-                    Você já está garantido no evento. Estamos te redirecionando para a sua área...
+                    Você já está garantido no evento. Estamos te redirecionando para o login...
                 </p>
                 <Button
                     className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-6 rounded-xl"

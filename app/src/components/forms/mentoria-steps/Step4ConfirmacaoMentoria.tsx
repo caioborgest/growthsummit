@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target, ShieldCheck, CheckCircle2, Star } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
@@ -58,7 +58,9 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             let userId = existingSession?.user?.id;
             let authError = null;
 
-            if (existingSession && existingSession.user.email !== dados.email) {
+            if (existingSession && (existingSession.user.email === dados.email || !dados.email)) {
+                userId = existingSession.user.id;
+            } else {
                 userId = undefined;
             }
 

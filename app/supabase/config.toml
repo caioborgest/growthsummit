@@ -34,6 +34,7 @@ enabled = true
 port = 54328
 api_external_url = "http://localhost:54328"
 max_session_duration = "720h"
+confirm_email = false
 
 [realtime]
 enabled = true

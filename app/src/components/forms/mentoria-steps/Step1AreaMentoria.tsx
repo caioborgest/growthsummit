@@ -45,10 +45,10 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContin
     return (
         <div className="space-y-10">
             <div className="text-left sm:text-center max-w-2xl mx-auto">
-                <h3 className="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight tracking-tight">
+                <h3 className="text-2xl sm:text-4xl font-black text-white mb-3 leading-tight tracking-tight px-1">
                     Qual o seu maior <span className="text-brand-orange-coral">desafio</span> hoje?
                 </h3>
-                <p className="text-gray-400 text-sm sm:text-lg">
+                <p className="text-gray-400 text-sm sm:text-lg px-2">
                     Selecione a área principal e descreva brevemente seu cenário para encontrarmos o mentor ideal.
                 </p>
             </div>

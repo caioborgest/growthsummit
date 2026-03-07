@@ -53,7 +53,9 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         ticketType: (row['tipo_inscricao'] as string) || undefined,
         status: (row['status'] as string) || undefined,
         statusPagamento: (row['status_pagamento'] as string) || undefined,
-        palestrasNoturnas: Boolean(row['palestras_noturnas']),
+        palestrasNoturnas: Array.isArray(row['palestras_noturnas'])
+            ? row['palestras_noturnas'].length > 0
+            : Boolean(row['palestras_noturnas']),
         cursosSelecionados: Array.isArray(row['cursos_selecionados'])
             ? (row['cursos_selecionados'] as string[])
             : [],
