@@ -705,8 +705,8 @@ export function DashboardParticipante() {
               <div className="relative group">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-xl shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
                   <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
-                    {(user?.avatar || (user as any)?.avatarUrl) ? (
-                      <img src={user.avatar || (user as any)?.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="h-8 w-8 text-orange-400" />
                     )}

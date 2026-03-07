@@ -15,13 +15,15 @@ import {
   Loader2,
   X,
   Plus,
-  Trash2
+  Trash2,
+  Star
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRegistrations, useTransactions, useData } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 

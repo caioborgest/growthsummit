@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export function Login() {
   const navigate = useNavigate();
