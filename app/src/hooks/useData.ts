@@ -145,6 +145,11 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
   valor_investido: 'amount',
+  data_mentoria: 'scheduledAt',
+  mentorado_id: 'menteeId',
+  nome_mentorado: 'menteeName',
+  tema_interesse: 'topic',
+  anotacoes: 'notes',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -365,7 +370,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at';
+      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,avaliacao_mentoria,indicacao_mentor,avaliado_em';
     }
     if (entity === 'b2b_meetings') {
       return 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';

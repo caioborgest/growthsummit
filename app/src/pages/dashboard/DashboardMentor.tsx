@@ -401,12 +401,10 @@ export function DashboardMentor() {
       while (current < endDateTime) {
         slotsToCreate.push({
           mentorId: mentorData.id,
-          mentorName: mentorData.name,
-          menteeId: '',
-          menteeName: '',
+          menteeId: null,
+          menteeName: null,
           status: 'scheduled',
           scheduledAt: current.toISOString(),
-          duration: 30,
           topic: 'Disponibilidade de Mentoria',
           notes: ''
         });
@@ -420,8 +418,9 @@ export function DashboardMentor() {
       toast.dismiss(loadingToast);
       toast.success(`${slotsToCreate.length} horários abertos com sucesso!`);
       form.reset();
-    } catch {
-      toast.error('Erro ao abrir horários.');
+    } catch (err: any) {
+      console.error('Erro ao abrir horários:', err);
+      toast.error('Erro ao abrir horários. ' + (err.message || ''));
     }
   };
 

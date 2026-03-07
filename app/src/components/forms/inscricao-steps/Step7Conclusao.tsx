@@ -110,7 +110,10 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
 
                 <Button
                     size="lg"
-                    onClick={onFechar}
+                    onClick={() => {
+                        onFechar();
+                        window.location.href = '/login';
+                    }}
                     className="flex-1 bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-14 rounded-xl transition-all"
                 >
                     Concluir Cadastro

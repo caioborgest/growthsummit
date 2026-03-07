@@ -253,6 +253,7 @@ export default function AdminInscricoes() {
       if (updates.status === 'free') {
         updates.amount = 0;
         updates.status = 'pago'; // No banco tratamos como pago com valor 0
+        updates.palestrasNoturnas = true; // Converter para grátis garante o Pro
       }
 
       await update(id, updates);
@@ -635,6 +636,15 @@ export default function AdminInscricoes() {
                       <td className="p-4">
                         <p className="text-white font-medium text-sm">{reg.name || 'Desconhecido'}</p>
                         <p className="text-gray-500 text-xs truncate max-w-[200px]">{reg.email || '-'}</p>
+                        {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {reg.cursosSelecionados.map((c, i) => (
+                              <Badge key={i} variant="outline" className="text-[9px] py-0 px-1 border-teal-500/20 text-teal-400 bg-teal-500/5">
+                                {c}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td className="p-4">
                         <Badge className={statusColors[reg.status] || 'bg-gray-500/20 text-gray-400'}>
