@@ -43,7 +43,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ProfileForm } from './components/ProfileForm';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+import { PremiumHeader } from './components/shared/PremiumHeader';
+import { PremiumBackground } from './components/shared/PremiumBackground';
+import { QuickActions } from './components/shared/QuickActions';
+import { B2BFormModal } from '@/components/forms/B2BFormModal';
+import { StartupFormModal } from '@/components/forms/StartupFormModal';
 
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
@@ -342,7 +348,11 @@ export function DashboardMentor() {
   const { data: sessions } = useMentoringSessions();
   const { data: mentors } = useMentors();
   const { data: notificationsData, update: updateNotification } = useNotifications();
-  const unreadNotifications = notificationsData?.filter(n => !n.isRead).length || 0;
+  const unreadNotifications = notificationsData?.filter(n => !n.read).length || 0;
+
+  const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
+  const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
 
   const mentorData = mentors.find(m => m.userId === user?.id);
   const mentorSessions = sessions.filter(s => s.mentorId === mentorData?.id);
@@ -396,15 +406,18 @@ export function DashboardMentor() {
         return;
       }
 
-      const slotsToCreate = [];
+      const slotsToCreate: Omit<MentoringSession, 'id' | 'createdAt'>[] = [];
       let current = new Date(startDateTime);
       while (current < endDateTime) {
         slotsToCreate.push({
+          projectId: mentorData.projectId,
           mentorId: mentorData.id,
-          menteeId: null,
-          menteeName: null,
-          status: 'scheduled',
+          mentorName: mentorData.name,
+          menteeId: '',
+          menteeName: '',
+          status: 'scheduled' as const,
           scheduledAt: current.toISOString(),
+          duration: 30,
           topic: 'Disponibilidade de Mentoria',
           notes: ''
         });
@@ -465,426 +478,323 @@ export function DashboardMentor() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-dark-400 mesh-gradient pb-10"
+      className="min-h-screen bg-dark-400 mesh-gradient pb-32"
     >
-      {/* Header Premium */}
-      <div className="bg-dark-300 border-b border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[120px] rounded-full -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/5 blur-[120px] rounded-full -ml-32 -mb-32"></div>
+      <PremiumBackground />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="relative group">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-orange-500 to-orange-700 p-0.5 shadow-xl shadow-orange-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-full h-full bg-dark-300 rounded-[1.4rem] flex items-center justify-center overflow-hidden">
-                    {mentorData?.photo ? (
-                      <img src={mentorData.photo} alt={mentorData?.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="h-8 w-8 text-orange-400" />
-                    )}
-                  </div>
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-4 border-dark-300 rounded-full"></div>
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                  {mentorData?.name || user?.name}
-                </h1>
-                <p className="text-orange-400 font-bold tracking-widest uppercase text-[10px] md:text-xs">Mentor Oficial 2026</p>
+      <PremiumHeader
+        userName={mentorData?.name || user?.name}
+        userAvatar={mentorData?.photo}
+        projectName="GROWTH SUMMIT 2026"
+        roleLabel="MENTOR OFICIAL"
+        isPro={true}
+        statusFinanceiro="pago"
+        notifications={notificationsData || []}
+        onLogout={handleLogout}
+        onGuideClick={() => navigate('/guia')}
+        onNotificationRead={handleMarkAsRead}
+      />
 
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30 font-bold px-3 py-1">
-                    <CheckCircle className="h-3 w-3 mr-1.5" /> Mentor Verificado
-                  </Badge>
-                  <button onClick={() => navigate('/guia')} className="bg-white/5 hover:bg-white/10 text-gray-400 px-3 py-1 rounded-full text-xs font-bold transition-colors">
-                    Guia do Mentor
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 p-3 rounded-2xl transition-all border border-white/5">
-                    <Bell className="h-5 w-5" />
-                    {unreadNotifications > 0 && (
-                      <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark-300"></span>
-                    )}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-96 bg-[#1a1c1e] border-white/5 p-5 rounded-[2rem] shadow-3xl">
-                  <div className="flex items-center justify-between mb-6 px-1">
-                    <h3 className="text-white font-black text-lg tracking-tight">Notificações</h3>
-                    <button className="text-[10px] text-brand-orange-coral hover:brightness-125 uppercase tracking-[0.2em] font-black transition-all">
-                      LIMPAR
-                    </button>
-                  </div>
-                  <div className="space-y-4 max-h-[450px] overflow-y-auto pr-1 custom-scrollbar">
-                    {notificationsData && notificationsData.length > 0 ? (
-                      notificationsData.map(n => (
-                        <div
-                          key={n.id}
-                          onClick={() => !n.isRead && handleMarkAsRead(n.id)}
-                          className={`p-5 rounded-[1.5rem] border transition-all cursor-pointer group ${n.isRead ? 'bg-white/[0.02] border-transparent opacity-50' : 'bg-[#251b18] border-brand-orange-coral/20 hover:border-brand-orange-coral/40'}`}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <p className="text-white text-sm font-black group-hover:text-brand-orange-coral transition-colors">{n.title}</p>
-                            <span className="text-gray-500 text-[9px] font-bold uppercase tracking-wider">{formatRelativeTime(n.createdAt)}</span>
-                          </div>
-                          <p className="text-gray-400 text-xs leading-relaxed font-medium">{n.message}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="py-12 text-center">
-                        <Bell className="h-8 w-8 text-gray-800 mx-auto mb-3 opacity-20" />
-                        <p className="text-gray-600 font-bold text-xs uppercase tracking-widest">Nenhuma notificação</p>
-                      </div>
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Button onClick={handleLogout} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-2xl px-6">
-                Sair
-              </Button>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 relative">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="flex-1">
+            <QuickActions
+              onB2BClick={() => setIsB2BModalOpen(true)}
+              onStartupClick={() => setIsStartupModalOpen(true)}
+              showMentoria={false}
+            />
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-teal-500/10 hover:border-teal-500/30 transition-all">
-            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Total Mentorias</p>
-            <p className="text-3xl font-black text-white">{stats.total}</p>
-          </div>
-          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-green-500/10 hover:border-green-500/30 transition-all">
-            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Concluídas</p>
-            <p className="text-3xl font-black text-green-400">{stats.completed}</p>
-          </div>
-          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-blue-500/10 hover:border-blue-500/30 transition-all">
-            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Agendadas</p>
-            <p className="text-3xl font-black text-blue-400">{stats.scheduled}</p>
-          </div>
-          <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all">
-            <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Avaliação Média</p>
-            <div className="flex items-center gap-2">
-              <p className="text-3xl font-black text-yellow-400">{stats.avgRating.toFixed(1)}</p>
-              <Star className="h-6 w-6 text-yellow-500 fill-yellow-500 animate-pulse" />
+        {/* Stats Section with Glassmorphism */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          {[
+            { label: 'Total Mentorias', value: stats.total, color: 'teal' },
+            { label: 'Concluídas', value: stats.completed, color: 'green' },
+            { label: 'Agendadas', value: stats.scheduled, color: 'blue' },
+            { label: 'Avaliação Média', value: stats.avgRating.toFixed(1), color: 'yellow', icon: Star }
+          ].map((stat, i) => (
+            <div key={i} className={`p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all group`}>
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">{stat.label}</p>
+              <div className="flex items-center gap-3">
+                <span className={`text-3xl font-black text-white group-hover:scale-110 transition-transform ${stat.color === 'green' ? 'text-green-400' : ''} ${stat.color === 'blue' ? 'text-blue-400' : ''} ${stat.color === 'yellow' ? 'text-yellow-400' : ''}`}>
+                  {stat.value}
+                </span>
+                {stat.icon && <stat.icon className="h-5 w-5 text-yellow-500 fill-yellow-500 animate-pulse" />}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
-            <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
-              <Calendar className="h-4 w-4 mr-1 md:mr-2" />
-              Agenda
-            </TabsTrigger>
-            <TabsTrigger value="slots" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
-              <Clock className="h-4 w-4 mr-1 md:mr-2" />
-              Disponibilidade
-            </TabsTrigger>
-            <TabsTrigger value="historico" className="data-[state=active]:bg-teal-500 py-3 text-xs md:text-sm">
-              <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
-              Histórico
-            </TabsTrigger>
-            <TabsTrigger value="perfil" className="data-[state=active]:bg-teal-500">
-              <User className="h-4 w-4 mr-2" />
-              Perfil
-            </TabsTrigger>
-            <TabsTrigger value="mentor_data" className="data-[state=active]:bg-teal-500">
-              <Briefcase className="h-4 w-4 mr-2" />
-              Currículo
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Agenda Tab */}
-          <TabsContent value="agenda" className="mt-0">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-xl font-bold text-white">Minha Agenda Personalizada</h2>
-                <p className="text-gray-400 text-sm mt-1">Sessões de mentoria agendadas com participantes confirmados.</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              {mentorSessions
-                .filter(s => s.status === 'scheduled' && s.menteeId)
-                .map((session) => (
-                  <div key={session.id} className="glass-card p-6 border-teal-500/20">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                      <div className="lg:w-32">
-                        <p className="text-teal-400 font-bold">
-                          {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
-                        </p>
-                        <p className="text-gray-400 text-sm">
-                          {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white font-black text-lg">{session.menteeName}</p>
-                        {session.topic && (
-                          <p className="text-teal-400/80 text-sm font-medium">{session.topic}</p>
-                        )}
-                      </div>
-                      <div className="flex space-x-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
-                              <CalendarDays className="h-4 w-4 mr-1" />
-                              Sincronizar
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-dark-200 border-white/10">
-                            <DropdownMenuItem className="text-white hover:bg-teal-500/20 cursor-pointer" asChild>
-                              <a href={generateGoogleCalendarLink(session)} target="_blank" rel="noopener noreferrer">
-                                Google Calendar
-                              </a>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-white hover:bg-teal-500/20 cursor-pointer" asChild>
-                              <a href={generateICalLink(session)} download="mentoria.ics">
-                                iCal / Outlook
-                              </a>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
-                          <MessageSquare className="h-4 w-4 mr-1" />
-                          Chat
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600 text-white font-bold"
-                          onClick={() => update(session.id, { status: 'completed' })}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Concluir
-                        </Button>
-                      </div>
-                    </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === 'agenda' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-xl font-bold text-white italic uppercase tracking-tight">Agenda Personalizada</h2>
+                    <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mt-1">Sessões agendadas com participantes confirmados</p>
                   </div>
-                ))}
-
-              {mentorSessions.filter(s => s.status === 'scheduled' && s.menteeId).length === 0 && (
-                <div className="glass-card p-12 text-center border-white/5">
-                  <Calendar className="h-12 w-12 text-gray-700 mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium">Você não tem mentorias agendadas com participantes no momento.</p>
                 </div>
-              )}
-            </div>
-          </TabsContent>
+                <div className="space-y-4">
+                  {mentorSessions
+                    .filter(s => s.status === 'scheduled' && s.menteeId)
+                    .map((session) => (
+                      <div key={session.id} className="p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-all border-l-4 border-l-teal-500">
+                        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                          <div className="lg:w-32 bg-teal-500/10 p-4 rounded-2xl border border-teal-500/10 text-center">
+                            <p className="text-teal-400 font-black text-xs">
+                              {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
+                            </p>
+                            <p className="text-white font-black text-lg mt-1">
+                              {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-white font-black text-xl italic uppercase font-black">{session.menteeName}</p>
+                            {session.topic && (
+                              <p className="text-teal-400 font-bold text-sm tracking-tight mt-1">{session.topic}</p>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button className="bg-white/5 hover:bg-white/10 text-gray-400 font-bold rounded-xl border border-white/10">
+                                  <CalendarDays className="h-4 w-4 mr-2" />
+                                  Sincronizar
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="bg-[#1a1c1e] border-white/5 p-2 rounded-2xl shadow-2xl">
+                                <DropdownMenuItem className="text-white hover:bg-teal-500/20 rounded-xl cursor-pointer p-3" asChild>
+                                  <a href={generateGoogleCalendarLink(session)} target="_blank" rel="noopener noreferrer">
+                                    Google Calendar
+                                  </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-white hover:bg-teal-500/20 rounded-xl cursor-pointer p-3" asChild>
+                                  <a href={generateICalLink(session)} download="mentoria.ics">
+                                    iCal / Outlook
+                                  </a>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 font-black rounded-xl border border-teal-500/20">
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Chat
+                            </Button>
+                            <Button
+                              className="bg-green-500 hover:bg-green-600 text-white font-black rounded-xl shadow-lg shadow-green-500/20"
+                              onClick={() => update(session.id, { status: 'completed' })}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Concluir
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
 
-          {/* Slots Tab */}
-          <TabsContent value="slots" className="mt-0">
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="md:col-span-1">
-                <div className="glass-card p-6 border-teal-500/30 bg-teal-500/5">
-                  <h3 className="text-white font-black mb-4 flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-teal-400" />
-                    Abrir Novo Horário
-                  </h3>
-                  <form onSubmit={handleOpenSlots} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Data</label>
-                      <input
-                        name="slotDate"
-                        type="date"
-                        required
-                        className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
-                      />
+                  {mentorSessions.filter(s => s.status === 'scheduled' && s.menteeId).length === 0 && (
+                    <div className="p-20 text-center bg-white/5 border border-dashed border-white/10 rounded-[3rem]">
+                      <Calendar className="h-16 w-16 text-gray-800 mx-auto mb-6 opacity-30" />
+                      <p className="text-gray-500 font-black uppercase tracking-widest text-sm">Sem mentorias agendadas</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Início</label>
-                        <input
-                          name="slotTime"
-                          type="time"
-                          required
-                          className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Término</label>
-                        <input
-                          name="slotEndTime"
-                          type="time"
-                          required
-                          className="w-full bg-dark-200 border border-dark-300 rounded-lg px-3 py-2 text-white text-sm"
-                        />
-                      </div>
-                    </div>
-                    <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold">
-                      GERAR SPOTS 30min
-                    </Button>
-                  </form>
-                  <p className="text-[10px] text-gray-500 mt-4 leading-tight italic">
-                    * O horário ficará visível para inscritos "Experience Pro" na área do participante.
-                  </p>
+                  )}
                 </div>
               </div>
+            )}
 
-              <div className="md:col-span-2 space-y-4">
-                <h3 className="text-white font-black flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-teal-400" />
-                  Meus Horários em Aberto
-                </h3>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {mentorSessions
-                    .filter(s => s.status === 'scheduled' && !s.menteeId)
-                    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
-                    .map(slot => (
-                      <div key={slot.id} className="glass-card p-4 border-white/5 bg-dark-200 flex items-center justify-between group">
-                        <div>
-                          <p className="text-white font-bold">{new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                          <p className="text-teal-400 font-medium">{new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+            {activeTab === 'slots' && (
+              <div className="grid lg:grid-cols-12 gap-12">
+                <div className="lg:col-span-4">
+                  <div className="p-8 bg-white/5 border border-teal-500/20 rounded-[2.5rem] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+                      <Plus className="h-24 w-24 text-teal-500" />
+                    </div>
+                    <h3 className="text-white font-black text-xl uppercase italic tracking-tight mb-8 flex items-center gap-3">
+                      <Plus className="h-6 w-6 text-teal-400" />
+                      Novo Horário
+                    </h3>
+                    <form onSubmit={handleOpenSlots} className="space-y-6">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Data da Sessão</label>
+                        <input
+                          name="slotDate"
+                          type="date"
+                          required
+                          className="w-full bg-dark-200 border border-white/5 rounded-2xl px-4 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-teal-500/50 transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Início</label>
+                          <input
+                            name="slotTime"
+                            type="time"
+                            required
+                            className="w-full bg-dark-200 border border-white/5 rounded-2xl px-4 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-teal-500/50 transition-all"
+                          />
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-gray-600 hover:text-red-400 transition-colors"
-                          onClick={() => remove(slot.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Término</label>
+                          <input
+                            name="slotEndTime"
+                            type="time"
+                            required
+                            className="w-full bg-dark-200 border border-white/5 rounded-2xl px-4 py-4 text-white font-bold outline-none focus:ring-2 focus:ring-teal-500/50 transition-all"
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 h-16 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 uppercase tracking-widest text-xs">
+                        GERAR SPOTS 30min
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-8 space-y-6">
+                  <h3 className="text-white font-black text-xl uppercase italic tracking-tight flex items-center gap-3">
+                    <Clock className="h-6 w-6 text-teal-400" />
+                    Horários em Aberto
+                  </h3>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {mentorSessions
+                      .filter(s => s.status === 'scheduled' && !s.menteeId)
+                      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                      .map(slot => (
+                        <div key={slot.id} className="p-5 bg-white/5 border border-white/10 rounded-[2rem] hover:bg-white/10 transition-all flex items-center justify-between group">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/10">
+                              <Calendar className="h-5 w-5 text-teal-400" />
+                            </div>
+                            <div>
+                              <p className="text-white font-black text-sm">{new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                              <p className="text-teal-400 font-bold text-xs">{new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-700 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                            onClick={() => remove(slot.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+
+                  {mentorSessions.filter(s => s.status === 'scheduled' && !s.menteeId).length === 0 && (
+                    <div className="p-16 text-center bg-white/5 border border-dashed border-white/10 rounded-[2.5rem]">
+                      <Clock className="h-12 w-12 text-gray-800 mx-auto mb-4 opacity-30" />
+                      <p className="text-gray-500 font-black uppercase tracking-widest text-xs">Nenhum horário aberto</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'historico' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-white italic uppercase tracking-tight mb-8">Histórico de Sessões</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {mentorSessions
+                    .filter(s => s.status === 'completed')
+                    .map((session) => (
+                      <div key={session.id} className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] hover:bg-white/10 transition-all">
+                        <div className="flex items-start justify-between mb-6">
+                          <div>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge className="bg-green-500/10 text-green-400 border-green-500/10 rounded-lg px-3 py-1 font-black text-[10px] tracking-widest">CONCLUÍDA</Badge>
+                              {session.feedback && (
+                                <Badge className="bg-yellow-500/10 text-yellow-400 border-yellow-500/10 rounded-lg px-3 py-1 font-black text-[10px] tracking-widest flex items-center gap-1">
+                                  <Star className="h-3 w-3 fill-yellow-400" />
+                                  {(session.feedback.avaliacaoMentoria || session.feedback.rating || 0).toFixed(1)}
+                                </Badge>
+                              )}
+                            </div>
+                            <h4 className="text-white font-black text-2xl italic uppercase">{session.menteeName}</h4>
+                            <p className="text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em] mt-1">
+                              {new Date(session.scheduledAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                        {session.topic && (
+                          <div className="mb-6 p-4 bg-dark-200 rounded-2xl border border-white/5">
+                            <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Tópico</p>
+                            <p className="text-gray-300 font-bold text-sm tracking-tight">{session.topic}</p>
+                          </div>
+                        )}
+                        <Button className="w-full bg-white/5 hover:bg-white/10 text-gray-400 font-black rounded-xl border border-white/10">
+                          Ver Detalhes do Feedback
                         </Button>
                       </div>
                     ))}
                 </div>
-
-                {mentorSessions.filter(s => s.status === 'scheduled' && !s.menteeId).length === 0 && (
-                  <div className="glass-card p-12 text-center border-dashed border-dark-300">
-                    <Clock className="h-8 w-8 text-gray-700 mx-auto mb-2" />
-                    <p className="text-gray-500 text-sm">Nenhum horário em aberto.</p>
-                  </div>
-                )}
               </div>
-            </div>
-          </TabsContent>
+            )}
 
-          {/* Historico Tab */}
-          <TabsContent value="historico" className="mt-0">
-            <div className="space-y-4">
-              {mentorSessions
-                .filter(s => s.status === 'completed')
-                .map((session) => (
-                  <div key={session.id} className="glass-card p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className="bg-green-500/20 text-green-400">Concluída</Badge>
-                          {session.feedback && (
-                            <div className="flex flex-col gap-1">
-                              {session.feedback.avaliacaoMentoria && (
-                                <div className="flex items-center">
-                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                  <span className="text-white text-xs">Mentoria: {session.feedback.avaliacaoMentoria}/5</span>
-                                </div>
-                              )}
-                              {session.feedback.indicacaoMentor && (
-                                <div className="flex items-center">
-                                  <Star className="h-3 w-3 text-orange-400 fill-orange-400 mr-1" />
-                                  <span className="text-white text-xs">Indicação: {session.feedback.indicacaoMentor}/5</span>
-                                </div>
-                              )}
-                              {!session.feedback.avaliacaoMentoria && session.feedback.rating && (
-                                <div className="flex items-center">
-                                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mr-1" />
-                                  <span className="text-white text-xs">{session.feedback.rating}/5</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-white font-semibold">{session.menteeName}</p>
-                        <p className="text-gray-400 text-sm">
-                          {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}
-                        </p>
-                        {session.topic && (
-                          <p className="text-gray-400 text-sm mt-1">{session.topic}</p>
-                        )}
-                      </div>
-                      <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
-                        Ver detalhes
-                      </Button>
-                    </div>
-                    {session.threeSteps && session.threeSteps.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-dark-300">
-                        <p className="text-gray-400 text-sm mb-2">3 Passos Acordados:</p>
-                        <ul className="space-y-1">
-                          {session.threeSteps.map((step, i) => (
-                            <li key={i} className="text-gray-300 text-sm flex items-center">
-                              <span className="w-5 h-5 rounded-full bg-teal-500/20 flex items-center justify-center mr-2 text-xs text-teal-400">
-                                {i + 1}
-                              </span>
-                              {step}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </TabsContent>
-
-          {/* Perfil Tab */}
-          <TabsContent value="perfil" className="mt-0 text-left">
-            <ProfileForm />
-          </TabsContent>
-
-          {/* Mentor Data Tab */}
-          <TabsContent value="mentor_data" className="mt-0 text-left">
-            <MentorDataTab mentorData={mentorData} />
-          </TabsContent>
-
-
-          {/* Recursos Tab */}
-          <TabsContent value="recursos" className="mt-0">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="glass-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Materiais do Mentor</h3>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Guia do Mentor', type: 'PDF' },
-                    { name: 'Template de Feedback', type: 'DOC' },
-                    { name: 'Checklist de Mentoria', type: 'PDF' },
-                  ].map((doc, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-teal-400 mr-3" />
-                        <span className="text-white text-sm">{doc.name}</span>
-                      </div>
-                      <Badge className="bg-dark-300 text-gray-300">{doc.type}</Badge>
-                    </div>
-                  ))}
-                </div>
+            {activeTab === 'perfil' && (
+              <div className="max-w-4xl mx-auto">
+                <ProfileForm />
               </div>
+            )}
 
-              <div className="glass-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Links Úteis</h3>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Programação do Evento', url: '#' },
-                    { name: 'Mapa do Venue', url: '#' },
-                    { name: 'Contato Organização', url: '#' },
-                  ].map((link, i) => (
-                    <a
-                      key={i}
-                      href={link.url}
-                      className="flex items-center p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
-                    >
-                      <span className="text-teal-400 text-sm">{link.name}</span>
-                    </a>
-                  ))}
-                </div>
+            {activeTab === 'mentor_data' && (
+              <div className="max-w-4xl mx-auto">
+                <MentorDataTab mentorData={mentorData} />
               </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
+
+      {/* Modern Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
+        <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
+            {[
+              { id: 'agenda', icon: Calendar, label: 'Agenda' },
+              { id: 'slots', icon: Clock, label: 'Spots' },
+              { id: 'historico', icon: TrendingUp, label: 'Histórico' },
+              { id: 'mentor_data', icon: Briefcase, label: 'CV' },
+              { id: 'perfil', icon: User, label: 'Perfil' },
+            ].map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`relative flex flex-col items-center justify-center py-2 px-1 min-w-[50px] transition-all duration-500 ${isActive ? 'text-teal-400' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 bg-teal-500/10 rounded-2xl -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <item.icon className={`h-5 w-5 mb-1 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]' : 'scale-100'}`} />
+                  <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals integrated into QuickActions */}
+      <B2BFormModal isOpen={isB2BModalOpen} onClose={() => setIsB2BModalOpen(false)} />
+      <StartupFormModal isOpen={isStartupModalOpen} onClose={() => setIsStartupModalOpen(false)} />
     </motion.div>
   );
 }
