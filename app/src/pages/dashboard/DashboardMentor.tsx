@@ -488,7 +488,7 @@ export function DashboardMentor() {
         projectName="GROWTH SUMMIT 2026"
         roleLabel="MENTOR OFICIAL"
         isPro={true}
-        statusFinanceiro="pago"
+        statusFinanceiro={{ label: 'Ativo' }}
         notifications={notificationsData || []}
         onLogout={handleLogout}
         onGuideClick={() => navigate('/guia')}

@@ -88,9 +88,15 @@ export function DashboardSponsor() {
 
       <div className="relative z-10 pb-24">
         <PremiumHeader
-          user={user}
+          userName={user?.name}
+          projectName="GROWTH SUMMIT 2026"
+          roleLabel="PATROCINADOR"
+          isPro={true}
+          statusFinanceiro={{ label: 'Ativo' }}
+          notifications={[]}
           onLogout={handleLogout}
-          unreadNotifications={unreadNotifications}
+          onGuideClick={() => navigate('/guia')}
+          onNotificationRead={() => { }}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">

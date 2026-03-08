@@ -6,47 +6,22 @@ import {
   Users,
   MessageCircle,
   FileText,
-  HelpCircle,
-  Download,
-  MapPin,
-  LogOut,
   Sparkles,
   Award,
   Loader2,
-  FolderOpen,
   CheckCircle2,
-  CreditCard,
-  Tag,
   BookOpen,
-  Sun,
-  Moon,
   XCircle,
-  ChevronRight,
-  ScanLine,
-  Lock,
-  Copy,
   CheckCircle,
-  AlertCircle,
-  Bell,
-  BellRing,
-  X,
-  Star
+  Tag
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
+  Tabs
 } from '@/components/ui/tabs';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSessions, useMentors, useMentoringSessions } from '@/hooks/useData';
@@ -581,7 +556,12 @@ export function DashboardParticipante() {
       return { label: 'Grátis', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição diurna gratuita' };
     }
     const pgto = myRegistration?.statusPagamento;
-    if (pgto === 'pago' || pgto === 'paid') {
+    const status = myRegistration?.status;
+
+    // Só é "Confirmado" se o Admin marcou como pago (pago/paid) OU se o status de pagamento é pago
+    const isActuallyPaid = (pgto === 'pago' || pgto === 'paid' || status === 'pago' || status === 'paid');
+
+    if (isActuallyPaid) {
       return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
     }
     return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };

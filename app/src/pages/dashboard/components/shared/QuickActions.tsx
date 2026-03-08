@@ -23,7 +23,7 @@ export function QuickActions({
 
     const handleShare = async () => {
         const shareData = {
-            title: 'Growth Experience 2026',
+            title: 'Growth Experience Triunfo 2026',
             text: 'Vem comigo para o maior evento de Growth e Negócios do Triunfo! 🚀',
             url: window.location.origin
         };
@@ -47,8 +47,9 @@ export function QuickActions({
                 onClick={onB2BClick}
                 className="group relative flex items-center gap-4 p-5 bg-white/5 border border-white/10 rounded-3xl overflow-hidden transition-all hover:bg-teal-500/10 hover:border-teal-500/30 hover:scale-[1.02] text-left"
             >
-                <div className="w-12 h-12 rounded-2xl bg-teal-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform">
-                    <Handshake className="h-6 w-6 text-teal-400" />
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/20 flex items-center justify-center group-hover:rotate-6 transition-transform relative">
+                    <Handshake className="h-6 w-6 text-teal-400 z-10" />
+                    <div className="absolute inset-0 bg-teal-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
                 <div>
                     <h4 className="text-white font-black text-sm uppercase tracking-tight italic">Rodada Negócios</h4>
@@ -62,8 +63,9 @@ export function QuickActions({
                 onClick={onStartupClick}
                 className="group relative flex items-center gap-4 p-5 bg-white/5 border border-white/10 rounded-3xl overflow-hidden transition-all hover:bg-orange-500/10 hover:border-orange-500/30 hover:scale-[1.02] text-left"
             >
-                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center group-hover:-rotate-6 transition-transform">
-                    <Rocket className="h-6 w-6 text-orange-400" />
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center group-hover:-rotate-6 transition-transform relative">
+                    <Rocket className="h-6 w-6 text-orange-400 z-10" />
+                    <div className="absolute inset-0 bg-orange-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
                 <div>
                     <h4 className="text-white font-black text-sm uppercase tracking-tight italic">Expo StartUp</h4>

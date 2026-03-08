@@ -99,19 +99,22 @@ export function PremiumHeader({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 {/* Primary Info */}
                 <div className="flex items-center gap-6">
-                    <div className="relative">
-                        <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-gradient-to-br from-orange-500/20 to-orange-500/5 p-1 backdrop-blur-sm border border-white/10 shadow-2xl overflow-hidden group">
+                    <div className="relative group/avatar">
+                        <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-gradient-to-br from-orange-500/30 to-orange-500/5 p-1 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 group-hover/avatar:shadow-orange-500/20 group-hover/avatar:scale-[1.02]">
                             <div className="w-full h-full bg-dark-400 rounded-[1.8rem] flex items-center justify-center overflow-hidden relative">
                                 {userAvatar ? (
-                                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110" />
                                 ) : (
-                                    <div className="text-3xl md:text-4xl font-black text-orange-400 drop-shadow-lg">
+                                    <div className="text-3xl md:text-4xl font-black text-orange-400 drop-shadow-lg group-hover/avatar:scale-110 transition-transform duration-500">
                                         {userName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || <User className="h-10 w-10" />}
                                     </div>
                                 )}
-                                <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-dark-400 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/10 via-transparent to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity"></div>
+                                <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-dark-400 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] z-10"></div>
                             </div>
                         </div>
+                        {/* Shine Effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-teal-500/20 rounded-[2.2rem] opacity-0 group-hover/avatar:opacity-100 blur transition-opacity -z-10"></div>
                     </div>
 
                     <div className="space-y-3">

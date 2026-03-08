@@ -32,7 +32,7 @@ export const registrationService = {
      */
     async registerWithSlots(params: RegistrationParams) {
         try {
-            const { data, error } = await supabase.rpc(
+            const { data, error } = await (supabase.rpc as any)(
                 'register_participant_with_slots',
                 {
                     p_project_id: params.projectId,
@@ -43,8 +43,8 @@ export const registrationService = {
                     p_session_ids: params.sessionIds,
                     p_tipo_inscricao: params.tipoInscricao || 'standard',
                     p_valor_pago: params.valorPago || 0,
-                    p_status_pagamento: params.statusPagamento || 'pago',
-                    p_status: params.status || 'ativo',
+                    p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
+                    p_status: params.status || (params.palestrasNoturnas ? 'pendente' : 'ativo'),
                     p_evento: params.evento || null,
                     p_palestras_noturnas: params.palestrasNoturnas || false,
                     p_tipo_atividade: params.tipoAtividade,
