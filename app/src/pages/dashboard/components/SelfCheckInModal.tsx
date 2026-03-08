@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
-import { XCircle, Camera, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { XCircle, Camera, CheckCircle2, Loader2, Sparkles, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -10,43 +10,57 @@ interface SelfCheckInModalProps {
     registration: any;
 }
 
-export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfCheckInModalProps) {
+export function SelfCheckInModal({ onClose, onScanSuccess }: SelfCheckInModalProps) {
     const [step, setStep] = useState(1); // 1: Info, 2: Scanner, 3: Success
     const [loading, setLoading] = useState(false);
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+    const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
     useEffect(() => {
         if (step === 2) {
-            const scanner = new Html5QrcodeScanner(
-                "reader",
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
-            );
+            // Small delay to ensure DOM element is ready
+            const timer = setTimeout(() => {
+                const html5QrCode = new Html5Qrcode(readerId.current);
+                html5QrCodeRef.current = html5QrCode;
 
-            scanner.render(
-                async (decodedText) => {
-                    setLoading(true);
+                const startScanner = async () => {
                     try {
-                        await scanner.clear();
-                        await onScanSuccess(decodedText);
-                        setStep(3);
-                    } catch (error: any) {
-                        toast.error(error.message || 'Erro ao validar QR Code');
+                        await html5QrCode.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 250, height: 250 },
+                                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                            },
+                            async (decodedText) => {
+                                setLoading(true);
+                                try {
+                                    await html5QrCode.stop();
+                                    await onScanSuccess(decodedText);
+                                    setStep(3);
+                                } catch (error: any) {
+                                    toast.error(error.message || 'Erro ao validar QR Code');
+                                    setStep(1);
+                                } finally {
+                                    setLoading(false);
+                                }
+                            },
+                            () => { } // silent scan failures
+                        );
+                    } catch (err) {
+                        console.error("Erro ao iniciar câmera:", err);
+                        toast.error("Não foi possível acessar a câmera. Verifique as permissões.");
                         setStep(1);
-                    } finally {
-                        setLoading(false);
                     }
-                },
-                () => {
-                    // silent error for scan failures
-                }
-            );
+                };
 
-            scannerRef.current = scanner;
+                startScanner();
+            }, 300);
 
             return () => {
-                if (scannerRef.current) {
-                    scannerRef.current.clear().catch(e => console.error("Failed to clear scanner", e));
+                clearTimeout(timer);
+                if (html5QrCodeRef.current?.isScanning) {
+                    html5QrCodeRef.current.stop().catch(e => console.error("Failed to stop scanner", e));
                 }
             };
         }
@@ -108,7 +122,7 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                         </div>
 
                         <div className="relative rounded-[2rem] overflow-hidden border-2 border-teal-500/50 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
-                            <div id="reader" className="w-full h-80 bg-black"></div>
+                            <div id={readerId.current} className="w-full h-80 bg-black"></div>
 
                             {/* Scanning Line Animation */}
                             {!loading && (

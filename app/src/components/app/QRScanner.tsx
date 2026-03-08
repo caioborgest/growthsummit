@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseQRString } from '@/lib/qrUtils';
-import { CheckCircle, XCircle, QrCode, Camera } from 'lucide-react';
+import { XCircle, QrCode, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -12,47 +12,52 @@ interface QRScannerProps {
 
 export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QRScannerProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scannerRef = useRef<any>(null);
+    const html5QrCodeRef = useRef<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [isScanning, setIsScanning] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
+    const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
     useEffect(() => {
         let isMounted = true;
 
         // Dynamic import to avoid build-time resolution failure on Vercel
-        import('html5-qrcode').then(({ Html5QrcodeScanner, Html5QrcodeSupportedFormats }) => {
+        import('html5-qrcode').then(async ({ Html5Qrcode, Html5QrcodeSupportedFormats }) => {
             if (!isMounted) return;
             setIsLoading(false);
 
-            const scanner = new Html5QrcodeScanner(
-                "reader",
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
-                },
-                /* verbose= */ false
-            );
+            // Small delay to ensure DOM element is ready after isLoading becomes false
+            setTimeout(async () => {
+                const html5QrCode = new Html5Qrcode(readerId.current);
+                html5QrCodeRef.current = html5QrCode;
 
-            const onScanSuccess = (decodedText: string) => {
-                const parsed = parseQRString(decodedText);
-                if (parsed) {
-                    scanner.clear();
-                    setIsScanning(false);
-                    onSuccess(parsed);
-                } else {
-                    toast.error("QR Code inválido para este evento.");
+                try {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                        },
+                        async (decodedText) => {
+                            const parsed = parseQRString(decodedText);
+                            if (parsed) {
+                                await html5QrCode.stop();
+                                setIsScanning(false);
+                                onSuccess(parsed);
+                            } else {
+                                toast.error("QR Code inválido para este evento.");
+                            }
+                        },
+                        () => { } // silent scan failures
+                    );
+                } catch (err) {
+                    if (isMounted) {
+                        setError('Não foi possível iniciar a câmera. Verifique as permissões.');
+                        console.error("Camera error:", err);
+                    }
                 }
-            };
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const onScanFailure = (_error: any) => {
-                // Normal behavior, QR code not found in frame — no spam
-            };
-
-            scanner.render(onScanSuccess, onScanFailure);
-            scannerRef.current = scanner;
+            }, 300);
         }).catch(() => {
             if (isMounted) {
                 setError('Biblioteca de scanner não disponível. Verifique a conexão.');
@@ -62,8 +67,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
 
         return () => {
             isMounted = false;
-            if (scannerRef.current) {
-                scannerRef.current.clear().catch(() => { });
+            if (html5QrCodeRef.current?.isScanning) {
+                html5QrCodeRef.current.stop().catch(() => { });
             }
         };
     }, [onSuccess]);
@@ -105,7 +110,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                         </div>
                     ) : (
                         <div className="relative overflow-hidden rounded-2xl bg-black">
-                            <div id="reader" className="w-full"></div>
+                            <div id={readerId.current} className="w-full"></div>
 
                             {isScanning && (
                                 <div className="absolute inset-0 pointer-events-none border-[2px] border-brand-orange-coral/30">

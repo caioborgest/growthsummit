@@ -766,7 +766,7 @@ export function DashboardParticipante() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
-          onNotificationRead={(id) => {
+          onNotificationRead={(_id) => {
             // handle notification read
           }}
         />
