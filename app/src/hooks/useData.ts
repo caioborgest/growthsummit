@@ -140,8 +140,9 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   data_mentoria: 'scheduledAt',
   avaliacao_mentoria: 'mentoringRating',
   indicacao_mentor: 'mentorIndicationRating',
-  avaliado_em: 'evaluatedAt',
   // Other GE fields
+  nome_mentor: 'mentorName',
+  duracao: 'duration',
   mentor_name: 'mentorName',
   years_experience: 'yearsExperience',
   max_mentories: 'maxMentories',
@@ -261,6 +262,8 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'mentoring_sessions' && key === 'notes') dbKey = isGEProject(projectId) ? 'anotacoes' : 'notes';
       else if (entity === 'mentoring_sessions' && key === 'menteeId') dbKey = isGEProject(projectId) ? 'mentorado_id' : 'mentee_id';
       else if (entity === 'mentoring_sessions' && key === 'menteeName') dbKey = isGEProject(projectId) ? 'nome_mentorado' : 'mentee_name';
+      else if (entity === 'mentoring_sessions' && key === 'mentorName') dbKey = isGEProject(projectId) ? 'nome_mentor' : 'mentor_name';
+      else if (entity === 'mentoring_sessions' && key === 'duration') dbKey = isGEProject(projectId) ? 'duracao' : 'duration';
       else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
       else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
       else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
@@ -383,7 +386,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,avaliacao_mentoria,indicacao_mentor,avaliado_em';
+      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,nome_mentor,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em';
     }
     if (entity === 'b2b_meetings') {
       return 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';

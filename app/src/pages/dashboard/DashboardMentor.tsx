@@ -417,20 +417,27 @@ export function DashboardMentor() {
           menteeName: '',
           status: 'scheduled' as const,
           scheduledAt: current.toISOString(),
-          duration: 30,
+          duration: 20,
           topic: 'Disponibilidade de Mentoria',
           notes: ''
         });
-        current = new Date(current.getTime() + 30 * 60000);
+        current = new Date(current.getTime() + 20 * 60000);
       }
 
-      const loadingToast = toast.loading(`Abrindo ${slotsToCreate.length} horários...`);
-      for (const slot of slotsToCreate) {
-        await create(slot);
+      const total = slotsToCreate.length;
+      const loadingToast = toast.loading(`Abrindo ${total} horários de 20min...`);
+
+      try {
+        for (const slot of slotsToCreate) {
+          await create(slot);
+        }
+        toast.dismiss(loadingToast);
+        toast.success(`${total} horários abertos com sucesso!`);
+        form.reset();
+      } catch (err: any) {
+        toast.dismiss(loadingToast);
+        throw err;
       }
-      toast.dismiss(loadingToast);
-      toast.success(`${slotsToCreate.length} horários abertos com sucesso!`);
-      form.reset();
     } catch (err: any) {
       console.error('Erro ao abrir horários:', err);
       toast.error('Erro ao abrir horários. ' + (err.message || ''));
@@ -654,7 +661,7 @@ export function DashboardMentor() {
                         </div>
                       </div>
                       <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 h-16 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 uppercase tracking-widest text-xs">
-                        GERAR SPOTS 30min
+                        GERAR SPOTS 20min
                       </Button>
                     </form>
                   </div>
