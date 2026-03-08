@@ -98,7 +98,7 @@ function DetalhesModal({
             { label: 'Nº Inscrição', value: reg.ticketNumber },
             {
               label: 'Status',
-              value: (reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis' : (statusLabels[reg.status] || reg.status)
+              value: (reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis/Cortesia' : (statusLabels[reg.status] || reg.status)
             },
             { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00' },
             {
@@ -171,7 +171,7 @@ function DetalhesModal({
 
           <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Gerenciar Status de Pagamento</p>
           <div className="flex flex-col gap-2">
-            {(!['pago', 'paid'].includes(reg.status)) && (
+            {((!['pago', 'paid'].includes(reg.status)) || (reg.amount === 0 && reg.palestrasNoturnas)) && (
               <Button
                 onClick={() => onUpdateStatus(reg.id, 'paid')}
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
@@ -294,24 +294,48 @@ export default function AdminInscricoes() {
         }
       }
 
-      // 2. Sincronização de Pagamento (Criar Lançamento)
-      if ((status === 'paid' || status === 'free' || status === 'pago') && !['pago', 'paid'].includes(oldStatus)) {
+      // 2. Sincronização de Pagamento (Criar Lançamento ou Atualizar Existente)
+      if ((status === 'paid' || status === 'free' || status === 'pago')) {
         try {
-          const amount = status === 'free' ? 0 : (registration.amount || 0);
-          await createTransaction({
-            projectId: registration.projectId || '',
-            type: 'income',
-            category: 'Inscrições',
-            description: `Inscrição (${status === 'free' ? 'Cortesia' : 'Manual'}): ${registration.name}${registration.palestrasNoturnas ? ' + Night Experience' : ''}`,
-            amount: amount,
-            date: new Date().toISOString(),
-            status: 'completed',
-            relatedId: id,
-            relatedType: 'registration'
-          } as any);
-          toast.success('Lançamento registrado no financeiro');
+          // Se for uma confirmação de pagamento manual e o valor for 0 mas tiver Night, assume o valor padrão
+          let finalAmount = registration.amount || 0;
+          if ((status === 'paid' || status === 'pago') && finalAmount === 0 && registration.palestrasNoturnas) {
+            finalAmount = 179.90;
+            // Atualiza a inscrição também
+            await update(id, { amount: finalAmount } as any);
+            updates.amount = finalAmount;
+          }
+
+          const amount = status === 'free' ? 0 : finalAmount;
+          const description = `Inscrição (${status === 'free' ? 'Cortesia' : 'Manual'}): ${registration.name}${registration.palestrasNoturnas ? ' + Night Experience' : ''}`;
+
+          const existingTransaction = transactions.find(t => t.relatedId === id);
+
+          if (existingTransaction) {
+            await updateTransaction(existingTransaction.id, {
+              amount: amount,
+              status: 'completed',
+              description: description,
+              date: new Date().toISOString()
+            } as any);
+            toast.success('Lançamento financeiro atualizado');
+          } else if (!['pago', 'paid'].includes(oldStatus)) {
+            // Só cria se for novo pagamento (não transição de pago -> pago)
+            await createTransaction({
+              projectId: registration.projectId || '',
+              type: 'income',
+              category: 'Inscrições',
+              description: description,
+              amount: amount,
+              date: new Date().toISOString(),
+              status: 'completed',
+              relatedId: id,
+              relatedType: 'registration'
+            } as any);
+            toast.success('Lançamento registrado no financeiro');
+          }
         } catch (finErr) {
-          console.error('Erro ao registrar no financeiro:', finErr);
+          console.error('Erro ao processar financeiro:', finErr);
         }
       }
 
@@ -670,7 +694,7 @@ export default function AdminInscricoes() {
                             : ['pendente', 'pending'].includes(reg.status)
                               ? <Clock className="h-3 w-3 mr-1" />
                               : <XCircle className="h-3 w-3 mr-1" />}
-                          {(reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis' : (statusLabels[reg.status] || reg.status)}
+                          {(reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Cortesia' : (statusLabels[reg.status] || reg.status)}
                         </Badge>
                       </td>
                       <td className="p-4 text-white text-sm">

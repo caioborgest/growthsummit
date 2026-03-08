@@ -203,16 +203,22 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         </Button>
                     </div>
 
-                    {/* Enhanced Progress Tracker */}
+                    {/* Improved Progress Tracker - use visible steps for correct segments */}
                     <div className="relative mb-10 overflow-hidden px-1">
                         <div className="flex items-center gap-2">
-                            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
-                                if (stepsToSkip.includes(step)) return null;
+                            {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão'].filter((_, idx) => !stepsToSkip.includes(idx + 1)).map((_, visibleIdx, arr) => {
+                                const stepNum = visibleIdx + 1;
+                                // Determine current relative step
+                                const activeSteps = ['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão']
+                                    .map((_, i) => i + 1)
+                                    .filter(s => !stepsToSkip.includes(s));
+                                const currentRank = activeSteps.indexOf(currentStep) + 1;
+
                                 return (
-                                    <div key={step} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
+                                    <div key={visibleIdx} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
                                         <div
-                                            className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${step < currentStep ? 'bg-green-500 translate-x-0' :
-                                                step === currentStep ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
+                                            className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${stepNum < currentRank ? 'bg-green-500 translate-x-0' :
+                                                stepNum === currentRank ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
                                                     '-translate-x-full'
                                                 }`}
                                         />
@@ -222,31 +228,33 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         </div>
                     </div>
 
-                    {/* Polished Stepper Labels */}
+                    {/* Polished Stepper Labels - correctly sequenced */}
                     <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-                        {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão'].map((label, idx) => {
-                            const step = idx + 1;
-                            if (stepsToSkip.includes(step)) return null;
-                            const isActive = step === currentStep;
-                            const isCompleted = step < currentStep;
+                        {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão']
+                            .map((label, idx) => ({ label, step: idx + 1 }))
+                            .filter(s => !stepsToSkip.includes(s.step))
+                            .map((s, visibleIdx) => {
+                                const isActive = s.step === currentStep;
+                                const isCompleted = s.step < currentStep;
+                                const displayNum = visibleIdx + 1;
 
-                            return (
-                                <div key={step} className={`flex flex-col items-center gap-3 transition-all duration-700 min-w-[70px] sm:min-w-[100px] ${isActive ? 'opacity-100' : 'opacity-30'}`}>
-                                    <div className={`
-                                        w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-700 relative
-                                        ${isCompleted ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                            isActive ? 'bg-brand-orange-coral text-white shadow-glow-orange scale-110' :
-                                                'bg-white/5 text-gray-500 border border-white/5'}
-                                    `}>
-                                        {isCompleted ? <CheckCircle size={20} className="sm:size-6" /> : <span className="text-sm sm:text-lg font-black">{step}</span>}
-                                        {isActive && <div className="absolute inset-0 rounded-2xl bg-brand-orange-coral animate-ping opacity-20" />}
+                                return (
+                                    <div key={s.step} className={`flex flex-col items-center gap-3 transition-all duration-700 min-w-[70px] sm:min-w-[100px] ${isActive ? 'opacity-100' : 'opacity-30'}`}>
+                                        <div className={`
+                                            w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-700 relative
+                                            ${isCompleted ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                                isActive ? 'bg-brand-orange-coral text-white shadow-glow-orange scale-110' :
+                                                    'bg-white/5 text-gray-500 border border-white/5'}
+                                        `}>
+                                            {isCompleted ? <CheckCircle size={20} className="sm:size-6" /> : <span className="text-sm sm:text-lg font-black">{displayNum}</span>}
+                                            {isActive && <div className="absolute inset-0 rounded-2xl bg-brand-orange-coral animate-ping opacity-20" />}
+                                        </div>
+                                        <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-center ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-500'}`}>
+                                            {s.label}
+                                        </span>
                                     </div>
-                                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-center ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-500'}`}>
-                                        {label}
-                                    </span>
-                                </div>
-                            )
-                        })}
+                                )
+                            })}
                     </div>
                 </div>
                 <div className="relative z-10 px-0 sm:px-2">{renderStep()}</div>

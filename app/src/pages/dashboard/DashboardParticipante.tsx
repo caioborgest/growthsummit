@@ -855,6 +855,8 @@ export function DashboardParticipante() {
             {activeTab === 'agenda' && (
               <AgendaSection
                 myRegistration={myRegistration}
+                isActuallyPaid={isActuallyPaid}
+                onUpgradeClick={() => setShowUpgradeModal(true)}
                 cursosSelecionados={cursosSelecionados}
                 setIsSelfCheckInOpen={setIsSelfCheckInOpen}
                 navigate={navigate}
@@ -897,7 +899,7 @@ export function DashboardParticipante() {
       </div>
 
       {/* Modern High-End Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
           <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
             {[

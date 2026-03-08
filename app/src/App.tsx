@@ -180,12 +180,15 @@ function Home() {
   if (isAuthenticated && user) {
     const rolesToPaths: Record<string, string> = {
       'admin': '/admin',
+      'staff': '/admin',
       'mentor': '/mentor-area',
       'company': '/empresa-area',
       'startup': '/startup-area',
       'sponsor': '/patrocinador-area',
       'participant': '/minha-area',
-      'participante': '/minha-area'
+      'participante': '/minha-area',
+      'visitor': '/',
+      'speaker': '/'
     };
     const path = rolesToPaths[user.role] || '/';
     if (path !== '/') return <Navigate to={path} replace />;

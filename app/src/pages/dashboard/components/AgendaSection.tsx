@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 
 interface AgendaSectionProps {
     myRegistration: any;
+    isActuallyPaid?: boolean;
+    onUpgradeClick?: () => void;
     cursosSelecionados: any[];
     setIsSelfCheckInOpen: (open: boolean) => void;
     navigate: (path: string) => void;
@@ -32,10 +34,20 @@ export function AgendaSection({
                         <QrCode className="h-4 w-4 mr-2" /> SCAN QR CODE
                     </Button>
                     <Button
-                        className="bg-white text-black hover:bg-gray-100 rounded-xl font-black h-11 px-6 shadow-xl"
-                        onClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
+                        className={`${isActuallyPaid ? 'bg-white text-black hover:bg-gray-100' : 'bg-orange-500 text-white hover:bg-orange-600'} rounded-xl font-black h-11 px-6 shadow-xl uppercase tracking-tight`}
+                        onClick={() => {
+                            if (isActuallyPaid) {
+                                navigate('/growth-experience-triunfo');
+                            } else if (onUpgradeClick) {
+                                onUpgradeClick();
+                            } else {
+                                navigate('/upgrade');
+                            }
+                        }}
                     >
-                        VER PROGRAMAÇÃO COMPLETA
+                        {isActuallyPaid
+                            ? 'Inclua mais opções em sua agenda'
+                            : 'Liberar acesso completo (Night + Cursos)'}
                     </Button>
                 </div>
             </div>

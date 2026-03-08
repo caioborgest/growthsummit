@@ -101,7 +101,7 @@ export function AdminFinanceiro() {
       return acc;
     }, {} as Record<string, number>);
 
-  const paidRegistrations = registrations.filter(r => r.status === 'paid');
+  const paidRegistrations = registrations.filter(r => r.status === 'paid' || r.status === 'pago' || r.paymentStatus === 'pago');
   const paidRegistrationsCount = paidRegistrations.length;
   const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.amount || 0), 0);
 
