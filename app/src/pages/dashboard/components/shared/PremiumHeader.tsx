@@ -13,6 +13,7 @@ interface PremiumHeaderProps {
     projectName?: string;
     roleLabel: string;
     isPro?: boolean;
+    isActuallyPaid?: boolean;
     statusFinanceiro?: { label: string };
     notifications: any[];
     onLogout: () => void;
@@ -26,6 +27,7 @@ export function PremiumHeader({
     projectName,
     roleLabel,
     isPro,
+    isActuallyPaid,
     statusFinanceiro,
     notifications,
     onLogout,
@@ -137,12 +139,12 @@ export function PremiumHeader({
                                 {isPro ? 'Exp. Pro' : 'Free Morning'}
                             </Badge>
 
-                            {isPro && statusFinanceiro && (
-                                <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${statusFinanceiro.label === 'Confirmado'
+                            {isPro && (
+                                <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${isActuallyPaid
                                     ? 'bg-green-500/10 text-green-400 border-green-500/20'
                                     : 'bg-orange-500/5 text-orange-500 border-orange-500/20'
                                     }`}>
-                                    {statusFinanceiro.label === 'Confirmado' ? 'Acesso Ativo' : 'Pagamento Pendente'}
+                                    {isActuallyPaid ? 'Acesso Ativo' : 'Pagamento Pendente'}
                                 </Badge>
                             )}
                         </div>

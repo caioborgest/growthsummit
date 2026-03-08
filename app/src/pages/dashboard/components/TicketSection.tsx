@@ -9,6 +9,7 @@ interface TicketSectionProps {
     user: any;
     selectedProject: any;
     statusFinanceiro: any;
+    isActuallyPaid: boolean;
     generateTicketPDF: (reg: any, projectName: string) => Promise<void>;
     setShowCheckInModal: (show: boolean) => void;
 }
@@ -18,6 +19,7 @@ export function TicketSection({
     user,
     selectedProject,
     statusFinanceiro,
+    isActuallyPaid,
     generateTicketPDF,
     setShowCheckInModal
 }: TicketSectionProps) {
@@ -172,7 +174,7 @@ export function TicketSection({
 
                         {/* Palestras Noturnas Logic */}
                         {myRegistration?.palestrasNoturnas ? (
-                            statusFinanceiro.label === 'Confirmado' ? (
+                            isActuallyPaid ? (
                                 <div className="p-4 bg-green-500/5 rounded-2xl border border-green-500/10 mt-6">
                                     <p className="text-green-400 text-xs font-bold leading-relaxed">
                                         ✅ Seu acesso PRO está ativo! Você tem entrada liberada nas palestras noturnas e agendamento de mentorias.

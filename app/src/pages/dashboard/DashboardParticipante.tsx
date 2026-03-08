@@ -551,21 +551,28 @@ export function DashboardParticipante() {
   // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
   // Experience Pro pago: status = "Confirmado"
   // Experience Pro não pago: status = "Pendente"
+  const isActuallyPaid = useMemo(() => {
+    if (!myRegistration) return false;
+    const pgto = myRegistration.status_pagamento || myRegistration.statusPagamento;
+    const status = myRegistration.status;
+
+    // Explicitly check for positive payment indicators
+    const hasPaidPgto = pgto === 'pago' || pgto === 'paid';
+    const hasPaidStatus = status === 'pago' || status === 'paid' || status === 'ativo' || status === 'Confirmado';
+
+    return hasPaidPgto || hasPaidStatus;
+  }, [myRegistration]);
+
   const statusFinanceiro = useMemo(() => {
     if (!myRegistration?.palestrasNoturnas) {
       return { label: 'Grátis', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição diurna gratuita' };
     }
-    const pgto = myRegistration?.statusPagamento;
-    const status = myRegistration?.status;
-
-    // Só é "Confirmado" se o Admin marcou como pago (pago/paid) OU se o status de pagamento é pago
-    const isActuallyPaid = (pgto === 'pago' || pgto === 'paid' || status === 'pago' || status === 'paid');
 
     if (isActuallyPaid) {
       return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
     }
     return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };
-  }, [myRegistration]);
+  }, [myRegistration, isActuallyPaid]);
 
   // Cursos selecionados (busca nas sessions pelos IDs)
   const cursosSelecionados = useMemo(() => {
@@ -762,6 +769,7 @@ export function DashboardParticipante() {
           projectName={selectedProject?.name}
           roleLabel="PARTICIPANTE"
           isPro={myRegistration?.palestrasNoturnas}
+          isActuallyPaid={isActuallyPaid}
           statusFinanceiro={statusFinanceiro}
           notifications={notifications}
           onLogout={handleLogout}
@@ -838,6 +846,7 @@ export function DashboardParticipante() {
                 user={user}
                 selectedProject={selectedProject}
                 statusFinanceiro={statusFinanceiro}
+                isActuallyPaid={isActuallyPaid}
                 generateTicketPDF={generateTicketPDF}
                 setShowCheckInModal={setShowCheckInModal}
               />
