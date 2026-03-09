@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,7 +15,9 @@ import {
     Settings,
     PieChart,
     MessageSquare,
-    Target
+    Target,
+    Building2,
+    BarChart
 } from 'lucide-react';
 import { areasMentoria } from '@/data/mentores';
 
@@ -35,12 +38,24 @@ const iconMap: Record<string, any> = {
 interface Step1AreaMentoriaProps {
     areaSelecionada: string;
     descricaoProblema: string;
-    onContinuar: (area: string, descricao: string) => void;
+    nomeNegocio?: string;
+    estagioNegocio?: string;
+    onContinuar: (area: string, descricao: string, neg: string, est: string) => void;
 }
 
-export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContinuar }: Step1AreaMentoriaProps) {
+export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNegocio = '', estagioNegocio = '', onContinuar }: Step1AreaMentoriaProps) {
     const [tempArea, setTempArea] = useState(areaSelecionada);
     const [tempDesc, setTempDesc] = useState(descricaoProblema);
+    const [tempNegocio, setTempNegocio] = useState(nomeNegocio);
+    const [tempEstagio, setTempEstagio] = useState(estagioNegocio);
+
+    const estagios = [
+        'Ideação / MVP',
+        'Operação Inicial (Early Stage)',
+        'Tração / Crescimento',
+        'Escala (Scale-up)',
+        'Empresa Consolidada'
+    ];
 
     return (
         <div className="space-y-10">
@@ -49,11 +64,43 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContin
                     Qual o seu maior <span className="text-brand-orange-coral">desafio</span> hoje?
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg px-2">
-                    Selecione a área principal e descreva brevemente seu cenário para encontrarmos o mentor ideal.
+                    Preencha os dados do seu negócio e selecione a área para encontrarmos o mentor ideal.
                 </p>
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-8">
+                {/* Dados do Negócio */}
+                <Card className="glass-card p-6 border-white/5 bg-dark-200/30">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                                <Building2 size={14} className="text-brand-orange-coral" /> Nome do Negócio
+                            </label>
+                            <input
+                                className="w-full bg-dark-300 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-brand-orange-coral transition-all"
+                                placeholder="Sua Startup ou Empresa"
+                                value={tempNegocio}
+                                onChange={e => setTempNegocio(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                                <BarChart size={14} className="text-brand-orange-coral" /> Estágio Atual
+                            </label>
+                            <select
+                                className="w-full bg-dark-300 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-brand-orange-coral transition-all appearance-none"
+                                value={tempEstagio}
+                                onChange={e => setTempEstagio(e.target.value)}
+                            >
+                                <option value="" disabled>Selecione o estágio</option>
+                                {estagios.map(e => <option key={e} value={e}>{e}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Grid de Áreas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
                     {areasMentoria.map((area) => {
                         const Icon = iconMap[area] || Target;
@@ -97,8 +144,8 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContin
                                 <MessageSquare className="h-5 w-5 text-brand-orange-coral" />
                             </div>
                             <div>
-                                <h4 className="text-white font-bold">Conte seu desafio</h4>
-                                <p className="text-gray-500 text-xs">Quanto mais detalhes, melhor será a orientação.</p>
+                                <h4 className="text-white font-bold">Conte seu desafio/problema</h4>
+                                <p className="text-gray-500 text-xs">Descreva exatamente o que deseja resolver nesta sessão.</p>
                             </div>
                         </div>
 
@@ -122,20 +169,19 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, onContin
                 )}
             </div>
 
-            <div className="flex justify-center pt-12 pb-6">
+            <div className="flex justify-center pt-8 pb-6">
                 <Button
                     size="lg"
-                    disabled={!tempArea || !tempDesc || tempDesc.length < 10}
-                    onClick={() => onContinuar(tempArea, tempDesc)}
-                    className={`w-full sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDesc || tempDesc.length < 10
+                    disabled={!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio}
+                    onClick={() => onContinuar(tempArea, tempDesc, tempNegocio, tempEstagio)}
+                    className={`w-full sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio
                         ? 'bg-white/5 text-gray-500 cursor-not-allowed opacity-50'
                         : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-glow-orange hover:scale-[1.02] active:scale-95'
                         }`}
                 >
-                    Buscar Mentores <ArrowRight className="ml-3 h-6 w-6" />
+                    Próximo Passo <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
             </div>
         </div>
     );
 }
-

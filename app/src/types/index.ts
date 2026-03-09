@@ -104,6 +104,10 @@ export interface Registration {
   palestrasNoturnas?: boolean;
   couponCode?: string;
   discountAmount?: number;
+  externalPaymentId?: string;
+  externalPaymentUrl?: string;
+  loteId?: string;
+  voucherEmpresa?: string;
 }
 
 export interface Mentor {
@@ -438,6 +442,24 @@ export interface EmpresaIncentivadora {
   createdAt: string;
 }
 
+export interface RegistrationBatch {
+  id: string;
+  projectId: string;
+  nomeEmpresa: string;
+  cnpj?: string;
+  nomeResponsavel: string;
+  emailResponsavel: string;
+  emailContato: string;
+  voucherCode: string;
+  quantidadeVagas: number;
+  vagasUtilizadas: number;
+  tipoIngresso: string;
+  valorTotal: number;
+  statusPagamento: 'pendente' | 'pago' | 'cancelado';
+  observacoes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface MentoringSession {
   id: string;
@@ -448,9 +470,11 @@ export interface MentoringSession {
   menteeName: string;
   scheduledAt: string;
   duration: number;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  status: 'pending' | 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   topic?: string;
   notes?: string;
+  startupName?: string;
+  sector?: string;
   feedback?: {
     rating: number;
     comment: string;

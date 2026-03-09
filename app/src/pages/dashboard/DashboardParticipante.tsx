@@ -13,7 +13,13 @@ import {
   BookOpen,
   XCircle,
   CheckCircle,
-  Tag
+  Tag,
+  Copy,
+  AlertCircle,
+  MapPin,
+  Clock,
+  Info,
+  ArrowRight
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,11 +28,18 @@ import { Button } from '@/components/ui/button';
 import {
   Tabs
 } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions } from '@/hooks/useData';
-import { useMyRegistration } from '@/hooks/useMyRegistration';
-import type { MyRegistration } from '@/hooks/useMyRegistration';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches } from '@/hooks/useData';
+import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
 import { AgendaSection } from './components/AgendaSection';
@@ -34,6 +47,7 @@ import { TicketSection } from './components/TicketSection';
 import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
 import { ProfileForm } from './components/ProfileForm';
+import { DashboardEquipe } from './components/DashboardEquipe';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import { generateTicketPDF } from '@/lib/reports';
@@ -355,10 +369,20 @@ export function DashboardParticipante() {
   const { user, logout } = useAuth();
   const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
   const { data: sessions } = useSessions();
+
+  const { data: batches } = useRegistrationBatches();
+  const myBatches = useMemo(() => {
+    return batches.filter(b => b.emailResponsavel === user?.email);
+  }, [batches, user]);
+
   const [activeTab, setActiveTab] = useState('ingresso');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const { data: activityCheckIns, refetch: refetchActivityCheckIns } = useCheckInsAtividades();
+  const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
+  const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
 
   // Auto-refetch registration to keep status in sync with backoffice
   useEffect(() => {
@@ -554,11 +578,10 @@ export function DashboardParticipante() {
   const isActuallyPaid = useMemo(() => {
     if (!myRegistration) return false;
     const pgto = myRegistration.status_pagamento || myRegistration.statusPagamento;
-    const status = myRegistration.status;
+    const st = myRegistration.status;
 
-    // Explicitly check for positive payment indicators
     const hasPaidPgto = pgto === 'pago' || pgto === 'paid';
-    const hasPaidStatus = status === 'pago' || status === 'paid' || status === 'ativo' || status === 'Confirmado';
+    const hasPaidStatus = st === 'pago' || st === 'paid' || st === 'ativo' || st === 'Confirmado';
 
     return hasPaidPgto || hasPaidStatus;
   }, [myRegistration]);
@@ -751,6 +774,80 @@ export function DashboardParticipante() {
         />
       )}
 
+      {/* Session Details Modal */}
+      <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
+        <DialogContent className="max-w-md bg-dark-200 border-white/5 rounded-[2rem] p-0 overflow-hidden">
+          {selectedSession && (
+            <div className="relative">
+              <div className={`h-32 bg-gradient-to-br ${selectedSession.color || 'from-teal-500/20 to-teal-500/5'} flex items-end p-6`}>
+                <Badge className="bg-white/10 backdrop-blur-md text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1.5">
+                  {selectedSession.type || selectedSession.tipo || 'ATIVIDADE'}
+                </Badge>
+              </div>
+              <div className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black text-white italic tracking-tight leading-tight">
+                    {selectedSession.title || selectedSession.titulo}
+                  </h3>
+                  <div className="flex flex-wrap gap-4 text-gray-400">
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                      <Clock className="h-3.5 w-3.5 text-teal-400" />
+                      {selectedSession.startTime} - {selectedSession.endTime}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+                      <MapPin className="h-3.5 w-3.5 text-teal-400" />
+                      {selectedSession.room || 'Auditório Principal'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    {selectedSession.description || 'Nenhuma descrição detalhada disponível para esta atividade.'}
+                  </p>
+
+                  {selectedSession.speakers && selectedSession.speakers.length > 0 && (
+                    <div className="pt-4 border-t border-white/5">
+                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">PALESTRANTE(S)</p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.isArray(selectedSession.speakers)
+                          ? selectedSession.speakers.map((s: string, i: number) => (
+                            <Badge key={i} variant="outline" className="border-teal-500/20 text-teal-400 bg-teal-500/5 font-bold">
+                              {s}
+                            </Badge>
+                          ))
+                          : <Badge variant="outline" className="border-teal-500/20 text-teal-400 bg-teal-500/5 font-bold">{selectedSession.speakers}</Badge>
+                        }
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-6">
+                  {activityCheckIns?.some((c: any) => c.session_id === selectedSession.id && c.registration_id === myRegistration?.id) ? (
+                    <div className="w-full bg-green-500/10 border border-green-500/20 rounded-2xl py-4 flex items-center justify-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-400" />
+                      <span className="text-green-400 font-black uppercase tracking-widest text-xs">PRESENÇA CONFIRMADA</span>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        setSelectedSession(null);
+                        setIsSelfCheckInOpen(true);
+                      }}
+                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-teal-500/30 group"
+                    >
+                      <QrCode className="h-5 w-5 mr-3 group-hover:rotate-12 transition-all" />
+                      CONFIRMAR PRESENÇA
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {isB2BModalOpen && (
         <B2BFormModal isOpen={isB2BModalOpen} onClose={() => setIsB2BModalOpen(false)} />
       )}
@@ -770,7 +867,6 @@ export function DashboardParticipante() {
           roleLabel="PARTICIPANTE"
           isPro={myRegistration?.palestrasNoturnas}
           isActuallyPaid={isActuallyPaid}
-          statusFinanceiro={statusFinanceiro}
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
@@ -779,66 +875,78 @@ export function DashboardParticipante() {
           }}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 relative">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="flex-1">
-              <QuickActions
-                onB2BClick={() => setIsB2BModalOpen(true)}
-                onStartupClick={() => setIsStartupModalOpen(true)}
-                onMentoriaClick={() => activeTab !== 'mentorias' ? setActiveTab('mentorias') : setIsMentoriaModalOpen(true)}
-                showMentoria={myRegistration?.palestrasNoturnas}
-              />
+        {/* WELCOME SUMMARY & PROMINENT ACTIONS (TOP) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            {/* User Badge & QR Mini */}
+            <div className="md:col-span-2 flex flex-col sm:flex-row items-center gap-8 bg-dark-200/40 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-orange-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="w-40 h-40 bg-white p-3 rounded-2xl shadow-2xl relative">
+                  <QRCode
+                    value={myRegistration?.qrCode || 'GS-GUEST'}
+                    size={150}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                  />
+                </div>
+              </div>
+
+              <div className="text-center sm:text-left space-y-4">
+                <div>
+                  <h1 className="text-3xl font-black text-white tracking-tight leading-none mb-2">Olá, {myRegistration?.nome?.split(' ')[0] || user?.name?.split(' ')[0]}!</h1>
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em]">Seu acesso está <span className="text-emerald-500">liberado</span> para o evento</p>
+                </div>
+
+                <div className="flex flex-wrap justify-center sm:justify-start gap-3">
+                  <Badge className="bg-orange-500 text-white font-black px-4 py-1.5 rounded-full border-none shadow-glow-orange">
+                    {myRegistration?.categoria || 'PARTICIPANTE'}
+                  </Badge>
+                  {isActuallyPaid && (
+                    <Badge className="bg-teal-500 text-white font-black px-4 py-1.5 rounded-full border-none shadow-glow-teal">
+                      PASSAPORTE NIGHT
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-3">
+            {/* Quick Action Button */}
+            <div className="flex flex-col gap-4">
               <Button
                 onClick={() => setIsSelfCheckInOpen(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-black px-8 h-14 rounded-2xl text-sm shadow-xl shadow-orange-500/20 border-none group transition-all hover:scale-[1.02] active:scale-95"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-[2rem] text-lg shadow-2xl shadow-orange-500/30 group transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 border-none"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mr-3 group-hover:rotate-12 transition-transform">
-                  <QrCode className="h-4 w-4" />
+                <div className="flex items-center gap-3">
+                  <QrCode className="h-6 w-6 group-hover:rotate-12 transition-transform" />
+                  CONFIRMAR PRESENÇA
                 </div>
-                CONFIRMAR PRESENÇA
+                <span className="text-[10px] opacity-70 font-bold uppercase tracking-widest leading-none">Aponte para o QR Code na sala</span>
               </Button>
+
+              {activeTab !== 'agenda' && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveTab('agenda')}
+                  className="text-gray-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em]"
+                >
+                  VER MINHA AGENDA COMPLETA <ArrowRight className="h-3 w-3 ml-2" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Programming Preview integrated better */}
-      {cursosSelecionados.length > 0 && (
-        <div className="mt-10 pt-6 border-t border-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2">
-              <BookOpen className="h-3 w-3 text-teal-400" /> Sua Programação do Dia
-            </p>
-            <span className="text-[10px] text-teal-400/40 font-bold uppercase">{cursosSelecionados.length} atividades</span>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {cursosSelecionados.map((curso: any, i) => (
-              <div key={i} className="flex-shrink-0 flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl px-4 py-3 group hover:border-teal-500/20 transition-all cursor-default min-w-[200px]">
-                <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex flex-col items-center justify-center border border-teal-500/10">
-                  <span className="text-teal-400 font-black text-[9px] leading-none">{curso.startTime?.split(':')[0] || '00'}</span>
-                  <span className="text-teal-400/50 font-bold text-[7px] leading-none">{curso.startTime?.split(':')[1] || '00'}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-white font-bold text-[11px] truncate leading-tight group-hover:text-teal-400 transition-colors">{curso.title || curso.titulo}</p>
-                  <p className="text-gray-500 text-[9px] font-medium uppercase tracking-tighter mt-0.5">{curso.room || 'Auditório'}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-10">
+
+        {/* Render actual tab content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
             {activeTab === 'ingresso' && (
               <TicketSection
@@ -856,10 +964,11 @@ export function DashboardParticipante() {
               <AgendaSection
                 myRegistration={myRegistration}
                 isActuallyPaid={isActuallyPaid}
-                onUpgradeClick={() => setShowUpgradeModal(true)}
                 cursosSelecionados={cursosSelecionados}
                 setIsSelfCheckInOpen={setIsSelfCheckInOpen}
                 navigate={navigate}
+                activityCheckIns={activityCheckIns}
+                onSessionClick={(session) => setSelectedSession(session)}
               />
             )}
 
@@ -868,8 +977,8 @@ export function DashboardParticipante() {
                 myRegistration={myRegistration}
                 myMentorships={myMentorships}
                 availableSlots={availableSlots}
-                handleCancelMentoring={handleCancelMentoring}
                 handleBookMentoring={handleBookMentoring}
+                handleCancelMentoring={handleCancelMentoring}
                 setRatingModal={setRatingModal}
                 setIsMentoriaModalOpen={setIsMentoriaModalOpen}
                 setShowUpgradeModal={setShowUpgradeModal}
@@ -877,10 +986,7 @@ export function DashboardParticipante() {
             )}
 
             {activeTab === 'documentos' && (
-              <DocsSection
-                documentos={documentos}
-                loadingDocs={loadingDocs}
-              />
+              <DocsSection documentos={documentos} loadingDocs={loadingDocs} />
             )}
 
             {activeTab === 'certificados' && (
@@ -891,11 +997,66 @@ export function DashboardParticipante() {
               />
             )}
 
+            {activeTab === 'equipe' && (
+              <DashboardEquipe batches={myBatches} />
+            )}
+
             {activeTab === 'dados' && (
               <ProfileForm />
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* INSCRIPTION OPTIONS & PREVIEWS (BOTTOM) */}
+        <div className="flex flex-col gap-8 pt-10 border-t border-white/5">
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Ações e Atalhos</h4>
+            <QuickActions
+              onB2BClick={() => setIsB2BModalOpen(true)}
+              onStartupClick={() => setIsStartupModalOpen(true)}
+              onMentoriaClick={() => activeTab !== 'mentorias' ? setActiveTab('mentorias') : setIsMentoriaModalOpen(true)}
+              showMentoria={true}
+            />
+          </div>
+
+          {cursosSelecionados.length > 0 && (
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Sua Programação do Dia</h4>
+              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                {cursosSelecionados.map((cursoId) => {
+                  const s = sessions.find(ss => ss.id === cursoId);
+                  if (!s) return null;
+                  return (
+                    <div
+                      key={s.id}
+                      onClick={() => setSelectedSession(s)}
+                      className="min-w-[280px] bg-dark-200/50 border border-white/5 rounded-2xl p-4 cursor-pointer hover:bg-dark-100/50 transition-all group"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
+                          <Clock className="h-5 w-5 text-teal-400" />
+                        </div>
+                        <div>
+                          <p className="text-white font-black text-sm uppercase italic truncate w-40 leading-none mb-1">{s.title || s.titulo}</p>
+                          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{s.startTime} - {s.endTime}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 text-gray-600" />
+                          <span className="text-[9px] text-gray-500 font-bold uppercase">{s.room || 'Auditório'}</span>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-teal-500 transition-colors">
+                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modern High-End Bottom Navigation */}
@@ -908,6 +1069,7 @@ export function DashboardParticipante() {
               { id: 'mentorias', icon: Users, label: 'Mentor' },
               { id: 'documentos', icon: FileText, label: 'Docs' },
               { id: 'certificados', icon: Award, label: 'Certs' },
+              ...(myBatches && myBatches.length > 0 ? [{ id: 'equipe', icon: Building2, label: 'Equipe' }] : []),
               { id: 'dados', icon: User, label: 'Perfil' },
             ].map((item) => {
               const isActive = activeTab === item.id;

@@ -674,6 +674,16 @@ export default function AdminInscricoes() {
                       <td className="p-4">
                         <p className="text-white font-medium text-sm">{reg.name || 'Desconhecido'}</p>
                         <p className="text-gray-500 text-xs truncate max-w-[200px]">{reg.email || '-'}</p>
+                        {reg.loteId && (
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-[10px] py-0 px-1.5">
+                              EQUIPE
+                            </Badge>
+                            {reg.voucherEmpresa && (
+                              <span className="text-[10px] text-gray-500 font-mono">{reg.voucherEmpresa}</span>
+                            )}
+                          </div>
+                        )}
                         {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {reg.cursosSelecionados.map((id, i) => {

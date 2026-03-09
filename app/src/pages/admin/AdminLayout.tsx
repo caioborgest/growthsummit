@@ -62,6 +62,7 @@ const navigationGroups: SidebarGroup[] = [
     title: 'Evento & Inscrições',
     items: [
       { id: 'inscricoes', name: 'Participantes', icon: Users, path: '/admin/inscricoes' },
+      { id: 'lotes-equipes', name: 'Lotes de Equipes', icon: Ticket, path: '/admin/lotes-equipes' },
       { id: 'empresas-incentivadoras', name: 'Empresas Incentivadoras', icon: Gem, path: '/admin/empresas-incentivadoras' },
       { id: 'check-in', name: 'Check-in (QR)', icon: QrCode, path: '/admin/check-in' },
       { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },

@@ -115,26 +115,61 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             } else {
                 setValidating(true);
                 try {
-                    const { data, error } = await (supabase
-                        .from('cupons_parceria_social') as any)
-                        .select('*')
-                        .eq('project_id', projectId)
-                        .eq('codigo', codigo.trim().toUpperCase())
-                        .eq('ativo', true)
-                        .single();
+                    // Lógica específica para Voucher de Equipe (Empresa)
+                    if (indicacaoTipo === 'empresa') {
+                        const { data, error } = await supabase
+                            .from('lotes_inscricao_empresa')
+                            .select('*')
+                            .eq('project_id', projectId)
+                            .eq('voucher_code', codigo.trim().toUpperCase())
+                            .single();
 
-                    if (error || !data) {
-                        newErrors.codigo = 'Código inválido ou inativo';
-                    } else {
-                        const couponData = data;
-                        if (couponData.indicacao_tipo !== indicacaoTipo) {
-                            newErrors.codigo = `Este código pertence à categoria ${couponData.indicacao_tipo}`;
-                        } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
-                            newErrors.codigo = 'Este código de parceria já expirou';
-                        } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
-                            newErrors.codigo = 'Limite de usos atingido para este código';
+                        if (error || !data) {
+                            newErrors.codigo = 'Voucher corporativo não encontrado';
+                        } else if (data.status_pagamento !== 'pago') {
+                            newErrors.codigo = 'Este voucher aguarda confirmação de pagamento da empresa';
+                        } else if (data.vagas_utilizadas >= data.quantidade_vagas) {
+                            newErrors.codigo = 'Limite de vagas deste voucher esgotado';
                         } else {
-                            setDesconto(couponData.porcentagem_desconto);
+                            // Sucesso
+                            setDesconto(100); // 100% de desconto pois a empresa já pagou o lote
+                            onContinuar({
+                                nome,
+                                email,
+                                telefone,
+                                senha,
+                                indicacaoTipo,
+                                indicacaoNome: data.nome_empresa,
+                                codigo: codigo.trim().toUpperCase(),
+                                descontoSocial: 100,
+                                loteId: data.id,
+                                voucherEmpresa: codigo.trim().toUpperCase()
+                            });
+                            return; // Encerra pois já chamou onContinuar
+                        }
+                    } else {
+                        // Lógica padrão para cupons sociais
+                        const { data, error } = await (supabase
+                            .from('cupons_parceria_social') as any)
+                            .select('*')
+                            .eq('project_id', projectId)
+                            .eq('codigo', codigo.trim().toUpperCase())
+                            .eq('ativo', true)
+                            .single();
+
+                        if (error || !data) {
+                            newErrors.codigo = 'Código inválido ou inativo';
+                        } else {
+                            const couponData = data;
+                            if (couponData.indicacao_tipo !== indicacaoTipo) {
+                                newErrors.codigo = `Este código pertence à categoria ${couponData.indicacao_tipo}`;
+                            } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
+                                newErrors.codigo = 'Este código de parceria já expirou';
+                            } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
+                                newErrors.codigo = 'Limite de usos atingido para este código';
+                            } else {
+                                setDesconto(couponData.porcentagem_desconto);
+                            }
                         }
                     }
                 } catch (validationError) {
@@ -421,7 +456,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             <div className="animate-in fade-in slide-in-from-top-2 duration-400">
                                 <Label htmlFor="codigo" className="text-white mb-2 block text-sm flex items-center gap-2">
                                     <Key className="h-4 w-4 text-brand-orange-coral" />
-                                    Código da Parceria
+                                    {indicacaoTipo === 'empresa' ? 'Código do Voucher Corporativo' : 'Código da Parceria'}
                                 </Label>
                                 <Input
                                     id="codigo"
@@ -431,7 +466,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                         setCodigo(e.target.value);
                                         if (errors.codigo) setErrors({ ...errors, codigo: '' });
                                     }}
-                                    placeholder="INSIRA O CÓDIGO AQUI"
+                                    placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-EQUIPE-XYZ' : 'INSIRA O CÓDIGO AQUI'}
                                     className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest ${errors.codigo ? 'border-red-500' : ''}`}
                                 />
                                 {errors.codigo && (
@@ -441,7 +476,10 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                     </p>
                                 )}
                                 <p className="text-[10px] text-gray-500 mt-2">
-                                    Este código é fornecido pela sua Prefeitura ou Liderança Política parceira do evento.
+                                    {indicacaoTipo === 'empresa'
+                                        ? 'Este código foi enviado para o email do responsável pela compra do lote da sua empresa.'
+                                        : 'Este código é fornecido pela sua Prefeitura ou Liderança Política parceira do evento.'
+                                    }
                                 </p>
                             </div>
                         )}

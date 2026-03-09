@@ -9,13 +9,17 @@ interface AgendaSectionProps {
     cursosSelecionados: any[];
     setIsSelfCheckInOpen: (open: boolean) => void;
     navigate: (path: string) => void;
+    activityCheckIns?: any[];
+    onSessionClick?: (session: any) => void;
 }
 
 export function AgendaSection({
     myRegistration,
     cursosSelecionados,
     setIsSelfCheckInOpen,
-    navigate
+    navigate,
+    activityCheckIns = [],
+    onSessionClick
 }: AgendaSectionProps) {
     return (
         <div className="space-y-8">
@@ -68,32 +72,60 @@ export function AgendaSection({
 
                         {cursosSelecionados.length > 0 ? (
                             <div className="space-y-3">
-                                {cursosSelecionados.map((item: any, i) => (
-                                    <div key={i} className="glass-card p-5 border-white/5 hover:border-teal-500/30 transition-all group relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-all"></div>
+                                {cursosSelecionados.map((item: any, i) => {
+                                    const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
 
-                                        <div className="flex items-start gap-5 relative z-10">
-                                            <div className="text-center min-w-[60px]">
-                                                <p className="text-teal-400 font-black text-lg leading-tight">{item.startTime || item.horario_inicio || '--:--'}</p>
-                                                <p className="text-gray-600 text-[10px] font-bold uppercase">{item.endTime || item.horario_fim || ''}</p>
-                                            </div>
+                                    return (
+                                        <div
+                                            key={i}
+                                            onClick={() => onSessionClick?.(item)}
+                                            className="glass-card p-5 border-white/5 hover:border-teal-500/30 transition-all group relative overflow-hidden cursor-pointer active:scale-[0.98]"
+                                        >
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-all"></div>
 
-                                            <div className="flex-1 space-y-2">
-                                                <h4 className="text-white font-black leading-tight group-hover:text-teal-400 transition-colors uppercase italic">{item.title || item.titulo}</h4>
-                                                <div className="flex flex-wrap items-center gap-3">
-                                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter flex items-center">
-                                                        <MapPin className="h-3 w-3 mr-1 text-teal-500/50" /> {item.room || item.local || 'Auditório Principial'}
-                                                    </span>
-                                                    <Badge className="bg-white/5 text-gray-400 border-none text-[9px] font-black">{item.type || item.tipo || 'PALESTRA'}</Badge>
+                                            <div className="flex items-start gap-5 relative z-10">
+                                                <div className="text-center min-w-[60px]">
+                                                    <p className="text-teal-400 font-black text-lg leading-tight">{item.startTime || item.horario_inicio || '--:--'}</p>
+                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">{item.endTime || item.horario_fim || ''}</p>
+                                                </div>
+
+                                                <div className="flex-1 space-y-3">
+                                                    <div>
+                                                        <h4 className="text-white font-black leading-tight group-hover:text-teal-400 transition-colors uppercase italic truncate max-w-[200px] sm:max-w-none">
+                                                            {item.title || item.titulo}
+                                                        </h4>
+                                                        <div className="flex flex-wrap items-center gap-3 mt-1">
+                                                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter flex items-center">
+                                                                <MapPin className="h-3 w-3 mr-1 text-teal-500/50" /> {item.room || item.local || 'Auditório Principial'}
+                                                            </span>
+                                                            <Badge className="bg-white/5 text-gray-400 border-none text-[9px] font-black">{item.type || item.tipo || 'PALESTRA'}</Badge>
+                                                        </div>
+                                                    </div>
+
+                                                    {!isCheckedIn && (
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setIsSelfCheckInOpen(true);
+                                                            }}
+                                                            className="bg-teal-500/10 hover:bg-teal-500 text-teal-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-teal-500/20 transition-all flex items-center gap-2"
+                                                        >
+                                                            <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
+                                                        </Button>
+                                                    )}
+                                                </div>
+
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isCheckedIn ? 'bg-green-500/20' : 'bg-teal-500/10 group-hover:bg-teal-500/20'}`}>
+                                                    {isCheckedIn ? (
+                                                        <CheckCircle2 className="h-5 w-5 text-green-400" />
+                                                    ) : (
+                                                        <ChevronRight className="h-5 w-5 text-teal-400 group-hover:translate-x-0.5 transition-transform" />
+                                                    )}
                                                 </div>
                                             </div>
-
-                                            <div className="w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center">
-                                                <CheckCircle2 className="h-4 w-4 text-teal-400" />
-                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="p-8 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10">
@@ -136,14 +168,26 @@ export function AgendaSection({
                                                 <p className="text-orange-400 font-black text-lg leading-tight">{session.time}</p>
                                                 <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
-                                                <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speaker}</p>
-                                                <div className="flex items-center gap-2 mt-3">
-                                                    <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
-                                                        <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> Arena Principal
-                                                    </span>
+                                            <div className="flex-1 space-y-3">
+                                                <div>
+                                                    <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
+                                                    <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speaker}</p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
+                                                            <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> Arena Principal
+                                                        </span>
+                                                    </div>
                                                 </div>
+
+                                                <Button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsSelfCheckInOpen(true);
+                                                    }}
+                                                    className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
+                                                >
+                                                    <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
+                                                </Button>
                                             </div>
                                             <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
                                         </div>

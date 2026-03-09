@@ -31,18 +31,15 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
         setError('');
 
         try {
+            // Tenta validar como Cupom Social
             const { data, error: cError } = await (supabase
                 .from('cupons_parceria_social') as any)
                 .select('*')
                 .eq('codigo', cupom.trim().toUpperCase())
                 .eq('ativo', true)
-                .single();
+                .maybeSingle();
 
-            if (cError || !data) {
-                setError('Código inválido ou inativo');
-                setCupomAplicado(false);
-                onUpdate?.({ descontoPalestra: 0, cupomPalestra: '' });
-            } else {
+            if (data) {
                 if (data.vencimento && new Date(data.vencimento) < new Date()) {
                     setError('Este código já expirou');
                     return;
@@ -57,7 +54,40 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
                     cupomPalestra: cupom.trim().toUpperCase(),
                     tipoSocioPalestra: data.indicacao_tipo
                 });
+                return;
             }
+
+            // Tenta validar como Lote Corporativo (Voucher Empresa)
+            const { data: batchData, error: bError } = await supabase
+                .from('lotes_inscricao_empresa')
+                .select('*')
+                .eq('voucher_code', cupom.trim().toUpperCase())
+                .maybeSingle();
+
+            if (batchData) {
+                if (batchData.status_pagamento !== 'pago') {
+                    setError('O pagamento desse lote se encontra pendente. Entre em contato com o responsável da sua empresa.');
+                    return;
+                }
+                if (batchData.vagas_utilizadas >= batchData.quantidade_vagas) {
+                    setError('Todas as vagas deste lote já foram utilizadas.');
+                    return;
+                }
+                setCupomAplicado(true);
+                onUpdate?.({
+                    descontoPalestra: 100, // Corporate passes are fully paid by the batch
+                    cupomPalestra: cupom.trim().toUpperCase(),
+                    tipoSocioPalestra: 'Lote Empresarial',
+                    loteId: batchData.id,
+                    voucherEmpresa: batchData.voucher_code
+                });
+                return;
+            }
+
+            // Se nenhum dos dois for encontrado ou válido
+            setError('Código inválido ou inativo');
+            setCupomAplicado(false);
+            onUpdate?.({ descontoPalestra: 0, cupomPalestra: '', loteId: undefined, voucherEmpresa: undefined });
         } catch (err) {
             logger.error('Erro cupom palestra:', err);
             setError('Falha ao validar código');

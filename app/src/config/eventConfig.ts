@@ -12,5 +12,6 @@ export const EVENT_CONFIG = {
     social: {
         instagram: "https://www.instagram.com/growthsummit2026",
         linkedin: "https://www.linkedin.com/in/caioborgesgrowth/"
-    }
+    },
+    stripePaymentLink: "https://buy.stripe.com/test_eVaeVz3Zf1mU2Kk4gg" // Substituir pelo link real
 };

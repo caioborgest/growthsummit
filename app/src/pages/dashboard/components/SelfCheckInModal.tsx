@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { XCircle, Camera, CheckCircle2, Loader2, Sparkles, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -10,60 +10,117 @@ interface SelfCheckInModalProps {
     registration: any;
 }
 
-export function SelfCheckInModal({ onClose, onScanSuccess }: SelfCheckInModalProps) {
-    const [step, setStep] = useState(1); // 1: Info, 2: Scanner, 3: Success
+export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfCheckInModalProps) {
+    const [step, setStep] = useState(1); // 1: Info, 2: Scanner, 3: Success, 4: Manual
     const [loading, setLoading] = useState(false);
+    const [manualCode, setManualCode] = useState('');
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-    const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
+    const readerId = useRef(`reader-${Math.random().toString(36).substring(2, 11)}`);
 
     useEffect(() => {
-        if (step === 2) {
-            // Small delay to ensure DOM element is ready
-            const timer = setTimeout(() => {
-                const html5QrCode = new Html5Qrcode(readerId.current);
+        let isChildMounted = true;
+        let html5QrCode: Html5Qrcode | null = null;
+
+        const startScanner = async () => {
+            if (step !== 2 || !isChildMounted) return;
+
+            // Wait a bit to ensure the DOM element is rendered
+            const element = document.getElementById(readerId.current);
+            if (!element) {
+                console.warn("Scanner element not found yet, retrying...");
+                setTimeout(startScanner, 100);
+                return;
+            }
+
+            try {
+                html5QrCode = new Html5Qrcode(readerId.current);
                 html5QrCodeRef.current = html5QrCode;
 
-                const startScanner = async () => {
-                    try {
-                        await html5QrCode.start(
-                            { facingMode: "environment" },
-                            {
-                                fps: 10,
-                                qrbox: { width: 250, height: 250 },
-                                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
-                            },
-                            async (decodedText) => {
-                                setLoading(true);
-                                try {
+                // Try to start with environment camera (rear)
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    async (decodedText) => {
+                        if (!isChildMounted) return;
+                        setLoading(true);
+                        try {
+                            if (html5QrCode?.isScanning) {
+                                await html5QrCode.stop();
+                            }
+                            await onScanSuccess(decodedText);
+                            if (isChildMounted) setStep(3);
+                        } catch (error: unknown) {
+                            const errorMessage = error instanceof Error ? error.message : 'Erro ao validar QR Code';
+                            toast.error(errorMessage);
+                            if (isChildMounted) setStep(1);
+                        } finally {
+                            if (isChildMounted) setLoading(false);
+                        }
+                    },
+                    () => { } // silent scan failures
+                );
+            } catch (err: unknown) {
+                console.warn("Falha ao iniciar câmera traseira, tentando qualquer câmera disponível:", err);
+
+                // Fallback: Try any available camera if environment fails
+                try {
+                    if (!isChildMounted || !html5QrCode) return;
+                    await html5QrCode.start(
+                        { facingMode: "user" }, // Try front/any if back fails
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        async (decodedText) => {
+                            if (!isChildMounted) return;
+                            setLoading(true);
+                            try {
+                                if (html5QrCode?.isScanning) {
                                     await html5QrCode.stop();
-                                    await onScanSuccess(decodedText);
-                                    setStep(3);
-                                } catch (error: any) {
-                                    toast.error(error.message || 'Erro ao validar QR Code');
-                                    setStep(1);
-                                } finally {
-                                    setLoading(false);
                                 }
-                            },
-                            () => { } // silent scan failures
-                        );
-                    } catch (err) {
-                        console.error("Erro ao iniciar câmera:", err);
-                        toast.error("Não foi possível acessar a câmera. Verifique as permissões.");
+                                await onScanSuccess(decodedText);
+                                if (isChildMounted) setStep(3);
+                            } catch (error: unknown) {
+                                const errorMessage = error instanceof Error ? error.message : 'Erro ao validar QR Code';
+                                toast.error(errorMessage);
+                                if (isChildMounted) setStep(1);
+                            } finally {
+                                if (isChildMounted) setLoading(false);
+                            }
+                        },
+                        () => { }
+                    );
+                } catch (fallbackErr) {
+                    if (isChildMounted) {
+                        console.error("Erro fatal ao iniciar câmera:", fallbackErr);
+                        toast.error("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
                         setStep(1);
                     }
-                };
-
-                startScanner();
-            }, 300);
-
-            return () => {
-                clearTimeout(timer);
-                if (html5QrCodeRef.current?.isScanning) {
-                    html5QrCodeRef.current.stop().catch(e => console.error("Failed to stop scanner", e));
                 }
-            };
+            }
+        };
+
+        if (step === 2) {
+            startScanner();
         }
+
+        return () => {
+            isChildMounted = false;
+            if (html5QrCode?.isScanning) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode?.clear();
+                }).catch(() => { /* Ignore stop failures on unmount */ });
+            } else {
+                try {
+                    html5QrCode?.clear();
+                } catch {
+                    // Ignore clear if not initialized
+                }
+            }
+        };
     }, [step, onScanSuccess]);
 
     return (
@@ -104,13 +161,23 @@ export function SelfCheckInModal({ onClose, onScanSuccess }: SelfCheckInModalPro
                             ))}
                         </div>
 
-                        <Button
-                            onClick={() => setStep(2)}
-                            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-teal-500/30 group"
-                        >
-                            INICIAR LEITURA
-                            <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </Button>
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => setStep(2)}
+                                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-teal-500/30 group"
+                            >
+                                INICIAR LEITURA
+                                <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                onClick={() => setStep(4)}
+                                className="w-full text-gray-500 hover:text-white font-bold h-12"
+                            >
+                                Digitar código manualmente
+                            </Button>
+                        </div>
                     </div>
                 )}
 
@@ -139,13 +206,22 @@ export function SelfCheckInModal({ onClose, onScanSuccess }: SelfCheckInModalPro
                             )}
                         </div>
 
-                        <Button
-                            variant="ghost"
-                            onClick={() => setStep(1)}
-                            className="w-full text-gray-500 hover:text-white font-bold"
-                        >
-                            Voltar
-                        </Button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setStep(1)}
+                                className="text-gray-500 hover:text-white font-bold h-14 rounded-2xl"
+                            >
+                                Voltar
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setStep(4)}
+                                className="text-teal-400 hover:text-teal-300 font-bold h-14 rounded-2xl bg-white/5"
+                            >
+                                Digitar código
+                            </Button>
+                        </div>
                     </div>
                 )}
 
@@ -185,21 +261,66 @@ export function SelfCheckInModal({ onClose, onScanSuccess }: SelfCheckInModalPro
                         </Button>
                     </div>
                 )}
+                {step === 4 && (
+                    <div className="p-8 space-y-8">
+                        <div className="text-center space-y-4">
+                            <div className="w-20 h-20 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-orange-500/10">
+                                <Sparkles className="h-10 w-10 text-orange-400" />
+                            </div>
+                            <h2 className="text-3xl font-black text-white tracking-tight">Inserir Código</h2>
+                            <p className="text-gray-400 leading-relaxed">
+                                Insira o código de <strong>credenciamento</strong> ou da <strong>sala</strong> abaixo.
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-2">Código da Atividade/Entrada</label>
+                                <input
+                                    type="text"
+                                    value={manualCode}
+                                    onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                                    placeholder="Ex: GE-EVENT-ENTRY"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white font-black text-lg focus:outline-none focus:border-teal-500/50 transition-all placeholder:text-gray-700"
+                                />
+                            </div>
+
+                            <Button
+                                onClick={async () => {
+                                    if (!manualCode.trim()) {
+                                        toast.error('Insira um código válido');
+                                        return;
+                                    }
+                                    setLoading(true);
+                                    try {
+                                        await onScanSuccess(manualCode.trim());
+                                        setStep(3);
+                                    } catch (error: unknown) {
+                                        const errorMessage = error instanceof Error ? error.message : 'Código inválido';
+                                        toast.error(errorMessage);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                disabled={loading}
+                                className="w-full bg-white hover:bg-gray-100 text-black font-black py-7 h-auto rounded-3xl text-lg shadow-xl transition-all"
+                            >
+                                {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'CONFIRMAR CÓDIGO'}
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                onClick={() => setStep(1)}
+                                className="w-full text-gray-500 hover:text-white font-bold"
+                            >
+                                Voltar para o início
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
-function ChevronRight({ className }: { className?: string }) {
-    return (
-        <svg
-            className={className}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24" height="24" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" strokeWidth="3"
-            strokeLinecap="round" strokeLinejoin="round"
-        >
-            <path d="m9 18 6-6-6-6" />
-        </svg>
-    );
-}
+

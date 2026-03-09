@@ -29,4 +29,6 @@ export interface DadosInscricao {
     inscricaoId?: string;
     statusPagamento?: string;
     appInstalado?: boolean;
+    loteId?: string;
+    voucherEmpresa?: string;
 }

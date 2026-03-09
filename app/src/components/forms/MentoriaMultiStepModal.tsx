@@ -1,15 +1,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { DadosMentoria } from './mentoria-steps/mentoriaTypes';
 import { Step1AreaMentoria } from './mentoria-steps/Step1AreaMentoria';
 import { Step2SelecionarMentor } from './mentoria-steps/Step2SelecionarMentor';
 import { Step3DadosPessoaisMentoria } from './mentoria-steps/Step3DadosPessoaisMentoria';
 import { Step4ConfirmacaoMentoria } from './mentoria-steps/Step4ConfirmacaoMentoria';
-import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
-import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { useAuth } from '@/contexts/AuthContext';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 
@@ -21,17 +18,18 @@ interface MentoriaMultiStepModalProps {
 export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepModalProps) {
     const { user, isAuthenticated } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosMentoria>({
         area: '',
         mentorId: '',
+        slotId: '',
         descricaoProblema: '',
         nome: '',
         email: '',
         telefone: '',
         senha: '',
-        comprarPalestras: false
+        nomeNegocio: '',
+        estagioNegocio: ''
     });
 
     // Efeito para preencher dados se o usuário estiver logado
@@ -41,13 +39,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 ...prev,
                 nome: user.name || prev.nome,
                 email: user.email || prev.email,
-                telefone: user.phone || prev.phone,
+                telefone: (user as any).phone || prev.telefone,
                 userId: user.id
             }));
         }
     }, [isAuthenticated, user, isOpen]);
 
-    const totalSteps = 7;
+    const totalSteps = 5;
     const stepsToSkip = isAuthenticated ? [3, 6] : [];
 
     const handleClose = () => {
@@ -70,7 +68,6 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         if (isProcessing) return;
         setIsProcessing(true);
 
-        // Calcular próximo passo pulando os desnecessários
         let next = currentStep + 1;
         while (stepsToSkip.includes(next) && next < totalSteps) {
             next++;
@@ -79,13 +76,6 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         setCurrentStep(Math.min(next, totalSteps));
         setTimeout(() => setIsProcessing(false), 500);
     };
-
-    // Auto-scroll to top when step changes
-    useEffect(() => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [currentStep]);
 
     const prevStep = () => {
         if (isProcessing) return;
@@ -105,8 +95,10 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                     <Step1AreaMentoria
                         areaSelecionada={dados.area}
                         descricaoProblema={dados.descricaoProblema}
-                        onContinuar={(area, descricao) => {
-                            updateDados({ area, descricaoProblema: descricao });
+                        nomeNegocio={dados.nomeNegocio}
+                        estagioNegocio={dados.estagioNegocio}
+                        onContinuar={(area, descricao, neg, est) => {
+                            updateDados({ area, descricaoProblema: descricao, nomeNegocio: neg, estagioNegocio: est });
                             nextStep();
                         }}
                     />
@@ -116,8 +108,9 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                     <Step2SelecionarMentor
                         area={dados.area}
                         mentorSelecionadoId={dados.mentorId}
-                        onContinuar={(mentorId) => {
-                            updateDados({ mentorId });
+                        slotSelecionadoId={dados.slotId}
+                        onContinuar={(mentorId, slotId) => {
+                            updateDados({ mentorId, slotId });
                             nextStep();
                         }}
                         onVoltar={prevStep}
@@ -126,7 +119,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
             case 3:
                 return (
                     <Step3DadosPessoaisMentoria
-                        dados={dados}
+                        dados={dados as any}
                         onContinuar={(novos) => {
                             updateDados(novos);
                             nextStep();
@@ -137,7 +130,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
             case 4:
                 return (
                     <Step4ConfirmacaoMentoria
-                        dados={dados}
+                        dados={dados as any}
                         onConfirmar={(userId, inscricaoId) => {
                             updateDados({ userId, inscricaoId });
                             nextStep();
@@ -147,28 +140,8 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 );
             case 5:
                 return (
-                    <Step4OfertaPalestras
-                        dados={dados as any}
-                        onComprar={() => {
-                            updateDados({ comprarPalestras: true });
-                            nextStep();
-                        }}
-                        onPular={() => {
-                            updateDados({ comprarPalestras: false });
-                            nextStep();
-                        }}
-                    />
-                );
-            case 6:
-                return (
-                    <Step6DownloadApp
-                        onContinuar={nextStep}
-                    />
-                );
-            case 7:
-                return (
                     <Step7Conclusao
-                        dados={dados as any} // Cast to any because the interface is slightly different but fields match
+                        dados={dados as any}
                         onFechar={() => {
                             onClose();
                             setCurrentStep(1);
@@ -182,80 +155,14 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent
-                ref={scrollContainerRef}
-                className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-dark-100 border-white/10 p-4 sm:p-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[2.5rem] custom-scrollbar selection:bg-brand-orange-coral/30"
-            >
+            <DialogContent className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-dark-100 border-white/10 p-4 sm:p-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[2.5rem] custom-scrollbar">
                 <div className="sr-only">
                     <DialogTitle>Solicitação de Mentoria</DialogTitle>
                     <DialogDescription>Formulário de agendamento de mentoria em múltiplas etapas.</DialogDescription>
                 </div>
-                <div className="sticky top-0 bg-dark-100/95 backdrop-blur-2xl pb-8 border-b border-white/5 mb-10 z-30 -mx-4 sm:-mx-10 px-4 sm:px-10 pt-2">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="space-y-1">
-                            <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Agendar Mentoria 1:1</DialogTitle>
-                            <DialogDescription className="text-gray-500 text-xs sm:text-sm font-medium tracking-wide">
-                                Resolva seus desafios com especialistas de alto nível.
-                            </DialogDescription>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={handleClose} className="text-gray-500 hover:text-white hover:bg-white/10 rounded-2xl h-12 w-12 transition-all flex-shrink-0">
-                            <X size={28} />
-                        </Button>
-                    </div>
-
-                    {/* Improved Progress Tracker - use visible steps for correct segments */}
-                    <div className="relative mb-10 overflow-hidden px-1">
-                        <div className="flex items-center gap-2">
-                            {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão'].filter((_, idx) => !stepsToSkip.includes(idx + 1)).map((_, visibleIdx, arr) => {
-                                const stepNum = visibleIdx + 1;
-                                // Determine current relative step
-                                const activeSteps = ['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão']
-                                    .map((_, i) => i + 1)
-                                    .filter(s => !stepsToSkip.includes(s));
-                                const currentRank = activeSteps.indexOf(currentStep) + 1;
-
-                                return (
-                                    <div key={visibleIdx} className="grow h-1.5 rounded-full bg-white/5 relative overflow-hidden">
-                                        <div
-                                            className={`absolute top-0 left-0 h-full w-full transition-transform duration-1000 [transition-timing-function:cubic-bezier(0.2,0,0,1)] ${stepNum < currentRank ? 'bg-green-500 translate-x-0' :
-                                                stepNum === currentRank ? 'bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense shadow-glow-orange translate-x-0' :
-                                                    '-translate-x-full'
-                                                }`}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Polished Stepper Labels - correctly sequenced */}
-                    <div className="flex justify-between items-start gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-                        {['Área', 'Mentor', 'Dados', 'Confirmação', 'Palestras', 'Acesso', 'Conclusão']
-                            .map((label, idx) => ({ label, step: idx + 1 }))
-                            .filter(s => !stepsToSkip.includes(s.step))
-                            .map((s, visibleIdx) => {
-                                const isActive = s.step === currentStep;
-                                const isCompleted = s.step < currentStep;
-                                const displayNum = visibleIdx + 1;
-
-                                return (
-                                    <div key={s.step} className={`flex flex-col items-center gap-3 transition-all duration-700 min-w-[70px] sm:min-w-[100px] ${isActive ? 'opacity-100' : 'opacity-30'}`}>
-                                        <div className={`
-                                            w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-700 relative
-                                            ${isCompleted ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                                isActive ? 'bg-brand-orange-coral text-white shadow-glow-orange scale-110' :
-                                                    'bg-white/5 text-gray-500 border border-white/5'}
-                                        `}>
-                                            {isCompleted ? <CheckCircle size={20} className="sm:size-6" /> : <span className="text-sm sm:text-lg font-black">{displayNum}</span>}
-                                            {isActive && <div className="absolute inset-0 rounded-2xl bg-brand-orange-coral animate-ping opacity-20" />}
-                                        </div>
-                                        <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] text-center ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-500'}`}>
-                                            {s.label}
-                                        </span>
-                                    </div>
-                                )
-                            })}
-                    </div>
+                <div className="sticky top-0 bg-dark-100/95 backdrop-blur-2xl pb-8 border-b border-white/5 mb-10 z-30 -mx-4 sm:-mx-10 px-4 sm:px-10 pt-2 text-center">
+                    <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">Mentoria <span className="text-brand-orange-coral">EXPERIENCE</span></DialogTitle>
+                    <p className="text-gray-500 text-xs font-medium tracking-widest mt-2 uppercase">Growth Summit 2026 · 20min Spots</p>
                 </div>
                 <div className="relative z-10 px-0 sm:px-2">{renderStep()}</div>
             </DialogContent>

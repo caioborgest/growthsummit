@@ -11,6 +11,9 @@ export interface RegistrationParams {
     tipoInscricao?: string;
     valorPago?: number;
     statusPagamento?: string;
+    appInstalado?: boolean;
+    loteId?: string;
+    voucherEmpresa?: string;
     status?: string;
     evento?: string;
     palestrasNoturnas?: boolean;
@@ -23,6 +26,8 @@ export interface RegistrationParams {
     codigoSocial?: string | null;
     codigoPalestra?: string | null;
     extraData?: Record<string, unknown>;
+    loteId?: string | null;
+    voucherEmpresa?: string | null;
 }
 
 export const registrationService = {
@@ -56,6 +61,8 @@ export const registrationService = {
                     p_codigo_social: params.codigoSocial,
                     p_codigo_palestra: params.codigoPalestra,
                     p_extra_data: params.extraData || {},
+                    p_lote_id: params.loteId || null,
+                    p_voucher_empresa: params.voucherEmpresa || null,
                 }
             );
 

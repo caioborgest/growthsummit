@@ -62,6 +62,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
+      case 'registration_batches': return 'lotes_inscricao_empresa';
       default: return entity;
     }
   }
@@ -113,6 +114,8 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   valor_pago: 'amount',
   valor_desconto_palestra: 'discountAmount',
   check_in_at: 'checkInTime',
+  external_payment_id: 'externalPaymentId',
+  external_payment_url: 'externalPaymentUrl',
   indicacao_tipo: 'indicacaoTipo',
   indicacao_nome: 'indicacaoNome',
   porcentagem_desconto: 'porcentagemDesconto',
@@ -159,6 +162,19 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
   valor_investido: 'investmentAmount',
+  // Mentoria additional business info
+  nome_startup: 'startupName',
+  // Registration Batch
+  nome_empresa: 'nomeEmpresa',
+  nome_responsavel: 'nomeResponsavel',
+  email_responsavel: 'emailResponsavel',
+  email_contato: 'emailContato',
+  voucher_code: 'voucherCode',
+  quantidade_vagas: 'quantidadeVagas',
+  vagas_utilizadas: 'vagasUtilizadas',
+  tipo_ingresso: 'tipoIngresso',
+  valor_total: 'valorTotal',
+  status_pagamento: 'statusPagamento',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -262,7 +278,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'mentoring_sessions' && key === 'notes') dbKey = isGEProject(projectId) ? 'anotacoes' : 'notes';
       else if (entity === 'mentoring_sessions' && key === 'menteeId') dbKey = isGEProject(projectId) ? 'mentorado_id' : 'mentee_id';
       else if (entity === 'mentoring_sessions' && key === 'menteeName') dbKey = isGEProject(projectId) ? 'nome_mentorado' : 'mentee_name';
-      else if (entity === 'mentoring_sessions' && key === 'mentorName') dbKey = isGEProject(projectId) ? 'nome_mentor' : 'mentor_name';
+      else if (entity === 'mentoring_sessions' && key === 'mentorName') dbKey = 'mentor_name';
       else if (entity === 'mentoring_sessions' && key === 'duration') dbKey = isGEProject(projectId) ? 'duracao' : 'duration';
       else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
       else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
@@ -332,6 +348,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
 // Generic interface with id
 interface WithId {
   id: string;
+  createdAt: string;
   projectId?: string;
 }
 
@@ -386,7 +403,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,nome_mentor,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em';
+      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em';
     }
     if (entity === 'b2b_meetings') {
       return 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';
@@ -728,6 +745,10 @@ export function useCoupons() {
   return useData<Coupon>([], 'cupons');
 }
 
+export function useCheckInsAtividades() {
+  return useData<any>([], 'check_ins_atividades');
+}
+
 export function useUsers() {
   return useData<User>([], 'users');
 }
@@ -803,4 +824,8 @@ export function useEmpresasIncentivadoras() {
 
 export function useNotifications() {
   return useData<Notification>([], 'notifications');
+}
+
+export function useRegistrationBatches() {
+  return useData<RegistrationBatch>([], 'registration_batches');
 }

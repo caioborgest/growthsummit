@@ -24,32 +24,10 @@ export function MentorshipSection({
     setShowUpgradeModal
 }: MentorshipSectionProps) {
 
-    const isPro = myRegistration?.palestrasNoturnas && (myRegistration?.statusPagamento === 'pago' || myRegistration?.statusPagamento === 'paid');
+    // Mentorship is available for all participants as requested
+    const canAccess = true;
 
-    if (!isPro) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 px-6 text-center max-w-2xl mx-auto">
-                <div className="w-24 h-24 rounded-3xl bg-orange-500/10 flex items-center justify-center mb-8 relative">
-                    <Lock className="h-10 w-10 text-orange-500" />
-                    <div className="absolute inset-0 bg-orange-500/20 blur-2xl rounded-full"></div>
-                </div>
-                <h2 className="text-3xl font-black text-white mb-4 italic uppercase tracking-tight">Mentorias Exclusivas</h2>
-                <p className="text-gray-400 mb-8 leading-relaxed">
-                    {myRegistration?.statusPagamento === 'pendente'
-                        ? 'Recebemos seu comprovante! Nossa equipe está revisando seu pagamento para liberar as sessões de mentoria estratégica 1-on-1 com os grandes nomes do mercado.'
-                        : 'As sessões de mentoria estratégica com executives C-Level e investidores são exclusivas para participantes do plano Experience Pro.'
-                    }
-                </p>
-                <Button
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-black px-12 py-7 rounded-2xl shadow-2xl shadow-orange-500/20 text-lg transition-transform hover:scale-[1.02]"
-                    onClick={() => setShowUpgradeModal(true)}
-                >
-                    {myRegistration?.statusPagamento === 'pendente' ? 'AGUARDANDO APROVAÇÃO' : 'QUERO ME TORNAR PRO'}
-                </Button>
-                <p className="mt-8 text-gray-600 text-[10px] uppercase font-bold tracking-[0.3em]">Networking de Alto Impacto · Growth Summit 2026</p>
-            </div>
-        );
-    }
+    if (!canAccess) return null;
 
     return (
         <div className="space-y-12">

@@ -21,18 +21,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSponsors } from '@/hooks/useData';
+import { useSponsors, useLeads } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ProfileForm } from './components/ProfileForm';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, Users, QrCode } from 'lucide-react';
 
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
+import { LeadScanner } from './components/shared/LeadScanner';
 
 export function DashboardSponsor() {
   const navigate = useNavigate();
@@ -61,7 +62,45 @@ export function DashboardSponsor() {
     { id: 5, item: 'Lista de representantes', deadline: '2026-05-10', status: 'pending', completedAt: null, notes: '' },
   ];
 
-  // Estatísticas
+  // Estatísticas e Leads
+  const { data: leads, create: createLead } = useLeads();
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const sponsorLeads = sponsorData
+    ? leads.filter(l => l.sponsorId === sponsorData.id)
+    : [];
+
+  const handleScanSuccess = async (decodedText: string) => {
+    try {
+      let registrationId = decodedText;
+      if (decodedText.startsWith('{')) {
+        const data = JSON.parse(decodedText);
+        registrationId = data.id || data.registrationId;
+      }
+
+      if (!registrationId) return;
+
+      const alreadyScanned = sponsorLeads.some(l => l.registrationId === registrationId);
+      if (alreadyScanned) {
+        toast.info('Este participante já está na sua lista de leads.');
+        return;
+      }
+
+      await createLead({
+        sponsorId: sponsorData?.id,
+        registrationId: registrationId,
+        interestLevel: 'high',
+        notes: 'Capturado via QR Code do Stand',
+        visitorName: 'Participante ' + registrationId.substring(0, 4),
+      } as any);
+
+      toast.success('Lead capturado com sucesso!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao ler QR Code ou salvar lead');
+    }
+  };
+
   const stats = {
     totalDeliverables: deliverables.length,
     completed: deliverables.filter(d => d.status === 'completed').length,
@@ -139,7 +178,7 @@ export function DashboardSponsor() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                 <TabsTrigger
                   value="overview"
                   className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
@@ -153,6 +192,13 @@ export function DashboardSponsor() {
                 >
                   <FileCheck className="h-4 w-4 mr-1 md:mr-2" />
                   Entregáveis
+                </TabsTrigger>
+                <TabsTrigger
+                  value="leads"
+                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+                >
+                  <Users className="h-4 w-4 mr-1 md:mr-2" />
+                  Leads
                 </TabsTrigger>
                 <TabsTrigger
                   value="programacao"
@@ -335,6 +381,60 @@ export function DashboardSponsor() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Leads Tab */}
+              <TabsContent value="leads" className="mt-0">
+                <div className="glass-card p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-white">Leads Capturados (Patrocinador)</h3>
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => setIsScannerOpen(true)}>
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Escanear Crachá
+                      </Button>
+                      <Button variant="outline" className="border-dark-300 text-gray-300">
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportar CSV
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {sponsorLeads.map((lead) => (
+                      <div key={lead.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
+                        <div>
+                          <p className="text-white font-medium">{lead.visitorName}</p>
+                          <p className="text-gray-400 text-sm">{lead.visitorEmail || 'Email não disponível'}</p>
+                          {lead.visitorCompany && (
+                            <p className="text-gray-500 text-sm">{lead.visitorCompany}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          <Badge className={
+                            lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
+                              lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-gray-500/20 text-gray-400'
+                          }>
+                            <Star className="h-3 w-3 mr-1" />
+                            {lead.interestLevel}
+                          </Badge>
+                          <Button size="sm" variant="ghost" className="text-gray-400">
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {sponsorLeads.length === 0 && (
+                      <div className="text-center py-12">
+                        <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                        <p className="text-gray-400">Nenhum lead capturado ainda</p>
+                        <p className="text-gray-500 text-sm mt-2">Clique em "Escanear Crachá" para capturar o primeiro lead ou interaja com os participantes em seu stand.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Programação Tab */}
@@ -584,6 +684,12 @@ export function DashboardSponsor() {
             <StartupFormModal
               isOpen={isStartupModalOpen}
               onClose={() => setIsStartupModalOpen(false)}
+            />
+          )}
+          {isScannerOpen && (
+            <LeadScanner
+              onScanSuccess={handleScanSuccess}
+              onClose={() => setIsScannerOpen(false)}
             />
           )}
         </AnimatePresence>

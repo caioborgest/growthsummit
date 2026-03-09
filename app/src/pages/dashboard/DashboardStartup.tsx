@@ -36,6 +36,10 @@ import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
+import { toast } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
+
+import { LeadScanner } from './components/shared/LeadScanner';
 
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
@@ -48,12 +52,13 @@ export function DashboardStartup() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { data: startups } = useStartups();
-  const { data: leads } = useLeads();
+  const { data: leads, create: createLead } = useLeads();
   const [activeTab, setActiveTab] = useState('visao-geral');
   const [unreadNotifications] = useState(1);
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const startupData = startups.find(s => s.userId === user?.id);
   const startupLeads = startupData
@@ -70,6 +75,39 @@ export function DashboardStartup() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleScanSuccess = async (decodedText: string) => {
+    try {
+      // O decodedText será o registration id (uuid) ou um JSON contendo o id
+      let registrationId = decodedText;
+      if (decodedText.startsWith('{')) {
+        const data = JSON.parse(decodedText);
+        registrationId = data.id || data.registrationId;
+      }
+
+      if (!registrationId) return;
+
+      // Procura primeiro localmente se esse lead já existe
+      const alreadyScanned = startupLeads.some(l => l.registrationId === registrationId);
+      if (alreadyScanned) {
+        toast.info('Este participante já está na sua lista de leads.');
+        return;
+      }
+
+      await createLead({
+        startupId: startupData?.id,
+        registrationId: registrationId,
+        interestLevel: 'high', // Padrão
+        notes: 'Capturado via QR Code do Stand',
+        visitorName: 'Participante ' + registrationId.substring(0, 4), // Placeholder genérico, será atualizado pelo hook do DB
+      } as any);
+
+      toast.success('Lead capturado com sucesso!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao ler QR Code ou salvar lead');
+    }
   };
 
   return (
@@ -254,10 +292,16 @@ export function DashboardStartup() {
                 <div className="glass-card p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-white">Leads Capturados</h3>
-                    <Button variant="outline" className="border-dark-300 text-gray-300">
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar CSV
-                    </Button>
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => setIsScannerOpen(true)}>
+                        <QrCode className="h-4 w-4 mr-2" />
+                        Escanear Crachá
+                      </Button>
+                      <Button variant="outline" className="border-dark-300 text-gray-300">
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportar CSV
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
@@ -265,7 +309,7 @@ export function DashboardStartup() {
                       <div key={lead.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
                         <div>
                           <p className="text-white font-medium">{lead.visitorName}</p>
-                          <p className="text-gray-400 text-sm">{lead.visitorEmail}</p>
+                          <p className="text-gray-400 text-sm">{lead.visitorEmail || 'Email não disponível'}</p>
                           {lead.visitorCompany && (
                             <p className="text-gray-500 text-sm">{lead.visitorCompany}</p>
                           )}
@@ -290,7 +334,7 @@ export function DashboardStartup() {
                       <div className="text-center py-12">
                         <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
                         <p className="text-gray-400">Nenhum lead capturado ainda</p>
-                        <p className="text-gray-500 text-sm mt-2">Os visitantes podem se registrar no seu stand</p>
+                        <p className="text-gray-500 text-sm mt-2">Clique em "Escanear Crachá" para capturar o primeiro lead ou peça para visitarem seu stand virtual</p>
                       </div>
                     )}
                   </div>
@@ -361,7 +405,7 @@ export function DashboardStartup() {
                         </li>
                         <li className="flex items-start">
                           <CheckCircle className="h-4 w-4 text-teal-400 mr-2 mt-0.5" />
-                          Colete contatos de todos os interessados
+                          Colete contatos usando o leitor de crachás
                         </li>
                       </ul>
                     </div>
@@ -434,6 +478,12 @@ export function DashboardStartup() {
           <StartupFormModal
             isOpen={isStartupModalOpen}
             onClose={() => setIsStartupModalOpen(false)}
+          />
+        )}
+        {isScannerOpen && (
+          <LeadScanner
+            onScanSuccess={handleScanSuccess}
+            onClose={() => setIsScannerOpen(false)}
           />
         )}
       </AnimatePresence>

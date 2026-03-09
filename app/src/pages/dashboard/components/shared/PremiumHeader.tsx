@@ -14,7 +14,6 @@ interface PremiumHeaderProps {
     roleLabel: string;
     isPro?: boolean;
     isActuallyPaid?: boolean;
-    statusFinanceiro?: { label: string };
     notifications: any[];
     onLogout: () => void;
     onGuideClick: () => void;
@@ -28,13 +27,12 @@ export function PremiumHeader({
     roleLabel,
     isPro,
     isActuallyPaid,
-    statusFinanceiro,
     notifications,
     onLogout,
     onGuideClick,
     onNotificationRead
 }: PremiumHeaderProps) {
-    const unreadCount = notifications.filter(n => !n.read && !n.isRead).length;
+    const unreadCount = (notifications || []).filter(n => n && !n.read && !n.isRead).length;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 relative">
@@ -139,7 +137,7 @@ export function PremiumHeader({
                                 {isPro ? 'Exp. Pro' : 'Free Morning'}
                             </Badge>
 
-                            {isPro && (
+                            {isPro && isActuallyPaid !== undefined && (
                                 <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${isActuallyPaid
                                     ? 'bg-green-500/10 text-green-400 border-green-500/20'
                                     : 'bg-orange-500/5 text-orange-500 border-orange-500/20'

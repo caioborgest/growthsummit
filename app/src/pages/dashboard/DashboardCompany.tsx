@@ -35,6 +35,8 @@ import { ProfileForm } from './components/ProfileForm';
 import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
+import { B2BScheduleModal } from './components/B2BScheduleModal';
+import type { B2BMatch, Company } from '@/types';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
@@ -50,6 +52,8 @@ export function DashboardCompany() {
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<{ match: B2BMatch, otherCompany: Company } | null>(null);
 
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
@@ -181,18 +185,22 @@ export function DashboardCompany() {
 
             <div className="mt-12">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
                     Visão Geral
                   </TabsTrigger>
-                  <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
-                    <Handshake className="h-4 w-4 mr-1 md:mr-2" />
-                    Agenda
+                  <TabsTrigger value="discovery" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
+                    <Sparkles className="h-4 w-4 mr-1 md:mr-2" />
+                    Explorar
                   </TabsTrigger>
                   <TabsTrigger value="matches" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <Heart className="h-4 w-4 mr-1 md:mr-2" />
                     Conexões
+                  </TabsTrigger>
+                  <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
+                    <Handshake className="h-4 w-4 mr-1 md:mr-2" />
+                    Agenda
                   </TabsTrigger>
                   <TabsTrigger value="programacao" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <Calendar className="h-4 w-4 mr-1 md:mr-2" />
@@ -285,7 +293,7 @@ export function DashboardCompany() {
                             </div>
                             <h3 className="text-2xl font-black text-white mb-3">Discovery Concluído</h3>
                             <p className="text-gray-500 mb-8 max-w-[240px]">Você já visualizou todas as empresas disponíveis para este evento.</p>
-                            <Button variant="outline" className="border-teal-500/30 text-teal-400 rounded-xl" onClick={() => setActiveTab('reunioes')}>
+                            <Button variant="outline" className="border-teal-500/30 text-teal-400 rounded-xl" onClick={() => setActiveTab('agenda')}>
                               Ver Minha Agenda
                             </Button>
                           </div>
@@ -296,7 +304,7 @@ export function DashboardCompany() {
                 </TabsContent>
 
                 {/* Agenda B2B Tab */}
-                <TabsContent value="reunioes">
+                <TabsContent value="agenda">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-bold text-white flex items-center">
@@ -422,14 +430,29 @@ export function DashboardCompany() {
                                 </div>
                               </div>
                               <div className="mt-auto pt-6 border-t border-dark-300/50 flex gap-2">
-                                <Button size="sm" variant="outline" className="flex-1 border-dark-300 rounded-xl">Detalhes</Button>
-                                <Button size="sm" className="flex-1 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-xl">Enviar Chat</Button>
+                                <Button size="sm" variant="outline" className="flex-1 border-dark-300 rounded-xl whitespace-nowrap px-1">Detalhes</Button>
+                                {match.status === 'scheduled' ? (
+                                  <Button size="sm" className="flex-1 bg-dark-300 text-gray-400 font-bold rounded-xl cursor-not-allowed whitespace-nowrap px-1" disabled>
+                                    Agendado
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    className="flex-1 bg-teal-500 hover:bg-teal-400 text-white font-bold rounded-xl whitespace-nowrap px-1"
+                                    onClick={() => {
+                                      setSelectedMatch({ match, otherCompany: other });
+                                      setScheduleModalOpen(true);
+                                    }}
+                                  >
+                                    Agendar
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           );
                         })}
 
-                      {matches.length === 0 && (
+                      {matches.filter((m: B2BMatch) => m.companyAId === companyData?.id || m.companyBId === companyData?.id).length === 0 && (
                         <div className="col-span-full py-16 text-center">
                           <Heart className="h-10 w-10 text-dark-300 mx-auto mb-4" />
                           <p className="text-gray-600 font-medium">Continue swiping para encontrar conexões!</p>
@@ -544,7 +567,21 @@ export function DashboardCompany() {
               onClose={() => setIsStartupModalOpen(false)}
             />
           )}
+          {scheduleModalOpen && selectedMatch && (
+            <B2BScheduleModal
+              isOpen={scheduleModalOpen}
+              onClose={() => {
+                setScheduleModalOpen(false);
+                setSelectedMatch(null);
+                refetchCompanies();
+              }}
+              match={selectedMatch.match}
+              otherCompany={selectedMatch.otherCompany}
+              currentCompanyId={companyData?.id || ''}
+            />
+          )}
         </AnimatePresence>
       </div>
-      );
+    </div>
+  );
 }

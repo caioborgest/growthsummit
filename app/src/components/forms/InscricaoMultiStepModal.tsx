@@ -167,17 +167,25 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
                                     const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
 
-                                    await (supabase
-                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
-                                        .update({
-                                            palestras_noturnas: true,
-                                            valor_pago: valorComDesconto,
-                                            status_pagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
-                                            cupom_palestra: dados.cupomPalestra || null,
-                                            codigo_palestra: dados.cupomPalestra || null,
-                                            valor_desconto_palestra: (dados.descontoPalestra || 0)
-                                        })
-                                        .eq('id', dados.inscricaoId);
+                                    if (dados.voucherEmpresa) {
+                                        const { error: rpcError } = await supabase.rpc('aplicar_voucher_empresa', {
+                                            p_inscricao_id: dados.inscricaoId,
+                                            p_voucher_code: dados.voucherEmpresa
+                                        });
+                                        if (rpcError) throw rpcError;
+                                    } else {
+                                        await (supabase
+                                            .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
+                                            .update({
+                                                palestras_noturnas: true,
+                                                valor_pago: valorComDesconto,
+                                                status_pagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
+                                                cupom_palestra: dados.cupomPalestra || null,
+                                                codigo_palestra: dados.cupomPalestra || null,
+                                                valor_desconto_palestra: (dados.descontoPalestra || 0)
+                                            })
+                                            .eq('id', dados.inscricaoId);
+                                    }
 
                                     updateDados({
                                         comprarPalestras: true,

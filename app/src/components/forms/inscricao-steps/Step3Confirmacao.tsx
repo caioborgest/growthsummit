@@ -113,6 +113,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 indicacaoNome: dados.indicacaoNome || null,
                 codigoSocial: dados.codigo || null,
                 codigoPalestra: dados.cupomPalestra || null,
+                loteId: dados.loteId,
+                voucherEmpresa: dados.voucherEmpresa,
             });
 
             // Verificar retorno da RPC

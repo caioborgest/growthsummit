@@ -7,12 +7,18 @@ import {
     CheckCircle,
     MessageCircle,
     ArrowRight,
-    AlertCircle
+    AlertCircle,
+    Landmark,
+    Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
+import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
+import { useData } from '@/hooks/useData';
 import type { DadosInscricao } from './inscricaoTypes';
+import { useEffect, useRef } from 'react';
 
 interface Step5PagamentoPixProps {
     dados: DadosInscricao;
@@ -22,6 +28,10 @@ interface Step5PagamentoPixProps {
 export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps) {
     const { selectedProject } = useProject();
     const [copied, setCopied] = useState(false);
+    const [loadingPix, setLoadingPix] = useState(true);
+    const [pixData, setPixData] = useState<{ copyPaste: string; qrCode: string } | null>(null);
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const pollingInterval = useRef<any>(null);
 
     // Configurações do PIX (centralizadas no EVENT_CONFIG)
     const cnpj = EVENT_CONFIG.pix.cnpj;
@@ -33,11 +43,73 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
     const valorFinal = valorOriginal * (1 - descontoEfetivo / 100);
     const valorFormatado = valorFinal.toFixed(2);
 
+    // 1. Gerar PIX ao montar
+    useEffect(() => {
+        const generatePix = async () => {
+            if (!dados.inscricaoId) return;
+            try {
+                setLoadingPix(true);
+                const { data, error } = await supabase.functions.invoke('cora-gateway', {
+                    body: { registrationId: dados.inscricaoId, action: 'create-pix' }
+                });
+
+                if (error) throw error;
+
+                if (data.success) {
+                    setPixData({
+                        copyPaste: data.pixCopyPaste,
+                        qrCode: data.qrCodeUrl
+                    });
+                }
+            } catch (err) {
+                logger.error('Erro ao gerar PIX Cora:', err);
+                toast.error('Erro ao gerar QR Code PIX. Tente novamente.');
+            } finally {
+                setLoadingPix(false);
+            }
+        };
+
+        generatePix();
+
+        // 2. Iniciar Polling para confirmação automática
+        pollingInterval.current = setInterval(async () => {
+            if (!dados.inscricaoId || isConfirmed) return;
+
+            const { data, error } = await supabase
+                .from('inscricoes_growth_experience')
+                .select('status_pagamento')
+                .eq('id', dados.inscricaoId)
+                .single();
+
+            if (data?.status_pagamento === 'pago') {
+                setIsConfirmed(true);
+                clearInterval(pollingInterval.current);
+                toast.success('PAGAMENTO CONFIRMADO! 🎉', {
+                    description: 'Seu acesso foi liberado automaticamente.',
+                    duration: 5000
+                });
+                setTimeout(onContinuar, 2000);
+            }
+        }, 5000);
+
+        return () => {
+            if (pollingInterval.current) clearInterval(pollingInterval.current);
+        };
+    }, [dados.inscricaoId]);
+
     const handleCopy = () => {
-        navigator.clipboard.writeText(cnpj);
+        const textToCopy = pixData?.copyPaste || cnpj;
+        navigator.clipboard.writeText(textToCopy);
         setCopied(true);
-        toast.success("CNPJ copiado!");
+        toast.success(pixData ? "Código PIX copiado!" : "CNPJ copiado!");
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleStripe = () => {
+        // Link de pagamento do Stripe conforme solicitado
+        const STRIPE_LINK = EVENT_CONFIG.stripePaymentLink;
+        window.open(STRIPE_LINK, '_blank');
+        toast.info("Link do Stripe aberto. O acesso será liberado após a confirmação no cartão.");
     };
 
     const handleWhatsApp = () => {
@@ -91,28 +163,53 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
                         </div>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Favorecido</p>
-                            <div className="p-3 rounded-xl bg-dark-200/50 border border-white/5 h-full flex flex-col justify-center">
-                                <p className="text-sm font-bold text-white uppercase">{merchantName}</p>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-tighter">Banco PJ</p>
-                            </div>
+                    <div className="grid sm:grid-cols-2 gap-6 items-center">
+                        <div className="flex justify-center bg-white p-4 rounded-2xl shadow-inner border border-white/10 mx-auto sm:mx-0 w-48 h-48 sm:w-56 sm:h-56">
+                            {loadingPix ? (
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" />
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Gerando<br />QR Code...</p>
+                                </div>
+                            ) : pixData ? (
+                                <img src={pixData.qrCode} alt="PIX QR Code" className="w-full h-full object-contain" />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-4 text-center">
+                                    <AlertCircle className="h-8 w-8 text-brand-orange-coral mb-2" />
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter leading-none">Aguardando<br />Sistema</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="space-y-2">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Chave PIX (CNPJ)</p>
-                            <div className="flex items-center gap-2 bg-dark-300/50 p-1.5 rounded-xl border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
-                                <code className="text-white font-mono text-base font-bold flex-1 text-center py-2">
-                                    {cnpj}
-                                </code>
-                                <Button
-                                    size="sm"
-                                    onClick={handleCopy}
-                                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-4 h-10 font-bold rounded-lg shadow-lg"
-                                >
-                                    {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                                </Button>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Código PIX Copia e Cola</p>
+                                <div className="flex items-center gap-2 bg-dark-300/50 p-1.5 rounded-xl border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
+                                    <code className="text-white font-mono text-[10px] truncate max-w-[150px] sm:max-w-none font-bold flex-1 py-2 px-2">
+                                        {pixData?.copyPaste || cnpj}
+                                    </code>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleCopy}
+                                        className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-4 h-10 font-bold rounded-lg shadow-lg"
+                                    >
+                                        {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Favorecido</p>
+                                    <div className="p-2 rounded-lg bg-dark-200/50 border border-white/5">
+                                        <p className="text-[10px] font-bold text-white uppercase truncate">{merchantName}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Banco</p>
+                                    <div className="p-2 rounded-lg bg-dark-200/50 border border-white/5">
+                                        <p className="text-[10px] font-bold text-white uppercase">CORA SOCIEDADE</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -133,11 +230,11 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                 <Button
                     size="lg"
-                    onClick={handleWhatsApp}
-                    className="h-16 bg-green-600 hover:bg-green-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-green-500/20 group"
+                    onClick={handleStripe}
+                    className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest text-xs"
                 >
-                    <MessageCircle className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-                    Enviar Comprovante
+                    <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                    Pagar com Cartão (Parcelado)
                 </Button>
 
                 <Button
