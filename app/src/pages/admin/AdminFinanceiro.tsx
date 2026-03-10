@@ -77,29 +77,13 @@ export function AdminFinanceiro() {
     return typeFilter === 'all' || t.type === typeFilter;
   });
 
-  const income = transactions
+  const baseIncome = transactions
     .filter(t => t.type === 'income' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0);
 
   const expenses = transactions
     .filter(t => t.type === 'expense' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0);
-
-  const balance = income - expenses;
-
-  const incomeByCategory = transactions
-    .filter(t => t.type === 'income' && t.status === 'completed')
-    .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
-      return acc;
-    }, {} as Record<string, number>);
-
-  const expensesByCategory = transactions
-    .filter(t => t.type === 'expense' && t.status === 'completed')
-    .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
-      return acc;
-    }, {} as Record<string, number>);
 
   const paidRegistrations = registrations.filter(r => r.status === 'paid' || r.status === 'pago' || r.paymentStatus === 'pago');
   const paidRegistrationsCount = paidRegistrations.length;
@@ -111,6 +95,32 @@ export function AdminFinanceiro() {
   const incentiveCompanyRevenue = (companies || [])
     .filter(c => c.status === 'approved' || c.status === 'aprovado')
     .reduce((sum: number, c: EmpresaIncentivadora) => sum + (c.amount || 0), 0);
+
+  const totalIncome = baseIncome + registrationRevenue + incentiveCompanyRevenue;
+  const balance = totalIncome - expenses;
+
+  const incomeByCategory = transactions
+    .filter(t => t.type === 'income' && t.status === 'completed')
+    .reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {} as Record<string, number>);
+
+  // Aggregate external revenue into categories
+  if (registrationRevenue > 0) {
+    incomeByCategory['Inscrições'] = (incomeByCategory['Inscrições'] || 0) + registrationRevenue;
+  }
+  if (incentiveCompanyRevenue > 0) {
+    const sponsorCategory = 'Patrocínio';
+    incomeByCategory[sponsorCategory] = (incomeByCategory[sponsorCategory] || 0) + incentiveCompanyRevenue;
+  }
+
+  const expensesByCategory = transactions
+    .filter(t => t.type === 'expense' && t.status === 'completed')
+    .reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {} as Record<string, number>);
 
   // Calculator state
   const [calcQty, setCalcQty] = useState(0);
@@ -153,7 +163,7 @@ export function AdminFinanceiro() {
                 </div>
                 <Badge className="bg-green-500/20 text-green-400">Receita</Badge>
               </div>
-              <p className="text-3xl font-bold text-white">R$ {income.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-white">R$ {totalIncome.toLocaleString()}</p>
               <p className="text-gray-400 text-sm mt-1">Total recebido</p>
             </div>
 
@@ -235,7 +245,7 @@ export function AdminFinanceiro() {
                       <div className="w-full bg-dark-300 rounded-full h-2">
                         <div
                           className="bg-teal-500 h-2 rounded-full"
-                          style={{ width: `${(amount / income) * 100}%` }}
+                          style={{ width: `${(amount / totalIncome) * 100}%` }}
                         />
                       </div>
                     </div>
@@ -289,15 +299,15 @@ export function AdminFinanceiro() {
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-400 text-sm">Receita</span>
-                  <span className="text-teal-400 text-sm">{Math.round((income / goals.revenue) * 100)}%</span>
+                  <span className="text-teal-400 text-sm">{Math.round((totalIncome / goals.revenue) * 100)}%</span>
                 </div>
                 <div className="w-full bg-dark-300 rounded-full h-3">
                   <div
                     className="bg-teal-500 h-3 rounded-full"
-                    style={{ width: `${Math.min((income / goals.revenue) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((totalIncome / goals.revenue) * 100, 100)}%` }}
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {income.toLocaleString()} / R$ {goals.revenue.toLocaleString()}</p>
+                <p className="text-gray-500 text-xs mt-1">R$ {totalIncome.toLocaleString()} / R$ {goals.revenue.toLocaleString()}</p>
               </div>
               <div>
                 <div className="flex justify-between mb-2">

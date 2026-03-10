@@ -33,7 +33,7 @@ const AuthCallback = lazy(() => import('./pages/auth/AuthCallback').then(m => ({
 
 // ── Dashboards (lazy — each in its own chunk)
 const DashboardParticipante = lazy(() => import('./pages/dashboard/DashboardParticipante').then(m => ({ default: m.DashboardParticipante })));
-const DashboardMentor = lazy(() => import('./pages/dashboard/DashboardMentor').then(m => ({ default: m.DashboardMentor })));
+const DashboardMentor = lazy(() => import('./pages/dashboard/DashboardMentor').then(m => ({ default: m.default })));
 const DashboardCompany = lazy(() => import('./pages/dashboard/DashboardCompany').then(m => ({ default: m.DashboardCompany })));
 const DashboardStartup = lazy(() => import('./pages/dashboard/DashboardStartup').then(m => ({ default: m.DashboardStartup })));
 const DashboardSponsor = lazy(() => import('./pages/dashboard/DashboardSponsor').then(m => ({ default: m.DashboardSponsor })));
@@ -60,7 +60,7 @@ const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ 
 const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.default })));
 const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
 const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
-const AdminCertificados = lazy(() => import('./pages/admin/AdminCertificados').then(m => ({ default: m.AdminCertificados })));
+const AdminCertificados = lazy(() => import('./pages/admin/AdminCertificados').then(m => ({ default: m.default })));
 const AdminBatches = lazy(() => import('./pages/admin/AdminBatches').then(m => ({ default: m.default })));
 const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
 const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));

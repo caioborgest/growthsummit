@@ -163,9 +163,9 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   quantidade_noite: 'quantidadeNoite',
   valor_investido: 'investmentAmount',
   // Mentoria additional business info
-  nome_startup: 'startupName',
+  // nome_startup: 'startupName', // Already defined at line 104
   // Registration Batch
-  nome_empresa: 'nomeEmpresa',
+  // nome_empresa: 'nomeEmpresa', // Already defined at line 108
   nome_responsavel: 'nomeResponsavel',
   email_responsavel: 'emailResponsavel',
   email_contato: 'emailContato',
@@ -174,7 +174,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   vagas_utilizadas: 'vagasUtilizadas',
   tipo_ingresso: 'tipoIngresso',
   valor_total: 'valorTotal',
-  status_pagamento: 'statusPagamento',
+  // status_pagamento: 'statusPagamento', // Already defined at line 110
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -747,6 +747,10 @@ export function useCoupons() {
 
 export function useCheckInsAtividades() {
   return useData<any>([], 'check_ins_atividades');
+}
+
+export function usePitchScores() {
+  return useData<any>([], 'pitch_scores');
 }
 
 export function useUsers() {

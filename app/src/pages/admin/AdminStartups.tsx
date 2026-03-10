@@ -9,7 +9,8 @@ import {
   Users,
   DollarSign,
   ExternalLink,
-  Star
+  Star,
+  Trophy
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,9 @@ import {
 import { useStartups, useLeads } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import { ScoreStartupModal } from '@/components/admin/ScoreStartupModal';
+import { PitchLeaderboard } from '@/components/admin/PitchLeaderboard';
+import type { Startup } from '@/types';
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
@@ -76,6 +80,14 @@ export function AdminStartups() {
   });
 
   const [selectedStartup, setSelectedStartup] = useState<string | null>(null);
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false);
+  const [startupToScore, setStartupToScore] = useState<Startup | null>(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  const handleOpenScoreModal = (startup: Startup) => {
+    setStartupToScore(startup);
+    setIsScoreModalOpen(true);
+  };
 
   const filteredStartups = startups.filter(startup => {
     const matchesSearch =
@@ -211,6 +223,14 @@ export function AdminStartups() {
               Adicionar Startup
             </Button>
           </DialogTrigger>
+          <Button
+            variant="outline"
+            className={`border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 ${showLeaderboard ? 'bg-yellow-500/20' : ''}`}
+            onClick={() => setShowLeaderboard(!showLeaderboard)}
+          >
+            <Trophy className="h-4 w-4 mr-2" />
+            {showLeaderboard ? 'Ver Lista' : 'Ver Leaderboard'}
+          </Button>
           <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Nova Startup</DialogTitle>
@@ -478,123 +498,146 @@ export function AdminStartups() {
         </div>
       )}
 
-      {/* Startups Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredStartups.map((startup) => (
-          <div key={startup.id} className="glass-card p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
-                <Rocket className="h-7 w-7 text-white" />
-              </div>
-              <div className="flex flex-col items-end">
-                <Badge className={statusColors[startup.status]}>
-                  {startup.status}
-                </Badge>
-                <Badge className="mt-1 bg-dark-300 text-gray-300">
-                  {stageLabels[startup.stage]}
-                </Badge>
-              </div>
-            </div>
-
-            <h3 className="text-lg font-semibold text-white mb-1">{startup.startupName}</h3>
-            <p className="text-teal-400 text-sm mb-1">{startup.sector}</p>
-            <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startupDescription}</p>
-
-            {/* Metrics */}
-            {startup.metrics && (
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {startup.metrics.revenue !== undefined && (
-                  <div className="bg-dark-100 rounded p-2 text-center">
-                    <DollarSign className="h-4 w-4 text-green-400 mx-auto mb-1" />
-                    <p className="text-white text-sm font-medium">R${(startup.metrics.revenue / 1000).toFixed(0)}k</p>
-                    <p className="text-gray-500 text-xs">Receita</p>
-                  </div>
-                )}
-                {startup.metrics.users !== undefined && (
-                  <div className="bg-dark-100 rounded p-2 text-center">
-                    <Users className="h-4 w-4 text-blue-400 mx-auto mb-1" />
-                    <p className="text-white text-sm font-medium">{startup.metrics.users}</p>
-                    <p className="text-gray-500 text-xs">Usuários</p>
-                  </div>
-                )}
-                {startup.metrics.growth !== undefined && (
-                  <div className="bg-dark-100 rounded p-2 text-center">
-                    <TrendingUp className="h-4 w-4 text-teal-400 mx-auto mb-1" />
-                    <p className="text-white text-sm font-medium">{startup.metrics.growth}%</p>
-                    <p className="text-gray-500 text-xs">Crescimento</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Team */}
-            <div className="mb-4">
-              <p className="text-gray-400 text-sm mb-2">Fundadores:</p>
-              <div className="flex flex-wrap gap-2">
-                {startup.foundingTeam.map((member, i) => (
-                  <Badge key={i} className="bg-dark-300 text-gray-300">
-                    {member.name} - {member.role}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Package & Stand */}
-            <div className="flex items-center justify-between mb-4">
-              <Badge className={
-                startup.packageType === 'pitch' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'
-              }>
-                {startup.packageType === 'pitch' ? 'Pitch + Expo' : 'Expo'}
-              </Badge>
-              {startup.standNumber && (
-                <span className="text-gray-400 text-sm">Stand {startup.standNumber}</span>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex space-x-2">
-              {startup.status === 'pending' ? (
-                <>
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white"
-                    onClick={() => handleApprove(startup.id)}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Aprovar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
-                    onClick={() => handleReject(startup.id)}
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Rejeitar
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button size="sm" variant="outline" className="flex-1 border-dark-300 text-gray-300">
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Ver perfil
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className={`border-teal-500 text-teal-400 ${selectedStartup === startup.id ? 'bg-teal-500/10' : ''}`}
-                    onClick={() => setSelectedStartup(selectedStartup === startup.id ? null : startup.id)}
-                  >
-                    <Star className="h-4 w-4 mr-1" />
-                    Leads
-                  </Button>
-                </>
-              )}
-            </div>
-
+      {/* Leaderboard Section */}
+      {showLeaderboard && (
+        <div className="animate-fade-in-up">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="h-6 w-6 text-yellow-500" />
+            <h2 className="text-xl font-bold text-white">Ranking Arena Pitch</h2>
           </div>
-        ))}
-      </div>
+          <PitchLeaderboard />
+        </div>
+      )}
+
+      {/* Startups Grid */}
+      {!showLeaderboard && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStartups.map((startup) => (
+            <div key={startup.id} className="glass-card p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                  <Rocket className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex flex-col items-end">
+                  <Badge className={statusColors[startup.status]}>
+                    {startup.status}
+                  </Badge>
+                  <Badge className="mt-1 bg-dark-300 text-gray-300">
+                    {stageLabels[startup.stage]}
+                  </Badge>
+                </div>
+              </div>
+
+              <h3 className="text-lg font-semibold text-white mb-1">{startup.startupName}</h3>
+              <p className="text-teal-400 text-sm mb-1">{startup.sector}</p>
+              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startupDescription}</p>
+
+              {/* Metrics */}
+              {startup.metrics && (
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {startup.metrics.revenue !== undefined && (
+                    <div className="bg-dark-100 rounded p-2 text-center">
+                      <DollarSign className="h-4 w-4 text-green-400 mx-auto mb-1" />
+                      <p className="text-white text-sm font-medium">R${(startup.metrics.revenue / 1000).toFixed(0)}k</p>
+                      <p className="text-gray-500 text-xs">Receita</p>
+                    </div>
+                  )}
+                  {startup.metrics.users !== undefined && (
+                    <div className="bg-dark-100 rounded p-2 text-center">
+                      <Users className="h-4 w-4 text-blue-400 mx-auto mb-1" />
+                      <p className="text-white text-sm font-medium">{startup.metrics.users}</p>
+                      <p className="text-gray-500 text-xs">Usuários</p>
+                    </div>
+                  )}
+                  {startup.metrics.growth !== undefined && (
+                    <div className="bg-dark-100 rounded p-2 text-center">
+                      <TrendingUp className="h-4 w-4 text-teal-400 mx-auto mb-1" />
+                      <p className="text-white text-sm font-medium">{startup.metrics.growth}%</p>
+                      <p className="text-gray-500 text-xs">Crescimento</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Team */}
+              <div className="mb-4">
+                <p className="text-gray-400 text-sm mb-2">Fundadores:</p>
+                <div className="flex flex-wrap gap-2">
+                  {startup.foundingTeam.map((member, i) => (
+                    <Badge key={i} className="bg-dark-300 text-gray-300">
+                      {member.name} - {member.role}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Package & Stand */}
+              <div className="flex items-center justify-between mb-4">
+                <Badge className={
+                  startup.packageType === 'pitch' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'
+                }>
+                  {startup.packageType === 'pitch' ? 'Pitch + Expo' : 'Expo'}
+                </Badge>
+                {startup.standNumber && (
+                  <span className="text-gray-400 text-sm">Stand {startup.standNumber}</span>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-2">
+                {startup.status === 'pending' ? (
+                  <>
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => handleApprove(startup.id)}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Aprovar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
+                      onClick={() => handleReject(startup.id)}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Rejeitar
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" className="flex-1 border-dark-300 text-gray-300">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Ver perfil
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className={`border-teal-500 text-teal-400 ${selectedStartup === startup.id ? 'bg-teal-500/10' : ''}`}
+                      onClick={() => setSelectedStartup(selectedStartup === startup.id ? null : startup.id)}
+                    >
+                      <Users className="h-4 w-4 mr-1" />
+                      Leads
+                    </Button>
+                    {startup.packageType === 'pitch' && (
+                      <Button
+                        size="sm"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold"
+                        onClick={() => handleOpenScoreModal(startup as any)}
+                      >
+                        <Star className="h-4 w-4 mr-1 text-white" />
+                        Votar
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Leads Section */}
       {selectedStartup && (
@@ -626,6 +669,14 @@ export function AdminStartups() {
           </div>
         </div>
       )}
+
+      {/* Score Modal */}
+      <ScoreStartupModal
+        isOpen={isScoreModalOpen}
+        onClose={() => setIsScoreModalOpen(false)}
+        startup={startupToScore}
+        projectId={projectId || ''}
+      />
     </div>
   );
 }

@@ -26,23 +26,18 @@ pop3_port = 54326
 
 [storage]
 enabled = true
-port = 54327
 file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-port = 54328
-api_external_url = "http://localhost:54328"
-max_session_duration = "720h"
-confirm_email = false
+
+[auth.email]
+enable_confirmations = false
 
 [realtime]
 enabled = true
-port = 54329
 
-[edge_functions]
-enabled = true
-port = 54330
+# edge_functions block was removed as it's invalid in new configs
 
 [functions.whatsapp-send-invite]
 verify_jwt = true
@@ -62,13 +57,13 @@ port = 54331
 vector_port = 54332
 
 # SMTP configuration for sending emails
-[smtp]
-host = ""
-port = 587
-user = ""
-pass = ""
-sender_name = ""
+# [smtp]
+# host = ""
+# port = 587
+# user = ""
+# pass = ""
+# sender_name = ""
 
 # Experimental features
-[experimental]
-orioledb_version = ""
+# [experimental]
+# orioledb_version = ""

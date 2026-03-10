@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
-import { issueCertificate, generateCertificatePDF } from './certificateGenerator';
-import type { User, Project, Session, Certificate } from '@/types';
+import { issueCertificate } from './certificateGenerator';
+import type { User, Project, Session } from '@/types';
 
 /**
  * Service to handle automatic certificate issuance
@@ -17,26 +17,38 @@ export class CertificateService {
     ) {
         try {
             // 1. Check if certificate already exists
-            const { data: existing } = await supabase
-                .from('certificates')
+            const { data: existing } = await (supabase
+                .from('certificados' as any) as any)
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('session_id', session.id)
                 .maybeSingle();
 
             if (existing) {
-                console.log('Certificate already exists for this session');
+                console.info('Certificate already exists for this session');
                 return;
             }
 
-            // 2. Issuance Logic: For now, if they checked in, they get it.
-            // In a real scenario, we might check if the session is over or 
-            // if they stayed X% of the time, but for Triunfo, check-in = participation.
+            // 2. Issuance Logic: Check if they checked into this activity
+            // We use the new check_ins_atividades table
+            const { data: attendance, error: attendanceError } = await (supabase
+                .from('check_ins_atividades' as any) as any)
+                .select('id')
+                .eq('session_id', session.id)
+                .eq('registration_id', registrationId)
+                .maybeSingle();
 
+            if (attendanceError || !attendance) {
+                console.info(`User ${user.id} not checked in for session ${session.id}`);
+                return;
+            }
+
+            // 3. Generate certificate data
             const certData = await issueCertificate(user, project, 'lecture', session);
 
-            const { error } = await supabase
-                .from('certificates')
+            // 4. Save certificate to DB
+            const { error } = await (supabase
+                .from('certificados' as any) as any)
                 .insert({
                     project_id: project.id,
                     user_id: user.id,
@@ -52,7 +64,7 @@ export class CertificateService {
 
             if (error) throw error;
 
-            console.log(`Certificate issued for ${user.name} - ${session.title}`);
+            console.info(`Certificate issued for ${user.name} - ${session.title}`);
         } catch (err) {
             console.error('Failed to issue certificate:', err);
         }
@@ -66,23 +78,37 @@ export class CertificateService {
         project: Project,
         registrationId: string
     ) {
-        // Similar logic for overall event attendance
-        const certData = await issueCertificate(user, project, 'event');
+        try {
+            // Check if already exists
+            const { data: existing } = await (supabase
+                .from('certificados' as any) as any)
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('registration_id', registrationId)
+                .eq('type', 'event')
+                .maybeSingle();
 
-        const { error } = await supabase
-            .from('certificates')
-            .insert({
-                project_id: project.id,
-                user_id: user.id,
-                registration_id: registrationId,
-                type: 'event',
-                code: certData.certificateCode,
-                metadata: {
-                    event_name: project.name,
-                    total_hours: 12 // Example
-                }
-            });
+            if (existing) return;
 
-        if (error) throw error;
+            const certData = await issueCertificate(user, project, 'event');
+
+            const { error } = await (supabase
+                .from('certificados' as any) as any)
+                .insert({
+                    project_id: project.id,
+                    user_id: user.id,
+                    registration_id: registrationId,
+                    type: 'event',
+                    code: certData.certificateCode,
+                    metadata: {
+                        event_name: project.name,
+                        total_hours: 12 // Example
+                    }
+                });
+
+            if (error) throw error;
+        } catch (err) {
+            console.error('Failed to issue event certificate:', err);
+        }
     }
 }

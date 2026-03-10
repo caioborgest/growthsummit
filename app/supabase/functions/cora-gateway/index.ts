@@ -1,5 +1,8 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import axios from 'npm:axios@1.6.8'
+import https from 'node:https'
+import { Buffer } from 'node:buffer'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -29,7 +32,20 @@ serve(async (req) => {
             // 1. Fetch registration details
             const { data: registration, error: fetchError } = await supabase
                 .from('inscricoes_growth_experience')
-                .select('*')
+                .select(`
+                    id, 
+                    user_id, 
+                    nome, 
+                    email, 
+                    telefone,
+                    valor_pago,
+                    profiles (
+                        cpf,
+                        cnpj,
+                        city,
+                        state
+                    )
+                `)
                 .eq('id', registrationId)
                 .single()
 
@@ -40,13 +56,99 @@ serve(async (req) => {
                 })
             }
 
-            // 2. Call Cora API to create Invoice
-            // NOTE: Here we would use CORA_CLIENT_ID / CORA_SECRET from Deno.env
-            // For now, let's pretend we're calling Cora.
-            const coraInvoiceId = `cora_${Math.random().toString(36).substr(2, 9)}`
-            const pixCopyPaste = `00020101021226840014BR.GOV.BCB.PIX0114${registrationId.replace(/-/g, '')}5204000053039865406${registration.valor_pago.toFixed(2)}5802BR5913GROWTHSUMMIT6007TRIUNFO62070503***6304`
+            // Validar documento
+            const profile = Array.isArray(registration.profiles) ? registration.profiles[0] : (registration.profiles || {});
+            const rawDocument = profile?.cnpj || profile?.cpf || '00000000000';
+            const document = rawDocument.replace(/\D/g, ''); // apenas números
+            const isCnpj = document.length === 14;
 
-            // 3. Update registration with Cora ID
+            if (!document) {
+                return new Response(JSON.stringify({ error: 'CPF/CNPJ não preenchido no perfil' }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+
+            // Certificados
+            const certStr = Deno.env.get('CORA_CERTIFICATE')?.replace(/\\n/g, '\n');
+            const keyStr = Deno.env.get('CORA_PRIVATE_KEY')?.replace(/\\n/g, '\n');
+            const clientId = Deno.env.get('CORA_CLIENT_ID');
+            // Allow override via env variable, use stage as default if you are testing, or production
+            const baseUrl = Deno.env.get('CORA_API_URL') || 'https://matls-clients.api.stage.cora.com.br';
+
+            if (!certStr || !keyStr || !clientId) {
+                throw new Error('Credenciais da Cora não configuradas no ambiente (CORA_CERTIFICATE, CORA_PRIVATE_KEY, CORA_CLIENT_ID).');
+            }
+
+            const httpsAgent = new https.Agent({
+                cert: Buffer.from(certStr),
+                key: Buffer.from(keyStr),
+            });
+
+            // 2. Gerar Token na Cora
+            const tokenParams = new URLSearchParams();
+            tokenParams.append('grant_type', 'client_credentials');
+            tokenParams.append('client_id', clientId);
+
+            const tokenRes = await axios.post(`${baseUrl}/token`, tokenParams.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                httpsAgent
+            });
+
+            const accessToken = tokenRes.data.access_token;
+
+            // 3. Criar Invoice (Pix) na Cora
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 3); // Vencimento em 3 dias, ajustável
+            const formattedDueDate = dueDate.toISOString().split('T')[0];
+            const idempotencyKey = crypto.randomUUID();
+
+            const invoicePayload = {
+                code: registrationId,
+                customer: {
+                    name: registration.nome || 'Participante Growth Summit',
+                    email: registration.email || 'contato@growthsummit.com.br',
+                    document: {
+                        identity: document, // Apenas números
+                        type: isCnpj ? 'CNPJ' : 'CPF'
+                    },
+                    address: {
+                        street: 'N/A',
+                        number: 'S/N',
+                        district: 'N/A',
+                        city: profile?.city || 'Petrolina',
+                        state: profile?.state || 'PE',
+                        complement: '',
+                        zip_code: '56300000'
+                    }
+                },
+                services: [{
+                    name: 'Inscrição Growth Experience',
+                    description: `Inscrição para o evento Growth Experience (Ref: ${registrationId})`,
+                    amount: Math.round(Number(registration.valor_pago) * 100) // Em centavos!
+                }],
+                payment_terms: {
+                    due_date: formattedDueDate,
+                },
+                // Força a emissão do QR Code Pix na API v2 da Cora
+                payment_forms: ['PIX']
+            };
+
+            const invoiceRes = await axios.post(`${baseUrl}/v2/invoices`, invoicePayload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Idempotency-Key': idempotencyKey
+                },
+                httpsAgent
+            });
+
+            const invoiceData = invoiceRes.data;
+            const coraInvoiceId = invoiceData.id;
+            const pixCopyPaste = invoiceData.payment_options?.pix?.emv || 'Erro_ao_gerar_Copia_e_Cola';
+            const pixQrCodeUrl = invoiceData.payment_options?.pix?.qr_code || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCopyPaste)}`;
+
+            // 4. Atualizar registro local
             await supabase
                 .from('inscricoes_growth_experience')
                 .update({
@@ -58,7 +160,7 @@ serve(async (req) => {
             return new Response(JSON.stringify({
                 success: true,
                 pixCopyPaste,
-                qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCopyPaste)}`,
+                qrCodeUrl: pixQrCodeUrl,
                 invoiceId: coraInvoiceId
             }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,7 +178,7 @@ serve(async (req) => {
             const invoiceId = body.data?.id
             const status = body.data?.status
 
-            if (eventType === 'invoice.paid' || status === 'PAID') {
+            if (eventType === 'INVOICE.PAID' || eventType === 'invoice.paid' || status === 'PAID') {
                 // Encontrar a inscrição pelo Cora ID
                 const { data: registration, error: findError } = await supabase
                     .from('inscricoes_growth_experience')
@@ -124,6 +226,7 @@ serve(async (req) => {
         })
 
     } catch (err: any) {
+        console.error('Cora Gateway Error: ', err.message);
         return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -77,7 +77,19 @@ Data: {{data}}</p>
 <p><strong>🚨 Informação Importante:</strong> A empresa que apresentar a maior quantidade de colaboradores participando das programações diurna e noturna (paga) receberá o prêmio <strong>"Empresa incentivadora na educação empreendedora"</strong> durante o evento.</p>
 <p>Em breve enviaremos os códigos de acesso individual para cada colaborador.</p>`
   },
-
+  {
+    id: '5',
+    name: 'Feedback Arena Pitch',
+    subject: 'Feedback e Notas: Sua participação na Arena Pitch 🚀',
+    category: 'Startups',
+    lastUsed: '2024-03-09',
+    body: `<h1>Olá {{fundador}}!</h1>
+<p>Parabéns pela apresentação na <strong>Arena Pitch</strong> do Growth Experience.</p>
+<p>Sua dedicação e visão foram notáveis. Segue o resumo da sua avaliação pelos jurados:</p>
+<p><strong>Média Geral:</strong> {{media}}<br/>
+<strong>Pontos Fortes:</strong> {{pontos_fortes}}</p>
+<p>Desejamos muito sucesso na jornada de crescimento da {{startup}}!</p>`
+  }
 ];
 
 const initialEmailCampaigns = [

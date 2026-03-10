@@ -18,7 +18,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
-import { useCheckIns, useRegistrations, useMentors, useSessions } from '@/hooks/useData';
+import { useCheckIns, useRegistrations, useMentors, useSessions, useCheckInsAtividades } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -154,6 +154,7 @@ export function GrowthExperienceTriunfo() {
   const { user } = useAuth();
   const { data: userRegistrations } = useRegistrations();
   const { create: registerCheckIn } = useCheckIns();
+  const { create: registerSessionCheckIn } = useCheckInsAtividades();
   const { data: allSessions } = useSessions();
 
   // initialized MUST be declared before initProject to avoid use-before-declaration
@@ -179,17 +180,14 @@ export function GrowthExperienceTriunfo() {
       if (qrData.type === 'session') {
         const session = (allSessions || []).find(s => s.id === qrData.id);
 
-        await registerCheckIn({
+        await registerSessionCheckIn({
           projectId: currentProject?.id,
           registrationId: userReg.id,
           userId: user.id,
           sessionId: qrData.id,
-          ticketNumber: userReg.ticketNumber,
-          timestamp: new Date().toISOString(),
-          location: 'Sala de Atividade',
-          method: 'self_scan',
-          checkInType: 'session'
-        } as any);
+          checkInAt: new Date().toISOString(),
+          checkInType: 'qr'
+        });
 
         // --- Automatic Certification Trigger ---
         if (session && currentProject) {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   QrCode,
   Search,
@@ -7,12 +7,14 @@ import {
   TrendingUp,
   X,
   User,
-  Camera
+  Camera,
+  Calendar,
+  Filter
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRegistrations, useCheckIns } from '@/hooks/useData';
+import { useRegistrations, useCheckIns, useSessions, useCheckInsAtividades } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
 import type { Registration } from '@/types';
@@ -21,13 +23,22 @@ import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 
 export function AdminCheckIn() {
   const { data: registrations, update } = useRegistrations();
-  const { data: checkIns, create } = useCheckIns();
+  const { data: checkIns, create: createEventCheckIn } = useCheckIns();
+  const { data: sessions } = useSessions();
+  const { data: sessionAttendance, create: createSessionAttendance } = useCheckInsAtividades();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
 
   const [lastCheckIn, setLastCheckIn] = useState<Registration | null>(null);
   const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
+
+  const selectedSession = useMemo(() =>
+    sessions.find(s => s.id === selectedSessionId),
+    [sessions, selectedSessionId]
+  );
 
   const triggerVibrate = (type: 'success' | 'error') => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -41,43 +52,72 @@ export function AdminCheckIn() {
 
   const handleManualCheckIn = useCallback(async (registration: Registration) => {
     try {
-      if (registration.checkedIn) {
-        setScanResult('duplicate');
-        setResultRegistration(registration);
-        triggerVibrate('error');
-        return;
+      // 1. Check if it's GLOBAL event check-in
+      if (selectedSessionId === 'all') {
+        if (registration.checkedIn) {
+          setScanResult('duplicate');
+          setResultRegistration(registration);
+          triggerVibrate('error');
+          return;
+        }
+
+        await update(registration.id, {
+          checkedIn: true,
+          checkInTime: new Date().toISOString()
+        } as any);
+
+        await createEventCheckIn({
+          projectId: registration.projectId,
+          registrationId: registration.id,
+          userId: registration.userId,
+          ticketNumber: registration.ticketNumber,
+          timestamp: new Date().toISOString(),
+          location: 'Entrada Principal',
+          method: 'manual',
+          checkInType: 'event',
+        });
+
+        toast.success(`Check-in GERAL realizado: ${registration.ticketNumber}`);
       }
+      // 2. Check if it's SESSION check-in
+      else {
+        // Check if already checked in for THIS session
+        const alreadyAttending = sessionAttendance.some(
+          a => a.sessionId === selectedSessionId && (a.registrationId === registration.id || a.userId === registration.userId)
+        );
 
-      await update(registration.id, {
-        checkedIn: true,
-        checkInTime: new Date().toISOString()
-      } as any);
+        if (alreadyAttending) {
+          setScanResult('duplicate');
+          setResultRegistration(registration);
+          triggerVibrate('error');
+          toast.info(`Já possui presença registrada em: ${selectedSession?.title}`);
+          return;
+        }
 
-      // Log check-in event in the table
-      await create({
-        projectId: registration.projectId,
-        registrationId: registration.id,
-        userId: registration.userId,
-        ticketNumber: registration.ticketNumber,
-        timestamp: new Date().toISOString(),
-        location: 'Entrada Principal',
-        method: 'manual',
-        checkInType: 'event',
-      });
+        await createSessionAttendance({
+          projectId: registration.projectId,
+          sessionId: selectedSessionId,
+          registrationId: registration.id,
+          userId: registration.userId,
+          checkInAt: new Date().toISOString(),
+          checkInType: 'manual',
+        });
+
+        toast.success(`Presença registrada em: ${selectedSession?.title}`);
+      }
 
       setLastCheckIn(registration);
       setResultRegistration(registration);
       setScanResult('success');
       triggerVibrate('success');
       setSearchQuery('');
-      // toast.success(`Check-in realizado: ${registration.ticketNumber}`); // Modal handles this now
     } catch (err: unknown) {
       const error = err as Error;
       setScanResult('error');
       triggerVibrate('error');
       toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
-  }, [update, create]);
+  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession]);
 
   const handleScannerSuccess = useCallback((res: QRData | null) => {
     if (!res) return;
@@ -93,15 +133,13 @@ export function AdminCheckIn() {
     setIsScanning(false);
   }, [registrations, handleManualCheckIn]);
 
-  // Handle Enter key for hardware scanners (standard behavior)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       const exactMatch = registrations.find(r =>
-        (r.id === searchQuery || r.ticketNumber === searchQuery) && !r.checkedIn
+        (r.id === searchQuery || r.ticketNumber === searchQuery)
       );
       if (exactMatch) {
         handleManualCheckIn(exactMatch);
-        toast.success(`Check-in automático: ${exactMatch.ticketNumber}`);
       }
     }
   };
@@ -111,25 +149,20 @@ export function AdminCheckIn() {
   const checkInRate = totalRegistrations > 0 ? (checkedInCount / totalRegistrations) * 100 : 0;
 
   const filteredRegistrations = registrations.filter(reg => {
-    return (
+    const matchesSearch =
       reg.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       reg.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reg.userId.toLowerCase().includes(searchQuery.toLowerCase())
-    ) && !reg.checkedIn;
+      (reg.nome || reg.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Se estiver no modo geral, esconde os que já fizeram check-in
+    if (selectedSessionId === 'all') {
+      return matchesSearch && !reg.checkedIn;
+    }
+
+    return matchesSearch;
   });
 
-  // Calculate real hourly stats from checkIns (today only)
-  const HOURS = ['08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h', '18h', '19h'];
-  const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-
-  const hourlyStats = HOURS.map(hourStr => {
-    const hourInt = parseInt(hourStr);
-    return checkIns.filter(c => {
-      const date = new Date(c.timestamp);
-      return date.toLocaleDateString('en-CA') === today && date.getHours() === hourInt;
-    }).length;
-  });
-
+  const today = new Date().toLocaleDateString('en-CA');
   const checkInsToday = checkIns.filter(c =>
     new Date(c.timestamp).toLocaleDateString('en-CA') === today
   ).length;
@@ -146,6 +179,42 @@ export function AdminCheckIn() {
           }}
         />
       )}
+
+      {/* Header with Mode Toggle */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
+            <QrCode className="h-8 w-8 text-brand-orange-coral" />
+            Controle de Acesso
+          </h2>
+          <p className="text-gray-400">Gerencie o check-in geral ou presenças por atividade.</p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-dark-200 p-1 rounded-xl border border-white/5">
+          <Button
+            variant={selectedSessionId === 'all' ? 'default' : 'ghost'}
+            className={selectedSessionId === 'all' ? 'bg-brand-orange-coral text-white font-bold' : 'text-gray-400'}
+            onClick={() => setSelectedSessionId('all')}
+          >
+            Check-in Geral
+          </Button>
+          <div className="w-px h-6 bg-white/10 mx-1" />
+          <div className="relative">
+            <select
+              value={selectedSessionId}
+              onChange={(e) => setSelectedSessionId(e.target.value)}
+              className="bg-transparent text-sm font-bold text-teal-400 focus:outline-none pr-8 pl-4 appearance-none cursor-pointer"
+            >
+              <option value="all">Check-in Geral</option>
+              {sessions.map(s => (
+                <option key={s.id} value={s.id}>{s.title}</option>
+              ))}
+            </select>
+            <Calendar className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-teal-400 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-4">
@@ -161,160 +230,168 @@ export function AdminCheckIn() {
           <p className="text-2xl font-bold text-green-400">{checkInRate.toFixed(1)}%</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Pendentes</p>
-          <p className="text-2xl font-bold text-yellow-400">{totalRegistrations - checkedInCount}</p>
+          <p className="text-gray-400 text-sm">Modo Ativo</p>
+          <Badge className={selectedSessionId === 'all' ? 'bg-brand-orange-coral/20 text-brand-orange-coral' : 'bg-teal-500/20 text-teal-400'}>
+            {selectedSessionId === 'all' ? 'Geral' : 'Sessão Individual'}
+          </Badge>
         </div>
       </div>
 
-      {/* Last Check-in Alert */}
-      {lastCheckIn && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-center animate-fade-in">
-          <CheckCircle className="h-8 w-8 text-green-400 mr-4" />
-          <div className="flex-1">
-            <p className="text-white font-medium text-lg">Check-in realizado com sucesso!</p>
-            <p className="text-gray-400">{lastCheckIn.ticketNumber}</p>
+      {/* Mode Indicator */}
+      {selectedSession && (
+        <div className="bg-teal-500/10 border border-teal-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 animate-in fade-in slide-in-from-top-4">
+          <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center shrink-0">
+            <Filter className="h-8 w-8 text-teal-400" />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <Badge className="mb-2 bg-teal-500 text-white font-bold">MODO: CHECK-IN DE SESSÃO</Badge>
+            <h3 className="text-xl font-bold text-white">{selectedSession.title}</h3>
+            <p className="text-gray-400 text-sm">{selectedSession.room} • {selectedSession.startTime} - {selectedSession.endTime}</p>
+          </div>
+          <div className="flex flex-col items-center md:items-end shrink-0">
+            <p className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-1">Presenças Registradas</p>
+            <p className="text-3xl font-black text-teal-400">
+              {sessionAttendance.filter(a => (a.sessionId || a.session_id) === selectedSessionId).length}
+              {selectedSession.maxCapacity > 0 && <span className="text-gray-600 text-lg"> / {selectedSession.maxCapacity}</span>}
+            </p>
           </div>
           <Button
             variant="ghost"
-            className="text-gray-400"
-            onClick={() => setLastCheckIn(null)}
+            size="sm"
+            className="text-gray-500 hover:text-white"
+            onClick={() => setSelectedSessionId('all')}
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
       )}
 
-      {/* QR Scanner */}
-      {isScanning && (
-        <QRScanner
-          onSuccess={handleScannerSuccess}
-          onClose={() => setIsScanning(false)}
-        />
-      )}
-
-      <div className="glass-card p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-white">Scanner QR Code</h2>
-            <p className="text-sm text-gray-400">O sistema detecta automaticamente QR codes inseridos no campo de busca ou via câmera.</p>
+      {/* Scanner & Search Area */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Search */}
+        <div className="glass-card p-6 border-teal-500/30 shadow-[0_0_20px_rgba(20,184,166,0.1)] h-full">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-tighter">Busca de Participante</h2>
           </div>
-          <Button
-            onClick={() => setIsScanning(true)}
-            className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-bold h-12 px-8"
-          >
-            <Camera className="h-5 w-5 mr-2" />
-            ABRIR SCANNER (CÂMERA)
-          </Button>
-        </div>
 
-        <div className="aspect-video bg-dark-100 rounded-lg flex items-center justify-center border-2 border-dashed border-dark-300">
-          <div className="text-center">
-            <QrCode className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400">Use o scanner de câmera ou o campo de busca abaixo</p>
+          <div className="relative mb-6">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
+            <Input
+              autoFocus
+              type="text"
+              placeholder="Nome, e-mail ou número do ticket..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="pl-12 h-14 w-full bg-dark-100 border-teal-500/30 text-white text-lg focus:ring-teal-500"
+            />
           </div>
-        </div>
-      </div>
 
-      {/* Manual Check-in */}
-      <div className="glass-card p-6 border-teal-500/30 shadow-[0_0_20px_rgba(20,184,166,0.1)]">
-        <h2 className="text-lg font-semibold text-white mb-4">Check-in / Busca QR</h2>
-
-        <div className="relative mb-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
-          <Input
-            autoFocus
-            type="text"
-            placeholder="Aponte o leitor de QR Code ou busque manualmente..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="pl-12 h-14 w-full bg-dark-100 border-teal-500/30 text-white text-lg focus:ring-teal-500"
-          />
-        </div>
-
-        {searchQuery && (
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {filteredRegistrations.length > 0 ? (
-              filteredRegistrations.map((reg) => (
-                <div
-                  key={reg.id}
-                  className="flex items-center justify-between p-4 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
-                >
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center mr-4">
-                      <User className="h-5 w-5 text-teal-400" />
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">{reg.ticketNumber}</p>
-                      <p className="text-gray-400 text-sm font-mono text-[10px]">{reg.id}</p>
-                      <Badge variant="outline" className="mt-1 text-[10px] bg-white/5 border-white/10">
-                        {reg.ticketType.toUpperCase()}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="bg-green-500 hover:bg-green-600 text-white font-bold"
-                    onClick={() => handleManualCheckIn(reg)}
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {searchQuery ? (
+              filteredRegistrations.length > 0 ? (
+                filteredRegistrations.map((reg) => (
+                  <div
+                    key={reg.id}
+                    className="flex items-center justify-between p-4 bg-dark-100 rounded-xl hover:bg-dark-300 transition-all border border-white/5 group"
                   >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Check-in
-                  </Button>
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center mr-4 group-hover:bg-teal-500/20 transition-colors">
+                        <User className="h-5 w-5 text-teal-400" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold">{reg.nome || reg.name || 'Sem nome'}</p>
+                        <p className="text-gray-400 text-xs font-mono">{reg.ticketNumber}</p>
+                        <Badge variant="outline" className="mt-1 text-[9px] bg-white/5 border-white/10 uppercase font-black">
+                          {reg.ticketType}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-4"
+                      onClick={() => handleManualCheckIn(reg)}
+                    >
+                      REALIZAR CHECK-IN
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-10 opacity-50">
+                  <Search className="h-10 w-10 mx-auto mb-2 text-gray-600" />
+                  <p className="text-gray-400">Nenhum participante encontrado</p>
                 </div>
-              ))
+              )
             ) : (
-              <p className="text-gray-400 text-center py-4">Nenhum ingresso compatível encontrado</p>
+              <div className="text-center py-10 opacity-40">
+                <Clock className="h-10 w-10 mx-auto mb-2 text-gray-700" />
+                <p className="text-sm font-bold uppercase tracking-widest">Aguardando busca...</p>
+              </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Recent Check-ins */}
-      <div className="glass-card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Check-ins Recentes</h2>
-          <Badge className="bg-teal-500/20 text-teal-400">
-            <Clock className="h-3 w-3 mr-1" />
-            Ao vivo
-          </Badge>
         </div>
 
-        <div className="space-y-3">
-          {checkIns.slice(0, 10).map((checkIn) => (
-            <div key={checkIn.id} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
-                  <CheckCircle className="h-5 w-5 text-green-400" />
+        {/* Scanner */}
+        <div className="glass-card p-6 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-white uppercase tracking-tighter text-brand-orange-coral">Scanner QR (Câmera)</h2>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center bg-dark-100 rounded-2xl border-2 border-dashed border-dark-300 relative group overflow-hidden min-h-[300px]">
+            {!isScanning ? (
+              <div className="text-center z-10 p-8">
+                <div className="w-20 h-20 bg-brand-orange-coral/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-orange-coral/20">
+                  <Camera className="h-10 w-10 text-brand-orange-coral" />
                 </div>
-                <div>
-                  <p className="text-white font-medium">{checkIn.ticketNumber}</p>
-                  <p className="text-gray-400 text-sm">{checkIn.registrationId}</p>
-                </div>
+                <h3 className="text-white font-bold mb-2">Usar Câmera do Dispositivo</h3>
+                <Button
+                  onClick={() => setIsScanning(true)}
+                  className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-12 px-10 rounded-xl"
+                >
+                  ABRIR CÂMERA
+                </Button>
               </div>
-              <div className="text-right">
-                <p className="text-teal-400 text-sm">
-                  {new Date(checkIn.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                <p className="text-gray-500 text-xs">{checkIn.location}</p>
-              </div>
-            </div>
-          ))}
+            ) : (
+              <QRScanner
+                onSuccess={handleScannerSuccess}
+                onClose={() => setIsScanning(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Attendance by Hour */}
+      {/* Recent Activity */}
       <div className="glass-card p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Presença por Horário</h2>
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
-          {HOURS.map((hour, idx) => (
-            <div key={hour} className="text-center">
-              <div className="bg-dark-100 rounded-lg p-3 mb-2">
-                <TrendingUp className="h-4 w-4 text-teal-400 mx-auto" />
-              </div>
-              <p className="text-gray-400 text-[10px]">{hour}</p>
-              <p className="text-white font-bold">{hourlyStats[idx]}</p>
-            </div>
-          ))}
+        <h2 className="text-lg font-semibold text-white uppercase tracking-tighter mb-4">Atividade Recente</h2>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...(selectedSessionId === 'all' ? checkIns : sessionAttendance.filter(a => (a.sessionId || a.session_id) === selectedSessionId))]
+            .sort((a, b) => new Date(b.timestamp || b.checkInAt).getTime() - new Date(a.timestamp || a.checkInAt).getTime())
+            .slice(0, 6)
+            .map((item, idx) => {
+              const reg = registrations.find(r => r.id === (item.registrationId || item.registration_id));
+              const ts = item.timestamp || item.checkInAt;
+
+              return (
+                <div key={idx} className="flex items-center justify-between p-4 bg-dark-100 rounded-xl border border-white/5">
+                  <div className="flex items-center min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mr-3 shrink-0">
+                      <CheckCircle className="h-4 w-4 text-green-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white font-bold text-sm truncate">{reg?.nome || reg?.name || item.ticketNumber || 'Visitante'}</p>
+                      <p className="text-gray-500 text-[10px] font-mono">{reg?.ticketNumber || 'SESSÃO'}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 ml-4">
+                    <p className="text-teal-400 font-bold text-xs">
+                      {new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
         </div>
       </div>
     </div>

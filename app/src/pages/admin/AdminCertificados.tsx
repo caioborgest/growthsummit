@@ -92,7 +92,7 @@ export function AdminCertificados() {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
-                .from('certificados' as any)
+                .from('certificates' as any)
                 .select('*, registration:inscricoes_growth_experience(nome, email)')
                 .eq('project_id', selectedProject.id)
                 .order('issue_date', { ascending: false });
@@ -105,7 +105,7 @@ export function AdminCertificados() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedProject?.id]);
+    }, [selectedProject?.id, setCertificates]);
 
     useEffect(() => {
         fetchData();

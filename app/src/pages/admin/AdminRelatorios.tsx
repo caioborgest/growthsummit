@@ -13,11 +13,28 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useRegistrations, useMentors, useMentoringSessions, useStartups, useSponsors, useTransactions } from '@/hooks/useData';
+import {
+  useRegistrations,
+  useMentors,
+  useMentoringSessions,
+  useStartups,
+  useSponsors,
+  useTransactions,
+  usePitchScores,
+  useCheckInsAtividades,
+  useSessions
+} from '@/hooks/useData';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
-import { generateInscricoesReport, generateFinanceiroReport, generateMentoriasReport } from '@/lib/reports';
+import {
+  generateInscricoesReport,
+  generateFinanceiroReport,
+  generateMentoriasReport,
+  generateStartupsReport,
+  generatePatrocinadoresReport,
+  generatePresencaReport
+} from '@/lib/reports';
 
 const reportTypes = [
   {
@@ -75,6 +92,9 @@ export function AdminRelatorios() {
   const { data: startups } = useStartups();
   const { data: sponsors } = useSponsors();
   const { data: transactions } = useTransactions();
+  const { data: pitchScores } = usePitchScores();
+  const { data: attendance } = useCheckInsAtividades();
+  const { data: activitySessions } = useSessions();
 
   const handleGenerate = async (reportId: string) => {
     setGenerating(reportId);
@@ -95,8 +115,17 @@ export function AdminRelatorios() {
         case 'mentorias':
           generateMentoriasReport(sessions, projectName);
           break;
+        case 'startups':
+          generateStartupsReport(startups, pitchScores, projectName);
+          break;
+        case 'patrocinadores':
+          generatePatrocinadoresReport(sponsors, projectName);
+          break;
+        case 'presenca':
+          generatePresencaReport(activitySessions, attendance, projectName);
+          break;
         default:
-          toast.error(`Geração do relatório ${reportId} ainda não disponível em formato PDF real.`);
+          toast.error(`Geração do relatório ${reportId} ainda não disponível.`);
           setGenerating(null);
           return;
       }
