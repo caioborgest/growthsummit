@@ -27,7 +27,7 @@ import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
-import { LeadScanner } from './components/LeadScanner';
+import { LeadScanner } from './components/shared/LeadScanner';
 import { jsPDF } from 'jspdf';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 
