@@ -146,7 +146,7 @@ export default function AdminPatrocinadores() {
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold" onClick={() => toast.info('A integração com a ferramenta de exportação será lançada na v2')}>
               <Plus className="h-4 w-4 mr-2" />
               Novo Patrocinador
             </Button>

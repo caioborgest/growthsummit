@@ -1,11 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Users, Calendar, CheckCircle, Clock, XCircle, MessageSquare,
-  MapPin, Phone, Mail, Briefcase, Plus, Power,
-  ChevronRight, ArrowRight, ShieldCheck, Star, Building2, BarChart, Settings,
-  LogOut,
-  User,
-  Trash2
+  Phone, Mail, Plus,
+  ShieldCheck, Building2, BarChart, Settings,
+  User, Sun, Moon, Target
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +12,6 @@ import { useMentoringSessions, useMentors, useNotifications } from '@/hooks/useD
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
@@ -46,9 +43,9 @@ export default function DashboardMentor() {
   // Filter sessions for this mentor
   const mentorSessions = sessions?.filter(s => s.mentorId === mentorData?.id) || [];
 
-  const pendingRequests = mentorSessions.filter(s => s.status === 'pendente' || s.status === 'pending');
-  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId);
-  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && !s.menteeId);
+  const pendingRequests = mentorSessions.filter(s => s.status === 'pending' || (s.status as string) === 'pendente');
+  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId);
+  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && !s.menteeId);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -59,7 +56,7 @@ export default function DashboardMentor() {
   const handleMarkAsRead = async (id: string) => {
     // Only proceed if id is valid
     if (!id) return;
-    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    const { error } = await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
     if (error) logger.error('Erro mark notific:', error);
   };
 
@@ -105,11 +102,11 @@ export default function DashboardMentor() {
     const session = mentorSessions.find(s => {
       const sDate = new Date(s.scheduledAt).toISOString().split('T')[0];
       const sTime = new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      return sDate === selectedDate && sTime === slotId && s.status !== 'cancelled' && s.status !== 'cancelado';
+      return sDate === selectedDate && sTime === slotId && s.status !== 'cancelled' && (s.status as string) !== 'cancelado';
     });
 
     if (!session) return 'empty';
-    if (session.status === 'pendente' || session.status === 'pending') return 'pending';
+    if (session.status === 'pending' || (session.status as string) === 'pendente') return 'pending';
     if (session.menteeId) return 'booked';
     return 'available';
   };
@@ -248,7 +245,21 @@ export default function DashboardMentor() {
                           <CheckCircle className="h-4 w-4 mr-2" /> ACEITAR
                         </Button>
                         <Button
-                          onClick={() => update(session.id, { status: 'cancelled' })}
+                          onClick={async () => {
+                            if (!window.confirm('Recusar esta solicitação? O horário voltará a ficar disponível.')) return;
+                            await update(session.id, { 
+                              status: 'scheduled',
+                              menteeId: '' as any,
+                              menteeName: '' as any,
+                              menteeEmail: '' as any,
+                              menteePhone: '' as any,
+                              topic: 'Disponível para Mentoria' as any,
+                              notes: 'Slot liberado após recusa.' as any,
+                              startupName: '' as any,
+                              sector: '' as any
+                            });
+                            toast.success('Solicitação recusada. O horário está disponível novamente.');
+                          }}
                           variant="ghost"
                           className="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white font-black text-xs py-5 rounded-2xl"
                         >
@@ -300,6 +311,28 @@ export default function DashboardMentor() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+                          onClick={async () => {
+                            if (!window.confirm('Deseja realmente CANCELAR esta mentoria confirmada?')) return;
+                            await update(session.id, { 
+                              status: 'scheduled',
+                              menteeId: '' as any,
+                              menteeName: '' as any,
+                              menteeEmail: '' as any,
+                              menteePhone: '' as any,
+                              topic: 'Disponível para Mentoria' as any,
+                              notes: 'Slot liberado após cancelamento do mentor.' as any,
+                              startupName: '' as any,
+                              sector: '' as any
+                            });
+                            toast.success('Mentoria cancelada e horário liberado.');
+                          }}
+                        >
+                          <XCircle className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="w-12 h-12 rounded-2xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
                           onClick={() => window.open(`https://wa.me/55${session.menteePhone?.replace(/\D/g, '')}`, '_blank')}
                         >
@@ -326,6 +359,27 @@ export default function DashboardMentor() {
         ) : (
           /* SLOTS / MANAGEMENT TAB */
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            
+            {/* Slot Statistics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-dark-200/50 border border-white/5 rounded-3xl p-6">
+                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Slots Totais</p>
+                <p className="text-white font-black text-2xl">{MENTORSHIP_TIME_SLOTS.length}</p>
+              </div>
+              <div className="bg-teal-500/10 border border-teal-500/20 rounded-3xl p-6">
+                <p className="text-teal-500 text-[10px] font-bold uppercase tracking-widest mb-1">Disponíveis</p>
+                <p className="text-white font-black text-2xl">{availableSlots.length}</p>
+              </div>
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-3xl p-6">
+                <p className="text-indigo-500 text-[10px] font-bold uppercase tracking-widest mb-1">Reservados</p>
+                <p className="text-white font-black text-2xl">{upcomingSessions.length}</p>
+              </div>
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-3xl p-6">
+                <p className="text-yellow-500 text-[10px] font-bold uppercase tracking-widest mb-1">Pendentes</p>
+                <p className="text-white font-black text-2xl">{pendingRequests.length}</p>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-3xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 shadow-xl shadow-teal-500/5">

@@ -16,7 +16,7 @@ import {
   MessageSquare,
   ClipboardList,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,13 +34,13 @@ import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { LeadScanner } from './components/shared/LeadScanner';
+import { exportToCSV } from '@/utils/csv';
 
 export function DashboardSponsor() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { data: sponsors } = useSponsors();
   const [activeTab, setActiveTab] = useState('overview');
-  const [unreadNotifications] = useState(1);
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -87,12 +87,13 @@ export function DashboardSponsor() {
       }
 
       await createLead({
+        projectId: sponsorData?.projectId,
         sponsorId: sponsorData?.id,
         registrationId: registrationId,
         interestLevel: 'high',
         notes: 'Capturado via QR Code do Stand',
         visitorName: 'Participante ' + registrationId.substring(0, 4),
-      } as any);
+      });
 
       toast.success('Lead capturado com sucesso!');
     } catch (e) {
@@ -131,7 +132,6 @@ export function DashboardSponsor() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="PATROCINADOR"
           isPro={true}
-          statusFinanceiro={{ label: 'Ativo' }}
           notifications={[]}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
@@ -370,7 +370,7 @@ export function DashboardSponsor() {
                               </Button>
                             )}
                             {deliverable.status === 'completed' && (
-                              <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                              <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate('/em-breve/download-entregavel')}>
                                 <Download className="h-4 w-4 mr-1" />
                                 Baixar
                               </Button>
@@ -393,7 +393,7 @@ export function DashboardSponsor() {
                         <QrCode className="h-4 w-4 mr-2" />
                         Escanear Crachá
                       </Button>
-                      <Button variant="outline" className="border-dark-300 text-gray-300">
+                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(sponsorLeads, 'leads_patrocinador')}>
                         <Download className="h-4 w-4 mr-2" />
                         Exportar CSV
                       </Button>
@@ -419,7 +419,7 @@ export function DashboardSponsor() {
                             <Star className="h-3 w-3 mr-1" />
                             {lead.interestLevel}
                           </Badge>
-                          <Button size="sm" variant="ghost" className="text-gray-400">
+                          <Button size="sm" variant="ghost" className="text-gray-400" onClick={() => navigate('/em-breve/contato-lead')}>
                             <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
@@ -533,7 +533,7 @@ export function DashboardSponsor() {
                               <FileText className="h-5 w-5 text-yellow-400 mr-3" />
                               <span className="text-white text-sm">{doc.name}</span>
                             </div>
-                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate(`/em-breve/download-${doc.name.toLowerCase().replace(/\s+/g, '-')}`)}>
                               <Download className="h-4 w-4" />
                             </Button>
                           </div>
@@ -563,7 +563,7 @@ export function DashboardSponsor() {
                               <FileText className="h-5 w-5 text-teal-400 mr-3" />
                               <span className="text-white text-sm">{doc.name}</span>
                             </div>
-                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
+                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate(`/em-breve/download-${doc.name.toLowerCase().replace(/\s+/g, '-')}`)}>
                               <Download className="h-4 w-4" />
                             </Button>
                           </div>
@@ -590,8 +590,9 @@ export function DashboardSponsor() {
                         ].map((link, i) => (
                           <a
                             key={i}
-                            href={link.url}
-                            className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
+                            href={link.url === '#' ? undefined : link.url}
+                            onClick={(e) => { if(link.url === '#') { e.preventDefault(); navigate(`/em-breve/${link.name.toLowerCase().replace(/\s+/g, '-')}`); } }}
+                            className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
                           >
                             <span className="text-yellow-400 text-sm">{link.name}</span>
                             <ExternalLink className="h-4 w-4 text-gray-400" />

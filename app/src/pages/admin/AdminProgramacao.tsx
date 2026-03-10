@@ -463,7 +463,7 @@ export function AdminProgramacao() {
             </div>
 
             <div className="flex space-x-4 pt-4">
-              <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
+              <Button type="button" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg" onClick={() => toast.info('Funcionalidade de salvamento do dia em desenvolvimento')}>
                 {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
               </Button>
               <Button

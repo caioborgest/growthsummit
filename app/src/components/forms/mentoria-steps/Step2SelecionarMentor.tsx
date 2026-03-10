@@ -9,23 +9,15 @@ import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
 import { MENTORSHIP_TIME_SLOTS } from './mentoriaTypes';
 
-interface Mentor {
-    id: string;
-    nome: string;
-    cargo?: string;
-    empresa: string;
-    bio: string;
-    foto_url?: string;
-    especialidades?: string[];
-}
-
 interface Step2SelecionarMentorProps {
     area: string;
     mentorSelecionadoId: string;
-    slotSelecionadoId: string;
+    slotId?: string;
     onContinuar: (mentorId: string, slotId: string) => void;
     onVoltar: () => void;
 }
+
+import { useMentoringSessions } from '@/hooks/useData';
 
 export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSelecionadoId, onContinuar, onVoltar }: Step2SelecionarMentorProps) {
     const [mentores, setMentores] = useState<Mentor[]>([]);
@@ -33,6 +25,19 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     const [tempMentorId, setTempMentorId] = useState(mentorSelecionadoId);
     const [tempSlotId, setTempSlotId] = useState(slotSelecionadoId);
     const { projectId } = useProject();
+    const { data: allSessions, isLoading: loadingSessions } = useMentoringSessions();
+
+    // Filter available slots for the selected mentor
+    const availableSlotsForMentor = (allSessions || []).filter(s => 
+        s.mentorId === tempMentorId && 
+        (s.status === 'scheduled' || s.status === 'agendado') && 
+        !s.menteeId
+    );
+
+    const mentorEnabledSlots = availableSlotsForMentor.map(s => {
+        const date = new Date(s.scheduledAt);
+        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    });
 
     useEffect(() => {
         async function fetchMentores() {
@@ -135,21 +140,39 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                     </h4>
                     <Card className="glass-card p-4 border-white/5 bg-dark-200/30 max-h-[500px] overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-1 gap-2">
-                            {MENTORSHIP_TIME_SLOTS.map(slot => {
-                                const isSelected = tempSlotId === slot.id;
-                                return (
-                                    <button
-                                        key={slot.id}
-                                        onClick={() => setTempSlotId(slot.id)}
-                                        className={`px-4 py-3 rounded-xl text-xs font-black transition-all border ${isSelected
-                                            ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-glow-orange/20'
-                                            : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'
-                                            }`}
-                                    >
-                                        {slot.label}
-                                    </button>
-                                );
-                            })}
+                            {loading || loadingSessions ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="h-6 w-6 text-brand-orange-coral animate-spin" />
+                                </div>
+                            ) : !tempMentorId ? (
+                                <p className="text-gray-500 text-[10px] font-bold uppercase text-center py-4">
+                                    Selecione um mentor para ver os horários
+                                </p>
+                            ) : mentorEnabledSlots.length > 0 ? (
+                                MENTORSHIP_TIME_SLOTS
+                                    .filter(slot => mentorEnabledSlots.includes(slot.id))
+                                    .map(slot => {
+                                        const isSelected = tempSlotId === slot.id;
+                                        return (
+                                            <button
+                                                key={slot.id}
+                                                onClick={() => setTempSlotId(slot.id)}
+                                                className={`px-4 py-3 rounded-xl text-xs font-black transition-all border ${isSelected
+                                                    ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-glow-orange/20'
+                                                    : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'
+                                                    }`}
+                                            >
+                                                {slot.label}
+                                            </button>
+                                        );
+                                    })
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 text-[10px] font-bold uppercase leading-relaxed">
+                                        Nenhum horário disponível<br />para este mentor hoje.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </Card>
                     <p className="text-[10px] text-gray-500 font-bold uppercase leading-tight p-2 italic text-center">

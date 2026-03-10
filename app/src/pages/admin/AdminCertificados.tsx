@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
     Award,
     Search,
@@ -9,16 +9,11 @@ import {
     Type,
     Save,
     Plus,
-    CheckCircle2,
-    XCircle,
-    Trash2,
     RefreshCw,
     User,
-    Calendar,
     Stamp,
     CloudUpload,
     Loader2,
-    ChevronRight,
     QrCode
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,7 +24,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
+import { generateCertificatePDF } from '@/lib/certificateGenerator';
+import { ManualCertificateModal } from './components/ManualCertificateModal';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 interface Certificate {
@@ -68,6 +64,7 @@ export function AdminCertificados() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
     // Template State
     const [template, setTemplate] = useState<CertificateTemplate>({
@@ -85,6 +82,10 @@ export function AdminCertificados() {
     });
 
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Upload Refs
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const signatureInputRef = useRef<HTMLInputElement>(null);
 
     // ── Carregar Dados ──────────────────────────────────────────────────────
     const fetchData = useCallback(async () => {
@@ -141,6 +142,36 @@ export function AdminCertificados() {
         }
     };
 
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: 'logo_url' | 'signature_url') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validar tamanho (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('A imagem deve ter no máximo 2MB.');
+            return;
+        }
+
+        try {
+            toast.loading('Processando imagem...', { id: 'upload' });
+            // Aqui poderíamos subir pro Supabase Storage, mas para simplificar
+            // no preview, vamos converter pra Base64. Num cenário real de 
+            // PDF generator, Base64 ou URL pública de storage ambos funcionam.
+            
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setTemplate(prev => ({ ...prev, [field]: base64String }));
+                toast.success('Imagem carregada com sucesso!', { id: 'upload' });
+            };
+            reader.readAsDataURL(file);
+            
+        } catch (error) {
+            logger.error('[AdminCertificados] Erro ao processar imagem:', error);
+            toast.error('Erro ao processar imagem.', { id: 'upload' });
+        }
+    };
+
     const handlePreview = async () => {
         try {
             toast.loading('Gerando preview...', { id: 'preview' });
@@ -166,6 +197,7 @@ export function AdminCertificados() {
 
             toast.success('Preview gerado!', { id: 'preview' });
         } catch (err) {
+            console.error(err);
             toast.error('Erro ao gerar preview.', { id: 'preview' });
         }
     };
@@ -195,7 +227,10 @@ export function AdminCertificados() {
                         <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                         Sincronizar
                     </Button>
-                    <Button className="bg-teal-500 hover:bg-teal-600 text-white font-black px-6">
+                    <Button 
+                        className="bg-teal-500 hover:bg-teal-600 text-white font-black px-6" 
+                        onClick={() => setIsManualModalOpen(true)}
+                    >
                         <Plus className="h-4 w-4 mr-2" />
                         Emitir Manualmente
                     </Button>
@@ -411,20 +446,48 @@ export function AdminCertificados() {
 
                                     {/* Uploaders robustos */}
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+                                        {/* Hidden inputs */}
+                                        <input 
+                                            type="file" 
+                                            ref={logoInputRef} 
+                                            onChange={(e) => handleImageUpload(e, 'logo_url')}
+                                            accept="image/png, image/jpeg" 
+                                            className="hidden" 
+                                        />
+                                        <input 
+                                            type="file" 
+                                            ref={signatureInputRef} 
+                                            onChange={(e) => handleImageUpload(e, 'signature_url')}
+                                            accept="image/png, image/jpeg" 
+                                            className="hidden" 
+                                        />
+
+                                        <div 
+                                            className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all cursor-pointer"
+                                            onClick={() => logoInputRef.current?.click()}
+                                        >
                                             <div className="flex items-center gap-3">
                                                 <CloudUpload className="h-5 w-5 text-gray-500 group-hover:text-teal-400 transition-colors" />
-                                                <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Logomarca (Alta Defin.)</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Logomarca (Alta Defin.)</span>
+                                                    {template.logo_url && <span className="text-[10px] text-teal-400 font-bold">Imagem Carregada ✓</span>}
+                                                </div>
                                             </div>
-                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10">Alterar</Button>
+                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10" onClick={(e) => { e.stopPropagation(); logoInputRef.current?.click(); }}>Alterar</Button>
                                         </div>
 
-                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+                                        <div 
+                                            className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all cursor-pointer"
+                                            onClick={() => signatureInputRef.current?.click()}
+                                        >
                                             <div className="flex items-center gap-3">
                                                 <Stamp className="h-5 w-5 text-gray-500 group-hover:text-teal-400 transition-colors" />
-                                                <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Assinatura Digitalizada (PNG)</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Assinatura Digitalizada (PNG)</span>
+                                                    {template.signature_url && <span className="text-[10px] text-teal-400 font-bold">Imagem Carregada ✓</span>}
+                                                </div>
                                             </div>
-                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10">Alterar</Button>
+                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10" onClick={(e) => { e.stopPropagation(); signatureInputRef.current?.click(); }}>Alterar</Button>
                                         </div>
                                     </div>
                                 </div>
@@ -448,7 +511,11 @@ export function AdminCertificados() {
                                         <div className="absolute left-0 top-0 w-2 h-full bg-orange-500"></div>
                                         <div className="absolute right-0 top-0 w-2 h-full bg-teal-500"></div>
 
-                                        <div className="w-20 h-8 bg-white/10 rounded mb-4" /> {/* Logo mock */}
+                                        {template.logo_url ? (
+                                            <img src={template.logo_url} alt="Logo" className="max-w-[80px] max-h-[32px] object-contain mb-4" />
+                                        ) : (
+                                            <div className="w-20 h-8 bg-white/10 rounded mb-4" />
+                                        )}
                                         <div className="space-y-2 mb-8">
                                             <p className="text-[8px] font-black text-white/40 tracking-[0.3em] uppercase">{template.title}</p>
                                             <p className="text-[6px] text-white/20">Certificamos com orgulho que</p>
@@ -464,8 +531,12 @@ export function AdminCertificados() {
 
                                         <div className="flex justify-between w-full px-6">
                                             <div className="text-left">
-                                                <div className="w-16 h-8 bg-white/5 rounded border border-white/10 mb-2 flex items-center justify-center">
-                                                    <span className="text-[5px] text-white/20 italic">ASSINATURA</span>
+                                                <div className="w-16 h-8 bg-white/5 rounded border border-white/10 mb-2 flex items-center justify-center overflow-hidden">
+                                                    {template.signature_url ? (
+                                                        <img src={template.signature_url} alt="Assinatura" className="max-w-full max-h-full object-contain" />
+                                                    ) : (
+                                                        <span className="text-[5px] text-white/20 italic">ASSINATURA</span>
+                                                    )}
                                                 </div>
                                                 <p className="text-[6px] font-bold text-white mb-0.5">{template.ceo_name}</p>
                                                 <p className="text-[5px] text-white/30">{template.ceo_role}</p>
@@ -516,6 +587,15 @@ export function AdminCertificados() {
                     </div>
                 </TabsContent>
             </Tabs>
+
+            {selectedProject?.id && (
+                <ManualCertificateModal
+                    isOpen={isManualModalOpen}
+                    onClose={() => setIsManualModalOpen(false)}
+                    projectId={selectedProject.id}
+                    onSuccess={fetchData}
+                />
+            )}
         </div>
     );
 }

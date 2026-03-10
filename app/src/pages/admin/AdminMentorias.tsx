@@ -99,14 +99,15 @@ export function AdminMentorias() {
   };
 
   const stats = {
-    scheduled: sessions.filter(s => s.status === 'scheduled' && s.menteeId).length,
-    available: sessions.filter(s => s.status === 'scheduled' && !s.menteeId).length,
+    scheduled: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId).length,
+    available: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && !s.menteeId).length,
+    pending: sessions.filter(s => s.status === 'pendente' || s.status === 'pending').length,
     completed: sessions.filter(s => s.status === 'completed').length,
-    cancelled: sessions.filter(s => s.status === 'cancelled').length,
+    cancelled: sessions.filter(s => (s.status === 'cancelled' || s.status === 'cancelado')).length,
     avgRating: sessions
-      .filter(s => s.feedback)
-      .reduce((acc, s) => acc + (s.feedback?.avaliacaoMentoria || s.feedback?.rating || 0), 0) /
-      sessions.filter(s => s.feedback).length || 0,
+      .filter(s => s.evaluationRating || s.rating)
+      .reduce((acc, s) => acc + (s.evaluationRating || s.rating || 0), 0) /
+      sessions.filter(s => s.evaluationRating || s.rating).length || 0,
   };
 
   return (
@@ -139,7 +140,7 @@ export function AdminMentorias() {
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white" onClick={() => toast.info('Matching via Inteligência Artificial será integrado na próxima release')}>
               <Calendar className="h-4 w-4 mr-2" />
               Nova Mentoria
             </Button>
@@ -245,12 +246,12 @@ export function AdminMentorias() {
           <p className="text-gray-400 text-sm font-bold text-orange-400">Slots Abertos</p>
           <p className="text-2xl font-bold text-orange-400">{stats.available}</p>
         </div>
-        <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Concluídas</p>
-          <p className="text-2xl font-bold text-green-400">{stats.completed}</p>
+        <div className="glass-card p-4 border-l-4 border-l-yellow-500">
+          <p className="text-gray-400 text-sm font-bold text-yellow-500">Pendentes</p>
+          <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Avaliação Média</p>
+          <p className="text-gray-400 text-sm">Rating Médio</p>
           <div className="flex items-center">
             <p className="text-2xl font-bold text-yellow-400">{stats.avgRating.toFixed(1)}</p>
             <Star className="h-5 w-5 text-yellow-400 ml-1 fill-yellow-400" />

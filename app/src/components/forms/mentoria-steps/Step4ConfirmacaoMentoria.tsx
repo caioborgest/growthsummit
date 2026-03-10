@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { User, Mail, Phone, Briefcase, Loader2, AlertCircle, Target, ShieldCheck, CheckCircle2, Star, Clock, Building2, BarChart } from 'lucide-react';
+import { User, Mail, Phone, Loader2, Target, ShieldCheck, Clock, Building2, BarChart } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { MENTORSHIP_TIME_SLOTS } from './mentoriaTypes';
 import { supabase } from '@/lib/supabase';
@@ -113,7 +113,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             }
 
             if (userId) {
-                const usersTable = supabase.from('users') as any;
+                const usersTable = supabase.from('users' as any) as any;
                 await usersTable
                     .upsert({
                         id: userId,
@@ -130,25 +130,59 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             const [hours, minutes] = dados.slotId.split(':');
             const scheduled_date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
 
+            const mentoriasTable = supabase.from('mentorias_agendadas' as any) as any;
 
-            const mentoriasTable = supabase.from('mentorias_agendadas') as any;
-            const { data: mentoriaData, error: mentoriaError } = await mentoriasTable
-                .insert({
-                    project_id: projectId,
-                    mentorado_id: userId || null,
-                    mentor_id: dados.mentorId,
-                    nome_mentorado: dados.nome,
-                    email_mentorado: dados.email,
-                    telefone_mentorado: dados.telefone,
-                    tema_interesse: dados.area,
-                    anotacoes: dados.descricaoProblema,
-                    data_mentoria: scheduled_date.toISOString(),
-                    nome_startup: dados.nomeNegocio, // requested business info
-                    setor: dados.estagioNegocio,       // requested business info
-                    status: 'pendente'
-                })
-                .select();
+            // 1. First, check if there's an existing available slot (mentor habilitou esse horário)
+            const { data: existingSlots } = await mentoriasTable
+                .select('id')
+                .eq('mentor_id', dados.mentorId)
+                .eq('data_mentoria', scheduled_date.toISOString())
+                .is('mentorado_id', null)
+                .eq('status', 'scheduled')
+                .limit(1);
 
+            const slotToUpdate = existingSlots?.[0]?.id;
+            let mentoriaResult;
+
+            if (slotToUpdate) {
+                // Update existing slot
+                mentoriaResult = await mentoriasTable
+                    .update({
+                        mentorado_id: userId || null,
+                        nome_mentorado: dados.nome,
+                        email_mentorado: dados.email,
+                        telefone_mentorado: dados.telefone,
+                        tema_interesse: dados.area,
+                        anotacoes: dados.descricaoProblema,
+                        nome_startup: dados.nomeNegocio,
+                        setor: dados.estagioNegocio,
+                        status: 'pendente',
+                        duracao: 20
+                    })
+                    .eq('id', slotToUpdate)
+                    .select();
+            } else {
+                // Fallback: Create new record if no slot exists (legacy behavior or admin manual override)
+                mentoriaResult = await mentoriasTable
+                    .insert({
+                        project_id: projectId,
+                        mentorado_id: userId || null,
+                        mentor_id: dados.mentorId,
+                        nome_mentorado: dados.nome,
+                        email_mentorado: dados.email,
+                        telefone_mentorado: dados.telefone,
+                        tema_interesse: dados.area,
+                        anotacoes: dados.descricaoProblema,
+                        data_mentoria: scheduled_date.toISOString(),
+                        nome_startup: dados.nomeNegocio,
+                        setor: dados.estagioNegocio,
+                        status: 'pendente',
+                        duracao: 20
+                    })
+                    .select();
+            }
+
+            const { data: mentoriaData, error: mentoriaError } = mentoriaResult;
             if (mentoriaError) throw new Error(mentoriaError.message);
 
             // Notify mentor

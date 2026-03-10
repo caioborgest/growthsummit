@@ -301,6 +301,7 @@ export interface CheckIn {
   checkInType: 'event' | 'session';
   staffId?: string;
   notes?: string;
+  createdAt: string;
 }
 
 export interface Certificate {
@@ -363,6 +364,7 @@ export interface Session {
   topics?: string[];
   color?: string;
   metadata?: Record<string, unknown>;
+  createdAt: string;
 }
 
 export interface Notification {
@@ -377,10 +379,12 @@ export interface Notification {
 
 export interface Lead {
   id: string;
-  projectId: string;
-  startupId: string;
+  projectId?: string;
+  startupId?: string;
+  sponsorId?: string;
+  registrationId?: string;
   visitorName: string;
-  visitorEmail: string;
+  visitorEmail?: string;
   visitorCompany?: string;
   interestLevel: 'low' | 'medium' | 'high';
   notes?: string;
@@ -468,6 +472,8 @@ export interface MentoringSession {
   mentorName: string;
   menteeId: string;
   menteeName: string;
+  menteeEmail?: string;
+  menteePhone?: string;
   scheduledAt: string;
   duration: number;
   status: 'pending' | 'scheduled' | 'completed' | 'cancelled' | 'no_show';
@@ -487,3 +493,14 @@ export interface MentoringSession {
   threeSteps?: string[];
   createdAt: string;
 }
+
+export interface B2BChatMessage {
+  id: string;
+  projectId: string;
+  matchId: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+  readAt?: string;
+}
+

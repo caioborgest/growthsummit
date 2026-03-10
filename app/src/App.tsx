@@ -38,6 +38,7 @@ const DashboardCompany = lazy(() => import('./pages/dashboard/DashboardCompany')
 const DashboardStartup = lazy(() => import('./pages/dashboard/DashboardStartup').then(m => ({ default: m.DashboardStartup })));
 const DashboardSponsor = lazy(() => import('./pages/dashboard/DashboardSponsor').then(m => ({ default: m.DashboardSponsor })));
 const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m => ({ default: m.Certificados })));
+const ComingSoon = lazy(() => import('./pages/ComingSoon').then(m => ({ default: m.ComingSoon })));
 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -160,7 +161,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   }
 
   if (!isAuthenticated) {
-    console.log('[ProtectedRoute] Usuário não autenticado, redirecionando para /login');
+    console.info('[ProtectedRoute] Usuário não autenticado, redirecionando para /login');
     return <Navigate to="/login" replace />;
   }
 
@@ -228,6 +229,8 @@ function AppRoutes() {
               <Certificados />
             </ProtectedRoute>
           } />
+          <Route path="em-breve" element={<ComingSoon />} />
+          <Route path="em-breve/:feature" element={<ComingSoon />} />
         </Route>
 
         {/* Help Center (App only, no public layout) */}

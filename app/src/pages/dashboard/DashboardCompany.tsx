@@ -4,25 +4,17 @@ import {
   Handshake,
   TrendingUp,
   MessageSquare,
-  CheckCircle,
   FileText,
-  LogOut,
   Sparkles,
   Heart,
   X as CloseIcon,
   Info,
   Calendar,
-  HelpCircle,
   MapPin,
   User,
-  Bell
 } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,7 +28,9 @@ import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { B2BScheduleModal } from './components/B2BScheduleModal';
-import type { B2BMatch, Company } from '@/types';
+import { B2BChatModal } from './components/B2BChatModal';
+import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
+import { logger } from '@/utils/logger';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
@@ -48,11 +42,11 @@ export function DashboardCompany() {
   const { data: matches } = useB2BMatches();
   const { data: sessions } = useSessions();
   const [activeTab, setActiveTab] = useState('discovery');
-  const [unreadNotifications] = useState(1);
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<{ match: B2BMatch, otherCompany: Company } | null>(null);
 
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -136,7 +130,6 @@ export function DashboardCompany() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="REPRESENTANTE B2B"
           isPro={true}
-          statusFinanceiro={{ label: 'Ativo' }}
           notifications={[]}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
@@ -271,7 +264,7 @@ export function DashboardCompany() {
                                     <CloseIcon className="h-8 w-8" />
                                   </button>
 
-                                  <Button size="sm" variant="ghost" className="text-gray-600 hover:text-white uppercase text-[10px] font-black tracking-widest">
+                                  <Button size="sm" variant="ghost" className="text-gray-600 hover:text-white uppercase text-[10px] font-black tracking-widest" onClick={() => navigate('/em-breve/perfil-empresa')}>
                                     <Info className="h-4 w-4 mr-2" />
                                     Ver Perfil
                                   </Button>
@@ -345,10 +338,10 @@ export function DashboardCompany() {
                                 </div>
                               </div>
                               <div className="flex gap-3">
-                                <Button className="bg-dark-300 hover:bg-dark-400 text-white rounded-xl">
+                                <Button className="bg-dark-300 hover:bg-dark-400 text-white rounded-xl" onClick={() => navigate('/em-breve/chat-b2b')}>
                                   <MessageSquare className="h-4 w-4" />
                                 </Button>
-                                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-10">
+                                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-10" onClick={() => toast.success('Presença Confirmada!')}>
                                   Confirmar
                                 </Button>
                               </div>
@@ -394,7 +387,7 @@ export function DashboardCompany() {
                               </span>
                             </div>
                           </div>
-                          <Button variant="outline" className="border-dark-300 rounded-xl text-gray-400 group-hover:text-teal-400 group-hover:border-teal-400/30">
+                          <Button variant="outline" className="border-dark-300 rounded-xl text-gray-400 group-hover:text-teal-400 group-hover:border-teal-400/30" onClick={() => navigate('/em-breve/reserva-lugar')}>
                             Reservar Lugar
                           </Button>
                         </div>
@@ -430,7 +423,7 @@ export function DashboardCompany() {
                                 </div>
                               </div>
                               <div className="mt-auto pt-6 border-t border-dark-300/50 flex gap-2">
-                                <Button size="sm" variant="outline" className="flex-1 border-dark-300 rounded-xl whitespace-nowrap px-1">Detalhes</Button>
+                                <Button size="sm" variant="outline" className="flex-1 border-dark-300 rounded-xl whitespace-nowrap px-1" onClick={() => navigate('/em-breve/detalhes-match')}>Detalhes</Button>
                                 {match.status === 'scheduled' ? (
                                   <Button size="sm" className="flex-1 bg-dark-300 text-gray-400 font-bold rounded-xl cursor-not-allowed whitespace-nowrap px-1" disabled>
                                     Agendado
@@ -447,6 +440,17 @@ export function DashboardCompany() {
                                     Agendar
                                   </Button>
                                 )}
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 rounded-xl"
+                                  onClick={() => {
+                                    setSelectedMatch({ match, otherCompany: other });
+                                    setChatModalOpen(true);
+                                  }}
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
                           );
@@ -472,7 +476,7 @@ export function DashboardCompany() {
                   <div className="glass-card p-10 max-w-4xl text-left">
                     <div className="flex items-center justify-between mb-12">
                       <h2 className="text-2xl font-black text-white">Configurações da Empresa</h2>
-                      <Button className="bg-teal-500 hover:bg-teal-400 text-white font-black px-10 py-6 rounded-2xl">
+                      <Button className="bg-teal-500 hover:bg-teal-400 text-white font-black px-10 py-6 rounded-2xl" onClick={() => navigate('/em-breve/atualizar-dados-empresa')}>
                         ATUALIZAR DADOS
                       </Button>
                     </div>
@@ -539,10 +543,10 @@ export function DashboardCompany() {
                       <h3 className="text-xl font-black text-white mb-6">Suporte Estratégico</h3>
                       <p className="text-gray-400 text-sm leading-relaxed mb-10">Tire suas dúvidas diretamente com os organizadores da Rodada de Negócios via canal exclusivo.</p>
                       <div className="space-y-4">
-                        <Button className="w-full bg-teal-500 hover:bg-teal-400 text-white font-black py-4 rounded-xl">
+                        <Button className="w-full bg-teal-500 hover:bg-teal-400 text-white font-black py-4 rounded-xl" onClick={() => navigate('/em-breve/suporte-whatsapp')}>
                           WHATSAPP B2B
                         </Button>
-                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl">
+                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl" onClick={() => navigate('/em-breve/mapa-interativo')}>
                           MAPA DA ARENA
                         </Button>
                       </div>
@@ -581,6 +585,14 @@ export function DashboardCompany() {
             />
           )}
         </AnimatePresence>
+        {selectedMatch && (
+          <B2BChatModal
+            isOpen={chatModalOpen}
+            onClose={() => setChatModalOpen(false)}
+            matchId={selectedMatch.match.id}
+            otherCompany={selectedMatch.otherCompany}
+          />
+        )}
       </div>
     </div>
   );

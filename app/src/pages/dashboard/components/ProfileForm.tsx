@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';import { useNavigate } from 'react-router-dom';
 
 
 export function ProfileForm() {
+    const navigate = useNavigate();
     const { user, updateProfile } = useAuth();
     const { data: profile, update: updateProfileData, isLoading: isProfileLoading } = useProfile(user?.id);
     const { data: mentors } = useMentors();
@@ -460,7 +461,7 @@ export function ProfileForm() {
                                 <p className="text-gray-500 text-xs">Aumente a segurança da sua conta</p>
                             </div>
                         </div>
-                        <Button variant="ghost" className="text-teal-400 hover:bg-teal-500/10 font-bold">Configurar</Button>
+                        <Button variant="ghost" className="text-teal-400 hover:bg-teal-500/10 font-bold" onClick={() => navigate('/em-breve/configuracao-2fa')}>Configurar</Button>
                     </div>
                 </div>
             </div>

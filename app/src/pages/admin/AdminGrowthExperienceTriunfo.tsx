@@ -268,7 +268,7 @@ export function AdminGrowthExperienceTriunfo() {
                         className="pl-12 bg-dark-100 border-dark-300 text-white"
                     />
                 </div>
-                <Button variant="outline" className="border-dark-300 text-gray-300">
+                <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Exportação da arena pendente')}>
                     <Filter className="h-4 w-4 mr-2" />
                     Filtros
                 </Button>

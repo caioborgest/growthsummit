@@ -486,7 +486,12 @@ export function DashboardParticipante() {
       await updateMentoring(sessionId, {
         menteeId: '' as any,
         menteeName: '' as any,
-        topic: undefined as any,
+        menteeEmail: '' as any,
+        menteePhone: '' as any,
+        topic: 'Disponível para Mentoria' as any,
+        notes: 'Slot liberado pelo participante.' as any,
+        startupName: '' as any,
+        sector: '' as any,
         status: 'scheduled'
       });
 

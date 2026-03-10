@@ -26,6 +26,8 @@ import { useUsers } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { createAuthUserWithoutSession } from '@/lib/auth-helpers';
+import { useNavigate } from 'react-router-dom';
+import { exportToCSV } from '@/utils/csv';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -91,6 +93,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function AdminUsuarios() {
+    const navigate = useNavigate();
     const { data: users, create, update, remove, isLoading } = useUsers();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
@@ -217,13 +220,13 @@ export default function AdminUsuarios() {
                     <p className="text-gray-400">Gestão de membros da equipe, mentores, palestrantes e administradores.</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="border-dark-300 text-gray-300">
+                    <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(users, 'equipe_projeto')}>
                         <Download className="h-4 w-4 mr-2" />
                         Exportar
                     </Button>
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+                            <Button className="bg-teal-500 hover:bg-teal-600 text-white" onClick={() => setIsCreateDialogOpen(true)}>
                                 <UserPlus className="h-4 w-4 mr-2" />
                                 Adicionar Membro
                             </Button>
@@ -454,7 +457,7 @@ export default function AdminUsuarios() {
                                         <td className="p-4 text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={() => navigate('/em-breve/detalhes-usuario')}>
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -466,7 +469,7 @@ export default function AdminUsuarios() {
                                                         <Edit2 className="h-4 w-4 mr-2" />
                                                         Editar Acesso
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-gray-300 hover:bg-dark-300 cursor-pointer">
+                                                    <DropdownMenuItem className="text-gray-300 hover:bg-dark-300 cursor-pointer" onClick={() => navigate('/em-breve/contato-membro')}>
                                                         <Mail className="h-4 w-4 mr-2" />
                                                         Enviar Mensagem
                                                     </DropdownMenuItem>

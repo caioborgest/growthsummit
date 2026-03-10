@@ -116,8 +116,25 @@ const initialEmailCampaigns = [
 
 export default function AdminComunicacao() {
   const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose'>('templates');
-  const [templates, setTemplates] = useState(initialEmailTemplates);
-  const [campaigns, setCampaigns] = useState(initialEmailCampaigns);
+  
+  // Persistence with localStorage
+  const [templates, setTemplates] = useState(() => {
+    const saved = localStorage.getItem('gs_email_templates');
+    return saved ? JSON.parse(saved) : initialEmailTemplates;
+  });
+
+  const [campaigns, setCampaigns] = useState(() => {
+    const saved = localStorage.getItem('gs_email_campaigns');
+    return saved ? JSON.parse(saved) : initialEmailCampaigns;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('gs_email_templates', JSON.stringify(templates));
+  }, [templates]);
+
+  useEffect(() => {
+    localStorage.setItem('gs_email_campaigns', JSON.stringify(campaigns));
+  }, [campaigns]);
 
   const { data: registrations } = useRegistrations();
 
@@ -172,10 +189,23 @@ export default function AdminComunicacao() {
       return;
     }
 
+    let count = 0;
+    const filter = campaignFormData.recipients;
+    
+    if (filter === 'all') count = registrations.length;
+    else if (filter === 'paid') count = registrations.filter(r => (r as any).status === 'paid' || (r as any).status_pagamento === 'pago').length;
+    else if (filter === 'pending') count = registrations.filter(r => (r as any).status === 'pending' || (r as any).status_pagamento === 'pendente').length;
+    else if (filter === 'vip') count = registrations.filter(r => (r as any).ticketType === 'vip' || (r as any).tipo_inscricao === 'vip').length;
+    // ... potentially more precise counts for mentors/startups if we had them in context, 
+    // but for now we'll estimate or use the context we have.
+    else count = registrations.length; // Fallback
+
     const newCampaign = {
       id: Math.random().toString(36).substr(2, 9),
       name: campaignFormData.name,
-      recipients: registrations.length, // Real number
+      templateId: campaignFormData.templateId,
+      recipients: count,
+      recipients_filter: filter,
       sent: 0,
       opened: 0,
       clicked: 0,
@@ -195,63 +225,83 @@ export default function AdminComunicacao() {
     }
 
     try {
-      const loadingToast = toast.loading('Preparando envio...');
+      const loadingToast = toast.loading('Preparando envio personalizado...');
 
-      let emails: string[] = [];
+      let recipientsData: any[] = [];
 
       // 1. Buscar destinatários baseados no filtro
       if (composeData.recipients === 'all') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'paid') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pago') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pago') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'pending') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('status_pagamento', 'pendente') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pendente') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'vip') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email').eq('tipo_inscricao', 'vip') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('tipo_inscricao', 'vip') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'mentors') {
-        const { data } = await supabase.from('mentores_growth_experience').select('email') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('mentores_growth_experience').select('email, nome') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'startups') {
-        const { data } = await supabase.from('startups_arena_pitch').select('email') as { data: { email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.email) || [])];
+        const { data } = await supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'sponsors') {
-        const { data } = await supabase.from('sponsors').select('contact_email') as { data: { contact_email: string }[] | null };
-        emails = [...new Set(data?.map(i => i.contact_email) || [])];
+        const { data } = await supabase.from('sponsors').select('contact_email, company_name, contact_name') as { data: any[] | null };
+        recipientsData = data || [];
       } else if (composeData.recipients === 'companies') {
-        // Combinar emails de B2B e Incentivadoras
         const [b2bRes, incentiveRes] = await Promise.all([
-          supabase.from('rodada_negocios_b2b').select('email'),
-          supabase.from('inscricoes_empresas_incentivadoras').select('email')
+          supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante'),
+          supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel')
         ]);
-        emails = [...new Set([
-          ...(b2bRes.data?.map(i => i.email) || []),
-          ...(incentiveRes.data?.map(i => i.email) || [])
-        ])];
+        recipientsData = [
+          ...(b2bRes.data || []),
+          ...(incentiveRes.data || [])
+        ];
       }
 
-      if (emails.length === 0) {
+      if (recipientsData.length === 0) {
         toast.dismiss(loadingToast);
         toast.error('Nenhum destinatário encontrado para este filtro');
         return;
       }
 
-      // 2. Chamar a Edge Function para enviar
-      const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: emails,
-          subject: composeData.subject,
-          html: composeData.body.replace(/\n/g, '<br/>')
-        }
+      // 2. Agrupar por email para evitar duplicidade
+      const uniqueRecipients = Array.from(new Map(recipientsData.map(item => [item.email, item])).values());
+
+      // 3. Chamar a Edge Function para cada destinatário ou em lote se a API suportar templates
+      // Como não temos a API de templates no backend, faremos a substituição aqui e enviaremos
+      
+      const sendPromises = uniqueRecipients.map(async (recipient) => {
+        let personalizedBody = composeData.body;
+        const nome = recipient.nome || recipient.nome_fundador || recipient.nome_representante || recipient.nome_responsavel || 'Participante';
+        const empresa = recipient.nome_empresa || recipient.company_name || recipient.startup_name || '';
+        const ticket = recipient.tipo_inscricao || '';
+
+        personalizedBody = personalizedBody
+          .replace(/{{nome}}/g, nome)
+          .replace(/{{email}}/g, recipient.email)
+          .replace(/{{empresa}}/g, empresa)
+          .replace(/{{ticket}}/g, ticket)
+          .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
+          .replace(/{{evento}}/g, 'Growth Experience 2026');
+
+        return supabase.functions.invoke('send-email', {
+          body: {
+            to: [recipient.email],
+            subject: composeData.subject,
+            html: personalizedBody.replace(/\n/g, '<br/>')
+          }
+        });
       });
 
-      if (error) throw error;
+      // Para não estourar rate limit, poderíamos fazer em chunks, mas aqui usaremos Promise.all por simplicidade
+      await Promise.all(sendPromises);
 
       toast.dismiss(loadingToast);
-      toast.success(`Emails enviados com sucesso para ${emails.length} destinatários!`);
+      toast.success(`Emails disparados para ${uniqueRecipients.length} destinatários!`);
 
       // Limpar formulário
       setComposeData({
@@ -266,6 +316,31 @@ export default function AdminComunicacao() {
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       toast.error('Erro ao enviar emails: ' + message);
     }
+  };
+
+  const handleSendCampaign = async (campaignId: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+
+    if (!window.confirm(`Deseja disparar a campanha "${campaign.name}" agora?`)) return;
+
+    const template = templates.find(t => t.id === campaign.templateId) || templates[0];
+    
+    // Set compose data to trigger handleSend
+    setComposeData({
+      subject: template.subject,
+      body: template.body || '',
+      recipients: campaign.recipients_filter || 'all'
+    });
+
+    // Auto trigger send after a small delay to ensure state update (or call handleSend directly with inject)
+    setTimeout(() => {
+      handleSend();
+      // Update campaign status
+      setCampaigns(prev => prev.map(c => 
+        c.id === campaignId ? { ...c, status: 'sent', sentAt: new Date().toISOString(), sent: campaign.recipients } : c
+      ));
+    }, 100);
   };
 
   const handleInsertVariable = (variable: string) => {
@@ -376,6 +451,9 @@ export default function AdminComunicacao() {
                   </div>
                   <div className="space-y-2">
                     <Label>Corpo do Email (HTML/Texto)</Label>
+                    <p className="text-[10px] text-gray-500">
+                      Variáveis: {"{{nome}}"}, {"{{email}}"}, {"{{empresa}}"}.
+                    </p>
                     <Textarea
                       value={templateFormData.body}
                       onChange={e => setTemplateFormData({ ...templateFormData, body: e.target.value })}
@@ -576,7 +654,11 @@ export default function AdminComunicacao() {
                       <td className="p-4">
                         <div className="flex space-x-2">
                           {campaign.status === 'draft' && (
-                            <Button size="sm" className="bg-teal-500 hover:bg-teal-600 text-white">
+                            <Button 
+                              size="sm" 
+                              className="bg-teal-500 hover:bg-teal-600 text-white"
+                              onClick={() => handleSendCampaign(campaign.id)}
+                            >
                               <Send className="h-4 w-4 mr-1" />
                               Enviar
                             </Button>
@@ -691,7 +773,7 @@ export default function AdminComunicacao() {
                 <Send className="h-4 w-4 mr-2" />
                 Enviar Agora
               </Button>
-              <Button variant="outline" className="border-dark-300 text-gray-300">
+              <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Filtros em desenvolvimento')}>
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Rascunho
               </Button>

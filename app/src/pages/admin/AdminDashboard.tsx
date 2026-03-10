@@ -372,7 +372,7 @@ export function AdminDashboard() {
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-white">Atividade Recente</h2>
-            <Button variant="ghost" size="sm" className="text-teal-400">
+            <Button variant="ghost" size="sm" className="text-teal-400" onClick={() => toast.info('Dashboard detalhado pendente')}>
               Ver todas
             </Button>
           </div>
@@ -413,10 +413,10 @@ export function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10">
+                  <Button size="sm" variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10" onClick={() => toast.success('Presença simulada')}>
                     Aprovar
                   </Button>
-                  <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
+                  <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10" onClick={() => toast.info('Ação revogada simulada')}>
                     Rejeitar
                   </Button>
                 </div>
@@ -435,10 +435,10 @@ export function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10">
+                  <Button size="sm" variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10" onClick={() => toast.success('Ação rápida simulada')}>
                     Aprovar
                   </Button>
-                  <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
+                  <Button size="sm" variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10" onClick={() => toast.info('Cancelamento simulado')}>
                     Rejeitar
                   </Button>
                 </div>
@@ -452,7 +452,7 @@ export function AdminDashboard() {
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-white">Próximas Mentorias</h2>
-          <Button variant="ghost" size="sm" className="text-teal-400">
+          <Button variant="ghost" size="sm" className="text-teal-400" onClick={() => toast.info('Gestão de equipe em desenvolvimento')}>
             Ver agenda
           </Button>
         </div>

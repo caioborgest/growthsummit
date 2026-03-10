@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import {
-  Rocket,
   Users,
   TrendingUp,
-  DollarSign,
   Star,
   QrCode,
   Download,
@@ -11,19 +9,10 @@ import {
   FileText,
   ExternalLink,
   Edit3,
-  HelpCircle,
-  LogOut,
   CheckCircle,
-  Bell,
-  Sparkles,
   User as UserIcon,
 } from 'lucide-react';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,8 +27,11 @@ import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
+import { LeadScanner } from './components/LeadScanner';
+import { jsPDF } from 'jspdf';
+import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 
-import { LeadScanner } from './components/shared/LeadScanner';
+import { exportToCSV } from '@/utils/csv';
 
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
@@ -54,7 +46,6 @@ export function DashboardStartup() {
   const { data: startups } = useStartups();
   const { data: leads, create: createLead } = useLeads();
   const [activeTab, setActiveTab] = useState('visao-geral');
-  const [unreadNotifications] = useState(1);
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -96,18 +87,56 @@ export function DashboardStartup() {
       }
 
       await createLead({
+        projectId: startupData?.projectId,
         startupId: startupData?.id,
         registrationId: registrationId,
         interestLevel: 'high', // Padrão
         notes: 'Capturado via QR Code do Stand',
         visitorName: 'Participante ' + registrationId.substring(0, 4), // Placeholder genérico, será atualizado pelo hook do DB
-      } as any);
+      });
 
       toast.success('Lead capturado com sucesso!');
     } catch (e) {
       console.error(e);
       toast.error('Erro ao ler QR Code ou salvar lead');
     }
+  };
+
+  const handleDownloadQRCode = () => {
+    if (!startupData) return;
+    try {
+      const doc = new jsPDF();
+      doc.setFillColor(12, 14, 18);
+      doc.rect(0, 0, 210, 297, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.text('GROWTH EXPERIENCE 2026', 105, 40, { align: 'center' });
+      
+      doc.setFontSize(30);
+      doc.setTextColor(20, 184, 166); // Teal
+      doc.text(startupData.name.toUpperCase(), 105, 60, { align: 'center' });
+      
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(55, 80, 100, 100, 5, 5, 'F');
+      
+      doc.setTextColor(12, 14, 18);
+      doc.setFontSize(12);
+      doc.text('ESCANEIE PARA CONHECER', 105, 195, { align: 'center' });
+      
+      doc.setTextColor(255, 112, 67); // Orange
+      doc.setFontSize(16);
+      doc.text(`STAND NO: ${startupData.standNumber || 'EXPO'}`, 105, 215, { align: 'center' });
+      
+      doc.save(`Stand_${startupData.name.replace(/\s+/g, '_')}_QRCode.pdf`);
+      toast.success('QR Code pronto para impressão!');
+    } catch (error) {
+      toast.error('Erro ao gerar PDF');
+    }
+  };
+
+  const handleQuickMessage = (email: string) => {
+    window.open(`mailto:${email}?subject=Conexão Growth Experience - Stand ${startupData?.name}`, '_blank');
   };
 
   return (
@@ -120,7 +149,6 @@ export function DashboardStartup() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="EXPOSITOR STARTUP"
           isPro={true}
-          statusFinanceiro={{ label: 'Ativo' }}
           notifications={[]}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
@@ -225,7 +253,7 @@ export function DashboardStartup() {
                             <div className="grid grid-cols-3 gap-2">
                               {startupData.metrics.revenue !== undefined && (
                                 <div className="bg-dark-100 rounded p-2 text-center">
-                                  <DollarSign className="h-4 w-4 text-green-400 mx-auto mb-1" />
+                                  <TrendingUp className="h-4 w-4 text-green-400 mx-auto mb-1" />
                                   <p className="text-white text-sm">R${(startupData.metrics.revenue / 1000).toFixed(0)}k</p>
                                   <p className="text-gray-500 text-xs">Receita</p>
                                 </div>
@@ -270,15 +298,15 @@ export function DashboardStartup() {
                         <Edit3 className="h-4 w-4 mr-2" />
                         Editar Perfil
                       </Button>
-                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start">
+                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start" onClick={() => navigate('/guia')}>
                         <Download className="h-4 w-4 mr-2" />
                         Baixar Pitch Deck
                       </Button>
-                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start">
+                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start" onClick={() => navigate('/guia')}>
                         <FileText className="h-4 w-4 mr-2" />
                         Ver Material de Apoio
                       </Button>
-                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start">
+                      <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start" onClick={() => window.open('https://wa.me/5581999999999', '_blank')}>
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Contatar Organização
                       </Button>
@@ -297,7 +325,7 @@ export function DashboardStartup() {
                         <QrCode className="h-4 w-4 mr-2" />
                         Escanear Crachá
                       </Button>
-                      <Button variant="outline" className="border-dark-300 text-gray-300">
+                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(startupLeads, 'leads_startup')}>
                         <Download className="h-4 w-4 mr-2" />
                         Exportar CSV
                       </Button>
@@ -315,7 +343,7 @@ export function DashboardStartup() {
                           )}
                         </div>
                         <div className="flex items-center space-x-4">
-                          <Badge className={
+                           <Badge className={
                             lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
                               lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                                 'bg-gray-500/20 text-gray-400'
@@ -323,10 +351,16 @@ export function DashboardStartup() {
                             <Star className="h-3 w-3 mr-1" />
                             {lead.interestLevel}
                           </Badge>
-                          <Button size="sm" variant="ghost" className="text-gray-400">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-gray-400 hover:text-teal-400" 
+                            onClick={() => handleQuickMessage(lead.visitorEmail || '')}
+                          >
                             <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
+
                       </div>
                     ))}
 
@@ -341,7 +375,6 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Stand Tab */}
               <TabsContent value="stand" className="mt-0">
                 <div className="grid lg:grid-cols-2 gap-6">
                   <div className="glass-card p-6 text-center">
@@ -352,18 +385,17 @@ export function DashboardStartup() {
                           <QrCode className="h-32 w-32 text-dark" />
                         </div>
                       </div>
-                      {/* Decorative corners */}
                       <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-orange-500 rounded-tl-xl transition-all group-hover:w-12 group-hover:h-12"></div>
                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-teal-500 rounded-br-xl transition-all group-hover:w-12 group-hover:h-12"></div>
                     </div>
                     <p className="text-gray-400 mb-2 font-medium">Capture leads automaticamente</p>
                     <p className="text-orange-400 font-black tracking-widest text-xs uppercase">Seu Stand Virtual Growth Experience</p>
                     <div className="flex justify-center space-x-3 mt-6">
-                      <Button variant="outline" size="sm" className="border-dark-300 text-gray-300">
+                      <Button variant="outline" size="sm" className="border-dark-300 text-gray-300 hover:text-white hover:border-teal-500/50" onClick={handleDownloadQRCode}>
                         <Download className="h-4 w-4 mr-2" />
                         Baixar
                       </Button>
-                      <Button variant="outline" size="sm" className="border-dark-300 text-gray-300">
+                      <Button variant="outline" size="sm" className="border-dark-300 text-gray-300 hover:text-white" onClick={() => window.print()}>
                         Imprimir
                       </Button>
                     </div>
@@ -440,17 +472,24 @@ export function DashboardStartup() {
                     <h3 className="text-lg font-semibold text-white mb-4">Links Úteis</h3>
                     <div className="space-y-3">
                       {[
-                        { name: 'Programação do Evento', url: '#' },
-                        { name: 'Lista de Investidores', url: '#' },
-                        { name: 'Suporte para Startups', url: '#' },
-                        { name: 'Grupo WhatsApp Startups', url: '#' },
+                        { name: 'Programação do Evento', url: '/agenda' },
+                        { name: 'Lista de Investidores', url: '/em-breve/investidores' },
+                        { name: 'Suporte para Startups', url: 'https://wa.me/5581999999999' },
+                        { name: 'Grupo WhatsApp Startups', url: 'https://chat.whatsapp.com/ExemploGrowth' },
                       ].map((link, i) => (
                         <a
                           key={i}
                           href={link.url}
-                          className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors"
+                          target={link.url.startsWith('http') ? '_blank' : undefined}
+                          onClick={(e) => { 
+                            if(!link.url.startsWith('http')) { 
+                              e.preventDefault(); 
+                              navigate(link.url); 
+                            } 
+                          }}
+                          className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
                         >
-                          <span className="text-orange-400 text-sm">{link.name}</span>
+                          <span className="text-orange-400 text-sm font-bold">{link.name}</span>
                           <ExternalLink className="h-4 w-4 text-gray-400" />
                         </a>
                       ))}
@@ -458,6 +497,7 @@ export function DashboardStartup() {
                   </div>
                 </div>
               </TabsContent>
+
               {/* Perfil Tab */}
               <TabsContent value="perfil" className="mt-0">
                 <ProfileForm />

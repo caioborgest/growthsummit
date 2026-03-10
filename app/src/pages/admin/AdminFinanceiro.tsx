@@ -85,7 +85,7 @@ export function AdminFinanceiro() {
     .filter(t => t.type === 'expense' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const paidRegistrations = registrations.filter(r => r.status === 'paid' || r.status === 'pago' || r.paymentStatus === 'pago');
+  const paidRegistrations = registrations.filter(r => r.status === 'paid' || r.status === 'pago' || (r as any).paymentStatus === 'pago');
   const paidRegistrationsCount = paidRegistrations.length;
   const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.amount || 0), 0);
 
@@ -463,7 +463,7 @@ export function AdminFinanceiro() {
                 <option value="income">Receita</option>
                 <option value="expense">Despesa</option>
               </select>
-              <Button variant="outline" className="border-dark-300 text-gray-300">
+              <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Exportação do relatório financeiro em desenvolvimento')}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>

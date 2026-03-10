@@ -6,7 +6,7 @@ import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
-  EmpresaIncentivadora, Notification
+  EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 
@@ -61,6 +61,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'sessions': return 'programacao_evento';
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
+      case 'b2b_chat_messages': return 'b2b_chat_messages';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       case 'registration_batches': return 'lotes_inscricao_empresa';
       default: return entity;
@@ -833,3 +834,20 @@ export function useNotifications() {
 export function useRegistrationBatches() {
   return useData<RegistrationBatch>([], 'registration_batches');
 }
+
+export function useB2BChat(matchId?: string) {
+  const hook = useData<B2BChatMessage>([], 'b2b_chat_messages');
+  
+  const matchMessages = useMemo(() => {
+    if (!matchId) return hook.data;
+    return hook.data.filter(m => m.matchId === matchId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [hook.data, matchId]);
+
+  return {
+    ...hook,
+    data: matchMessages,
+    messages: matchMessages
+  };
+}
+

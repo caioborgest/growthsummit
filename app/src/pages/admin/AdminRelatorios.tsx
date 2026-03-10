@@ -9,10 +9,12 @@ import {
   CheckCircle,
   Calendar,
   PieChart,
-  Filter
+  Filter,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { exportToCSV } from '@/utils/csv';
 import {
   useRegistrations,
   useMentors,
@@ -96,24 +98,65 @@ export function AdminRelatorios() {
   const { data: attendance } = useCheckInsAtividades();
   const { data: activitySessions } = useSessions();
 
-  const handleGenerate = async (reportId: string) => {
-    setGenerating(reportId);
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filteredRegistrations = useMemo(() => {
+    return registrations.filter(r => {
+      const dateMatch = (!dateRange.start || r.createdAt >= dateRange.start) && 
+                       (!dateRange.end || r.createdAt <= dateRange.end);
+      const currentStatus = (r as any).status || (r as any).status_pagamento;
+      const statusMatch = statusFilter === 'all' || currentStatus === statusFilter;
+      return dateMatch && statusMatch;
+    });
+  }, [registrations, dateRange, statusFilter]);
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const dateMatch = (!dateRange.start || t.date >= dateRange.start) && 
+                       (!dateRange.end || t.date <= dateRange.end);
+      return dateMatch;
+    });
+  }, [transactions, dateRange]);
+
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(s => {
+      const dateMatch = (!dateRange.start || s.scheduledAt >= dateRange.start) && 
+                       (!dateRange.end || s.scheduledAt <= dateRange.end);
+      return dateMatch;
+    });
+  }, [sessions, dateRange]);
+
+  const handleGenerate = async (reportId: string, format: 'pdf' | 'csv' = 'pdf') => {
+    setGenerating(`${reportId}-${format}`);
 
     try {
       const projectName = selectedProject?.name || 'Growth Summit';
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      // Simula pequeno delay de processamento para UX
-      await new Promise(resolve => setTimeout(resolve, 800));
+      if (format === 'csv') {
+        let exportData: Record<string, unknown>[] = [];
+        switch (reportId) {
+          case 'inscricoes': exportData = filteredRegistrations as unknown as Record<string, unknown>[]; break;
+          case 'financeiro': exportData = filteredTransactions as unknown as Record<string, unknown>[]; break;
+          case 'mentorias': exportData = filteredSessions as unknown as Record<string, unknown>[]; break;
+          case 'startups': exportData = startups as unknown as Record<string, unknown>[]; break;
+          case 'patrocinadores': exportData = sponsors as unknown as Record<string, unknown>[]; break;
+          case 'presenca': exportData = attendance as unknown as Record<string, unknown>[]; break;
+        }
+        exportToCSV(exportData, `relatorio-${reportId}`);
+        toast.success(`CSV de ${reportId} exportado!`);
+        return;
+      }
 
       switch (reportId) {
         case 'inscricoes':
-          generateInscricoesReport(registrations, projectName);
+          generateInscricoesReport(filteredRegistrations, projectName);
           break;
         case 'financeiro':
-          generateFinanceiroReport(transactions, projectName);
+          generateFinanceiroReport(filteredTransactions, projectName);
           break;
         case 'mentorias':
-          generateMentoriasReport(sessions, projectName);
+          generateMentoriasReport(filteredSessions, projectName);
           break;
         case 'startups':
           generateStartupsReport(startups, pitchScores, projectName);
@@ -125,27 +168,25 @@ export function AdminRelatorios() {
           generatePresencaReport(activitySessions, attendance, projectName);
           break;
         default:
-          toast.error(`Geração do relatório ${reportId} ainda não disponível.`);
-          setGenerating(null);
-          return;
+          toast.error(`Relatório não disponível.`);
       }
 
-      toast.success(`Relatório ${reportId} baixado com sucesso!`);
+      toast.success(`PDF de ${reportId} gerado!`);
     } catch (error) {
       logger.error('Erro ao gerar relatório:', error);
-      toast.error('Ocorreu um erro ao gerar o relatório em PDF.');
+      toast.error('Erro ao gerar relatório.');
     } finally {
       setGenerating(null);
     }
   };
 
   const stats = {
-    totalInscricoes: registrations.length,
+    totalInscricoes: filteredRegistrations.length,
     totalMentores: mentors.length,
-    totalMentorias: sessions.length,
+    totalMentorias: filteredSessions.length,
     totalStartups: startups.length,
     totalPatrocinadores: sponsors.length,
-    totalReceita: transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+    totalReceita: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
   };
 
   return (
@@ -171,9 +212,22 @@ export function AdminRelatorios() {
               className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
             />
           </div>
-          <Button variant="outline" className="border-dark-300 text-gray-300">
+          <div className="flex-1">
+            <label className="block text-sm text-gray-400 mb-2">Status Pagamento</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+            >
+              <option value="all">Todos</option>
+              <option value="pago">Pago</option>
+              <option value="pendente">Pendente</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+          <Button variant="outline" className="border-teal-500/50 text-teal-400 hover:bg-teal-500/10" onClick={() => toast.success('Filtros aplicados')}>
             <Filter className="h-4 w-4 mr-2" />
-            Filtrar
+            Aplicar Filtros
           </Button>
         </div>
       </div>
@@ -222,23 +276,31 @@ export function AdminRelatorios() {
               <h3 className="text-lg font-semibold text-white mb-2">{report.name}</h3>
               <p className="text-gray-400 text-sm mb-6">{report.description}</p>
 
-              <Button
-                className={`w-full bg-${report.color}-500 hover:bg-${report.color}-600 text-white`}
-                onClick={() => handleGenerate(report.id)}
-                disabled={generating === report.id}
-              >
-                {generating === report.id ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Gerando...
-                  </>
-                ) : (
-                  <>
-                    <Download className="h-4 w-4 mr-2" />
-                    Gerar Relatório
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  className={`flex-1 bg-${report.color}-500 hover:bg-${report.color}-600 text-white`}
+                  onClick={() => handleGenerate(report.id, 'pdf')}
+                  disabled={!!generating}
+                >
+                  {generating === `${report.id}-pdf` ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      PDF
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`border-${report.color}-500/50 text-${report.color}-400`}
+                  onClick={() => handleGenerate(report.id, 'csv')}
+                  disabled={!!generating}
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  CSV
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -263,7 +325,7 @@ export function AdminRelatorios() {
               </div>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-400 text-sm">{report.size}</span>
-                <Button size="sm" variant="ghost" className="text-teal-400">
+                <Button size="sm" variant="ghost" className="text-teal-400" onClick={() => handleGenerate('inscricoes', 'pdf')}>
                   <Download className="h-4 w-4" />
                 </Button>
               </div>
@@ -304,9 +366,9 @@ export function AdminRelatorios() {
             </div>
           </div>
         </div>
-        <Button className="bg-teal-500 hover:bg-teal-600 text-white">
+        <Button className="bg-teal-500 hover:bg-teal-600 text-white" onClick={() => handleGenerate('inscricoes', 'pdf')}>
           <BarChart3 className="h-4 w-4 mr-2" />
-          Gerar Relatório Personalizado
+          Gerar Relatório Consolidado
         </Button>
       </div>
     </div>
