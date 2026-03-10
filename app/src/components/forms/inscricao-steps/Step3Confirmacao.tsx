@@ -10,7 +10,7 @@ import { useSessions } from '@/hooks/useData';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { registrationService } from '@/services/registrationService';
 import { logger } from '@/lib/logger';
-import { getOrCreateUser } from '@/lib/auth-helpers';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
@@ -76,6 +76,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             });
 
             if (!userId) throw new Error('Usuário não identificado para a inscrição.');
+
+            // ── ETAPA 1.5: Aguardar sincronização (Prevenção de race condition no FK)
+            await waitForUserSync(userId);
 
             // ── ETAPA 2: Calcular valor
             const valorOriginal = 179.99;

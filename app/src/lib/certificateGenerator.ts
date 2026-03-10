@@ -1,14 +1,8 @@
 // ============================================================
 // GERADOR DE CERTIFICADO — Growth Experience
-// Versão 3 — Sem dourado | Logo GX | Design premium
-// Idioma: Português do Brasil
-// Cores: Laranja #FE4C38 | Teal #21808D | Sem dourado
+// Versão 4 — Design Inovador | Suporte a Marcas Parceiras
+// Cores: Laranja #FE4C38 | Teal #21808D
 // ============================================================
-// NOTA: jsPDF é carregado dinamicamente para compatibilidade com build do Vercel
-async function loadJsPDF() {
-    const { jsPDF } = await import('jspdf');
-    return jsPDF;
-}
 
 export interface CertificateTemplateData {
     /** Nome completo do participante (inserido automaticamente) */
@@ -31,33 +25,37 @@ export interface CertificateTemplateData {
     signatureBase64?: string;
     /** Base64 PNG da logomarca Growth Experience */
     logoBase64?: string;
+    /** Base64 PNGs de marcas parceiras (ex: SEBRAE, Prefeitura, etc.) */
+    partnerLogosBase64?: string[];
     /** Overrides configuráveis via Admin */
     templateOverrides?: {
         title?: string;
         description?: string;
         ceoName?: string;
         ceoRole?: string;
-        primaryColor?: string; // hex #ff7043
+        primaryColor?: string; // hex #fe4c38
         secondaryColor?: string; // hex #21808d
+        accentColor?: string; // hex #ffffff
+        showBackgroundPattern?: boolean;
+        customBackgroundBase64?: string;
     };
 }
 
-// ── Paleta (SEM DOURADO) ──────────────────────────────────────
+// ── Paleta Premium ────────────────────────────────────────────
 const C = {
-    bg: [10, 10, 15] as [number, number, number],
-    bgPanel: [22, 22, 32] as [number, number, number],
+    bg: [8, 8, 12] as [number, number, number],
+    bgPanel: [20, 20, 30] as [number, number, number],
     orange: [254, 76, 56] as [number, number, number],
-    orangeMid: [180, 55, 40] as [number, number, number],
+    orangeGlow: [255, 112, 67] as [number, number, number],
     teal: [33, 128, 141] as [number, number, number],
-    tealMid: [24, 90, 100] as [number, number, number],
-    tealDim: [18, 60, 68] as [number, number, number],
+    tealGlow: [45, 170, 185] as [number, number, number],
     white: [255, 255, 255] as [number, number, number],
-    gray: [165, 165, 178] as [number, number, number],
-    dim: [80, 80, 95] as [number, number, number],
-    signBg: [240, 240, 245] as [number, number, number], // fundo claro p/ assinatura preta
+    gray: [180, 180, 195] as [number, number, number],
+    dim: [70, 70, 85] as [number, number, number],
+    glass: [255, 255, 255, 0.03] as [number, number, number, number],
+    signBg: [245, 245, 250] as [number, number, number],
 };
 
-// ── Rótulos em Português ──────────────────────────────────────
 const TIPO_ARTIGO: Record<string, string> = {
     event: 'do evento',
     lecture: 'da palestra',
@@ -82,360 +80,270 @@ const TIPO_PILL: Record<string, string> = {
     course: 'CURSO',
 };
 
-// ── Função auxiliar: texto em caixa com cantos arredondados ───
-function roundedBox(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    doc: any,
-    x: number, y: number, w: number, h: number,
-    fillColor: [number, number, number],
-    r = 3
-) {
+// ── Funções Auxiliares de Desenho ──────────────────────────────
+function roundedBox(doc: any, x: number, y: number, w: number, h: number, fillColor: [number, number, number], r = 3) {
     doc.setFillColor(...fillColor);
     doc.roundedRect(x, y, w, h, r, r, 'F');
 }
 
-/**
- * Gera PDF do certificado A4 horizontal.
- * Nome, atividade, data e duração são inseridos automaticamente.
- * A assinatura (tinta preta) é renderizada sobre fundo claro.
- * A logomarca é carregada do Supabase Storage via `logoBase64`.
- */
+function gradientLine(doc: any, x: number, y: number, w: number, c1: [number, number, number], c2: [number, number, number]) {
+    const steps = 40;
+    const stepW = w / steps;
+    for (let i = 0; i < steps; i++) {
+        const ratio = i / steps;
+        const r = Math.floor(c1[0] * (1 - ratio) + c2[0] * ratio);
+        const g = Math.floor(c1[1] * (1 - ratio) + c2[1] * ratio);
+        const b = Math.floor(c1[2] * (1 - ratio) + c2[2] * ratio);
+        doc.setDrawColor(r, g, b);
+        doc.setLineWidth(0.5);
+        doc.line(x + (i * stepW), y, x + ((i + 1) * stepW), y);
+    }
+}
+
 export async function generateCertificatePDF(data: CertificateTemplateData): Promise<void> {
     const JsPDF = await loadJsPDF();
     const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-    const W = doc.internal.pageSize.getWidth();   // 297 mm
-    const H = doc.internal.pageSize.getHeight();  // 210 mm
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
     const cx = W / 2;
-    const BAND = 12; // largura das faixas laterais em mm
+    const bandWidth = 10;
 
-    // --- Template Overrides Logic ---
-    const primaryRGB = data.templateOverrides?.primaryColor
-        ? _hexToRgb(data.templateOverrides.primaryColor)
-        : C.orange;
-    const secondaryRGB = data.templateOverrides?.secondaryColor
-        ? _hexToRgb(data.templateOverrides.secondaryColor)
-        : C.teal;
+    const primaryRGB = data.templateOverrides?.primaryColor ? _hexToRgb(data.templateOverrides.primaryColor) : C.orange;
+    const secondaryRGB = data.templateOverrides?.secondaryColor ? _hexToRgb(data.templateOverrides.secondaryColor) : C.teal;
 
-    // 1. FUNDO PRINCIPAL
-    // ════════════════════════════════════════════════════════════
+    // 1. FUNDO E BASE ESTRUTURAL
     doc.setFillColor(...C.bg);
     doc.rect(0, 0, W, H, 'F');
 
-    // Padrão geométrico de fundo (pontos sutis)
-    doc.setFillColor(30, 30, 45);
-    for (let i = BAND + 10; i < W - BAND - 10; i += 15) {
-        for (let j = 10; j < H - 10; j += 15) {
-            doc.circle(i, j, 0.15, 'F');
-        }
-    }
-
-    // Marca d'água GX sutil no fundo
-    doc.setTextColor(20, 20, 30);
-    doc.setFontSize(120);
-    doc.setFont('helvetica', 'bold');
-    doc.text('GX', cx, H / 2 + 20, { align: 'center', angle: -15 });
-
-    // Brilho sutil central (simulado com círculo escurecido)
-    doc.setFillColor(18, 12, 12);
-    doc.circle(cx, H * 0.42, 70, 'F');
-
-    // ════════════════════════════════════════════════════════════
-    // 2. FAIXAS LATERAIS
-    // ════════════════════════════════════════════════════════════
-    // Esquerda — cor primária
-    doc.setFillColor(...primaryRGB);
-    doc.rect(0, 0, BAND, H, 'F');
-    // Linha divisória interna
-    doc.setDrawColor(primaryRGB[0] * 0.7, primaryRGB[1] * 0.7, primaryRGB[2] * 0.7);
-    doc.setLineWidth(0.3);
-    doc.line(BAND, 0, BAND, H);
-
-    // Direita — cor secundária
-    doc.setFillColor(...secondaryRGB);
-    doc.rect(W - BAND, 0, BAND, H, 'F');
-    doc.setDrawColor(secondaryRGB[0] * 0.7, secondaryRGB[1] * 0.7, secondaryRGB[2] * 0.7);
-    doc.setLineWidth(0.3);
-    doc.line(W - BAND, 0, W - BAND, H);
-
-    // ════════════════════════════════════════════════════════════
-    // 3. BORDA INTERNA
-    // ════════════════════════════════════════════════════════════
-    doc.setDrawColor(secondaryRGB[0] * 0.5, secondaryRGB[1] * 0.5, secondaryRGB[2] * 0.5);
-    doc.setLineWidth(0.4);
-    doc.rect(BAND + 4, 6, W - (BAND + 4) * 2, H - 12, 'D');
-
-    // ════════════════════════════════════════════════════════════
-    // 4. LOGOMARCA GROWTH EXPERIENCE
-    // ════════════════════════════════════════════════════════════
-    const logoW = 44;
-    const logoH = 16;
-    const logoX = BAND + 10;
-    const logoY = 14;
-
-    if (data.logoBase64) {
+    // Background Image ou Pattern
+    if (data.templateOverrides?.customBackgroundBase64) {
         try {
-            doc.addImage(data.logoBase64, 'PNG', logoX, logoY, logoW, logoH);
-        } catch {
-            // Fallback: logotipo em texto
-            _renderTextLogo(doc, logoX, logoY + 10);
+            doc.addImage(data.templateOverrides.customBackgroundBase64, 'JPEG', 0, 0, W, H);
+        } catch (e) { console.error('BG Image error', e); }
+    } else if (data.templateOverrides?.showBackgroundPattern !== false) {
+        // Pattern Geométrico Moderno (Grid de linhas finas + pontos)
+        doc.setDrawColor(25, 25, 35);
+        doc.setLineWidth(0.1);
+        for(let i=0; i<W; i+=20) doc.line(i, 0, i, H);
+        for(let i=0; i<H; i+=20) doc.line(0, i, W, i);
+        
+        doc.setFillColor(40, 40, 60);
+        for(let i=10; i<W; i+=20) {
+            for(let j=10; j<H; j+=20) doc.circle(i, j, 0.2, 'F');
         }
-    } else {
-        _renderTextLogo(doc, logoX, logoY + 10);
     }
 
-    // ════════════════════════════════════════════════════════════
-    // 5. SEPARADOR HORIZONTAL TEAL (abaixo do logo)
-    // ════════════════════════════════════════════════════════════
-    const sepY = 34;
-    doc.setDrawColor(...C.teal);
-    doc.setLineWidth(0.6);
-    doc.line(BAND + 4, sepY, W - BAND - 4, sepY);
-
-    // ════════════════════════════════════════════════════════════
-    // 6. TIPO DO CERTIFICADO
-    // ════════════════════════════════════════════════════════════
-    doc.setTextColor(...C.white);
-    doc.setFontSize(15);
+    // Marca d'água central estilizada
+    doc.setTextColor(15, 15, 20);
+    doc.setFontSize(150);
     doc.setFont('helvetica', 'bold');
-    doc.text(
-        data.templateOverrides?.title || `CERTIFICADO DE ${TIPO_TITULO[data.type] || 'PARTICIPAÇÃO'}`,
-        cx, 44, { align: 'center', charSpace: 0.6 }
-    );
+    doc.text('GROWTH', cx, H/2 + 30, { align: 'center', angle: 5 });
 
-    // ════════════════════════════════════════════════════════════
-    // 7. TEXTO "CERTIFICAMOS"
-    // ════════════════════════════════════════════════════════════
+    // 2. FAIXAS DE CORES INNOVATIVAS (Gradientes simulados e glow)
+    // Esquerda Glow
+    for(let i=0; i<bandWidth; i++) {
+        const alpha = 1 - (i/bandWidth);
+        const r = Math.floor(primaryRGB[0] * alpha + C.bg[0] * (1-alpha));
+        const g = Math.floor(primaryRGB[1] * alpha + C.bg[1] * (1-alpha));
+        const b = Math.floor(primaryRGB[2] * alpha + C.bg[2] * (1-alpha));
+        doc.setFillColor(r, g, b);
+        doc.rect(i, 0, 1, H, 'F');
+    }
+    // Direita Glow
+    for(let i=0; i<bandWidth; i++) {
+        const alpha = 1 - (i/bandWidth);
+        const r = Math.floor(secondaryRGB[0] * alpha + C.bg[0] * (1-alpha));
+        const g = Math.floor(secondaryRGB[1] * alpha + C.bg[1] * (1-alpha));
+        const b = Math.floor(secondaryRGB[2] * alpha + C.bg[2] * (1-alpha));
+        doc.setFillColor(r, g, b);
+        doc.rect(W - i - 1, 0, 1, H, 'F');
+    }
+
+    // 3. MOLDURA INTERNA "GLASS"
+    doc.setDrawColor(255, 255, 255, 0.1);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(bandWidth + 5, 8, W - (bandWidth + 5)*2, H - 16, 5, 5, 'D');
+
+    // 4. HEADER: LOGO E MARCAS PARCEIRAS
+    const logoY = 18;
+    // Logo Principal (GX)
+    if (data.logoBase64) {
+        doc.addImage(data.logoBase64, 'PNG', bandWidth + 12, logoY, 45, 15);
+    } else {
+        _renderTextLogo(doc, bandWidth + 12, logoY + 8);
+    }
+
+    // Marcas Parceiras (Ex: SEBRAE) no canto superior direito
+    if (data.partnerLogosBase64 && data.partnerLogosBase64.length > 0) {
+        let currentX = W - bandWidth - 15;
+        data.partnerLogosBase64.reverse().forEach((logo) => {
+            currentX -= 30; // largura aproximada p/ cada logo parceiro
+            try {
+                doc.addImage(logo, 'PNG', currentX, logoY - 2, 25, 12);
+            } catch(e) { console.error('Partner logo error', e); }
+        });
+    }
+
+    // 5. CONTEÚDO PRINCIPAL
+    // Título do Certificado
+    doc.setTextColor(...C.white);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    const fullTitle = data.templateOverrides?.title || `CERTIFICADO DE ${TIPO_TITULO[data.type] || 'PARTICIPAÇÃO'}`;
+    doc.text(fullTitle, cx, 50, { align: 'center', charSpace: 1 });
+
+    // Subtítulo
     doc.setTextColor(...C.gray);
-    doc.setFontSize(9.5);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Certificamos com orgulho que', cx, 55, { align: 'center' });
+    doc.text('Certificamos para os devidos fins que', cx, 60, { align: 'center' });
 
-    // ════════════════════════════════════════════════════════════
-    // 8. NOME DO PARTICIPANTE (automático)
-    // ════════════════════════════════════════════════════════════
-    const nameY = 74;
-
-    // Linha teal acima
-    doc.setDrawColor(...C.teal);
-    doc.setLineWidth(0.3);
-    doc.line(cx - 90, nameY - 10, cx + 90, nameY - 10);
-
-    // Nome — tamanho adaptativo
-    const nameFontSize = data.userName.length > 38 ? 20
-        : data.userName.length > 28 ? 24
-            : data.userName.length > 20 ? 28
-                : 32;
-
+    // NOME DO PARTICIPANTE (ESTILO PREMIUM)
+    const nameY = 85;
     doc.setTextColor(...C.white);
-    doc.setFontSize(nameFontSize);
+    const nameSize = data.userName.length > 30 ? 24 : 32;
+    doc.setFontSize(nameSize);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.userName.toUpperCase(), cx, nameY + 2, { align: 'center' });
+    doc.text(data.userName.toUpperCase(), cx, nameY, { align: 'center' });
 
-    // Linha teal abaixo
-    doc.setDrawColor(...C.teal);
-    doc.setLineWidth(0.3);
-    doc.line(cx - 90, nameY + 9, cx + 90, nameY + 9);
+    // Linha de detalhe sob o nome (gradiente)
+    gradientLine(doc, cx - 80, nameY + 5, 160, primaryRGB, secondaryRGB);
 
-    // ════════════════════════════════════════════════════════════
-    // 9. NOME DA ATIVIDADE (laranja em destaque)
-    // ════════════════════════════════════════════════════════════
-    const actY = nameY + 24;
+    // DESCRIÇÃO DA ATIVIDADE
+    const descY = nameY + 22;
+    doc.setTextColor(...C.gray);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+
     const artigo = TIPO_ARTIGO[data.type] || 'do evento';
+    let descriptionText = data.templateOverrides?.description;
 
-    if (data.sessionTitle && data.type !== 'event') {
-        // Título da atividade em destaque
-        doc.setTextColor(...C.orange);
-        doc.setFontSize(13);
-        doc.setFont('helvetica', 'bold');
-        const titleLines = doc.splitTextToSize(`"${data.sessionTitle}"`, W - (BAND + 8) * 2 - 20);
-        doc.text(titleLines, cx, actY, { align: 'center' });
-
-        const offsetY = (titleLines.length - 1) * 6;
-
-        // Corpo do texto
-        doc.setTextColor(...C.gray);
-        doc.setFontSize(9.5);
-        doc.setFont('helvetica', 'normal');
-        doc.text(
-            `integrante da programação ${artigo} ${data.eventName}${data.eventCity ? ', ' + data.eventCity : ''}`,
-            cx, actY + 9 + offsetY, { align: 'center' }
-        );
-        doc.text(
-            `realizado no dia ${data.date}${data.totalHours ? `, com carga horária de ${data.totalHours} hora${data.totalHours > 1 ? 's' : ''}` : ''}.`,
-            cx, actY + 17 + offsetY, { align: 'center' }
-        );
-    } else {
-        doc.setTextColor(...C.gray);
-        doc.setFontSize(9.5);
-        doc.setFont('helvetica', 'normal');
-        const defaultDesc = `participou ${artigo} ${data.eventName}${data.eventCity ? ', ' + data.eventCity : ''}`;
-        doc.text(
-            data.templateOverrides?.description || defaultDesc,
-            cx, actY, { align: 'center' }
-        );
-        doc.text(
-            `realizado no dia ${data.date}${data.totalHours ? `, com carga horária de ${data.totalHours} hora${data.totalHours > 1 ? 's' : ''}` : ''}.`,
-            cx, actY + 8, { align: 'center' }
-        );
+    if (!descriptionText) {
+        if (data.sessionTitle && data.type !== 'event') {
+            descriptionText = `participou com êxito ${artigo} "${data.sessionTitle}"`;
+        } else {
+            descriptionText = `participou ativamente ${artigo} ${data.eventName}`;
+        }
+        descriptionText += `${data.eventCity ? ', em ' + data.eventCity : ''}, no dia ${data.date}.`;
     }
 
-    // ════════════════════════════════════════════════════════════
-    // 10. ASSINATURA (fundo claro para tinta preta ser visível)
-    // ════════════════════════════════════════════════════════════
-    const sigAreaX = BAND + 14;
-    const sigAreaY = H - 54;
-    const sigAreaW = 80;
-    const sigAreaH = 36;
+    const descLines = doc.splitTextToSize(descriptionText, 180);
+    doc.text(descLines, cx, descY, { align: 'center', lineHeightFactor: 1.5 });
 
-    // Painel claro para a assinatura preta
-    roundedBox(doc, sigAreaX, sigAreaY, sigAreaW, sigAreaH, C.signBg, 3);
+    // CARGA HORÁRIA (PILL ESTILIZADO)
+    if (data.totalHours) {
+        const chY = descY + (descLines.length * 8) + 5;
+        roundedBox(doc, cx - 25, chY, 50, 8, [30, 30, 45], 4);
+        doc.setTextColor(...primaryRGB);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`CARGA HORÁRIA: ${data.totalHours} HORAS`, cx, chY + 5.5, { align: 'center' });
+    }
 
-    // Linha laranja no topo do painel
-    doc.setDrawColor(...C.orange);
-    doc.setLineWidth(0.8);
-    doc.line(sigAreaX, sigAreaY, sigAreaX + sigAreaW, sigAreaY);
+    // 6. RODAPÉ: ASSINATURA E VALIDAÇÃO
+    const footerTopY = H - 55;
+
+    // Painel de Assinatura (Minimalista e Elegante)
+    const sigX = bandWidth + 15;
+    const sigW = 75;
+    doc.setDrawColor(...C.dim);
+    doc.setLineWidth(0.2);
+    doc.line(sigX, footerTopY + 25, sigX + sigW, footerTopY + 25);
 
     if (data.signatureBase64) {
-        try {
-            // Centralizar assinatura dentro do painel claro
-            doc.addImage(
-                data.signatureBase64, 'PNG',
-                sigAreaX + 4, sigAreaY + 2,
-                sigAreaW - 8, sigAreaH - 8
-            );
-        } catch {
-            // Fallback: texto cursivo escuro
-            doc.setTextColor(30, 30, 30);
-            doc.setFontSize(13);
-            doc.setFont('helvetica', 'bolditalic');
-            doc.text('Caio Diniz Borges', sigAreaX + sigAreaW / 2, sigAreaY + 20, { align: 'center' });
-        }
+        doc.addImage(data.signatureBase64, 'PNG', sigX + 10, footerTopY, 55, 22);
     } else {
-        // Placeholder até assinatura ser enviada
         doc.setTextColor(...C.dim);
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
-        doc.text('[assinatura]', sigAreaX + sigAreaW / 2, sigAreaY + 20, { align: 'center' });
+        doc.text('[ Assinatura Direção ]', sigX + sigW/2, footerTopY + 15, { align: 'center' });
     }
 
-    // Dados do responsável (abaixo do painel)
-    const infoY = sigAreaY + sigAreaH + 5;
     doc.setTextColor(...C.white);
-    doc.setFontSize(8.5);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.templateOverrides?.ceoName || 'Caio Diniz Borges', sigAreaX + sigAreaW / 2, infoY, { align: 'center' });
-
+    doc.text(data.templateOverrides?.ceoName || 'Caio Diniz Borges', sigX + sigW/2, footerTopY + 31, { align: 'center' });
+    
     doc.setTextColor(...C.gray);
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
-    doc.text(data.templateOverrides?.ceoRole || 'CEO Growth & IA', sigAreaX + sigAreaW / 2, infoY + 5, { align: 'center' });
+    doc.text(data.templateOverrides?.ceoRole || 'CEO, Growth Experience', sigX + sigW/2, footerTopY + 36, { align: 'center' });
 
+    // Código de Validação e QR Code simulation
+    const valX = W - bandWidth - 15 - 50;
     doc.setTextColor(...C.dim);
-    doc.setFontSize(6.5);
-    doc.text('CNPJ: 54.789.957/0001-98', sigAreaX + sigAreaW / 2, infoY + 10, { align: 'center' });
-
-    // ════════════════════════════════════════════════════════════
-    // 11. PILLS DE METADADOS (lado direito)
-    // ════════════════════════════════════════════════════════════
-    const pillW = 58;
-    const pillH = 11;
-    const pillGap = 5;
-    const pillX = W - BAND - 14 - pillW;
-    let pillY = H - 60;
-
-    // Pill 1: Tipo
-    roundedBox(doc, pillX, pillY, pillW, pillH, C.orange, 4);
-    doc.setTextColor(...C.white);
     doc.setFontSize(7);
+    doc.text('AUTENTICIDADE', valX + 25, footerTopY + 20, { align: 'center' });
+    doc.setTextColor(...secondaryRGB);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(TIPO_PILL[data.type] || 'EVENTO', pillX + pillW / 2, pillY + 7.5, { align: 'center', charSpace: 0.8 });
-    pillY += pillH + pillGap;
+    doc.text(data.certificateCode, valX + 25, footerTopY + 26, { align: 'center' });
 
-    // Pill 2: Data
-    roundedBox(doc, pillX, pillY, pillW, pillH, C.teal, 4);
-    doc.setTextColor(...C.white);
-    doc.setFontSize(7);
-    doc.text(data.date, pillX + pillW / 2, pillY + 7.5, { align: 'center' });
-    pillY += pillH + pillGap;
+    // 7. HOLOGRAM STAMP (Subtle Seal simulation)
+    const sealX = W - bandWidth - 14;
+    const sealY = H - 32;
+    doc.setDrawColor(...primaryRGB);
+    doc.setLineWidth(0.3);
+    doc.circle(sealX, sealY, 10, 'D'); // Outer
+    doc.setFillColor(primaryRGB[0], primaryRGB[1], primaryRGB[2], 0.05);
+    doc.circle(sealX, sealY, 9, 'F');
+    
+    doc.setTextColor(...primaryRGB);
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GX', sealX, sealY - 1, { align: 'center' });
+    doc.setFontSize(3.5);
+    doc.text('OFFICIAL', sealX, sealY + 2, { align: 'center' });
 
-    // Pill 3: Carga horária (condicional)
-    if (data.totalHours) {
-        roundedBox(doc, pillX, pillY, pillW, pillH, [40, 40, 55], 4);
-        doc.setTextColor(...C.teal);
-        doc.setFontSize(7);
-        doc.text(
-            `${data.totalHours} HORA${data.totalHours > 1 ? 'S' : ''}`,
-            pillX + pillW / 2, pillY + 7.5, { align: 'center', charSpace: 0.5 }
-        );
-    }
-
-    // ════════════════════════════════════════════════════════════
-    // 12. RODAPÉ DE VALIDAÇÃO
-    // ════════════════════════════════════════════════════════════
-    const footerY = H - 10;
-
-    doc.setDrawColor(...C.tealDim);
-    doc.setLineWidth(0.25);
-    doc.line(BAND + 4, footerY - 4, W - BAND - 4, footerY - 4);
-
-    doc.setTextColor(...C.dim);
-    doc.setFontSize(6.5);
+    // Texto de Rodapé Final
+    doc.setTextColor(50, 50, 65);
+    doc.setFontSize(6);
     doc.setFont('helvetica', 'normal');
-    doc.text(
-        `Código de Autenticidade: ${data.certificateCode}  ·  Emitido em: ${new Date().toLocaleDateString('pt-BR')}  ·  Valide em: growthsummit.site/certificado`,
-        cx,
-        footerY,
-        { align: 'center' }
-    );
+    const footerNote = `Este certificado foi gerado eletronicamente e pode ser validado através do código ${data.certificateCode} em growthsummit.site/validar. CNPJ: 54.789.957/0001-98.`;
+    doc.text(footerNote, cx, H - 8, { align: 'center' });
 
-    // ════════════════════════════════════════════════════════════
-    // DOWNLOAD
-    // ════════════════════════════════════════════════════════════
-    const safeName = data.userName
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9_]/g, '');
-    doc.save(`Certificado_${safeName}_${data.certificateCode}.pdf`);
+
+    // Finalização e Download
+    const safeFilename = `Certificado_${data.userName.replace(/\s+/g, '_')}_${data.certificateCode}.pdf`;
+    doc.save(safeFilename);
 }
 
-// ── Fallback de logotipo em texto quando imagem não disponível ─
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _renderTextLogo(doc: any, x: number, y: number) {
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(254, 76, 56);
     doc.text('GROWTH', x, y);
     doc.setTextColor(33, 128, 141);
-    doc.text('EXPERIENCE', x, y + 7);
+    doc.text('EXPERIENCE', x, y + 6);
 }
 
-// ── UTILITÁRIOS ───────────────────────────────────────────────
-
-/**
- * Converte URL de imagem em Base64 para uso no jsPDF.
- */
 export async function imageUrlToBase64(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.width; canvas.height = img.height;
             const ctx = canvas.getContext('2d');
-            if (!ctx) return reject(new Error('Canvas indisponível'));
+            if (!ctx) return reject(new Error('Canvas Error'));
             ctx.drawImage(img, 0, 0);
             resolve(canvas.toDataURL('image/png'));
         };
-        img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+        img.onerror = () => reject(new Error('Image Load Error'));
         img.src = url;
     });
 }
 
-/**
- * Gera código único baseado em userId + referência.
- */
+function _hexToRgb(hex: string): [number, number, number] {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [0, 0, 0];
+}
+
+async function loadJsPDF() {
+    const { jsPDF } = await import('jspdf');
+    return jsPDF;
+}
+
 export function generateCertificateCode(userId: string, ref: string): string {
     const raw = `${userId}-${ref}-${Date.now()}`;
     let hash = 0;
@@ -446,19 +354,6 @@ export function generateCertificateCode(userId: string, ref: string): string {
     return Math.abs(hash).toString(36).toUpperCase().padStart(8, '0').slice(0, 8);
 }
 
-// Auxiliar para converter hex (#ffffff) para RGB [r, g, b]
-function _hexToRgb(hex: string): [number, number, number] {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16)
-    ] : [0, 0, 0];
-}
-
-/**
- * issueCertificate — compatível com CertificateService.
- */
 export async function issueCertificate(
     user: { id: string; name: string },
     project: { id: string; name: string; city?: string },
@@ -473,9 +368,7 @@ export async function issueCertificate(
         eventName: project.name,
         eventCity: project.city,
         sessionTitle: session?.title,
-        date: session?.startTime
-            ? new Date(session.startTime).toLocaleDateString('pt-BR')
-            : new Date().toLocaleDateString('pt-BR'),
+        date: session?.startTime ? new Date(session.startTime).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'),
         certificateCode: code,
         type: certificateType,
     };

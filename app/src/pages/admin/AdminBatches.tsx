@@ -27,7 +27,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useRegistrationBatches, useProject } from '@/hooks/useData';
+import { useRegistrationBatches } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import type { RegistrationBatch } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';

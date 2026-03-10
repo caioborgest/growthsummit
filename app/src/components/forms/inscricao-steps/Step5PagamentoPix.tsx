@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import {
     Copy,
     CheckCircle,
-    MessageCircle,
     ArrowRight,
     AlertCircle,
     Landmark,
@@ -16,7 +15,6 @@ import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
-import { useData } from '@/hooks/useData';
 import type { DadosInscricao } from './inscricaoTypes';
 import { useEffect, useRef } from 'react';
 
@@ -31,7 +29,7 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
     const [loadingPix, setLoadingPix] = useState(true);
     const [pixData, setPixData] = useState<{ copyPaste: string; qrCode: string } | null>(null);
     const [isConfirmed, setIsConfirmed] = useState(false);
-    const pollingInterval = useRef<any>(null);
+    const pollingInterval = useRef<NodeJS.Timeout | null>(null);
 
     // Configurações do PIX (centralizadas no EVENT_CONFIG)
     const cnpj = EVENT_CONFIG.pix.cnpj;
@@ -48,18 +46,34 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
         const generatePix = async () => {
             if (!dados.inscricaoId) return;
             try {
-                setLoadingPix(true);
+                // 1. Tentar obter a sessão atual para garantir que o JWT seja enviado
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    logger.warn('[Step5] Nenhuma sessão ativa encontrada ao tentar gerar PIX.');
+                }
+
                 const { data, error } = await supabase.functions.invoke('cora-gateway', {
-                    body: { registrationId: dados.inscricaoId, action: 'create-pix' }
+                    body: { 
+                        registrationId: dados.inscricaoId,
+                        action: 'create-pix' 
+                    }
                 });
 
-                if (error) throw error;
+                if (error) {
+                    // Tratar erro 401 especificamente
+                    if (error.status === 401 || (error as any).message?.includes('401')) {
+                        throw new Error('Sessão expirada ou não autorizada. Por favor, tente recarregar a página.');
+                    }
+                    throw error;
+                }
 
-                if (data.success) {
+                if (data?.success) {
                     setPixData({
                         copyPaste: data.pixCopyPaste,
                         qrCode: data.qrCodeUrl
                     });
+                } else if (data?.error) {
+                    throw new Error(data.error);
                 }
             } catch (err) {
                 logger.error('Erro ao gerar PIX Cora:', err);
@@ -75,13 +89,13 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
         pollingInterval.current = setInterval(async () => {
             if (!dados.inscricaoId || isConfirmed) return;
 
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('inscricoes_growth_experience')
                 .select('status_pagamento')
                 .eq('id', dados.inscricaoId)
                 .single();
 
-            if (data?.status_pagamento === 'pago') {
+            if ((data as any)?.status_pagamento === 'pago') {
                 setIsConfirmed(true);
                 clearInterval(pollingInterval.current);
                 toast.success('PAGAMENTO CONFIRMADO! 🎉', {
@@ -95,7 +109,7 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
         return () => {
             if (pollingInterval.current) clearInterval(pollingInterval.current);
         };
-    }, [dados.inscricaoId]);
+    }, [dados.inscricaoId, isConfirmed, onContinuar]);
 
     const handleCopy = () => {
         const textToCopy = pixData?.copyPaste || cnpj;

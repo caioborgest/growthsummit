@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, CheckCircle, Users, Trophy, Building2, Ticket } from 'lucide-react';
+import { X, Loader2, CheckCircle, Trophy, Building2, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
@@ -26,8 +26,6 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         email: '',
         phone: '',
         nomeEmpresa: '',
-        quantidadeEquipe: '',
-        quantidadeDia: '',
         quantidadeNoite: '',
         objetivo: '',
         amount: ''
@@ -64,8 +62,6 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         setFormData({
             nomeResponsavel: '', email: '', phone: '',
             nomeEmpresa: '',
-            quantidadeEquipe: '',
-            quantidadeDia: '',
             quantidadeNoite: '',
             objetivo: '',
             amount: ''
@@ -110,8 +106,6 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 email: formData.email,
                 telefone: formData.phone,
                 nome_empresa: formData.nomeEmpresa,
-                quantidade_equipe: parseInt(formData.quantidadeEquipe) || 0,
-                quantidade_dia: parseInt(formData.quantidadeDia) || 0,
                 quantidade_noite: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
                 valor_investido: parseFloat(formData.amount) || 0,
@@ -123,24 +117,21 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 throw dbError;
             }
 
-            const qtdDia = parseInt(formData.quantidadeDia) || 0;
             const qtdNoite = parseInt(formData.quantidadeNoite) || 0;
             const valorTotal = parseFloat(formData.amount) || 0;
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             if (!isAdmin) {
                 const mensagem = encodeURIComponent(
-                    `🚀 *INSCRIÇÃO DE EQUIPE - GROWTH EXPERIENCE*\n\n` +
-                    `Olá! Gostaria de realizar o pagamento das inscrições da minha equipe e oficializar nossa participação no prêmio *Melhor empresa incentivadora da educação empreendedora*.\n\n` +
+                    `🚀 *INSCRIÇÃO EM LOTE - GE TRIUNFO*\n\n` +
+                    `Olá! Acabo de finalizar a inscrição da minha equipe e gostaria de receber o *QR Code para pagamento* e o meu *Cupom de Acesso*.\n\n` +
                     `*DADOS DA EMPRESA:*\n` +
                     `• *Empresa:* ${formData.nomeEmpresa}\n` +
                     `• *Responsável:* ${formData.nomeResponsavel}\n` +
                     `• *WhatsApp:* ${formData.phone}\n` +
-                    `• *Equipe (Dia):* ${qtdDia} pessoas\n` +
-                    `• *Equipe (Noite):* ${qtdNoite} pessoas\n` +
-                    `• *Valor do Investimento:* ${valorFormatado}\n\n` +
-                    `*MOTIVO DA INSCRIÇÃO:* ${formData.objetivo}\n\n` +
-                    `_Pode me enviar a chave Pix para pagamento?_`
+                    `• *Vagas (Noite):* ${qtdNoite} pessoas\n` +
+                    `• *Valor Total:* ${valorFormatado}\n\n` +
+                    `_Aguardando o QR Code para liberar meus vouchers._`
                 );
                 window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
             }
@@ -179,10 +170,10 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
                                 <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-400" />
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">Inscrição Enviada!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">Inscrição Enviada! 🎉</h2>
                             <p className="text-sm sm:text-lg text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-                                Sua empresa foi pré-inscrita para o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.<br className="hidden sm:block" />
-                                <strong>Estamos te redirecionando para o nosso WhatsApp Business</strong> para confirmarmos as vagas da equipe e os detalhes do pagamento.
+                                Estamos te redirecionando para o **WhatsApp oficial** para gerarmos o seu **QR Code de Pagamento**.<br /><br />
+                                Após a confirmação do Pix, nosso sistema gerará um **Cupom Exclusivo** para que seus colaboradores possam se inscrever no site sem custo adicional.
                             </p>
                             <Button onClick={onClose} className="bg-brand-orange-coral text-white px-8 h-12">
                                 Voltar ao Site
@@ -193,88 +184,81 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                             <div className="mb-6 sm:mb-8">
                                 <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
                                     <Trophy className="h-3 w-3 mr-2" />
-                                    Premiação Especial
+                                    Voucher Corporativo
                                 </Badge>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">Empresa Incentivadora</h2>
-                                <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Inscreva sua equipe e concorra à homenagem oficial no palco principal.</p>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">Inscrição em Lote (Equipe)</h2>
+                                <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Garante desconto de 30% para sua equipe atingir o próximo nível.</p>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Empresa</label>
-                                        <div className="relative">
-                                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
-                                                required
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
-                                                value={formData.nomeEmpresa}
-                                                onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })}
-                                                placeholder="Nome da sua empresa"
-                                            />
-                                        </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Empresa</label>
+                                    <div className="relative">
+                                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                        <input
+                                            required
+                                            className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                            value={formData.nomeEmpresa}
+                                            onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })}
+                                            placeholder="Nome da sua empresa"
+                                        />
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Colaboradores (Dia)</label>
-                                        <div className="relative">
-                                            <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
-                                                required
-                                                type="number"
-                                                min="0"
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
-                                                value={formData.quantidadeDia}
-                                                onChange={e => {
-                                                    const val = e.target.value;
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        quantidadeDia: val,
-                                                        quantidadeEquipe: Math.max(parseInt(val) || 0, parseInt(prev.quantidadeNoite) || 0).toString()
-                                                    }));
-                                                }}
-                                                placeholder="Arena/Networking"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Colaboradores (Noite)</label>
+                                        <label className="text-sm font-medium text-gray-300">Vagas para Noite</label>
                                         <div className="relative">
                                             <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                             <input
                                                 required
                                                 type="number"
-                                                min="0"
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                                min="1"
+                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base font-bold"
                                                 value={formData.quantidadeNoite}
                                                 onChange={e => {
                                                     const val = e.target.value;
                                                     const qNoite = parseInt(val) || 0;
-                                                    const calculatedAmount = qNoite * 497;
+                                                    const unitPrice = 179.99;
+                                                    const discount = qNoite >= 5 ? 0.3 : 0;
+                                                    const calculatedAmount = Number((qNoite * unitPrice * (1 - discount)).toFixed(2));
+                                                    
                                                     setFormData(prev => ({
                                                         ...prev,
                                                         quantidadeNoite: val,
-                                                        quantidadeEquipe: Math.max(parseInt(prev.quantidadeDia) || 0, qNoite).toString(),
                                                         amount: calculatedAmount.toString()
                                                     }));
                                                 }}
-                                                placeholder="Programação Paga"
+                                                placeholder="0"
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-2 col-span-1 sm:col-span-2">
-                                        <label className="text-sm font-medium text-gray-300">Investimento Total (R$)</label>
-                                        <div className="relative">
-                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
-                                                required
-                                                type="number"
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-teal-500 outline-none text-sm sm:text-base font-bold"
-                                                value={formData.amount}
-                                                onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                                                placeholder="0.00"
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-teal-400 uppercase font-black tracking-widest hidden sm:block">
-                                                Cálculo: R$ 497/unid. Noite
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="text-sm font-medium text-gray-300">Resumo do Lote</label>
+                                            {parseInt(formData.quantidadeNoite) >= 5 && (
+                                                <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[8px] animate-pulse">
+                                                    -30% OFF
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="bg-dark-300/50 p-3 rounded-xl border border-white/5 space-y-1">
+                                            <div className="flex justify-between text-[10px] text-gray-500">
+                                                <span>Subtotal:</span>
+                                                <span>{( (parseInt(formData.quantidadeNoite) || 0) * 179.99 ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                            </div>
+                                            {parseInt(formData.quantidadeNoite) >= 5 && (
+                                                <div className="flex justify-between text-[10px] text-green-500/70">
+                                                    <span>Desconto Lote (30%):</span>
+                                                    <span>-{( (parseInt(formData.quantidadeNoite) || 0) * 179.99 * 0.3 ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center pt-1 border-t border-white/5">
+                                                <span className="text-[10px] font-bold text-white uppercase">Total Final:</span>
+                                                <span className="text-sm font-black text-brand-orange-coral tracking-tight">
+                                                    {(parseFloat(formData.amount) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -316,20 +300,20 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Por que sua empresa merece o prêmio?</label>
+                                    <label className="text-sm font-medium text-gray-300">Observações / Objetivos</label>
                                     <textarea
                                         rows={3}
                                         className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none resize-none"
                                         value={formData.objetivo}
                                         onChange={e => setFormData({ ...formData, objetivo: e.target.value })}
-                                        placeholder="Conte brevemente sobre o incentivo que sua empresa dá aos colaboradores..."
+                                        placeholder="Motivo da inscrição ou dúvidas..."
                                     />
                                 </div>
 
                                 <div className="bg-brand-orange-coral/10 p-4 rounded-xl border border-brand-orange-coral/20 flex gap-3">
                                     <Trophy className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
                                     <p className="text-xs text-gray-300 leading-relaxed">
-                                        Empresas que levam equipes acima de **10 pessoas** para a **programação a noite**, ganham **10% de desconto adicional** no valor das inscrições e concorrem ao prêmio oficial. A empresa com maior engajamento total (Dia + Noite) ganha o prêmio **"Melhor empresa incentivadora da educação empreendedora"**.
+                                        Empresas que inscrevem equipes acima de **5 pessoas** para a **programação paga**, ganham **30% de desconto** imediato e concorrem ao prêmio oficial. A empresa com maior engajamento total (Dia + Noite) ganha o troféu **"Melhor empresa incentivadora da educação empreendedora"**.
                                     </p>
                                 </div>
 
@@ -347,7 +331,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                     {isSubmitting ? (
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                     ) : (
-                                        'Inscrever Equipe & Competir'
+                                        'Finalizar Inscrição de Equipe'
                                     )}
                                 </Button>
                             </form>
@@ -358,4 +342,3 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         </div>
     );
 }
-

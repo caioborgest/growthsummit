@@ -518,18 +518,18 @@ export function GrowthExperienceTriunfo() {
                 <SectionShare sectionId="premio-empresa" title="Prêmio Empresa Incentivadora - Growth Experience" />
               </div>
               <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
-                Sua Empresa merece ser <span className="text-gradient underline decoration-brand-orange-coral/30 underline-offset-8">Homenageada?</span>
+                Garante o Futuro da sua <span className="text-gradient underline decoration-brand-orange-coral/30 underline-offset-8">Equipe</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                 Empresas que investem na capacitação de suas equipes são os verdadeiros motores do desenvolvimento local.
-                Ao inscrever sua equipe para o *Night Experience*, sua empresa compete automaticamente ao prêmio de "Melhor Empresa Incentivadora ao Empreendedorismo".
+                Ao realizar a **Inscrição em Lote**, sua empresa garante descontos exclusivos e compete automaticamente ao prêmio de "Melhor Empresa Incentivadora ao Empreendedorismo".
               </p>
 
               <div className="space-y-4 mb-10">
                 {[
+                  { text: '30% de Desconto para grupos acima de 5 pessoas', icon: CheckCircle },
                   { text: 'Homenagem no Palco durante a premiação noturna', icon: CheckCircle },
-                  { text: 'Selo Digital para uso em redes sociais e site', icon: CheckCircle },
-                  { text: 'Networking VIP para os colaboradores', icon: CheckCircle }
+                  { text: 'Selo Digital "Empresa Incentivadora" para suas redes', icon: CheckCircle }
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors group">
                     <item.icon className="h-6 w-6 text-brand-orange-coral mt-0.5 group-hover:scale-110 transition-transform" />
@@ -543,7 +543,7 @@ export function GrowthExperienceTriunfo() {
                 className="w-full sm:w-auto bg-white text-dark font-black px-10 py-7 rounded-2xl shadow-xl hover:bg-brand-orange-coral hover:text-white transition-all duration-300 h-auto group"
                 onClick={() => handleOpenModal('empresa')}
               >
-                Inscrever minha Equipe
+                Inscrição em Lote / Equipe
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>

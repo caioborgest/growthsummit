@@ -6,16 +6,16 @@ import {
     Calendar,
     CheckCircle2,
     Lock,
-    ArrowRight
+    ArrowRight,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useCertificates } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
+import { generateCertificatePDF } from '@/lib/certificateGenerator';
 import { useProject } from '@/contexts/ProjectContext';
-import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export function Certificados() {
@@ -23,75 +23,45 @@ export function Certificados() {
     const { selectedProject } = useProject();
     const { data: certificates, isLoading } = useCertificates();
     const [searchTerm, setSearchTerm] = useState('');
-    const [signatureBase64, setSignatureBase64] = useState<string | undefined>();
-    const [logoBase64, setLogoBase64] = useState<string | undefined>();
-
-    // Carregar logo + assinatura ao montar
-    useEffect(() => {
-        const loadAssets = async () => {
-            // Logomarca local (fundo escuro = ideal para certificado escuro)
-            try {
-                const logo = await imageUrlToBase64('/images/logomarca-GX-fundoescuro.png');
-                setLogoBase64(logo);
-            } catch { /* usa fallback texto */ }
-
-            // Assinatura do Supabase Storage
-            try {
-                // Tenta URL pública primeiro
-                const { data: pubData } = supabase.storage
-                    .from('event-files')
-                    .getPublicUrl('event-files/assinatura/assinatura-caio.png');
-
-                let sigUrl = pubData?.publicUrl;
-
-                // Se não for público, gera URL assinada (válida por 1 ano)
-                if (!sigUrl || sigUrl.includes('undefined')) {
-                    const { data: signData } = await supabase.storage
-                        .from('event-files')
-                        .createSignedUrl('event-files/assinatura/assinatura-caio.png', 31536000);
-                    sigUrl = signData?.signedUrl ?? '';
-                }
-
-                if (sigUrl) {
-                    const sig = await imageUrlToBase64(sigUrl);
-                    setSignatureBase64(sig);
-                }
-            } catch { /* certificado gerado sem imagem de assinatura */ }
-        };
-        loadAssets();
-    }, []);
 
     const filteredCerts = (certificates || []).filter(cert => {
-        const sessionTitle = (cert.metadata?.session_title as string || '').toLowerCase();
-        const eventName = (cert.metadata?.event_name as string || '').toLowerCase();
+        const sessionTitle = (cert.activity_name || '').toLowerCase();
+        const type = (cert.type || '').toLowerCase();
         return sessionTitle.includes(searchTerm.toLowerCase()) ||
-            eventName.includes(searchTerm.toLowerCase()) ||
-            cert.type.includes(searchTerm.toLowerCase());
+            type.includes(searchTerm.toLowerCase());
     });
 
     const handleDownload = async (cert: any) => {
         try {
             toast.loading('Gerando seu certificado premium...', { id: 'cert-gen' });
 
+            const template = selectedProject?.metadata?.certificate_template;
+            
+            // Extract overrides from certificate metadata if they exist (for manual edits)
+            const manualOverrides = cert.metadata?.overrides || {};
+
             await generateCertificatePDF({
                 userName: user?.name || 'Participante',
-                eventName: cert.metadata?.event_name || selectedProject?.name || 'Growth Experience',
-                eventCity: selectedProject?.city,
-                sessionTitle: cert.metadata?.session_title,
-                date: new Date(cert.issueDate).toLocaleDateString('pt-BR'),
+                eventName: template?.subtitle || selectedProject?.name || 'Growth Experience',
+                eventCity: selectedProject?.city || 'Brasil',
+                sessionTitle: cert.activity_name || 'Participação Geral',
+                date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
                 certificateCode: cert.code,
-                type: cert.type as 'event' | 'course' | 'lecture' | 'workshop',
-                signatureBase64,
-                logoBase64,
-                totalHours: cert.metadata?.total_hours,
-                templateOverrides: selectedProject?.metadata?.certificate_template ? {
-                    title: selectedProject.metadata.certificate_template.title,
-                    description: selectedProject.metadata.certificate_template.description,
-                    ceoName: selectedProject.metadata.certificate_template.ceo_name,
-                    ceoRole: selectedProject.metadata.certificate_template.ceo_role,
-                    primaryColor: selectedProject.metadata.certificate_template.primary_color,
-                    secondaryColor: selectedProject.metadata.certificate_template.secondary_color,
-                } : undefined
+                type: cert.type as any,
+                totalHours: cert.metadata?.total_hours || 8,
+                logoBase64: template?.logo_url,
+                signatureBase64: template?.signature_url,
+                partnerLogosBase64: template?.partner_logos || [],
+                templateOverrides: {
+                    title: manualOverrides.title || template?.title,
+                    description: manualOverrides.description || template?.description,
+                    ceoName: template?.ceo_name,
+                    ceoRole: template?.ceo_role,
+                    primaryColor: template?.primary_color,
+                    secondaryColor: template?.secondary_color,
+                    accentColor: template?.accent_color,
+                    showBackgroundPattern: template?.show_pattern !== undefined ? template.show_pattern : true
+                }
             });
 
             toast.success('Certificado baixado com sucesso!', { id: 'cert-gen' });
@@ -102,56 +72,55 @@ export function Certificados() {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade-in pb-20">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-white flex items-center gap-3">
                         <Award className="text-brand-orange-coral h-8 w-8" />
-                        Meus Certificados
+                        Minhas Conquistas
                     </h1>
-                    <p className="text-gray-400 mt-2">Sua jornada de aprendizado e crescimento documentada.</p>
+                    <p className="text-gray-400 mt-2">Documentação oficial de sua jornada no ecossistema Growth.</p>
                 </div>
 
-                <div className="relative w-full md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <div className="relative w-full md:w-80">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                     <Input
-                        placeholder="Buscar certificados..."
+                        placeholder="Buscar por atividade..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-dark-200 border-white/5 text-white focus:ring-brand-orange-coral h-11"
+                        className="pl-12 bg-dark-200 border-white/5 text-white focus:ring-brand-orange-coral h-12 rounded-2xl"
                     />
                 </div>
             </header>
 
             {/* Hero Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="glass-card p-6 border-brand-orange-coral/20 bg-brand-orange-coral/5 group hover:bg-brand-orange-coral/10 transition-all">
+                <div className="glass-card p-6 border-brand-orange-coral/20 bg-brand-orange-coral/5 group hover:bg-brand-orange-coral/10 transition-all rounded-3xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/10 blur-3xl -z-10" />
                     <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/20 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center border border-brand-orange-coral/20">
                             <CheckCircle2 className="text-brand-orange-coral h-6 w-6" />
                         </div>
-                        <span className="text-4xl font-black text-white">{certificates.length}</span>
+                        <span className="text-4xl font-black text-white">{certificates?.length || 0}</span>
                     </div>
-                    <p className="text-white font-bold text-lg leading-tight">Certificados Conquistados</p>
-                    <p className="text-gray-400 text-sm mt-1">Sua evolução no evento</p>
+                    <p className="text-white font-bold text-lg leading-tight">Certificados Oficiais</p>
+                    <p className="text-gray-400 text-sm mt-1">Conquistas validadas via QR Code</p>
                 </div>
 
-                <div className="glass-card p-6 border-white/5 hover:bg-white/[0.02] transition-all">
+                <div className="glass-card p-6 border-white/5 hover:bg-white/[0.02] transition-all rounded-3xl">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
                             <Calendar className="text-gray-400 h-6 w-6" />
                         </div>
                     </div>
-                    <p className="text-white font-bold text-lg leading-tight">Próximos em Triunfo</p>
-                    <p className="text-gray-400 text-sm mt-1">Participe para desbloquear</p>
+                    <p className="text-white font-bold text-lg leading-tight">Próximos Desafios</p>
+                    <p className="text-gray-400 text-sm mt-1">Novas certificações em breve</p>
                 </div>
 
-                <div className="glass-card p-6 border-white/5 hover:bg-white/[0.02] transition-all border-dashed">
-                    <div className="flex items-center justify-center h-full text-center py-4">
-                        <div>
-                            <Lock className="text-gray-700 h-8 w-8 mx-auto mb-2" />
-                            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Mais em Breve</p>
-                        </div>
+                <div className="glass-card p-6 border-white/5 flex items-center justify-center text-center border-dashed rounded-3xl opacity-50">
+                    <div>
+                        <Lock className="text-gray-700 h-8 w-8 mx-auto mb-2" />
+                        <p className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em]">Trilhas Bloqueadas</p>
                     </div>
                 </div>
             </div>
@@ -159,67 +128,65 @@ export function Certificados() {
             {/* Certificates List */}
             <div className="space-y-4">
                 {isLoading ? (
-                    <div className="text-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral mx-auto mb-4"></div>
-                        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Carregando conquistas...</p>
+                    <div className="text-center py-24 glass-card border-none">
+                        <Loader2 className="animate-spin h-10 w-10 text-brand-orange-coral mx-auto mb-4" />
+                        <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Acessando cofre de conquistas...</p>
                     </div>
                 ) : filteredCerts.length > 0 ? (
                     <div className="grid gap-4">
                         {filteredCerts.map((cert) => (
                             <div
                                 key={cert.id}
-                                className="glass-card p-5 border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+                                className="glass-card p-6 border-white/5 hover:border-teal-500/20 transition-all flex flex-col md:flex-row md:items-center justify-between gap-8 group rounded-[2.5rem] relative overflow-hidden"
                             >
+                                <div className="absolute top-0 left-0 w-1.5 h-full bg-brand-orange-coral group-hover:bg-teal-500 transition-colors" />
                                 <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-dark-300 border border-white/5 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                        <Award className="h-8 w-8 text-brand-orange-coral opacity-80" />
+                                    <div className="w-16 h-16 rounded-3xl bg-dark-300 border border-white/5 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-xl">
+                                        <Award className="h-8 w-8 text-brand-orange-coral group-hover:text-teal-400" />
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 text-[10px] uppercase font-black tracking-widest">
-                                                {cert.type === 'event' ? 'PARTICIPAÇÃO GERAL' : 'SESSÃO / CURSO'}
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Badge className="bg-white/5 text-gray-400 border-none text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5">
+                                                ID: {cert.code}
                                             </Badge>
-                                            <span className="text-[10px] text-gray-600 font-bold">EMITIDO EM {new Date(cert.issueDate).toLocaleDateString()}</span>
+                                            <span className="text-[10px] text-gray-500 font-bold uppercase italic">VALIDADO ✓</span>
                                         </div>
-                                        <h3 className="text-white font-bold text-xl group-hover:text-brand-orange-coral transition-colors">
-                                            {String(cert.metadata?.session_title || cert.metadata?.event_name || 'Certificado de Participação')}
+                                        <h3 className="text-white font-black text-xl italic tracking-tight group-hover:text-brand-orange-coral transition-colors uppercase">
+                                            {cert.activity_name || 'Participação Geral'}
                                         </h3>
-                                        <p className="text-gray-400 text-sm flex items-center gap-2">
-                                            {cert.metadata?.room && (
-                                                <>
-                                                    <span className="font-bold text-gray-500 tracking-tighter">{String(cert.metadata.room)}</span>
-                                                    <span className="text-gray-700">•</span>
-                                                </>
-                                            )}
-                                            <span>CÓD: {cert.code}</span>
+                                        <p className="text-gray-500 text-xs font-medium flex items-center gap-2 mt-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {new Date(cert.issue_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        onClick={() => handleDownload(cert)}
-                                        className="flex-1 md:flex-none bg-white text-dark hover:bg-brand-orange-coral hover:text-white font-black px-6 py-4 h-auto rounded-xl transition-all shadow-xl"
-                                    >
-                                        <Download className="h-4 w-4 mr-2" />
-                                        BAIXAR PDF
-                                    </Button>
-                                </div>
+                                <Button
+                                    onClick={() => handleDownload(cert)}
+                                    className="bg-white text-black hover:bg-brand-orange-coral hover:text-white font-black px-10 h-14 rounded-2xl transition-all shadow-2xl flex items-center gap-3 active:scale-95"
+                                >
+                                    <Download className="h-5 w-5" />
+                                    BAIXAR PDF
+                                </Button>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-white/[0.01] rounded-[2rem] border border-dashed border-white/5">
-                        <div className="w-20 h-20 rounded-full bg-dark-200 flex items-center justify-center mx-auto mb-6">
-                            <Award className="h-10 w-10 text-gray-700" />
+                    <div className="text-center py-24 glass-card border-dashed border-white/10 rounded-[3rem]">
+                        <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8 border border-white/5">
+                            <Award className="h-12 w-12 text-gray-800" />
                         </div>
-                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm mb-2">Você ainda não possui certificados</p>
-                        <p className="text-gray-600 text-sm max-w-md mx-auto mb-8">
-                            Participe das atividades do evento e faça o check-in via QR Code para desbloquear suas certificações automaticamente.
+                        <h3 className="text-white font-black text-xl mb-3 tracking-tight">Nenhuma conquista registrada</h3>
+                        <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed mb-10">
+                            Participe das sessões, workshops e mentorias. O check-in valida sua presença e libera o certificado instantaneamente.
                         </p>
-                        <Button variant="outline" className="border-white/10 text-gray-400" onClick={() => window.location.href = '#programacao'}>
-                            Explorar Programação
-                            <ArrowRight className="h-4 w-4 ml-2" />
+                        <Button
+                            variant="outline"
+                            className="h-14 px-10 rounded-2xl border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-black text-xs uppercase tracking-widest"
+                            onClick={() => window.location.href = '/programacao'}
+                        >
+                            Ver Programação
+                            <ArrowRight className="h-4 w-4 ml-3" />
                         </Button>
                     </div>
                 )}

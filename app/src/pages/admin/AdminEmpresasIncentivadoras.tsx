@@ -94,11 +94,10 @@ export default function AdminEmpresasIncentivadoras() {
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-white tracking-tight mb-2 uppercase italic">
-                            Prêmio Especial: Empresa Incentivadora na Educação Empreendedora
+                            Inscrições em Lote e Prêmio Empresa Incentivadora
                         </h2>
                         <p className="text-gray-300 text-sm max-w-3xl leading-relaxed">
-                            A empresa que levar a <strong className="text-teal-400">maior quantidade de colaboradores</strong> para a programação diurna e noturna (paga) receberá o prêmio oficial
-                            por seu compromisso com a educação empreendedora de sua equipe.
+                            Acompanhe as <strong className="text-teal-400">vendas corporativas</strong> e o engajamento das empresas. O ranking abaixo mostra quem está liderando o prêmio de incentivo à educação empreendedora.
                         </p>
                     </div>
                     <div className="flex-1" />

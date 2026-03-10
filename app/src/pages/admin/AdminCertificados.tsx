@@ -4,7 +4,6 @@ import {
     Search,
     Download,
     Eye,
-    Settings2,
     Palette,
     Type,
     Save,
@@ -14,7 +13,9 @@ import {
     Stamp,
     CloudUpload,
     Loader2,
-    QrCode
+    QrCode,
+    Trash2,
+    Trash
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,9 +54,12 @@ interface CertificateTemplate {
     ceo_role: string;
     primary_color: string;
     secondary_color: string;
+    accent_color: string;
+    show_pattern: boolean;
     background_url: string;
     logo_url: string;
     signature_url: string;
+    partner_logos: string[];
 }
 
 export function AdminCertificados() {
@@ -74,11 +78,14 @@ export function AdminCertificados() {
         organization: 'Growth & IA Hub',
         ceo_name: 'Caio Diniz Borges',
         ceo_role: 'CEO Growth & IA',
-        primary_color: '#ff7043',
+        primary_color: '#fe4c38',
         secondary_color: '#21808d',
+        accent_color: '#ffffff',
+        show_pattern: true,
         background_url: '',
         logo_url: '',
-        signature_url: ''
+        signature_url: '',
+        partner_logos: []
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -86,6 +93,7 @@ export function AdminCertificados() {
     // Upload Refs
     const logoInputRef = useRef<HTMLInputElement>(null);
     const signatureInputRef = useRef<HTMLInputElement>(null);
+    const partnerLogoInputRef = useRef<HTMLInputElement>(null);
 
     // ── Carregar Dados ──────────────────────────────────────────────────────
     const fetchData = useCallback(async () => {
@@ -106,14 +114,19 @@ export function AdminCertificados() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedProject?.id, setCertificates]);
+    }, [selectedProject?.id]);
 
     useEffect(() => {
         fetchData();
 
         // Carregar config do projeto se existir
         if (selectedProject?.metadata?.certificate_template) {
-            setTemplate(prev => ({ ...prev, ...selectedProject.metadata.certificate_template }));
+            const savedTemplate = selectedProject.metadata.certificate_template;
+            setTemplate(prev => ({ 
+                ...prev, 
+                ...savedTemplate,
+                partner_logos: savedTemplate.partner_logos || []
+            }));
         }
     }, [fetchData, selectedProject]);
 
@@ -142,11 +155,10 @@ export function AdminCertificados() {
         }
     };
 
-    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: 'logo_url' | 'signature_url') => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: 'logo_url' | 'signature_url' | 'partner_logos') => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validar tamanho (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
             toast.error('A imagem deve ter no máximo 2MB.');
             return;
@@ -154,37 +166,49 @@ export function AdminCertificados() {
 
         try {
             toast.loading('Processando imagem...', { id: 'upload' });
-            // Aqui poderíamos subir pro Supabase Storage, mas para simplificar
-            // no preview, vamos converter pra Base64. Num cenário real de 
-            // PDF generator, Base64 ou URL pública de storage ambos funcionam.
-            
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result as string;
-                setTemplate(prev => ({ ...prev, [field]: base64String }));
+                if (field === 'partner_logos') {
+                    setTemplate(prev => ({ 
+                        ...prev, 
+                        partner_logos: [...(prev.partner_logos || []), base64String] 
+                    }));
+                } else {
+                    setTemplate(prev => ({ ...prev, [field]: base64String }));
+                }
                 toast.success('Imagem carregada com sucesso!', { id: 'upload' });
             };
             reader.readAsDataURL(file);
-            
         } catch (error) {
             logger.error('[AdminCertificados] Erro ao processar imagem:', error);
             toast.error('Erro ao processar imagem.', { id: 'upload' });
         }
     };
 
+    const removePartnerLogo = (index: number) => {
+        setTemplate(prev => ({
+            ...prev,
+            partner_logos: prev.partner_logos.filter((_, i) => i !== index)
+        }));
+    };
+
     const handlePreview = async () => {
         try {
             toast.loading('Gerando preview...', { id: 'preview' });
 
-            // Mock data for preview
             await generateCertificatePDF({
-                userName: 'NOME DO PARTICIPANTE EXPLO',
-                eventName: template.subtitle || selectedProject?.name || 'Evento de Teste',
+                userName: 'Participante de Exemplo',
+                eventName: template.subtitle || selectedProject?.name || 'Growth Experience',
                 eventCity: selectedProject?.city || 'Brasil',
-                sessionTitle: 'Título da Atividade Exemplo',
+                sessionTitle: 'Workshop de Inovação e Growth',
                 date: new Date().toLocaleDateString('pt-BR'),
-                certificateCode: 'PREVIEW-000',
-                type: 'event',
+                certificateCode: 'PREVIEW-GX',
+                type: 'workshop',
+                totalHours: 8,
+                logoBase64: template.logo_url,
+                signatureBase64: template.signature_url,
+                partnerLogosBase64: template.partner_logos,
                 templateOverrides: {
                     title: template.title,
                     description: template.description,
@@ -192,6 +216,8 @@ export function AdminCertificados() {
                     ceoRole: template.ceo_role,
                     primaryColor: template.primary_color,
                     secondaryColor: template.secondary_color,
+                    accentColor: template.accent_color,
+                    showBackgroundPattern: template.show_pattern
                 }
             });
 
@@ -216,10 +242,10 @@ export function AdminCertificados() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-white flex items-center gap-3">
-                        <Award className="h-9 w-9 text-teal-400" />
-                        Gestão de Certificados
+                        <Award className="h-9 w-9 text-brand-orange-coral" />
+                        Portal de Certificados
                     </h1>
-                    <p className="text-gray-500 font-medium">Controle total sobre emissão, modelos e validação de certificados.</p>
+                    <p className="text-gray-500 font-medium">Design inovador, marcas parceiras e emissão automatizada.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -228,38 +254,34 @@ export function AdminCertificados() {
                         Sincronizar
                     </Button>
                     <Button 
-                        className="bg-teal-500 hover:bg-teal-600 text-white font-black px-6" 
+                        className="bg-brand-orange-coral hover:bg-orange-600 text-white font-black px-6 shadow-lg shadow-orange-500/20" 
                         onClick={() => setIsManualModalOpen(true)}
                     >
                         <Plus className="h-4 w-4 mr-2" />
-                        Emitir Manualmente
+                        Nova Emissão
                     </Button>
                 </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="bg-dark-200 border border-white/5 p-1 h-14 rounded-2xl mb-8">
-                    <TabsTrigger value="list" className="rounded-xl px-8 h-full data-[state=active]:bg-teal-500 data-[state=active]:text-white font-bold">
+                    <TabsTrigger value="list" className="rounded-xl px-8 h-full data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white font-bold">
                         <Award className="h-4 w-4 mr-2" />
-                        Listagem Geral
+                        Emissões
                     </TabsTrigger>
-                    <TabsTrigger value="template" className="rounded-xl px-8 h-full data-[state=active]:bg-teal-500 data-[state=active]:text-white font-bold">
+                    <TabsTrigger value="template" className="rounded-xl px-8 h-full data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white font-bold">
                         <Palette className="h-4 w-4 mr-2" />
-                        Editor de Modelo
-                    </TabsTrigger>
-                    <TabsTrigger value="stats" className="rounded-xl px-8 h-full data-[state=active]:bg-teal-500 data-[state=active]:text-white font-bold">
-                        <Settings2 className="h-4 w-4 mr-2" />
-                        Configurações Robustas
+                        Editor Premium
                     </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="list" className="space-y-6">
-                    <div className="flex items-center gap-4 bg-dark-200 border border-white/5 p-4 rounded-2xl">
+                    <div className="flex items-center gap-4 bg-dark-200 border border-white/5 p-4 rounded-2xl shadow-xl">
                         <div className="relative flex-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
                             <Input
                                 placeholder="Buscar por participante, atividade ou código..."
-                                className="bg-dark-100 border-none pl-12 h-12 text-white"
+                                className="bg-dark-100 border-none pl-12 h-12 text-white placeholder:text-gray-600"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -270,10 +292,10 @@ export function AdminCertificados() {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-white/5 text-gray-400 text-[10px] sm:text-xs uppercase font-black tracking-widest">
-                                    <th className="px-6 py-5">Participante / ID</th>
+                                    <th className="px-6 py-5">Participante</th>
                                     <th className="px-6 py-5">Atividade</th>
-                                    <th className="px-6 py-5">Código Único</th>
-                                    <th className="px-6 py-5 text-center">Data Emissão</th>
+                                    <th className="px-6 py-5">Chave / Código</th>
+                                    <th className="px-6 py-5 text-center">Data</th>
                                     <th className="px-6 py-5 text-right">Ações</th>
                                 </tr>
                             </thead>
@@ -281,33 +303,33 @@ export function AdminCertificados() {
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="py-20 text-center">
-                                            <Loader2 className="h-10 w-10 text-teal-400 animate-spin mx-auto mb-4" />
-                                            <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Acessando banco de dados...</p>
+                                            <Loader2 className="h-10 w-10 text-brand-orange-coral animate-spin mx-auto mb-4" />
+                                            <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Sincronizando dados...</p>
                                         </td>
                                     </tr>
                                 ) : filteredCertificates.length > 0 ? (
                                     filteredCertificates.map((cert) => (
-                                        <tr key={cert.id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <tr key={cert.id} className="hover:bg-white/[0.02] transition-colors group border-b border-white/5 last:border-0">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                                                        <User className="h-5 w-5 text-teal-400" />
+                                                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                                                        <User className="h-5 w-5 text-brand-orange-coral" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-white font-bold text-sm tracking-tight">{cert.registration?.nome || 'Anônimo'}</p>
+                                                        <p className="text-white font-bold text-sm tracking-tight">{cert.registration?.nome || 'Inscrito'}</p>
                                                         <p className="text-gray-500 text-[10px] uppercase font-black tracking-tighter truncate max-w-[150px]">
-                                                            {cert.registration_id}
+                                                            {cert.registration?.email}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <Badge className="bg-dark-300 text-teal-400 border-teal-500/20 px-3 py-1 font-black text-[10px] italic">
-                                                    {cert.activity_name || 'Participação Geral'}
+                                                    {cert.activity_name || 'Geral'}
                                                 </Badge>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <code className="text-sm font-mono text-brand-orange-coral bg-brand-orange-coral/5 px-2 py-1 rounded-md">
+                                                <code className="text-sm font-mono text-brand-orange-coral bg-brand-orange-coral/5 px-2 py-1 rounded-md border border-brand-orange-coral/10">
                                                     {cert.code}
                                                 </code>
                                             </td>
@@ -319,11 +341,8 @@ export function AdminCertificados() {
                                                     <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-white/5" title="Visualizar">
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-teal-400 hover:bg-white/5" title="Download">
+                                                    <Button variant="ghost" size="icon" className="text-teal-400 hover:bg-teal-500/10" title="Download">
                                                         <Download className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-400 hover:bg-white/5" title="Excluir">
-                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </td>
@@ -332,11 +351,10 @@ export function AdminCertificados() {
                                 ) : (
                                     <tr>
                                         <td colSpan={5} className="py-20 text-center">
-                                            <div className="w-16 h-16 rounded-full bg-dark-300 flex items-center justify-center mx-auto mb-4">
+                                            <div className="w-16 h-16 rounded-full bg-dark-300 flex items-center justify-center mx-auto mb-4 border border-white/5">
                                                 <Award className="h-8 w-8 text-gray-700" />
                                             </div>
-                                            <p className="text-gray-400 font-bold mb-1">Nenhum certificado emitido</p>
-                                            <p className="text-gray-600 text-xs">Os certificados aparecem aqui à medida que os participantes fazem check-in.</p>
+                                            <p className="text-gray-400 font-bold mb-1">Nenhum certificado encontrado</p>
                                         </td>
                                     </tr>
                                 )}
@@ -354,21 +372,21 @@ export function AdminCertificados() {
                                     <div className="p-2 bg-teal-500/20 rounded-xl">
                                         <Type className="h-5 w-5 text-teal-400" />
                                     </div>
-                                    <h3 className="text-lg font-black text-white">Conteúdo & Textos</h3>
+                                    <h3 className="text-lg font-black text-white">Configuração Global de Textos</h3>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Título do Certificado</label>
+                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Título do Documento</label>
                                         <Input
                                             value={template.title}
                                             onChange={e => setTemplate({ ...template, title: e.target.value })}
-                                            className="bg-dark-100 border-none h-12 text-white font-bold"
+                                            className="bg-dark-100 border-none h-12 text-white font-bold focus:ring-2 focus:ring-teal-500"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Subtítulo (Evento)</label>
+                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Evento / Subtítulo</label>
                                         <Input
                                             value={template.subtitle}
                                             onChange={e => setTemplate({ ...template, subtitle: e.target.value })}
@@ -377,19 +395,18 @@ export function AdminCertificados() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Descrição Padrão</label>
+                                        <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Corpo do Texto (Participação)</label>
                                         <textarea
                                             rows={3}
                                             value={template.description}
                                             onChange={e => setTemplate({ ...template, description: e.target.value })}
-                                            className="w-full bg-dark-100 border-none rounded-xl p-4 text-white text-sm resize-none"
+                                            className="w-full bg-dark-100 border-none rounded-xl p-4 text-white text-sm resize-none focus:ring-2 focus:ring-teal-500"
                                         />
-                                        <p className="text-[10px] text-gray-600 italic">Dica: Use frases que transmitam credibilidade e conquista.</p>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Assinado por (Nome)</label>
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Nome do Assinante</label>
                                             <Input
                                                 value={template.ceo_name}
                                                 onChange={e => setTemplate({ ...template, ceo_name: e.target.value })}
@@ -397,7 +414,7 @@ export function AdminCertificados() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cargo do Assinante</label>
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cargo / Título</label>
                                             <Input
                                                 value={template.ceo_role}
                                                 onChange={e => setTemplate({ ...template, ceo_role: e.target.value })}
@@ -413,176 +430,135 @@ export function AdminCertificados() {
                                     <div className="p-2 bg-orange-500/20 rounded-xl">
                                         <Palette className="h-5 w-5 text-orange-400" />
                                     </div>
-                                    <h3 className="text-lg font-black text-white">Identidade Visual</h3>
+                                    <h3 className="text-lg font-black text-white">Identidade & Marcas Parceiras</h3>
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cor Principal</label>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="color"
-                                                    value={template.primary_color}
-                                                    onChange={e => setTemplate({ ...template, primary_color: e.target.value })}
-                                                    className="w-12 h-12 rounded-xl bg-transparent border-none cursor-pointer"
-                                                />
-                                                <span className="text-gray-300 font-mono text-sm">{template.primary_color}</span>
-                                            </div>
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cor Primária</label>
+                                            <input type="color" value={template.primary_color} onChange={e => setTemplate({ ...template, primary_color: e.target.value })} className="w-full h-10 rounded-lg cursor-pointer bg-dark-100 border-none" />
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cor Secundária</label>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="color"
-                                                    value={template.secondary_color}
-                                                    onChange={e => setTemplate({ ...template, secondary_color: e.target.value })}
-                                                    className="w-12 h-12 rounded-xl bg-transparent border-none cursor-pointer"
-                                                />
-                                                <span className="text-gray-300 font-mono text-sm">{template.secondary_color}</span>
-                                            </div>
+                                            <input type="color" value={template.secondary_color} onChange={e => setTemplate({ ...template, secondary_color: e.target.value })} className="w-full h-10 rounded-lg cursor-pointer bg-dark-100 border-none" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Destaque</label>
+                                            <input type="color" value={template.accent_color} onChange={e => setTemplate({ ...template, accent_color: e.target.value })} className="w-full h-10 rounded-lg cursor-pointer bg-dark-100 border-none" />
                                         </div>
                                     </div>
 
-                                    {/* Uploaders robustos */}
                                     <div className="space-y-4">
-                                        {/* Hidden inputs */}
-                                        <input 
-                                            type="file" 
-                                            ref={logoInputRef} 
-                                            onChange={(e) => handleImageUpload(e, 'logo_url')}
-                                            accept="image/png, image/jpeg" 
-                                            className="hidden" 
-                                        />
-                                        <input 
-                                            type="file" 
-                                            ref={signatureInputRef} 
-                                            onChange={(e) => handleImageUpload(e, 'signature_url')}
-                                            accept="image/png, image/jpeg" 
-                                            className="hidden" 
-                                        />
+                                        <input type="file" ref={logoInputRef} onChange={(e) => handleImageUpload(e, 'logo_url')} accept="image/png, image/jpeg" className="hidden" />
+                                        <input type="file" ref={signatureInputRef} onChange={(e) => handleImageUpload(e, 'signature_url')} accept="image/png, image/jpeg" className="hidden" />
+                                        <input type="file" ref={partnerLogoInputRef} onChange={(e) => handleImageUpload(e, 'partner_logos')} accept="image/png, image/jpeg" className="hidden" />
 
-                                        <div 
-                                            className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all cursor-pointer"
-                                            onClick={() => logoInputRef.current?.click()}
-                                        >
+                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer" onClick={() => logoInputRef.current?.click()}>
                                             <div className="flex items-center gap-3">
-                                                <CloudUpload className="h-5 w-5 text-gray-500 group-hover:text-teal-400 transition-colors" />
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Logomarca (Alta Defin.)</span>
-                                                    {template.logo_url && <span className="text-[10px] text-teal-400 font-bold">Imagem Carregada ✓</span>}
-                                                </div>
+                                                <CloudUpload className="h-5 w-5 text-gray-500" />
+                                                <span className="text-sm font-bold text-gray-400">Logomarca Principal (GX)</span>
                                             </div>
-                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10" onClick={(e) => { e.stopPropagation(); logoInputRef.current?.click(); }}>Alterar</Button>
+                                            {template.logo_url && <Badge className="bg-teal-500/20 text-teal-400 border-none">OK</Badge>}
                                         </div>
 
-                                        <div 
-                                            className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all cursor-pointer"
-                                            onClick={() => signatureInputRef.current?.click()}
-                                        >
+                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer" onClick={() => signatureInputRef.current?.click()}>
                                             <div className="flex items-center gap-3">
-                                                <Stamp className="h-5 w-5 text-gray-500 group-hover:text-teal-400 transition-colors" />
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-400 group-hover:text-white transition-colors tracking-tight">Assinatura Digitalizada (PNG)</span>
-                                                    {template.signature_url && <span className="text-[10px] text-teal-400 font-bold">Imagem Carregada ✓</span>}
-                                                </div>
+                                                <Stamp className="h-5 w-5 text-gray-500" />
+                                                <span className="text-sm font-bold text-gray-400">Assinatura do CEO</span>
                                             </div>
-                                            <Button size="sm" variant="ghost" className="text-teal-400 hover:bg-teal-500/10" onClick={(e) => { e.stopPropagation(); signatureInputRef.current?.click(); }}>Alterar</Button>
+                                            {template.signature_url && <Badge className="bg-teal-500/20 text-teal-400 border-none">OK</Badge>}
+                                        </div>
+
+                                        {/* Gestão de Marcas Parceiras: SEBRAE, etc. */}
+                                        <div className="space-y-3 pt-2">
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center justify-between">
+                                                Marcas Parceiras (Ex: SEBRAE, Prefeitura)
+                                                <Button size="xs" variant="ghost" className="text-teal-400 h-6 px-2" onClick={() => partnerLogoInputRef.current?.click()}>
+                                                    <Plus className="h-3 w-3 mr-1" /> Adicionar Logo
+                                                </Button>
+                                            </label>
+                                            <div className="flex flex-wrap gap-3">
+                                                {template.partner_logos && template.partner_logos.map((logo, idx) => (
+                                                    <div key={idx} className="relative group w-16 h-12 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center overflow-hidden">
+                                                        <img src={logo} alt="Partner" className="max-w-[80%] max-h-[80%] object-contain" />
+                                                        <button 
+                                                            onClick={() => removePartnerLogo(idx)}
+                                                            className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <Plus className="h-4 w-4 rotate-45" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                {(!template.partner_logos || template.partner_logos.length === 0) && (
+                                                    <p className="text-[10px] text-gray-600 italic">Nenhuma marca parceira adicionada ainda.</p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Preview Dinâmico */}
+                        {/* Preview Dinâmico Estilizado */}
                         <div className="lg:sticky lg:top-8 h-fit space-y-6">
-                            <div className="glass-card overflow-hidden border-teal-500/20 relative group">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button onClick={handlePreview} className="bg-teal-500 text-white font-black px-8 py-4 rounded-xl shadow-2xl">
-                                        <Download className="h-4 w-4 mr-2" />
-                                        GERAR DOWNLOAD TESTE
+                            <div className="glass-card overflow-hidden border-teal-500/20 relative group shadow-2xl">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button onClick={handlePreview} className="bg-brand-orange-coral text-white font-black px-10 py-5 rounded-2xl shadow-2xl scale-110">
+                                        <Download className="h-5 w-5 mr-3" />
+                                        VER CERTIDÃO EM PDF
                                     </Button>
                                 </div>
 
-                                <div className="aspect-[1.41] bg-dark-300 relative flex items-center justify-center p-8">
-                                    {/* Esqueleto Visual do Certificado */}
-                                    <div className="w-full h-full border-[10px] border-dark-100 rounded-lg p-6 flex flex-col items-center justify-between bg-[#0a0a0f] text-center shadow-2xl relative overflow-hidden">
-                                        {/* Decorative Sidebar (Mock) */}
-                                        <div className="absolute left-0 top-0 w-2 h-full bg-orange-500"></div>
-                                        <div className="absolute right-0 top-0 w-2 h-full bg-teal-500"></div>
-
-                                        {template.logo_url ? (
-                                            <img src={template.logo_url} alt="Logo" className="max-w-[80px] max-h-[32px] object-contain mb-4" />
-                                        ) : (
-                                            <div className="w-20 h-8 bg-white/10 rounded mb-4" />
-                                        )}
-                                        <div className="space-y-2 mb-8">
-                                            <p className="text-[8px] font-black text-white/40 tracking-[0.3em] uppercase">{template.title}</p>
-                                            <p className="text-[6px] text-white/20">Certificamos com orgulho que</p>
+                                <div className="aspect-[1.41] bg-[#0A0A0F] relative flex items-center justify-center p-6 sm:p-10 overflow-hidden">
+                                    {/* Esqueleto Visual Premium */}
+                                    <div className="w-full h-full border-[1px] border-white/10 rounded-sm p-8 flex flex-col items-center justify-between text-center relative">
+                                        {/* Lateral Bands */}
+                                        <div className="absolute left-0 top-0 w-2 h-full" style={{ backgroundColor: template.primary_color }} />
+                                        <div className="absolute right-0 top-0 w-2 h-full" style={{ backgroundColor: template.secondary_color }} />
+                                        
+                                        {/* Header Row */}
+                                        <div className="w-full flex justify-between items-start mb-4">
+                                            <div className="w-20 h-6 bg-white/5 rounded flex items-center justify-center">
+                                                {template.logo_url ? <img src={template.logo_url} className="max-h-full max-w-full opacity-60" /> : <span className="text-[5px] text-gray-600">GX LOGO</span>}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {template.partner_logos.map((_, i) => (
+                                                    <div key={i} className="w-6 h-6 bg-white/5 rounded-full" />
+                                                ))}
+                                            </div>
                                         </div>
 
-                                        <div className="w-3/4 h-[1px] bg-teal-500/30" />
-                                        <h4 className="text-base font-black text-white tracking-tighter uppercase italic py-2">NOME DO PARTICIPANTE</h4>
-                                        <div className="w-3/4 h-[1px] bg-teal-500/30 mb-4" />
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-black tracking-[0.4em] text-white" style={{ color: template.primary_color }}>{template.title}</p>
+                                            <h4 className="text-xl font-black text-white italic tracking-tighter">NOME PARTICIPANTE</h4>
+                                            <div className="w-32 h-[2px] mx-auto bg-gradient-to-r from-transparent via-teal-500 to-transparent" />
+                                        </div>
 
-                                        <p className="text-[6px] text-white/40 px-8 leading-relaxed mb-6">
-                                            {template.description.substring(0, 150)}...
+                                        <p className="text-[7px] text-gray-500 max-w-[200px] leading-relaxed">
+                                            {template.description.substring(0, 120)}...
                                         </p>
 
-                                        <div className="flex justify-between w-full px-6">
+                                        <div className="w-full flex justify-between items-end mt-4">
                                             <div className="text-left">
-                                                <div className="w-16 h-8 bg-white/5 rounded border border-white/10 mb-2 flex items-center justify-center overflow-hidden">
-                                                    {template.signature_url ? (
-                                                        <img src={template.signature_url} alt="Assinatura" className="max-w-full max-h-full object-contain" />
-                                                    ) : (
-                                                        <span className="text-[5px] text-white/20 italic">ASSINATURA</span>
-                                                    )}
-                                                </div>
-                                                <p className="text-[6px] font-bold text-white mb-0.5">{template.ceo_name}</p>
-                                                <p className="text-[5px] text-white/30">{template.ceo_role}</p>
+                                                <div className="w-12 h-[1px] bg-white/20 mb-2" />
+                                                <p className="text-[6px] font-bold text-white">{template.ceo_name}</p>
+                                                <p className="text-[5px] text-gray-600">{template.ceo_role}</p>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-[8px] font-black text-orange-500 tracking-widest">EVENTO</p>
-                                                <p className="text-[6px] text-white/40">{new Date().toLocaleDateString()}</p>
-                                                <div className="mt-2 w-8 h-8 bg-white/5 rounded ml-auto flex items-center justify-center">
-                                                    <QrCode className="h-4 w-4 text-white/20" />
-                                                </div>
+                                            <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center">
+                                                <QrCode className="h-4 w-4 text-white/20" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-4 bg-teal-500/10 border-t border-teal-500/20">
-                                    <p className="text-[10px] text-teal-400 font-bold text-center flex items-center justify-center gap-2">
-                                        <Eye className="h-3 w-3" /> PRÉ-VISUALIZAÇÃO EM TEMPO REAL
-                                    </p>
+                                <div className="p-4 bg-teal-500/10 border-t border-teal-500/20 text-center">
+                                    <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">Preview Instantâneo</p>
                                 </div>
                             </div>
 
-                            <Button
-                                onClick={handleSaveTemplate}
-                                disabled={isSaving}
-                                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 h-auto rounded-2xl text-lg shadow-xl shadow-teal-500/20"
-                            >
-                                {isSaving ? (
-                                    <Loader2 className="h-6 w-6 animate-spin" />
-                                ) : (
-                                    <>
-                                        <Save className="h-5 w-5 mr-3" />
-                                        SALVAR CONFIGURAÇÕES DO MODELO
-                                    </>
-                                )}
+                            <Button onClick={handleSaveTemplate} disabled={isSaving} className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 rounded-2xl text-lg shadow-xl shadow-teal-500/30">
+                                {isSaving ? <Loader2 className="h-6 w-6 animate-spin" /> : <><Save className="h-5 w-5 mr-3" /> SALVAR DESIGN DO PROJETO</>}
                             </Button>
-
-                            <div className="p-6 bg-orange-500/5 border border-orange-500/10 rounded-2xl flex items-start gap-4 h-fit">
-                                <AlertCircle className="h-5 w-5 text-orange-400 flex-shrink-0 mt-0.5" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-bold text-white">Configuração Global</p>
-                                    <p className="text-xs text-gray-400 leading-relaxed">
-                                        As alterações feitas aqui afetarão todos os certificados emitidos para o projeto
-                                        <strong> {selectedProject?.name}</strong>, incluindo retroativamente.
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </TabsContent>
@@ -602,13 +578,7 @@ export function AdminCertificados() {
 
 function AlertCircle({ className }: { className?: string }) {
     return (
-        <svg
-            className={className}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24" height="24" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round"
-        >
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" x2="12" y1="8" y2="12" />
             <line x1="12" x2="12.01" y1="16" y2="16" />

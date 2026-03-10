@@ -6,6 +6,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { logger } from '@/lib/logger';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 export function PetrolinaRegistrationForm() {
     const { selectedProject } = useProject();
@@ -33,71 +34,19 @@ export function PetrolinaRegistrationForm() {
         setIsSubmitting(true);
 
         try {
-            // 1. Auth / User Creation
-            const { data: { session: existingSession } } = await supabase.auth.getSession();
-            let userId = existingSession?.user?.id;
+            // 1. Auth / User Creation (Centralized)
+            const { userId } = await getOrCreateUser({
+                email: formData.email,
+                password: formData.senha,
+                name: formData.nome,
+                phone: formData.whatsapp,
+                role: 'participant'
+            });
 
-            if (!userId) {
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: formData.email,
-                    password: formData.senha,
-                    options: {
-                        data: {
-                            name: formData.nome,
-                            phone: formData.whatsapp,
-                            role: 'participant'
-                        }
-                    }
-                });
+            if (!userId) throw new Error('Falha ao identificar usuário');
 
-                if (authError) {
-                    if (authError.message.includes('already registered')) {
-                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                            email: formData.email,
-                            password: formData.senha
-                        });
-
-                        if (signInError) {
-                            throw new Error('Este email já está cadastrado. Por favor, use a senha correta ou outro email.');
-                        }
-                        userId = signInData.user.id;
-                    } else {
-                        throw authError;
-                    }
-                } else {
-                    userId = authData?.user?.id;
-
-                    // Tentar login automático se não retornou sessão (Supabase pode exigir confirmação, mas vamos tentar)
-                    if (!authData?.session) {
-                        await supabase.auth.signInWithPassword({
-                            email: formData.email,
-                            password: formData.senha
-                        }).catch(e => logger.warn('Auto-login skip Petrolina (confirmation required?):', e.message));
-                    }
-                }
-            }
-
-            // 2. Sincronização robusta
-            if (userId) {
-                try {
-                    // Apenas verifica se o perfil básico existe.
-                    // A trigger handle_new_user no Supabase cuida da criação automática na tabela public.users.
-                    const { data: userData, error: userError } = await supabase
-                        .from('users')
-                        .select('id, role')
-                        .eq('id', userId)
-                        .maybeSingle();
-
-                    if (userError) logger.warn('Erro ao verificar usuário public:', userError);
-
-                    // Se o usuário já existe mas a role está errada (raro), podemos tentar atualizar
-                    if (userData && userData.role !== 'participant' && userData.role !== 'admin') {
-                        await supabase.from('users').update({ role: 'participant' }).eq('id', userId);
-                    }
-                } catch (syncErr: any) {
-                    logger.warn('Erro na lógica de verificação Petrolina:', syncErr);
-                }
-            }
+            // 2. Sincronização robusta (Para FK)
+            await waitForUserSync(userId);
 
             // 3. Insert Registration
             const { data: inscricaoData, error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({

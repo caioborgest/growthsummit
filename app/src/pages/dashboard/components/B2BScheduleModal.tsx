@@ -4,7 +4,8 @@ import { Calendar, Clock, MapPin, X, CheckCircle, Handshake } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useB2BAppointmentsTriunfo, useProject } from '@/hooks/useData';
+import { useB2BAppointmentsTriunfo } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import type { B2BMatch, Company } from '@/types';
 
 interface B2BScheduleModalProps {

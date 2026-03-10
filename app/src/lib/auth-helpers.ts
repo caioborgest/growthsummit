@@ -104,6 +104,24 @@ export async function getOrCreateUser({
         const userId = authData?.user?.id;
         if (!userId) throw new Error('Não foi possível identificar o usuário criado.');
 
+        // ── STEP 3.5: Fallback Sync (Garantir public.users se o trigger falhar)
+        try {
+            const { error: syncError } = await supabase.from('users').upsert({
+                id: userId,
+                email: cleanEmail,
+                name: name || cleanEmail,
+                phone: phone,
+                role: role,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+
+            if (syncError) {
+                logger.warn('[auth-helpers] Manual sync warning (non-blocking):', syncError.message);
+            }
+        } catch (e) {
+            logger.warn('[auth-helpers] Manual sync failed (non-blocking).');
+        }
+
         logger.info('[auth-helpers] Novo usuário criado:', { userId, email: cleanEmail });
         return { userId, isNew: true, sessionCreated: !!authData.session };
     }
@@ -159,8 +177,8 @@ export async function waitForUserSync(userId: string): Promise<string> {
     }
 
     // Mesmo sem confirmar a sincronia, retornar o userId — o insert de inscrição vai funcionar
-    // pois o Supabase propaga o trigger assincronicamente
-    logger.warn('[auth-helpers] Timeout aguardando sync do usuário. Prosseguindo...', { userId });
+    // pois o Supabase propaga o trigger assincronicamente ou nós já tentamos o upsert no getOrCreateUser
+    logger.warn('[auth-helpers] Timeout aguardando sync do usuário. Verifique se o trigger handle_new_user() está ativo no Supabase.', { userId });
     return userId;
 }
 

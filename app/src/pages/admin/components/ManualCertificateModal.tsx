@@ -6,7 +6,11 @@ import {
   Type, 
   CheckCircle2,
   Search,
-  Loader2
+  Loader2,
+  Settings,
+  ChevronDown,
+  ChevronUp,
+  Clock
 } from 'lucide-react';
 import { useRegistrations } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
@@ -30,9 +34,15 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
   const [selectedRegId, setSelectedRegId] = useState<string | null>(null);
   const [activityName, setActivityName] = useState('Participação Geral');
   const [type, setType] = useState('event');
+  const [totalHours, setTotalHours] = useState(8);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const filteredInscricoes = registrations.filter(r => 
+  // Advanced Overrides
+  const [customTitle, setCustomTitle] = useState('');
+  const [customDescription, setCustomDescription] = useState('');
+
+  const filteredInscricoes = (registrations || []).filter(r => 
     r.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     r.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ).slice(0, 5);
@@ -47,18 +57,28 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
     try {
       const code = `CERT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
+      const payload = {
+        registration_id: selectedRegId,
+        project_id: projectId,
+        activity_name: activityName,
+        type: type,
+        code: code,
+        issue_date: new Date().toISOString(),
+        status: 'issued',
+        metadata: { 
+          manual: true, 
+          issued_by: 'admin',
+          total_hours: totalHours,
+          overrides: {
+            title: customTitle || undefined,
+            description: customDescription || undefined
+          }
+        }
+      };
+
       const { error } = await supabase
         .from('certificates' as any)
-        .insert({
-          registration_id: selectedRegId,
-          project_id: projectId,
-          activity_name: activityName,
-          type: type,
-          code: code,
-          issue_date: new Date().toISOString(),
-          status: 'issued',
-          metadata: { manual: true, issued_by: 'admin' }
-        } as any);
+        .insert(payload as any);
 
       if (error) throw error;
 
@@ -73,102 +93,165 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
     }
   };
 
+  const selectedUser = registrations?.find(r => r.id === selectedRegId);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-dark-200 border-dark-300 rounded-3xl p-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b border-white/5">
-          <DialogTitle className="text-xl font-black text-white flex items-center gap-3">
-            <Award className="h-6 w-6 text-teal-400" />
-            Emissão Manual
+      <DialogContent className="sm:max-w-[550px] bg-dark-200 border border-white/5 rounded-3xl p-0 overflow-hidden shadow-2xl">
+        <DialogHeader className="p-8 border-b border-white/5 bg-gradient-to-r from-teal-500/5 to-transparent">
+          <DialogTitle className="text-2xl font-black text-white flex items-center gap-4">
+            <Award className="h-8 w-8 text-teal-400" />
+            Emissão Personalizada
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
-            Emita um certificado avulso para um participante específico.
+          <DialogDescription className="text-gray-500 font-medium">
+            Configure e emita um certificado exclusivo para o participante.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-6 space-y-6">
-          <div className="space-y-3">
-            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
-              <Search className="h-3 w-3" /> Buscar Participante
-            </label>
-            <Input 
-              placeholder="Nome ou e-mail..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-dark-100 border-dark-400 text-white"
-            />
-            {searchTerm && (
-              <div className="bg-dark-300 rounded-xl border border-white/5 overflow-hidden">
-                {filteredInscricoes.map(r => (
+        <ScrollArea className="max-h-[60vh]">
+          <div className="p-8 space-y-8">
+            {/* Busca de Participante */}
+            <div className="space-y-4">
+              <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+                <Search className="h-3 w-3" /> Localizar Participante
+              </label>
+              <Input 
+                placeholder="Ex: Caio Diniz ou caio@growth.com"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-dark-100 border-none h-12 text-white placeholder:text-gray-700"
+              />
+              {searchTerm && filteredInscricoes.length > 0 && (
+                <div className="bg-dark-300 rounded-2xl border border-white/5 overflow-hidden shadow-xl">
+                  {filteredInscricoes.map(r => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => {
+                          setSelectedRegId(r.id);
+                          setSearchTerm('');
+                      }}
+                      className={`w-full p-4 text-left hover:bg-teal-500/10 flex items-center justify-between transition-colors border-b border-white/5 last:border-0 ${selectedRegId === r.id ? 'bg-teal-500/20' : ''}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white">{r.name}</p>
+                          <p className="text-[10px] text-gray-500 font-medium">{r.email}</p>
+                        </div>
+                      </div>
+                      {selectedRegId === r.id && <CheckCircle2 className="h-5 w-5 text-teal-400" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {selectedRegId && (
+              <div className="bg-teal-500/5 p-6 rounded-3xl border border-teal-500/20 flex items-center gap-5 animate-in fade-in slide-in-from-top-4">
+                 <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                    <User className="text-teal-400 h-7 w-7" />
+                 </div>
+                 <div className="flex-1 overflow-hidden">
+                    <p className="text-[10px] text-teal-400 font-black uppercase tracking-widest mb-1">Participante Selecionado</p>
+                    <p className="text-xl text-white font-black tracking-tight truncate">{selectedUser?.name}</p>
+                 </div>
+              </div>
+            )}
+
+            {/* Configurações da Atividade */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+                  <Type className="h-3 w-3" /> Atividade
+                </label>
+                <Input 
+                  value={activityName}
+                  onChange={e => setActivityName(e.target.value)}
+                  className="bg-dark-100 border-none h-12 text-white font-bold"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="h-3 w-3" /> Carga Horária
+                </label>
+                <Input 
+                  type="number"
+                  value={totalHours}
+                  onChange={e => setTotalHours(parseInt(e.target.value))}
+                  className="bg-dark-100 border-none h-12 text-white font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+                <Calendar className="h-3 w-3" /> Modalidade
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {['event', 'course', 'lecture', 'workshop', 'oficina'].map(t => (
                   <button
-                    key={r.id}
-                    onClick={() => {
-                        setSelectedRegId(r.id);
-                        setSearchTerm('');
-                    }}
-                    className={`w-full p-3 text-left hover:bg-teal-500/10 flex items-center justify-between transition-colors ${selectedRegId === r.id ? 'bg-teal-500/20' : ''}`}
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${type === t ? 'bg-teal-500 border-teal-400 text-white shadow-lg shadow-teal-500/20' : 'bg-dark-100 border-white/5 text-gray-500 hover:border-white/20'}`}
                   >
-                    <div>
-                      <p className="text-sm font-bold text-white">{r.name}</p>
-                      <p className="text-[10px] text-gray-500">{r.email}</p>
-                    </div>
-                    {selectedRegId === r.id && <CheckCircle2 className="h-4 w-4 text-teal-400" />}
+                    {t}
                   </button>
                 ))}
               </div>
-            )}
-          </div>
-
-          {selectedRegId && (
-            <div className="bg-teal-500/5 p-4 rounded-2xl border border-teal-500/20 flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center">
-                  <User className="text-teal-400 h-5 w-5" />
-               </div>
-               <div>
-                  <p className="text-xs text-teal-400 font-black uppercase tracking-widest">Selecionado</p>
-                  <p className="text-white font-bold">{registrations.find(r => r.id === selectedRegId)?.name}</p>
-               </div>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
-                <Type className="h-3 w-3" /> Nome da Atividade
-              </label>
-              <Input 
-                value={activityName}
-                onChange={e => setActivityName(e.target.value)}
-                className="bg-dark-100 border-dark-400 text-white"
-              />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
-                <Calendar className="h-3 w-3" /> Tipo de Certificado
-              </label>
-              <select 
-                value={type}
-                onChange={e => setType(e.target.value)}
-                className="w-full bg-dark-100 border border-dark-400 rounded-lg p-2 text-white text-sm"
+            {/* Opções Avançadas (Texto Editado) */}
+            <div className="pt-4 pb-6">
+              <button 
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center gap-2 text-teal-400 text-xs font-black uppercase tracking-widest hover:text-teal-300 transition-colors"
               >
-                <option value="event">Evento Completo</option>
-                <option value="course">Curso / Workshop</option>
-                <option value="lecture">Palestra Individual</option>
-                <option value="mentoria">Mentoria</option>
-              </select>
+                <Settings className={`h-4 w-4 ${showAdvanced ? 'rotate-90' : ''} transition-transform`} />
+                Opções de Conteúdo Editável
+                {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showAdvanced && (
+                <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-2">
+                   <div className="space-y-3">
+                    <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Título Customizado (Ex: MENÇÃO HONROSA)</label>
+                    <Input 
+                      placeholder="Deixe em branco para usar o padrão"
+                      value={customTitle}
+                      onChange={e => setCustomTitle(e.target.value)}
+                      className="bg-dark-100 border-none h-12 text-white"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Descrição Customizada para este Certificado</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Deixe em branco para usar a descrição do projeto..."
+                      value={customDescription}
+                      onChange={e => setCustomDescription(e.target.value)}
+                      className="w-full bg-dark-100 border-none rounded-2xl p-4 text-white text-sm resize-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </ScrollArea>
 
-        <DialogFooter className="p-6 bg-dark-300 border-t border-white/5">
-          <Button variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white">Cancelar</Button>
+        <DialogFooter className="p-8 bg-dark-300 border-t border-white/5">
+          <Button variant="ghost" type="button" onClick={onClose} className="text-gray-400 hover:text-white font-bold h-14 px-8 rounded-2xl border-white/5 border">Cancelar</Button>
           <Button 
             onClick={handleSubmit} 
             disabled={!selectedRegId || isSubmitting}
-            className="bg-teal-500 hover:bg-teal-600 text-white font-black px-8"
+            className="bg-teal-500 hover:bg-teal-600 text-white font-black px-12 h-14 rounded-2xl shadow-xl shadow-teal-500/20"
           >
-            {isSubmitting ? <Loader2 className="animate-spin h-4 w-4" /> : 'Confirmar Emissão'}
+            {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : 'Emitir Certificado'}
           </Button>
         </DialogFooter>
       </DialogContent>

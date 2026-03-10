@@ -22,12 +22,20 @@ serve(async (req) => {
 
         const url = new URL(req.url)
         const action = url.pathname.split('/').pop()
+        const body = await req.json().catch(() => ({}))
 
         // ─────────────────────────────────────────────────────────────────────────
-        // ACTION: CREATE PIX
+        // ACTION: CREATE PIX (Aceita /create-pix ou corpo com action)
         // ─────────────────────────────────────────────────────────────────────────
-        if (action === 'create-pix') {
-            const { registrationId } = await req.json()
+        if (action === 'create-pix' || body.action === 'create-pix') {
+            const registrationId = body.registrationId || body.id;
+
+            if (!registrationId) {
+                return new Response(JSON.stringify({ error: 'registrationId é obrigatório' }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                })
+            }
 
             // 1. Fetch registration details
             const { data: registration, error: fetchError } = await supabase
@@ -168,11 +176,10 @@ serve(async (req) => {
         }
 
         // ─────────────────────────────────────────────────────────────────────────
-        // ACTION: WEBHOOK
+        // ACTION: WEBHOOK (Recuperado do body se não estiver na URL)
         // ─────────────────────────────────────────────────────────────────────────
-        if (action === 'webhook') {
-            const body = await req.json()
-            console.log('Cora Webhook received:', body)
+        if (action === 'webhook' || body.event_type) {
+            console.info('Cora Webhook received:', body)
 
             const eventType = body.event_type
             const invoiceId = body.data?.id
@@ -180,7 +187,7 @@ serve(async (req) => {
 
             if (eventType === 'INVOICE.PAID' || eventType === 'invoice.paid' || status === 'PAID') {
                 // Encontrar a inscrição pelo Cora ID
-                const { data: registration, error: findError } = await supabase
+                const { data: registration } = await supabase
                     .from('inscricoes_growth_experience')
                     .select('id, user_id, project_id, valor_pago')
                     .eq('external_payment_id', invoiceId)
@@ -225,10 +232,14 @@ serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
 
-    } catch (err: any) {
-        console.error('Cora Gateway Error: ', err.message);
-        return new Response(JSON.stringify({ error: err.message }), {
-            status: 500,
+    } catch (err) {
+        const error = err as any;
+        const status = error.response?.status || 500;
+        const message = error.response?.data?.error || error.message;
+        
+        console.error(`Cora Gateway Error (${status}):`, message);
+        return new Response(JSON.stringify({ error: message, success: false }), {
+            status,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
     }

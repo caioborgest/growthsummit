@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
-import { getOrCreateUser } from '@/lib/auth-helpers';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface InscricaoModalProps {
     isOpen: boolean;
@@ -135,23 +135,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             if (!userId) throw new Error('Falha ao identificar usuário');
 
-            // 1.5. Sincronização robusta com public.users (Zombie record cleanup)
-            if (userId) {
-                try {
-                    // Verificação de sincronização (opcional, para logging)
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('id, role')
-                        .eq('id', userId)
-                        .maybeSingle();
-
-                    if (!userData) {
-                        logger.info('Aguardando sincronização automática do usuário...');
-                    }
-                } catch (userTableCatch) {
-                    logger.debug('Aviso de sincronização (não fatal):', userTableCatch);
-                }
-            }
+            // 1.5. Sincronização robusta com public.users (Para FK)
+            await waitForUserSync(userId);
 
             // Prosseguindo (user_id pode ser null se auth falhou)
 
