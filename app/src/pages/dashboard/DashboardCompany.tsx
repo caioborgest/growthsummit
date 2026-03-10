@@ -30,7 +30,7 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { B2BScheduleModal } from './components/B2BScheduleModal';
 import { B2BChatModal } from './components/B2BChatModal';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
-import { logger } from '@/utils/logger';
+import { logger } from '@/lib/logger';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
