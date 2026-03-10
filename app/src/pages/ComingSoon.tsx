@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Home as HomeIcon, ArrowLeft, Rocket, Sparkles, Clock, Bell } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { PremiumBackground } from '@/components/ui/PremiumBackground';
+import { PremiumBackground } from './dashboard/components/shared/PremiumBackground';
 
 export function ComingSoon() {
   const { feature } = useParams();
