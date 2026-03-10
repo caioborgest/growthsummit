@@ -27,11 +27,13 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     const { projectId } = useProject();
     const { data: allSessions, isLoading: loadingSessions } = useMentoringSessions();
 
+    const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
+
     // Filter available slots for the selected mentor
     const availableSlotsForMentor = (allSessions || []).filter(s => 
         s.mentorId === tempMentorId && 
         (s.status === 'scheduled' || s.status === 'agendado') && 
-        !s.menteeId
+        (!s.menteeId || s.menteeId === PLACEHOLDER_ID)
     );
 
     const mentorEnabledSlots = availableSlotsForMentor.map(s => {
