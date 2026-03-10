@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Bell, LogOut, HelpCircle, Moon, Sun } from 'lucide-react';
+import { User, Bell, LogOut, HelpCircle, Moon, Sun, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     Popover,
@@ -119,9 +119,9 @@ export function PremiumHeader({
 
                     <div className="space-y-3">
                         <div className="space-y-1">
-                            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter flex items-center gap-3 italic">
+                            <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter flex items-center gap-2 italic">
                                 {userName?.split(' ')[0] || 'Bem-vindo'}
-                                <span className="text-orange-500 not-italic">.</span>
+                                <span className="text-orange-500 not-italic text-3xl">.</span>
                             </h1>
                             <p className="text-gray-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] opacity-60">
                                 {userName || roleLabel}
@@ -129,21 +129,30 @@ export function PremiumHeader({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest flex items-center gap-1.5 ${isPro
-                                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                                : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
-                                }`}>
-                                {isPro ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
-                                {isPro ? 'Exp. Pro' : 'Free Morning'}
-                            </Badge>
-
-                            {isPro && isActuallyPaid !== undefined && (
-                                <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${isActuallyPaid
-                                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                    : 'bg-orange-500/5 text-orange-500 border-orange-500/20'
-                                    }`}>
-                                    {isActuallyPaid ? 'Acesso Ativo' : 'Pagamento Pendente'}
+                            {roleLabel.includes('MENTOR') ? (
+                                <Badge className="px-2.5 py-1 bg-orange-500 text-white border-none text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-glow-orange">
+                                    <Star className="h-2.5 w-2.5 fill-current" />
+                                    Mentor Oficial
                                 </Badge>
+                            ) : (
+                                <>
+                                    <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest flex items-center gap-1.5 ${isPro
+                                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                        : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                                        }`}>
+                                        {isPro ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
+                                        {isPro ? 'Exp. Pro' : 'Free Morning'}
+                                    </Badge>
+
+                                    {isPro && isActuallyPaid !== undefined && (
+                                        <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${isActuallyPaid
+                                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                            : 'bg-orange-500/5 text-orange-500 border-orange-500/20'
+                                            }`}>
+                                            {isActuallyPaid ? 'Acesso Ativo' : 'Pagamento Pendente'}
+                                        </Badge>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

@@ -5,11 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export function Layout() {
   const location = useLocation();
+  const isLandingPage = location.pathname === '/' || 
+                        location.pathname.includes('growth-experience-triunfo') || 
+                        location.pathname.includes('growth-experience-petrolina') ||
+                        location.pathname.includes('sobre');
 
   return (
     <div className="min-h-screen bg-dark text-white overflow-x-hidden">
       <Header />
-      <main className="pt-18 lg:pt-20">
+      <main className={isLandingPage ? "" : "pt-18 lg:pt-20"}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

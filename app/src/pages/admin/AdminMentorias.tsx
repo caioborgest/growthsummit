@@ -42,10 +42,13 @@ export function AdminMentorias() {
   const [formData, setFormData] = useState({
     mentorId: '',
     menteeId: '',
+    slotId: '',
     scheduledAt: '',
     topic: '',
     duration: 30
   });
+
+  const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
 
   const filteredSessions = sessions.filter(session => {
     const matchesSearch =
@@ -81,13 +84,26 @@ export function AdminMentorias() {
         payload.menteeId = registration.userId;
       }
 
-      await create(payload);
+      if (formData.slotId) {
+        // Se escolheu um slot existente, faz UPDATE naquele registro
+        await update(formData.slotId, {
+          status: 'scheduled',
+          menteeId: payload.menteeId,
+          menteeName: payload.menteeName,
+          topic: payload.topic,
+          duration: payload.duration
+        });
+      } else {
+        // Se preencheu manualmente, faz CREATE
+        await create(payload);
+      }
 
       toast.success('Mentoria agendada com sucesso!');
       setIsModalOpen(false);
       setFormData({
         mentorId: '',
         menteeId: '',
+        slotId: '',
         scheduledAt: '',
         topic: '',
         duration: 30
@@ -99,10 +115,10 @@ export function AdminMentorias() {
   };
 
   const stats = {
-    scheduled: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId).length,
-    available: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && !s.menteeId).length,
+    scheduled: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId && s.menteeId !== PLACEHOLDER_ID).length,
+    available: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && (!s.menteeId || s.menteeId === PLACEHOLDER_ID)).length,
     pending: sessions.filter(s => s.status === 'pendente' || s.status === 'pending').length,
-    completed: sessions.filter(s => s.status === 'completed').length,
+    completed: sessions.filter(s => s.status === 'completed' || s.status === 'concluido').length,
     cancelled: sessions.filter(s => (s.status === 'cancelled' || s.status === 'cancelado')).length,
     avgRating: sessions
       .filter(s => s.evaluationRating || s.rating)
@@ -183,6 +199,43 @@ export function AdminMentorias() {
                 </select>
               </div>
 
+              {formData.mentorId && (
+                <div className="space-y-2">
+                  <Label>Horário Disponível (Escolha do perfil do mentor)</Label>
+                  <select
+                    value={formData.slotId}
+                    onChange={e => {
+                      const slotId = e.target.value;
+                      if (!slotId) {
+                        setFormData({ ...formData, slotId: '', scheduledAt: '', duration: 30 });
+                        return;
+                      }
+                      const slot = sessions.find(s => s.id === slotId);
+                      if (slot) {
+                        setFormData({ 
+                          ...formData, 
+                          slotId, 
+                          scheduledAt: new Date(slot.scheduledAt).toISOString().slice(0, 16),
+                          duration: slot.duration || 20
+                        });
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-teal-500/5 border border-teal-500/30 rounded-lg text-teal-400 font-bold"
+                  >
+                    <option value="" className="bg-dark-200">Personalizado / Manual</option>
+                    {sessions
+                      .filter(s => s.mentorId === formData.mentorId && (s.status === 'scheduled' || s.status === 'agendado') && (!s.menteeId || s.menteeId === PLACEHOLDER_ID))
+                      .sort((a,b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                      .map(slot => (
+                        <option key={slot.id} value={slot.id} className="bg-dark-200">
+                          {new Date(slot.scheduledAt).toLocaleDateString('pt-BR')} - {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </option>
+                      ))
+                    }
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Data e Hora *</Label>
@@ -190,8 +243,9 @@ export function AdminMentorias() {
                     required
                     type="datetime-local"
                     value={formData.scheduledAt}
-                    onChange={e => setFormData({ ...formData, scheduledAt: e.target.value })}
+                    onChange={e => setFormData({ ...formData, scheduledAt: e.target.value, slotId: '' })}
                     className="bg-dark-100 border-dark-300"
+                    disabled={!!formData.slotId}
                   />
                 </div>
                 <div className="space-y-2">
@@ -199,8 +253,9 @@ export function AdminMentorias() {
                   <Input
                     type="number"
                     value={formData.duration}
-                    onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
+                    onChange={e => setFormData({ ...formData, duration: Number(e.target.value), slotId: '' })}
                     className="bg-dark-100 border-dark-300"
+                    disabled={!!formData.slotId}
                   />
                 </div>
               </div>
@@ -291,7 +346,7 @@ export function AdminMentorias() {
                         <User className="h-4 w-4 text-orange-400" />
                       </div>
                       <span className={session.menteeName ? "text-white" : "text-gray-600 italic"}>
-                        {session.menteeName || 'Disponível / Aberto'}
+                        {(!session.menteeName || session.menteeName === 'Disponível') ? 'Disponível / Aberto' : session.menteeName}
                       </span>
                     </div>
                   </td>
@@ -306,8 +361,8 @@ export function AdminMentorias() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <Badge className={!session.menteeId ? 'bg-orange-500/20 text-orange-400' : statusColors[session.status]}>
-                      {!session.menteeId ? 'Disponível' : session.status}
+                    <Badge className={(!session.menteeId || session.menteeId === PLACEHOLDER_ID) ? 'bg-orange-500/20 text-orange-400' : statusColors[session.status]}>
+                      {(!session.menteeId || session.menteeId === PLACEHOLDER_ID) ? 'Disponível' : session.status}
                     </Badge>
                   </td>
                   <td className="p-4 text-gray-300">

@@ -47,120 +47,96 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
     }, [selectedProject?.startDate, selectedProject?.slug, isTriunfo]);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Background Image with Overlay */}
-            <div className="absolute inset-0">
-                {/* A imagem de fundo é mantida para Triunfo e removida para Petrolina conforme solicitado */}
+        <section className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center overflow-hidden bg-brand-black">
+            {/* Background Image with Enhanced Overlay */}
+            <div className="absolute inset-0 z-0">
                 {selectedProject?.slug !== 'ge-petrolina-2026' && (
-                    <img
-                        src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
-                        alt={selectedProject?.city || "Growth Experience"}
-                        className="w-full h-full object-cover object-center scale-105"
-                    />
+                    <div className="relative w-full h-full">
+                        <img
+                            src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                            alt={selectedProject?.city || "Growth Experience"}
+                            className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-40 sm:opacity-60"
+                        />
+                        {/* Layered Gradients for Depth */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-brand-black via-transparent to-brand-black opacity-80" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-brand-black/40 to-brand-black opacity-90" />
+                    </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-black/95 via-dark-100/90 to-brand-black/95" />
-                <div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                        backgroundImage: `
-              radial-gradient(circle at 20% 50%, rgba(255, 112, 67, 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(255, 133, 73, 0.1) 0%, transparent 50%)
-            `
-                    }}
-                />
+                
+                {/* Animated Mesh Gradients */}
+                <div className="absolute inset-0 opacity-40 mix-blend-overlay">
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-orange-coral/30 blur-[120px] rounded-full animate-pulse-slow" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-orange-intense/20 blur-[120px] rounded-full animate-pulse-slow-reverse" />
+                </div>
             </div>
 
-            {/* Padrão de pontos */}
-            <div
-                className="absolute inset-0 opacity-10"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, rgba(255, 112, 67, 0.3) 1px, transparent 1px)',
-                    backgroundSize: '50px 50px'
-                }}
-            />
+            {/* Decorative Elements */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute top-1/4 left-10 w-2 h-2 bg-brand-orange-coral rounded-full animate-ping opacity-20" />
+                <div className="absolute top-1/3 right-12 w-3 h-3 bg-brand-orange-gradient rounded-full animate-ping opacity-10" style={{ animationDelay: '1s' }} />
+                <div className="absolute bottom-1/4 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-pulse opacity-20" />
+            </div>
 
-            {/* Conteúdo */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="text-center">
-                    {/* Badge de destaque */}
-                    <div
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange-coral/10 border border-brand-orange-coral/30 mb-8 animate-fade-in-up backdrop-blur-sm"
-                        style={{ animationDelay: '0.1s' }}
-                    >
-                        <Sparkles className="h-4 w-4 text-brand-orange-coral" />
-                        <span className="text-brand-orange-coral font-semibold text-sm">
-                            Evento Presencial • {selectedProject?.city}-{selectedProject?.state || 'PE'}
-                        </span>
+            {/* Content Container */}
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24 flex flex-col items-center text-center">
+                
+                {/* Premium Location Badge */}
+                <div
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 mb-6 sm:mb-10 animate-fade-in-up backdrop-blur-md shadow-2xl"
+                    style={{ animationDelay: '0.1s' }}
+                >
+                    <div className="flex h-2 w-2 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange-coral opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange-coral"></span>
                     </div>
+                    <span className="text-white font-bold text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+                        {selectedProject?.city}-{selectedProject?.state || 'PE'} • PRESENCIAL
+                    </span>
+                </div>
 
-                    {/* TITLE REFINED FOR MOBILE */}
+                {/* Main Hero Header */}
+                <div className="max-w-5xl mb-8 sm:mb-12">
                     <h1
-                        className="text-3xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up px-2"
+                        className="text-4xl sm:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter animate-fade-in-up mb-4 sm:mb-6"
                         style={{ animationDelay: '0.2s' }}
                     >
-                        <span className="block mb-2 text-2xl sm:text-6xl lg:text-7xl uppercase tracking-tighter">Growth Experience</span>
-                        <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent block sm:inline">
-                            {selectedProject?.city}-{selectedProject?.state} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
+                        <span className="block opacity-80 text-xl sm:text-3xl lg:text-4xl uppercase tracking-[0.3em] font-medium mb-2 sm:mb-4">
+                            Growth Experience
+                        </span>
+                        <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent drop-shadow-sm">
+                            {selectedProject?.city} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
                         </span>
                     </h1>
 
-                    {/* Subtítulo */}
                     <p
-                        className="text-lg sm:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 animate-fade-in-up px-4"
+                        className="text-base sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up leading-relaxed"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior evento de empreendedorismo do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}.
-                        <span className="block mt-2 text-brand-orange-coral font-bold text-base sm:text-xl">
-                            Networking, Mentorias e Negócios
-                        </span>
+                        O maior encontro de inteligência de negócios do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}. 
+                        <span className="hidden sm:inline"> Prepare-se para uma imersão total em estratégias de escala e networking de alto nível.</span>
                     </p>
-
-                    {/* Informações do evento */}
-                    <div
-                        className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-6 mb-12 animate-fade-in-up px-2"
-                        style={{ animationDelay: '0.4s' }}
-                    >
-                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
-                            <Calendar className="h-4 w-4 text-brand-orange-coral" />
-                            <span className="font-semibold text-xs sm:text-sm">
-                                {isTriunfo
-                                    ? '16 abr 2026'
-                                    : (selectedProject?.startDate
-                                        ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
-                                        : 'Data a definir')}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
-                            <Clock className="h-4 w-4 text-brand-orange-coral" />
-                            <span className="font-semibold text-xs sm:text-sm">08:00 - 23:00</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-300 bg-white/5 py-1.5 px-3 rounded-full border border-white/5">
-                            <MapPin className="h-4 w-4 text-brand-orange-coral" />
-                            <span className="font-semibold text-xs sm:text-sm truncate max-w-[150px]">{selectedProject?.city || 'Local a definir'}</span>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Contador regressivo */}
+                {/* Refined Countdown Section */}
                 <div
-                    className="max-w-2xl mx-auto mb-12 animate-fade-in-up"
-                    style={{ animationDelay: '0.5s' }}
+                    className="w-full max-w-2xl mb-12 sm:mb-16 animate-fade-in-up"
+                    style={{ animationDelay: '0.4s' }}
                 >
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 bg-white/5 p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-white/5 backdrop-blur-xl shadow-inner-glow relative">
+                        {/* Decorative glow behind countdown */}
+                        <div className="absolute inset-0 bg-brand-orange-coral/5 rounded-inherit blur-xl -z-10 group-hover:bg-brand-orange-coral/10 transition-colors" />
+                        
                         {[
                             { label: 'Dias', value: timeLeft.dias },
                             { label: 'Horas', value: timeLeft.horas },
                             { label: 'Min', value: timeLeft.minutos },
                             { label: 'Seg', value: timeLeft.segundos }
                         ].map((item, i) => (
-                            <div
-                                key={i}
-                                className="glass-card p-4 sm:p-6 text-center border-brand-orange-coral/20 hover:border-brand-orange-coral/50 transition-all hover:scale-105"
-                            >
-                                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-br from-brand-orange-coral to-brand-orange-gradient bg-clip-text text-transparent mb-2">
+                            <div key={i} className="flex flex-col items-center justify-center p-2 rounded-2xl hover:bg-white/5 transition-colors group">
+                                <div className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tabular-nums tracking-tighter mb-1 sm:mb-2 flex items-center justify-center h-10 sm:h-20 group-hover:scale-110 transition-transform">
                                     {String(item.value).padStart(2, '0')}
                                 </div>
-                                <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">
+                                <div className="text-[10px] sm:text-xs text-gray-500 group-hover:text-brand-orange-coral uppercase tracking-[0.2em] font-bold transition-colors">
                                     {item.label}
                                 </div>
                             </div>
@@ -168,24 +144,45 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     </div>
                 </div>
 
-                {/* CTAs */}
+                {/* Refined Event Data Info */}
                 <div
-                    className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up px-4"
+                    className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mb-12 animate-fade-in-up"
+                    style={{ animationDelay: '0.5s' }}
+                >
+                    {[
+                        { icon: Calendar, text: isTriunfo ? '16 Abr 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : 'Data a definir') },
+                        { icon: Clock, text: '08:00 - 23:00' },
+                        { icon: MapPin, text: selectedProject?.city || 'Local a definir' }
+                    ].map((info, idx) => (
+                        <div key={idx} className="flex items-center gap-2.5 group">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-brand-orange-coral/10 group-hover:border-brand-orange-coral/30 transition-all">
+                                <info.icon className="h-4 w-4 sm:h-5 sm:w-5 text-brand-orange-gradient" />
+                            </div>
+                            <span className="text-white/80 font-bold text-sm sm:text-base group-hover:text-white transition-colors">
+                                {info.text}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Optimized CTAs */}
+                <div
+                    className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full sm:w-auto animate-fade-in-up"
                     style={{ animationDelay: '0.6s' }}
                 >
                     <Button
                         size="lg"
                         onClick={onCTAClick}
-                        className="w-full sm:w-auto group bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white px-8 py-6 text-lg font-bold shadow-glow-orange hover:shadow-glow hover:scale-105 transition-all duration-300"
+                        className="w-full sm:w-auto h-auto px-8 sm:px-12 py-5 sm:py-7 bg-brand-orange-coral hover:bg-brand-orange-intense text-white rounded-2xl sm:rounded-3xl text-lg sm:text-xl font-black shadow-[0_20px_50px_rgba(255,112,67,0.3)] hover:shadow-[0_20px_50px_rgba(255,112,67,0.5)] hover:-translate-y-1 transition-all duration-300 group"
                     >
                         Garantir Minha Vaga
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                     </Button>
 
                     <Button
                         size="lg"
-                        variant="outline"
-                        className="w-full sm:w-auto border-2 border-brand-orange-coral text-brand-orange-coral hover:bg-brand-orange-coral/10 px-8 py-6 text-lg font-bold hover:scale-105 transition-all duration-300"
+                        variant="ghost"
+                        className="w-full sm:w-auto h-auto px-8 sm:px-12 py-5 sm:py-7 border-2 border-white/10 hover:border-white/20 text-white rounded-2xl sm:rounded-3xl text-lg sm:text-xl font-bold backdrop-blur-sm transition-all"
                         onClick={() => {
                             document.getElementById('programacao')?.scrollIntoView({ behavior: 'smooth' });
                         }}
@@ -194,23 +191,46 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     </Button>
                 </div>
 
-                {/* Badge de vagas limitadas */}
-                <div
-                    className="mt-8 animate-fade-in-up text-center"
+                {/* Scarcity Badge */}
+                <div 
+                    className="mt-10 sm:mt-12 animate-fade-in-up"
                     style={{ animationDelay: '0.7s' }}
                 >
-                    <Badge className="bg-brand-orange-intense/20 text-brand-orange-intense border-brand-orange-intense/30 px-4 py-2 text-sm font-semibold animate-pulse">
-                        ⚡ Vagas Limitadas - Inscrições Abertas
-                    </Badge>
+                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-brand-orange-intense/10 border border-brand-orange-intense/20 text-brand-orange-intense font-black text-xs sm:text-sm tracking-widest uppercase animate-pulse">
+                        <Sparkles className="h-4 w-4" />
+                        Capacidade Limitada: 1.500 Ingressos
+                    </div>
                 </div>
             </div>
 
-            {/* Indicador de scroll */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-                <div className="w-6 h-10 rounded-full border-2 border-brand-orange-coral/50 flex items-start justify-center p-2">
-                    <div className="w-1 h-3 bg-brand-orange-coral rounded-full animate-pulse" />
-                </div>
+            {/* Premium Scroll Indicator */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 animate-fade-in" style={{ animationDelay: '1s' }}>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 rotate-180 [writing-mode:vertical-lr]">Scroll</span>
+                <div className="w-[1px] h-12 bg-gradient-to-b from-brand-orange-coral to-transparent animate-shimmer-v" />
             </div>
+            
+            {/* Custom Animations to be added to index.css or local style */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @keyframes slow-zoom {
+                    0% { transform: scale(1.1); }
+                    100% { transform: scale(1.2); }
+                }
+                @keyframes shimmer-v {
+                    0% { transform: translateY(-100%); opacity: 0; }
+                    50% { opacity: 1; }
+                    100% { transform: translateY(100%); opacity: 0; }
+                }
+                @keyframes pulse-slow {
+                    0%, 100% { opacity: 0.3; transform: scale(1); }
+                    50% { opacity: 0.5; transform: scale(1.1); }
+                }
+                .animate-slow-zoom { animation: slow-zoom 20s linear infinite alternate; }
+                .animate-shimmer-v { animation: shimmer-v 2s ease-in-out infinite; }
+                .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+                .animate-pulse-slow-reverse { animation: pulse-slow 10s ease-in-out infinite reverse; }
+                .shadow-inner-glow { box-shadow: inset 0 0 40px rgba(255,112,67,0.05); }
+                .rounded-inherit { border-radius: inherit; }
+            ` }} />
         </section>
     );
 }

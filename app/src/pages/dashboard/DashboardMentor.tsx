@@ -24,13 +24,21 @@ export default function DashboardMentor() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { selectedProject } = useProject();
-  const { data: mentorsData } = useMentors();
+  const { data: mentorsData, update: updateMentorProfile } = useMentors();
   const { data: sessions, create, update, remove, isLoading } = useMentoringSessions();
 
   // Find current mentor profile
   const mentorData = mentorsData?.find(m => m.userId === user?.id || (m as any).email === user?.email);
 
-  const [activeTab, setActiveTab] = useState<'sessions' | 'slots'>('sessions');
+  const [activeTab, setActiveTab] = useState<'sessions' | 'slots' | 'profile'>('sessions');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    specialties: '',
+    bio: '',
+    company: '',
+    position: ''
+  });
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     if (selectedProject?.startDate) {
       return new Date(selectedProject.startDate).toISOString().split('T')[0];
@@ -89,10 +97,16 @@ export default function DashboardMentor() {
           scheduledAt: scheduledDate.toISOString(),
           duration: 20,
           topic: 'Disponível para Mentoria',
-          notes: 'Slot de disponibilidade criado pelo mentor.'
+          notes: 'Slot de disponibilidade criado pelo mentor.',
+          // Required fields for GE table to satisfy NOT NULL constraints
+          menteeName: 'Disponível',
+          menteeEmail: '',
+          menteePhone: '',
+          menteeId: '00000000-0000-0000-0000-000000000000' as any // Placeholder UUID
         } as any);
         toast.success('Horário habilitado com sucesso!');
       } catch (err) {
+        logger.error('Erro toggleSlot:', err);
         toast.error('Erro ao habilitar horário.');
       }
     }
@@ -107,7 +121,7 @@ export default function DashboardMentor() {
 
     if (!session) return 'empty';
     if (session.status === 'pending' || (session.status as string) === 'pendente') return 'pending';
-    if (session.menteeId) return 'booked';
+    if (session.menteeId && session.menteeId !== '00000000-0000-0000-0000-000000000000') return 'booked';
     return 'available';
   };
 
@@ -150,9 +164,26 @@ export default function DashboardMentor() {
           </button>
           <button
             onClick={() => setActiveTab('slots')}
-            className={`flex items-center gap-3 px-8 py-4 rounded-[1.8rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'slots' ? 'bg-teal-500 text-white shadow-glow-teal' : 'text-gray-500 hover:text-white'}`}
+            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 rounded-[1.8rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'slots' ? 'bg-teal-500 text-white shadow-glow-teal' : 'text-gray-500 hover:text-white'}`}
           >
             <Clock className="h-4 w-4" /> Disponibilidade
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('profile');
+              if (mentorData) {
+                setProfileForm({
+                  name: mentorData.name || '',
+                  specialties: mentorData.specialties || '',
+                  bio: mentorData.bio || '',
+                  company: mentorData.company || '',
+                  position: mentorData.position || ''
+                });
+              }
+            }}
+            className={`flex items-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 rounded-[1.8rem] text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? 'bg-indigo-500 text-white shadow-glow-indigo' : 'text-gray-500 hover:text-white'}`}
+          >
+            <User className="h-4 w-4" /> Perfil
           </button>
         </div>
 
@@ -249,12 +280,12 @@ export default function DashboardMentor() {
                             if (!window.confirm('Recusar esta solicitação? O horário voltará a ficar disponível.')) return;
                             await update(session.id, { 
                               status: 'scheduled',
-                              menteeId: '' as any,
-                              menteeName: '' as any,
+                              menteeId: '00000000-0000-0000-0000-000000000000' as any,
+                              menteeName: 'Disponível' as any,
                               menteeEmail: '' as any,
                               menteePhone: '' as any,
                               topic: 'Disponível para Mentoria' as any,
-                              notes: 'Slot liberado após recusa.' as any,
+                              notes: 'Slot de disponibilidade criado pelo mentor.' as any,
                               startupName: '' as any,
                               sector: '' as any
                             });
@@ -296,13 +327,13 @@ export default function DashboardMentor() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-white font-black text-lg tracking-tight uppercase italic">{session.menteeName}</p>
+                          <p className="text-white font-black text-lg tracking-tight uppercase italic truncate w-32 md:w-full">{session.menteeName}</p>
                           <div className="flex items-center gap-3 mt-1">
                             <div className="flex items-center gap-1.5 bg-dark-300 px-2 py-0.5 rounded-md border border-white/5">
                               <Building2 className="h-3 w-3 text-orange-500" />
-                              <span className="text-[10px] text-gray-500 font-bold uppercase">{session.startupName || 'Growth Business'}</span>
+                              <span className="text-[10px] text-gray-500 font-bold uppercase truncate max-w-[80px]">{session.startupName || 'Growth Business'}</span>
                             </div>
-                            <Badge variant="outline" className="border-teal-500/20 text-teal-400 text-[8px] font-black">{session.topic}</Badge>
+                            <Badge variant="outline" className="border-teal-500/20 text-teal-400 text-[8px] font-black truncate max-w-[100px]">{session.topic}</Badge>
                           </div>
                         </div>
                       </div>
@@ -316,12 +347,12 @@ export default function DashboardMentor() {
                             if (!window.confirm('Deseja realmente CANCELAR esta mentoria confirmada?')) return;
                             await update(session.id, { 
                               status: 'scheduled',
-                              menteeId: '' as any,
-                              menteeName: '' as any,
+                              menteeId: '00000000-0000-0000-0000-000000000000' as any,
+                              menteeName: 'Disponível' as any,
                               menteeEmail: '' as any,
                               menteePhone: '' as any,
                               topic: 'Disponível para Mentoria' as any,
-                              notes: 'Slot liberado após cancelamento do mentor.' as any,
+                              notes: 'Slot de disponibilidade criado pelo mentor.' as any,
                               startupName: '' as any,
                               sector: '' as any
                             });
@@ -340,7 +371,7 @@ export default function DashboardMentor() {
                         </Button>
                         <Button
                           onClick={() => update(session.id, { status: 'completed' })}
-                          className="bg-teal-500 hover:bg-teal-600 text-white font-black px-6 h-12 rounded-2xl shadow-glow-teal"
+                          className="bg-teal-500 hover:bg-teal-600 text-white font-black px-6 h-12 rounded-2xl shadow-glow-teal hidden sm:flex"
                         >
                           FINALIZAR
                         </Button>
@@ -354,6 +385,207 @@ export default function DashboardMentor() {
                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">Nenhuma mentoria confirmada para hoje</p>
                 </div>
               )}
+            </div>
+
+            {/* HISTÓRICO / FINALIZADAS */}
+            <div className="space-y-6 pt-10 border-t border-white/5">
+              <div className="flex items-center gap-4 px-2 opacity-60">
+                <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-white/5">
+                  <CheckCircle className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-white tracking-tight italic">Histórico de <span className="text-gray-500">Mentorias</span></h2>
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Sessões concluídas com sucesso</p>
+                </div>
+              </div>
+
+              {mentorSessions.filter(s => s.status === 'completed' || (s.status as string) === 'concluido').length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {mentorSessions.filter(s => s.status === 'completed' || (s.status as string) === 'concluido').map(session => (
+                    <div key={session.id} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center">
+                          <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-white font-bold text-xs uppercase truncate w-24">{session.menteeName}</p>
+                          <p className="text-gray-500 text-[9px] font-bold">{new Date(session.scheduledAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[8px] font-black">CONCLUÍDO</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-10 text-gray-700 text-[9px] font-black uppercase tracking-[0.2em]">Nenhum histórico disponível</p>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'profile' ? (
+          /* PROFILE TABS */
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              {/* Left Column: Quick Actions & Profile Summary */}
+              <div className="space-y-6">
+                <Card className="bg-dark-200/50 border border-white/5 rounded-[2.5rem] p-8 text-center">
+                  <div className="w-24 h-24 rounded-3xl mx-auto mb-6 bg-gradient-to-br from-orange-500/20 to-orange-500/5 p-1 border border-white/10 overflow-hidden">
+                    <img src={mentorData?.photo} alt={mentorData?.name} className="w-full h-full object-cover rounded-[1.4rem]" />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase italic tracking-tight">{mentorData?.name}</h3>
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">{mentorData?.position} @ {mentorData?.company}</p>
+                  
+                  <div className="mt-8 pt-8 border-t border-white/5 space-y-3">
+                    <Button 
+                      className="w-full bg-white/5 hover:bg-white/10 text-white font-black text-xs h-12 rounded-2xl"
+                      onClick={() => setIsEditingProfile(!isEditingProfile)}
+                    >
+                      {isEditingProfile ? 'CANCELAR EDIÇÃO' : 'EDITAR PERFIL'}
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      className="w-full text-red-500 hover:bg-red-500/10 font-black text-[10px] tracking-widest"
+                      onClick={handleLogout}
+                    >
+                      SAIR DA CONTA
+                    </Button>
+                  </div>
+                </Card>
+
+                <div className="bg-teal-500/5 border border-teal-500/10 rounded-[2rem] p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400">
+                      <BarChart className="h-4 w-4" />
+                    </div>
+                    <span className="text-white font-black text-[10px] uppercase tracking-widest">Impacto Mental</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-dark-300/50 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Média Avaliação</p>
+                      <p className="text-white font-black text-xl">4.9/5</p>
+                    </div>
+                    <div className="bg-dark-300/50 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Recomendação</p>
+                      <p className="text-white font-black text-xl">100%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Edit Form or Profile Detail */}
+              <div className="lg:col-span-2">
+                <Card className="bg-dark-200/50 border border-white/5 rounded-[2.5rem] p-8 md:p-10 h-full">
+                  {!isEditingProfile ? (
+                    <div className="space-y-10">
+                      <div>
+                        <h4 className="text-orange-500 font-black text-[10px] uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                          <Plus className="h-3 w-3" /> Especialidades & Track
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(mentorData?.specialties || 'Marketing, Growth, Vendas').split(',').map((s, i) => (
+                            <Badge key={i} className="bg-white/5 text-gray-300 border border-white/10 px-4 py-2 rounded-xl font-bold text-xs">
+                              {s.trim()}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-orange-500 font-black text-[10px] uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                          <Plus className="h-3 w-3" /> Biografia Profissional
+                        </h4>
+                        <p className="text-gray-400 text-sm leading-relaxed whitespace-pre-wrap italic">
+                          "{mentorData?.bio || 'Nenhuma biografia informada ainda. Clique em Editar Perfil para adicionar.'}"
+                        </p>
+                      </div>
+
+                      <div className="bg-dark-300/30 p-6 rounded-3xl border border-dashed border-white/5">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center">Essas informações são exibidas para todos os participantes que buscam mentoria.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-black text-white italic tracking-tight mb-8">Editar <span className="text-orange-500">Dados Mentoria</span></h2>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Nome de Exibição</label>
+                          <input 
+                            type="text" 
+                            className="w-full bg-dark-400 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-orange-500/50 transition-all"
+                            value={profileForm.name}
+                            onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Especialidades (Sempre separadas por vírgula)</label>
+                          <input 
+                            type="text" 
+                            className="w-full bg-dark-400 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-orange-500/50 transition-all"
+                            placeholder="Growth, SaaS, Vendas..."
+                            value={profileForm.specialties}
+                            onChange={(e) => setProfileForm({...profileForm, specialties: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Empresa</label>
+                          <input 
+                            type="text" 
+                            className="w-full bg-dark-400 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-orange-500/50 transition-all"
+                            value={profileForm.company}
+                            onChange={(e) => setProfileForm({...profileForm, company: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Cargo</label>
+                          <input 
+                            type="text" 
+                            className="w-full bg-dark-400 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-orange-500/50 transition-all"
+                            value={profileForm.position}
+                            onChange={(e) => setProfileForm({...profileForm, position: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-1">Mini Bio (Curta e Impactante)</label>
+                        <textarea 
+                          className="w-full bg-dark-400 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-orange-500/50 transition-all min-h-[120px] resize-none"
+                          value={profileForm.bio}
+                          onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-4 pt-6">
+                        <Button 
+                          variant="ghost" 
+                          className="px-8 h-14 rounded-2xl font-black text-gray-500 hover:text-white"
+                          onClick={() => setIsEditingProfile(false)}
+                        >
+                          DESCARTAR
+                        </Button>
+                        <Button 
+                          className="px-10 h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black shadow-glow-orange"
+                          onClick={async () => {
+                            try {
+                              if (!mentorData?.id) return;
+                              await updateMentorProfile(mentorData.id, profileForm as any);
+                              toast.success('Perfil atualizado com sucesso!');
+                              setIsEditingProfile(false);
+                            } catch (err) {
+                              toast.error('Erro ao salvar perfil.');
+                            }
+                          }}
+                        >
+                          SALVAR ALTERAÇÕES
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </div>
             </div>
           </div>
         ) : (
