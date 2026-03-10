@@ -148,29 +148,39 @@ export function TicketSection({
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+                <div className="flex flex-col gap-4 w-full max-w-sm">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full">
+                        <Button
+                            variant="ghost"
+                            className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
+                            onClick={async () => {
+                                if (!myRegistration) return;
+                                await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
+                                toast.success('Ingresso PDF gerado!');
+                            }}
+                        >
+                            <Download className="h-4 w-4 mr-2 text-teal-400" /> Baixar PDF
+                        </Button>
+                        <Button
+                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl px-8 flex-1 h-14 shadow-xl shadow-brand-orange-coral/20 transition-all hover:scale-[1.02] uppercase text-[10px] tracking-widest"
+                            onClick={() => {
+                                if (!myRegistration) {
+                                    toast.error('Inscrição não localizada.');
+                                    return;
+                                }
+                                setShowCheckInModal(true);
+                            }}
+                        >
+                            <QrCode className="h-4 w-4 mr-2" /> Validar Manual
+                        </Button>
+                    </div>
+
                     <Button
                         variant="ghost"
-                        className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
-                        onClick={async () => {
-                            if (!myRegistration) return;
-                            await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
-                            toast.success('Ingresso PDF gerado!');
-                        }}
+                        className="w-full bg-[#00C4CC]/10 hover:bg-[#00C4CC]/20 border border-[#00C4CC]/30 hover:border-[#00C4CC]/50 text-[#00C4CC] font-black rounded-2xl h-14 transition-all hover:scale-[1.02] uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
+                        onClick={() => window.open('https://www.canva.com/design/DAHDS-Bkw5w/hmucdo1Un_o-wOxW8zaZ9A/view?utm_content=DAHDS-Bkw5w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
                     >
-                        <Download className="h-4 w-4 mr-2 text-teal-400" /> Baixar PDF
-                    </Button>
-                    <Button
-                        className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl px-8 flex-1 h-14 shadow-xl shadow-brand-orange-coral/20 transition-all hover:scale-[1.02] uppercase text-[10px] tracking-widest"
-                        onClick={() => {
-                            if (!myRegistration) {
-                                toast.error('Inscrição não localizada.');
-                                return;
-                            }
-                            setShowCheckInModal(true);
-                        }}
-                    >
-                        <QrCode className="h-4 w-4 mr-2" /> Validar Manual
+                        <Sparkles className="h-4 w-4" /> Mostre aos seus amigos
                     </Button>
                 </div>
 
