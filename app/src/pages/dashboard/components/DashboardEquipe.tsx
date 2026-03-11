@@ -82,8 +82,8 @@ export function DashboardEquipe({ batches }: DashboardEquipeProps) {
                                     <div className="w-full bg-dark-400 h-2 rounded-full overflow-hidden">
                                         <div
                                             className="bg-teal-500 h-full rounded-full"
-                                            style={{ width: \`\${Math.min(100, (batch.vagasUtilizadas / batch.quantidadeVagas) * 100)}%\` }}
-                     />
+                                            style={{ width: `${Math.min(100, (batch.vagasUtilizadas / batch.quantidadeVagas) * 100)}%` }}
+                                        />
                                     </div>
                                 </div>
                             </div>
