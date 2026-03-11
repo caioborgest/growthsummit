@@ -102,7 +102,7 @@ export default function DashboardMentor() {
           menteeName: 'Disponível',
           menteeEmail: '',
           menteePhone: '',
-          menteeId: '00000000-0000-0000-0000-000000000000' as any // Placeholder UUID
+          menteeId: null as any // Using null to avoid foreign key violation
         } as any);
         toast.success('Horário habilitado com sucesso!');
       } catch (err) {
@@ -174,7 +174,7 @@ export default function DashboardMentor() {
               if (mentorData) {
                 setProfileForm({
                   name: mentorData.name || '',
-                  specialties: mentorData.specialties || '',
+                  specialties: Array.isArray(mentorData.specialties) ? mentorData.specialties.join(', ') : mentorData.specialties || '',
                   bio: mentorData.bio || '',
                   company: mentorData.company || '',
                   position: mentorData.position || ''
@@ -481,9 +481,14 @@ export default function DashboardMentor() {
                           <Plus className="h-3 w-3" /> Especialidades & Track
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {(mentorData?.specialties || 'Marketing, Growth, Vendas').split(',').map((s, i) => (
+                          {(Array.isArray(mentorData?.specialties)
+                            ? mentorData.specialties
+                            : typeof mentorData?.specialties === 'string' && mentorData.specialties
+                              ? mentorData.specialties.split(',')
+                              : ['Marketing', 'Growth', 'Vendas']
+                          ).map((s: any, i: number) => (
                             <Badge key={i} className="bg-white/5 text-gray-300 border border-white/10 px-4 py-2 rounded-xl font-bold text-xs">
-                              {s.trim()}
+                              {String(s).trim()}
                             </Badge>
                           ))}
                         </div>
