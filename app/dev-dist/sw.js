@@ -72,6 +72,13 @@ define(['./workbox-c5fd805d'], (function (workbox) { 'use strict';
   self.skipWaiting();
   workbox.clientsClaim();
 
+  // listen for skip waiting message so we can trigger it from the page
+  self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+      self.skipWaiting();
+    }
+  });
+
   /**
    * The precacheAndRoute() method efficiently caches and responds to
    * requests for URLs in the manifest.

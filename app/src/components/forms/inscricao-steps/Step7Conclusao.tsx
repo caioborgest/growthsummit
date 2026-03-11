@@ -26,7 +26,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
             toast.info('Verifique seu e-mail para confirmar seu cadastro!');
         }
         */
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, []);
 
     return (

@@ -23,6 +23,7 @@ export const spacing = {
   md: '1rem',
   lg: '1.5rem',
   xl: '2rem',
+  '2xl': '3rem',
 };
 
 export const typography = {
@@ -30,4 +31,16 @@ export const typography = {
   baseSize: '1rem',
   heading: '1.875rem',
   display: '3rem',
+  weight: {
+    normal: 400,
+    semibold: 600,
+    bold: 700,
+  },
+};
+
+export const radius = {
+  sm: '0.125rem',
+  md: '0.375rem',
+  lg: '0.5rem',
+  xl: '0.75rem',
 };

@@ -265,11 +265,13 @@ export function GrowthExperienceTriunfo() {
     }
   }, [setSelectedProject]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     initProject();
   }, [initProject]);
 
   // Sincronizar modais com a URL para facilitar compartilhamento
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const formParam = searchParams.get('form');
     if (formParam === 'inscricao') setModalInscricaoAberto(true);

@@ -88,12 +88,18 @@ export function Programacao() {
   const [activeTab, setActiveTab] = useState('day1');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-  // load saved filters
+  // load saved filters (only set state once after parsing)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     try {
       const saved = localStorage.getItem('programacao_filters');
-      if (saved) setSelectedTypes(JSON.parse(saved));
-    } catch {}
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSelectedTypes(parsed);
+      }
+    } catch {
+      // ignore JSON errors
+    }
   }, []);
 
   useEffect(() => {
