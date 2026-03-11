@@ -22,7 +22,7 @@ const AVAILABLE_TIMES = [
 ];
 
 export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, currentCompanyId }: B2BScheduleModalProps) {
-    const { create } = useB2BAppointmentsTriunfo();
+    const { data: appointments = [], create } = useB2BAppointmentsTriunfo();
     const { update: updateMatch } = useB2BMatches();
     const { selectedProject } = useProject();
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -45,6 +45,24 @@ export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, current
 
             const [hours, minutes] = selectedTime.split(':');
             const scheduledDate = new Date(`${dateStr}T${hours}:${minutes}:00`);
+
+            // timezone note: the UI and storage always work in UTC/Brasília.  
+            // convert appropriately if user is em outro fuso.
+
+            // client‑side conflict detection
+            const newStart = scheduledDate.getTime();
+            const newEnd = newStart + 20 * 60000;
+            const hasConflict = appointments.some(a => {
+                const aStart = new Date(a.scheduledAt).getTime();
+                const aEnd = aStart + (a.durationMinutes || 20) * 60000;
+                const shares = [a.companyAId, a.companyBId].includes(currentCompanyId) ||
+                               [a.companyAId, a.companyBId].includes(otherCompany.id);
+                return shares && newStart < aEnd && aStart < newEnd;
+            });
+            if (hasConflict) {
+                toast.error('Há um conflito de horário com reunião existente.');
+                return;
+            }
 
             // 1. Create the appointment
             await create({
@@ -120,6 +138,9 @@ export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, current
                                 <Clock className="w-4 h-4 text-teal-500" />
                                 Selecione o Horário (Duração: 20min)
                             </h3>
+                            <p className="text-[10px] text-gray-500 mb-2">
+                                Horários mostrados em horário de Brasília (UTC‑3). Ajuste se estiver em outro fuso.
+                            </p>
                             <div className="grid grid-cols-4 gap-2">
                                 {AVAILABLE_TIMES.map((time) => (
                                     <button

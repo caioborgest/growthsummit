@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Clock,
   MapPin,
@@ -86,6 +86,19 @@ function EventItem({ time, title, type, description, speaker }: EventItemProps) 
 
 export function Programacao() {
   const [activeTab, setActiveTab] = useState('day1');
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+
+  // load saved filters
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('programacao_filters');
+      if (saved) setSelectedTypes(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('programacao_filters', JSON.stringify(selectedTypes));
+  }, [selectedTypes]);
 
   return (
     <div className="bg-dark min-h-screen">
@@ -113,7 +126,30 @@ export function Programacao() {
       <section className="py-12 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-dark-200 mb-8">
+            {/* filtros de tipo de evento */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {Object.entries(eventTypeLabels).map(([type, label]) => {
+              const active = selectedTypes.includes(type);
+              return (
+                <button
+                  key={type}
+                  onClick={() => {
+                    setSelectedTypes(prev =>
+                      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+                    );
+                  }}
+                  className={`text-xs font-bold px-3 py-1 rounded-full transition-all ${
+                    active
+                      ? 'bg-brand-orange-coral text-white'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <TabsList className="grid w-full grid-cols-2 bg-dark-200 mb-8">
               <TabsTrigger
                 value="day1"
                 className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
@@ -143,16 +179,18 @@ export function Programacao() {
                 </div>
 
                 <div className="space-y-2">
-                  {schedule.day1.events.map((event, index) => (
-                    <EventItem
-                      key={index}
-                      time={event.time}
-                      title={event.title}
-                      type={event.type}
-                      description={event.description}
-                      speaker={event.speaker}
-                    />
-                  ))}
+                  {schedule.day1.events
+                    .filter(e => selectedTypes.length === 0 || selectedTypes.includes(e.type))
+                    .map((event, index) => (
+                      <EventItem
+                        key={index}
+                        time={event.time}
+                        title={event.title}
+                        type={event.type}
+                        description={event.description}
+                        speaker={event.speaker}
+                      />
+                    ))}
                 </div>
               </div>
             </TabsContent>
@@ -170,16 +208,18 @@ export function Programacao() {
                 </div>
 
                 <div className="space-y-2">
-                  {schedule.day2.events.map((event, index) => (
-                    <EventItem
-                      key={index}
-                      time={event.time}
-                      title={event.title}
-                      type={event.type}
-                      description={event.description}
-                      speaker={event.speaker}
-                    />
-                  ))}
+                  {schedule.day2.events
+                    .filter(e => selectedTypes.length === 0 || selectedTypes.includes(e.type))
+                    .map((event, index) => (
+                      <EventItem
+                        key={index}
+                        time={event.time}
+                        title={event.title}
+                        type={event.type}
+                        description={event.description}
+                        speaker={event.speaker}
+                      />
+                    ))}
                 </div>
               </div>
             </TabsContent>

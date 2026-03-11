@@ -85,15 +85,32 @@ define(['./workbox-c5fd805d'], (function (workbox) { 'use strict';
     "revision": "0.po0qintuo4o"
   }], {});
   workbox.cleanupOutdatedCaches();
+  // Navigation routing for SPA; network-first with fallback to cache
+  workbox.registerRoute(
+    ({ request }) => request.mode === 'navigate',
+    new workbox.NetworkFirst({
+      cacheName: 'pages-cache',
+      plugins: [
+        new workbox.ExpirationPlugin({
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 60 * 24, // 1 day
+        }),
+      ],
+      networkTimeoutSeconds: 3,
+    })
+  );
+
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("/index.html"), {
     allowlist: [/^\/$/],
     denylist: [/^\/api/, /^\/supabase/]
   }));
+
+  // Cache supabase assets with network-first strategy and longer expiration
   workbox.registerRoute(/^https:\/\/.*\.supabase\.co\/.*/i, new workbox.NetworkFirst({
     "cacheName": "supabase-cache",
     plugins: [new workbox.ExpirationPlugin({
-      maxEntries: 50,
-      maxAgeSeconds: 86400
+      maxEntries: 100,
+      maxAgeSeconds: 86400 * 7 // 7 days
     })]
   }), 'GET');
 

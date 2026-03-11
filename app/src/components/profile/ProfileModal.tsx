@@ -34,6 +34,8 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const [activeTab, setActiveTab] = useState<TabType>('pessoal');
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [consents, setConsents] = useState<Array<{id:string; consent_type:string; granted_at:string; revoked_at:string|null;}>>([]);
+
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -52,6 +54,24 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         photoPreview: '',
         photoFile: null as File | null
     });
+
+    const fetchConsents = async () => {
+        if (!user?.id) return;
+        const { data } = await supabase
+            .from('user_consents')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('granted_at', { ascending: false });
+        setConsents(data || []);
+    };
+
+    const revokeConsent = async (id: string) => {
+        await supabase
+            .from('user_consents')
+            .update({ revoked_at: new Date().toISOString() })
+            .eq('id', id);
+        fetchConsents();
+    };
 
     useEffect(() => {
         if (user || profile) {
@@ -75,6 +95,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             });
         }
     }, [user, profile, isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchConsents();
+        }
+    }, [isOpen, user]);
 
     if (!isOpen) return null;
 
@@ -365,6 +391,38 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         )}
                     </div>
                 </div>
+
+                {/* Consents (LGPD) */}
+                {consents.length > 0 && (
+                    <div className="p-6 sm:p-8 border-t border-white/5 bg-white/[0.02] space-y-2">
+                        <h4 className="text-sm font-bold text-white">Consentimentos de Dados</h4>
+                        <ul className="space-y-1 text-xs text-gray-400">
+                            {consents.map(c => (
+                                <li key={c.id} className="flex justify-between items-center">
+                                    <span>
+                                        {c.consent_type.replace(/_/g, ' ')}
+                                        <br />
+                                        <small className="text-[10px] text-gray-500">
+                                            {new Date(c.granted_at).toLocaleDateString('pt-BR')} {c.revoked_at ? '(revogado)' : ''}
+                                        </small>
+                                    </span>
+                                    {!c.revoked_at && (
+                                        <button
+                                            className="text-red-400 hover:underline text-[10px]"
+                                            onClick={() => revokeConsent(c.id)}
+                                        >
+                                            Revogar
+                                        </button>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                        <p className="text-[10px] text-gray-500">
+                            Revogar um consentimento não exclui automaticamente os dados,
+                            entre em contato com suporte se desejar remoção completa.
+                        </p>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className="p-6 sm:p-8 border-t border-white/5 bg-white/[0.02] flex items-center justify-between gap-4">

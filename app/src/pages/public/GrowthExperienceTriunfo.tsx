@@ -734,7 +734,7 @@ export function GrowthExperienceTriunfo() {
       {user && (
         <button
           onClick={() => setScannerAberto(true)}
-          className="fixed bottom-24 right-6 z-50 w-16 h-16 bg-white text-dark rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-white text-dark rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
         >
           <div className="absolute -top-12 right-0 bg-dark-200 border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
             Confirmar Presença

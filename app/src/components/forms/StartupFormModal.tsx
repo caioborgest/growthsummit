@@ -20,6 +20,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
         telefone: '',
         senha: '',
         confirmarSenha: '',
+        lgpdConsent: false,
 
         // Startup
         nome_startup: '',
@@ -42,6 +43,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Record<string,string>>({});
     const { projectId } = useProject();
 
     // Carregar rascunho
@@ -76,7 +78,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
-            nome_fundador: '', email: '', telefone: '', senha: '', confirmarSenha: '',
+            nome_fundador: '', email: '', telefone: '', senha: '', confirmarSenha: '', lgpdConsent: false,
             nome_startup: '', descricao_startup: '', setor: '', estagio: '',
             problema: '', solucao: '', diferencial: '', faturamento_mensal: '',
             investimento_buscado: '', pitch_deck_url: '', video_pitch_url: '',
@@ -136,7 +138,14 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             if (!formData.problema.trim()) throw new Error('O problema que você resolve é obrigatório');
             if (!formData.solucao.trim()) throw new Error('Sua solução é obrigatória');
-            if (!formData.diferencial.trim()) throw new Error('Seu diferencial competitivo é obrigatório');
+            if (!formData.diferencial.trim()) {
+                setFieldErrors(prev => ({ ...prev, diferencial: 'Seu diferencial competitivo é obrigatório' }));
+                throw new Error('Seu diferencial competitivo é obrigatório');
+            }
+            if (!formData.lgpdConsent) {
+                setFieldErrors(prev => ({ ...prev, lgpdConsent: 'É necessário concordar com a LGPD' }));
+                throw new Error('É necessário concordar com a LGPD');
+            }
 
             // 1. Garantir Usuário (Auth)
             const { userId } = await getOrCreateUser({
@@ -178,6 +187,15 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             if (supabaseError) throw supabaseError;
 
+            // registrar consentimento LGPD caso o usuário tenha marcado
+            if (formData.lgpdConsent) {
+                await supabase.from('user_consents').insert([{
+                    user_id: userId,
+                    consent_type: 'startup_application',
+                    granted_at: new Date().toISOString(),
+                }]);
+            }
+
             // Analytics tracking
             const win = window as unknown as { gtag?: (type: string, name: string, data: Record<string, unknown>) => void };
             if (typeof window !== 'undefined' && win.gtag) {
@@ -217,10 +235,13 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value, type, checked } = e.target as HTMLInputElement;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: type === 'checkbox' ? checked : value,
         });
+        // limpa erro daquele campo
+        setFieldErrors(prev => ({ ...prev, [name]: '' }));
     };
 
     return (
@@ -547,6 +568,24 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* LGPD Consentimento */}
+                            <div className="flex items-start space-x-2">
+                                <input
+                                    id="lgpdConsent"
+                                    type="checkbox"
+                                    name="lgpdConsent"
+                                    checked={formData.lgpdConsent}
+                                    onChange={e => setFormData({ ...formData, lgpdConsent: e.target.checked })}
+                                    className="mt-1 h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                                />
+                                <label htmlFor="lgpdConsent" className="text-xs text-gray-300">
+                                    Concordo com a <a href="/lgpd" target="_blank" className="underline">política de tratamento de dados (LGPD)</a>
+                                </label>
+                            </div>
+                            {fieldErrors.lgpdConsent && (
+                                <p className="text-red-400 text-xs">{fieldErrors.lgpdConsent}</p>
+                            )}
 
                             {error && (
                                 <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">

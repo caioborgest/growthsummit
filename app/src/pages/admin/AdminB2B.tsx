@@ -105,6 +105,23 @@ export function AdminB2B() {
       const anchor = companies.find(c => c.id === meetingFormData.companyAnchorId);
       const vendor = companies.find(c => c.id === meetingFormData.companyVendorId);
 
+      // basic overlap detection (client‑side) to reduce round‑trips
+      if (meetings) {
+        const newStart = new Date(meetingFormData.scheduledAt).getTime();
+        const newEnd = newStart + meetingFormData.duration * 60000;
+        const hasConflict = meetings.some(m => {
+          const mStart = new Date(m.scheduledAt).getTime();
+          const mEnd = mStart + (m.duration || 20) * 60000;
+          const sharesCompany = [m.companyAnchorId, m.companyVendorId].includes(meetingFormData.companyAnchorId)
+            || [m.companyAnchorId, m.companyVendorId].includes(meetingFormData.companyVendorId);
+          return sharesCompany && newStart < mEnd && mStart < newEnd;
+        });
+        if (hasConflict) {
+          toast.error('Conflito de horário detectado para uma das empresas');
+          return;
+        }
+      }
+
       await createMeeting({
         projectId: projectId || '',
         companyAnchorId: meetingFormData.companyAnchorId,
