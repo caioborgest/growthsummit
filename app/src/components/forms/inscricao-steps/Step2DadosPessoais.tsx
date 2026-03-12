@@ -119,7 +119,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     if (indicacaoTipo === 'empresa') {
                         const { data, error } = await supabase
                             .from('lotes_inscricao_empresa')
-                            .select('*')
+                            .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso')
                             .eq('project_id', projectId)
                             .eq('voucher_code', codigo.trim().toUpperCase())
                             .single();
@@ -151,7 +151,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         // Lógica padrão para cupons sociais
                         const { data, error } = await (supabase
                             .from('cupons_parceria_social') as any)
-                            .select('*')
+                            .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento')
                             .eq('project_id', projectId)
                             .eq('codigo', codigo.trim().toUpperCase())
                             .eq('ativo', true)

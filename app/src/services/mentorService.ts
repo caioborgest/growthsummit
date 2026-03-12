@@ -91,7 +91,7 @@ export const mentorService = {
     async getByUserId(userId: string, projectId: string) {
         const { data, error } = await (supabase
             .from('mentores_growth_experience' as any) as any)
-            .select('*')
+            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
             .eq('user_id', userId)
             .eq('project_id', projectId)
             .maybeSingle();

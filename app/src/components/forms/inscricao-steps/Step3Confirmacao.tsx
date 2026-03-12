@@ -66,6 +66,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
         const cleanEmail = dados.email.trim().toLowerCase();
 
         try {
+            // ── ETAPA 0: Validação server-side dos dados pessoais
+            const validation = await registrationService.validateInscricaoData(dados.nome, dados.email, dados.telefone);
+            if (!validation.valid) {
+                throw new Error(validation.errorMessage || 'Dados inválidos.');
+            }
+
             // ── ETAPA 1: Autenticar / criar usuário (lógica centralizada)
             const { userId } = await getOrCreateUser({
                 email: cleanEmail,

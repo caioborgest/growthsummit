@@ -106,8 +106,9 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
     try {
         // 1. Buscar pelo slug
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,target_registrations,target_revenue,created_at,updated_at';
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
-            .select('*')
+            .select(projCols)
             .eq('slug', GE_TRIUNFO_SLUG)
             .maybeSingle();
 
@@ -155,7 +156,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
             // Tentar buscar novamente — pode ter sido criado por outra aba/instância
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: retry } = await (supabase.from('projects') as any)
-                .select('*')
+                .select(projCols)
                 .eq('slug', GE_TRIUNFO_SLUG)
                 .maybeSingle();
 

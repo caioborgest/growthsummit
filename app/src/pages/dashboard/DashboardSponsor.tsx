@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Gem,
   FileCheck,
@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSponsors, useLeads } from '@/hooks/useData';
+import { useSponsors, useLeads, useNotifications } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -35,12 +35,24 @@ import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { LeadScanner } from './components/shared/LeadScanner';
 import { exportToCSV } from '@/utils/csv';
+import { supabase } from '@/lib/supabase';
 
 export function DashboardSponsor() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { data: sponsors } = useSponsors();
+  const { data: notificationsData } = useNotifications();
   const [activeTab, setActiveTab] = useState('overview');
+
+  const notifications = useMemo(() =>
+    (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
+    [notificationsData, user?.id]
+  );
+
+  const handleMarkAsRead = async (id: string) => {
+    if (!id) return;
+    await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
+  };
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -132,10 +144,10 @@ export function DashboardSponsor() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="PATROCINADOR"
           isPro={true}
-          notifications={[]}
+          notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
-          onNotificationRead={() => { }}
+          onNotificationRead={handleMarkAsRead}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">

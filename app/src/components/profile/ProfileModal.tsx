@@ -59,7 +59,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         if (!user?.id) return;
         const { data } = await supabase
             .from('user_consents')
-            .select('*')
+            .select('id,user_id,consent_type,granted_at,revoked_at')
             .eq('user_id', user.id)
             .order('granted_at', { ascending: false });
         setConsents(data || []);

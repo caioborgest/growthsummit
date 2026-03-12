@@ -32,6 +32,26 @@ export interface RegistrationParams {
 
 export const registrationService = {
     /**
+     * Valida dados da inscrição no servidor (LGPD/segurança).
+     * Deve ser chamado antes de registerWithSlots.
+     */
+    async validateInscricaoData(nome: string, email: string, telefone: string): Promise<{ valid: boolean; errorMessage?: string }> {
+        try {
+            const { data, error } = await (supabase.rpc as any)('validate_inscricao_dados', {
+                p_nome: nome?.trim() || '',
+                p_email: email?.trim() || '',
+                p_telefone: telefone?.trim() || '',
+            });
+            if (error) throw error;
+            const row = Array.isArray(data) ? data[0] : data;
+            return { valid: !!row?.valid, errorMessage: row?.error_message || undefined };
+        } catch (err) {
+            logger.error('[registrationService] Erro na validação:', err);
+            return { valid: false, errorMessage: 'Erro ao validar dados. Tente novamente.' };
+        }
+    },
+
+    /**
      * Realiza uma inscrição atômica verificando disponibilidade de vagas.
      * Chama a função RPC 'register_participant_with_slots' no Supabase.
      */
@@ -84,7 +104,7 @@ export const registrationService = {
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
         let query = supabase
             .from('inscricoes_growth_experience')
-            .select('*')
+            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas')
             .eq('project_id', projectId);
 
         if (filters.email) query = query.eq('email', filters.email);
@@ -101,7 +121,7 @@ export const registrationService = {
     async getById(id: string) {
         const { data, error } = await supabase
             .from('inscricoes_growth_experience')
-            .select('*')
+            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas,tipo_inscricao,qr_code,qr_code_data')
             .eq('id', id)
             .single();
         if (error) throw error;

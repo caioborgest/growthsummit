@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions } from '@/hooks/useData';
+import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PremiumHeader } from './components/shared/PremiumHeader';
@@ -31,12 +31,25 @@ import { B2BScheduleModal } from './components/B2BScheduleModal';
 import { B2BChatModal } from './components/B2BChatModal';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 
 export function DashboardCompany() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { data: companies, refetch: refetchCompanies } = useCompanies();
+  const { data: discoveryCompaniesRaw, refetch: refetchDiscovery } = useB2BDiscoveryCompanies();
   const { data: meetings } = useB2BMeetings();
+  const { data: notificationsData } = useNotifications();
+
+  const notifications = useMemo(() =>
+    (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
+    [notificationsData, user?.id]
+  );
+
+  const handleMarkAsRead = async (id: string) => {
+    if (!id) return;
+    await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
+  };
   const { data: swipes, create: createSwipe } = useB2BSwipes();
   const { data: appointments } = useB2BAppointmentsTriunfo();
   const { data: matches } = useB2BMatches();
@@ -68,19 +81,17 @@ export function DashboardCompany() {
     [meetings, appointments, companyData]
   );
 
-  // Filter companies for discovery (only approved, not self, and not already swiped)
+  // Discovery: RPC retorna empresas sem dados sensíveis. Filtra self e já swiped.
   const discoveryCompanies = useMemo(() => {
     if (!companyData) return [];
     const swipedCompanyIds = swipes
       .filter(s => s.fromCompanyId === companyData.id)
       .map(s => s.toCompanyId);
 
-    return companies.filter(c =>
-      c.id !== companyData.id &&
-      c.status === 'approved' &&
-      !swipedCompanyIds.includes(c.id)
+    return (discoveryCompaniesRaw || []).filter(c =>
+      c.id !== companyData.id && !swipedCompanyIds.includes(c.id)
     );
-  }, [companies, swipes, companyData]);
+  }, [discoveryCompaniesRaw, swipes, companyData]);
 
   const stats = {
     total: companyMeetings.length,
@@ -109,6 +120,7 @@ export function DashboardCompany() {
       setTimeout(() => {
         setSwipeDirection(null);
         refetchCompanies();
+        refetchDiscovery();
       }, 300);
     } catch (err) {
       logger.error('Erro ao registrar swipe:', err);
@@ -130,10 +142,10 @@ export function DashboardCompany() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="REPRESENTANTE B2B"
           isPro={true}
-          notifications={[]}
+          notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
-          onNotificationRead={() => { }}
+          onNotificationRead={handleMarkAsRead}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">

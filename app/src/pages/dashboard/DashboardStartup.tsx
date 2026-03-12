@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Users,
   TrendingUp,
@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useStartups, useLeads } from '@/hooks/useData';
+import { useStartups, useLeads, useNotifications } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileForm } from './components/ProfileForm';
@@ -32,6 +32,7 @@ import { jsPDF } from 'jspdf';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 
 import { exportToCSV } from '@/utils/csv';
+import { supabase } from '@/lib/supabase';
 
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
@@ -45,6 +46,7 @@ export function DashboardStartup() {
   const { user, logout } = useAuth();
   const { data: startups } = useStartups();
   const { data: leads, create: createLead } = useLeads();
+  const { data: notificationsData } = useNotifications();
   const [activeTab, setActiveTab] = useState('visao-geral');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
@@ -61,6 +63,16 @@ export function DashboardStartup() {
     highInterest: startupLeads.filter(l => l.interestLevel === 'high').length,
     mediumInterest: startupLeads.filter(l => l.interestLevel === 'medium').length,
     lowInterest: startupLeads.filter(l => l.interestLevel === 'low').length,
+  };
+
+  const notifications = useMemo(() =>
+    (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
+    [notificationsData, user?.id]
+  );
+
+  const handleMarkAsRead = async (id: string) => {
+    if (!id) return;
+    await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
   };
 
   const handleLogout = () => {
@@ -149,10 +161,10 @@ export function DashboardStartup() {
           projectName="GROWTH SUMMIT 2026"
           roleLabel="EXPOSITOR STARTUP"
           isPro={true}
-          notifications={[]}
+          notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
-          onNotificationRead={() => { }}
+          onNotificationRead={handleMarkAsRead}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">

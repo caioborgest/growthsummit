@@ -34,7 +34,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
             // Tenta validar como Cupom Social
             const { data, error: cError } = await (supabase
                 .from('cupons_parceria_social') as any)
-                .select('*')
+                .select('id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento')
                 .eq('codigo', cupom.trim().toUpperCase())
                 .eq('ativo', true)
                 .maybeSingle();
@@ -60,7 +60,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onUpdate }: St
             // Tenta validar como Lote Corporativo (Voucher Empresa)
             const { data: batchData, error: bError } = await supabase
                 .from('lotes_inscricao_empresa')
-                .select('*')
+                .select('id,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso')
                 .eq('voucher_code', cupom.trim().toUpperCase())
                 .maybeSingle();
 

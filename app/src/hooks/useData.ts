@@ -760,7 +760,7 @@ export function useProfile(userId?: string) {
     try {
       const { data: supabaseData, error } = await supabase
         .from('profiles' as any)
-        .select('*')
+        .select('id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,newsletter_opt_in,created_at,updated_at')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -825,6 +825,45 @@ export function useNotifications() {
 
 export function useRegistrationBatches() {
   return useData<RegistrationBatch>([], 'registration_batches');
+}
+
+/** Hook para discovery B2B: retorna empresas aprovadas SEM dados sensíveis (telefone, email, cnpj). LGPD-safe. */
+export function useB2BDiscoveryCompanies() {
+  const { projectId } = useProject();
+  const [data, setData] = useState<Company[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!projectId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data: rows, error: rpcError } = await (supabase.rpc as any)('get_b2b_discovery_companies', {
+        p_project_id: projectId,
+      });
+      if (rpcError) throw rpcError;
+      const mapped = (rows || []).map((r: Record<string, unknown>) => {
+        const m = mapFromSupabase(r) as Record<string, unknown>;
+        if (!m.name && m.companyName) m.name = m.companyName;
+        return m;
+      });
+      setData(mapped as Company[]);
+    } catch (err) {
+      const e = err instanceof Error ? err : new Error(String(err));
+      setError(e);
+      logger.error('Erro ao buscar empresas discovery B2B:', err);
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, isLoading, error, refetch: fetchData };
 }
 
 export function useB2BChat(matchId?: string) {

@@ -46,7 +46,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
             try {
                 const { data, error } = await supabase
                     .from('mentores_growth_experience')
-                    .select('*')
+                    .select('id,project_id,user_id,nome,email,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
                     .eq('project_id', projectId)
                     .eq('status', 'aprovado');
 

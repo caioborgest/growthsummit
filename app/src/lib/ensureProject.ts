@@ -13,8 +13,9 @@ type ProjectRow = Database['public']['Tables']['projects']['Row'];
 export async function ensureProject(projectConfig: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Project | null> {
     try {
         // 1. Try to find by slug
+        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,target_registrations,target_revenue,created_at,updated_at';
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
-            .select('*')
+            .select(projCols)
             .eq('slug', projectConfig.slug)
             .maybeSingle();
 
@@ -69,7 +70,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             // Final attempt to fetch (race condition check)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: retry } = await (supabase.from('projects') as any)
-                .select('*')
+                .select(projCols)
                 .eq('slug', projectConfig.slug)
                 .maybeSingle();
 

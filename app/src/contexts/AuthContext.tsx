@@ -371,7 +371,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
       if (error) throw error;
       if (data.user) {
-        const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
+        const { data: userData } = await supabase.from('users').select('id,name,email,role,avatar_url,phone,two_factor_enabled').eq('id', data.user.id).single();
         setSession(data.session);
         setUser(mapSupabaseUserToUser(data.user, (userData as unknown) as UserDBMetadata | undefined));
         logAuditEvent('otp_verified', data.user.id);
