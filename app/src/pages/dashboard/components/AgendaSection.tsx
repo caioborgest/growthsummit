@@ -11,6 +11,7 @@ interface AgendaSectionProps {
     navigate: (path: string) => void;
     activityCheckIns?: any[];
     onSessionClick?: (session: any) => void;
+    allSessions?: any[];
 }
 
 export function AgendaSection({
@@ -21,8 +22,18 @@ export function AgendaSection({
     setIsSelfCheckInOpen,
     navigate,
     activityCheckIns = [],
-    onSessionClick
+    onSessionClick,
+    allSessions = []
 }: AgendaSectionProps) {
+    // Filtrar sessões noturnas e momentos âncora
+    const nightSessions = allSessions.filter(s => s.category === 'noturna').sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    const morningAnchors = allSessions.filter(s => s.category === 'manha_ancora').sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    
+    // Unificar manhã: âncoras + cursos selecionados
+    const fullMorningAgenda = [...morningAnchors, ...cursosSelecionados]
+        .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i) // unique
+        .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
+
     return (
         <div className="space-y-8">
             {/* Header with Actions */}
@@ -72,9 +83,9 @@ export function AgendaSection({
                             <Badge variant="outline" className="text-[10px] text-teal-400 border-teal-500/20">GRATUITO</Badge>
                         </div>
 
-                        {cursosSelecionados.length > 0 ? (
+                        {fullMorningAgenda.length > 0 ? (
                             <div className="space-y-3">
-                                {cursosSelecionados.map((item: any, i) => {
+                                {fullMorningAgenda.map((item: any, i) => {
                                     const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
 
                                     return (
@@ -155,46 +166,82 @@ export function AgendaSection({
                             <Badge className="bg-orange-500/20 text-orange-400 border-none text-[10px] font-black tracking-tighter">PREMIUM</Badge>
                         </div>
 
-                        {myRegistration?.palestrasNoturnas ? (
+                        {isActuallyPaid ? (
                             <div className="space-y-3">
-                                {/* Local Sessions for Night */}
-                                {[
-                                    { time: '18:30', title: 'Abertura Night Summit', speaker: 'Equipe Growth' },
-                                    { time: '19:00', title: 'Growth Strategies for 2026', speaker: 'Leandro Batista' },
-                                    { time: '20:30', title: 'Data Driven Culture', speaker: 'Vanylton Matias' }
-                                ].map((session, i) => (
-                                    <div key={i} className="glass-card p-5 border-white/5 hover:border-orange-500/30 transition-all group relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-all"></div>
-                                        <div className="flex items-start gap-5 relative z-10">
-                                            <div className="text-center min-w-[60px]">
-                                                <p className="text-orange-400 font-black text-lg leading-tight">{session.time}</p>
-                                                <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
-                                            </div>
-                                            <div className="flex-1 space-y-3">
-                                                <div>
-                                                    <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
-                                                    <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speaker}</p>
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
-                                                            <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> Arena Principal
-                                                        </span>
-                                                    </div>
+                                {nightSessions.length > 0 ? (
+                                    nightSessions.map((session, i) => (
+                                        <div key={i} onClick={() => onSessionClick?.(session)} className="glass-card p-5 border-white/5 hover:border-orange-500/30 transition-all group relative overflow-hidden cursor-pointer">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-all"></div>
+                                            <div className="flex items-start gap-5 relative z-10">
+                                                <div className="text-center min-w-[60px]">
+                                                    <p className="text-orange-400 font-black text-lg leading-tight">{session.startTime || '--:--'}</p>
+                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
                                                 </div>
+                                                <div className="flex-1 space-y-3">
+                                                    <div>
+                                                        <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
+                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speakers?.split(',').shift() || 'Equipe Growth'}</p>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
+                                                                <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> {session.room || 'Arena Principal'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
 
-                                                <Button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setIsSelfCheckInOpen(true);
-                                                    }}
-                                                    className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
-                                                >
-                                                    <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
-                                                </Button>
+                                                    <Button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setIsSelfCheckInOpen(true);
+                                                        }}
+                                                        className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
+                                                    >
+                                                        <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
+                                                    </Button>
+                                                </div>
+                                                <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
                                             </div>
-                                            <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    // Fallback legacy sessions if none found in DB
+                                    [
+                                        { time: '18:30', title: 'Abertura Night Summit', speaker: 'Equipe Growth' },
+                                        { time: '19:00', title: 'Growth Strategies for 2026', speaker: 'Leandro Batista' },
+                                        { time: '20:30', title: 'Data Driven Culture', speaker: 'Vanylton Matias' }
+                                    ].map((session, i) => (
+                                        <div key={i} className="glass-card p-5 border-white/5 hover:border-orange-500/30 transition-all group relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-all"></div>
+                                            <div className="flex items-start gap-5 relative z-10">
+                                                <div className="text-center min-w-[60px]">
+                                                    <p className="text-orange-400 font-black text-lg leading-tight">{session.time}</p>
+                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
+                                                </div>
+                                                <div className="flex-1 space-y-3">
+                                                    <div>
+                                                        <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
+                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speaker}</p>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
+                                                                <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> Arena Principal
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <Button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setIsSelfCheckInOpen(true);
+                                                        }}
+                                                        className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
+                                                    >
+                                                        <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
+                                                    </Button>
+                                                </div>
+                                                <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         ) : (
                             <div className="p-8 text-center bg-orange-500/5 rounded-3xl border border-orange-500/10">

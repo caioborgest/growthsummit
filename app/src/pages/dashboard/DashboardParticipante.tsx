@@ -76,11 +76,18 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const { user } = useAuth();
   const { selectedProject } = useProject();
   const { registration } = useMyRegistration();
-
+  const { data: sessions } = useSessions();
   const PRECO_BASE = 179.90;
   const precoFinal = cupomValido
     ? PRECO_BASE * (1 - cupomValido.desconto / 100)
     : PRECO_BASE;
+
+  const nightSpeakers = useMemo(() => {
+    const night = sessions.filter(s => s.category === 'noturna');
+    if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
+    const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
+    return names.join(' + ');
+  }, [sessions]);
 
   const validarCupom = async () => {
     if (!cupom.trim()) return;
@@ -199,15 +206,20 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
         </div>
 
         <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
-          {/* Benefícios */}
-          <div className="space-y-2">
-            {['Acesso às 2 Palestras Noturnas', 'Leandro Batista + Vanylton Matias', 'Networking exclusivo pós-evento', 'Certificado de participação completo'].map((b, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
-                <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
-                <span>{b}</span>
-              </div>
-            ))}
-          </div>
+{/* Benefícios */}
+<div className="space-y-2">
+  {[
+    `Acesso às ${sessions.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`, 
+    nightSpeakers, 
+    'Networking exclusivo pós-evento', 
+    'Certificado de participação completo'
+  ].map((b, i) => (
+    <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
+      <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
+      <span>{b}</span>
+    </div>
+  ))}
+</div>
 
           {/* Cupom */}
           <div className="space-y-2">
@@ -383,6 +395,13 @@ export function DashboardParticipante() {
   const { data: activityCheckIns, refetch: refetchActivityCheckIns } = useCheckInsAtividades();
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+
+  const nightSpeakers = useMemo(() => {
+    const night = sessions.filter(s => s.category === 'noturna');
+    if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
+    const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
+    return names.join(' + ');
+  }, [sessions]);
 
   // Auto-refetch registration to keep status in sync with backoffice
   useEffect(() => {
@@ -1017,6 +1036,7 @@ export function DashboardParticipante() {
                 navigate={navigate}
                 activityCheckIns={activityCheckIns}
                 onSessionClick={(session) => setSelectedSession(session)}
+                allSessions={sessions}
               />
             )}
 
