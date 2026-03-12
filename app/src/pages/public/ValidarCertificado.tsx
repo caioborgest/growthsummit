@@ -46,8 +46,8 @@ export function ValidarCertificado() {
         .from('certificates' as any) as any)
         .select(`
           *,
-          registration:registration_id (nome, email),
-          project:project_id (name)
+          registration:inscricoes_growth_experience (nome, email),
+          project:projects (name)
         `)
         .eq('code', searchCode.toUpperCase())
         .maybeSingle();

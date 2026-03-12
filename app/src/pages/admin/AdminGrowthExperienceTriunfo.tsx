@@ -28,8 +28,8 @@ export function AdminGrowthExperienceTriunfo() {
     const { selectedProject } = useProject();
     const stats = useGrowthExperienceStats();
     const { data: inscricoes, loading: loadingInscricoes } = useInscricoesTriunfo();
-    const { data: startups, loading: loadingStartups } = useStartupsArenaPitch();
-    const { data: empresasB2B, loading: loadingB2B } = useEmpresasB2B();
+    const { data: startups, loading: loadingStartups, updateStatus: updateStartupStatus } = useStartupsArenaPitch();
+    const { data: empresasB2B, loading: loadingB2B, updateStatus: updateB2BStatus } = useEmpresasB2B();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'inscricoes' | 'startups' | 'b2b'>('inscricoes');
@@ -308,7 +308,7 @@ export function AdminGrowthExperienceTriunfo() {
                         className="pl-12 bg-dark-100 border-dark-300 text-white"
                     />
                 </div>
-                <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Exportação da arena pendente')}>
+                <Button variant="outline" className="border-dark-300 text-gray-300">
                     <Filter className="h-4 w-4 mr-2" />
                     Filtros
                 </Button>
@@ -395,10 +395,18 @@ export function AdminGrowthExperienceTriunfo() {
                                         </td>
                                         <td className="p-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-green-500 hover:text-white">
+                                                <Button 
+                                                    variant="outline" size="sm" 
+                                                    className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-green-500 hover:text-white"
+                                                    onClick={() => updateStartupStatus(item.id, 'aprovado').then(() => toast.success('Startup aprovada!'))}
+                                                >
                                                     <CheckCircle className="h-3 w-3 mr-1" /> Aprovar
                                                 </Button>
-                                                <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-red-500 hover:text-white">
+                                                <Button 
+                                                    variant="outline" size="sm" 
+                                                    className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-red-500 hover:text-white"
+                                                    onClick={() => updateStartupStatus(item.id, 'rejeitado').then(() => toast.success('Startup rejeitada'))}
+                                                >
                                                     <XCircle className="h-3 w-3 mr-1" /> Rejeitar
                                                 </Button>
                                             </div>
@@ -432,7 +440,11 @@ export function AdminGrowthExperienceTriunfo() {
                                         </td>
                                         <td className="p-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-brand-orange-coral hover:text-white">
+                                                <Button 
+                                                    variant="outline" size="sm" 
+                                                    className="h-8 text-[10px] font-black uppercase tracking-widest border-white/10 hover:bg-brand-orange-coral hover:text-white"
+                                                    onClick={() => updateB2BStatus(item.id, 'aprovado').then(() => toast.success('Empresa B2B aprovada!'))}
+                                                >
                                                     <CheckCircle className="h-3 w-3 mr-1" /> Aprovar
                                                 </Button>
                                             </div>
