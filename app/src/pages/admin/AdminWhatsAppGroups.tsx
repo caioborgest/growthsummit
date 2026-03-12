@@ -582,6 +582,9 @@ export function AdminWhatsAppGroups() {
         <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Criar Novo Grupo WhatsApp</DialogTitle>
+            <DialogDescription className="text-[#94A3B8]">
+              Preencha os dados abaixo para criar um novo grupo de comunicação para o evento.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
@@ -821,6 +824,9 @@ export function AdminWhatsAppGroups() {
         <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">QR Code do Grupo</DialogTitle>
+            <DialogDescription className="text-[#94A3B8]">
+              Escaneie ou baixe o código para compartilhar o acesso ao grupo.
+            </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center p-6 space-y-4">
             <div className="bg-white p-4 rounded-xl">

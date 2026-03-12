@@ -15,6 +15,7 @@ const footerLinks = {
     { name: 'Triunfo-PE', href: '/growth-experience-triunfo' },
     { name: 'Petrolina-PE', href: '/growth-experience-petrolina' },
     { name: 'Inscrições', href: '/inscricoes' },
+    { name: 'Validar Certificado', href: '/validar' },
     { name: 'FAQ', href: '/faq' },
   ],
   participar: [

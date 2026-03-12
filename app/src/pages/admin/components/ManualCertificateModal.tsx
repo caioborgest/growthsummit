@@ -35,6 +35,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
   const [activityName, setActivityName] = useState('Participação Geral');
   const [type, setType] = useState('event');
   const [totalHours, setTotalHours] = useState(8);
+  const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -64,7 +65,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
         activity_name: activityName,
         type: type,
         code: code,
-        issue_date: new Date().toISOString(),
+        issue_date: new Date(issueDate).toISOString(),
         status: 'issued',
         metadata: { 
           manual: true, 
@@ -99,9 +100,9 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px] bg-dark-200 border border-white/5 rounded-3xl p-0 overflow-hidden shadow-2xl">
-        <DialogHeader className="p-8 border-b border-white/5 bg-gradient-to-r from-teal-500/5 to-transparent">
+        <DialogHeader className="p-8 border-b border-white/5 bg-gradient-to-r from-brand-orange-coral/5 to-transparent">
           <DialogTitle className="text-2xl font-black text-white flex items-center gap-4">
-            <Award className="h-8 w-8 text-teal-400" />
+            <Award className="h-8 w-8 text-brand-orange-coral" />
             Emissão Personalizada
           </DialogTitle>
           <DialogDescription className="text-gray-500 font-medium">
@@ -132,7 +133,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                           setSelectedRegId(r.id);
                           setSearchTerm('');
                       }}
-                      className={`w-full p-4 text-left hover:bg-teal-500/10 flex items-center justify-between transition-colors border-b border-white/5 last:border-0 ${selectedRegId === r.id ? 'bg-teal-500/20' : ''}`}
+                      className={`w-full p-4 text-left hover:bg-brand-orange-coral/10 flex items-center justify-between transition-colors border-b border-white/5 last:border-0 ${selectedRegId === r.id ? 'bg-brand-orange-coral/20' : ''}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
@@ -143,7 +144,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                           <p className="text-[10px] text-gray-500 font-medium">{r.email}</p>
                         </div>
                       </div>
-                      {selectedRegId === r.id && <CheckCircle2 className="h-5 w-5 text-teal-400" />}
+                      {selectedRegId === r.id && <CheckCircle2 className="h-5 w-5 text-brand-orange-coral" />}
                     </button>
                   ))}
                 </div>
@@ -151,13 +152,14 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
             </div>
 
             {selectedRegId && (
-              <div className="bg-teal-500/5 p-6 rounded-3xl border border-teal-500/20 flex items-center gap-5 animate-in fade-in slide-in-from-top-4">
-                 <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                    <User className="text-teal-400 h-7 w-7" />
+              <div className="bg-brand-orange-coral/5 p-6 rounded-3xl border border-brand-orange-coral/20 flex items-center gap-5 animate-in fade-in slide-in-from-top-4">
+                 <div className="w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                    <User className="text-brand-orange-coral h-7 w-7" />
                  </div>
                  <div className="flex-1 overflow-hidden">
-                    <p className="text-[10px] text-teal-400 font-black uppercase tracking-widest mb-1">Participante Selecionado</p>
+                    <p className="text-[10px] text-brand-orange-coral font-black uppercase tracking-widest mb-1">Participante Selecionado</p>
                     <p className="text-xl text-white font-black tracking-tight truncate">{selectedUser?.name}</p>
+                    <p className="text-xs text-gray-500 font-medium truncate">{selectedUser?.email}</p>
                  </div>
               </div>
             )}
@@ -190,6 +192,18 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
 
             <div className="space-y-3">
               <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+                <Calendar className="h-3 w-3" /> Data de Emissão
+              </label>
+              <Input 
+                type="date"
+                value={issueDate}
+                onChange={e => setIssueDate(e.target.value)}
+                className="bg-dark-100 border-none h-12 text-white font-bold [color-scheme:dark]"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="h-3 w-3" /> Modalidade
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -198,7 +212,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                     key={t}
                     type="button"
                     onClick={() => setType(t)}
-                    className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${type === t ? 'bg-teal-500 border-teal-400 text-white shadow-lg shadow-teal-500/20' : 'bg-dark-100 border-white/5 text-gray-500 hover:border-white/20'}`}
+                    className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${type === t ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-lg shadow-brand-orange-coral/20' : 'bg-dark-100 border-white/5 text-gray-500 hover:border-white/20'}`}
                   >
                     {t}
                   </button>
@@ -211,7 +225,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
               <button 
                 type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-teal-400 text-xs font-black uppercase tracking-widest hover:text-teal-300 transition-colors"
+                className="flex items-center gap-2 text-brand-orange-coral text-xs font-black uppercase tracking-widest hover:text-brand-orange-gradient transition-colors"
               >
                 <Settings className={`h-4 w-4 ${showAdvanced ? 'rotate-90' : ''} transition-transform`} />
                 Opções de Conteúdo Editável
@@ -236,7 +250,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                       placeholder="Deixe em branco para usar a descrição do projeto..."
                       value={customDescription}
                       onChange={e => setCustomDescription(e.target.value)}
-                      className="w-full bg-dark-100 border-none rounded-2xl p-4 text-white text-sm resize-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full bg-dark-100 border-none rounded-2xl p-4 text-white text-sm resize-none focus:ring-2 focus:ring-brand-orange-coral"
                     />
                   </div>
                 </div>
@@ -250,7 +264,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
           <Button 
             onClick={handleSubmit} 
             disabled={!selectedRegId || isSubmitting}
-            className="bg-teal-500 hover:bg-teal-600 text-white font-black px-12 h-14 rounded-2xl shadow-xl shadow-teal-500/20"
+            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-12 h-14 rounded-2xl shadow-xl shadow-brand-orange-coral/20"
           >
             {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : 'Emitir Certificado'}
           </Button>

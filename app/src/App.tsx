@@ -40,6 +40,7 @@ const Contato = lazy(() => import('./pages/public/Contato').then(m => ({ default
 const SejaMentor = lazy(() => import('./pages/public/SejaMentor').then(m => ({ default: m.SejaMentor })));
 const LocalViagem = lazy(() => import('./pages/public/LocalViagem').then(m => ({ default: m.LocalViagem })));
 const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ default: m.HelpCenter })));
+const ValidarCertificado = lazy(() => import('./pages/public/ValidarCertificado').then(m => ({ default: m.ValidarCertificado })));
 
 // ── Auth (lazy)
 const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
@@ -239,6 +240,8 @@ function AppRoutes() {
           <Route path="lgpd" element={<LegalPage title="LGPD" />} />
           <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
           <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
+          <Route path="validar" element={<ValidarCertificado />} />
+          <Route path="validar/:code" element={<ValidarCertificado />} />
           <Route path="meus-certificados" element={
             <ProtectedRoute allowedRoles={['participant', 'participante', 'admin']}>
               <Certificados />

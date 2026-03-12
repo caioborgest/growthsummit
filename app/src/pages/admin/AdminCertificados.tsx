@@ -158,6 +158,9 @@ export function AdminCertificados() {
     const handleDownload = async (cert: Certificate, mode: 'save' | 'bloburl' = 'save') => {
         const toastId = toast.loading(mode === 'save' ? 'Gerando certificado...' : 'Preparando visualização...');
         try {
+            // Extract overrides from certificate metadata if they exist (for manual edits)
+            const manualOverrides = cert.metadata?.overrides || {};
+
             // Preparar dados do template
             const certData: any = {
                 userName: cert.registration?.nome || 'Participante',
@@ -166,13 +169,15 @@ export function AdminCertificados() {
                 certificateCode: cert.code,
                 type: cert.type || 'lecture',
                 sessionTitle: cert.activity_name,
+                totalHours: cert.metadata?.total_hours || 8,
                 templateOverrides: {
-                    title: template.title,
-                    description: template.description,
+                    title: manualOverrides.title || template.title,
+                    description: manualOverrides.description || template.description,
                     ceoName: template.ceo_name,
                     ceoRole: template.ceo_role,
                     primaryColor: template.primary_color,
                     secondaryColor: template.secondary_color,
+                    accentColor: template.accent_color,
                     showBackgroundPattern: template.show_pattern
                 }
             };
@@ -644,7 +649,10 @@ export function AdminCertificados() {
                                         </p>
 
                                         <div className="w-full flex justify-between items-end mt-4">
-                                            <div className="text-left">
+                                            <div className="text-left relative">
+                                                {template.signature_url && (
+                                                    <img src={template.signature_url} className="absolute -top-6 left-0 h-6 w-auto opacity-70 pointer-events-none" alt="Assinatura" />
+                                                )}
                                                 <div className="w-12 h-[1px] bg-white/20 mb-2" />
                                                 <p className="text-[6px] font-bold text-white">{template.ceo_name}</p>
                                                 <p className="text-[5px] text-gray-600">{template.ceo_role}</p>

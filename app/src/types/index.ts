@@ -310,7 +310,7 @@ export interface Certificate {
   userId: string;
   registrationId: string;
   sessionId?: string;
-  type: 'event' | 'course' | 'lecture' | 'workshop';
+  type: 'event' | 'course' | 'lecture' | 'workshop' | 'oficina';
   code: string;
   issueDate: string;
   downloadCount: number;
