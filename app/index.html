@@ -121,6 +121,13 @@
 </head>
 
 <body>
+  <script>
+    try {
+      if (localStorage.getItem('ge_theme_outdoor') === '1') {
+        document.documentElement.setAttribute('data-theme', 'outdoor');
+      }
+    } catch (_) {}
+  </script>
   <div id="root"></div>
   <noscript>
     <div

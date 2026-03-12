@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Bell, LogOut, HelpCircle, Moon, Sun, Star } from 'lucide-react';
+import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 import { Badge } from '@/components/ui/badge';
 import {
     Popover,
@@ -33,6 +34,7 @@ export function PremiumHeader({
     onNotificationRead
 }: PremiumHeaderProps) {
     const unreadCount = (notifications || []).filter(n => n && !n.read && !n.isRead).length;
+    const { isOutdoor, toggle } = useOutdoorTheme();
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 relative">
@@ -44,6 +46,16 @@ export function PremiumHeader({
                 </div>
 
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={toggle}
+                        className={`h-8 w-8 flex items-center justify-center rounded-full transition-all border ${
+                            isOutdoor ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-white/5 border-white/5 text-gray-400 hover:text-amber-400'
+                        }`}
+                        aria-label={isOutdoor ? 'Desativar modo outdoor' : 'Modo outdoor'}
+                        title="Modo outdoor - leitura ao sol"
+                    >
+                        <Sun className="h-3.5 w-3.5" />
+                    </button>
                     <button
                         onClick={onGuideClick}
                         className="bg-white/5 hover:bg-white/10 text-gray-400 h-8 px-3 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 border border-white/5"

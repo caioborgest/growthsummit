@@ -4,7 +4,7 @@ import { Calendar, Clock, MapPin, X, CheckCircle, Handshake } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useB2BAppointmentsTriunfo } from '@/hooks/useData';
+import { useB2BAppointmentsTriunfo, useB2BMatches } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import type { B2BMatch, Company } from '@/types';
 
@@ -28,6 +28,24 @@ export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, current
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const dateStr = selectedProject?.startDate
+        ? new Date(selectedProject.startDate).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
+    const occupiedSlots = new Set(
+        appointments
+            .filter(a => a.status !== 'cancelled' && a.status !== 'no_show')
+            .filter(a => {
+                const am = a as { companyAId?: string; companyBId?: string };
+                return [am.companyAId, am.companyBId].includes(currentCompanyId) ||
+                       [am.companyAId, am.companyBId].includes(otherCompany.id);
+            })
+            .map(a => {
+                const d = new Date(a.scheduledAt);
+                return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+            })
+    );
+
     if (!isOpen) return null;
 
     const handleSchedule = async () => {
@@ -39,10 +57,6 @@ export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, current
         try {
             setIsSubmitting(true);
             // Construct date string - Assuming event is fixed date or from project
-            const dateStr = selectedProject?.startDate
-                ? new Date(selectedProject.startDate).toISOString().split('T')[0]
-                : new Date().toISOString().split('T')[0];
-
             const [hours, minutes] = selectedTime.split(':');
             const scheduledDate = new Date(`${dateStr}T${hours}:${minutes}:00`);
 
@@ -142,19 +156,28 @@ export function B2BScheduleModal({ isOpen, onClose, match, otherCompany, current
                                 Horários mostrados em horário de Brasília (UTC‑3). Ajuste se estiver em outro fuso.
                             </p>
                             <div className="grid grid-cols-4 gap-2">
-                                {AVAILABLE_TIMES.map((time) => (
-                                    <button
-                                        key={time}
-                                        onClick={() => setSelectedTime(time)}
-                                        className={`py-3 rounded-xl text-sm font-bold transition-all border
-                      ${selectedTime === time
-                                                ? 'bg-teal-500 text-white border-teal-500 shadow-lg shadow-teal-500/20'
-                                                : 'bg-dark-300 text-gray-400 border-transparent hover:bg-dark-400 hover:text-white hover:border-dark-400/50'
-                                            }`}
-                                    >
-                                        {time}
-                                    </button>
-                                ))}
+                                {AVAILABLE_TIMES.map((time) => {
+                                    const isOccupied = occupiedSlots.has(time);
+                                    return (
+                                        <button
+                                            key={time}
+                                            type="button"
+                                            onClick={() => !isOccupied && setSelectedTime(time)}
+                                            disabled={isOccupied}
+                                            className={`py-3 rounded-xl text-sm font-bold transition-all border
+                                                ${isOccupied
+                                                    ? 'bg-dark-400/50 text-gray-600 border-dark-400 cursor-not-allowed opacity-60'
+                                                    : selectedTime === time
+                                                        ? 'bg-teal-500 text-white border-teal-500 shadow-lg shadow-teal-500/20'
+                                                        : 'bg-dark-300 text-gray-400 border-transparent hover:bg-dark-400 hover:text-white hover:border-dark-400/50'
+                                                }`}
+                                            title={isOccupied ? 'Horário indisponível' : undefined}
+                                        >
+                                            {time}
+                                            {isOccupied && <span className="block text-[9px] font-normal opacity-75">Ocupado</span>}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

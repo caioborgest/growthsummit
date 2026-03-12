@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Clock, Users, MapPin, Coffee, Mic2, Award, Zap, UserPlus } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Clock, Users, MapPin, Coffee, Mic2, Award, Zap, UserPlus, Radio, ChevronRight, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useProject } from '@/contexts/ProjectContext';
+import { useSessionFavorites } from '@/hooks/useSessionFavorites';
 
 export interface Atividade {
     id?: string;
@@ -66,6 +68,14 @@ export interface MomentoAncora {
     local: string;
 }
 
+export interface AgoraProximoItem {
+    id: string;
+    titulo: string;
+    horario: string;
+    local?: string;
+    status: 'agora' | 'proximo';
+}
+
 export interface ProgramacaoTabsProps {
     programacaoManha: ProgramacaoDiurna;
     programacaoTarde: ProgramacaoTarde;
@@ -76,6 +86,9 @@ export interface ProgramacaoTabsProps {
         tarde: MomentoAncora[];
     };
     onInscricao?: () => void;
+    /** Data do evento (YYYY-MM-DD) e atividades com horário para jornada Agora/Próximo */
+    eventDate?: string;
+    allActivitiesWithTimes?: { id: string; titulo: string; horario: string; startTime?: string; endTime?: string; local?: string }[];
 }
 
 const corMap: Record<string, string> = {
@@ -83,15 +96,63 @@ const corMap: Record<string, string> = {
     neutral: 'bg-white/5 text-gray-400 border-white/10',
 };
 
+function parseTimeToMinutes(t: string): number {
+    const m = (t || '').match(/(\d{1,2}):(\d{2})/);
+    if (!m) return 0;
+    return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
 export function ProgramacaoTabs({
     programacaoManha,
     programacaoTarde,
     programacaoNoturna,
     circuitoExperiencias,
     momentosAncora,
-    onInscricao
+    onInscricao,
+    eventDate,
+    allActivitiesWithTimes = []
 }: ProgramacaoTabsProps) {
     const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
+    const { projectId } = useProject();
+    const { favorites, toggle, isFavorite } = useSessionFavorites(projectId);
+
+    const { agoraItem, proximoItem } = useMemo(() => {
+        if (!eventDate || allActivitiesWithTimes.length === 0) return { agoraItem: null, proximoItem: null };
+        const now = new Date();
+        const today = now.toISOString().slice(0, 10);
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+
+        const eventMin = eventDate === today ? currentMin : (eventDate < today ? 24 * 60 : -1);
+        if (eventDate !== today) return { agoraItem: null, proximoItem: null };
+
+        let agora: typeof allActivitiesWithTimes[0] | null = null;
+        let proximo: typeof allActivitiesWithTimes[0] | null = null;
+
+        const sorted = [...allActivitiesWithTimes]
+            .filter(a => a.startTime)
+            .sort((a, b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime));
+
+        for (const a of sorted) {
+            const start = parseTimeToMinutes(a.startTime || '');
+            const end = parseTimeToMinutes(a.endTime || '') || start + 60;
+            if (currentMin >= start && currentMin < end) {
+                agora = a;
+                break;
+            }
+            if (!proximo && currentMin < start) {
+                proximo = a;
+                break;
+            }
+        }
+        if (!agora && sorted.length > 0 && currentMin < parseTimeToMinutes(sorted[0].startTime || '')) {
+            proximo = sorted[0];
+        }
+
+        return {
+            agoraItem: agora ? { ...agora, status: 'agora' as const } : null,
+            proximoItem: proximo ? { ...proximo, status: 'proximo' as const } : null,
+        };
+    }, [eventDate, allActivitiesWithTimes]);
 
     const renderBloco = (bloco: Bloco) => (
         <div className="mb-10 last:mb-0">
@@ -124,7 +185,16 @@ export function ProgramacaoTabs({
                     <div className="text-xs font-black text-brand-orange-coral/60 uppercase tracking-widest mb-3 ml-1">Salão Principal (80 Pessoas)</div>
                     <Card className="glass-card p-8 border-white/10 hover:border-brand-orange-coral/40 transition-all group relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-colors" />
-
+                        {bloco.salao.id && (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); toggle(bloco.salao!.id!); }}
+                                className="absolute top-6 right-6 z-20 p-2 rounded-full hover:bg-white/10 transition-colors"
+                                aria-label={isFavorite(bloco.salao.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                            >
+                                <Heart className={`h-5 w-5 transition-colors ${isFavorite(bloco.salao.id) ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'}`} />
+                            </button>
+                        )}
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
                             <div className="flex items-start gap-5">
                                 <div className="w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">
@@ -170,8 +240,18 @@ export function ProgramacaoTabs({
                     <div className="text-xs font-black text-brand-orange-coral/60 uppercase tracking-widest mb-3 ml-1">Workshops Simultâneos (Salas 1 a 3)</div>
                     <div className="grid md:grid-cols-3 gap-6">
                         {bloco.salas.map((sala) => (
-                            <Card key={sala.numero} className="glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all hover:-translate-y-1 relative group bg-white/[0.02]">
+                            <Card key={sala.id || sala.numero} className="glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all hover:-translate-y-1 relative group bg-white/[0.02]">
                                 <div className="absolute top-0 left-0 w-1 h-0 bg-brand-orange-coral group-hover:h-full transition-all duration-300" />
+                                {sala.id && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); toggle(sala.id!); }}
+                                        className="absolute top-4 right-4 z-10 p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                                        aria-label={isFavorite(sala.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                    >
+                                        <Heart className={`h-4 w-4 transition-colors ${isFavorite(sala.id) ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'}`} />
+                                    </button>
+                                )}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="px-3 py-1 rounded bg-brand-orange-coral/20 border border-brand-orange-coral/30">
                                         <span className="text-brand-orange-coral font-black text-xs tracking-tighter">SALA 0{sala.numero}</span>
@@ -227,6 +307,73 @@ export function ProgramacaoTabs({
 
     return (
         <div className="w-full">
+            {/* Minhas atividades favoritas */}
+            {favorites.length > 0 && allActivitiesWithTimes.length > 0 && (
+                <div className="mb-10 p-5 rounded-2xl bg-brand-orange-coral/5 border border-brand-orange-coral/20">
+                    <h3 className="text-lg font-black text-white uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+                        Minhas atividades ({favorites.length})
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                        {favorites
+                            .map((id) => allActivitiesWithTimes.find((a) => a.id === id))
+                            .filter(Boolean)
+                            .map((a) => (
+                                <div
+                                    key={a!.id}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10"
+                                >
+                                    <span className="text-brand-orange-coral font-bold text-sm">{a!.horario}</span>
+                                    <span className="text-white font-medium">{a!.titulo}</span>
+                                    {a!.local && <span className="text-gray-500 text-xs">• {a!.local}</span>}
+                                    <button
+                                        type="button"
+                                        onClick={() => toggle(a!.id)}
+                                        className="ml-1 p-1 rounded hover:bg-white/10"
+                                        aria-label="Remover dos favoritos"
+                                    >
+                                        <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                                    </button>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+            )}
+            {/* Jornada Agora / Próximo */}
+            {(agoraItem || proximoItem) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                    {agoraItem && (
+                        <div className="flex items-center gap-4 p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+                            <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40 flex-shrink-0">
+                                <Radio className="h-6 w-6 text-emerald-400 animate-pulse" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Acontecendo agora</span>
+                                <p className="text-white font-bold text-lg truncate">{agoraItem.titulo}</p>
+                                <p className="text-gray-400 text-sm flex items-center gap-1">
+                                    {agoraItem.horario}
+                                    {agoraItem.local && <><span>•</span><MapPin className="h-3 w-3" />{agoraItem.local}</>}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    {proximoItem && (
+                        <div className="flex items-center gap-4 p-5 rounded-2xl bg-brand-orange-coral/10 border border-brand-orange-coral/30">
+                            <div className="w-12 h-12 rounded-full bg-brand-orange-coral/20 flex items-center justify-center border border-brand-orange-coral/40 flex-shrink-0">
+                                <ChevronRight className="h-6 w-6 text-brand-orange-coral" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <span className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest">Próximo</span>
+                                <p className="text-white font-bold text-lg truncate">{proximoItem.titulo}</p>
+                                <p className="text-gray-400 text-sm flex items-center gap-1">
+                                    {proximoItem.horario}
+                                    {proximoItem.local && <><span>•</span><MapPin className="h-3 w-3" />{proximoItem.local}</>}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Tabs Navigation */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-12 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
                 {[

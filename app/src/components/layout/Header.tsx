@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, User, LogOut, Bell } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogOut, Bell, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileModal } from '@/components/profile/ProfileModal';
+import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 
 const navLinks = [
   { name: 'Início', href: '/' },
@@ -26,6 +27,7 @@ const moreLinks = [
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { isOutdoor, toggle } = useOutdoorTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -119,7 +121,17 @@ export function Header() {
           </nav>
 
           {/* CTA Buttons Premium */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={toggle}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all touch-target ${
+                isOutdoor ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-white/5 border-white/10 text-gray-400 hover:text-amber-400 hover:border-amber-500/30'
+              }`}
+              aria-label={isOutdoor ? 'Desativar modo outdoor (alto contraste)' : 'Ativar modo outdoor (melhor leitura ao sol)'}
+              title={isOutdoor ? 'Modo outdoor ativado' : 'Modo outdoor - melhor leitura ao sol'}
+            >
+              <Sun className="h-5 w-5" />
+            </button>
             {isAuthenticated ? (
               <div className="flex items-center gap-2 bg-white/5 border border-white/5 p-1 rounded-2xl group">
                 <DropdownMenu>
@@ -197,6 +209,15 @@ export function Header() {
 
           {/* Mobile Menu Button Premium */}
           <div className="lg:hidden flex items-center gap-2">
+            <button
+              onClick={toggle}
+              className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all touch-target ${
+                isOutdoor ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-white/5 border-white/10 text-gray-400'
+              }`}
+              aria-label={isOutdoor ? 'Desativar modo outdoor' : 'Modo outdoor'}
+            >
+              <Sun className="h-5 w-5" />
+            </button>
             {isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

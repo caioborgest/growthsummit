@@ -64,6 +64,28 @@
     --warning: 38 92% 50%;
     --info: 217 91% 60%;
   }
+
+  /* Modo outdoor / alto contraste - legibilidade sob sol */
+  [data-theme='outdoor'] {
+    --background: 220 20% 3%;
+    --foreground: 0 0% 100%;
+    --card: 220 20% 6%;
+    --muted-foreground: 0 0% 85%;
+    --brand-orange-coral: 14 100% 55%;
+    --brand-orange-gradient: 19 100% 60%;
+    --brand-orange-intense: 11 100% 52%;
+    --border: 217 19% 25%;
+  }
+  [data-theme='outdoor'] body {
+    -webkit-font-smoothing: antialiased;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+  }
+  [data-theme='outdoor'] .glass-card {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  [data-theme='outdoor'] .text-gray-400 { color: rgb(200 200 210) !important; }
+  [data-theme='outdoor'] .text-gray-500 { color: rgb(180 180 190) !important; }
 }
 
 @layer base {

@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, Zap, Trophy, Briefcase, GraduationCap, Landmark } from 'lucide-react';
 import { ProgramacaoTabs, type ProgramacaoDiurna, type ProgramacaoTarde, type Estacao, type MomentoAncora } from './ProgramacaoTabs';
 import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
+import { useProject } from '@/contexts/ProjectContext';
 import {
     circuitoExperienciasData,
     momentosAncoraData,
@@ -28,6 +29,7 @@ const getIcon = (nome: string) => {
 
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
     const { programacao } = useProgramacaoTriunfo();
+    const { selectedProject } = useProject();
 
     // Se não houver dados no banco, usa os estáticos como fallback
     // Isso garante que a página não fique vazia enquanto o admin não preenche
@@ -91,6 +93,8 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                     circuitoExperiencias={finalData.circuitoExperiencias}
                     momentosAncora={finalData.momentosAncora}
                     onInscricao={onInscricao}
+                    eventDate={selectedProject?.startDate}
+                    allActivitiesWithTimes={programacao?.allActivitiesWithTimes}
                 />
             </div>
         </section>

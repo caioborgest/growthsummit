@@ -24,6 +24,13 @@ registerSW({
 import { validateConfig } from '@/lib/config';
 validateConfig();
 
+// Aplica tema outdoor antes do React (evita flash)
+try {
+  if (localStorage.getItem('ge_theme_outdoor') === '1') {
+    document.documentElement.setAttribute('data-theme', 'outdoor');
+  }
+} catch (_) {}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryProvider>

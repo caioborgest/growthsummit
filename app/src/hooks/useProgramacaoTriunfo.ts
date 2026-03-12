@@ -1,10 +1,10 @@
-import { useSessions } from '@/hooks/useData';
+import { useSessionsRealtime } from '@/hooks/useSessionsRealtime';
 import { useMemo } from 'react';
 import type { Session } from '@/types';
 import { formatEventTime, compareEventTimes } from '@/lib/formatTime';
 
 export function useProgramacaoTriunfo() {
-    const { data: sessions, isLoading, error } = useSessions();
+    const { data: sessions, isLoading, error } = useSessionsRealtime();
 
     const programacao = useMemo(() => {
         const transformAtividade = (s: Session) => ({
@@ -79,8 +79,24 @@ export function useProgramacaoTriunfo() {
             };
         });
 
+        // Lista plana para Agora/Próximo (sessões com horário definido)
+        const allActivitiesWithTimes = [
+            ...b1_sessions, ...b2_sessions, ...b3_sessions, ...b4_sessions,
+            ...filterByCategory('manha_ancora'), ...filterByCategory('tarde_ancora'),
+            circ1, circ2, enc_manha, enc_tarde,
+            ...filterByCategory('noturna')
+        ].filter(Boolean).map(s => ({
+            id: s.id,
+            titulo: s.title,
+            horario: formatEventTime(s.startTime),
+            startTime: s.startTime,
+            endTime: s.endTime,
+            local: s.room || 'Espaço Parque',
+        }));
+
         // Default structure to avoid crashes if empty
         return {
+            allActivitiesWithTimes,
             momentosAncora: { manha: manhaAncora, tarde: tardeAncora },
             programacaoManha: {
                 bloco1: { horario: formatEventTime(b1_salao?.startTime) || '08:30', titulo: b1_salao?.title || 'Bloco 1', salao: b1_salao ? transformAtividade(b1_salao) : undefined, salas: b1_salas },
