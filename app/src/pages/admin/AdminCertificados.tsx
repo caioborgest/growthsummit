@@ -25,7 +25,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { generateCertificatePDF } from '@/lib/certificateGenerator';
+import { generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
 import { ManualCertificateModal } from './components/ManualCertificateModal';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
@@ -152,6 +152,89 @@ export function AdminCertificados() {
             toast.error('Erro ao salvar configurações.');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleDownload = async (cert: Certificate, mode: 'save' | 'bloburl' = 'save') => {
+        const toastId = toast.loading(mode === 'save' ? 'Gerando certificado...' : 'Preparando visualização...');
+        try {
+            // Preparar dados do template
+            const certData: any = {
+                userName: cert.registration?.nome || 'Participante',
+                eventName: selectedProject?.name || 'Growth Experience',
+                date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
+                certificateCode: cert.code,
+                type: cert.type || 'lecture',
+                sessionTitle: cert.activity_name,
+                templateOverrides: {
+                    title: template.title,
+                    description: template.description,
+                    ceoName: template.ceo_name,
+                    ceoRole: template.ceo_role,
+                    primaryColor: template.primary_color,
+                    secondaryColor: template.secondary_color,
+                    showBackgroundPattern: template.show_pattern
+                }
+            };
+
+            // Carregar Imagens
+            if (template.logo_url) {
+                certData.logoBase64 = await imageUrlToBase64(template.logo_url).catch(e => {
+                    console.error('Erro logo:', e);
+                    return undefined;
+                });
+            }
+            if (template.signature_url) {
+                certData.signatureBase64 = await imageUrlToBase64(template.signature_url).catch(e => {
+                    console.error('Erro assinatura:', e);
+                    return undefined;
+                });
+            }
+            if (template.background_url) {
+                certData.templateOverrides.customBackgroundBase64 = await imageUrlToBase64(template.background_url).catch(e => {
+                    console.error('Erro BG:', e);
+                    return undefined;
+                });
+            }
+            if (template.partner_logos?.length > 0) {
+                certData.partnerLogosBase64 = await Promise.all(
+                    template.partner_logos.map(url => imageUrlToBase64(url).catch(() => null))
+                ).then(res => res.filter(Boolean));
+            }
+
+            const result = await generateCertificatePDF(certData, mode);
+            
+            if (mode === 'bloburl' && typeof result === 'string') {
+                window.open(result, '_blank');
+                toast.success('Visualização aberta!', { id: toastId });
+            } else {
+                toast.success('Certificado gerado com sucesso!', { id: toastId });
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Erro ao processar certificado.', { id: toastId });
+        }
+    };
+
+    const handleView = (cert: Certificate) => {
+        handleDownload(cert, 'bloburl');
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Tem certeza que deseja excluir este certificado? Esta ação não pode ser desfeita.')) return;
+        
+        try {
+            const { error } = await supabase
+                .from('certificates' as any)
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success('Certificado excluído.');
+            fetchData();
+        } catch (err) {
+            logger.error('[AdminCertificados] Erro ao excluir:', err);
+            toast.error('Erro ao excluir certificado.');
         }
     };
 
@@ -338,11 +421,32 @@ export function AdminCertificados() {
                                             </td>
                                             <td className="px-6 py-5 text-right">
                                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-white/5" title="Visualizar">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-gray-400 hover:text-white hover:bg-white/5" 
+                                                        title="Visualizar"
+                                                        onClick={() => handleView(cert)}
+                                                    >
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="text-teal-400 hover:bg-teal-500/10" title="Download">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-teal-400 hover:bg-teal-500/10" 
+                                                        title="Download"
+                                                        onClick={() => handleDownload(cert)}
+                                                    >
                                                         <Download className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-red-400 hover:bg-red-500/10" 
+                                                        title="Excluir"
+                                                        onClick={() => handleDelete(cert.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </td>

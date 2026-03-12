@@ -18,7 +18,7 @@ export class CertificateService {
         try {
             // 1. Check if certificate already exists
             const { data: existing } = await (supabase
-                .from('certificados' as any) as any)
+                .from('certificates' as any) as any)
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('session_id', session.id)
@@ -48,7 +48,7 @@ export class CertificateService {
 
             // 4. Save certificate to DB
             const { error } = await (supabase
-                .from('certificados' as any) as any)
+                .from('certificates' as any) as any)
                 .insert({
                     project_id: project.id,
                     user_id: user.id,
@@ -81,7 +81,7 @@ export class CertificateService {
         try {
             // Check if already exists
             const { data: existing } = await (supabase
-                .from('certificados' as any) as any)
+                .from('certificates' as any) as any)
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('registration_id', registrationId)
@@ -93,7 +93,7 @@ export class CertificateService {
             const certData = await issueCertificate(user, project, 'event');
 
             const { error } = await (supabase
-                .from('certificados' as any) as any)
+                .from('certificates' as any) as any)
                 .insert({
                     project_id: project.id,
                     user_id: user.id,

@@ -60,7 +60,7 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
-import { generateCertificateCode } from '@/lib/certificateGenerator';
+import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
 function UpgradeProModal({ registrationId, onClose, onSuccess }: {
@@ -647,9 +647,11 @@ export function DashboardParticipante() {
 
         // Gerar placeholder de certificado
         const certCode = generateCertificateCode(myRegistration.id, sessionId);
-        await (supabase.from('certificados' as any) as any).insert({
+        await (supabase.from('certificates' as any) as any).insert({
           project_id: selectedProject?.id,
           registration_id: myRegistration.id,
+          user_id: user?.id,
+          session_id: sessionId,
           activity_name: sessionTitle,
           status: 'disponivel',
           type: 'lecture', // ou workshop dependendo do contexto, mas lecture é o padrão
@@ -693,7 +695,7 @@ export function DashboardParticipante() {
     setLoadingCerts(true);
     try {
       const { data, error } = await supabase
-        .from('certificados' as any)
+        .from('certificates' as any)
         .select('*')
         .eq('registration_id', myRegistration.id)
         .order('issue_date', { ascending: false });
@@ -712,6 +714,46 @@ export function DashboardParticipante() {
       fetchCertificados();
     }
   }, [activeTab, fetchCertificados]);
+
+  const handleDownloadCertificate = async (cert: any) => {
+    const toastId = toast.loading('Gerando certificado...');
+    try {
+      const template = selectedProject?.metadata?.certificate_template || {};
+      
+      const certData: any = {
+        userName: myRegistration?.nome || user?.name || 'Participante',
+        eventName: selectedProject?.name || 'Growth Experience',
+        date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
+        certificateCode: cert.code,
+        type: cert.type || 'lecture',
+        sessionTitle: cert.activity_name,
+        templateOverrides: {
+          title: template.title,
+          description: template.description,
+          ceoName: template.ceo_name,
+          ceoRole: template.ceo_role,
+          primaryColor: template.primary_color,
+          secondaryColor: template.secondary_color,
+          showBackgroundPattern: template.show_pattern
+        }
+      };
+
+      if (template.logo_url) certData.logoBase64 = await imageUrlToBase64(template.logo_url).catch(() => undefined);
+      if (template.signature_url) certData.signatureBase64 = await imageUrlToBase64(template.signature_url).catch(() => undefined);
+      if (template.background_url) certData.templateOverrides.customBackgroundBase64 = await imageUrlToBase64(template.background_url).catch(() => undefined);
+      if (template.partner_logos?.length > 0) {
+        certData.partnerLogosBase64 = await Promise.all(
+          template.partner_logos.map((url: string) => imageUrlToBase64(url).catch(() => null))
+        ).then((res: (any)[]) => res.filter(Boolean));
+      }
+
+      await generateCertificatePDF(certData);
+      toast.success('Download iniciado!', { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao gerar certificado.', { id: toastId });
+    }
+  };
 
   // ── Documentos do Storage ──────────────────────────────────────────────────
   const [documentos, setDocumentos] = useState<Array<{
@@ -969,6 +1011,7 @@ export function DashboardParticipante() {
               <AgendaSection
                 myRegistration={myRegistration}
                 isActuallyPaid={isActuallyPaid}
+                onUpgradeClick={() => setShowUpgradeModal(true)}
                 cursosSelecionados={cursosSelecionados}
                 setIsSelfCheckInOpen={setIsSelfCheckInOpen}
                 navigate={navigate}
@@ -999,6 +1042,7 @@ export function DashboardParticipante() {
                 certificados={certificados}
                 loadingCerts={loadingCerts}
                 fetchCertificados={fetchCertificados}
+                onDownload={handleDownloadCertificate}
               />
             )}
 

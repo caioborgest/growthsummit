@@ -59,6 +59,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
       
       const payload = {
         registration_id: selectedRegId,
+        user_id: selectedUser?.userId,
         project_id: projectId,
         activity_name: activityName,
         type: type,

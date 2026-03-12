@@ -100,7 +100,7 @@ function gradientLine(doc: any, x: number, y: number, w: number, c1: [number, nu
     }
 }
 
-export async function generateCertificatePDF(data: CertificateTemplateData): Promise<void> {
+export async function generateCertificatePDF(data: CertificateTemplateData, output: 'save' | 'bloburl' = 'save'): Promise<string | void> {
     const JsPDF = await loadJsPDF();
     const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
@@ -305,7 +305,13 @@ export async function generateCertificatePDF(data: CertificateTemplateData): Pro
 
     // Finalização e Download
     const safeFilename = `Certificado_${data.userName.replace(/\s+/g, '_')}_${data.certificateCode}.pdf`;
-    doc.save(safeFilename);
+    
+    if (output === 'save') {
+        doc.save(safeFilename);
+    } else if (output === 'bloburl') {
+        const url = doc.output('bloburl');
+        return url;
+    }
 }
 
 function _renderTextLogo(doc: any, x: number, y: number) {

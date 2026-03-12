@@ -82,17 +82,7 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter();
 
-const ROLE_MAPPING: Record<string, string> = {
-  'participante': 'participant',
-  'admin': 'admin',
-  'superadmin': 'admin',
-  'super-admin': 'admin',
-  'mentor': 'mentor',
-  'company': 'company',
-  'empresa': 'company',
-  'startup': 'startup',
-  'sponsor': 'sponsor'
-};
+import { ROLE_MAPPING } from '@/lib/constants';
 
 interface UserDBMetadata {
   id: string;
@@ -112,9 +102,17 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
   // 1. Tentar pegar role (Prioridade: Metadata do DB > Metadata do JWT > default)
   let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
 
+  // Forçar admin para o email principal do projeto se necessário
+  if (supabaseUser.email === 'projetos@cbxgrowth.com.br') {
+    rawRole = 'admin';
+  }
+
   // Se não houver role no metadata nem no JWT, verificamos se é um email admin conhecido 
   // ou se o metadata do DB existe mas a role está vazia
-  if (!rawRole && supabaseUser.email?.endsWith('@growthsummit.site')) {
+  if (!rawRole && (
+    supabaseUser.email?.endsWith('@growthsummit.site') || 
+    supabaseUser.email?.endsWith('@cbxgrowth.com.br')
+  )) {
     rawRole = 'admin';
   }
 

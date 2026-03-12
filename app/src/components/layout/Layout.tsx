@@ -87,6 +87,13 @@ export function Layout() {
     }
   }, [installPrompt]);
 
+  // Reset offline banner when back online
+  useEffect(() => {
+    if (online) {
+      setShowOfflineBanner(true);
+    }
+  }, [online]);
+
   return (
     <div className="min-h-screen bg-dark text-white overflow-x-hidden">
       <Header />
@@ -106,7 +113,6 @@ export function Layout() {
           </button>
         </div>
       )}
-      {online && setShowOfflineBanner(true)}
       <main className={isLandingPage ? "" : "pt-18 lg:pt-20"}>
         <AnimatePresence mode="wait">
           <motion.div

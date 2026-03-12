@@ -9,6 +9,7 @@ import type {
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
+import { STATUS_MAPPING } from '@/lib/constants';
 
 // Table Mapping based on project slug prefix
 // All GE projects (ge-*) use the standardized Growth Experience tables
@@ -203,26 +204,17 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
     result.ticketNumber = (item.id as string).split('-')[0].toUpperCase();
   }
 
-  // Semantic status value translation (GE inscricoes use Portuguese status)
-  // This block runs AFTER the loop, so we set status based on payment status or raw status.
-  // IMPORTANT: Priority order matters — paymentStatus wins for GE registrations.
-  if (result.paymentStatus === 'pago') {
-    result.status = 'paid';
-  } else if (result.paymentStatus === 'pendente') {
-    result.status = 'pending';
-  } else if (item.status !== undefined) {
-    // Only apply raw status if paymentStatus didn't already set it
-    // Translate Portuguese statuses from GE tables to English equivalents
-    const statusMap: Record<string, string> = {
-      'ativo': 'paid',
-      'pendente': 'pending',
-      'cancelado': 'cancelled',
-      'aprovado': 'approved',
-      'rejeitado': 'rejected',
-      'inactive': 'inactive',
-    };
+  // 2. Semantic status value translation (GE inscricoes use Portuguese status)
+  // Translate both payment_status and general status to standard English equivalents
+  if (item.status_pagamento !== undefined) {
+    result.paymentStatus = STATUS_MAPPING[String(item.status_pagamento)] || String(item.status_pagamento);
+    // Backward compatibility: Ensure 'status' is also set from paymentStatus for registrations if not already set
+    if (!result.status) result.status = result.paymentStatus;
+  }
+  
+  if (item.status !== undefined) {
     const rawStatus = String(item.status);
-    result.status = statusMap[rawStatus] ?? rawStatus;
+    result.status = STATUS_MAPPING[rawStatus] ?? rawStatus;
   }
 
   return result;

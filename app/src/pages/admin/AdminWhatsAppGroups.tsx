@@ -118,6 +118,7 @@ export function AdminWhatsAppGroups() {
     groups,
     loading: groupsLoading,
     createGroup,
+    updateGroup,
     deleteGroup,
     refetch: refetchGroups
   } = useWhatsAppGroups(projectId);
@@ -126,6 +127,10 @@ export function AdminWhatsAppGroups() {
 
   const [selectedGroup, setSelectedGroup] = useState<GroupType | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<GroupType | null>(null);
+  const [selectedGroupForQR, setSelectedGroupForQR] = useState<GroupType | null>(null);
   const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -161,6 +166,35 @@ export function AdminWhatsAppGroups() {
 
     return matchesSearch && matchesType && matchesStatus;
   });
+
+  const handleOpenEdit = (group: GroupType) => {
+    setEditingGroup(group);
+    setNewGroup({
+      project_id: group.project_id,
+      group_name: group.group_name,
+      group_description: group.group_description || '',
+      group_type: group.group_type,
+      max_participants: group.max_participants,
+      welcome_message_template: group.welcome_message_template || '',
+      auto_invite_on_registration: group.auto_invite_on_registration,
+      auto_invite_on_checkin: group.auto_invite_on_checkin,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleOpenQR = (group: GroupType) => {
+    setSelectedGroupForQR(group);
+    setIsQRDialogOpen(true);
+  };
+
+  const handleUpdateGroup = async () => {
+    if (!editingGroup) return;
+    const success = await updateGroup(editingGroup.id, newGroup);
+    if (success) {
+      setIsEditDialogOpen(false);
+      setEditingGroup(null);
+    }
+  };
 
   const handleCreateGroup = async () => {
     if (!newGroup.group_name || !projectId) {
@@ -503,7 +537,7 @@ export function AdminWhatsAppGroups() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="bg-[#1E293B] border-[#334155]">
                           <DropdownMenuItem
-                            onClick={() => {/* TODO: Edit */ }}
+                            onClick={() => handleOpenEdit(group)}
                             className="text-white hover:bg-[#334155] cursor-pointer"
                           >
                             <Edit className="w-4 h-4 mr-2" />
@@ -518,7 +552,7 @@ export function AdminWhatsAppGroups() {
                           </DropdownMenuItem>
                           {group.qr_code_url && (
                             <DropdownMenuItem
-                              onClick={() => {/* TODO: View QR */ }}
+                              onClick={() => handleOpenQR(group)}
                               className="text-white hover:bg-[#334155] cursor-pointer"
                             >
                               <QrCode className="w-4 h-4 mr-2" />
@@ -667,6 +701,154 @@ export function AdminWhatsAppGroups() {
               Criar Grupo
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Group Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Editar Grupo WhatsApp</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Altere as configurações do grupo "{editingGroup?.group_name}".
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <label className="text-sm text-[#94A3B8]">Nome do Grupo *</label>
+              <Input
+                value={newGroup.group_name}
+                onChange={(e) => setNewGroup({ ...newGroup, group_name: e.target.value })}
+                placeholder="Ex: Growth Summit 2026 - Participantes VIP"
+                className="bg-[#0F172A] border-[#334155] text-white"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-[#94A3B8]">Descrição</label>
+              <textarea
+                value={newGroup.group_description}
+                onChange={(e) => setNewGroup({ ...newGroup, group_description: e.target.value })}
+                placeholder="Descrição do grupo..."
+                className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-md text-white text-sm min-h-[80px]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-[#94A3B8]">Tipo de Grupo *</label>
+                <Select
+                  value={newGroup.group_type}
+                  onValueChange={(value) => setNewGroup({ ...newGroup, group_type: value as any })}
+                >
+                  <SelectTrigger className="bg-[#0F172A] border-[#334155] text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1E293B] border-[#334155]">
+                    {Object.entries(groupTypeLabels).map(([key, { label, description }]) => (
+                      <SelectItem key={key} value={key}>
+                        <div>
+                          <div>{label}</div>
+                          <div className="text-xs text-gray-400">{description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-[#94A3B8]">Limite de Participantes</label>
+                <Input
+                  type="number"
+                  value={newGroup.max_participants}
+                  onChange={(e) => setNewGroup({ ...newGroup, max_participants: parseInt(e.target.value) })}
+                  min={1}
+                  max={1024}
+                  className="bg-[#0F172A] border-[#334155] text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-[#94A3B8]">Mensagem de Boas-vindas</label>
+              <textarea
+                value={newGroup.welcome_message_template}
+                onChange={(e) => setNewGroup({ ...newGroup, welcome_message_template: e.target.value })}
+                placeholder="Olá {{nome}}! Bem-vindo ao grupo..."
+                className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-md text-white text-sm min-h-[100px]"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-sm text-[#94A3B8]">Automações</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="edit_auto_invite_registration"
+                  checked={newGroup.auto_invite_on_registration}
+                  onChange={(e) => setNewGroup({ ...newGroup, auto_invite_on_registration: e.target.checked })}
+                  className="w-4 h-4 rounded border-[#334155] bg-[#0F172A]"
+                />
+                <label htmlFor="edit_auto_invite_registration" className="text-sm text-white">
+                  Enviar convite automaticamente na inscrição
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              className="border-[#334155] text-white hover:bg-[#334155]"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleUpdateGroup}
+              disabled={groupsLoading}
+              className="bg-teal-500 hover:bg-teal-600 text-white"
+            >
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
+        <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">QR Code do Grupo</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center p-6 space-y-4">
+            <div className="bg-white p-4 rounded-xl">
+              <img 
+                src={selectedGroupForQR?.qr_code_url} 
+                alt="QR Code do Grupo" 
+                className="w-64 h-64"
+              />
+            </div>
+            <p className="text-center text-[#94A3B8] text-sm">
+              Aponte a câmera do celular para entrar no grupo<br/>
+              <strong>{selectedGroupForQR?.group_name}</strong>
+            </p>
+            <Button 
+              className="w-full bg-[#334155] hover:bg-[#475569] text-white"
+              onClick={() => {
+                if (selectedGroupForQR?.qr_code_url) {
+                  const link = document.createElement('a');
+                  link.href = selectedGroupForQR.qr_code_url;
+                  link.download = `QR_${selectedGroupForQR.group_name}.png`;
+                  link.click();
+                }
+              }}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Baixar QR Code
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

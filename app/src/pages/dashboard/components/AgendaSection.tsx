@@ -15,6 +15,8 @@ interface AgendaSectionProps {
 
 export function AgendaSection({
     myRegistration,
+    isActuallyPaid,
+    onUpgradeClick,
     cursosSelecionados,
     setIsSelfCheckInOpen,
     navigate,

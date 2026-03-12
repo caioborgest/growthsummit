@@ -6,12 +6,14 @@ interface CertificatesSectionProps {
     certificados: any[];
     loadingCerts: boolean;
     fetchCertificados: () => void;
+    onDownload: (cert: any) => void;
 }
 
 export function CertificatesSection({
     certificados,
     loadingCerts,
-    fetchCertificados
+    fetchCertificados,
+    onDownload
 }: CertificatesSectionProps) {
     return (
         <div className="space-y-10">
@@ -71,7 +73,7 @@ export function CertificatesSection({
                                     </div>
 
                                     <Button
-                                        onClick={() => window.open(`/certificado/${cert.id}`, '_blank')}
+                                        onClick={() => onDownload(cert)}
                                         className="w-full bg-white text-black hover:bg-teal-500 hover:text-white font-black rounded-2xl h-12 transition-all"
                                     >
                                         DOWNLOAD PDF

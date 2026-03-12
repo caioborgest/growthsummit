@@ -5,6 +5,21 @@ import { useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
 
+// ── Helper para Carregamento Dinâmico com Retry ───────────────────────────
+const lazyWithRetry = (componentImport: () => Promise<any>, exportName?: string) => {
+  return lazy(async () => {
+    try {
+      const module = await componentImport();
+      return { default: exportName ? module[exportName] : module.default || module };
+    } catch (error) {
+      console.error('Failed to load dynamic module, retrying...', error);
+      // Forçar recarga após falha no chunk - Resolve erros de hash 404 pós-deploy
+      window.location.reload();
+      return { default: () => null };
+    }
+  });
+};
+
 // ── Public Layout (loaded eagerly — needed for initial route)
 import { Layout } from './components/layout/Layout';
 
@@ -41,7 +56,7 @@ const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m 
 const ComingSoon = lazy(() => import('./pages/ComingSoon').then(m => ({ default: m.ComingSoon })));
 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
-const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminLayout = lazyWithRetry(() => import('./pages/admin/AdminLayout'), 'AdminLayout');
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos').then(m => ({ default: m.default })));
 const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.default })));
@@ -61,7 +76,7 @@ const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ 
 const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.default })));
 const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
 const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
-const AdminCertificados = lazy(() => import('./pages/admin/AdminCertificados').then(m => ({ default: m.default })));
+const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'));
 const AdminBatches = lazy(() => import('./pages/admin/AdminBatches').then(m => ({ default: m.default })));
 const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
 const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));

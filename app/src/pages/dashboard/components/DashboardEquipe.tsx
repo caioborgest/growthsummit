@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { RegistrationBatch } from '@/types';
+import type { RegistrationBatch } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileText, Users, Mail, Building2, Copy, CheckCircle2, QrCode } from 'lucide-react';
@@ -104,14 +104,14 @@ export function DashboardEquipe({ batches }: DashboardEquipeProps) {
                                     <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em] mb-2">Voucher de Acesso da Equipe</p>
                                     <div className="flex items-center gap-4">
                                         <div className="bg-dark-200 border border-teal-500/30 px-6 py-4 rounded-xl text-teal-400 font-black text-2xl tracking-widest flex-1 text-center font-mono">
-                                            {selectedBatch.voucherCodigo}
+                                            {selectedBatch.voucherCode}
                                         </div>
                                         <Button
                                             size="icon"
-                                            onClick={() => handleCopyCode(selectedBatch.voucherCodigo)}
+                                            onClick={() => handleCopyCode(selectedBatch.voucherCode)}
                                             className="bg-teal-500 hover:bg-teal-600 h-16 w-16 rounded-xl flex-shrink-0"
                                         >
-                                            {copied === selectedBatch.voucherCodigo ? <CheckCircle2 className="h-6 w-6 text-white" /> : <Copy className="h-6 w-6 text-white" />}
+                                            {copied === selectedBatch.voucherCode ? <CheckCircle2 className="h-6 w-6 text-white" /> : <Copy className="h-6 w-6 text-white" />}
                                         </Button>
                                     </div>
                                     <p className="text-gray-500 text-xs leading-relaxed">
