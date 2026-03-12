@@ -31,7 +31,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   }, [selectedProject]);
 
   const handleSetProject = useCallback((project: Project | null) => {
-    setSelectedProject(project);
+    setSelectedProject(current => {
+      // Evitar atualizações se for o mesmo projeto (mesmo ID ou mesmo objeto)
+      if (current?.id === project?.id) return current;
+      return project;
+    });
   }, []);
 
   const value = React.useMemo(() => ({

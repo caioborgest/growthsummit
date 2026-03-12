@@ -711,3 +711,5 @@ export function GrowthExperience() {
     </div>
   );
 }
+
+export default GrowthExperience;

@@ -10,12 +10,39 @@ const lazyWithRetry = (componentImport: () => Promise<any>, exportName?: string)
   return lazy(async () => {
     try {
       const module = await componentImport();
-      return { default: exportName ? module[exportName] : module.default || module };
+      // Se tiver exportName, usa ele. Senão tenta default, senão o próprio módulo.
+      const Component = exportName ? module[exportName] : module.default || module;
+      
+      if (!Component) {
+        throw new Error(`Componente "${exportName || 'default'}" não encontrado no módulo.`);
+      }
+      
+      return { default: Component };
     } catch (error) {
-      console.error('Failed to load dynamic module, retrying...', error);
-      // Forçar recarga após falha no chunk - Resolve erros de hash 404 pós-deploy
-      window.location.reload();
-      return { default: () => null };
+      console.error(`[lazyWithRetry] Falha ao carregar ${exportName || 'componente'}:`, error);
+      
+      // Verifica se é erro de rede/chunk e tenta novamente uma vez antes de desistir
+      const isNetworkError = error instanceof Error && 
+        (error.message.includes('fetch') || error.message.includes('Loading chunk') || error.message.includes('connection lost'));
+      
+      if (isNetworkError) {
+        // Aguarda um pouco e recarrega a página como última instância para tentar reconectar ao servidor Vite
+        console.warn('[lazyWithRetry] Erro de rede detectado. Agendando recarregamento...');
+        setTimeout(() => window.location.reload(), 2000);
+      }
+      
+      return { default: () => (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center bg-dark-200 rounded-3xl border border-white/5">
+          <h2 className="text-xl font-bold text-white mb-2">Ops! Problema na Conexão</h2>
+          <p className="text-gray-400 mb-6">Não conseguimos baixar os arquivos necessários. O servidor pode estar reiniciando.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-brand-orange-coral text-white rounded-2xl font-black shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
+          >
+            Sincronizar Agora
+          </button>
+        </div>
+      )};
     }
   });
 };
@@ -24,63 +51,63 @@ const lazyWithRetry = (componentImport: () => Promise<any>, exportName?: string)
 import { Layout } from './components/layout/Layout';
 
 // ── Public Pages (lazy)
-const Sobre = lazy(() => import('./pages/public/Sobre').then(m => ({ default: m.Sobre })));
-const Programacao = lazy(() => import('./pages/public/Programacao').then(m => ({ default: m.Programacao })));
-const Palestrantes = lazy(() => import('./pages/public/Palestrantes').then(m => ({ default: m.Palestrantes })));
-const Inscricoes = lazy(() => import('./pages/public/Inscricoes').then(m => ({ default: m.Inscricoes })));
-const Mentorias = lazy(() => import('./pages/public/Mentorias').then(m => ({ default: m.Mentorias })));
-const RodadaB2B = lazy(() => import('./pages/public/RodadaB2B').then(m => ({ default: m.RodadaB2B })));
-const Startups = lazy(() => import('./pages/public/Startups').then(m => ({ default: m.Startups })));
-const Patrocinio = lazy(() => import('./pages/public/Patrocinio').then(m => ({ default: m.Patrocinio })));
-const GrowthExperience = lazy(() => import('./pages/public/GrowthExperience').then(m => ({ default: m.GrowthExperience })));
-const GrowthExperienceTriunfo = lazy(() => import('./pages/public/GrowthExperienceTriunfo').then(m => ({ default: m.GrowthExperienceTriunfo })));
-const GrowthExperiencePetrolina = lazy(() => import('./pages/public/GrowthExperiencePetrolina').then(m => ({ default: m.GrowthExperiencePetrolina })));
-const FAQ = lazy(() => import('./pages/public/FAQ').then(m => ({ default: m.FAQ })));
-const Contato = lazy(() => import('./pages/public/Contato').then(m => ({ default: m.Contato })));
-const SejaMentor = lazy(() => import('./pages/public/SejaMentor').then(m => ({ default: m.SejaMentor })));
-const LocalViagem = lazy(() => import('./pages/public/LocalViagem').then(m => ({ default: m.LocalViagem })));
-const HelpCenter = lazy(() => import('./pages/help/HelpCenter').then(m => ({ default: m.HelpCenter })));
-const ValidarCertificado = lazy(() => import('./pages/public/ValidarCertificado').then(m => ({ default: m.ValidarCertificado })));
+const Sobre = lazyWithRetry(() => import('./pages/public/Sobre'), 'Sobre');
+const Programacao = lazyWithRetry(() => import('./pages/public/Programacao'), 'Programacao');
+const Palestrantes = lazyWithRetry(() => import('./pages/public/Palestrantes'), 'Palestrantes');
+const Inscricoes = lazyWithRetry(() => import('./pages/public/Inscricoes'), 'Inscricoes');
+const Mentorias = lazyWithRetry(() => import('./pages/public/Mentorias'), 'Mentorias');
+const RodadaB2B = lazyWithRetry(() => import('./pages/public/RodadaB2B'), 'RodadaB2B');
+const Startups = lazyWithRetry(() => import('./pages/public/Startups'), 'Startups');
+const Patrocinio = lazyWithRetry(() => import('./pages/public/Patrocinio'), 'Patrocinio');
+const GrowthExperience = lazyWithRetry(() => import('./pages/public/GrowthExperience'));
+const GrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/public/GrowthExperienceTriunfo'));
+const GrowthExperiencePetrolina = lazyWithRetry(() => import('./pages/public/GrowthExperiencePetrolina'));
+const FAQ = lazyWithRetry(() => import('./pages/public/FAQ'), 'FAQ');
+const Contato = lazyWithRetry(() => import('./pages/public/Contato'), 'Contato');
+const SejaMentor = lazyWithRetry(() => import('./pages/public/SejaMentor'), 'SejaMentor');
+const LocalViagem = lazyWithRetry(() => import('./pages/public/LocalViagem'), 'LocalViagem');
+const HelpCenter = lazyWithRetry(() => import('./pages/help/HelpCenter'), 'HelpCenter');
+const ValidarCertificado = lazyWithRetry(() => import('./pages/public/ValidarCertificado'), 'ValidarCertificado');
 
 // ── Auth (lazy)
-const Login = lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
-const ResetPassword = lazy(() => import('./pages/auth/ResetPassword').then(m => ({ default: m.ResetPassword })));
-const AuthCallback = lazy(() => import('./pages/auth/AuthCallback').then(m => ({ default: m.AuthCallback })));
+const Login = lazyWithRetry(() => import('./pages/auth/Login'), 'Login');
+const ResetPassword = lazyWithRetry(() => import('./pages/auth/ResetPassword'), 'ResetPassword');
+const AuthCallback = lazyWithRetry(() => import('./pages/auth/AuthCallback'), 'AuthCallback');
 
 // ── Dashboards (lazy — each in its own chunk)
-const DashboardParticipante = lazy(() => import('./pages/dashboard/DashboardParticipante').then(m => ({ default: m.DashboardParticipante })));
-const DashboardMentor = lazy(() => import('./pages/dashboard/DashboardMentor').then(m => ({ default: m.default })));
-const DashboardCompany = lazy(() => import('./pages/dashboard/DashboardCompany').then(m => ({ default: m.DashboardCompany })));
-const DashboardStartup = lazy(() => import('./pages/dashboard/DashboardStartup').then(m => ({ default: m.DashboardStartup })));
-const DashboardSponsor = lazy(() => import('./pages/dashboard/DashboardSponsor').then(m => ({ default: m.DashboardSponsor })));
-const Certificados = lazy(() => import('./pages/dashboard/Certificados').then(m => ({ default: m.Certificados })));
-const ComingSoon = lazy(() => import('./pages/ComingSoon').then(m => ({ default: m.ComingSoon })));
+const DashboardParticipante = lazyWithRetry(() => import('./pages/dashboard/DashboardParticipante'), 'DashboardParticipante');
+const DashboardMentor = lazyWithRetry(() => import('./pages/dashboard/DashboardMentor'));
+const DashboardCompany = lazyWithRetry(() => import('./pages/dashboard/DashboardCompany'), 'DashboardCompany');
+const DashboardStartup = lazyWithRetry(() => import('./pages/dashboard/DashboardStartup'), 'DashboardStartup');
+const DashboardSponsor = lazyWithRetry(() => import('./pages/dashboard/DashboardSponsor'), 'DashboardSponsor');
+const Certificados = lazyWithRetry(() => import('./pages/dashboard/Certificados'), 'Certificados');
+const ComingSoon = lazyWithRetry(() => import('./pages/ComingSoon'), 'ComingSoon');
 
 // ── Admin (lazy — all in shared 'admin' chunk via dynamic imports)
 const AdminLayout = lazyWithRetry(() => import('./pages/admin/AdminLayout'), 'AdminLayout');
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminProjetos = lazy(() => import('./pages/admin/AdminProjetos').then(m => ({ default: m.default })));
-const AdminInscricoes = lazy(() => import('./pages/admin/AdminInscricoes').then(m => ({ default: m.default })));
-const AdminEmpresasIncentivadoras = lazy(() => import('./pages/admin/AdminEmpresasIncentivadoras').then(m => ({ default: m.default })));
-const AdminMentores = lazy(() => import('./pages/admin/AdminMentores').then(m => ({ default: m.AdminMentores })));
-const AdminMentorias = lazy(() => import('./pages/admin/AdminMentorias').then(m => ({ default: m.AdminMentorias })));
-const AdminB2B = lazy(() => import('./pages/admin/AdminB2B').then(m => ({ default: m.AdminB2B })));
-const AdminStartups = lazy(() => import('./pages/admin/AdminStartups').then(m => ({ default: m.AdminStartups })));
-const AdminPatrocinadores = lazy(() => import('./pages/admin/AdminPatrocinadores').then(m => ({ default: m.default })));
-const AdminFinanceiro = lazy(() => import('./pages/admin/AdminFinanceiro').then(m => ({ default: m.AdminFinanceiro })));
-const AdminCheckIn = lazy(() => import('./pages/admin/AdminCheckIn').then(m => ({ default: m.AdminCheckIn })));
-const AdminComunicacao = lazy(() => import('./pages/admin/AdminComunicacao').then(m => ({ default: m.default })));
-const AdminRelatorios = lazy(() => import('./pages/admin/AdminRelatorios').then(m => ({ default: m.AdminRelatorios })));
-const AdminProgramacao = lazy(() => import('./pages/admin/AdminProgramacao').then(m => ({ default: m.AdminProgramacao })));
-const AdminSecurity = lazy(() => import('./pages/admin/AdminSecurity').then(m => ({ default: m.AdminSecurity })));
-const AdminCupons = lazy(() => import('./pages/admin/AdminCupons').then(m => ({ default: m.default })));
-const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios').then(m => ({ default: m.default })));
-const AdminGrowthExperienceTriunfo = lazy(() => import('./pages/admin/AdminGrowthExperienceTriunfo').then(m => ({ default: m.AdminGrowthExperienceTriunfo })));
-const AdminWhatsAppGroups = lazy(() => import('./pages/admin/AdminWhatsAppGroups').then(m => ({ default: m.AdminWhatsAppGroups })));
+const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'), 'AdminDashboard');
+const AdminProjetos = lazyWithRetry(() => import('./pages/admin/AdminProjetos'));
+const AdminInscricoes = lazyWithRetry(() => import('./pages/admin/AdminInscricoes'));
+const AdminEmpresasIncentivadoras = lazyWithRetry(() => import('./pages/admin/AdminEmpresasIncentivadoras'));
+const AdminMentores = lazyWithRetry(() => import('./pages/admin/AdminMentores'), 'AdminMentores');
+const AdminMentorias = lazyWithRetry(() => import('./pages/admin/AdminMentorias'), 'AdminMentorias');
+const AdminB2B = lazyWithRetry(() => import('./pages/admin/AdminB2B'), 'AdminB2B');
+const AdminStartups = lazyWithRetry(() => import('./pages/admin/AdminStartups'), 'AdminStartups');
+const AdminPatrocinadores = lazyWithRetry(() => import('./pages/admin/AdminPatrocinadores'));
+const AdminFinanceiro = lazyWithRetry(() => import('./pages/admin/AdminFinanceiro'), 'AdminFinanceiro');
+const AdminCheckIn = lazyWithRetry(() => import('./pages/admin/AdminCheckIn'), 'AdminCheckIn');
+const AdminComunicacao = lazyWithRetry(() => import('./pages/admin/AdminComunicacao'));
+const AdminRelatorios = lazyWithRetry(() => import('./pages/admin/AdminRelatorios'), 'AdminRelatorios');
+const AdminProgramacao = lazyWithRetry(() => import('./pages/admin/AdminProgramacao'), 'AdminProgramacao');
+const AdminSecurity = lazyWithRetry(() => import('./pages/admin/AdminSecurity'), 'AdminSecurity');
+const AdminCupons = lazyWithRetry(() => import('./pages/admin/AdminCupons'));
+const AdminUsuarios = lazyWithRetry(() => import('./pages/admin/AdminUsuarios'));
+const AdminGrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/admin/AdminGrowthExperienceTriunfo'), 'AdminGrowthExperienceTriunfo');
+const AdminWhatsAppGroups = lazyWithRetry(() => import('./pages/admin/AdminWhatsAppGroups'), 'AdminWhatsAppGroups');
 const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'));
-const AdminBatches = lazy(() => import('./pages/admin/AdminBatches').then(m => ({ default: m.default })));
-const PWAInstallPrompt = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.PWAInstallPrompt })));
-const IOSInstallBadge = lazy(() => import('./components/PWAInstallPrompt').then(m => ({ default: m.IOSInstallBadge })));
+const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
+const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
+const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
 
 // ── Legal Pages (Shared Component Stub)
 function LegalPage({ title }: { title: string }) {

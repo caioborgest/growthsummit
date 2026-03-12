@@ -290,3 +290,5 @@ export function GrowthExperiencePetrolina() {
         </div>
     );
 }
+
+export default GrowthExperiencePetrolina;

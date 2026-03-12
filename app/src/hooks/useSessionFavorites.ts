@@ -2,13 +2,30 @@ import { useCallback, useSyncExternalStore } from 'react';
 
 const STORAGE_KEY = (projectId: string) => `ge_favoritos_${projectId}`;
 
+let lastProjectId: string | null = null;
+let lastRaw: string | null = null;
+let lastSnapshot: string[] = [];
+
 function getSnapshot(projectId: string | null): string[] {
     if (!projectId) return [];
+    
     try {
         const raw = localStorage.getItem(STORAGE_KEY(projectId));
-        if (!raw) return [];
-        const arr = JSON.parse(raw);
-        return Array.isArray(arr) ? arr.filter((x: unknown) => typeof x === 'string') : [];
+        
+        // Se o projectId ou o conteúdo do localStorage mudou, recalcula o array
+        if (projectId !== lastProjectId || raw !== lastRaw) {
+            lastProjectId = projectId;
+            lastRaw = raw;
+            
+            if (!raw) {
+                lastSnapshot = [];
+            } else {
+                const arr = JSON.parse(raw);
+                lastSnapshot = Array.isArray(arr) ? arr.filter((x: unknown) => typeof x === 'string') : [];
+            }
+        }
+        
+        return lastSnapshot;
     } catch {
         return [];
     }

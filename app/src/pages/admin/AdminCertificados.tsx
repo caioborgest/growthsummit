@@ -122,13 +122,24 @@ export function AdminCertificados() {
         // Carregar config do projeto se existir
         if (selectedProject?.metadata?.certificate_template) {
             const savedTemplate = selectedProject.metadata.certificate_template;
-            setTemplate(prev => ({ 
-                ...prev, 
-                ...savedTemplate,
-                partner_logos: savedTemplate.partner_logos || []
-            }));
+            
+            // Verificação de segurança para evitar loops de atualização
+            setTemplate(prev => {
+                const hasChanged = 
+                    prev.title !== savedTemplate.title || 
+                    prev.subtitle !== savedTemplate.subtitle ||
+                    prev.logo_url !== savedTemplate.logo_url;
+                
+                if (!hasChanged) return prev;
+
+                return { 
+                    ...prev, 
+                    ...savedTemplate,
+                    partner_logos: savedTemplate.partner_logos || []
+                };
+            });
         }
-    }, [fetchData, selectedProject]);
+    }, [fetchData, selectedProject?.id, selectedProject?.metadata?.certificate_template]);
 
     // ── Ações ────────────────────────────────────────────────────────────────
     const handleSaveTemplate = async () => {

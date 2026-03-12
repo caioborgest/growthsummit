@@ -146,7 +146,7 @@ const cotas = [
 // Main Component
 export function GrowthExperienceTriunfo() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { setSelectedProject } = useProject();
+  const { selectedProject, setSelectedProject } = useProject();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [modalInscricaoAberto, setModalInscricaoAberto] = useState(false);
   const [modalAberto, setModalAberto] = useState<'mentor' | 'mentor-cadastro' | 'startup' | 'b2b' | 'palestra' | 'empresa' | null>(null);
@@ -258,12 +258,16 @@ export function GrowthExperienceTriunfo() {
         };
 
         setCurrentProject(canonicalProject);
-        setSelectedProject(canonicalProject);
+        
+        // Só atualiza se o ID for diferente para evitar loops de render
+        if (selectedProject?.id !== canonicalProject.id) {
+          setSelectedProject(canonicalProject);
+        }
       }
     } catch (err) {
       console.error('[GrowthExperienceTriunfo] Erro init:', err);
     }
-  }, [setSelectedProject]);
+  }, [selectedProject?.id, setSelectedProject]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
@@ -756,3 +760,5 @@ export function GrowthExperienceTriunfo() {
     </div>
   );
 }
+
+export default GrowthExperienceTriunfo;
