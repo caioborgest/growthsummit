@@ -15,7 +15,9 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle,
-  QrCode
+  QrCode,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
 import { useCheckIns, useRegistrations, useMentors, useSessions, useCheckInsAtividades } from '@/hooks/useData';
@@ -308,6 +310,15 @@ export function GrowthExperienceTriunfo() {
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
 
   const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="flex flex-col overflow-x-hidden">
@@ -425,10 +436,41 @@ export function GrowthExperienceTriunfo() {
           </div>
 
           {!mentorsLoading && approvedMentors.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 animate-fade-in-up">
-              {approvedMentors.map((mentor) => (
-                <MentorCard key={mentor.id} mentor={mentor as any} />
-              ))}
+            <div className="relative group animate-fade-in-up">
+              {/* Navigation Arrows */}
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 rounded-full bg-dark-200/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 backdrop-blur-md hover:bg-brand-orange-coral hover:border-brand-orange-coral hidden md:flex"
+                aria-label="Anterior"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 rounded-full bg-dark-200/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 backdrop-blur-md hover:bg-brand-orange-coral hover:border-brand-orange-coral hidden md:flex"
+                aria-label="Próximo"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+
+              <div 
+                ref={scrollRef}
+                className="flex overflow-x-auto gap-6 pb-8 scrollbar-hide snap-x snap-mandatory px-4 -mx-4 cursor-grab active:cursor-grabbing"
+              >
+                {approvedMentors.map((mentor) => (
+                  <div key={mentor.id} className="min-w-[280px] sm:min-w-[320px] snap-center">
+                    <MentorCard mentor={mentor as any} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Scroll Indicator */}
+              <div className="flex justify-center gap-2 mt-4 md:hidden">
+                <div className="h-1.5 w-12 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-orange-coral w-1/3 rounded-full" />
+                </div>
+              </div>
             </div>
           ) : mentorsLoading ? (
             <div className="flex justify-center py-20">
