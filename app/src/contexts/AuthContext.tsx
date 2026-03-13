@@ -177,10 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.debug('Sincronização já em curso — aguardando...', { userId: currentSession.user.id });
       }
 
-      // CRITICO: Garantir que o loader seja liberado se já temos o usuário
-      if (user && user.id === currentSession.user.id && isLoading) {
-        setIsLoading(false);
-      }
+      // CRITICO: Garantir que o loader seja liberado se encontrarmos a mesma sessão
+      setIsLoading(false);
       return;
     }
 
@@ -191,21 +189,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // --- ABORDAGEM OTIMISTA ---
     // Definimos o usuário IMEDIATAMENTE usando os metadados do JWT (Supabase Auth)
-    // Se já tivermos um usuário no estado com os mesmos IDs, EVITAMOS o downgrade 
-    // para dados otimistas (evita piscar o nome/avatar que já foram carregados do DB).
     const optimisticUser = mapSupabaseUserToUser(currentSession.user);
     const hasCoreData = !!(optimisticUser.name && optimisticUser.role);
 
     setSession(currentSession);
 
     // Só definimos usuário otimista se não tivermos nenhum ou se for um usuário diferente
-    if (!user || user.id !== currentSession.user.id) {
-      setUser(optimisticUser);
-    }
+    // Usamos atualização funcional para evitar dependência de 'user'
+    setUser(prevUser => {
+      if (!prevUser || prevUser.id !== currentSession.user.id) {
+        return optimisticUser;
+      }
+      return prevUser;
+    });
 
-    if (hasCoreData || user) {
+    if (hasCoreData) {
       setIsLoading(false);
-      if (hasCoreData) logger.debug('✅ UI liberada com dados otimistas (JWT)');
+      logger.debug('✅ UI liberada com dados otimistas (JWT)');
     }
 
     // 4. Buscar metadados enriquecidos no banco em background

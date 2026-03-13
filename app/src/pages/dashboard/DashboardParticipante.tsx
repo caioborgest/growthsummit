@@ -21,7 +21,8 @@ import {
   Info,
   ArrowRight,
   ChevronRight,
-  Building2
+  Building2,
+  Trophy
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,7 +41,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -64,6 +65,7 @@ import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
+import { GamificationSection } from './components/GamificationSection';
 import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
@@ -383,11 +385,13 @@ export function DashboardParticipante() {
   const { selectedProject } = useProject();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
+  const { create: registerStandCheckIn } = useStandCheckIns();
   const { data: batches = [] } = useRegistrationBatches();
+  const { data: stands = [] } = useStands();
+  const { data: leads = [], create: createLead } = useLeads();
 
   const nextActivity = useMemo(() => {
     if (!allSessions || !activityCheckIns) return null;
@@ -455,6 +459,14 @@ export function DashboardParticipante() {
     mentorName: '',
     alreadyRated: false
   });
+
+  const handleDownloadTicket = () => {
+    if (!myRegistration) {
+      toast.error('Inscrição não encontrada.');
+      return;
+    }
+    generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
+  };
 
   const handleBookMentoring = async (slotId: string, topic: string) => {
     if (!myRegistration) return;
@@ -724,6 +736,52 @@ export function DashboardParticipante() {
 
         if (error) throw error;
         toast.success(`Mentoria com ${mentorName} confirmada!`);
+        return;
+      }
+
+      // Caso 4: Check-in em Stands (GE-STAND|ID|NAME)
+      if (decodedText.startsWith('GE-STAND')) {
+        const parts = decodedText.split('|');
+        const standId = parts[1];
+        const standName = parts[2] || 'Stand';
+
+        // Geração de Lead em Tempo Real
+        const stand = stands.find(s => s.id === standId);
+        if (stand && stand.ownerId) {
+          try {
+            // Verifica se já existe lead para este stand e este participante
+            const existingLead = leads.find(l => 
+              l.registrationId === myRegistration.id && 
+              (l.startupId === stand.ownerId || l.companyId === stand.ownerId)
+            );
+
+            if (!existingLead) {
+              await createLead({
+                projectId: selectedProject?.id,
+                startupId: stand.ownerType === 'startup' ? stand.ownerId : undefined,
+                companyId: stand.ownerType === 'company' ? stand.ownerId : undefined,
+                registrationId: myRegistration.id,
+                interestLevel: 'high',
+                notes: `Check-in realizado no stand: ${standName}`,
+                visitorName: myRegistration.nome || user?.name || 'Visitante',
+                visitorEmail: myRegistration.email || user?.email,
+                visitorPhone: myRegistration.telefone,
+                visitorCpf: myRegistration.cpf,
+              });
+              logger.info(`Lead gerado para o stand ${standName}`);
+            }
+          } catch (err) {
+            logger.error('Erro ao gerar lead no check-in:', err);
+          }
+        }
+
+        await registerStandCheckIn({
+          projectId: selectedProject?.id,
+          registrationId: myRegistration.id,
+          standId: standId,
+        });
+
+        toast.success(`Check-in realizado no stand: ${standName}! 🚀`);
         return;
       }
 
@@ -1010,6 +1068,14 @@ export function DashboardParticipante() {
                   <Users className="h-6 w-6 text-brand-orange-coral" />
                   <span className="text-white font-black text-sm text-left leading-tight">Networking</span>
                </button>
+               {/* Tab Circuito */}
+               <button
+                 onClick={() => setActiveTab('circuito')}
+                 className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                 <Trophy className="h-6 w-6 text-brand-orange-coral" />
+                 <span className="text-white font-black text-sm text-left leading-tight">Circuito<br/>GE-STAND</span>
+               </button>
             </div>
 
             {/* Quick Actions Grid */}
@@ -1106,6 +1172,10 @@ export function DashboardParticipante() {
               <DocsSection documentos={documentos} loadingDocs={loadingDocs} />
             )}
 
+            {activeTab === 'circuito' && myRegistration?.id && (
+              <GamificationSection registrationId={myRegistration.id} onScanSuccess={handleScanSuccess} />
+            )}
+
             {activeTab === 'certificados' && (
               <CertificatesSection
                 certificados={certificados}
@@ -1183,6 +1253,7 @@ export function DashboardParticipante() {
             {[
               { id: 'ingresso', icon: QrCode, label: 'Ticket' },
               { id: 'agenda', icon: Calendar, label: 'Agenda' },
+              { id: 'circuito', icon: Trophy, label: 'Circuito' },
               { id: 'mentorias', icon: Users, label: 'Mentor' },
               { id: 'documentos', icon: FileText, label: 'Docs' },
               { id: 'certificados', icon: Award, label: 'Certs' },

@@ -382,9 +382,12 @@ export interface Lead {
   projectId?: string;
   startupId?: string;
   sponsorId?: string;
+  companyId?: string;
   registrationId?: string;
   visitorName: string;
   visitorEmail?: string;
+  visitorPhone?: string;
+  visitorCpf?: string;
   visitorCompany?: string;
   interestLevel: 'low' | 'medium' | 'high';
   notes?: string;
@@ -504,3 +507,23 @@ export interface B2BChatMessage {
   readAt?: string;
 }
 
+
+export interface Stand {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+  location?: string;
+  ownerId?: string;
+  ownerType?: 'startup' | 'company' | 'sponsor';
+  createdAt: string;
+}
+
+export interface StandCheckIn {
+  id: string;
+  projectId: string;
+  registrationId: string;
+  standId: string;
+  createdAt: string;
+}

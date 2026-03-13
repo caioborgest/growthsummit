@@ -9,8 +9,9 @@ import {
   FileText,
   ExternalLink,
   Edit3,
-  CheckCircle,
   User as UserIcon,
+  Phone,
+  Mail,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -400,37 +401,64 @@ export function DashboardStartup() {
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {startupLeads.map((lead) => (
-                      <div key={lead.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
-                        <div>
-                          <p className="text-white font-medium">{lead.visitorName}</p>
-                          <p className="text-gray-400 text-sm">{lead.visitorEmail || 'Email não disponível'}</p>
-                          {lead.visitorCompany && (
-                            <p className="text-gray-500 text-sm">{lead.visitorCompany}</p>
-                          )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {startupLeads.map((lead) => (
+                        <div key={lead.id} className="glass-card p-5 bg-white/5 border-white/10 hover:border-orange-500/30 transition-all group relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors"></div>
+                          
+                          <div className="flex justify-between items-start mb-4 relative z-10">
+                            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                              <UserIcon className="h-5 w-5" />
+                            </div>
+                            <Badge className={`${
+                              lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' : 
+                              'bg-yellow-500/20 text-yellow-400'
+                            } border-none font-black text-[9px] uppercase`}>
+                              {lead.interestLevel === 'high' ? 'Alto Interesse' : 'Médio Interesse'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="relative z-10 mb-4">
+                            <h4 className="text-white font-black text-base leading-tight mb-0.5 truncate">{lead.visitorName}</h4>
+                            <p className="text-gray-400 text-[10px] font-medium truncate mb-1">{lead.visitorEmail || 'Email não disponível'}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {lead.visitorPhone && (
+                                <Badge variant="outline" className="border-white/5 text-[9px] text-gray-500 font-bold px-2 py-0">
+                                  {lead.visitorPhone}
+                                </Badge>
+                              )}
+                              {lead.visitorCpf && (
+                                <Badge variant="outline" className="border-white/5 text-[9px] text-gray-500 font-bold px-2 py-0">
+                                  CPF: {lead.visitorCpf}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-white/5 relative z-10">
+                             <div className="flex flex-col gap-0.5">
+                               <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest leading-none">Data Captura</p>
+                               <p className="text-[9px] text-white font-bold italic">
+                                 {lead.createdAt ? `${new Date(lead.createdAt).toLocaleDateString('pt-BR')} • ${new Date(lead.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Recent'}
+                               </p>
+                             </div>
+                             <Button 
+                               size="sm" 
+                               variant="ghost" 
+                               className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 h-7 w-7 p-0 rounded-full"
+                               onClick={() => {
+                                 if (lead.visitorPhone) {
+                                   window.open(`https://wa.me/55${lead.visitorPhone.replace(/\D/g, '')}`, '_blank');
+                                 } else {
+                                   handleQuickMessage(lead.visitorEmail || '');
+                                 }
+                               }}
+                             >
+                               {lead.visitorPhone ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                             </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                           <Badge className={
-                            lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
-                              lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                'bg-gray-500/20 text-gray-400'
-                          }>
-                            <Star className="h-3 w-3 mr-1" />
-                            {lead.interestLevel}
-                          </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-gray-400 hover:text-teal-400" 
-                            onClick={() => handleQuickMessage(lead.visitorEmail || '')}
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                      </div>
-                    ))}
+                      ))}
 
                     {startupLeads.length === 0 && (
                       <div className="text-center py-12">

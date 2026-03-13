@@ -101,6 +101,7 @@ function DetalhesModal({
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
           {[
             { label: 'Nº Inscrição', value: reg.ticketNumber },
+            { label: 'CPF', value: reg.cpf || '—' },
             {
               label: 'Status',
               value: (reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis/Cortesia' : (statusLabels[reg.status] || reg.status)

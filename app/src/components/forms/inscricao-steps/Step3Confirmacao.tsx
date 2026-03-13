@@ -107,6 +107,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 nome: dados.nome,
                 email: cleanEmail,
                 telefone: dados.telefone,
+                cpf: dados.cpf,
                 sessionIds: sessionIds.length > 0 ? sessionIds : [],
                 tipoInscricao: 'standard',
                 valorPago,
@@ -213,6 +214,14 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                             <div>
                                 <p className="text-xs text-gray-500">Email</p>
                                 <p className="text-white font-semibold">{dados.email}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <Contact className="h-4 w-4 text-gray-400 mt-1" />
+                            <div>
+                                <p className="text-xs text-gray-500">CPF</p>
+                                <p className="text-white font-semibold">{dados.cpf}</p>
                             </div>
                         </div>
                     </div>

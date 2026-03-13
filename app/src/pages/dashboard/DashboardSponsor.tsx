@@ -15,6 +15,9 @@ import {
   Upload,
   MessageSquare,
   ClipboardList,
+  Mail,
+  Phone,
+  Search,
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -94,9 +97,20 @@ export function DashboardSponsor() {
   const { data: leads, create: createLead } = useLeads();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const sponsorLeads = sponsorData
-    ? leads.filter(l => l.sponsorId === sponsorData.id)
-    : [];
+  const sponsorLeads = useMemo(() => {
+    if (!sponsorData) return [];
+    return leads.filter(l => l.sponsorId === sponsorData.id);
+  }, [leads, sponsorData]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredLeads = useMemo(() => {
+    return sponsorLeads.filter(l => 
+      l.visitorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.visitorEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.visitorCpf?.includes(searchTerm)
+    );
+  }, [sponsorLeads, searchTerm]);
 
   const handleScanSuccess = async (decodedText: string) => {
     try {
@@ -451,60 +465,131 @@ export function DashboardSponsor() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-
-              {/* Leads Tab */}
-              <TabsContent value="leads" className="mt-0">
-                <div className="glass-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-white">Leads Capturados (Patrocinador)</h3>
-                    <div className="flex gap-3">
-                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => setIsScannerOpen(true)}>
-                        <QrCode className="h-4 w-4 mr-2" />
-                        Escanear Crachá
-                      </Button>
-                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(sponsorLeads, 'leads_patrocinador')}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar CSV
-                      </Button>
-                    </div>
+                 {/* Leads Tab */}
+              <TabsContent value="leads" className="mt-0 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Buscar por nome, email ou CPF..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-dark-200 border border-white/5 rounded-2xl py-3 pl-10 pr-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-yellow-500/50 transition-all"
+                    />
                   </div>
-
-                  <div className="space-y-3">
-                    {sponsorLeads.map((lead) => (
-                      <div key={lead.id} className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
-                        <div>
-                          <p className="text-white font-medium">{lead.visitorName}</p>
-                          <p className="text-gray-400 text-sm">{lead.visitorEmail || 'Email não disponível'}</p>
-                          {lead.visitorCompany && (
-                            <p className="text-gray-500 text-sm">{lead.visitorCompany}</p>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <Badge className={
-                            lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400' :
-                              lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                'bg-gray-500/20 text-gray-400'
-                          }>
-                            <Star className="h-3 w-3 mr-1" />
-                            {lead.interestLevel}
-                          </Badge>
-                          <Button size="sm" variant="ghost" className="text-gray-400" onClick={() => navigate('/em-breve/contato-lead')}>
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {sponsorLeads.length === 0 && (
-                      <div className="text-center py-12">
-                        <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-400">Nenhum lead capturado ainda</p>
-                        <p className="text-gray-500 text-sm mt-2">Clique em "Escanear Crachá" para capturar o primeiro lead ou interaja com os participantes em seu stand.</p>
-                      </div>
-                    )}
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => setIsScannerOpen(true)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl px-6 h-12 font-bold shadow-lg shadow-yellow-500/20"
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      Capturar Lead
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => exportToCSV(sponsorLeads, 'leads_patrocinador')}
+                      className="border-white/5 bg-dark-200 text-gray-300 rounded-2xl px-6 h-12 font-bold hover:bg-dark-300"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar
+                    </Button>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredLeads.map((lead) => (
+                    <motion.div
+                      key={lead.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card p-6 bg-gradient-to-br from-dark-200 to-dark-300 border-white/5 flex flex-col gap-6 group hover:border-yellow-500/20 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 group-hover:scale-110 transition-transform">
+                            <Users className="h-6 w-6 text-yellow-500" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold text-lg leading-tight">{lead.visitorName}</h4>
+                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                              {new Date(lead.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {new Date(lead.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className={
+                          lead.interestLevel === 'high' ? 'bg-green-500/20 text-green-400 border-green-500/20' :
+                          lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20' :
+                          'bg-gray-500/20 text-gray-400 border-white/5'
+                        }>
+                          {lead.interestLevel.toUpperCase()}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        {lead.visitorEmail && (
+                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                            <Mail className="h-4 w-4 text-yellow-500/50" />
+                            <span className="text-sm truncate">{lead.visitorEmail}</span>
+                          </div>
+                        )}
+                        {lead.visitorPhone && (
+                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                            <Phone className="h-4 w-4 text-yellow-500/50" />
+                            <span className="text-sm">{lead.visitorPhone}</span>
+                          </div>
+                        )}
+                        {lead.visitorCpf && (
+                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                            <FileCheck className="h-4 w-4 text-yellow-500/50" />
+                            <span className="text-sm">CPF: {lead.visitorCpf}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {lead.notes && (
+                        <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
+                          <p className="text-xs text-gray-500 leading-relaxed italic">
+                            "{lead.notes}"
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3 mt-auto">
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-white/5 bg-dark-200 text-xs font-bold uppercase tracking-widest h-10 rounded-xl hover:bg-yellow-500/10 hover:text-yellow-500 transition-all"
+                          onClick={() => window.open(`https://wa.me/55${lead.visitorPhone?.replace(/\D/g, '')}`, '_blank')}
+                          disabled={!lead.visitorPhone}
+                        >
+                          WhatsApp
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-white/5 bg-dark-200 text-xs font-bold uppercase tracking-widest h-10 rounded-xl hover:bg-yellow-500/10 hover:text-yellow-500 transition-all"
+                          onClick={() => window.location.href = `mailto:${lead.visitorEmail}`}
+                          disabled={!lead.visitorEmail}
+                        >
+                          E-mail
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {filteredLeads.length === 0 && (
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                      <div className="w-20 h-20 rounded-full bg-dark-200 flex items-center justify-center mb-6">
+                        <Users className="h-10 w-10 text-gray-500" />
+                      </div>
+                      <h4 className="text-white font-bold text-xl mb-2">Nenhum lead encontrado</h4>
+                      <p className="text-gray-500 max-w-sm">
+                        {searchTerm ? 'Nenhum participante corresponde aos filtros de busca.' : 'Você ainda não capturou nenhum lead. Comece escaneando os crachás dos participantes.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+>
               </TabsContent>
 
               {/* Programação Tab */}

@@ -106,6 +106,7 @@ const AdminGrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/admin/A
 const AdminWhatsAppGroups = lazyWithRetry(() => import('./pages/admin/AdminWhatsAppGroups'), 'AdminWhatsAppGroups');
 const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'));
 const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
+const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
 
@@ -370,6 +371,7 @@ function AppRoutes() {
           <Route path="whatsapp" element={<AdminWhatsAppGroups />} />
           <Route path="certificados" element={<AdminCertificados />} />
           <Route path="lotes-equipes" element={<AdminBatches />} />
+          <Route path="stands" element={<AdminStands />} />
         </Route>
 
         {/* 404 */}

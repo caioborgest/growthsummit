@@ -6,7 +6,8 @@ import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
-  EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch
+  EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
+  Stand, StandCheckIn
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
@@ -65,6 +66,8 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'b2b_chat_messages': return 'b2b_chat_messages';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       case 'registration_batches': return 'lotes_inscricao_empresa';
+      case 'stands': return 'stands_ge';
+      case 'stand_checkins': return 'checkins_stands';
       default: return entity;
     }
   }
@@ -176,7 +179,11 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   vagas_utilizadas: 'vagasUtilizadas',
   tipo_ingresso: 'tipoIngresso',
   valor_total: 'valorTotal',
-  // status_pagamento: 'statusPagamento', // Already defined at line 110
+  owner_id: 'ownerId',
+  owner_type: 'ownerType',
+  company_id: 'companyId',
+  visitor_phone: 'visitorPhone',
+  visitor_cpf: 'visitorCpf',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -361,6 +368,8 @@ const CACHE_TTL_MAP: Record<string, number> = {
   check_ins: 10 * 1000,           // 10s
   mentoring_sessions: 15 * 1000,
   b2b_meetings: 15 * 1000,
+  stands: 5 * 60 * 1000,      // 5 min (mostly static)
+  stand_checkins: 10 * 1000,   // 10s
 };
 const DEFAULT_CACHE_TTL = 30_000; // fallback para entidades não mapeadas
 const dataCache = new Map<string, { data: unknown[]; ts: number }>();
@@ -769,6 +778,14 @@ export function usePitchScores() {
 
 export function useUsers() {
   return useData<User>([], 'users');
+}
+
+export function useStands() {
+  return useData<Stand>([], 'stands');
+}
+
+export function useStandCheckIns() {
+  return useData<StandCheckIn>([], 'stand_checkins');
 }
 
 export function useProfile(userId?: string) {

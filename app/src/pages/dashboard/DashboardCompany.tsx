@@ -12,13 +12,18 @@ import {
   Calendar,
   MapPin,
   User,
+  Users,
+  QrCode,
+  Download,
+  Star
 } from 'lucide-react';
+import { exportToCSV } from '@/utils/csv';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
+import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications, useCheckInsAtividades, useMyRegistration, useLeads } from '@/hooks/useData';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,6 +63,7 @@ export function DashboardCompany() {
   const { data: sessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
   const { registration } = useMyRegistration();
+  const { data: leads } = useLeads();
   const [activeTab, setActiveTab] = useState('home');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
@@ -83,6 +89,13 @@ export function DashboardCompany() {
       })
       : [],
     [meetings, appointments, companyData]
+  );
+  
+  const companyLeads = useMemo(() => 
+    companyData 
+      ? leads.filter(l => l.companyId === companyData.id) 
+      : [],
+    [leads, companyData]
   );
 
   const nextActivity = useMemo(() => {
@@ -205,7 +218,7 @@ export function DashboardCompany() {
 
             <div className="mt-12">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-9 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                   <TabsTrigger value="home" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     Início
                   </TabsTrigger>
@@ -220,6 +233,10 @@ export function DashboardCompany() {
                   <TabsTrigger value="matches" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <Heart className="h-4 w-4 mr-1 md:mr-2" />
                     Conexões
+                  </TabsTrigger>
+                  <TabsTrigger value="leads" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+                    <Users className="h-4 w-4 mr-1 md:mr-2" />
+                    Leads
                   </TabsTrigger>
                   <TabsTrigger value="agenda" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <Handshake className="h-4 w-4 mr-1 md:mr-2" />
@@ -528,6 +545,96 @@ export function DashboardCompany() {
                         <div className="col-span-full py-16 text-center">
                           <Heart className="h-10 w-10 text-dark-300 mx-auto mb-4" />
                           <p className="text-gray-600 font-medium">Continue swiping para encontrar conexões!</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Leads Tab */}
+                <TabsContent value="leads">
+                  <div className="glass-card p-6 border-orange-500/20 shadow-2xl">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                      <div>
+                        <h3 className="text-xl font-black text-white italic tracking-tighter uppercase">Leads do Stand</h3>
+                        <p className="text-gray-500 text-xs font-medium">Participantes que realizaram check-in no seu stand.</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full md:w-auto border-white/10 text-gray-300 hover:text-white hover:bg-white/5" 
+                        onClick={() => exportToCSV(companyLeads, `leads_expositor_${companyData?.name.replace(/\s+/g, '_')}`)}
+                        disabled={companyLeads.length === 0}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Exportar Planilha
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {companyLeads.map((lead) => (
+                        <div key={lead.id} className="glass-card p-5 bg-white/5 border-white/10 hover:border-orange-500/30 transition-all group relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-colors"></div>
+                          
+                          <div className="flex justify-between items-start mb-4 relative z-10">
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                              <User className="h-6 w-6" />
+                            </div>
+                            <Badge className="bg-green-500/20 text-green-400 border-none font-black text-[10px]">
+                              CHECK-IN REALIZADO
+                            </Badge>
+                          </div>
+                          
+                          <div className="relative z-10 mb-4">
+                            <h4 className="text-white font-black text-lg leading-tight mb-0.5 truncate">{lead.visitorName}</h4>
+                            <p className="text-gray-400 text-[10px] font-medium truncate mb-1">{lead.visitorEmail || 'Email não disponível'}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {lead.visitorPhone && (
+                                <Badge variant="outline" className="border-white/5 text-[9px] text-gray-500 font-bold px-2 py-0">
+                                  {lead.visitorPhone}
+                                </Badge>
+                              )}
+                              {lead.visitorCpf && (
+                                <Badge variant="outline" className="border-white/5 text-[9px] text-gray-500 font-bold px-2 py-0">
+                                  CPF: {lead.visitorCpf}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-white/5 relative z-10">
+                             <div className="flex flex-col gap-0.5">
+                               <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest leading-none">Data do Check-in</p>
+                               <p className="text-[10px] text-white font-black italic">
+                                 {new Date(lead.createdAt).toLocaleDateString('pt-BR')} • {new Date(lead.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                               </p>
+                             </div>
+                             <Button 
+                               size="sm" 
+                               variant="ghost" 
+                               className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 h-8 w-8 p-0 rounded-full"
+                               onClick={() => {
+                                 if (lead.visitorPhone) {
+                                   window.open(`https://wa.me/55${lead.visitorPhone.replace(/\D/g, '')}`, '_blank');
+                                 } else {
+                                   window.open(`mailto:${lead.visitorEmail}`, '_blank');
+                                 }
+                               }}
+                             >
+                               {lead.visitorPhone ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                             </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {companyLeads.length === 0 && (
+                        <div className="col-span-full text-center py-20 border-2 border-dashed border-white/5 rounded-[3rem]">
+                          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                             <Users className="h-10 w-10 text-gray-600" />
+                          </div>
+                          <h3 className="text-white font-black text-xl italic uppercase tracking-tighter">Nenhum lead capturado</h3>
+                          <p className="text-gray-500 text-sm max-w-xs mx-auto mt-2 font-medium leading-relaxed">
+                            Os dados dos visitantes aparecerão aqui em tempo real assim que eles escanearem o QR Code no seu stand.
+                          </p>
                         </div>
                       )}
                     </div>

@@ -10,6 +10,7 @@ export interface DadosInscricao {
 
     // Etapa 2
     nome: string;
+    cpf: string;
     email: string;
     telefone: string;
     senha: string;

@@ -42,6 +42,7 @@ interface Step2DadosPessoaisProps {
 
 export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosPessoaisProps) {
     const [nome, setNome] = useState(dados.nome);
+    const [cpf, setCpf] = useState(dados.cpf || '');
     const [email, setEmail] = useState(dados.email);
     const [telefone, setTelefone] = useState(dados.telefone);
     const [senha, setSenha] = useState(dados.senha);
@@ -66,6 +67,35 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         return telefone;
     };
 
+    const formatCPF = (value: string) => {
+        const numbers = value.replace(/\D/g, '');
+        return numbers
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    };
+
+    const validateCPF = (cpf: string) => {
+        const numbers = cpf.replace(/\D/g, '');
+        if (numbers.length !== 11) return false;
+        if (/^(\d)\1{10}$/.test(numbers)) return false;
+        
+        let sum = 0;
+        for (let i = 0; i < 9; i++) sum += parseInt(numbers.charAt(i)) * (10 - i);
+        let rev = 11 - (sum % 11);
+        if (rev === 10 || rev === 11) rev = 0;
+        if (rev !== parseInt(numbers.charAt(9))) return false;
+        
+        sum = 0;
+        for (let i = 0; i < 10; i++) sum += parseInt(numbers.charAt(i)) * (11 - i);
+        rev = 11 - (sum % 11);
+        if (rev === 10 || rev === 11) rev = 0;
+        if (rev !== parseInt(numbers.charAt(10))) return false;
+        
+        return true;
+    };
+
     const validateEmail = (email: string) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
@@ -79,6 +109,12 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             newErrors.nome = 'Nome é obrigatório';
         } else if (nome.trim().length < 3) {
             newErrors.nome = 'Nome deve ter pelo menos 3 caracteres';
+        }
+
+        if (!cpf.trim()) {
+            newErrors.cpf = 'CPF é obrigatório';
+        } else if (!validateCPF(cpf)) {
+            newErrors.cpf = 'CPF inválido';
         }
 
         if (!email.trim()) {
@@ -135,6 +171,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             setDesconto(100); // 100% de desconto pois a empresa já pagou o lote
                             onContinuar({
                                 nome,
+                                cpf,
                                 email,
                                 telefone,
                                 senha,
@@ -187,6 +224,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
                 nome,
+                cpf,
                 email,
                 telefone,
                 senha,
@@ -235,6 +273,32 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
                                 <AlertCircle className="h-3 w-3" />
                                 {errors.nome}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* CPF */}
+                    <div>
+                        <Label htmlFor="cpf" className="text-white mb-2 flex items-center gap-2">
+                            <Contact className="h-4 w-4 text-brand-orange-coral" />
+                            CPF
+                        </Label>
+                        <Input
+                            id="cpf"
+                            type="text"
+                            value={cpf}
+                            onChange={(e) => {
+                                setCpf(formatCPF(e.target.value));
+                                if (errors.cpf) setErrors({ ...errors, cpf: '' });
+                            }}
+                            placeholder="000.000.000-00"
+                            className={`bg-dark-200 border-white/10 text-white ${errors.cpf ? 'border-red-500' : ''
+                                }`}
+                        />
+                        {errors.cpf && (
+                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.cpf}
                             </p>
                         )}
                     </div>

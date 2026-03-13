@@ -7,6 +7,7 @@ export interface RegistrationParams {
     nome: string;
     email: string;
     telefone: string;
+    cpf: string;
     sessionIds: string[];
     tipoInscricao?: string;
     valorPago?: number;
@@ -65,6 +66,7 @@ export const registrationService = {
                     p_nome: params.nome,
                     p_email: params.email,
                     p_telefone: params.telefone,
+                    p_cpf: params.cpf,
                     p_session_ids: params.sessionIds,
                     p_tipo_inscricao: params.tipoInscricao || 'standard',
                     p_valor_pago: params.valorPago || 0,
