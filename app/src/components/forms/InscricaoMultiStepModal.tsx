@@ -75,7 +75,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 const parsed = JSON.parse(saved);
                 setDados(prev => ({ ...prev, ...parsed.data }));
                 setCurrentStep(parsed.step || 1);
-                logger.info('Rascunho de inscrição carregado');
+                logger.debug('Rascunho de inscrição carregado');
             } catch (e) {
                 logger.warn('Erro ao carregar rascunho de inscrição:', e);
             }

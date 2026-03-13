@@ -61,7 +61,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                     setFormData(prev => ({ ...prev, fotoPreview: parsed.data.fotoPreview }));
                 }
                 setStep(parsed.step || 1);
-                logger.info('Rascunho de mentor carregado');
+                logger.debug('Rascunho de mentor carregado');
             } catch (e) {
                 logger.warn('Erro ao carregar rascunho:', e);
             }

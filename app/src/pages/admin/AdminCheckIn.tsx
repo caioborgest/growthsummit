@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   QrCode,
   Search,
@@ -14,26 +14,33 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRegistrations, useCheckIns, useSessions, useCheckInsAtividades } from '@/hooks/useData';
+import { useRegistrations, useCheckIns, useSessions, useCheckInsAtividades, useMentors, useCompanies, useStartups } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
 import type { Registration } from '@/types';
 import type { QRData } from '@/lib/qrUtils';
 import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
+import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
+import { useSearchParams } from 'react-router-dom';
 
 export function AdminCheckIn() {
-  const { data: registrations, update } = useRegistrations();
-  const { data: checkIns, create: createEventCheckIn } = useCheckIns();
-  const { data: sessions } = useSessions();
-  const { data: sessionAttendance, create: createSessionAttendance } = useCheckInsAtividades();
+  const { data: mentors } = useMentors();
+  const { data: companies } = useCompanies();
+  const { data: startups } = useStartups();
 
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
+  const [isScanning, setIsScanning] = useState(searchParams.get('scan') === 'true');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
 
   const [lastCheckIn, setLastCheckIn] = useState<Registration | null>(null);
   const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
+
+  // New states for Robust Accreditation
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup'>('participant');
 
   const selectedSession = useMemo(() =>
     sessions.find(s => s.id === selectedSessionId),
@@ -121,6 +128,37 @@ export function AdminCheckIn() {
 
   const handleScannerSuccess = useCallback((res: QRData | null) => {
     if (!res) return;
+
+    // Direct logic for Robust Accreditation
+    if (['mentor', 'company', 'startup', 'registration'].includes(res.type)) {
+      let entity: any = null;
+      let role: any = 'participant';
+
+      if (res.type === 'mentor') {
+        entity = mentors.find(m => m.id === res.id);
+        role = 'mentor';
+      } else if (res.type === 'company') {
+        entity = companies.find(c => c.id === res.id);
+        role = 'company';
+      } else if (res.type === 'startup') {
+        entity = startups.find(s => s.id === res.id);
+        role = 'startup';
+      } else {
+        entity = registrations.find(r => r.id === res.id);
+        role = 'participant';
+      }
+
+      if (entity) {
+        setSelectedEntity(entity);
+        setSelectedRole(role);
+        setIsChecklistOpen(true);
+      } else {
+        toast.error('Entidade não encontrada no sistema.');
+      }
+      setIsScanning(false);
+      return;
+    }
+
     const registration = registrations.find(r => r.id === res.id);
     if (registration) {
       handleManualCheckIn(registration);
@@ -131,7 +169,13 @@ export function AdminCheckIn() {
       toast.error('Ingresso não encontrado no sistema.');
     }
     setIsScanning(false);
-  }, [registrations, handleManualCheckIn]);
+  }, [registrations, mentors, companies, startups, handleManualCheckIn]);
+
+  const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup') => {
+    setSelectedEntity(entity);
+    setSelectedRole(role);
+    setIsChecklistOpen(true);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -148,19 +192,43 @@ export function AdminCheckIn() {
   const totalRegistrations = registrations.length;
   const checkInRate = totalRegistrations > 0 ? (checkedInCount / totalRegistrations) * 100 : 0;
 
-  const filteredRegistrations = registrations.filter(reg => {
-    const matchesSearch =
-      reg.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      reg.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (reg.nome || reg.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+  const unifiedResults = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    if (!query) return [];
 
-    // Se estiver no modo geral, esconde os que já fizeram check-in
-    if (selectedSessionId === 'all') {
-      return matchesSearch && !reg.checkedIn;
-    }
+    const results: any[] = [];
 
-    return matchesSearch;
-  });
+    // 1. Search Participants
+    registrations.filter(r => 
+      r.id.toLowerCase().includes(query) ||
+      (r.nome || r.name || '').toLowerCase().includes(query) ||
+      (r.email || '').toLowerCase().includes(query) ||
+      r.ticketNumber.toLowerCase().includes(query)
+    ).forEach(r => results.push({ ...r, _role: 'participant', _name: r.nome || r.name }));
+
+    // 2. Search Mentors
+    mentors.filter(m => 
+      m.id.toLowerCase().includes(query) ||
+      (m.name || '').toLowerCase().includes(query) ||
+      (m.email || '').toLowerCase().includes(query)
+    ).forEach(m => results.push({ ...m, _role: 'mentor', _name: m.name }));
+
+    // 3. Search Startups
+    startups.filter(s => 
+      s.id.toLowerCase().includes(query) ||
+      (s.name || '').toLowerCase().includes(query) ||
+      (s.email || '').toLowerCase().includes(query)
+    ).forEach(s => results.push({ ...s, _role: 'startup', _name: s.name }));
+
+    // 4. Search Companies
+    companies.filter(c => 
+      c.id.toLowerCase().includes(query) ||
+      (c.name || '').toLowerCase().includes(query) ||
+      (c.contactEmail || '').toLowerCase().includes(query)
+    ).forEach(c => results.push({ ...c, _role: 'company', _name: c.name }));
+
+    return results;
+  }, [searchQuery, registrations, mentors, startups, companies]);
 
   const today = new Date().toLocaleDateString('en-CA');
   const checkInsToday = checkIns.filter(c =>
@@ -176,6 +244,21 @@ export function AdminCheckIn() {
           onClose={() => {
             setScanResult(null);
             setResultRegistration(null);
+          }}
+        />
+      )}
+
+      {isChecklistOpen && (
+        <AccreditationChecklistModal
+          isOpen={isChecklistOpen}
+          onClose={() => {
+            setIsChecklistOpen(false);
+            setSelectedEntity(null);
+          }}
+          entity={selectedEntity}
+          role={selectedRole}
+          onSuccess={() => {
+            // Stats will refetch via useData hooks update/create
           }}
         />
       )}
@@ -222,12 +305,20 @@ export function AdminCheckIn() {
           <p className="text-2xl font-bold text-white">{checkInsToday}</p>
         </div>
         <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Total Check-ins</p>
-          <p className="text-2xl font-bold text-teal-400">{checkedInCount}</p>
+          <p className="text-gray-400 text-sm">Participantes</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-teal-400">{checkedInCount}</p>
+            <p className="text-xs text-gray-500">/ {totalRegistrations}</p>
+          </div>
         </div>
         <div className="glass-card p-4">
-          <p className="text-gray-400 text-sm">Taxa de Presença</p>
-          <p className="text-2xl font-bold text-green-400">{checkInRate.toFixed(1)}%</p>
+          <p className="text-gray-400 text-sm">Mentores & VIPs</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-blue-400">
+              {checkIns.filter(c => c.registrationId?.startsWith('GLOBAL_ROLE_')).length}
+            </p>
+            <p className="text-xs text-gray-500">Credenciados</p>
+          </div>
         </div>
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Modo Ativo</p>
@@ -289,30 +380,40 @@ export function AdminCheckIn() {
 
           <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {searchQuery ? (
-              filteredRegistrations.length > 0 ? (
-                filteredRegistrations.map((reg) => (
+              unifiedResults.length > 0 ? (
+                unifiedResults.map((item) => (
                   <div
-                    key={reg.id}
+                    key={item.id}
                     className="flex items-center justify-between p-4 bg-dark-100 rounded-xl hover:bg-dark-300 transition-all border border-white/5 group"
                   >
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full bg-teal-500/10 flex items-center justify-center mr-4 group-hover:bg-teal-500/20 transition-colors">
-                        <User className="h-5 w-5 text-teal-400" />
+                        {item._role === 'participant' && <User className="h-5 w-5 text-teal-400" />}
+                        {item._role === 'mentor' && <User className="h-5 w-5 text-blue-400" />}
+                        {item._role === 'company' && <Building2 className="h-5 w-5 text-purple-400" />}
+                        {item._role === 'startup' && <Rocket className="h-5 w-5 text-teal-400" />}
                       </div>
                       <div>
-                        <p className="text-white font-bold">{reg.nome || reg.name || 'Sem nome'}</p>
-                        <p className="text-gray-400 text-xs font-mono">{reg.ticketNumber}</p>
-                        <Badge variant="outline" className="mt-1 text-[9px] bg-white/5 border-white/10 uppercase font-black">
-                          {reg.ticketType}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-bold">{item._name || 'Sem nome'}</p>
+                          <Badge variant="outline" className={`text-[9px] uppercase font-black ${
+                            item._role === 'participant' ? 'border-teal-500/30 text-teal-400' :
+                            item._role === 'mentor' ? 'border-blue-500/30 text-blue-400' :
+                            item._role === 'startup' ? 'border-teal-500/30 text-teal-400' :
+                            'border-purple-500/30 text-purple-400'
+                          }`}>
+                            {item._role}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-400 text-xs font-mono">{item.ticketNumber || (item.email || item.contactEmail)}</p>
                       </div>
                     </div>
                     <Button
                       size="sm"
                       className="bg-teal-600 hover:bg-teal-500 text-white font-bold px-4"
-                      onClick={() => handleManualCheckIn(reg)}
+                      onClick={() => handleEntitySelection(item, item._role)}
                     >
-                      REALIZAR CHECK-IN
+                      ACREDITAR
                     </Button>
                   </div>
                 ))
@@ -337,7 +438,7 @@ export function AdminCheckIn() {
             <h2 className="text-lg font-semibold text-white uppercase tracking-tighter text-brand-orange-coral">Scanner QR (Câmera)</h2>
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center bg-dark-100 rounded-2xl border-2 border-dashed border-dark-300 relative group overflow-hidden min-h-[300px]">
+          <div className="flex-1 flex flex-col items-center justify-center bg-dark-100 rounded-2xl border-2 border-dashed border-dark-300 relative group overflow-hidden min-h-[400px]">
             {!isScanning ? (
               <div className="text-center z-10 p-8">
                 <div className="w-20 h-20 bg-brand-orange-coral/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-orange-coral/20">
@@ -371,7 +472,13 @@ export function AdminCheckIn() {
             .slice(0, 6)
             .map((item, idx) => {
               const reg = registrations.find(r => r.id === (item.registrationId || item.registration_id));
+              const mentor = mentors.find(m => 'GLOBAL_ROLE_' + m.id === item.registrationId);
+              const company = companies.find(c => 'GLOBAL_ROLE_' + c.id === item.registrationId);
+              const startup = startups.find(s => 'GLOBAL_ROLE_' + s.id === item.registrationId);
+              
               const ts = item.timestamp || item.checkInAt;
+              const name = reg?.nome || reg?.name || mentor?.name || company?.name || startup?.name || item.ticketNumber || 'Visitante';
+              const role = reg ? 'PARTICIPANTE' : mentor ? 'MENTOR' : company ? 'EMPRESA' : startup ? 'STARTUP' : 'SESSÃO';
 
               return (
                 <div key={idx} className="flex items-center justify-between p-4 bg-dark-100 rounded-xl border border-white/5">
@@ -380,8 +487,10 @@ export function AdminCheckIn() {
                       <CheckCircle className="h-4 w-4 text-green-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-white font-bold text-sm truncate">{reg?.nome || reg?.name || item.ticketNumber || 'Visitante'}</p>
-                      <p className="text-gray-500 text-[10px] font-mono">{reg?.ticketNumber || 'SESSÃO'}</p>
+                      <p className="text-white font-bold text-sm truncate">{name}</p>
+                      <Badge variant="outline" className="text-[8px] border-white/10 text-gray-500">
+                        {role}
+                      </Badge>
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-4">

@@ -9,15 +9,10 @@ import {
     MoreVertical,
     Edit2,
     Trash2,
-    CheckCircle,
-    Filter,
-    User as UserIcon,
-    HardHat,
-    Monitor,
-    HeartHandshake,
-    Ticket,
-    ShoppingCart,
     PhoneCall,
+    Package,
+    Contact,
+    CheckCircle2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,6 +39,8 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
+import { useCheckIns } from '@/hooks/useData';
 import type { User } from '@/types';
 
 const departmentIcons: Record<string, React.ElementType> = {
@@ -95,20 +92,19 @@ const roleColors: Record<string, string> = {
 export default function AdminUsuarios() {
     const navigate = useNavigate();
     const { data: users, create, update, remove, isLoading } = useUsers();
+    const { data: checkIns } = useCheckIns();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [deptFilter, setDeptFilter] = useState('all');
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [newUserData, setNewUserData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        role: 'staff' as User['role'],
-        department: '',
         staffRole: '',
     });
+
+    const [selectedEntity, setSelectedEntity] = useState<any>(null);
+    const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup'>('participant');
+    const [isChecklistOpen, setIsChecklistOpen] = useState(false);
 
     const filteredUsers = users.filter(user => {
         // Base filtering: Internal team and partners only
@@ -210,6 +206,7 @@ export default function AdminUsuarios() {
 
     const staffCount = users.filter(u => u.role === 'staff').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
+    const mentorCount = users.filter(u => u.role === 'mentor').length;
     const totalUsers = users.length;
 
     return (
@@ -335,11 +332,11 @@ export default function AdminUsuarios() {
                 </div>
                 <div className="glass-card p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <Shield className="h-5 w-5 text-red-400" />
-                        <Badge variant="outline" className="border-red-500/30 text-red-400">Admins</Badge>
+                        <UserIcon className="h-5 w-5 text-purple-400" />
+                        <Badge variant="outline" className="border-purple-500/30 text-purple-400">Mentores</Badge>
                     </div>
-                    <p className="text-2xl font-bold text-white">{adminCount}</p>
-                    <p className="text-xs text-gray-500 mt-1">Acesso total</p>
+                    <p className="text-2xl font-bold text-white">{mentorCount}</p>
+                    <p className="text-xs text-gray-500 mt-1">Especialistas cadastrados</p>
                 </div>
                 <div className="glass-card p-4 hidden lg:block">
                     <div className="flex items-center justify-between mb-2">
@@ -403,7 +400,7 @@ export default function AdminUsuarios() {
                                 <th className="p-4 text-gray-400 font-medium text-sm">Usuário</th>
                                 <th className="p-4 text-gray-400 font-medium text-sm">Cargo / Nível</th>
                                 <th className="p-4 text-gray-400 font-medium text-sm">Departamento</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm">Função Local</th>
+                                <th className="p-4 text-gray-400 font-medium text-sm">Acreditação</th>
                                 <th className="p-4 text-gray-400 font-medium text-sm">Entrou em</th>
                                 <th className="p-4 text-gray-400 font-medium text-sm text-right">Ações</th>
                             </tr>
@@ -443,13 +440,32 @@ export default function AdminUsuarios() {
                                             )}
                                         </td>
                                         <td className="p-4">
-                                            {user.staffRole ? (
-                                                <Badge variant="outline" className="border-dark-400 text-gray-400">
-                                                    {staffRoleLabels[user.staffRole] || user.staffRole}
-                                                </Badge>
-                                            ) : (
-                                                <span className="text-gray-600 text-sm">-</span>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {(() => {
+                                                    const userCheckIns = checkIns.filter(c => c.userId === user.id && c.checkInType === 'event');
+                                                    const entrance = userCheckIns.length > 0;
+                                                    const kit = userCheckIns.some(c => {
+                                                        try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
+                                                    });
+                                                    const badge = userCheckIns.some(c => {
+                                                        try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
+                                                    });
+
+                                                    return (
+                                                        <>
+                                                            <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <CheckCircle2 className="h-3 w-3" />
+                                                            </div>
+                                                            <div title="Crachá" className={`w-6 h-6 rounded-md flex items-center justify-center border ${badge ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <Contact className="h-3 w-3" />
+                                                            </div>
+                                                            <div title="Kit" className={`w-6 h-6 rounded-md flex items-center justify-center border ${kit ? 'bg-teal-500/10 border-teal-500/30 text-teal-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <Package className="h-3 w-3" />
+                                                            </div>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
                                         </td>
                                         <td className="p-4 text-gray-400 text-sm font-mono">
                                             {new Date(user.createdAt).toLocaleDateString('pt-BR')}
@@ -462,6 +478,17 @@ export default function AdminUsuarios() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent className="bg-dark-200 border-dark-300">
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            setSelectedEntity({ ...user, projectId: 'GS2026' }); // Default project context
+                                                            setSelectedRole(user.role as any);
+                                                            setIsChecklistOpen(true);
+                                                        }}
+                                                        className="text-teal-400 hover:bg-teal-500/10 cursor-pointer font-bold"
+                                                    >
+                                                        <Ticket className="h-4 w-4 mr-2" />
+                                                        Acreditar / Entrega
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => handleEdit(user)}
                                                         className="text-gray-300 hover:bg-dark-300 cursor-pointer"
@@ -559,6 +586,19 @@ export default function AdminUsuarios() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {isChecklistOpen && (
+                <AccreditationChecklistModal
+                    isOpen={isChecklistOpen}
+                    onClose={() => {
+                        setIsChecklistOpen(false);
+                        setSelectedEntity(null);
+                    }}
+                    entity={selectedEntity}
+                    role={selectedRole}
+                    onSuccess={() => {}}
+                />
+            )}
         </div>
     );
 }

@@ -121,7 +121,7 @@ export function AgendaSection({
                                                                 e.stopPropagation();
                                                                 setIsSelfCheckInOpen(true);
                                                             }}
-                                                            className="bg-teal-500/10 hover:bg-teal-500 text-teal-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-teal-500/20 transition-all flex items-center gap-2"
+                                                            className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
                                                         >
                                                             <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
                                                         </Button>
@@ -193,7 +193,7 @@ export function AgendaSection({
                                                             e.stopPropagation();
                                                             setIsSelfCheckInOpen(true);
                                                         }}
-                                                        className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
+                                                        className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
                                                     >
                                                         <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
                                                     </Button>
@@ -232,7 +232,7 @@ export function AgendaSection({
                                                             e.stopPropagation();
                                                             setIsSelfCheckInOpen(true);
                                                         }}
-                                                        className="bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white font-black text-[10px] h-8 px-4 rounded-lg border border-orange-500/20 transition-all flex items-center gap-2"
+                                                        className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
                                                     >
                                                         <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
                                                     </Button>

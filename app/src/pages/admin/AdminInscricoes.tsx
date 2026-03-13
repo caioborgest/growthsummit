@@ -2,21 +2,24 @@ import { useState, useCallback } from 'react';
 import {
   Search,
   Download,
-  CheckCircle,
-  XCircle,
-  Clock,
-  QrCode,
-  Mail,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Moon,
-  User,
-  Loader2,
-  X,
-  Plus,
-  Trash2,
-  Star
+    CheckCircle,
+    XCircle,
+    Clock,
+    QrCode,
+    Mail,
+    ChevronLeft,
+    ChevronRight,
+    Eye,
+    Moon,
+    User,
+    Loader2,
+    X,
+    Plus,
+    Trash2,
+    Star,
+    CheckCircle2,
+    Package,
+    Contact,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +29,8 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
+import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
+import { useCheckIns } from '@/hooks/useData';
 
 const PAGE_SIZE = 20;
 
@@ -116,7 +121,6 @@ function DetalhesModal({
               value: reg.couponCode ? `🎟️ ${reg.couponCode}` : '—',
               highlight: !!reg.couponCode
             },
-            { label: 'Check-in', value: reg.checkedIn ? `✅ ${reg.checkInTime ? new Date(reg.checkInTime).toLocaleTimeString('pt-BR') : 'Feito'}` : '❌ Pendente' },
             { label: 'Passaporte Night', value: reg.palestrasNoturnas ? '✅ Sim' : '—' },
             { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR') },
           ].map(({ label, value, highlight }) => (
@@ -160,13 +164,14 @@ function DetalhesModal({
         <div className="pt-6 border-t border-white/10">
           <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Ações de Credenciamento</p>
           <Button
-            onClick={() => onToggleCheckIn(reg.id, !!reg.checkedIn)}
-            className={`w-full font-black py-6 h-auto rounded-xl transition-all flex items-center justify-center gap-2 mb-6 ${reg.checkedIn
-              ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
-              : 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20'
-              }`}
+            onClick={() => {
+              onClose(); // Close details modal first
+              // We'll need a way to trigger the checklist modal from parent
+              (window as any).dispatchAccreditation(reg);
+            }}
+            className="w-full font-black py-6 h-auto rounded-xl transition-all flex items-center justify-center gap-2 mb-6 bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20"
           >
-            {reg.checkedIn ? 'CANCELAR CREDENCIAMENTO' : 'REALIZAR CREDENCIAMENTO'}
+            REALIZAR CREDENCIAMENTO COMPLETO
           </Button>
 
           <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Gerenciar Status de Pagamento</p>
@@ -239,6 +244,7 @@ function DetalhesModal({
 // ── Componente Principal ──────────────────────────────────────
 export default function AdminInscricoes() {
   const { data: registrations, update, remove } = useRegistrations();
+  const { data: checkIns } = useCheckIns();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
   const { data: allSessions } = useData<any>([], 'programacao_evento');
   const { update: updateSession } = useData([], 'sessions');
@@ -251,6 +257,18 @@ export default function AdminInscricoes() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
+
+  // Robust Accreditation States
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+  const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
+
+  // Global trigger for DetalhesModal to open checklist
+  useState(() => {
+    (window as any).dispatchAccreditation = (reg: Registration) => {
+      setSelectedReg(reg);
+      setIsChecklistOpen(true);
+    };
+  });
 
   const handleUpdateStatus = async (id: string, status: any) => {
     if (isUpdating) return;
@@ -645,7 +663,7 @@ export default function AdminInscricoes() {
                   <th className="p-4 text-left text-gray-400 font-medium text-sm">Status</th>
                   <th className="p-4 text-left text-gray-400 font-medium text-sm">Valor</th>
                   <th className="p-4 text-left text-gray-400 font-medium text-sm">Night</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Check-in</th>
+                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Acreditação</th>
                   <th className="p-4 text-left text-gray-400 font-medium text-sm">Ações</th>
                 </tr>
               </thead>
@@ -717,13 +735,32 @@ export default function AdminInscricoes() {
                         }
                       </td>
                       <td className="p-4">
-                        {reg.checkedIn ? (
-                          <Badge className="bg-green-500/20 text-green-400">
-                            <CheckCircle className="h-3 w-3 mr-1" />Feito
-                          </Badge>
-                        ) : (
-                          <span className="text-gray-600 text-xs">Pendente</span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {(() => {
+                            const regCheckIns = checkIns.filter(c => c.registrationId === reg.id && c.checkInType === 'event');
+                            const entrance = regCheckIns.length > 0;
+                            const kit = regCheckIns.some(c => {
+                              try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
+                            });
+                            const badge = regCheckIns.some(c => {
+                              try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
+                            });
+
+                            return (
+                              <>
+                                <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                  <CheckCircle2 className="h-3 w-3" />
+                                </div>
+                                <div title="Crachá" className={`w-6 h-6 rounded-md flex items-center justify-center border ${badge ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                  <Contact className="h-3 w-3" />
+                                </div>
+                                <div title="Kit" className={`w-6 h-6 rounded-md flex items-center justify-center border ${kit ? 'bg-teal-500/10 border-teal-500/30 text-teal-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                  <Package className="h-3 w-3" />
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td className="p-4">
                         <div className="flex gap-1">
@@ -809,6 +846,19 @@ export default function AdminInscricoes() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
+
+      {isChecklistOpen && (
+        <AccreditationChecklistModal
+          isOpen={isChecklistOpen}
+          onClose={() => {
+            setIsChecklistOpen(false);
+            setSelectedReg(null);
+          }}
+          entity={selectedReg}
+          role="participant"
+          onSuccess={() => {}}
+        />
+      )}
     </>
   );
 }

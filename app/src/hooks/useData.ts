@@ -441,12 +441,15 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   const consecutiveFetchCountRef = useRef(0);
   const lastFetchTimeRef = useRef(0);
 
-  const fetchData = useCallback(async (force = false) => {
+  const fetchData = useCallback(async (force = false, signal?: AbortSignal) => {
     const isGlobal = isGlobalEntity(entityName);
 
     if (!projectId && !isGlobal) {
+      // logger.debug(`[useData:${entityName}] Ignorando busca: sem projectId`);
       return;
     }
+
+    // logger.debug(`[useData:${entityName}] Iniciando busca...`, { force, projectId });
 
     const now = Date.now();
 
@@ -468,10 +471,6 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     lastFetchTimeRef.current = now;
 
-    // Concorrência e redundância (guardas)
-    if (isFetchingRef.current && !force) {
-      return;
-    }
 
     const cacheKey = projectId ? `${projectId}:${entityName}` : `global:${entityName}`;
     const cached = dataCache.get(cacheKey);
@@ -499,7 +498,12 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       }
 
       const resultRaw = await withTimeout(
-        (signal) => (query as any).abortSignal(signal) as Promise<{ data: Record<string, unknown>[] | null; error: Error | null }>,
+        (timeoutSignal) => {
+          // Usar o signal externo se fornecido (para cancelamento via unmount)
+          // mas garantir que abortSignal() do Supabase receba um signal válido
+          const combinedSignal = signal || timeoutSignal;
+          return (query as any).abortSignal(combinedSignal) as Promise<{ data: Record<string, unknown>[] | null; error: Error | null }>;
+        },
         15000,
         `FetchData:${entityName}`
       );
@@ -540,9 +544,24 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       // Store in cache
       dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
     } catch (err: unknown) {
+      const errStr = String(err).toLowerCase();
+      const isAborted = (err as any)?.name === 'AbortError' || 
+                        (err as any)?.message?.includes('aborted') ||
+                        (err as any)?.message?.includes('AbortError') ||
+                        errStr.includes('aborted') ||
+                        errStr.includes('abort_error') ||
+                        errStr.includes('timeout_exceeded');
+
+      if (isAborted) {
+        return;
+      }
+
       const errorObj = err instanceof Error ? err : new Error(String(err));
       setError(errorObj);
-      logger.error(`Erro ao buscar ${entityName}:`, err);
+      
+      // Log mais limpo: se for erro objeto do Supabase, tenta logar a mensagem
+      const errorMsg = (err as any)?.message || errorObj.message;
+      logger.error(`Erro ao buscar ${entityName}: ${errorMsg}`, err);
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;
@@ -650,7 +669,9 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   }, [data]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(false, controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
   return useMemo(() => ({

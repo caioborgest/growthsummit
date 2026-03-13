@@ -60,7 +60,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 if (parsed.data.logoPreview) {
                     setLogoPreview(parsed.data.logoPreview);
                 }
-                logger.info('Rascunho B2B carregado');
+                logger.debug('Rascunho B2B carregado');
             } catch (e) {
                 logger.warn('Erro ao carregar rascunho B2B:', e);
             }

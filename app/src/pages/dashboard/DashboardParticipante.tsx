@@ -40,7 +40,7 @@ import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
 import { AgendaSection } from './components/AgendaSection';
 import { TicketSection } from './components/TicketSection';
@@ -377,6 +377,7 @@ function CheckInModal({ registration, onClose }: { registration: MyRegistration;
 // ── Componente principal ──────────────────────────────────────────────────────
 export function DashboardParticipante() {
   const { selectedProject } = useProject();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
@@ -387,7 +388,8 @@ export function DashboardParticipante() {
     return batches.filter(b => b.emailResponsavel === user?.email);
   }, [batches, user]);
 
-  const [activeTab, setActiveTab] = useState('ingresso');
+  const initialTab = searchParams.get('tab') || 'ingresso';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
@@ -901,7 +903,7 @@ export function DashboardParticipante() {
                         setSelectedSession(null);
                         setIsSelfCheckInOpen(true);
                       }}
-                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-teal-500/30 group"
+                      className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-brand-orange-coral/30 group"
                     >
                       <QrCode className="h-5 w-5 mr-3 group-hover:rotate-12 transition-all" />
                       CONFIRMAR PRESENÇA
@@ -978,16 +980,26 @@ export function DashboardParticipante() {
 
             {/* Quick Action Button */}
             <div className="flex flex-col gap-4">
-              <Button
-                onClick={() => setIsSelfCheckInOpen(true)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-[2rem] text-lg shadow-2xl shadow-orange-500/30 group transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 border-none"
-              >
-                <div className="flex items-center gap-3">
-                  <QrCode className="h-6 w-6 group-hover:rotate-12 transition-transform" />
-                  CONFIRMAR PRESENÇA
-                </div>
-                <span className="text-[10px] opacity-70 font-bold uppercase tracking-widest leading-none">Aponte para o QR Code na sala</span>
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => setIsSelfCheckInOpen(true)}
+                  className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-6 rounded-2xl text-base shadow-xl shadow-brand-orange-coral/20 group transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-0.5 border-none h-auto"
+                >
+                  <div className="flex items-center gap-2 uppercase text-[12px] tracking-widest">
+                    <QrCode className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                    Confirmar Presença
+                  </div>
+                  <span className="text-[8px] opacity-70 font-bold uppercase tracking-widest leading-none">Entre na sala e aponte para o QR Code</span>
+                </Button>
+
+                <Button
+                  onClick={() => setIsSelfCheckInOpen(true)}
+                  variant="outline"
+                  className="w-full bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border-teal-500/30 font-black h-12 rounded-xl text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Autocredenciamento
+                </Button>
+              </div>
 
               {activeTab !== 'agenda' && (
                 <Button

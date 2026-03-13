@@ -122,7 +122,7 @@ export function TicketSection({
                             <div className="bg-dark-100 rounded-[2.2rem] overflow-hidden">
                                 {/* Ticket Inner */}
                                 <div className="p-8 pb-4 bg-gradient-to-br from-teal-500/10 to-orange-500/10 border-b border-white/5 text-center">
-                                    <p className="text-[9px] text-teal-400 font-black uppercase tracking-widest mb-1">IDENTIFICADOR DIGITAL</p>
+                                    <p className="text-[9px] text-teal-400 font-black uppercase tracking-widest mb-1">SUA CREDENCIAL</p>
                                     <p className="text-white font-mono text-base font-bold tracking-tighter uppercase">{myRegistration?.id?.slice(0, 13).toUpperCase() || 'GS2026-PENDENTE'}</p>
                                 </div>
                                 <div className="p-10 flex flex-col items-center bg-white">
@@ -141,7 +141,7 @@ export function TicketSection({
                                         </div>
                                         <div className="absolute inset-0 border-2 border-teal-500/10 rounded-xl group-hover:border-teal-500/30 transition-all pointer-events-none"></div>
                                     </div>
-                                    <p className="mt-6 text-[8px] text-dark font-black uppercase tracking-[0.3em] opacity-40">Apresente para leitura</p>
+                                    <p className="mt-6 text-[8px] text-dark font-black uppercase tracking-[0.3em] opacity-40">Apresente para leitura no balcão</p>
                                 </div>
                             </div>
                         </div>
@@ -149,20 +149,9 @@ export function TicketSection({
                 </div>
 
                 <div className="flex flex-col gap-4 w-full max-w-sm">
-                    <div className="flex flex-col sm:flex-row gap-4 w-full">
+                    <div className="flex flex-col gap-4 w-full">
                         <Button
-                            variant="ghost"
-                            className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
-                            onClick={async () => {
-                                if (!myRegistration) return;
-                                await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
-                                toast.success('Ingresso PDF gerado!');
-                            }}
-                        >
-                            <Download className="h-4 w-4 mr-2 text-teal-400" /> Baixar PDF
-                        </Button>
-                        <Button
-                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl px-8 flex-1 h-14 shadow-xl shadow-brand-orange-coral/20 transition-all hover:scale-[1.02] uppercase text-[10px] tracking-widest"
+                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl px-8 w-full h-16 shadow-xl shadow-brand-orange-coral/20 transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 border-none"
                             onClick={() => {
                                 if (!myRegistration) {
                                     toast.error('Inscrição não localizada.');
@@ -171,8 +160,38 @@ export function TicketSection({
                                 setShowCheckInModal(true);
                             }}
                         >
-                            <QrCode className="h-4 w-4 mr-2" /> Validar Manual
+                            <div className="flex items-center gap-2 uppercase text-[12px] tracking-widest">
+                                <QrCode className="h-5 w-5" /> Confirmar Presença
+                            </div>
+                            <span className="text-[9px] opacity-70 font-bold uppercase tracking-widest">Aponte para o QR Code na sala</span>
                         </Button>
+
+                        <div className="flex flex-col sm:flex-row gap-4 w-full">
+                            <Button
+                                variant="ghost"
+                                className="bg-teal-500/10 border border-teal-500/30 rounded-2xl hover:bg-teal-500/20 text-teal-400 transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
+                                onClick={() => {
+                                    if (!myRegistration) {
+                                        toast.error('Inscrição não localizada.');
+                                        return;
+                                    }
+                                    setShowCheckInModal(true);
+                                }}
+                            >
+                                <CheckCircle2 className="h-4 w-4 mr-2" /> Autocredenciamento
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
+                                onClick={async () => {
+                                    if (!myRegistration) return;
+                                    await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
+                                    toast.success('Ingresso PDF gerado!');
+                                }}
+                            >
+                                <Download className="h-4 w-4 mr-2 text-teal-400" /> Baixar PDF
+                            </Button>
+                        </div>
                     </div>
 
                     <Button

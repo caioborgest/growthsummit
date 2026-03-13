@@ -140,8 +140,8 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                                 <Camera className="h-10 w-10 text-teal-400" />
                             </div>
                             <h2 className="text-3xl font-black text-white tracking-tight">Auto-Credenciamento</h2>
-                            <p className="text-gray-400 leading-relaxed">
-                                Bem-vindo ao <strong>Growth Experience</strong>! Utilize a câmera para confirmar sua presença nas salas e stands.
+                            <p className="text-gray-400 leading-relaxed italic">
+                                Utilize a câmera para confirmar sua entrada no evento ou sua presença nas salas de cursos e palestras.
                             </p>
                         </div>
 
@@ -184,8 +184,8 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                 {step === 2 && (
                     <div className="p-8 space-y-6">
                         <div className="text-center">
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Escaneie o QR Code</h2>
-                            <p className="text-gray-400 text-sm">Aponte para o código na sala ou stand</p>
+                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Confirmar Presença</h2>
+                            <p className="text-gray-400 text-sm">Aponte para o QR Code na sala, stand ou entrada</p>
                         </div>
 
                         <div className="relative rounded-[2rem] overflow-hidden border-2 border-teal-500/50 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
@@ -269,7 +269,7 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                             </div>
                             <h2 className="text-3xl font-black text-white tracking-tight">Inserir Código</h2>
                             <p className="text-gray-400 leading-relaxed">
-                                Insira o código de <strong>credenciamento</strong> ou da <strong>sala</strong> abaixo.
+                                Insira o código de <strong>entrada no evento</strong> ou da <strong>sala/atividade</strong> abaixo.
                             </p>
                         </div>
 

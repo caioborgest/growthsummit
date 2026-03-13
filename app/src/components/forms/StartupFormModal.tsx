@@ -53,7 +53,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             try {
                 const parsed = JSON.parse(saved);
                 setFormData(prev => ({ ...prev, ...parsed.data }));
-                logger.info('Rascunho de startup carregado');
+                logger.debug('Rascunho de startup carregado');
             } catch (e) {
                 logger.warn('Erro ao carregar rascunho de startup:', e);
             }

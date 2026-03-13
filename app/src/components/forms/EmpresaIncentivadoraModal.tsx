@@ -38,7 +38,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             try {
                 const parsed = JSON.parse(saved);
                 setFormData(prev => ({ ...prev, ...parsed.data }));
-                logger.info('Rascunho de empresa carregado');
+                logger.debug('Rascunho de empresa carregado');
             } catch (e: unknown) {
                 const message = e instanceof Error ? e.message : String(e);
                 logger.warn('Erro ao carregar rascunho de empresa:', { error: message });

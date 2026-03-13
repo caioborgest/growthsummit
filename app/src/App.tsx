@@ -225,7 +225,7 @@ function Home() {
   if (isAuthenticated && user) {
     const rolesToPaths: Record<string, string> = {
       'admin': '/admin',
-      'staff': '/admin',
+      'staff': '/admin/check-in',
       'mentor': '/mentor-area',
       'company': '/empresa-area',
       'startup': '/startup-area',

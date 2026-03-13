@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
@@ -203,13 +203,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(optimisticUser);
     }
 
-    if (hasCoreData) {
+    if (hasCoreData || user) {
       setIsLoading(false);
-      logger.debug('✅ UI liberada com dados otimistas (JWT)');
-    } else {
-      // Se não tivermos o essencial no JWT, ainda mostramos o loader até o DB responder.
-      // Usamos isLoading para evitar piscar se já estiver falso.
-      setIsLoading(prev => prev || true);
+      if (hasCoreData) logger.debug('✅ UI liberada com dados otimistas (JWT)');
     }
 
     // 4. Buscar metadados enriquecidos no banco em background
@@ -601,23 +597,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user, logout]);
 
+  const value = useMemo(() => ({
+    user,
+    session,
+    isAuthenticated: !!user && !user.requires2FA,
+    isLoading,
+    isAuthenticating,
+    login,
+    loginWithOTP,
+    verifyOTP,
+    logout,
+    hasRole,
+    updateProfile,
+    enable2FA,
+    verify2FA,
+    disable2FA,
+  }), [user, session, isLoading, isAuthenticating, login, loginWithOTP, verifyOTP, logout, hasRole, updateProfile, enable2FA, verify2FA, disable2FA]);
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      isAuthenticated: !!user && !user.requires2FA,
-      isLoading,
-      isAuthenticating,
-      login,
-      loginWithOTP,
-      verifyOTP,
-      logout,
-      hasRole,
-      updateProfile,
-      enable2FA,
-      verify2FA,
-      disable2FA,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

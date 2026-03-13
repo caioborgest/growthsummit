@@ -366,12 +366,24 @@ export function AdminLayout() {
               )}
 
               {/* Profile Shortcut Mobile */}
-              <div className="lg:hidden relative">
-                <img
-                  src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
-                  alt={user?.name}
-                  className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/10"
-                />
+              <div className="flex items-center gap-3 lg:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="w-10 h-10 bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 rounded-xl"
+                >
+                  <Link to="/admin/check-in?scan=true">
+                    <QrCode className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <div className="relative">
+                  <img
+                    src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'}
+                    alt={user?.name}
+                    className="w-10 h-10 rounded-xl object-cover ring-2 ring-white/10"
+                  />
+                </div>
               </div>
             </div>
           </div>
