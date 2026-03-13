@@ -19,7 +19,9 @@ import {
   MapPin,
   Clock,
   Info,
-  ArrowRight
+  ArrowRight,
+  ChevronRight,
+  Building2
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -60,6 +62,8 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { NextActivityCard } from './components/shared/NextActivityCard';
 import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
@@ -83,7 +87,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     : PRECO_BASE;
 
   const nightSpeakers = useMemo(() => {
-    const night = sessions.filter(s => s.category === 'noturna');
+    const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
     const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
     return names.join(' + ');
@@ -381,9 +385,33 @@ export function DashboardParticipante() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
-  const { data: sessions } = useSessions();
+  const { data: allSessions } = useSessions();
+  const { data: activityCheckIns } = useCheckInsAtividades();
 
-  const { data: batches } = useRegistrationBatches();
+  const nextActivity = useMemo(() => {
+    if (!allSessions || !activityCheckIns) return null;
+    
+    // Sort all sessions by time
+    const sorted = [...allSessions].sort((a, b) => {
+      const timeA = a.startTime || '00:00';
+      const timeB = b.startTime || '00:00';
+      return timeA.localeCompare(timeB);
+    });
+
+    // Find the first session that doesn't have a check-in or is closest to now
+    const now = new Date();
+    const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    return sorted.find(s => {
+        const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === myRegistration?.id);
+        return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
+    }) || sorted[0]; // Fallback to first session if none found
+  }, [allSessions, activityCheckIns, myRegistration?.id]);
+
+  const [notifications] = useState<any[]>([
+    { id: 1, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '', read: true, type: 'info' }
+  ]);
+  
   const myBatches = useMemo(() => {
     return batches.filter(b => b.emailResponsavel === user?.email);
   }, [batches, user]);
@@ -394,12 +422,11 @@ export function DashboardParticipante() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
-  const { data: activityCheckIns, refetch: refetchActivityCheckIns } = useCheckInsAtividades();
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
 
   const nightSpeakers = useMemo(() => {
-    const night = sessions.filter(s => s.category === 'noturna');
+    const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
     const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
     return names.join(' + ');
@@ -943,44 +970,77 @@ export function DashboardParticipante() {
           }}
         />
 
-        {/* WELCOME SUMMARY & PROMINENT ACTIONS (TOP) */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 relative">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            {/* User Badge & QR Mini */}
-            <div className="md:col-span-2 flex flex-col sm:flex-row items-center gap-8 bg-dark-200/40 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-orange-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="w-40 h-40 bg-white p-3 rounded-2xl shadow-2xl relative">
-                  <QRCode
-                    value={myRegistration?.qrCode || 'GS-GUEST'}
-                    size={150}
-                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                  />
-                </div>
-              </div>
+        {/* NEW DASHBOARD HOME VIEW (PREMIUM STYLE) */}
+        {activeTab === 'inicio' && (
+          <div className="max-w-7xl mx-auto space-y-8 pb-10">
+            <PwaDashboardHero 
+              eventName={selectedProject?.name || "Growth Experience"}
+              location="Triunfo-PE"
+              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() : "16 ABR 2026"}
+              stats={{
+                people: "500+",
+                content: "12h",
+                activities: String(allSessions?.length || 20) + "+"
+              }}
+            />
 
-              <div className="text-center sm:text-left space-y-4">
-                <div>
-                  <h1 className="text-3xl font-black text-white tracking-tight leading-none mb-2">Olá, {myRegistration?.nome?.split(' ')[0] || user?.name?.split(' ')[0]}!</h1>
-                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em]">Seu acesso está <span className="text-emerald-500">liberado</span> para o evento</p>
-                </div>
+            {nextActivity && (
+              <NextActivityCard 
+                title={nextActivity.title || nextActivity.titulo}
+                subtitle={`${nextActivity.speakers || 'Leandro Batista'} • ${nextActivity.room || 'Auditório'}`}
+                time={nextActivity.startTime || '19:00'}
+                duration="50 min"
+                isConfirmed={activityCheckIns?.some((c: any) => c.session_id === nextActivity.id && c.registration_id === myRegistration?.id)}
+                onClick={() => setSelectedSession(nextActivity)}
+              />
+            )}
 
-                <div className="flex flex-wrap justify-center sm:justify-start gap-3">
-                  <Badge className="bg-orange-500 text-white font-black px-4 py-1.5 rounded-full border-none shadow-glow-orange">
-                    {myRegistration?.categoria || 'PARTICIPANTE'}
-                  </Badge>
-                  {isActuallyPaid && (
-                    <Badge className="bg-teal-500 text-white font-black px-4 py-1.5 rounded-full border-none shadow-glow-teal">
-                      PASSAPORTE NIGHT
-                    </Badge>
-                  )}
-                </div>
-              </div>
+            <div className="px-6 grid grid-cols-2 gap-4">
+               <button 
+                  onClick={() => setActiveTab('agenda')}
+                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                  <Calendar className="h-6 w-6 text-brand-orange-coral" />
+                  <span className="text-white font-black text-sm text-left leading-tight">Minha<br/>Agenda</span>
+               </button>
+               <button 
+                  onClick={() => setActiveTab('networking' as any)}
+                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                  <Users className="h-6 w-6 text-brand-orange-coral" />
+                  <span className="text-white font-black text-sm text-left leading-tight">Networking</span>
+               </button>
             </div>
 
-            {/* Quick Action Button */}
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3">
+            {/* Quick Actions Grid */}
+            <div className="px-6">
+               <QuickActions 
+                  onStartupClick={() => setIsStartupModalOpen(true)}
+                  onB2BClick={() => setIsB2BModalOpen(true)}
+                  onMentoriaClick={() => myRegistration?.palestrasNoturnas ? setActiveTab('mentorias' as any) : setShowUpgradeModal(true)}
+                  showMentoria={true}
+               />
+            </div>
+
+            {/* Float Action Button Download */}
+            <div className="fixed bottom-24 right-6 z-50">
+               <button 
+                onClick={() => handleDownloadTicket()}
+                className="w-16 h-16 bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense rounded-2xl flex items-center justify-center shadow-2xl shadow-brand-orange-coral/40 active:scale-90 transition-transform"
+               >
+                  <FileText className="h-7 w-7 text-white" />
+               </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Content Area - Only shown for other tabs */}
+      {activeTab !== 'inicio' && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-10 z-10 relative">
+          {/* Action Buttons for Agenda (Optional) */}
+          {activeTab === 'agenda' && (
+             <div className="flex flex-col gap-3">
                 <Button
                   onClick={() => setIsSelfCheckInOpen(true)}
                   className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-6 rounded-2xl text-base shadow-xl shadow-brand-orange-coral/20 group transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-0.5 border-none h-auto"
@@ -991,34 +1051,11 @@ export function DashboardParticipante() {
                   </div>
                   <span className="text-[8px] opacity-70 font-bold uppercase tracking-widest leading-none">Entre na sala e aponte para o QR Code</span>
                 </Button>
+             </div>
+          )}
 
-                <Button
-                  onClick={() => setIsSelfCheckInOpen(true)}
-                  variant="outline"
-                  className="w-full bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border-teal-500/30 font-black h-12 rounded-xl text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" /> Autocredenciamento
-                </Button>
-              </div>
-
-              {activeTab !== 'agenda' && (
-                <Button
-                  variant="ghost"
-                  onClick={() => setActiveTab('agenda')}
-                  className="text-gray-500 hover:text-white font-black text-[10px] uppercase tracking-[0.2em]"
-                >
-                  VER MINHA AGENDA COMPLETA <ArrowRight className="h-3 w-3 ml-2" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-10">
-
-        {/* Render actual tab content */}
-        <AnimatePresence mode="wait">
+          {/* Render actual tab content */}
+          <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
@@ -1048,7 +1085,7 @@ export function DashboardParticipante() {
                 navigate={navigate}
                 activityCheckIns={activityCheckIns}
                 onSessionClick={(session) => setSelectedSession(session)}
-                allSessions={sessions}
+                allSessions={allSessions || []}
               />
             )}
 
@@ -1136,9 +1173,8 @@ export function DashboardParticipante() {
                 })}
               </div>
             </div>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Modern High-End Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">

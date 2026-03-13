@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { NextActivityCard } from './components/shared/NextActivityCard';
+import { QuickActions } from './components/shared/QuickActions';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useProject } from '@/contexts/ProjectContext';
@@ -153,6 +156,49 @@ export default function DashboardMentor() {
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10 flex-1 relative z-10 w-full mb-20">
+        
+        {/* NEW DASHBOARD HOME VIEW (PREMIUM STYLE) - Only if in sessions tab or initial view */}
+        {activeTab === 'sessions' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <PwaDashboardHero 
+              eventName="Growth Experience"
+              location="Triunfo-PE"
+              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() : "16 ABR 2026"}
+              stats={{
+                people: mentorsData?.length ? String(mentorsData.length) + "+" : "50+",
+                content: "Impacto",
+                activities: String(upcomingSessions.length) + " Mentorias"
+              }}
+            />
+
+            {upcomingSessions.length > 0 && (
+              <NextActivityCard 
+                title={`Mentoria: ${upcomingSessions[0].menteeName}`}
+                subtitle={upcomingSessions[0].topic || "Sessão de Mentoria"}
+                time={new Date(upcomingSessions[0].scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                duration="20 min"
+                isConfirmed={true}
+              />
+            )}
+
+            <div className="px-2 grid grid-cols-2 gap-4">
+               <button 
+                  onClick={() => setActiveTab('slots')}
+                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                  <Clock className="h-6 w-6 text-brand-orange-coral" />
+                  <span className="text-white font-black text-sm text-left leading-tight">Configurar<br/>Slots</span>
+               </button>
+               <button 
+                  onClick={() => setActiveTab('profile')}
+                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                  <User className="h-6 w-6 text-brand-orange-coral" />
+                  <span className="text-white font-black text-sm text-left leading-tight">Meu Perfil<br/>Mentor</span>
+               </button>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Tabs (Premium Style) */}
         <div className="flex items-center gap-2 bg-dark-200/50 p-1.5 rounded-[2rem] border border-white/5 self-start shadow-xl shadow-black/20">

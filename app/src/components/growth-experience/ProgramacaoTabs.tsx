@@ -89,6 +89,7 @@ export interface ProgramacaoTabsProps {
     /** Data do evento (YYYY-MM-DD) e atividades com horário para jornada Agora/Próximo */
     eventDate?: string;
     allActivitiesWithTimes?: { id: string; titulo: string; horario: string; startTime?: string; endTime?: string; local?: string }[];
+    hasNightAccess?: boolean;
 }
 
 const corMap: Record<string, string> = {
@@ -110,7 +111,8 @@ export function ProgramacaoTabs({
     momentosAncora,
     onInscricao,
     eventDate,
-    allActivitiesWithTimes = []
+    allActivitiesWithTimes = [],
+    hasNightAccess = false
 }: ProgramacaoTabsProps) {
     const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
     const { projectId } = useProject();
@@ -169,14 +171,16 @@ export function ProgramacaoTabs({
                     </div>
                 </div>
 
-                <Button
-                    onClick={onInscricao}
-                    size="sm"
-                    className="bg-brand-orange-coral/10 border border-brand-orange-coral/30 text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white transition-all font-black text-[10px] uppercase tracking-widest px-6 h-9 rounded-full"
-                >
-                    <UserPlus className="h-3 w-3 mr-2" />
-                    Garantir Vaga Gratuita
-                </Button>
+                {(activeTab !== 'noturna' || !hasNightAccess) && (
+                    <Button
+                        onClick={onInscricao}
+                        size="sm"
+                        className="bg-brand-orange-coral/10 border border-brand-orange-coral/30 text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white transition-all font-black text-[10px] uppercase tracking-widest px-6 h-9 rounded-full"
+                    >
+                        <UserPlus className="h-3 w-3 mr-2" />
+                        Garantir Vaga Gratuita
+                    </Button>
+                )}
             </div>
 
             {/* Salão Principal */}
@@ -509,13 +513,22 @@ export function ProgramacaoTabs({
                                 <h3 className="text-4xl font-black text-white tracking-tighter mb-2">NIGHT EXPERIENCE</h3>
                                 <p className="text-brand-orange-coral font-black uppercase tracking-widest text-xs">O ponto alto do evento • 19h00 às 23h00</p>
                             </div>
-                            <div className="flex flex-col items-start md:items-end bg-brand-orange-coral p-5 rounded-2xl shadow-glow">
-                                <span className="text-dark-100 font-black text-xs uppercase tracking-widest mb-1 opacity-70">Ingresso Premium</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-dark-100 text-3xl font-black tracking-tighter">R$ 179,99</span>
-                                    <Badge className="bg-dark-100 text-brand-orange-coral font-black border-none">ÚLTIMAS VAGAS</Badge>
+                            {hasNightAccess ? (
+                                <div className="flex flex-col items-start md:items-end bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl shadow-glow">
+                                    <span className="text-emerald-400 font-black text-xs uppercase tracking-widest mb-1 opacity-70">Sua Credencial Premium</span>
+                                    <div className="flex items-center gap-2">
+                                        <Badge className="bg-emerald-500 text-dark-100 font-black border-none px-4 py-1">ACESSO CONFIRMADO</Badge>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col items-start md:items-end bg-brand-orange-coral p-5 rounded-2xl shadow-glow">
+                                    <span className="text-dark-100 font-black text-xs uppercase tracking-widest mb-1 opacity-70">Ingresso Premium</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-dark-100 text-3xl font-black tracking-tighter">R$ 179,99</span>
+                                        <Badge className="bg-dark-100 text-brand-orange-coral font-black border-none">ÚLTIMAS VAGAS</Badge>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-6">

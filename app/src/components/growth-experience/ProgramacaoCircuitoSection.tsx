@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Zap, Trophy, Briefcase, GraduationCap, Landmark } from 'lucide-react';
 import { ProgramacaoTabs, type ProgramacaoDiurna, type ProgramacaoTarde, type Estacao, type MomentoAncora } from './ProgramacaoTabs';
 import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
 import { useProject } from '@/contexts/ProjectContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRegistrations } from '@/hooks/useData';
 import {
     circuitoExperienciasData,
     momentosAncoraData,
@@ -28,8 +31,18 @@ const getIcon = (nome: string) => {
 
 
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
+    const { user } = useAuth();
+    const { data: registrations } = useRegistrations();
     const { programacao } = useProgramacaoTriunfo();
     const { selectedProject } = useProject();
+
+    // Verifica se o usuário tem acesso à noite (Night Experience) no projeto atual
+    const hasNightAccess = useMemo(() => {
+        if (!user || !registrations || !selectedProject) return false;
+        const currentReg = (registrations || []).find(r => r.projectId === selectedProject.id);
+        // O acesso à noite é confirmado se a inscrição existe, o pagamento está confirmado e o campo comprarPalestras é true (ou se for VIP/Sócio)
+        return currentReg?.status === 'confirmed' && currentReg?.subscriptionData?.comprarPalestras === true;
+    }, [user, registrations, selectedProject]);
 
     // Se não houver dados no banco, usa os estáticos como fallback
     // Isso garante que a página não fique vazia enquanto o admin não preenche
@@ -95,6 +108,7 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                     onInscricao={onInscricao}
                     eventDate={selectedProject?.startDate}
                     allActivitiesWithTimes={programacao?.allActivitiesWithTimes}
+                    hasNightAccess={hasNightAccess}
                 />
             </div>
         </section>
