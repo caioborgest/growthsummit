@@ -80,7 +80,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const { user } = useAuth();
   const { selectedProject } = useProject();
   const { registration } = useMyRegistration();
-  const { data: sessions } = useSessions();
+  const { data: allSessions } = useSessions();
   const PRECO_BASE = 179.90;
   const precoFinal = cupomValido
     ? PRECO_BASE * (1 - cupomValido.desconto / 100)
@@ -213,7 +213,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 {/* Benefícios */}
 <div className="space-y-2">
   {[
-    `Acesso às ${sessions.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`, 
+    `Acesso às ${allSessions?.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`, 
     nightSpeakers, 
     'Networking exclusivo pós-evento', 
     'Certificado de participação completo'
@@ -387,6 +387,7 @@ export function DashboardParticipante() {
   const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
+  const { data: batches = [] } = useRegistrationBatches();
 
   const nextActivity = useMemo(() => {
     if (!allSessions || !activityCheckIns) return null;
@@ -408,9 +409,8 @@ export function DashboardParticipante() {
     }) || sorted[0]; // Fallback to first session if none found
   }, [allSessions, activityCheckIns, myRegistration?.id]);
 
-  const [notifications] = useState<any[]>([
-    { id: 1, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '', read: true, type: 'info' }
-  ]);
+  // Manual notifications can be added here if needed
+  const [extraNotifications] = useState<any[]>([]);
   
   const myBatches = useMemo(() => {
     return batches.filter(b => b.emailResponsavel === user?.email);
@@ -430,7 +430,7 @@ export function DashboardParticipante() {
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
     const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
     return names.join(' + ');
-  }, [sessions]);
+  }, [allSessions]);
 
   // Auto-refetch registration to keep status in sync with backoffice
   useEffect(() => {

@@ -30,6 +30,9 @@ import { AnimatePresence } from 'framer-motion';
 import { LeadScanner } from './components/shared/LeadScanner';
 import { jsPDF } from 'jspdf';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
+import { useSessions, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { NextActivityCard } from './components/shared/NextActivityCard';
 
 import { exportToCSV } from '@/utils/csv';
 import { supabase } from '@/lib/supabase';
@@ -47,7 +50,10 @@ export function DashboardStartup() {
   const { data: startups } = useStartups();
   const { data: leads, create: createLead } = useLeads();
   const { data: notificationsData } = useNotifications();
-  const [activeTab, setActiveTab] = useState('visao-geral');
+  const { data: allSessions } = useSessions();
+  const { data: activityCheckIns } = useCheckInsAtividades();
+  const { registration } = useMyRegistration();
+  const [activeTab, setActiveTab] = useState('home');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -69,6 +75,17 @@ export function DashboardStartup() {
     (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
     [notificationsData, user?.id]
   );
+
+  const nextActivity = useMemo(() => {
+    if (!allSessions || !activityCheckIns) return null;
+    const sorted = [...allSessions].sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
+    const now = new Date();
+    const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    return sorted.find(s => {
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
+    }) || sorted[0];
+  }, [allSessions, activityCheckIns, registration?.id]);
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
@@ -210,7 +227,10 @@ export function DashboardStartup() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsTrigger value="home" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+                   Início
+                </TabsTrigger>
                 <TabsTrigger value="visao-geral" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
                   <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
                   Visão Geral
@@ -232,6 +252,42 @@ export function DashboardStartup() {
                   Perfil
                 </TabsTrigger>
               </TabsList>
+
+              {/* Home Tab */}
+              <TabsContent value="home" className="mt-0 space-y-10">
+                <PwaDashboardHero 
+                    eventName="Growth Experience"
+                    location="Triunfo-PE"
+                    date="16 ABR 2026"
+                    stats={{
+                        people: stats.totalLeads.toString() + "+",
+                        content: startupData?.sector || "Startup",
+                        activities: startupData?.standNumber || "EXPO"
+                    }}
+                />
+                
+                {nextActivity && (
+                    <NextActivityCard 
+                        title={nextActivity.title}
+                        subtitle={nextActivity.type || "Atividade Gerada"}
+                        time={nextActivity.startTime || "00:00"}
+                        duration="45 min"
+                        isConfirmed={activityCheckIns?.some(c => c.session_id === nextActivity.id && c.registration_id === registration?.id)}
+                        onClick={() => setActiveTab('agenda')}
+                    />
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                     <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20">
+                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Status Stand</p>
+                        <p className="text-xl font-bold text-white">Pronto</p>
+                     </div>
+                     <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20">
+                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Pitching</p>
+                        <p className="text-xl font-bold text-white">Agendado</p>
+                     </div>
+                </div>
+              </TabsContent>
 
               {/* Visao Geral Tab */}
               <TabsContent value="visao-geral" className="mt-0">

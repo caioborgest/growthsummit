@@ -21,7 +21,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSponsors, useLeads, useNotifications } from '@/hooks/useData';
+import { useSponsors, useLeads, useNotifications, useSessions, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { NextActivityCard } from './components/shared/NextActivityCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -42,12 +44,26 @@ export function DashboardSponsor() {
   const { user, logout } = useAuth();
   const { data: sponsors } = useSponsors();
   const { data: notificationsData } = useNotifications();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { data: allSessions } = useSessions();
+  const { data: activityCheckIns } = useCheckInsAtividades();
+  const { registration } = useMyRegistration();
+  const [activeTab, setActiveTab] = useState('home');
 
   const notifications = useMemo(() =>
     (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
     [notificationsData, user?.id]
   );
+
+  const nextActivity = useMemo(() => {
+    if (!allSessions || !activityCheckIns) return null;
+    const sorted = [...allSessions].sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
+    const now = new Date();
+    const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    return sorted.find(s => {
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
+    }) || sorted[0];
+  }, [allSessions, activityCheckIns, registration?.id]);
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
@@ -190,7 +206,13 @@ export function DashboardSponsor() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsTrigger
+                  value="home"
+                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
+                >
+                  Início
+                </TabsTrigger>
                 <TabsTrigger
                   value="overview"
                   className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
@@ -241,6 +263,42 @@ export function DashboardSponsor() {
                   Perfil
                 </TabsTrigger>
               </TabsList>
+
+              {/* Home Tab */}
+              <TabsContent value="home" className="mt-0 space-y-10">
+                <PwaDashboardHero 
+                    eventName="Growth Experience"
+                    location="Triunfo-PE"
+                    date="16 ABR 2026"
+                    stats={{
+                        people: sponsorLeads.length.toString() + "+",
+                        content: `${stats.completed}/${stats.totalDeliverables}`,
+                        activities: "Premium"
+                    }}
+                />
+                
+                {nextActivity && (
+                    <NextActivityCard 
+                        title={nextActivity.title}
+                        subtitle={nextActivity.type || "Patrocinador Geral"}
+                        time={nextActivity.startTime || "00:00"}
+                        duration="20 min"
+                        isConfirmed={activityCheckIns?.some(c => c.session_id === nextActivity.id && c.registration_id === registration?.id)}
+                        onClick={() => setActiveTab('programacao')}
+                    />
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                     <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20">
+                        <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Status Marca</p>
+                        <p className="text-xl font-bold text-white font-black group-hover:text-yellow-400 transition-colors">Aprovado</p>
+                     </div>
+                     <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
+                        <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Impacto Estimado</p>
+                        <p className="text-xl font-bold text-green-400 font-black">2.5k+</p>
+                     </div>
+                </div>
+              </TabsContent>
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="mt-0 space-y-6">

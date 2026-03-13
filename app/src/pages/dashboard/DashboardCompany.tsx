@@ -18,7 +18,9 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications } from '@/hooks/useData';
+import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { NextActivityCard } from './components/shared/NextActivityCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PremiumHeader } from './components/shared/PremiumHeader';
@@ -54,7 +56,9 @@ export function DashboardCompany() {
   const { data: appointments } = useB2BAppointmentsTriunfo();
   const { data: matches } = useB2BMatches();
   const { data: sessions } = useSessions();
-  const [activeTab, setActiveTab] = useState('discovery');
+  const { data: activityCheckIns } = useCheckInsAtividades();
+  const { registration } = useMyRegistration();
+  const [activeTab, setActiveTab] = useState('home');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -80,6 +84,17 @@ export function DashboardCompany() {
       : [],
     [meetings, appointments, companyData]
   );
+
+  const nextActivity = useMemo(() => {
+    if (!sessions || !activityCheckIns) return null;
+    const sorted = [...sessions].sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
+    const now = new Date();
+    const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    return sorted.find(s => {
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
+    }) || sorted[0];
+  }, [sessions, activityCheckIns, registration?.id]);
 
   // Discovery: RPC retorna empresas sem dados sensíveis. Filtra self e já swiped.
   const discoveryCompanies = useMemo(() => {
@@ -190,7 +205,10 @@ export function DashboardCompany() {
 
             <div className="mt-12">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                  <TabsTrigger value="home" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
+                    Início
+                  </TabsTrigger>
                   <TabsTrigger value="overview" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     <TrendingUp className="h-4 w-4 mr-1 md:mr-2" />
                     Visão Geral
@@ -220,6 +238,44 @@ export function DashboardCompany() {
                     Perfil
                   </TabsTrigger>
                 </TabsList>
+
+                {/* Home Tab */}
+                <TabsContent value="home" className="mt-0 space-y-10">
+                  <PwaDashboardHero 
+                      eventName="Growth Experience"
+                      location="Triunfo-PE"
+                      date="16 ABR 2026"
+                      stats={{
+                          people: discoveryCompanies.length.toString() + "+",
+                          content: stats.matches.toString() + " Matches",
+                          activities: stats.scheduled.toString() + " Reuniões"
+                      }}
+                  />
+                  
+                  {nextActivity && (
+                      <NextActivityCard 
+                          title={nextActivity.title}
+                          subtitle={nextActivity.type || "B2B Session"}
+                          time={nextActivity.startTime || "00:00"}
+                          duration="15 min"
+                          isConfirmed={activityCheckIns?.some(c => c.session_id === nextActivity.id && c.registration_id === registration?.id)}
+                          onClick={() => setActiveTab('programacao')}
+                      />
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                       <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20">
+                          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Status B2B</p>
+                          <p className="text-xl font-bold text-white">Ativo</p>
+                       </div>
+                       <div className="glass-card p-6 bg-gradient-to-br from-pink-500/10 to-transparent border-pink-500/20">
+                          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">Próxima Reunião</p>
+                          <p className="text-xl font-bold text-white">
+                              {companyMeetings[0] ? new Date(companyMeetings[0].scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '---'}
+                          </p>
+                       </div>
+                  </div>
+                </TabsContent>
 
                 {/* Discovery Tab */}
                 <TabsContent value="discovery">
