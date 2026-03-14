@@ -465,7 +465,8 @@ export function DashboardSponsor() {
                     </div>
                   </CardContent>
                 </Card>
-                 {/* Leads Tab */}
+              </TabsContent>
+              {/* Leads Tab */}
               <TabsContent value="leads" className="mt-0 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="relative flex-1 max-w-md">
@@ -588,8 +589,6 @@ export function DashboardSponsor() {
                     </div>
                   )}
                 </div>
-              </TabsContent>
->
               </TabsContent>
 
               {/* Programação Tab */}
