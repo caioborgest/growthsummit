@@ -1324,9 +1324,9 @@ export function DashboardParticipante() {
         />
       )}
 
-      {isSelfCheckInOpen && (
+      {isSelfCheckInOpen && myRegistration && (
         <SelfCheckInModal
-          isOpen={isSelfCheckInOpen}
+          registration={myRegistration}
           onClose={() => setIsSelfCheckInOpen(false)}
           onScanSuccess={handleScanSuccess}
         />

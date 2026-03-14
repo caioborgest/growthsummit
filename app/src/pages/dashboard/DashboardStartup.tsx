@@ -30,7 +30,6 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { LeadScanner } from './components/shared/LeadScanner';
-import { jsPDF } from 'jspdf';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 import { useSessions, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
@@ -133,9 +132,10 @@ export function DashboardStartup() {
     }
   };
 
-  const handleDownloadQRCode = () => {
+  const handleDownloadQRCode = async () => {
     if (!startupData) return;
     try {
+      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
       doc.setFillColor(12, 14, 18);
       doc.rect(0, 0, 210, 297, 'F');
