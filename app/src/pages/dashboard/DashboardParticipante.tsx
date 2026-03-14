@@ -768,7 +768,7 @@ export function DashboardParticipante() {
                 visitorName: myRegistration.nome || user?.name || 'Visitante',
                 visitorEmail: myRegistration.email || user?.email,
                 visitorPhone: myRegistration.telefone,
-                visitorCpf: myRegistration.cpf,
+                visitorCpf: (myRegistration as any).cpf,
               });
               logger.info(`Lead gerado para o stand ${standName}`);
             }
@@ -778,7 +778,7 @@ export function DashboardParticipante() {
         }
 
         await registerStandCheckIn({
-          projectId: selectedProject?.id,
+          projectId: selectedProject?.id || '',
           registrationId: myRegistration.id,
           standId: standId,
         });
@@ -826,7 +826,7 @@ export function DashboardParticipante() {
   const handleDownloadCertificate = async (cert: any) => {
     const toastId = toast.loading('Gerando certificado...');
     try {
-      const template = selectedProject?.metadata?.certificate_template || {};
+      const template = (selectedProject as any)?.metadata?.certificate_template || {};
       
       const certData: any = {
         userName: myRegistration?.nome || user?.name || 'Participante',
@@ -1175,7 +1175,7 @@ export function DashboardParticipante() {
             )}
 
             {activeTab === 'circuito' && myRegistration?.id && (
-              <GamificationSection registrationId={myRegistration.id} onScanSuccess={handleScanSuccess} />
+              <GamificationSection registrationId={myRegistration.id} />
             )}
 
             {activeTab === 'certificados' && (
@@ -1213,10 +1213,7 @@ export function DashboardParticipante() {
             <div className="space-y-4">
               <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Sua Programação do Dia</h4>
               <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                {cursosSelecionados.map((cursoId) => {
-                  const s = allSessions?.find(ss => ss.id === cursoId);
-                  if (!s) return null;
-                  return (
+                {cursosSelecionados.map((s) => (
                     <div
                       key={s.id}
                       onClick={() => setSelectedSession(s)}
