@@ -99,6 +99,12 @@ export default function AdminUsuarios() {
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [newUserData, setNewUserData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        role: 'staff' as User['role'],
+        department: '',
         staffRole: '',
     });
 
