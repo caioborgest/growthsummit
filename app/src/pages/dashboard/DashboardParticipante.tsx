@@ -92,7 +92,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const nightSpeakers = useMemo(() => {
     const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
+    const names = night.map(s => typeof s.speakers === 'string' ? s.speakers.split(',').shift() : Array.isArray(s.speakers) ? s.speakers[0] : (s.speakers as any)).filter(Boolean);
     return names.join(' + ');
   }, [allSessions]);
 
@@ -434,7 +434,7 @@ export function DashboardParticipante() {
   const nightSpeakers = useMemo(() => {
     const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
+    const names = night.map(s => typeof s.speakers === 'string' ? s.speakers.split(',').shift() : Array.isArray(s.speakers) ? s.speakers[0] : (s.speakers as any)).filter(Boolean);
     return names.join(' + ');
   }, [allSessions]);
 

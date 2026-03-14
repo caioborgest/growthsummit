@@ -458,6 +458,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       return;
     }
 
+    if (isFetchingRef.current && !force) return;
+
     // logger.debug(`[useData:${entityName}] Iniciando busca...`, { force, projectId });
 
     const now = Date.now();
