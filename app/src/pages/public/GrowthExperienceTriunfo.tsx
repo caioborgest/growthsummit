@@ -744,6 +744,38 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
+      {/* Marcas Apoiadoras */}
+      <section className="py-16 bg-dark-100 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h3 className="text-gray-500 uppercase tracking-[0.3em] text-xs font-black">Marcas que Apoiam o Regionalismo</h3>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 md:gap-24 px-4">
+            <div className="group transition-all duration-500">
+              <img 
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/acmt.png" 
+                alt="ACMT" 
+                className="h-12 sm:h-16 md:h-20 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+              />
+            </div>
+            <div className="group transition-all duration-500">
+              <img 
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/sebrae.png" 
+                alt="SEBRAE" 
+                className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+              />
+            </div>
+            <div className="group transition-all duration-500">
+              <img 
+                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/sest-senat.png" 
+                alt="SEST SENAT" 
+                className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Final */}
       <section className="py-24 bg-dark relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
