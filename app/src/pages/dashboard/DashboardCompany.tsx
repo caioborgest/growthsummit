@@ -15,7 +15,9 @@ import {
   Users,
   QrCode,
   Download,
-  Star
+  Star,
+  Phone,
+  Mail
 } from 'lucide-react';
 import { exportToCSV } from '@/utils/csv';
 import { motion, AnimatePresence } from 'framer-motion';

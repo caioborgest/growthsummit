@@ -12,6 +12,7 @@ import {
   User as UserIcon,
   Phone,
   Mail,
+  CheckCircle,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';

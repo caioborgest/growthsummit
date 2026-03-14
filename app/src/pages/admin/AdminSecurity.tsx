@@ -69,7 +69,7 @@ export function SecurityDashboard() {
             const { data: logs } = await supabase
                 .from('audit_logs')
                 .select('*')
-                .order('timestamp', { ascending: false })
+                .order('created_at', { ascending: false })
                 .limit(100);
 
             if (logs) setAuditLogs(logs);
@@ -132,7 +132,7 @@ export function SecurityDashboard() {
             const csv = [
                 ['Timestamp', 'Event', 'User ID', 'IP Address', 'User Agent'].join(','),
                 ...auditLogs.map(log => [
-                    log.timestamp,
+                    log.created_at,
                     log.event,
                     log.user_id || 'N/A',
                     log.ip_address || 'N/A',

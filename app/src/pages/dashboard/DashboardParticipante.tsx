@@ -720,8 +720,7 @@ export function DashboardParticipante() {
           code: certCode,
           issue_date: new Date().toISOString()
         }).catch(() => { });
-
-        toast.success(`Check -in em "${sessionTitle}" confirmado! Certificado gerado.`);
+        toast.success(`Check-in em "${sessionTitle}" confirmado! Certificado gerado.`);
         return;
       }
 
@@ -1238,14 +1237,13 @@ export function DashboardParticipante() {
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                ))}
               </div>
             </div>
           )}
         </div>
-        </div>
-      )}
+      </div>
+    )}
 
       {/* Modern High-End Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-40 p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
@@ -1310,6 +1308,43 @@ export function DashboardParticipante() {
         isOpen={isMentoriaModalOpen}
         onClose={() => setIsMentoriaModalOpen(false)}
       />
+
+      {showUpgradeModal && myRegistration && (
+        <UpgradeProModal
+          registrationId={myRegistration.id}
+          onClose={() => setShowUpgradeModal(false)}
+          onSuccess={() => refetchRegistration()}
+        />
+      )}
+
+      {showCheckInModal && myRegistration && (
+        <CheckInModal
+          registration={myRegistration}
+          onClose={() => setShowCheckInModal(false)}
+        />
+      )}
+
+      {isSelfCheckInOpen && (
+        <SelfCheckInModal
+          isOpen={isSelfCheckInOpen}
+          onClose={() => setIsSelfCheckInOpen(false)}
+          onScanSuccess={handleScanSuccess}
+        />
+      )}
+
+      {isB2BModalOpen && (
+        <B2BFormModal
+          isOpen={isB2BModalOpen}
+          onClose={() => setIsB2BModalOpen(false)}
+        />
+      )}
+
+      {isStartupModalOpen && (
+        <StartupFormModal
+          isOpen={isStartupModalOpen}
+          onClose={() => setIsStartupModalOpen(false)}
+        />
+      )}
     </motion.div>
   );
 }
