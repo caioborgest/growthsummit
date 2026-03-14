@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -67,6 +67,7 @@ import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 import { GamificationSection } from './components/GamificationSection';
 import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
+import { logger } from '@/lib/logger';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
 function UpgradeProModal({ registrationId, onClose, onSuccess }: {
@@ -93,7 +94,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
     const names = night.map(s => s.speakers?.split(',').shift()).filter(Boolean);
     return names.join(' + ');
-  }, [sessions]);
+  }, [allSessions]);
 
   const validarCupom = async () => {
     if (!cupom.trim()) return;
@@ -382,6 +383,7 @@ function CheckInModal({ registration, onClose }: { registration: MyRegistration;
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function DashboardParticipante() {
+  const { user, logout } = useAuth();
   const { selectedProject } = useProject();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -642,7 +644,7 @@ export function DashboardParticipante() {
   // Experience Pro não pago: status = "Pendente"
   const isActuallyPaid = useMemo(() => {
     if (!myRegistration) return false;
-    const pgto = myRegistration.status_pagamento || myRegistration.statusPagamento;
+    const pgto = (myRegistration as any).status_pagamento || myRegistration.statusPagamento;
     const st = myRegistration.status;
 
     const hasPaidPgto = pgto === 'pago' || pgto === 'paid';
@@ -666,8 +668,8 @@ export function DashboardParticipante() {
   const cursosSelecionados = useMemo(() => {
     const ids: string[] = myRegistration?.cursosSelecionados || [];
     if (!ids.length) return [];
-    return sessions.filter(s => ids.includes(s.id));
-  }, [sessions, myRegistration]);
+    return allSessions.filter(s => ids.includes(s.id));
+  }, [allSessions, myRegistration]);
 
 
 
@@ -1044,7 +1046,7 @@ export function DashboardParticipante() {
 
             {nextActivity && (
               <NextActivityCard 
-                title={nextActivity.title || nextActivity.titulo}
+                title={nextActivity.title || (nextActivity as any).titulo}
                 subtitle={`${nextActivity.speakers || 'Leandro Batista'} • ${nextActivity.room || 'Auditório'}`}
                 time={nextActivity.startTime || '19:00'}
                 duration="50 min"
@@ -1212,7 +1214,7 @@ export function DashboardParticipante() {
               <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Sua Programação do Dia</h4>
               <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
                 {cursosSelecionados.map((cursoId) => {
-                  const s = sessions.find(ss => ss.id === cursoId);
+                  const s = allSessions?.find(ss => ss.id === cursoId);
                   if (!s) return null;
                   return (
                     <div
@@ -1225,7 +1227,7 @@ export function DashboardParticipante() {
                           <Clock className="h-5 w-5 text-teal-400" />
                         </div>
                         <div>
-                          <p className="text-white font-black text-sm uppercase italic truncate w-40 leading-none mb-1">{s.title || s.titulo}</p>
+                          <p className="text-white font-black text-sm uppercase italic truncate w-40 leading-none mb-1">{s.title || (s as any).titulo}</p>
                           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{s.startTime} - {s.endTime}</p>
                         </div>
                       </div>
@@ -1243,6 +1245,8 @@ export function DashboardParticipante() {
                 })}
               </div>
             </div>
+          )}
+        </div>
         </div>
       )}
 
