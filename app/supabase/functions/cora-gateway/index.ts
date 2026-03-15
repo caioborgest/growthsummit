@@ -47,7 +47,8 @@ serve(async (req) => {
                     email, 
                     telefone,
                     valor_pago,
-                    profiles (
+                    cpf,
+                    profiles:user_id (
                         cpf,
                         cnpj,
                         city,
@@ -58,20 +59,21 @@ serve(async (req) => {
                 .single()
 
             if (fetchError || !registration) {
+                console.error('[Cora Gateway] Fetch error:', fetchError);
                 return new Response(JSON.stringify({ error: 'Inscrição não encontrada' }), {
                     status: 404,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 })
             }
 
-            // Validar documento
-            const profile = Array.isArray(registration.profiles) ? registration.profiles[0] : (registration.profiles || {});
-            const rawDocument = profile?.cnpj || profile?.cpf || '00000000000';
+            // Validar documento - Tentar de várias fontes
+            const profile = registration.profiles;
+            const rawDocument = profile?.cnpj || profile?.cpf || registration.cpf || '00000000000';
             const document = rawDocument.replace(/\D/g, ''); // apenas números
             const isCnpj = document.length === 14;
 
-            if (!document) {
-                return new Response(JSON.stringify({ error: 'CPF/CNPJ não preenchido no perfil' }), {
+            if (!document || document === '00000000000') {
+                return new Response(JSON.stringify({ error: 'Identificação (CPF/CNPJ) inválida ou não encontrada' }), {
                     status: 400,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });

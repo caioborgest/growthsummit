@@ -278,37 +278,37 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl h-[96vh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-2xl border-white/10 p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl sm:rounded-3xl">
+            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[94vh] sm:h-auto sm:max-h-[92vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
                 {/* Header com Progresso */}
-                <div className="bg-dark-100/50 backdrop-blur-md pb-4 pt-6 sm:pb-6 sm:pt-8 px-4 sm:px-8 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="bg-dark-100/50 backdrop-blur-md pb-3 pt-4 sm:pb-6 sm:pt-6 px-4 sm:px-10 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
+                    <div className="flex items-center justify-between mb-4 sm:mb-6">
                         <div>
-                            <DialogTitle className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                            <DialogTitle className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
                                 Inscrição <span className="text-brand-orange-coral">{selectedProject?.shortDescription || selectedProject?.name || 'Evento'}</span>
                             </DialogTitle>
                             <DialogDescription className="sr-only">
                                 Processo de inscrição para workshops e treinamentos do {selectedProject?.name || 'Growth Experience'}.
                             </DialogDescription>
-                            <p className="text-gray-500 text-[10px] sm:text-sm mt-1">{selectedProject?.name || 'Growth Experience'} • Workshop & Training</p>
+                            <p className="text-gray-500 text-[10px] sm:text-xs mt-0.5">{selectedProject?.name || 'Growth Experience'} • © 2026</p>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleClose}
-                            className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full h-10 w-10 transition-all"
+                            className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full h-8 w-8 sm:h-10 sm:w-10 transition-all shrink-0"
                         >
-                            <X className="h-5 w-5" />
+                            <X className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                     </div>
 
                     {/* Step Indicators Compactos e Elegantes */}
-                    <div className="flex items-center justify-between relative px-2">
+                    <div className="flex items-center justify-between relative px-2 sm:px-6">
                         {/* Linha de fundo conectora */}
-                        <div className="absolute top-5 left-8 right-8 h-[2px] bg-white/5 -z-10" />
+                        <div className="absolute top-4 sm:top-5 left-8 right-8 h-[1px] sm:h-[2px] bg-white/5 -z-10" />
                         {/* Linha de progresso ativa */}
                         <div
-                            className="absolute top-5 left-8 h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
-                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 48px)' }}
+                            className="absolute top-4 sm:top-5 left-8 h-[1px] sm:h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
+                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
                         {[
@@ -327,10 +327,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             return (
                                 <div
                                     key={step}
-                                    className="flex flex-col items-center gap-3 relative"
+                                    className="flex flex-col items-center gap-2 sm:gap-3 relative"
                                 >
                                     <div
-                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
+                                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
                                             ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                                             : isActive
                                                 ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-[0_0_20px_rgba(255,112,67,0.4)] scale-110'
@@ -338,18 +338,18 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                             }`}
                                     >
                                         {isCompleted ? (
-                                            <CheckCircle className="h-5 w-5" />
+                                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                                         ) : (
-                                            <span className="text-sm">{step}</span>
+                                            <span className="text-[10px] sm:text-sm">{step}</span>
                                         )}
                                     </div>
                                     <span
-                                        className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive
+                                        className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${isActive
                                             ? 'text-brand-orange-coral'
                                             : isCompleted
                                                 ? 'text-green-500'
                                                 : 'text-gray-600'
-                                            }`}
+                                            } hidden xs:block`}
                                     >
                                         {label}
                                     </span>
@@ -362,9 +362,11 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 {/* Content com Scrollbar Customizada */}
                 <div
                     ref={scrollContainerRef}
-                    className="flex-1 px-4 py-6 sm:px-8 sm:py-8 overflow-y-auto custom-scrollbar"
+                    className="flex-1 px-4 py-6 sm:px-12 sm:py-10 overflow-y-auto custom-scrollbar bg-dark-100/30"
                 >
-                    {renderStep()}
+                    <div className="max-w-3xl mx-auto w-full">
+                        {renderStep()}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

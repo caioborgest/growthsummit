@@ -552,13 +552,13 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             </Card>
 
             {/* Botões */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <Button
                     variant="outline"
                     size="lg"
                     onClick={onVoltar}
                     disabled={validating}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10"
+                    className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
                 >
                     Voltar
                 </Button>
@@ -566,15 +566,15 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     size="lg"
                     onClick={handleContinuar}
                     disabled={validating}
-                    className="flex-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:from-brand-orange-intense hover:to-brand-orange-coral text-white font-bold shadow-lg"
+                    className="flex-1 h-16 rounded-2xl font-black text-lg sm:text-xl tracking-tight transition-all duration-300 shadow-2xl bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-[0_15px_40px_rgba(255,112,67,0.3)] hover:scale-[1.02] active:scale-[0.98]"
                 >
                     {validating ? (
                         <>
-                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                            Validando...
+                            <Loader2 className="h-6 w-6 mr-3 animate-spin" />
+                            VALIDANDO DADOS...
                         </>
                     ) : (
-                        'Continuar'
+                        'CONTINUAR PARA CONFIRMAÇÃO'
                     )}
                 </Button>
             </div>

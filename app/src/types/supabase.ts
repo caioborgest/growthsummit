@@ -272,6 +272,7 @@ export interface Database {
           evento: string | null;
           created_at: string;
           ticket_number?: string | null;
+          cpf?: string | null;
           qr_code?: string | null;
           indicacao_tipo?: string | null;
           indicacao_nome?: string | null;
@@ -286,6 +287,7 @@ export interface Database {
           nome: string;
           email: string;
           telefone: string;
+          cpf?: string | null;
           tipo_inscricao?: string;
           status?: string;
           valor_pago?: number;
@@ -304,6 +306,7 @@ export interface Database {
           nome?: string;
           email?: string;
           telefone?: string;
+          cpf?: string | null;
           tipo_inscricao?: string;
           status?: string;
           valor_pago?: number;

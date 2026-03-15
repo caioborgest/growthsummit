@@ -242,34 +242,34 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             </div>
 
             {/* Botões de Ação */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 {onVoltar && (
                     <Button
                         variant="outline"
                         size="lg"
                         onClick={onVoltar}
-                        className="h-16 px-8 rounded-2xl font-bold text-gray-400 border-white/10 hover:bg-white/5"
+                        className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
                     >
                         Voltar
                     </Button>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Button
                         size="lg"
                         onClick={handleStripe}
-                        className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest text-[10px]"
+                        className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest transition-all hover:scale-[1.02]"
                     >
-                        <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-                        Pagar com Cartão (Parcelado)
+                        <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform hidden sm:block" />
+                        CARTÃO (ATÉ 12X)
                     </Button>
 
                     <Button
                         size="lg"
                         onClick={onContinuar}
-                        className="h-16 bg-white hover:bg-dark-100 text-dark hover:text-white font-black text-lg rounded-2xl transition-all group"
+                        className="h-16 bg-white hover:bg-dark-100 text-dark hover:text-white font-black text-sm sm:text-base rounded-2xl transition-all group shadow-xl hover:scale-[1.02]"
                     >
-                        Avançar Etapa
-                        <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                        PRÓXIMA ETAPA
+                        <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform" />
                     </Button>
                 </div>
             </div>

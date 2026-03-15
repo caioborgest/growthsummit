@@ -94,7 +94,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
             </div>
 
             {/* Botões Finais */}
-            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mt-8 px-4 sm:px-0">
+            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mt-10 px-4 sm:px-0">
                 <Button
                     variant="outline"
                     size="lg"
@@ -102,10 +102,10 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                         onFechar();
                         window.location.href = '/login';
                     }}
-                    className="flex-1 border-white/10 text-gray-300 hover:text-white hover:bg-white/5 h-14 rounded-xl font-bold"
+                    className="flex-1 h-16 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
                 >
-                    <Home className="h-5 w-5 mr-2" />
-                    Página de Login
+                    <Home className="h-5 w-5 mr-3" />
+                    PÁGINA DE LOGIN
                 </Button>
 
                 <Button
@@ -114,9 +114,9 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                         onFechar();
                         window.location.href = '/login';
                     }}
-                    className="flex-1 bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-14 rounded-xl transition-all"
+                    className="flex-1 bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-16 rounded-2xl transition-all shadow-2xl hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm"
                 >
-                    Concluir Cadastro
+                    CONCLUIR CADASTRO
                 </Button>
             </div>
 

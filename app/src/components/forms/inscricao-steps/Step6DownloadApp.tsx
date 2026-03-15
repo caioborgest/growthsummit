@@ -161,13 +161,13 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
             </div>
 
             {/* Botão de Confirmação */}
-            <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+            <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4">
                 {onVoltar && (
                     <Button
                         variant="outline"
                         size="lg"
                         onClick={onVoltar}
-                        className="w-full sm:w-auto px-8 h-14 rounded-xl font-bold text-gray-500 border-white/10 hover:bg-white/5"
+                        className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
                     >
                         Voltar
                     </Button>
@@ -175,10 +175,10 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
                 <Button
                     size="lg"
                     onClick={onContinuar}
-                    className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl shadow-lg"
+                    className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-16 rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] text-lg sm:text-xl"
                 >
-                    Próxima Etapa: Concluir Cadastro
-                    <ArrowRight className="h-5 w-5 ml-2" />
+                    PRÓXIMA ETAPA: CONCLUIR
+                    <ArrowRight className="h-6 w-6 ml-3" />
                 </Button>
             </div>
         </div>

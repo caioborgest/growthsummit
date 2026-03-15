@@ -182,7 +182,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                                             variant="outline"
                                             size="lg"
                                             onClick={onVoltar}
-                                            className="w-full sm:w-auto px-8 h-16 sm:h-20 rounded-2xl font-bold text-gray-400 border-white/10 hover:bg-white/5"
+                                            className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
                                         >
                                             Voltar
                                         </Button>
@@ -190,7 +190,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                                     <Button
                                         size="lg"
                                         onClick={onComprar}
-                                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-16 sm:h-20 text-xl sm:text-2xl rounded-2xl shadow-[0_15px_40px_rgba(255,112,67,0.4)] group relative overflow-hidden"
+                                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-16 sm:h-20 text-xl sm:text-2xl rounded-2xl shadow-[0_15px_40px_rgba(255,112,67,0.4)] group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
                                     >
                                         <div className="absolute inset-y-0 left-0 w-12 bg-white/20 -skew-x-12 -translate-x-full group-hover:animate-shimmer" />
                                         <span className="relative flex items-center justify-center gap-3">
