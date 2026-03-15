@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Settings, CheckCircle, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Calendar, MapPin, Settings, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import type { Project, ProjectType, ProjectStatus } from '@/types';
@@ -23,9 +23,9 @@ const projectTypeLabels: Record<ProjectType, string> = {
 
 const projectStatusLabels: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
   draft: { label: 'Rascunho', color: 'bg-gray-500', icon: Clock },
-  active: { label: 'Ativo', color: 'bg-green-500', icon: CheckCircle },
+  active: { label: 'Ativo', color: 'bg-green-500', icon: CheckCircle2 },
   paused: { label: 'Pausado', color: 'bg-yellow-500', icon: AlertCircle },
-  completed: { label: 'Concluído', color: 'bg-blue-500', icon: CheckCircle },
+  completed: { label: 'Concluído', color: 'bg-blue-500', icon: CheckCircle2 },
   cancelled: { label: 'Cancelado', color: 'bg-red-500', icon: AlertCircle },
 };
 
@@ -479,7 +479,7 @@ export default function AdminProjetos() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#21808D] to-[#2A9D8F] flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-white" />
+                  <CheckCircle2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">Projeto Selecionado</h3>

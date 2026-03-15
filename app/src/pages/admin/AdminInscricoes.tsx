@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import {
   Search,
   Download,
-    CheckCircle,
     XCircle,
     Clock,
     QrCode,
@@ -182,7 +181,7 @@ function DetalhesModal({
                 onClick={() => onUpdateStatus(reg.id, 'paid')}
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle2 className="h-4 w-4 mr-2" />
                 Confirmar Pagamento
               </Button>
             )}
@@ -262,6 +261,18 @@ export default function AdminInscricoes() {
   // Robust Accreditation States
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
+
+  // Otimização: Map para busca de check-ins
+  const checkInsByRegId = useMemo(() => {
+    const map = new Map<string, any[]>();
+    checkIns.forEach(c => {
+      if (c.registrationId) {
+        if (!map.has(c.registrationId)) map.set(c.registrationId, []);
+        map.get(c.registrationId)?.push(c);
+      }
+    });
+    return map;
+  }, [checkIns]);
 
   // Global trigger for DetalhesModal to open checklist
   useState(() => {
@@ -719,7 +730,7 @@ export default function AdminInscricoes() {
                       <td className="p-4">
                         <Badge className={statusColors[reg.status] || 'bg-gray-500/20 text-gray-400'}>
                           {['pago', 'paid'].includes(reg.status)
-                            ? <CheckCircle className="h-3 w-3 mr-1" />
+                            ? <CheckCircle2 className="h-3 w-3 mr-1" />
                             : ['pendente', 'pending'].includes(reg.status)
                               ? <Clock className="h-3 w-3 mr-1" />
                               : <XCircle className="h-3 w-3 mr-1" />}
@@ -738,7 +749,7 @@ export default function AdminInscricoes() {
                       <td className="p-4">
                         <div className="flex items-center gap-1.5">
                           {(() => {
-                            const regCheckIns = checkIns.filter(c => c.registrationId === reg.id && c.checkInType === 'event');
+                            const regCheckIns = (checkInsByRegId.get(reg.id) || []).filter(c => c.checkInType === 'event');
                             const entrance = regCheckIns.length > 0;
                             const kit = regCheckIns.some(c => {
                               try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
@@ -746,7 +757,6 @@ export default function AdminInscricoes() {
                             const badge = regCheckIns.some(c => {
                               try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
                             });
-
                             return (
                               <>
                                 <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>

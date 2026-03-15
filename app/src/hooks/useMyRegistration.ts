@@ -133,20 +133,30 @@ export function useMyRegistration() {
         }
     }, [user, projectId]);
 
+    // 1. Efeito para buscar a inscrição inicial
     useEffect(() => {
-        if (!user || !projectId) return;
+        if (!user || !projectId) {
+            setRegistration(null);
+            return;
+        }
         fetchRegistration();
+    }, [user, projectId, fetchRegistration]);
 
-        // Subscrição em tempo real para mudanças na inscrição
+    // 2. Efeito para subscrição em tempo real (apenas se tiver registration.id)
+    useEffect(() => {
+        if (!user || !projectId || !registration?.id) return;
+
         const table = getTable(projectId);
-        const channel = supabase.channel(`my_registration_${user.id}`)
+        const channelName = `my_registration_${registration.id}`;
+        
+        const channel = supabase.channel(channelName)
             .on(
                 'postgres_changes',
                 {
                     event: 'UPDATE',
                     schema: 'public',
                     table: table,
-                    filter: `id=eq.${registration?.id}`
+                    filter: `id=eq.${registration.id}`
                 },
                 (payload) => {
                     if (payload.new) {
@@ -154,10 +164,24 @@ export function useMyRegistration() {
                     }
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    logger.debug(`[useMyRegistration] Subscribed to ${channelName}`);
+                }
+            });
 
         return () => {
-            supabase.removeChannel(channel);
+            if (channel) {
+                // Tenta remover o canal de forma segura
+                supabase.removeChannel(channel).catch(err => {
+                    // Ignora erro de WebSocket closed if it's already dying
+                    if (err.message?.includes('WebSocket')) {
+                        logger.debug('[useMyRegistration] Ignoring expected WebSocket close error during cleanup');
+                    } else {
+                        logger.warn('[useMyRegistration] Error removing channel:', err);
+                    }
+                });
+            }
         };
     }, [user, projectId, registration?.id]);
 

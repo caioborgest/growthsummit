@@ -53,11 +53,27 @@ export default function AdminStands() {
         ownerType: '' as 'startup' | 'company' | 'sponsor' | ''
     });
 
+    // Otimização: Map para busca rápida de check-ins por participante
     const checkinsByRegistration = useMemo(() => {
-        const map: Record<string, Set<string>> = {};
+        const map = new Map<string, Set<string>>();
         checkins.forEach(c => {
-            if (!map[c.registrationId]) map[c.registrationId] = new Set();
-            map[c.registrationId].add(c.standId);
+            if (c.registrationId && c.standId) {
+                if (!map.has(c.registrationId)) {
+                    map.set(c.registrationId, new Set<string>());
+                }
+                map.get(c.registrationId)?.add(c.standId);
+            }
+        });
+        return map;
+    }, [checkins]);
+
+    // Otimização: Map para contagem de check-ins por stand
+    const checkinCountByStand = useMemo(() => {
+        const map = new Map<string, number>();
+        checkins.forEach(c => {
+            if (c.standId) {
+                map.set(c.standId, (map.get(c.standId) || 0) + 1);
+            }
         });
         return map;
     }, [checkins]);
@@ -65,7 +81,7 @@ export default function AdminStands() {
     const eligibleParticipants = useMemo(() => {
         if (stands.length === 0) return [];
         return inscricoes.filter(reg => {
-            const visitedCount = checkinsByRegistration[reg.id]?.size || 0;
+            const visitedCount = checkinsByRegistration.get(reg.id)?.size || 0;
             return visitedCount >= stands.length;
         });
     }, [inscricoes, stands, checkinsByRegistration]);
@@ -192,7 +208,7 @@ export default function AdminStands() {
     };
 
     const getStandCheckInCount = (standId: string) => {
-        return checkins.filter(c => c.standId === standId).length;
+        return checkinCountByStand.get(standId) || 0;
     };
 
     if (!isProjectSelected) {
@@ -445,7 +461,7 @@ export default function AdminStands() {
                                         <Trophy className="h-10 w-10 text-white" />
                                     </div>
                                     <h3 className="text-[10px] font-black text-orange-400 uppercase tracking-[0.3em] mb-2">🏅 GANHADOR(A) ENCONTRADO!</h3>
-                                    <p className="text-3xl font-black text-white tracking-tight mb-1">{winner.nome}</p>
+                                    <p className="text-3xl font-black text-white tracking-tight mb-1">{winner.name || winner.nome}</p>
                                     <p className="text-gray-500 text-sm font-bold">{winner.email}</p>
                                     <p className="text-gray-600 text-[10px] mt-4 font-black uppercase tracking-widest italic">{winner.ticketType || 'Experience Pro'}</p>
                                 </div>

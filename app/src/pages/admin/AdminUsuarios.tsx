@@ -13,6 +13,16 @@ import {
     Package,
     Contact,
     CheckCircle2,
+    HeartHandshake,
+    HardHat,
+    Monitor,
+    Ticket,
+    ShoppingCart,
+    Filter,
+    Users,
+    ChevronRight,
+    Lock,
+    Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -98,6 +108,20 @@ export default function AdminUsuarios() {
     const [deptFilter, setDeptFilter] = useState('all');
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
+
+    // Otimização: Criar um Map para busca rápida de check-ins
+    const checkInsByUserId = useMemo(() => {
+        const map = new Map<string, any[]>();
+        checkIns.forEach(c => {
+            if (c.userId) {
+                if (!map.has(c.userId)) map.set(c.userId, []);
+                map.get(c.userId)?.push(c);
+            }
+        });
+        return map;
+    }, [checkIns]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [newUserData, setNewUserData] = useState({
         name: '',
@@ -322,7 +346,7 @@ export default function AdminUsuarios() {
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="glass-card p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <UserIcon className="h-5 w-5 text-teal-400" />
+                        <Users className="h-5 w-5 text-teal-400" />
                         <Badge variant="outline" className="border-teal-500/30 text-teal-400">Total</Badge>
                     </div>
                     <p className="text-2xl font-bold text-white">{totalUsers}</p>
@@ -338,7 +362,7 @@ export default function AdminUsuarios() {
                 </div>
                 <div className="glass-card p-4">
                     <div className="flex items-center justify-between mb-2">
-                        <UserIcon className="h-5 w-5 text-purple-400" />
+                        <Users className="h-5 w-5 text-purple-400" />
                         <Badge variant="outline" className="border-purple-500/30 text-purple-400">Mentores</Badge>
                     </div>
                     <p className="text-2xl font-bold text-white">{mentorCount}</p>
@@ -346,7 +370,7 @@ export default function AdminUsuarios() {
                 </div>
                 <div className="glass-card p-4 hidden lg:block">
                     <div className="flex items-center justify-between mb-2">
-                        <CheckCircle className="h-5 w-5 text-green-400" />
+                        <CheckCircle2 className="h-5 w-5 text-green-400" />
                         <Badge variant="outline" className="border-green-500/30 text-green-400">Membros</Badge>
                     </div>
                     <p className="text-2xl font-bold text-white">{filteredUsers.length}</p>
@@ -446,9 +470,9 @@ export default function AdminUsuarios() {
                                             )}
                                         </td>
                                         <td className="p-4">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5">
                                                 {(() => {
-                                                    const userCheckIns = checkIns.filter(c => c.userId === user.id && c.checkInType === 'event');
+                                                    const userCheckIns = (checkInsByUserId.get(user.id) || []).filter(c => c.checkInType === 'event');
                                                     const entrance = userCheckIns.length > 0;
                                                     const kit = userCheckIns.some(c => {
                                                         try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
@@ -456,7 +480,6 @@ export default function AdminUsuarios() {
                                                     const badge = userCheckIns.some(c => {
                                                         try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
                                                     });
-
                                                     return (
                                                         <>
                                                             <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>

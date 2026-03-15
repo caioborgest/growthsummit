@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 interface Step6DownloadAppProps {
     onContinuar: () => void;
+    onVoltar?: () => void;
 }
 
-export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
+export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProps) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
     const { isInstallable, isStandalone, promptInstall } = usePWA();
@@ -160,11 +161,21 @@ export function Step6DownloadApp({ onContinuar }: Step6DownloadAppProps) {
             </div>
 
             {/* Botão de Confirmação */}
-            <div className="mt-6 pt-4 border-t border-white/10">
+            <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+                {onVoltar && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onVoltar}
+                        className="w-full sm:w-auto px-8 h-14 rounded-xl font-bold text-gray-500 border-white/10 hover:bg-white/5"
+                    >
+                        Voltar
+                    </Button>
+                )}
                 <Button
                     size="lg"
                     onClick={onContinuar}
-                    className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl shadow-lg"
+                    className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl shadow-lg"
                 >
                     Próxima Etapa: Concluir Cadastro
                     <ArrowRight className="h-5 w-5 ml-2" />

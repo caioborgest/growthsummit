@@ -2,14 +2,16 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   QrCode,
   Search,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   TrendingUp,
   X,
   User,
   Camera,
   Calendar,
-  Filter
+  Filter,
+  Building2,
+  Rocket
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -484,7 +486,7 @@ export function AdminCheckIn() {
                 <div key={idx} className="flex items-center justify-between p-4 bg-dark-100 rounded-xl border border-white/5">
                   <div className="flex items-center min-w-0">
                     <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center mr-3 shrink-0">
-                      <CheckCircle className="h-4 w-4 text-green-400" />
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-white font-bold text-sm truncate">{name}</p>

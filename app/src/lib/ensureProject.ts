@@ -20,6 +20,11 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             .maybeSingle();
 
         if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is just 'no rows' which is fine
+            // Se for um erro de cancelamento (AbortError), ignoramos silenciosamente
+            if (fetchError.message?.includes('aborted') || fetchError.name === 'AbortError') {
+                logger.debug(`[ensureProject] Fetch aborted for ${projectConfig.slug} (expected during navigation/HMR)`);
+                return null;
+            }
             logger.warn(`[ensureProject] Potential issue fetching project ${projectConfig.slug}:`, { error: fetchError.message });
         }
 
@@ -65,6 +70,9 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
             .single();
 
         if (createError) {
+            if (createError.message?.includes('aborted') || createError.name === 'AbortError') {
+                return null;
+            }
             logger.warn(`[ensureProject] Failed to create project ${projectConfig.slug}:`, { error: createError.message });
 
             // Final attempt to fetch (race condition check)
@@ -78,7 +86,11 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
         }
 
         return created ? rowToProject(created as ProjectRow) : null;
-    } catch (err) {
+    } catch (err: any) {
+        // Ignorar AbortError no catch block também
+        if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
+            return null;
+        }
         logger.error('[ensureProject] Unexpected error:', { error: err });
         return null;
     }

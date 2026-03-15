@@ -78,11 +78,11 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
             </div>
 
             {/* Content Container */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24 flex flex-col items-center text-center">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 sm:pt-40 sm:pb-24 lg:pt-48 lg:pb-32 flex flex-col items-center text-center">
                 
                 {/* Premium Location Badge */}
                 <div
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 mb-6 sm:mb-10 animate-fade-in-up backdrop-blur-md shadow-2xl"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 mb-8 sm:mb-12 animate-fade-in-up backdrop-blur-md shadow-2xl"
                     style={{ animationDelay: '0.1s' }}
                 >
                     <div className="flex h-2 w-2 relative">
@@ -95,12 +95,12 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 </div>
 
                 {/* Main Hero Header */}
-                <div className="max-w-5xl mb-8 sm:mb-12">
+                <div className="max-w-5xl mb-10 sm:mb-16">
                     <h1
                         className="text-4xl sm:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter animate-fade-in-up mb-4 sm:mb-6"
                         style={{ animationDelay: '0.2s' }}
                     >
-                        <span className="block opacity-80 text-xl sm:text-3xl lg:text-4xl uppercase tracking-[0.3em] font-medium mb-2 sm:mb-4">
+                        <span className="block opacity-80 text-lg sm:text-3xl lg:text-4xl uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium mb-2 sm:mb-4">
                             Growth Experience
                         </span>
                         <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent drop-shadow-sm">
@@ -109,7 +109,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     </h1>
 
                     <p
-                        className="text-base sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up leading-relaxed"
+                        className="text-balance sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up leading-relaxed px-4 sm:px-0"
                         style={{ animationDelay: '0.3s' }}
                     >
                         O maior encontro de inteligência de negócios do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}. 
@@ -133,10 +133,10 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                             { label: 'Seg', value: timeLeft.segundos }
                         ].map((item, i) => (
                             <div key={i} className="flex flex-col items-center justify-center p-2 rounded-2xl hover:bg-white/5 transition-colors group">
-                                <div className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tabular-nums tracking-tighter mb-1 sm:mb-2 flex items-center justify-center h-10 sm:h-20 group-hover:scale-110 transition-transform">
+                                <div className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tabular-nums tracking-tighter mb-1 sm:mb-2 flex items-center justify-center h-14 sm:h-20 group-hover:scale-110 transition-transform">
                                     {String(item.value).padStart(2, '0')}
                                 </div>
-                                <div className="text-[10px] sm:text-xs text-gray-500 group-hover:text-brand-orange-coral uppercase tracking-[0.2em] font-bold transition-colors">
+                                <div className="text-[11px] sm:text-xs text-gray-500 group-hover:text-brand-orange-coral uppercase tracking-[0.2em] font-bold transition-colors">
                                     {item.label}
                                 </div>
                             </div>

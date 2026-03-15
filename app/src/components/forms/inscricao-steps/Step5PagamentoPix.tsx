@@ -21,9 +21,10 @@ import { useEffect, useRef } from 'react';
 interface Step5PagamentoPixProps {
     dados: DadosInscricao;
     onContinuar: () => void;
+    onVoltar?: () => void;
 }
 
-export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps) {
+export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5PagamentoPixProps) {
     const { selectedProject } = useProject();
     const [copied, setCopied] = useState(false);
     const [loadingPix, setLoadingPix] = useState(true);
@@ -241,24 +242,36 @@ export function Step5PagamentoPix({ dados, onContinuar }: Step5PagamentoPixProps
             </div>
 
             {/* Botões de Ação */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                <Button
-                    size="lg"
-                    onClick={handleStripe}
-                    className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest text-xs"
-                >
-                    <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
-                    Pagar com Cartão (Parcelado)
-                </Button>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                {onVoltar && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onVoltar}
+                        className="h-16 px-8 rounded-2xl font-bold text-gray-400 border-white/10 hover:bg-white/5"
+                    >
+                        Voltar
+                    </Button>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                    <Button
+                        size="lg"
+                        onClick={handleStripe}
+                        className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest text-[10px]"
+                    >
+                        <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform" />
+                        Pagar com Cartão (Parcelado)
+                    </Button>
 
-                <Button
-                    size="lg"
-                    onClick={onContinuar}
-                    className="h-16 bg-white hover:bg-dark-100 text-dark hover:text-white font-black text-lg rounded-2xl transition-all group"
-                >
-                    Avançar Etapa
-                    <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                    <Button
+                        size="lg"
+                        onClick={onContinuar}
+                        className="h-16 bg-white hover:bg-dark-100 text-dark hover:text-white font-black text-lg rounded-2xl transition-all group"
+                    >
+                        Avançar Etapa
+                        <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                </div>
             </div>
 
             <p className="text-center text-[10px] text-gray-500 uppercase tracking-widest font-bold">

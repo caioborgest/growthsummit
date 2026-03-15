@@ -35,23 +35,23 @@ export function AgendaSection({
         .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             {/* Header with Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-black text-white italic tracking-tight">Minha Agenda G.S.</h2>
                     <p className="text-gray-400 text-sm">Organize suas atividades e não perca nenhum momento.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                     <Button
                         onClick={() => setIsSelfCheckInOpen(true)}
                         variant="outline"
-                        className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10 rounded-xl font-bold h-11"
+                        className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10 rounded-xl font-bold h-12 flex-1 sm:flex-none px-6"
                     >
-                        <QrCode className="h-4 w-4 mr-2" /> SCAN QR CODE
+                        <QrCode className="h-4 w-4 mr-2" /> SCAN QR
                     </Button>
                     <Button
-                        className={`${isActuallyPaid ? 'bg-white text-black hover:bg-gray-100' : 'bg-orange-500 text-white hover:bg-orange-600'} rounded-xl font-black h-11 px-6 shadow-xl uppercase tracking-tight`}
+                        className={`${isActuallyPaid ? 'bg-white text-black hover:bg-gray-100' : 'bg-orange-500 text-white hover:bg-orange-600'} rounded-xl font-black h-12 px-6 shadow-xl uppercase tracking-tight flex-1 sm:flex-none`}
                         onClick={() => {
                             if (isActuallyPaid) {
                                 navigate('/growth-experience-triunfo');
@@ -63,8 +63,8 @@ export function AgendaSection({
                         }}
                     >
                         {isActuallyPaid
-                            ? 'Inclua mais opções em sua agenda'
-                            : 'Liberar acesso completo (Night + Cursos)'}
+                            ? 'ADICIONAR ATIVIDADES'
+                            : 'UPGRADE PRO'}
                     </Button>
                 </div>
             </div>

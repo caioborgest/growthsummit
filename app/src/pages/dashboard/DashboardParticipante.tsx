@@ -1104,19 +1104,19 @@ export function DashboardParticipante() {
 
       {/* Main Content Area - Only shown for other tabs */}
       {activeTab !== 'inicio' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-10 z-10 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-8 z-10 relative">
           {/* Action Buttons for Agenda (Optional) */}
           {activeTab === 'agenda' && (
-             <div className="flex flex-col gap-3">
+             <div className="flex flex-col gap-3 px-6 -mb-4">
                 <Button
                   onClick={() => setIsSelfCheckInOpen(true)}
-                  className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-6 rounded-2xl text-base shadow-xl shadow-brand-orange-coral/20 group transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-0.5 border-none h-auto"
+                  className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-5 rounded-2xl text-base shadow-xl shadow-brand-orange-coral/20 group transition-all hover:scale-[1.01] active:scale-95 flex flex-col items-center justify-center gap-0.5 border-none h-auto"
                 >
-                  <div className="flex items-center gap-2 uppercase text-[12px] tracking-widest">
+                  <div className="flex items-center gap-2 uppercase text-[13px] tracking-widest">
                     <QrCode className="h-5 w-5 group-hover:rotate-12 transition-transform" />
                     Confirmar Presença
                   </div>
-                  <span className="text-[8px] opacity-70 font-bold uppercase tracking-widest leading-none">Entre na sala e aponte para o QR Code</span>
+                  <span className="text-[9px] opacity-70 font-bold uppercase tracking-widest leading-none">Aponte para o QR Code na sala</span>
                 </Button>
              </div>
           )}

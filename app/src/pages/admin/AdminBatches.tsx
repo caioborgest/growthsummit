@@ -4,7 +4,7 @@ import {
     Plus,
     Search,
     Building2,
-    CheckCircle,
+    CheckCircle2,
     XCircle,
     Copy,
     Users,

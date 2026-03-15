@@ -41,9 +41,10 @@ interface Step1AreaMentoriaProps {
     nomeNegocio?: string;
     estagioNegocio?: string;
     onContinuar: (area: string, descricao: string, neg: string, est: string) => void;
+    onVoltar?: () => void;
 }
 
-export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNegocio = '', estagioNegocio = '', onContinuar }: Step1AreaMentoriaProps) {
+export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNegocio = '', estagioNegocio = '', onContinuar, onVoltar }: Step1AreaMentoriaProps) {
     const [tempArea, setTempArea] = useState(areaSelecionada);
     const [tempDesc, setTempDesc] = useState(descricaoProblema);
     const [tempNegocio, setTempNegocio] = useState(nomeNegocio);
@@ -169,12 +170,22 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNego
                 )}
             </div>
 
-            <div className="flex justify-center pt-8 pb-6">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8 pb-6">
+                {onVoltar && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onVoltar}
+                        className="w-full sm:w-auto px-12 h-16 rounded-2xl font-bold text-gray-400 border-white/10 hover:bg-white/5"
+                    >
+                        Voltar
+                    </Button>
+                )}
                 <Button
                     size="lg"
                     disabled={!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio}
                     onClick={() => onContinuar(tempArea, tempDesc, tempNegocio, tempEstagio)}
-                    className={`w-full sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio
+                    className={`flex-1 sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio
                         ? 'bg-white/5 text-gray-500 cursor-not-allowed opacity-50'
                         : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-glow-orange hover:scale-[1.02] active:scale-95'
                         }`}

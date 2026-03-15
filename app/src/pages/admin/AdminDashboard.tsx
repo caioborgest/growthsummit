@@ -9,7 +9,7 @@ import {
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   AlertCircle,
   QrCode,
@@ -102,7 +102,7 @@ export function AdminDashboard() {
   const { data: checkIns } = useCheckIns();
 
   const quickActions = [
-    { name: 'Aprovar Mentor', icon: CheckCircle, color: 'green', path: '/admin/mentores' },
+    { name: 'Aprovar Mentor', icon: CheckCircle2, color: 'green', path: '/admin/mentores' },
     {
       name: 'Exportar Inscritos',
       icon: Download,

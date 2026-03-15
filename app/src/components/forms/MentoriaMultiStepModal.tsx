@@ -101,6 +101,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                             updateDados({ area, descricaoProblema: descricao, nomeNegocio: neg, estagioNegocio: est });
                             nextStep();
                         }}
+                        onVoltar={handleClose}
                     />
                 );
             case 2:
@@ -161,6 +162,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                     <DialogDescription>Formulário de agendamento de mentoria em múltiplas etapas.</DialogDescription>
                 </div>
                 <div className="sticky top-0 bg-dark-100/95 backdrop-blur-2xl pb-8 border-b border-white/5 mb-10 z-30 -mx-4 sm:-mx-10 px-4 sm:px-10 pt-2 text-center">
+                    <button
+                        onClick={handleClose}
+                        className="absolute right-6 top-4 p-2 rounded-xl bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-all z-40"
+                        aria-label="Fechar"
+                    >
+                        <X className="h-6 w-6" />
+                    </button>
                     <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">Mentoria <span className="text-brand-orange-coral">EXPERIENCE</span></DialogTitle>
                     <p className="text-gray-500 text-xs font-medium tracking-widest mt-2 uppercase">Growth Summit 2026 · 20min Spots</p>
                 </div>

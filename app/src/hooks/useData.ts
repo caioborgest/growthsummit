@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
@@ -464,18 +465,25 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     const now = Date.now();
 
-    // Circuit breaker: detecta loops de re-render (>10 fetches em 2s)
-    if (now - lastFetchTimeRef.current < 2000) {
+    // Circuit breaker: detecta loops de re-render (>20 fetches em 10s)
+    if (now - lastFetchTimeRef.current < 10000) {
       consecutiveFetchCountRef.current++;
     } else {
-      // Resetar contador após 2s de inatividade para permitir recuperação
       consecutiveFetchCountRef.current = 0;
     }
 
-    if (consecutiveFetchCountRef.current > 10) {
-      logger.error(`[useData] CRITICAL: Loop de busca detectado para ${entityName}. Abortando.`);
-      // Informar o usuário com uma mensagem de erro visível
-      setError(new Error('Muitas tentativas de carregamento. Por favor, recarregue a página.'));
+    if (consecutiveFetchCountRef.current > 20) {
+      console.error(`[useData] CRITICAL: Loop de busca detectado para ${entityName}. Bloqueando tentativas para proteger o navegador.`);
+      setError(new Error(`Carregamento bloqueado: Muitas tentativas para ${entityName}. Verifique o console ou atualize a página.`));
+      setIsLoading(false);
+      isFetchingRef.current = false;
+      return;
+    }
+
+    // Proteção: não buscar entidades não globais sem projectId
+    const globalTables = ['projects', 'users', 'checkins', 'profiles', 'empresas_incentivadoras', 'vouchers', 'cupons', 'campanhas_whatsapp', 'programacao', 'atividades', 'locais', 'palestrantes', 'mentorias', 'matches_b2b', 'matches', 'registration_batches', 'leads_scanner'];
+    if (!globalTables.includes(entityName) && !projectId) {
+      logger.debug(`[useData] Ignorando busca de ${entityName} (requer projectId)`);
       setIsLoading(false);
       return;
     }
@@ -680,9 +688,20 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   }, [data]);
 
   useEffect(() => {
+    let isSubscribed = true;
     const controller = new AbortController();
-    fetchData(false, controller.signal);
-    return () => controller.abort();
+
+    const doFetch = async () => {
+      if (!isSubscribed) return;
+      await fetchData(false, controller.signal);
+    };
+
+    doFetch();
+    
+    return () => {
+      isSubscribed = false;
+      controller.abort();
+    };
   }, [fetchData]);
 
   return useMemo(() => ({
@@ -708,6 +727,23 @@ export function useProjects() {
 
 export function useRegistrations() {
   return useData<Registration>([], 'registrations');
+}
+
+export function useInscricoes() {
+  return useRegistrations();
+}
+
+export function useMyRegistration() {
+  const { user } = useAuth();
+  const { projectId } = useProject();
+  const { data: registrations, isLoading, error, refetch } = useRegistrations();
+
+  const registration = useMemo(() => {
+    if (!user || !registrations || !projectId) return null;
+    return registrations.find(r => r.userId === user.id && r.projectId === projectId);
+  }, [user, registrations, projectId]);
+
+  return { registration, isLoading, error, refetch };
 }
 
 export function useMentors() {

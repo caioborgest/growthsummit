@@ -7,11 +7,13 @@ import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
 interface Step1SelecionarCursosProps {
     cursosSelecionados: string[];
     onContinuar: (cursos: string[]) => void;
+    onVoltar?: () => void;
 }
 
 export function Step1SelecionarCursos({
     cursosSelecionados: inicial,
-    onContinuar
+    onContinuar,
+    onVoltar
 }: Step1SelecionarCursosProps) {
     const { data: sessions, isLoading } = useSessions();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
@@ -175,7 +177,17 @@ export function Step1SelecionarCursos({
             </div>
 
             {/* Sticky Action Footer */}
-            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/5 flex flex-col items-center gap-4">
+            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center gap-4">
+                {onVoltar && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onVoltar}
+                        className="w-full sm:w-auto px-10 h-12 sm:h-14 rounded-xl sm:rounded-2xl font-bold text-gray-500 border-white/10 hover:bg-white/5"
+                    >
+                        Voltar
+                    </Button>
+                )}
                 <Button
                     size="lg"
                     disabled={selecionados.length === 0}

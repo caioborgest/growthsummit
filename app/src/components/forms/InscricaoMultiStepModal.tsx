@@ -127,6 +127,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             updateDados({ cursosSelecionados: cursos });
                             nextStep();
                         }}
+                        onVoltar={handleClose}
                     />
                 );
             case 2:
@@ -217,6 +218,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             updateDados({ comprarPalestras: false });
                             nextStep();
                         }}
+                        onVoltar={prevStep}
                         onUpdate={updateDados}
                     />
                 );
@@ -227,6 +229,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         <Step5PagamentoPix
                             dados={dados}
                             onContinuar={nextStep}
+                            onVoltar={prevStep}
                         />
                     );
                 } else {
@@ -237,6 +240,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             case 6:
                 return (
                     <Step6DownloadApp
+                        onVoltar={prevStep}
                         onContinuar={async () => {
                             if (isProcessing) return;
                             setIsProcessing(true);
