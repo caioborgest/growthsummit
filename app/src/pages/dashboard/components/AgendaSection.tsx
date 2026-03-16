@@ -180,7 +180,13 @@ export function AgendaSection({
                                                 <div className="flex-1 space-y-3">
                                                     <div>
                                                         <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
-                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speakers?.split(',').shift() || 'Equipe Growth'}</p>
+                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">
+                                                            SPEAKER: {typeof session.speakers === 'string' 
+                                                                ? session.speakers.split(',').shift() 
+                                                                : Array.isArray(session.speakers) 
+                                                                    ? session.speakers[0] 
+                                                                    : 'Equipe Growth'}
+                                                        </p>
                                                         <div className="flex items-center gap-2 mt-2">
                                                             <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
                                                                 <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> {session.room || 'Arena Principal'}

@@ -648,7 +648,7 @@ export function DashboardParticipante() {
     const st = myRegistration.status;
 
     const hasPaidPgto = pgto === 'pago' || pgto === 'paid';
-    const hasPaidStatus = st === 'pago' || st === 'paid' || st === 'ativo' || st === 'Confirmado';
+    const hasPaidStatus = st === 'pago' || st === 'paid' || st === 'Confirmado';
 
     return hasPaidPgto || hasPaidStatus;
   }, [myRegistration]);
