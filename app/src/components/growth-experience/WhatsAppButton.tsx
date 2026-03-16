@@ -9,7 +9,7 @@ export function WhatsAppButton() {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-4 right-5 sm:bottom-6 sm:right-8 z-50 group"
+            className="fixed bottom-24 right-5 lg:bottom-8 lg:right-8 z-50 group"
             aria-label="Fale conosco no WhatsApp"
         >
             <div className="relative">

@@ -11,8 +11,8 @@ import {
   ArrowRight,
   MapPin,
   Calendar,
-  Zap,
   TrendingUp,
+  Zap,
   BrainCircuit,
   Target,
   Megaphone
@@ -28,6 +28,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
+import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const benefits = [
@@ -653,19 +654,7 @@ export function GrowthExperience() {
           </p>
         </div>
       </section>
-      {/* Floating WhatsApp for Conversion */}
-      <a
-        href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 bg-green-500 hover:bg-green-600 text-white p-3.5 sm:p-4 rounded-full shadow-2xl shadow-green-500/40 transition-all hover:scale-110 flex items-center justify-center group"
-        aria-label="Falar com consultor"
-      >
-        <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-        <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-3 transition-all duration-500 font-bold whitespace-nowrap hidden sm:inline">
-          Falar com consultor
-        </span>
-      </a>
+      <WhatsAppButton />
 
       {/* Event Selection Modal */}
       <Dialog open={showEventSelector} onOpenChange={setShowEventSelector}>
