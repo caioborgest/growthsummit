@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { mentors } from '@/data/eventData';
 
 const benefits = [
-  "Sessões individuais de 25 minutos",
+  "Sessões individuais de 20 minutos",
   "Mentores especialistas em suas áreas",
   "Agendamento flexível durante o evento",
   "Follow-up pós-mentoria disponível",
@@ -32,7 +32,7 @@ const howItWorks = [
   {
     step: 3,
     title: "Prepare-se",
-    description: "Defina seus objetivos e perguntas para aproveitar ao máximo os 25 minutos."
+    description: "Defina seus objetivos e perguntas para aproveitar ao máximo os 20 minutos."
   },
   {
     step: 4,
@@ -74,7 +74,7 @@ export function Mentorias() {
             </div>
             <div className="flex items-center text-gray-300">
               <Clock className="h-5 w-5 mr-2 text-teal-400" />
-              <span>Sessões de 25 minutos</span>
+              <span>Sessões de 20 minutos</span>
             </div>
             <div className="flex items-center text-gray-300">
               <Calendar className="h-5 w-5 mr-2 text-teal-400" />

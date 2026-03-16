@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useStands, useStandCheckIns, useInscricoes, useStartups, useCompanies } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
-import type { Stand, Startup, Company } from '@/types';
+import type { Stand, Registration } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import QRCode from 'qrcode';
@@ -42,7 +42,9 @@ export default function AdminStands() {
 
     const [activeTab, setActiveTab] = useState<'stands' | 'sorteio'>('stands');
     const [isDrawing, setIsDrawing] = useState(false);
-    const [winner, setWinner] = useState<any>(null);
+    const [winner, setWinner] = useState<Registration | null>(null);
+    const [previousWinners, setPreviousWinners] = useState<Registration[]>([]);
+    const [scrollingName, setScrollingName] = useState<string>('');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -81,26 +83,43 @@ export default function AdminStands() {
     const eligibleParticipants = useMemo(() => {
         if (stands.length === 0) return [];
         return inscricoes.filter(reg => {
+            // Check if already won
+            if (previousWinners.some(w => w.id === reg.id)) return false;
+            
             const visitedCount = checkinsByRegistration.get(reg.id)?.size || 0;
             return visitedCount >= stands.length;
         });
-    }, [inscricoes, stands, checkinsByRegistration]);
+    }, [inscricoes, stands, checkinsByRegistration, previousWinners]);
 
     const handleDraw = () => {
         if (eligibleParticipants.length === 0) {
-            toast.error('Nenhum participante elegível (visitou todos os stands).');
+            toast.error('Nenhum participante elegível ou todos já foram sorteados.');
             return;
         }
 
         setIsDrawing(true);
         setWinner(null);
 
-        setTimeout(() => {
+        // Slot machine effect: scroll names quickly
+        let counter = 0;
+        const interval = setInterval(() => {
             const randomIndex = Math.floor(Math.random() * eligibleParticipants.length);
-            setWinner(eligibleParticipants[randomIndex]);
-            setIsDrawing(false);
-            toast.success('Ganhador sorteado com sucesso!');
-        }, 3000);
+            setScrollingName(eligibleParticipants[randomIndex].nome || eligibleParticipants[randomIndex].name || 'Sorteando...');
+            counter++;
+            
+            if (counter > 30) {
+                clearInterval(interval);
+                const finalWinner = eligibleParticipants[Math.floor(Math.random() * eligibleParticipants.length)];
+                setWinner(finalWinner);
+                setPreviousWinners(prev => [...prev, finalWinner]);
+                setIsDrawing(false);
+                setScrollingName('');
+                toast.success('Ganhador sorteado com sucesso!');
+                
+                // Trigger feedback
+                if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
+            }
+        }, 100);
     };
 
     const filteredStands = stands.filter(s => 
@@ -129,16 +148,17 @@ export default function AdminStands() {
                     description: formData.description,
                     logoUrl: formData.logoUrl,
                     ownerId: formData.ownerId || undefined,
-                    ownerType: (formData.ownerType as any) || undefined,
+                    ownerType: (formData.ownerType as 'startup' | 'company' | 'sponsor' | undefined),
                 });
                 toast.success('Novo stand cadastrado com sucesso!');
             }
 
             setIsModalOpen(false);
             resetForm();
-        } catch (err: any) {
-            logger.error('Erro ao salvar stand:', err);
-            toast.error(err.message || 'Erro ao salvar stand.');
+        } catch (err) {
+            const error = err as Error;
+            logger.error('Erro ao salvar stand:', error);
+            toast.error(error.message || 'Erro ao salvar stand.');
         }
     };
 
@@ -172,7 +192,8 @@ export default function AdminStands() {
             try {
                 await remove(id);
                 toast.success('Stand excluído com sucesso');
-            } catch (err: any) {
+            } catch (err) {
+                logger.error('Erro ao excluir stand:', err);
                 toast.error('Erro ao excluir stand');
             }
         }
@@ -433,73 +454,144 @@ export default function AdminStands() {
                     </div>
                 </>
             ) : (
-                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-8 animate-in fade-in duration-500">
-                    <div className="text-center space-y-2">
-                        <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Sorteio Gamificado</h2>
-                        <p className="text-gray-500 font-medium">Sorteie prêmios entre os participantes que completaram o circuito de stands.</p>
+                <div className="grid lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="text-left space-y-2">
+                            <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Sorteio <span className="text-orange-500">Gamificado</span></h2>
+                            <p className="text-gray-500 font-medium font-mono text-xs">CIRCUITO DE STANDS · ALGORITMO DE SELEÇÃO RANDÔMICA</p>
+                        </div>
+
+                        <div className="glass-card w-full p-10 border-orange-500/20 shadow-2xl relative overflow-hidden text-center">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[100px] -z-10" />
+                            
+                            <div className="relative z-10 space-y-8">
+                                <div className="flex justify-center gap-12">
+                                    <div className="text-center">
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Elegíveis Agora</p>
+                                        <p className="text-5xl font-black text-white tracking-tighter">{eligibleParticipants.length}</p>
+                                    </div>
+                                    <div className="w-px h-12 bg-white/10 mt-4" />
+                                    <div className="text-center">
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Stands no Circuito</p>
+                                        <p className="text-5xl font-black text-orange-500 tracking-tighter">{stands.length}</p>
+                                    </div>
+                                </div>
+
+                                {winner ? (
+                                    <div className="p-10 bg-orange-500/10 border-2 border-orange-500/30 rounded-[3rem] animate-in zoom-in-95 duration-500 relative group">
+                                        <div className="absolute -top-4 -right-4 bg-orange-500 text-white font-black text-[10px] px-4 py-2 rounded-full shadow-lg">PRÊMIO LIBERADO</div>
+                                        <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow-orange group-hover:scale-110 transition-transform">
+                                            <Trophy className="h-12 w-12 text-white" />
+                                        </div>
+                                        <h3 className="text-[10px] font-black text-orange-400 uppercase tracking-[0.3em] mb-2">🏅 TEMOS UM GANHADOR!</h3>
+                                        <p className="text-4xl font-black text-white tracking-tighter mb-1">{winner.name || winner.nome}</p>
+                                        <p className="text-gray-400 text-sm font-bold opacity-60">{winner.email}</p>
+                                        <div className="flex justify-center mt-6">
+                                            <Badge className="bg-white/5 text-gray-400 border-white/10 font-bold px-4 py-1">#{winner.id.slice(0, 8)}</Badge>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className={`p-16 border-2 border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-6 ${isDrawing ? 'bg-orange-500/5' : ''}`}>
+                                        {isDrawing ? (
+                                            <div className="space-y-6">
+                                                <div className="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                                                <div className="h-12 overflow-hidden">
+                                                    <p className="text-3xl font-black text-white uppercase italic tracking-tighter animate-pulse">
+                                                        {scrollingName}
+                                                    </p>
+                                                </div>
+                                                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Processando base de dados...</p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center">
+                                                    <Store className="h-10 w-10 text-gray-700" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Pronto para o Sorteio</p>
+                                                    <p className="text-gray-600 text-[10px] uppercase font-medium">Clique no botão abaixo para começar</p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="flex gap-4">
+                                    <Button
+                                        onClick={handleDraw}
+                                        disabled={isDrawing || eligibleParticipants.length === 0}
+                                        className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black py-10 rounded-3xl text-xl shadow-glow-orange group active:scale-95 transition-all"
+                                    >
+                                        {isDrawing ? 'SORTEANDO...' : winner ? 'REALIZAR NOVO SORTEIO' : 'INICIAR SORTEIO AGORA'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="glass-card max-w-2xl w-full p-10 border-orange-500/20 shadow-2xl relative overflow-hidden text-center">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-[100px] -z-10" />
-                        
-                        <div className="relative z-10 space-y-8">
-                            <div className="flex justify-center gap-12">
-                                <div className="text-center">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Elegíveis</p>
-                                    <p className="text-5xl font-black text-white tracking-tighter">{eligibleParticipants.length}</p>
-                                </div>
-                                <div className="w-px h-12 bg-white/10 mt-4" />
-                                <div className="text-center">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Stands</p>
-                                    <p className="text-5xl font-black text-orange-500 tracking-tighter">{stands.length}</p>
-                                </div>
-                            </div>
-
-                            {winner ? (
-                                <div className="p-8 bg-orange-500/10 border-2 border-orange-500/30 rounded-[2.5rem] animate-in zoom-in-95 duration-300">
-                                    <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow-orange">
-                                        <Trophy className="h-10 w-10 text-white" />
+                    <div className="space-y-6">
+                        <div className="glass-card p-6 border-white/5 h-fit">
+                            <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Trophy className="h-4 w-4 text-orange-500" /> Histórico de Ganhadores
+                            </h3>
+                            <div className="space-y-4">
+                                {previousWinners.length > 0 ? (
+                                    [...previousWinners].reverse().map((pw, i) => (
+                                        <div key={i} className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center font-black text-orange-500">
+                                                {previousWinners.length - i}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-white font-bold text-sm truncate">{pw.name || pw.nome}</p>
+                                                <p className="text-gray-500 text-[10px] font-mono">#{pw.id.slice(0, 8)}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-10 text-center opacity-30">
+                                        <p className="text-[10px] font-black uppercase tracking-widest">Nenhum ganhador ainda</p>
                                     </div>
-                                    <h3 className="text-[10px] font-black text-orange-400 uppercase tracking-[0.3em] mb-2">🏅 GANHADOR(A) ENCONTRADO!</h3>
-                                    <p className="text-3xl font-black text-white tracking-tight mb-1">{winner.name || winner.nome}</p>
-                                    <p className="text-gray-500 text-sm font-bold">{winner.email}</p>
-                                    <p className="text-gray-600 text-[10px] mt-4 font-black uppercase tracking-widest italic">{winner.ticketType || 'Experience Pro'}</p>
-                                </div>
-                            ) : (
-                                <div className={`p-12 border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 ${isDrawing ? 'animate-pulse' : ''}`}>
-                                    {isDrawing ? (
-                                        <>
-                                            <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-                                            <p className="text-xl font-black text-white uppercase italic tracking-tighter">Sorteando agora...</p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Users className="h-12 w-12 text-gray-600 mb-2" />
-                                            <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Aguardando início do sorteio</p>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="flex gap-4">
-                                <Button
-                                    onClick={handleDraw}
-                                    disabled={isDrawing || eligibleParticipants.length === 0}
-                                    className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black py-8 rounded-2xl text-lg shadow-glow-orange group"
-                                >
-                                    {isDrawing ? 'SORTEANDO...' : winner ? 'SORTEAR NOVAMENTE' : 'INICIAR SORTEIO AGORA'}
-                                </Button>
+                                )}
                             </div>
+                            {previousWinners.length > 0 && (
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="w-full mt-6 text-gray-500 hover:text-red-400 hover:bg-red-400/5 text-[10px] font-black uppercase"
+                                    onClick={() => setPreviousWinners([])}
+                                >
+                                    Limpar Histórico
+                                </Button>
+                            )}
+                        </div>
 
-                            <p className="text-[10px] text-gray-600 font-medium uppercase tracking-widest">
-                                O sistema seleciona aleatoriamente um participante que tenha<br/>registrado check-in em todos os {stands.length} stands ativos do projeto.
-                            </p>
+                        <div className="glass-card p-6 border-white/5">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-blue-500/20 rounded-lg">
+                                    <Users className="h-4 w-4 text-blue-400" />
+                                </div>
+                                <h4 className="text-sm font-bold text-white">Base de Dados</h4>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-gray-500">Total Participantes</span>
+                                    <span className="text-white font-bold">{inscricoes.length}</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-gray-500">Check-ins em Stands</span>
+                                    <span className="text-white font-bold">{checkins.length}</span>
+                                </div>
+                                <div className="pt-4 border-t border-white/5">
+                                    <p className="text-[10px] text-gray-500 italic leading-relaxed">
+                                        Apenas participantes que visitaram os <strong>{stands.length} stands</strong> deste projeto são incluídos no sorteio.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Modal Novo/Editar */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="glass-card max-w-xl w-full p-0 overflow-hidden shadow-2xl border-orange-500/20">
@@ -556,7 +648,7 @@ export default function AdminStands() {
                                         const [type, id] = e.target.value.split('|');
                                         setFormData({ 
                                             ...formData, 
-                                            ownerType: (type as any) || '', 
+                                            ownerType: (type as 'startup' | 'company' | 'sponsor') || '', 
                                             ownerId: id || '' 
                                         });
                                     }}
@@ -648,7 +740,7 @@ export default function AdminStands() {
     );
 }
 
-function Trophy(props: any) {
+function Trophy(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg
             {...props}

@@ -38,6 +38,7 @@ import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { B2BScheduleModal } from './components/B2BScheduleModal';
 import { B2BChatModal } from './components/B2BChatModal';
+import { LeadScanner } from './components/shared/LeadScanner';
 import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
@@ -65,11 +66,12 @@ export function DashboardCompany() {
   const { data: sessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
   const { registration } = useMyRegistration();
-  const { data: leads } = useLeads();
+  const { data: leads, create: createLead } = useLeads();
   const [activeTab, setActiveTab] = useState('home');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<{ match: B2BMatch, otherCompany: Company } | null>(null);
@@ -80,6 +82,44 @@ export function DashboardCompany() {
     companies.find(c => c.userId === user?.id),
     [companies, user?.id]
   );
+
+  const handleScanSuccess = async (decodedText: string) => {
+    try {
+      let registrationId = decodedText;
+      
+      if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
+        const parts = decodedText.split('|');
+        if (parts.length > 1) {
+          registrationId = parts[1].trim();
+        }
+      } else if (decodedText.startsWith('{')) {
+        const data = JSON.parse(decodedText);
+        registrationId = data.id || data.registrationId;
+      }
+
+      if (!registrationId || registrationId.length < 10) return;
+
+      const alreadyScanned = companyLeads.some(l => l.registrationId === registrationId);
+      if (alreadyScanned) {
+        toast.info('Este participante já está na sua lista de leads.');
+        return;
+      }
+
+      await createLead({
+        projectId: companyData?.projectId,
+        companyId: companyData?.id,
+        registrationId: registrationId,
+        interestLevel: 'high',
+        notes: 'Capturado via QR Code na Rodada B2B',
+        visitorName: 'Participante ' + registrationId.substring(0, 4),
+      });
+
+      toast.success('Lead capturado com sucesso!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao ler QR Code ou salvar lead');
+    }
+  };
 
   const companyMeetings = useMemo(() =>
     companyData
@@ -559,17 +599,26 @@ export function DashboardCompany() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                       <div>
                         <h3 className="text-xl font-black text-white italic tracking-tighter uppercase">Leads do Stand</h3>
-                        <p className="text-gray-500 text-xs font-medium">Participantes que realizaram check-in no seu stand.</p>
+                        <p className="text-gray-500 text-xs font-medium">Participantes que realizaram check-in no seu stand ou foram capturados via QR Code.</p>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        className="w-full md:w-auto border-white/10 text-gray-300 hover:text-white hover:bg-white/5" 
-                        onClick={() => exportToCSV(companyLeads, `leads_expositor_${companyData?.name.replace(/\s+/g, '_')}`)}
-                        disabled={companyLeads.length === 0}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar Planilha
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button 
+                          className="bg-teal-500 hover:bg-teal-400 text-white font-black px-6 h-12 rounded-2xl shadow-glow-teal"
+                          onClick={() => setIsScannerOpen(true)}
+                        >
+                          <QrCode className="h-4 w-4 mr-2" />
+                          ESCANEAR LEAD
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full md:w-auto border-white/10 text-gray-300 hover:text-white hover:bg-white/5 h-12 rounded-2xl" 
+                          onClick={() => exportToCSV(companyLeads as any, `leads_expositor_${companyData?.name.replace(/\s+/g, '_')}`)}
+                          disabled={companyLeads.length === 0}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Exportar Planilha
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -736,6 +785,13 @@ export function DashboardCompany() {
         </div>
 
         <AnimatePresence>
+          {isScannerOpen && (
+            <LeadScanner
+              isOpen={isScannerOpen}
+              onClose={() => setIsScannerOpen(false)}
+              onScanSuccess={handleScanSuccess}
+            />
+          )}
           {isB2BModalOpen && (
             <B2BFormModal
               isOpen={isB2BModalOpen}

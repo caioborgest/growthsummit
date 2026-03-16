@@ -8,7 +8,7 @@ import { Step2SelecionarMentor } from './mentoria-steps/Step2SelecionarMentor';
 import { Step3DadosPessoaisMentoria } from './mentoria-steps/Step3DadosPessoaisMentoria';
 import { Step4ConfirmacaoMentoria } from './mentoria-steps/Step4ConfirmacaoMentoria';
 import { useAuth } from '@/contexts/AuthContext';
-import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
+import { Step5ConclusaoMentoria } from './mentoria-steps/Step5ConclusaoMentoria';
 
 interface MentoriaMultiStepModalProps {
     isOpen: boolean;
@@ -46,7 +46,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
     }, [isAuthenticated, user, isOpen]);
 
     const totalSteps = 5;
-    const stepsToSkip = isAuthenticated ? [3, 6] : [];
+    const stepsToSkip = isAuthenticated ? [3] : [];
 
     const handleClose = () => {
         if (currentStep === totalSteps) {
@@ -141,8 +141,8 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 );
             case 5:
                 return (
-                    <Step7Conclusao
-                        dados={dados as any}
+                    <Step5ConclusaoMentoria
+                        dados={dados}
                         onFechar={() => {
                             onClose();
                             setCurrentStep(1);

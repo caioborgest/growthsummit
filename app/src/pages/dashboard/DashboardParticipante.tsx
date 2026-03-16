@@ -587,8 +587,12 @@ export function DashboardParticipante() {
     }
   };
 
+  const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
   const myMentorships = mentoringSessions.filter(s => s.menteeId === myRegistration?.id);
-  const availableSlots = mentoringSessions.filter(s => !s.menteeId && s.status === 'scheduled');
+  const availableSlots = mentoringSessions.filter(s => 
+    (!s.menteeId || s.menteeId === PLACEHOLDER_ID) && 
+    (s.status === 'scheduled' || s.status === 'agendado')
+  );
 
   // ── Notificações dinâmicas ─────────────────────────────────────────────────
   const notifications = useMemo(() => {

@@ -9,12 +9,12 @@ interface StatItemProps {
 
 function StatItem({ icon, value, label }: StatItemProps) {
     return (
-        <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-3xl p-4 aspect-square">
+        <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-3xl p-3 sm:p-4 min-h-[100px] text-center">
             <div className="text-brand-orange-coral mb-2">
                 {icon}
             </div>
-            <span className="text-white font-black text-xl tracking-tight leading-none mb-1">{value}</span>
-            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{label}</span>
+            <span className="text-white font-black text-xs sm:text-lg tracking-tight leading-tight mb-1 break-words w-full px-1">{value}</span>
+            <span className="text-gray-500 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">{label}</span>
         </div>
     );
 }

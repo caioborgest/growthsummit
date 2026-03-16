@@ -30,7 +30,6 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { LeadScanner } from './components/shared/LeadScanner';
-import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/types';
 import { useSessions, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
@@ -102,12 +101,19 @@ export function DashboardStartup() {
     try {
       // O decodedText será o registration id (uuid) ou um JSON contendo o id
       let registrationId = decodedText;
-      if (decodedText.startsWith('{')) {
+      
+      // Suporte ao formato padrão: GE - CHECKIN | UUID | EMAIL | TOKEN
+      if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
+        const parts = decodedText.split('|');
+        if (parts.length > 1) {
+          registrationId = parts[1].trim();
+        }
+      } else if (decodedText.startsWith('{')) {
         const data = JSON.parse(decodedText);
         registrationId = data.id || data.registrationId;
       }
 
-      if (!registrationId) return;
+      if (!registrationId || registrationId.length < 10) return;
 
       // Procura primeiro localmente se esse lead já existe
       const alreadyScanned = startupLeads.some(l => l.registrationId === registrationId);
@@ -395,7 +401,7 @@ export function DashboardStartup() {
                         <QrCode className="h-4 w-4 mr-2" />
                         Escanear Crachá
                       </Button>
-                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(startupLeads, 'leads_startup')}>
+                      <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => exportToCSV(startupLeads as any, 'leads_startup')}>
                         <Download className="h-4 w-4 mr-2" />
                         Exportar CSV
                       </Button>

@@ -103,6 +103,10 @@ export function MentorCard({ mentor }: MentorCardProps) {
                         </Button>
                     </div>
 
+                    <div className="sr-only">
+                        <DialogTitle>Perfil de {mentor.name}</DialogTitle>
+                    </div>
+
                     <div className="p-8 sm:p-12 overflow-y-auto max-h-[90vh]">
                         <div className="flex flex-col sm:flex-row items-center gap-8 mb-10 border-b border-white/5 pb-10">
                             <div className="w-32 h-32 rounded-[2rem] overflow-hidden border-2 border-brand-orange-coral/30 shadow-2xl shadow-brand-orange-coral/20 shrink-0">
@@ -113,7 +117,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
                                 />
                             </div>
                             <div className="text-center sm:text-left">
-                                <h2 className="text-3xl font-black mb-2">{mentor.name}</h2>
+                                <DialogTitle className="text-3xl font-black mb-2">{mentor.name}</DialogTitle>
                                 <p className="text-brand-orange-coral font-bold text-lg mb-4">{mentor.position} <span className="text-gray-500 mx-2">•</span> {mentor.company}</p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-4">
                                     {mentor.linkedin && (

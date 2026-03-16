@@ -115,12 +115,19 @@ export function DashboardSponsor() {
   const handleScanSuccess = async (decodedText: string) => {
     try {
       let registrationId = decodedText;
-      if (decodedText.startsWith('{')) {
+
+      // Suporte ao formato padrão: GE - CHECKIN | UUID | EMAIL | TOKEN
+      if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
+        const parts = decodedText.split('|');
+        if (parts.length > 1) {
+          registrationId = parts[1].trim();
+        }
+      } else if (decodedText.startsWith('{')) {
         const data = JSON.parse(decodedText);
         registrationId = data.id || data.registrationId;
       }
 
-      if (!registrationId) return;
+      if (!registrationId || registrationId.length < 10) return;
 
       const alreadyScanned = sponsorLeads.some(l => l.registrationId === registrationId);
       if (alreadyScanned) {
@@ -489,7 +496,7 @@ export function DashboardSponsor() {
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={() => exportToCSV(sponsorLeads, 'leads_patrocinador')}
+                      onClick={() => exportToCSV(sponsorLeads as any, 'leads_patrocinador')}
                       className="border-white/5 bg-dark-200 text-gray-300 rounded-2xl px-6 h-12 font-bold hover:bg-dark-300"
                     >
                       <Download className="h-4 w-4 mr-2" />

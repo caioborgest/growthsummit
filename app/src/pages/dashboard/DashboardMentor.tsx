@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Calendar, CheckCircle, Clock, XCircle, MessageSquare,
   Phone, Mail, Plus,
@@ -55,10 +56,8 @@ export default function DashboardMentor() {
   const mentorSessions = sessions?.filter(s => s.mentorId === mentorData?.id) || [];
 
   const pendingRequests = mentorSessions.filter(s => s.status === 'pending' || (s.status as string) === 'pendente');
-  const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
-
-  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId && s.menteeId !== PLACEHOLDER_ID);
-  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && (!s.menteeId || s.menteeId === PLACEHOLDER_ID));
+  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId);
+  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && !s.menteeId);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -78,7 +77,7 @@ export default function DashboardMentor() {
     const existingSlot = mentorSessions.find(s => {
       const sDate = new Date(s.scheduledAt).toISOString().split('T')[0];
       const sTime = new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      const isAvailable = !s.menteeId || s.menteeId === PLACEHOLDER_ID;
+      const isAvailable = !s.menteeId;
       return sDate === selectedDate && sTime === slotId && (s.status === 'scheduled' || s.status === 'agendado') && isAvailable;
     });
 
@@ -108,7 +107,7 @@ export default function DashboardMentor() {
           menteeName: 'Disponível',
           menteeEmail: '',
           menteePhone: '',
-          menteeId: PLACEHOLDER_ID
+          menteeId: null
         } as any);
         toast.success('Horário habilitado com sucesso!');
       } catch (err) {
@@ -126,7 +125,7 @@ export default function DashboardMentor() {
     });
 
     if (!session) return 'empty';
-    const isAvailable = !session.menteeId || session.menteeId === PLACEHOLDER_ID;
+    const isAvailable = !session.menteeId;
     if (isAvailable) return 'available';
     return 'booked';
   };
@@ -158,7 +157,7 @@ export default function DashboardMentor() {
       />
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10 flex-1 relative z-10 w-full mb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-32 relative z-10">
         
         {/* NEW DASHBOARD HOME VIEW (PREMIUM STYLE) - Only if in sessions tab or initial view */}
         {activeTab === 'sessions' && (
@@ -203,8 +202,8 @@ export default function DashboardMentor() {
           </div>
         )}
 
-        {/* Navigation Tabs (Premium Style) */}
-        <div className="flex items-center gap-2 bg-dark-200/50 p-1.5 rounded-[2rem] border border-white/5 self-start shadow-xl shadow-black/20">
+        {/* Desktop Navigation Tabs (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center gap-2 bg-dark-200/50 p-1.5 rounded-[2rem] border border-white/5 self-start shadow-xl shadow-black/20">
           <button
             onClick={() => setActiveTab('sessions')}
             className={`flex items-center gap-3 px-8 py-4 rounded-[1.8rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sessions' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
@@ -329,7 +328,7 @@ export default function DashboardMentor() {
                             if (!window.confirm('Recusar esta solicitação? O horário voltará a ficar disponível.')) return;
                             await update(session.id, { 
                               status: 'scheduled',
-                              menteeId: '00000000-0000-0000-0000-000000000000' as any,
+                              menteeId: null as any,
                               menteeName: 'Disponível' as any,
                               menteeEmail: '' as any,
                               menteePhone: '' as any,
@@ -396,7 +395,7 @@ export default function DashboardMentor() {
                             if (!window.confirm('Deseja realmente CANCELAR esta mentoria confirmada?')) return;
                             await update(session.id, { 
                               status: 'scheduled',
-                              menteeId: '00000000-0000-0000-0000-000000000000' as any,
+                              menteeId: null as any,
                               menteeName: 'Disponível' as any,
                               menteeEmail: '' as any,
                               menteePhone: '' as any,
@@ -798,6 +797,49 @@ export default function DashboardMentor() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Modern High-End Bottom Navigation (Mobile Only) */}
+      <div className="fixed md:hidden bottom-0 left-0 right-0 z-40 p-4 pb-8 pointer-events-none">
+        <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
+            {[
+              { id: 'sessions', icon: Calendar, label: 'Mentorias' },
+              { id: 'slots', icon: Clock, label: 'Slots' },
+              { id: 'profile', icon: User, label: 'Perfil' },
+            ].map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id as any);
+                    if (item.id === 'profile' && mentorData) {
+                      setProfileForm({
+                        name: mentorData.name || '',
+                        specialties: Array.isArray(mentorData.specialties) ? mentorData.specialties.join(', ') : mentorData.specialties || '',
+                        bio: mentorData.bio || '',
+                        company: mentorData.company || '',
+                        position: mentorData.position || ''
+                      });
+                    }
+                  }}
+                  className={`relative flex flex-col items-center justify-center py-2 px-1 min-w-[70px] transition-all duration-500 ${isActive ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-active-pill-mentor"
+                      className="absolute inset-0 bg-orange-500/10 rounded-2xl -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <item.icon className={`h-6 w-6 mb-1 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]' : 'scale-100'}`} />
+                  <span className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

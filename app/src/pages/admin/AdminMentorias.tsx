@@ -362,7 +362,11 @@ export function AdminMentorias() {
                   </td>
                   <td className="p-4">
                     <Badge className={(!session.menteeId || session.menteeId === PLACEHOLDER_ID) ? 'bg-orange-500/20 text-orange-400' : statusColors[session.status]}>
-                      {(!session.menteeId || session.menteeId === PLACEHOLDER_ID) ? 'Disponível' : session.status}
+                      {(!session.menteeId || session.menteeId === PLACEHOLDER_ID) ? 'Disponível' : 
+                        session.status === 'pending' || session.status === 'pendente' ? 'Pendente' :
+                        session.status === 'scheduled' || session.status === 'agendado' ? 'Agendado' :
+                        session.status === 'completed' || session.status === 'concluido' ? 'Concluído' :
+                        session.status === 'cancelled' || session.status === 'cancelado' ? 'Cancelado' : session.status}
                     </Badge>
                   </td>
                   <td className="p-4 text-gray-300">

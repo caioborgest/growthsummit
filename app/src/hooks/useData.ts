@@ -67,8 +67,8 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'b2b_chat_messages': return 'b2b_chat_messages';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       case 'registration_batches': return 'lotes_inscricao_empresa';
-      case 'stands': return 'stands_ge';
-      case 'stand_checkins': return 'checkins_stands';
+      case 'stands': return 'stands';
+      case 'stand_checkins': return 'stand_checkins';
       default: return entity;
     }
   }

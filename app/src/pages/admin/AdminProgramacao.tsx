@@ -609,7 +609,7 @@ export function AdminProgramacao() {
           <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl my-4" id="printable-qr">
             {qrSession && (
               <QRCode
-                value={generateQRString('session', projectId || '', qrSession.id)}
+                value={`GE-ACTIVITY|${qrSession.id}|${qrSession.title}`}
                 size={256}
                 level="H"
               />

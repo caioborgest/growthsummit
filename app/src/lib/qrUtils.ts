@@ -27,17 +27,66 @@ export function generateQRString(type: QRType, projectId: string, id: string): s
 }
 
 /**
- * Parses a GS_EVENT QR code string
+ * Parses a GS_EVENT QR code string or legacy GE- formats
  */
 export function parseQRString(qrString: string): QRData | null {
-    if (!qrString.startsWith('GS_EVENT:')) return null;
+    if (!qrString) return null;
 
-    try {
-        const base64Data = qrString.split(':')[1];
-        const data = JSON.parse(atob(base64Data)) as QRData;
-        return data;
-    } catch (e) {
-        console.error('Failed to parse GS QR Code:', e);
-        return null;
+    // 1. New Format: GS_EVENT:BASE64_JSON
+    if (qrString.startsWith('GS_EVENT:')) {
+        try {
+            const base64Data = qrString.split(':')[1];
+            const data = JSON.parse(atob(base64Data)) as QRData;
+            return data;
+        } catch (e) {
+            console.error('Failed to parse GS QR Code:', e);
+            return null;
+        }
     }
+
+    // 2. Legacy Formats: GE-CHECKIN, GE-ACTIVITY, GE-MENTORING, GE-STAND
+    if (qrString.startsWith('GE-')) {
+        const parts = qrString.split('|');
+        const prefix = parts[0];
+
+        try {
+            switch (prefix) {
+                case 'GE-CHECKIN':
+                case 'GE - CHECKIN':
+                    return {
+                        type: 'registration',
+                        projectId: '', // Not available in legacy string
+                        id: parts[1], // registrationId
+                        timestamp: new Date().toISOString()
+                    };
+                case 'GE-ACTIVITY':
+                    return {
+                        type: 'session',
+                        projectId: '',
+                        id: parts[1], // sessionId
+                        timestamp: new Date().toISOString()
+                    };
+                case 'GE-MENTORING':
+                    return {
+                        type: 'mentor', // or mentoria session? usually refers to mentor in scan contexts
+                        projectId: '',
+                        id: parts[1],
+                        timestamp: new Date().toISOString()
+                    };
+                case 'GE-STAND':
+                    return {
+                        type: 'sponsor', // or company/startup depending on context
+                        projectId: '',
+                        id: parts[1],
+                        timestamp: new Date().toISOString()
+                    };
+                default:
+                    return null;
+            }
+        } catch (e) {
+            return null;
+        }
+    }
+
+    return null;
 }

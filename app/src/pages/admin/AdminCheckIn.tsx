@@ -29,6 +29,10 @@ export function AdminCheckIn() {
   const { data: mentors } = useMentors();
   const { data: companies } = useCompanies();
   const { data: startups } = useStartups();
+  const { data: registrations, update } = useRegistrations();
+  const { data: checkIns, create: createEventCheckIn } = useCheckIns();
+  const { data: sessions } = useSessions();
+  const { data: sessionAttendance, create: createSessionAttendance } = useCheckInsAtividades();
 
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
