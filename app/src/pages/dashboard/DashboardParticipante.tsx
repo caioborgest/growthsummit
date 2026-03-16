@@ -51,6 +51,7 @@ import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
 import { ProfileForm } from './components/ProfileForm';
 import { DashboardEquipe } from './components/DashboardEquipe';
+import { BottomNavigation } from './components/shared/BottomNavigation';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import { generateTicketPDF } from '@/lib/reports';
@@ -1250,51 +1251,21 @@ export function DashboardParticipante() {
     )}
 
       {/* Modern High-End Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 md:p-6 pb-8 md:pb-10 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
-            {[
-              { id: 'ingresso', icon: QrCode, label: 'Ticket' },
-              { id: 'agenda', icon: Calendar, label: 'Agenda' },
-              { id: 'circuito', icon: Trophy, label: 'Circuito' },
-              { id: 'mentorias', icon: Users, label: 'Mentor' },
-              { id: 'documentos', icon: FileText, label: 'Docs' },
-              { id: 'certificados', icon: Award, label: 'Certs' },
-              ...(myBatches && myBatches.length > 0 ? [{ id: 'equipe', icon: Building2, label: 'Equipe' }] : []),
-              { id: 'dados', icon: User, label: 'Perfil' },
-            ].map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`relative flex flex-col items-center justify-center py-2 px-1 min-w-[50px] transition-all duration-500 ${isActive ? 'text-teal-400' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-active-pill"
-                      className="absolute inset-0 bg-teal-500/10 rounded-2xl -z-10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  {item.id === 'dados' ? (
-                    <div className={`h-5 w-5 mb-1 rounded-full overflow-hidden border ${isActive ? 'border-teal-400 scale-110' : 'border-gray-600 grayscale'}`}>
-                      {user?.avatar ? (
-                        <img src={user.avatar} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="w-full h-full p-0.5" />
-                      )}
-                    </div>
-                  ) : (
-                    <item.icon className={`h-5 w-5 mb-1 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]' : 'scale-100'}`} />
-                  )}
-                  <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <BottomNavigation
+        variant="teal"
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        tabs={[
+          { id: 'ingresso', icon: QrCode, label: 'Ticket' },
+          { id: 'agenda', icon: Calendar, label: 'Agenda' },
+          { id: 'circuito', icon: Trophy, label: 'Circuito' },
+          { id: 'mentorias', icon: Users, label: 'Mentor' },
+          { id: 'documentos', icon: FileText, label: 'Docs' },
+          { id: 'certificados', icon: Award, label: 'Certs' },
+          ...(myBatches && myBatches.length > 0 ? [{ id: 'equipe', icon: Building2, label: 'Equipe' }] : []),
+          { id: 'dados', icon: User, label: 'Perfil' },
+        ]}
+      />
 
       {/* Modal de Avaliação */}
       <MentorRatingModal

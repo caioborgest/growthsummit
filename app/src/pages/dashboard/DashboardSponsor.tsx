@@ -35,6 +35,8 @@ import { User as UserIcon, Users, QrCode } from 'lucide-react';
 
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
+import { BottomNavigation } from './components/shared/BottomNavigation';
+import { Home } from 'lucide-react';
 import { QuickActions } from './components/shared/QuickActions';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
@@ -187,7 +189,7 @@ export function DashboardSponsor() {
           onNotificationRead={handleMarkAsRead}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32 md:pb-8">
           <QuickActions
             onB2BClick={() => setIsB2BModalOpen(true)}
             onStartupClick={() => setIsStartupModalOpen(true)}
@@ -853,9 +855,20 @@ export function DashboardSponsor() {
               onScanSuccess={handleScanSuccess}
               onClose={() => setIsScannerOpen(false)}
             />
-          )}
         </AnimatePresence>
       </div>
+      <BottomNavigation
+        variant="orange"
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        tabs={[
+          { id: 'home', icon: Home, label: 'Início' },
+          { id: 'deliverables', icon: FileCheck, label: 'Entregáveis' },
+          { id: 'leads', icon: Users, label: 'Leads' },
+          { id: 'feedback', icon: MessageSquare, label: 'Suporte' },
+          { id: 'perfil', icon: UserIcon, label: 'Perfil' },
+        ]}
+      />
     </div>
   );
 }

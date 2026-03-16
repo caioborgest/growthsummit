@@ -19,6 +19,7 @@ import { PremiumBackground } from './components/shared/PremiumBackground';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 import { QuickActions } from './components/shared/QuickActions';
+import { BottomNavigation } from './components/shared/BottomNavigation';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useProject } from '@/contexts/ProjectContext';
@@ -800,47 +801,27 @@ export default function DashboardMentor() {
       </div>
 
       {/* Modern High-End Bottom Navigation (Mobile Only) */}
-      <div className="fixed md:hidden bottom-0 left-0 right-0 z-40 p-4 pb-8 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <div className="bg-dark-200/90 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] flex items-center justify-around p-2 relative">
-            {[
-              { id: 'sessions', icon: Calendar, label: 'Mentorias' },
-              { id: 'slots', icon: Clock, label: 'Slots' },
-              { id: 'profile', icon: User, label: 'Perfil' },
-            ].map((item) => {
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id as any);
-                    if (item.id === 'profile' && mentorData) {
-                      setProfileForm({
-                        name: mentorData.name || '',
-                        specialties: Array.isArray(mentorData.specialties) ? mentorData.specialties.join(', ') : mentorData.specialties || '',
-                        bio: mentorData.bio || '',
-                        company: mentorData.company || '',
-                        position: mentorData.position || ''
-                      });
-                    }
-                  }}
-                  className={`relative flex flex-col items-center justify-center py-2 px-1 min-w-[70px] transition-all duration-500 ${isActive ? 'text-orange-500' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-active-pill-mentor"
-                      className="absolute inset-0 bg-orange-500/10 rounded-2xl -z-10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <item.icon className={`h-6 w-6 mb-1 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]' : 'scale-100'}`} />
-                  <span className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <BottomNavigation
+        variant="orange"
+        activeTab={activeTab}
+        setActiveTab={(id) => {
+          setActiveTab(id as any);
+          if (id === 'profile' && mentorData) {
+            setProfileForm({
+              name: mentorData.name || '',
+              specialties: Array.isArray(mentorData.specialties) ? mentorData.specialties.join(', ') : mentorData.specialties || '',
+              bio: mentorData.bio || '',
+              company: mentorData.company || '',
+              position: mentorData.position || ''
+            });
+          }
+        }}
+        tabs={[
+          { id: 'sessions', icon: Calendar, label: 'Mentorias' },
+          { id: 'slots', icon: Clock, label: 'Slots' },
+          { id: 'profile', icon: User, label: 'Perfil' },
+        ]}
+      />
     </div>
   );
 }

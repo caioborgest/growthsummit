@@ -36,6 +36,8 @@ import { NextActivityCard } from './components/shared/NextActivityCard';
 
 import { exportToCSV } from '@/utils/csv';
 import { supabase } from '@/lib/supabase';
+import { BottomNavigation } from './components/shared/BottomNavigation';
+import { Home } from 'lucide-react';
 
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
@@ -199,7 +201,7 @@ export function DashboardStartup() {
           />
 
           {/* Content */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8">
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
@@ -629,7 +631,19 @@ export function DashboardStartup() {
             onClose={() => setIsScannerOpen(false)}
           />
         )}
-      </AnimatePresence>
+      <BottomNavigation
+        variant="orange"
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        tabs={[
+          { id: 'home', icon: Home, label: 'Início' },
+          { id: 'visao-geral', icon: TrendingUp, label: 'Visão' },
+          { id: 'leads', icon: Users, label: 'Leads' },
+          { id: 'stand', icon: QrCode, label: 'Stand' },
+          { id: 'recursos', icon: FileText, label: 'Docs' },
+          { id: 'perfil', icon: UserIcon, label: 'Perfil' },
+        ]}
+      />
     </div>
   );
 }

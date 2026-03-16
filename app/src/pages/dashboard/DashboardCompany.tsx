@@ -17,8 +17,10 @@ import {
   Download,
   Star,
   Phone,
-  Mail
+  Mail,
+  Home
 } from 'lucide-react';
+import { BottomNavigation } from './components/shared/BottomNavigation';
 import { exportToCSV } from '@/utils/csv';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -225,7 +227,7 @@ export function DashboardCompany() {
           />
 
           {/* Content */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8">
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
@@ -827,6 +829,21 @@ export function DashboardCompany() {
           />
         )}
       </div>
+          )}
+        </AnimatePresence>
+        <BottomNavigation
+          variant="teal"
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          tabs={[
+            { id: 'home', icon: Home, label: 'Início' },
+            { id: 'discovery', icon: Sparkles, label: 'B2B' },
+            { id: 'agenda', icon: Handshake, label: 'Agenda' },
+            { id: 'leads', icon: Users, label: 'Leads' },
+            { id: 'programacao', icon: Calendar, label: 'Tracks' },
+            { id: 'perfil', icon: User, label: 'Perfil' },
+          ]}
+        />
     </div>
   );
 }
