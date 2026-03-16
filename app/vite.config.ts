@@ -115,7 +115,8 @@ export default defineConfig({
           'icons': ['lucide-react'],
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 2000
   },
   preview: {
     port: 4173,

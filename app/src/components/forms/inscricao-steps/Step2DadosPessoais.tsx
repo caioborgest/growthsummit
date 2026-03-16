@@ -10,7 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle, Award, Key, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Phone, Lock, AlertCircle, Award, Key, Loader2, Contact } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
