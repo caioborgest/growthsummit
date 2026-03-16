@@ -855,6 +855,7 @@ export function DashboardSponsor() {
               onScanSuccess={handleScanSuccess}
               onClose={() => setIsScannerOpen(false)}
             />
+          )}
         </AnimatePresence>
       </div>
       <BottomNavigation

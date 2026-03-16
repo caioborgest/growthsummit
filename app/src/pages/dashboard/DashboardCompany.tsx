@@ -829,8 +829,6 @@ export function DashboardCompany() {
           />
         )}
       </div>
-          )}
-        </AnimatePresence>
         <BottomNavigation
           variant="teal"
           activeTab={activeTab}

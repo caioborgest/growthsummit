@@ -631,6 +631,7 @@ export function DashboardStartup() {
             onClose={() => setIsScannerOpen(false)}
           />
         )}
+      </AnimatePresence>
       <BottomNavigation
         variant="orange"
         activeTab={activeTab}
