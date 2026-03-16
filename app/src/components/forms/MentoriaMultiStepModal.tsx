@@ -110,8 +110,8 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                         area={dados.area}
                         mentorSelecionadoId={dados.mentorId}
                         slotSelecionadoId={dados.slotId}
-                        onContinuar={(mentorId, slotId) => {
-                            updateDados({ mentorId, slotId });
+                        onContinuar={(mentorId, slotId, selectedDate) => {
+                            updateDados({ mentorId, slotId, selectedDate });
                             nextStep();
                         }}
                         onVoltar={prevStep}

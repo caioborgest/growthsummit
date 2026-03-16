@@ -36,7 +36,8 @@ export const MENTORSHIP_TIME_SLOTS: TimeSlot[] = [
 export interface DadosMentoria {
     area: string;
     mentorId: string;
-    slotId: string; // New field for the chosen 20min spot
+    slotId: string; // The time string (e.g. '08:00')
+    selectedDate?: string; // The ISO date string (YYYY-MM-DD)
     descricaoProblema: string;
     nome: string;
     email: string;

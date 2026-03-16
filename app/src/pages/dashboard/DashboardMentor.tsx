@@ -55,8 +55,10 @@ export default function DashboardMentor() {
   const mentorSessions = sessions?.filter(s => s.mentorId === mentorData?.id) || [];
 
   const pendingRequests = mentorSessions.filter(s => s.status === 'pending' || (s.status as string) === 'pendente');
-  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId);
-  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && !s.menteeId);
+  const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
+
+  const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId && s.menteeId !== PLACEHOLDER_ID);
+  const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && (!s.menteeId || s.menteeId === PLACEHOLDER_ID));
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -76,7 +78,8 @@ export default function DashboardMentor() {
     const existingSlot = mentorSessions.find(s => {
       const sDate = new Date(s.scheduledAt).toISOString().split('T')[0];
       const sTime = new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      return sDate === selectedDate && sTime === slotId && (s.status === 'scheduled' || s.status === 'agendado') && !s.menteeId;
+      const isAvailable = !s.menteeId || s.menteeId === PLACEHOLDER_ID;
+      return sDate === selectedDate && sTime === slotId && (s.status === 'scheduled' || s.status === 'agendado') && isAvailable;
     });
 
     if (existingSlot) {
@@ -105,7 +108,7 @@ export default function DashboardMentor() {
           menteeName: 'Disponível',
           menteeEmail: '',
           menteePhone: '',
-          menteeId: null as any // Using null to avoid foreign key violation
+          menteeId: PLACEHOLDER_ID
         } as any);
         toast.success('Horário habilitado com sucesso!');
       } catch (err) {
@@ -123,9 +126,9 @@ export default function DashboardMentor() {
     });
 
     if (!session) return 'empty';
-    if (session.status === 'pending' || (session.status as string) === 'pendente') return 'pending';
-    if (session.menteeId && session.menteeId !== '00000000-0000-0000-0000-000000000000') return 'booked';
-    return 'available';
+    const isAvailable = !session.menteeId || session.menteeId === PLACEHOLDER_ID;
+    if (isAvailable) return 'available';
+    return 'booked';
   };
 
   if (isLoading || !mentorData) {

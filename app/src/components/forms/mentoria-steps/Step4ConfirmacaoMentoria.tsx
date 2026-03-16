@@ -125,19 +125,26 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     }, { onConflict: 'id' });
             }
 
-            // Create timestamp for scheduled_at based on today and provided timeSlotId
-            const now = new Date();
+            // Create timestamp for scheduled_at based on selectedDate and slotId
             const [hours, minutes] = dados.slotId.split(':');
-            const scheduled_date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
+            let scheduled_date: Date;
+            if (dados.selectedDate) {
+                const [y, m, d] = dados.selectedDate.split('-').map(Number);
+                scheduled_date = new Date(y, m - 1, d, parseInt(hours), parseInt(minutes));
+            } else {
+                const now = new Date();
+                scheduled_date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
+            }
 
             const mentoriasTable = supabase.from('mentorias_agendadas' as any) as any;
 
             // 1. First, check if there's an existing available slot (mentor habilitou esse horário)
+            const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
             const { data: existingSlots } = await mentoriasTable
                 .select('id')
                 .eq('mentor_id', dados.mentorId)
                 .eq('data_mentoria', scheduled_date.toISOString())
-                .is('mentorado_id', null)
+                .or(`mentorado_id.is.null,mentorado_id.eq.${PLACEHOLDER_ID}`)
                 .eq('status', 'scheduled')
                 .limit(1);
 

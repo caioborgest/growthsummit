@@ -7,13 +7,12 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
-import { MENTORSHIP_TIME_SLOTS } from './mentoriaTypes';
 
 interface Step2SelecionarMentorProps {
     area: string;
     mentorSelecionadoId: string;
-    slotId?: string;
-    onContinuar: (mentorId: string, slotId: string) => void;
+    slotSelecionadoId?: string;
+    onContinuar: (mentorId: string, slotId: string, selectedDate: string) => void;
     onVoltar: () => void;
 }
 
@@ -23,23 +22,29 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     const [mentores, setMentores] = useState<Mentor[]>([]);
     const [loading, setLoading] = useState(true);
     const [tempMentorId, setTempMentorId] = useState(mentorSelecionadoId);
-    const [tempSlotId, setTempSlotId] = useState(slotSelecionadoId);
     const { projectId } = useProject();
     const { data: allSessions, isLoading: loadingSessions } = useMentoringSessions();
 
+    const [selectedFullSlot, setSelectedFullSlot] = useState<{ slotId: string, date: string } | null>(null);
     const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
 
     // Filter available slots for the selected mentor
-    const availableSlotsForMentor = (allSessions || []).filter(s => 
+    const availableSessionsForMentor = (allSessions || []).filter(s => 
         s.mentorId === tempMentorId && 
         (s.status === 'scheduled' || s.status === 'agendado') && 
         (!s.menteeId || s.menteeId === PLACEHOLDER_ID)
     );
 
-    const mentorEnabledSlots = availableSlotsForMentor.map(s => {
-        const date = new Date(s.scheduledAt);
-        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    // Group available slots by date
+    const slotsByDate: Record<string, string[]> = {};
+    availableSessionsForMentor.forEach(s => {
+        const dateKey = new Date(s.scheduledAt).toISOString().split('T')[0];
+        const timeKey = new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if (!slotsByDate[dateKey]) slotsByDate[dateKey] = [];
+        if (!slotsByDate[dateKey].includes(timeKey)) slotsByDate[dateKey].push(timeKey);
     });
+
+    const dates = Object.keys(slotsByDate).sort();
 
     useEffect(() => {
         async function fetchMentores() {
@@ -150,28 +155,37 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                                 <p className="text-gray-500 text-[10px] font-bold uppercase text-center py-4">
                                     Selecione um mentor para ver os horários
                                 </p>
-                            ) : mentorEnabledSlots.length > 0 ? (
-                                MENTORSHIP_TIME_SLOTS
-                                    .filter(slot => mentorEnabledSlots.includes(slot.id))
-                                    .map(slot => {
-                                        const isSelected = tempSlotId === slot.id;
-                                        return (
-                                            <button
-                                                key={slot.id}
-                                                onClick={() => setTempSlotId(slot.id)}
-                                                className={`px-4 py-3 rounded-xl text-xs font-black transition-all border ${isSelected
-                                                    ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-glow-orange/20'
-                                                    : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'
-                                                    }`}
-                                            >
-                                                {slot.label}
-                                            </button>
-                                        );
-                                    })
+                            ) : dates.length > 0 ? (
+                                <div className="space-y-6">
+                                    {dates.map(date => (
+                                        <div key={date} className="space-y-3">
+                                            <p className="text-[10px] text-brand-orange-coral font-black uppercase tracking-widest px-1">
+                                                {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', weekday: 'short' }).toUpperCase()}
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {slotsByDate[date].sort().map(time => {
+                                                    const isSelected = selectedFullSlot?.slotId === time && selectedFullSlot?.date === date;
+                                                    return (
+                                                        <button
+                                                            key={`${date}-${time}`}
+                                                            onClick={() => setSelectedFullSlot({ slotId: time, date })}
+                                                            className={`px-3 py-2.5 rounded-xl text-[10px] font-black transition-all border ${isSelected
+                                                                ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-glow-orange/20'
+                                                                : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'
+                                                                }`}
+                                                        >
+                                                            {time}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
                                 <div className="text-center py-8">
                                     <p className="text-gray-500 text-[10px] font-bold uppercase leading-relaxed">
-                                        Nenhum horário disponível<br />para este mentor hoje.
+                                        Nenhum horário disponível<br />para este mentor ainda.
                                     </p>
                                 </div>
                             )}
@@ -194,8 +208,8 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                 </Button>
                 <Button
                     size="lg"
-                    disabled={!tempMentorId || !tempSlotId}
-                    onClick={() => onContinuar(tempMentorId, tempSlotId)}
+                    disabled={!tempMentorId || !selectedFullSlot}
+                    onClick={() => onContinuar(tempMentorId, selectedFullSlot!.slotId, selectedFullSlot!.date)}
                     className="flex-[2] bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-14 sm:h-16 text-xl rounded-2xl shadow-glow-orange disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                 >
                     Continuar <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
