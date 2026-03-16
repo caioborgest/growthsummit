@@ -142,14 +142,16 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             // ── ETAPA 4: Auto-convite WhatsApp (não bloqueante, apenas em produção)
             if (finalInscricaoId && import.meta.env.PROD) {
-                const projectSlug = selectedProject?.slug || 'growth-experience-triunfo';
-                autoInviteOnRegistration(
-                    finalInscricaoId,
-                    projectSlug,
-                    'standard'
-                ).catch(e => {
-                    logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
-                });
+                const currentProjectId = projectId || selectedProject?.id;
+                if (currentProjectId) {
+                    autoInviteOnRegistration(
+                        finalInscricaoId,
+                        currentProjectId,
+                        'standard'
+                    ).catch(e => {
+                        logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
+                    });
+                }
             }
 
             // ── ETAPA 5: Sucesso

@@ -7,11 +7,13 @@ import { Buffer } from 'node:buffer'
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
 }
 
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response(null, { headers: corsHeaders, status: 204 })
     }
 
     try {
@@ -237,10 +239,20 @@ serve(async (req) => {
     } catch (err) {
         const error = err as any;
         const status = error.response?.status || 500;
-        const message = error.response?.data?.error || error.message;
+        let message = error.response?.data?.message || error.response?.data?.error || error.message;
         
-        console.error(`Cora Gateway Error (${status}):`, message);
-        return new Response(JSON.stringify({ error: message, success: false }), {
+        // Se for 401 vindo da Cora, ser mais específico
+        if (status === 401 && error.config?.url?.includes('cora.com.br')) {
+            message = `Cora API Unauthorized: Verifique se CORA_CLIENT_ID, CORA_CERTIFICATE e CORA_PRIVATE_KEY estão corretos no Supabase. (${message})`;
+        }
+
+        console.error(`[Cora Gateway] Error (${status}):`, message);
+        
+        return new Response(JSON.stringify({ 
+            error: message, 
+            success: false,
+            details: error.response?.data || null 
+        }), {
             status,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })

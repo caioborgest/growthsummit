@@ -61,9 +61,10 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 });
 
                 if (error) {
+                    console.error('[Step5] Invoke error:', error);
                     // Tratar erro 401 especificamente
                     if (error.status === 401 || (error as any).message?.includes('401')) {
-                        throw new Error('Sessão expirada ou não autorizada. Por favor, tente recarregar a página.');
+                        throw new Error('Não autorizado (401). Verifique se as credenciais da Cora estão corretas no Supabase ou se a função exige login.');
                     }
                     throw error;
                 }
