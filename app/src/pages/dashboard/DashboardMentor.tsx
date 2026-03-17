@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Calendar, CheckCircle, Clock, XCircle, MessageSquare,
@@ -59,6 +59,21 @@ export default function DashboardMentor() {
   const pendingRequests = mentorSessions.filter(s => s.status === 'pending' || (s.status as string) === 'pendente');
   const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId);
   const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && !s.menteeId);
+  
+  const completedSessions = mentorSessions.filter(s => s.status === 'completed' || (s.status as string) === 'concluído');
+  const ratedSessions = completedSessions.filter(s => s.feedback?.rating || s.feedback?.avaliacaoMentoria);
+  
+  const avgRating = useMemo(() => {
+    if (ratedSessions.length === 0) return "5.0";
+    const sum = ratedSessions.reduce((acc, s) => acc + (s.feedback?.avaliacaoMentoria || s.feedback?.rating || 0), 0);
+    return (sum / ratedSessions.length).toFixed(1);
+  }, [ratedSessions]);
+
+  const recommendationRate = useMemo(() => {
+    if (ratedSessions.length === 0) return "100";
+    const recommended = ratedSessions.filter(s => (s.feedback?.indicacaoMentor || s.feedback?.rating || 0) >= 4).length;
+    return Math.round((recommended / ratedSessions.length) * 100);
+  }, [ratedSessions]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -510,11 +525,11 @@ export default function DashboardMentor() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-dark-300/50 p-4 rounded-2xl border border-white/5">
                       <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Média Avaliação</p>
-                      <p className="text-white font-black text-xl">4.9/5</p>
+                      <p className="text-white font-black text-xl">{avgRating}/5</p>
                     </div>
                     <div className="bg-dark-300/50 p-4 rounded-2xl border border-white/5">
                       <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Recomendação</p>
-                      <p className="text-white font-black text-xl">100%</p>
+                      <p className="text-white font-black text-xl">{recommendationRate}%</p>
                     </div>
                   </div>
                 </div>

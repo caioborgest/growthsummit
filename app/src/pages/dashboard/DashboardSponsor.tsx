@@ -28,6 +28,7 @@ import { useSponsors, useLeads, useNotifications, useSessions, useCheckInsAtivid
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ProfileForm } from './components/ProfileForm';
@@ -462,12 +463,12 @@ export function DashboardSponsor() {
                                 Enviar
                               </Button>
                             )}
-                            {deliverable.status === 'completed' && (
-                              <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate('/em-breve/download-entregavel')}>
-                                <Download className="h-4 w-4 mr-1" />
-                                Baixar
-                              </Button>
-                            )}
+                             {deliverable.status === 'completed' && (
+                               <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info(`Preparando download de: ${deliverable.item}`)}>
+                                 <Download className="h-4 w-4 mr-1" />
+                                 Baixar
+                               </Button>
+                             )}
                           </div>
                         </div>
                       ))}
@@ -745,22 +746,23 @@ export function DashboardSponsor() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {[
-                          { name: 'Site do Evento', url: '#' },
-                          { name: 'Área de Imprensa', url: '#' },
-                          { name: 'Resultados Anteriores', url: '#' },
-                          { name: 'Fotos do Evento', url: '#' },
-                        ].map((link, i) => (
-                          <a
-                            key={i}
-                            href={link.url === '#' ? undefined : link.url}
-                            onClick={(e) => { if(link.url === '#') { e.preventDefault(); navigate(`/em-breve/${link.name.toLowerCase().replace(/\s+/g, '-')}`); } }}
-                            className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
-                          >
-                            <span className="text-yellow-400 text-sm">{link.name}</span>
-                            <ExternalLink className="h-4 w-4 text-gray-400" />
-                          </a>
-                        ))}
+                         {[
+                           { name: 'Site do Evento', url: 'https://growthsummit.com.br' },
+                           { name: 'Área de Imprensa', url: 'https://growthsummit.com.br/press' },
+                           { name: 'Resultados Anteriores', url: 'https://growthsummit.com.br/previous-results' },
+                           { name: 'Fotos do Evento', url: 'https://flickr.com/photos/growthsummit' },
+                         ].map((link, i) => (
+                           <a
+                             key={i}
+                             href={link.url}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
+                           >
+                             <span className="text-yellow-400 text-sm">{link.name}</span>
+                             <ExternalLink className="h-4 w-4 text-gray-400" />
+                           </a>
+                         ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -779,8 +781,8 @@ export function DashboardSponsor() {
                         <div>
                           <p className="text-gray-400 text-sm">Responsável pelo Patrocínio</p>
                           <p className="text-white font-medium">Caio Borges</p>
-                          <p className="text-gray-400 text-sm">contato@growthsummit.site</p>
-                          <p className="text-gray-400 text-sm">(88) 98843-2310</p>
+                          <p className="text-gray-400 text-sm">{EVENT_CONFIG.email}</p>
+                          <p className="text-gray-400 text-sm">{EVENT_CONFIG.whatsapp.display}</p>
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">Suporte Técnico</p>
@@ -788,7 +790,12 @@ export function DashboardSponsor() {
                         </div>
                         <div>
                           <p className="text-gray-400 text-sm">WhatsApp</p>
-                          <p className="text-white font-medium">(88) 98843-2310</p>
+                          <button 
+                            onClick={() => window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}`, '_blank')}
+                            className="text-white font-medium hover:text-yellow-400 transition-colors"
+                          >
+                            {EVENT_CONFIG.whatsapp.display}
+                          </button>
                         </div>
                       </div>
                     </CardContent>
@@ -851,11 +858,11 @@ export function DashboardSponsor() {
             />
           )}
           {isScannerOpen && (
-            <LeadScanner
-              onScanSuccess={handleScanSuccess}
-              onClose={() => setIsScannerOpen(false)}
-            />
-          )}
+         <LeadScanner 
+           onClose={() => setIsScannerOpen(false)} 
+           onScanSuccess={handleScanSuccess} 
+         />
+       )}
         </AnimatePresence>
       </div>
       <BottomNavigation

@@ -237,7 +237,7 @@ export function DashboardStartup() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                 <TabsTrigger value="home" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
                    Início
                 </TabsTrigger>
@@ -256,6 +256,10 @@ export function DashboardStartup() {
                 <TabsTrigger value="recursos" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
                   <FileText className="h-4 w-4 mr-1 md:mr-2" />
                   Recursos
+                </TabsTrigger>
+                <TabsTrigger value="investidores" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
+                  <Handshake className="h-4 w-4 mr-1 md:mr-2" />
+                  Investidores
                 </TabsTrigger>
                 <TabsTrigger value="perfil" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
                   <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
@@ -578,27 +582,70 @@ export function DashboardStartup() {
                     <div className="space-y-3">
                       {[
                         { name: 'Programação do Evento', url: '/agenda' },
-                        { name: 'Lista de Investidores', url: '/em-breve/investidores' },
+                        { name: 'Lista de Investidores', action: () => setActiveTab('investidores') },
                         { name: 'Suporte para Startups', url: 'https://wa.me/5581999999999' },
                         { name: 'Grupo WhatsApp Startups', url: 'https://chat.whatsapp.com/ExemploGrowth' },
                       ].map((link, i) => (
-                        <a
+                        <div
                           key={i}
-                          href={link.url}
-                          target={link.url.startsWith('http') ? '_blank' : undefined}
-                          onClick={(e) => { 
-                            if(!link.url.startsWith('http')) { 
-                              e.preventDefault(); 
-                              navigate(link.url); 
-                            } 
+                          onClick={() => {
+                            if (link.action) {
+                              link.action();
+                            } else if (link.url) {
+                              if (link.url.startsWith('http')) {
+                                window.open(link.url, '_blank');
+                              } else {
+                                navigate(link.url);
+                              }
+                            }
                           }}
                           className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
                         >
                           <span className="text-orange-400 text-sm font-bold">{link.name}</span>
                           <ExternalLink className="h-4 w-4 text-gray-400" />
-                        </a>
+                        </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Investidores Tab */}
+              <TabsContent value="investidores" className="mt-0">
+                <div className="glass-card p-8">
+                  <div className="flex items-center justify-between mb-8">
+                     <h2 className="text-2xl font-black text-white italic tracking-tighter">Investidores <span className="text-orange-500">Confirmados</span></h2>
+                     <Badge className="bg-orange-500/10 text-orange-500 border-none font-black text-[10px] tracking-widest px-4 py-2 uppercase">Match Making</Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     {[
+                       { name: 'Venture Capital Nordeste', stage: 'Seed / Series A', sector: 'Generalista', logo: 'VC' },
+                       { name: 'Angel Investor Group', stage: 'Pre-seed', sector: 'SaaS / Fintech', logo: 'AI' },
+                       { name: 'Inova Capital', stage: 'Series A', sector: 'Agrotech / Health', logo: 'IC' },
+                       { name: 'Growth Ventures', stage: 'Seed', sector: 'Martech / Retail', logo: 'GV' },
+                     ].map((inv, i) => (
+                       <div key={i} className="group p-6 bg-dark-100 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all">
+                         <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center font-black text-orange-500 text-lg">
+                              {inv.logo}
+                            </div>
+                            <div>
+                              <p className="text-white font-black uppercase text-sm">{inv.name}</p>
+                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{inv.stage}</p>
+                            </div>
+                         </div>
+                         <div className="space-y-4">
+                            <div className="bg-dark-200 p-4 rounded-2xl border border-white/5">
+                              <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Foco Principal</p>
+                              <p className="text-white text-xs font-bold">{inv.sector}</p>
+                            </div>
+                            <Button className="w-full bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white border border-orange-500/20 font-black text-[10px] tracking-widest py-3 rounded-xl transition-all">
+                              SOLICITAR REUNIÃO
+                            </Button>
+                         </div>
+                       </div>
+                     ))}
                   </div>
                 </div>
               </TabsContent>

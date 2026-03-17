@@ -15,8 +15,6 @@ import {
   Users,
   QrCode,
   Download,
-  Star,
-  Phone,
   Mail,
   Home
 } from 'lucide-react';
@@ -30,6 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications, useCheckInsAtividades, useMyRegistration, useLeads } from '@/hooks/useData';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
+import { useProject } from '@/contexts/ProjectContext';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PremiumHeader } from './components/shared/PremiumHeader';
@@ -467,8 +467,8 @@ export function DashboardCompany() {
                                 </div>
                               </div>
                               <div className="flex gap-3">
-                                <Button className="bg-dark-300 hover:bg-dark-400 text-white rounded-xl" onClick={() => navigate('/em-breve/chat-b2b')}>
-                                  <MessageSquare className="h-4 w-4" />
+                                <Button className="bg-dark-300 hover:bg-dark-400 text-white rounded-xl" onClick={() => setActiveTab('matches')}>
+                                  Abrir Conversas
                                 </Button>
                                 <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl px-10" onClick={() => toast.success('Presença Confirmada!')}>
                                   Confirmar
@@ -516,7 +516,7 @@ export function DashboardCompany() {
                               </span>
                             </div>
                           </div>
-                          <Button variant="outline" className="border-dark-300 rounded-xl text-gray-400 group-hover:text-teal-400 group-hover:border-teal-400/30" onClick={() => navigate('/em-breve/reserva-lugar')}>
+                          <Button variant="outline" className="border-dark-300 rounded-xl text-gray-400 group-hover:text-teal-400 group-hover:border-teal-400/30" onClick={() => toast.success('Confirmação enviada! Enviaremos uma notificação antes do início.')}>
                             Reservar Lugar
                           </Button>
                         </div>
@@ -552,7 +552,17 @@ export function DashboardCompany() {
                                 </div>
                               </div>
                               <div className="mt-auto pt-6 border-t border-dark-300/50 flex gap-2">
-                                <Button size="sm" variant="outline" className="flex-1 border-dark-300 rounded-xl whitespace-nowrap px-1" onClick={() => navigate('/em-breve/detalhes-match')}>Detalhes</Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="flex-1 border-dark-300 rounded-xl whitespace-nowrap px-1" 
+                                  onClick={() => {
+                                    setSelectedMatch({ match, otherCompany: other });
+                                    toast.info(`Empresa: ${other.name}\nSetor: ${other.sector}\nInteresse: ${other.tipoInteresse || 'Não informado'}`);
+                                  }}
+                                >
+                                  Detalhes
+                                </Button>
                                 {match.status === 'scheduled' ? (
                                   <Button size="sm" className="flex-1 bg-dark-300 text-gray-400 font-bold rounded-xl cursor-not-allowed whitespace-nowrap px-1" disabled>
                                     Agendado
@@ -704,8 +714,9 @@ export function DashboardCompany() {
                   <div className="glass-card p-10 max-w-4xl text-left">
                     <div className="flex items-center justify-between mb-12">
                       <h2 className="text-2xl font-black text-white">Configurações da Empresa</h2>
-                      <Button className="bg-teal-500 hover:bg-teal-400 text-white font-black px-10 py-6 rounded-2xl" onClick={() => navigate('/em-breve/atualizar-dados-empresa')}>
-                        ATUALIZAR DADOS
+                      <Button className="bg-teal-500 hover:bg-teal-400 text-white font-black px-10 py-6 rounded-2xl" onClick={() => setIsB2BModalOpen(true)}>
+                        <Building2 className="mr-3 h-5 w-5" />
+                        EDITAR PERFIL COMPLETO
                       </Button>
                     </div>
 
@@ -771,11 +782,15 @@ export function DashboardCompany() {
                       <h3 className="text-xl font-black text-white mb-6">Suporte Estratégico</h3>
                       <p className="text-gray-400 text-sm leading-relaxed mb-10">Tire suas dúvidas diretamente com os organizadores da Rodada de Negócios via canal exclusivo.</p>
                       <div className="space-y-4">
-                        <Button className="w-full bg-teal-500 hover:bg-teal-400 text-white font-black py-4 rounded-xl" onClick={() => navigate('/em-breve/suporte-whatsapp')}>
+                        <Button 
+                          className="w-full bg-teal-500 hover:bg-teal-400 text-white font-black py-4 rounded-xl" 
+                          onClick={() => window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=Olá! Sou da empresa ${companyData?.name || ''} e preciso de suporte B2B.`, '_blank')}
+                        >
                           WHATSAPP B2B
                         </Button>
-                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl" onClick={() => navigate('/em-breve/mapa-interativo')}>
-                          MAPA DA ARENA
+                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl" onClick={() => window.open('https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/mapa-evento.png', '_blank')}>
+                          <MapPin className="h-4 w-4 mr-2" />
+                          Mapa Interativo
                         </Button>
                       </div>
                     </div>
@@ -789,10 +804,9 @@ export function DashboardCompany() {
         <AnimatePresence>
           {isScannerOpen && (
             <LeadScanner
-              isOpen={isScannerOpen}
-              onClose={() => setIsScannerOpen(false)}
-              onScanSuccess={handleScanSuccess}
-            />
+            onClose={() => setIsScannerOpen(false)}
+            onScanSuccess={handleScanSuccess}
+          />
           )}
           {isB2BModalOpen && (
             <B2BFormModal

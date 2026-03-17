@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
 import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 
 export function ProfileForm() {
@@ -461,7 +462,7 @@ export function ProfileForm() {
                                 <p className="text-gray-500 text-xs">Aumente a segurança da sua conta</p>
                             </div>
                         </div>
-                        <Button variant="ghost" className="text-teal-400 hover:bg-teal-500/10 font-bold" onClick={() => navigate('/em-breve/configuracao-2fa')}>Configurar</Button>
+                        <Button variant="ghost" className="text-teal-400 hover:bg-teal-500/10 font-bold" onClick={() => toast.info('A configuração de 2FA estará disponível em breve para sua conta.')}>Configurar</Button>
                     </div>
                 </div>
             </div>
