@@ -426,7 +426,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,registration_id,stand_id,created_at';
     }
     if (entity === 'leads') {
-      return 'id,project_id,visitor_name,visitor_email,visitor_phone,visitor_cpf,visitor_company,interest_level,notes,created_at,startup_id,sponsor_id,company_id';
+      return 'id,project_id,visitor_name,visitor_email,visitor_phone,visitor_company,interest_level,notes,created_at,startup_id,sponsor_id,company_id';
     }
   }
 
@@ -447,7 +447,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
     empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
-    users: 'id,email,name,role,department,permissions,created_at,staff_role,avatar_url',
+    users: 'id,email,name,role,created_at,avatar',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
     notifications: 'id,project_id,user_id,title,message,type,is_read,created_at'
   };
