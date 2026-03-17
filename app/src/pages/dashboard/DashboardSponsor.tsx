@@ -198,39 +198,42 @@ export function DashboardSponsor() {
 
           {/* Stats Overview */}
           <div className="py-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all group">
-                <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Total Entregáveis</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-yellow-400 transition-colors">{stats.totalDeliverables}</p>
-                  <FileCheck className="h-6 w-6 text-yellow-500/40" />
+            {/* Stats Grid */}
+            {(activeTab === 'home' || activeTab === 'overview') && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all group">
+                  <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Total Entregáveis</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-yellow-400 transition-colors">{stats.totalDeliverables}</p>
+                    <FileCheck className="h-6 w-6 text-yellow-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-green-500/10 hover:border-green-500/30 transition-all group">
+                  <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Concluídos</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-green-400">{stats.completed}</p>
+                    <CheckCircle className="h-6 w-6 text-green-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-blue-500/10 hover:border-blue-500/30 transition-all group">
+                  <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Em Andamento</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-blue-400">{stats.inProgress}</p>
+                    <Clock className="h-6 w-6 text-blue-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-red-500/10 hover:border-red-500/30 transition-all group">
+                  <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Pendentes</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-red-400">{stats.pending}</p>
+                    <AlertCircle className="h-6 w-6 text-red-500/40" />
+                  </div>
                 </div>
               </div>
-              <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-green-500/10 hover:border-green-500/30 transition-all group">
-                <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Concluídos</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-green-400">{stats.completed}</p>
-                  <CheckCircle className="h-6 w-6 text-green-500/40" />
-                </div>
-              </div>
-              <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-blue-500/10 hover:border-blue-500/30 transition-all group">
-                <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Em Andamento</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-blue-400">{stats.inProgress}</p>
-                  <Clock className="h-6 w-6 text-blue-500/40" />
-                </div>
-              </div>
-              <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-red-500/10 hover:border-red-500/30 transition-all group">
-                <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-2">Pendentes</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-red-400">{stats.pending}</p>
-                  <AlertCircle className="h-6 w-6 text-red-500/40" />
-                </div>
-              </div>
-            </div>
+            )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="hidden md:grid w-full grid-cols-2 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                 <TabsTrigger
                   value="home"
                   className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
@@ -288,11 +291,10 @@ export function DashboardSponsor() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Home Tab */}
-              <TabsContent value="home" className="mt-0 space-y-10">
+              <TabsContent value="home" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <PwaDashboardHero 
-                    eventName="Growth Experience"
-                    location="Triunfo-PE"
+                    eventName="Área do Patrocinador"
+                    location="Exposição VIP"
                     date="16 ABR 2026"
                     stats={{
                         people: sponsorLeads.length.toString() + "+",

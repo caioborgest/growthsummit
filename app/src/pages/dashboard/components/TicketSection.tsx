@@ -14,6 +14,7 @@ interface TicketSectionProps {
     isActuallyPaid: boolean;
     generateTicketPDF: (reg: any, projectName: string) => Promise<void>;
     setShowCheckInModal: (show: boolean) => void;
+    setShowUpgradeModal: (show: boolean) => void;
 }
 
 export function TicketSection({
@@ -23,7 +24,8 @@ export function TicketSection({
     statusFinanceiro,
     isActuallyPaid,
     generateTicketPDF,
-    setShowCheckInModal
+    setShowCheckInModal,
+    setShowUpgradeModal
 }: TicketSectionProps) {
     return (
         <div className="flex flex-col gap-8 pb-32">
@@ -98,7 +100,10 @@ export function TicketSection({
                                 Faça o upgrade para <strong>Experience Pro</strong> e sinta o poder das sessões noturnas e mentorias 1-on-1.
                             </p>
                         </div>
-                        <Button className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-10 py-7 rounded-2xl shadow-glow-orange transition-all hover:scale-105 active:scale-95">
+                        <Button 
+                            className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-10 py-7 rounded-2xl shadow-glow-orange transition-all hover:scale-105 active:scale-95"
+                            onClick={() => setShowUpgradeModal(true)}
+                        >
                             QUERO ME TORNAR PRO
                         </Button>
                     </div>

@@ -147,6 +147,8 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   tema_interesse: 'topic',
   anotacoes: 'notes',
   data_mentoria: 'scheduledAt',
+  localizacao: 'location',
+  descricao: 'description',
   avaliacao_mentoria: 'mentoringRating',
   indicacao_mentor: 'mentorIndicationRating',
   // Other GE fields
@@ -283,6 +285,9 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'mentoring_sessions' && key === 'duration') dbKey = isGEProject(projectId) ? 'duracao' : 'duration';
       else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
       else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
+      else if (entity === 'stands' && key === 'name') dbKey = 'nome';
+      else if (entity === 'stands' && key === 'location') dbKey = 'localizacao';
+      else if (entity === 'stands' && key === 'description') dbKey = 'descricao';
       else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'transactions' && key === 'amount') dbKey = 'amount';
@@ -415,7 +420,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,company_a_id,company_b_id,status,created_at';
     }
     if (entity === 'stands') {
-      return 'id,project_id,name,description,logo_url,location,owner_id,owner_type,created_at';
+      return 'id,project_id,nome,descricao,logo_url,localizacao,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
       return 'id,project_id,registration_id,stand_id,created_at';

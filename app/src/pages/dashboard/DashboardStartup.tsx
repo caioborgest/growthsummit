@@ -169,7 +169,7 @@ export function DashboardStartup() {
       
       doc.save(`Stand_${startupData.name.replace(/\s+/g, '_')}_QRCode.pdf`);
       toast.success('QR Code pronto para impressão!');
-    } catch (error) {
+    } catch {
       toast.error('Erro ao gerar PDF');
     }
   };
@@ -202,42 +202,44 @@ export function DashboardStartup() {
 
           {/* Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8">
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Total Leads</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.totalLeads}</p>
-                  <Users className="h-6 w-6 text-orange-500/40" />
+            {/* Stats Grid */}
+            {(activeTab === 'home' || activeTab === 'visao-geral') && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Total Leads</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.totalLeads}</p>
+                    <Users className="h-6 w-6 text-orange-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Alto Interesse</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-green-400">{stats.highInterest}</p>
+                    <Star className="h-6 w-6 text-green-500/40 fill-green-500/10" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Interesse Médio</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-yellow-500">{stats.mediumInterest}</p>
+                    <Star className="h-6 w-6 text-yellow-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Conversão</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-teal-400">
+                      {stats.totalLeads > 0 ? Math.round((stats.highInterest / stats.totalLeads) * 100) : 0}%
+                    </p>
+                    <TrendingUp className="h-6 w-6 text-teal-500/40" />
+                  </div>
                 </div>
               </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Alto Interesse</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-green-400">{stats.highInterest}</p>
-                  <Star className="h-6 w-6 text-green-500/40 fill-green-500/10" />
-                </div>
-              </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Interesse Médio</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-yellow-500">{stats.mediumInterest}</p>
-                  <Star className="h-6 w-6 text-yellow-500/40" />
-                </div>
-              </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-3">Conversão</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-teal-400">
-                    {stats.totalLeads > 0 ? Math.round((stats.highInterest / stats.totalLeads) * 100) : 0}%
-                  </p>
-                  <TrendingUp className="h-6 w-6 text-teal-500/40" />
-                </div>
-              </div>
-            </div>
+            )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+              <TabsList className="hidden md:grid w-full grid-cols-3 md:grid-cols-7 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                 <TabsTrigger value="home" className="data-[state=active]:bg-orange-500 py-3 text-[10px] md:text-sm">
                    Início
                 </TabsTrigger>
@@ -267,11 +269,10 @@ export function DashboardStartup() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Home Tab */}
-              <TabsContent value="home" className="mt-0 space-y-10">
+              <TabsContent value="home" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <PwaDashboardHero 
-                    eventName="Growth Experience"
-                    location="Triunfo-PE"
+                    eventName="Startup Arena"
+                    location="Palco Pitch"
                     date="16 ABR 2026"
                     stats={{
                         people: stats.totalLeads.toString() + "+",

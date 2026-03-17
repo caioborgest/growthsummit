@@ -22,7 +22,8 @@ import {
   ArrowRight,
   ChevronRight,
   Building2,
-  Trophy
+  Trophy,
+  Handshake
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -93,7 +94,12 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
   const nightSpeakers = useMemo(() => {
     const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => typeof s.speakers === 'string' ? s.speakers.split(',').shift() : Array.isArray(s.speakers) ? s.speakers[0] : (s.speakers as any)).filter(Boolean);
+    const names = night.map(s => {
+      const spks = (s as any).speakers;
+      if (typeof spks === 'string') return spks.split(',').shift();
+      if (Array.isArray(spks)) return spks[0];
+      return null;
+    }).filter(Boolean);
     return names.join(' + ');
   }, [allSessions]);
 
@@ -435,7 +441,12 @@ export function DashboardParticipante() {
   const nightSpeakers = useMemo(() => {
     const night = allSessions?.filter(s => s.category === 'noturna') || [];
     if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => typeof s.speakers === 'string' ? s.speakers.split(',').shift() : Array.isArray(s.speakers) ? s.speakers[0] : (s.speakers as any)).filter(Boolean);
+    const names = night.map(s => {
+      const spks = (s as any).speakers;
+      if (typeof spks === 'string') return spks.split(',').shift();
+      if (Array.isArray(spks)) return spks[0];
+      return null;
+    }).filter(Boolean);
     return names.join(' + ');
   }, [allSessions]);
 
@@ -588,9 +599,23 @@ export function DashboardParticipante() {
     }
   };
 
+  // ── Mapeamento e Enriquecimento de Mentorias ──────────────────────────────
+  const enrichedMentorships = useMemo(() => {
+    if (!mentoringSessions || !mentors) return [];
+    return mentoringSessions.map(session => {
+      const mentor = mentors.find(m => m.id === session.mentorId);
+      return {
+        ...session,
+        mentorName: mentor ? mentor.name : session.mentorName,
+        mentorAvatar: mentor ? (mentor.photo || mentor.foto_url) : null,
+        mentorSpecialties: mentor ? mentor.specialties : []
+      };
+    });
+  }, [mentoringSessions, mentors]);
+
   const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
-  const myMentorships = mentoringSessions.filter(s => s.menteeId === myRegistration?.id);
-  const availableSlots = mentoringSessions.filter(s => 
+  const myMentorships = enrichedMentorships.filter(s => s.menteeId === myRegistration?.id);
+  const availableSlots = enrichedMentorships.filter(s => 
     (!s.menteeId || s.menteeId === PLACEHOLDER_ID) && 
     (s.status === 'scheduled' || s.status === 'agendado')
   );
@@ -1144,6 +1169,7 @@ export function DashboardParticipante() {
                 isActuallyPaid={isActuallyPaid}
                 generateTicketPDF={generateTicketPDF}
                 setShowCheckInModal={setShowCheckInModal}
+                setShowUpgradeModal={setShowUpgradeModal}
               />
             )}
 
@@ -1180,6 +1206,32 @@ export function DashboardParticipante() {
 
             {activeTab === 'circuito' && myRegistration?.id && (
               <GamificationSection registrationId={myRegistration.id} />
+            )}
+
+            {activeTab === 'networking' && (
+              <div className="space-y-8">
+                <div className="p-8 text-center bg-dark-200/50 rounded-[2rem] border-2 border-dashed border-white/10">
+                  <Handshake className="h-12 w-12 text-teal-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-black text-white uppercase italic">Networking & Negócios</h3>
+                  <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                    Aumente sua rede de contatos, participe de rodadas de negócios e conecte-se com startups inovadoras.
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-4 max-w-md mx-auto">
+                    <Button 
+                      onClick={() => setIsB2BModalOpen(true)}
+                      className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl h-14"
+                    >
+                      RODADA B2B
+                    </Button>
+                    <Button 
+                      onClick={() => setIsStartupModalOpen(true)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl h-14"
+                    >
+                      ARENA STARTUP
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
 
             {activeTab === 'certificados' && (
@@ -1259,6 +1311,7 @@ export function DashboardParticipante() {
           { id: 'ingresso', icon: QrCode, label: 'Ticket' },
           { id: 'agenda', icon: Calendar, label: 'Agenda' },
           { id: 'circuito', icon: Trophy, label: 'Circuito' },
+          { id: 'networking', icon: Handshake, label: 'Match' },
           { id: 'mentorias', icon: Users, label: 'Mentor' },
           { id: 'documentos', icon: FileText, label: 'Docs' },
           { id: 'certificados', icon: Award, label: 'Certs' },

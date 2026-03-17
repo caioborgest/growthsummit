@@ -35,7 +35,7 @@ export default function DashboardMentor() {
   // Find current mentor profile
   const mentorData = mentorsData?.find(m => m.userId === user?.id || (m as any).email === user?.email);
 
-  const [activeTab, setActiveTab] = useState<'sessions' | 'slots' | 'profile'>('sessions');
+  const [activeTab, setActiveTab] = useState<'home' | 'sessions' | 'slots' | 'profile'>('home');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: '',
@@ -176,50 +176,73 @@ export default function DashboardMentor() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-32 relative z-10">
         
         {/* NEW DASHBOARD HOME VIEW (PREMIUM STYLE) - Only if in sessions tab or initial view */}
-        {activeTab === 'sessions' && (
-          <div className="space-y-8 animate-in fade-in duration-500">
+        {activeTab === 'home' && (
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <PwaDashboardHero 
-              eventName="Growth Experience"
-              location="Triunfo-PE"
-              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() : "16 ABR 2026"}
+              eventName="Growth Mentorship"
+              location="Arena de Mentorias"
+              date="16 ABR 2026"
               stats={{
-                people: mentorsData?.length ? String(mentorsData.length) + "+" : "50+",
-                content: "Impacto",
-                activities: String(upcomingSessions.length) + " Mentorias"
+                people: upcomingSessions.length.toString() + " Agendadas",
+                content: avgRating + " ⭐",
+                activities: availableSlots.length.toString() + " Slots"
               }}
             />
 
-            {upcomingSessions.length > 0 && (
+            {upcomingSessions[0] && (
               <NextActivityCard 
-                title={`Mentoria: ${upcomingSessions[0].menteeName}`}
+                title={`Mentoria com ${upcomingSessions[0].menteeName}`}
                 subtitle={upcomingSessions[0].topic || "Sessão de Mentoria"}
                 time={new Date(upcomingSessions[0].scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 duration="20 min"
                 isConfirmed={true}
+                onClick={() => setActiveTab('sessions')}
               />
             )}
 
-            <div className="px-2 grid grid-cols-2 gap-4">
-               <button 
-                  onClick={() => setActiveTab('slots')}
-                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                  <Clock className="h-6 w-6 text-brand-orange-coral" />
-                  <span className="text-white font-black text-sm text-left leading-tight">Configurar<br/>Slots</span>
-               </button>
-               <button 
-                  onClick={() => setActiveTab('profile')}
-                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                  <User className="h-6 w-6 text-brand-orange-coral" />
-                  <span className="text-white font-black text-sm text-left leading-tight">Meu Perfil<br/>Mentor</span>
-               </button>
+            <div className="grid grid-cols-2 gap-4 px-2">
+              <Button 
+                onClick={() => setActiveTab('sessions')}
+                className="h-32 bg-indigo-500/10 border border-indigo-500/20 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 hover:bg-indigo-500/20 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                  <Calendar className="h-6 w-6" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white font-black text-sm uppercase italic">Agenda</p>
+                  <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">{upcomingSessions.length} sessões</p>
+                </div>
+              </Button>
+
+              <Button 
+                onClick={() => setActiveTab('slots')}
+                className="h-32 bg-teal-500/10 border border-teal-500/20 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 hover:bg-teal-500/20 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/20 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white font-black text-sm uppercase italic">Meus Slots</p>
+                  <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">{availableSlots.length} livres</p>
+                </div>
+              </Button>
             </div>
+
+            <QuickActions 
+              onB2BClick={() => navigate('/b2b')}
+              onMentoriaClick={() => setActiveTab('slots')}
+            />
           </div>
         )}
 
         {/* Desktop Navigation Tabs (Hidden on Mobile) */}
         <div className="hidden md:flex items-center gap-2 bg-dark-200/50 p-1.5 rounded-[2rem] border border-white/5 self-start shadow-xl shadow-black/20">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex items-center gap-3 px-8 py-4 rounded-[1.8rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'home' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
+          >
+            <Home className={`h-4 w-4 ${activeTab === 'home' ? 'animate-bounce' : ''}`} /> Início
+          </button>
           <button
             onClick={() => setActiveTab('sessions')}
             className={`flex items-center gap-3 px-8 py-4 rounded-[1.8rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sessions' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
@@ -252,7 +275,7 @@ export default function DashboardMentor() {
         </div>
 
         {activeTab === 'sessions' ? (
-          <div className="space-y-12">
+          <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* NOVIDADES / PENDENTES */}
             {pendingRequests.length > 0 && (
@@ -832,8 +855,9 @@ export default function DashboardMentor() {
           }
         }}
         tabs={[
-          { id: 'sessions', icon: Calendar, label: 'Mentorias' },
-          { id: 'slots', icon: Clock, label: 'Slots' },
+          { id: 'home', icon: Home, label: 'Início' },
+          { id: 'sessions', icon: Calendar, label: 'Agenda' },
+          { id: 'slots', icon: Clock, label: 'Horários' },
           { id: 'profile', icon: User, label: 'Perfil' },
         ]}
       />

@@ -228,41 +228,43 @@ export function DashboardCompany() {
 
           {/* Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8">
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Empresas no Radar</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-teal-400 transition-colors">{discoveryCompanies.length}</p>
-                  <Sparkles className="h-6 w-6 text-teal-500/40 animate-pulse" />
+            {/* Content Section */}
+            {(activeTab === 'home' || activeTab === 'overview') && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="glass-card p-6 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 hover:border-teal-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Empresas no Radar</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-teal-400 transition-colors">{discoveryCompanies.length}</p>
+                    <Sparkles className="h-6 w-6 text-teal-500/40 animate-pulse" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-pink-500/10 to-transparent border-pink-500/20 hover:border-pink-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Seus Matches</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-pink-400 transition-colors">{stats.matches}</p>
+                    <Heart className="h-6 w-6 text-pink-500/40 fill-pink-500/10" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Reuniões Agendadas</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{stats.scheduled}</p>
+                    <Calendar className="h-6 w-6 text-blue-500/40" />
+                  </div>
+                </div>
+                <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
+                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Oportunidades</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.highInterest}</p>
+                    <TrendingUp className="h-6 w-6 text-orange-500/40" />
+                  </div>
                 </div>
               </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-pink-500/10 to-transparent border-pink-500/20 hover:border-pink-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Seus Matches</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-pink-400 transition-colors">{stats.matches}</p>
-                  <Heart className="h-6 w-6 text-pink-500/40 fill-pink-500/10" />
-                </div>
-              </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Reuniões Agendadas</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-blue-400 transition-colors">{stats.scheduled}</p>
-                  <Calendar className="h-6 w-6 text-blue-500/40" />
-                </div>
-              </div>
-              <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Oportunidades</p>
-                <div className="flex items-end justify-between">
-                  <p className="text-3xl font-black text-white group-hover:text-orange-400 transition-colors">{stats.highInterest}</p>
-                  <TrendingUp className="h-6 w-6 text-orange-500/40" />
-                </div>
-              </div>
-            </div>
+            )}
 
-            <div className="mt-12">
+            <div className="mt-4">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-9 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
+                <TabsList className="hidden md:grid w-full grid-cols-3 md:grid-cols-9 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
                   <TabsTrigger value="home" className="data-[state=active]:bg-teal-500 py-3 text-[10px] md:text-sm">
                     Início
                   </TabsTrigger>
@@ -300,11 +302,10 @@ export function DashboardCompany() {
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Home Tab */}
-                <TabsContent value="home" className="mt-0 space-y-10">
+                <TabsContent value="home" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <PwaDashboardHero 
-                      eventName="Growth Experience"
-                      location="Triunfo-PE"
+                      eventName="B2B Matchmaking"
+                      location="Espaço Negócios"
                       date="16 ABR 2026"
                       stats={{
                           people: discoveryCompanies.length.toString() + "+",
