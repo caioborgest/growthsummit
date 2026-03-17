@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
+import type { Mentor } from '@/types';
+import { useMentoringSessions } from '@/hooks/useData';
 
 interface Step2SelecionarMentorProps {
     area: string;
@@ -15,8 +17,6 @@ interface Step2SelecionarMentorProps {
     onContinuar: (mentorId: string, slotId: string, selectedDate: string) => void;
     onVoltar: () => void;
 }
-
-import { useMentoringSessions } from '@/hooks/useData';
 
 export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSelecionadoId, onContinuar, onVoltar }: Step2SelecionarMentorProps) {
     const [mentores, setMentores] = useState<Mentor[]>([]);
@@ -31,7 +31,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     // Filter available slots for the selected mentor
     const availableSessionsForMentor = (allSessions || []).filter(s => 
         s.mentorId === tempMentorId && 
-        (s.status === 'scheduled' || s.status === 'agendado') && 
+        s.status === 'scheduled' && 
         (!s.menteeId || s.menteeId === PLACEHOLDER_ID)
     );
 
@@ -52,11 +52,27 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                 const { data, error } = await supabase
                     .from('mentores_growth_experience')
                     .select('id,project_id,user_id,nome,email,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
-                    .eq('project_id', projectId)
-                    .eq('status', 'aprovado');
+                    .eq('project_id', projectId as any)
+                    .eq('status', 'aprovado' as any);
 
                 if (error) throw error;
-                setMentores(data || []);
+                // Database returns snake_case, but we use camelCase in the app
+                const mapped = (data || []).map(m => ({
+                    id: m.id,
+                    projectId: m.project_id,
+                    userId: m.user_id,
+                    name: m.nome,
+                    email: m.email,
+                    company: m.empresa,
+                    position: m.cargo,
+                    specialties: m.especialidades || [],
+                    bio: m.bio,
+                    photo: m.foto_url,
+                    status: m.status,
+                    yearsExperience: m.years_experience,
+                    maxMentories: m.max_mentories
+                }));
+                setMentores(mapped as any[]);
             } catch (err) {
                 logger.error('Erro ao buscar mentores:', err);
             } finally {
@@ -77,9 +93,9 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     };
 
     const mentoresSugeridos = mentores.filter(m => {
-        if (!m.especialidades) return false;
+        if (!m.specialties) return false;
         const normalizedAreaOptions = normalizeFilter(area);
-        return m.especialidades.some((e: string) => {
+        return m.specialties.some((e: string) => {
             const specLower = e.toLowerCase();
             return normalizedAreaOptions.some(opt => specLower.includes(opt) || opt.includes(specLower));
         });
@@ -116,8 +132,8 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                                         }`}
                                 >
                                     <div className="relative shrink-0">
-                                        {mentor.foto_url ? (
-                                            <img src={mentor.foto_url} alt={mentor.nome} className="w-16 h-16 rounded-2xl object-cover" />
+                                        {mentor.photo ? (
+                                            <img src={mentor.photo} alt={mentor.name} className="w-16 h-16 rounded-2xl object-cover" />
                                         ) : (
                                             <div className="w-16 h-16 rounded-2xl bg-dark-300 flex items-center justify-center"><User size={24} className="text-gray-600" /></div>
                                         )}
@@ -128,10 +144,10 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h5 className="text-lg font-black text-white italic leading-tight truncate">{mentor.nome}</h5>
-                                        <p className="text-gray-500 text-xs font-bold truncate mt-1">{mentor.cargo} @ {mentor.empresa}</p>
+                                        <h5 className="text-lg font-black text-white italic leading-tight truncate">{mentor.name}</h5>
+                                        <p className="text-gray-500 text-xs font-bold truncate mt-1">{mentor.position} @ {mentor.company}</p>
                                         <div className="flex gap-1 mt-2">
-                                            {mentor.especialidades?.slice(0, 3).map(e => <Badge key={e} className="text-[8px] bg-white/5 text-gray-400 border-none font-black uppercase">{e}</Badge>)}
+                                            {mentor.specialties?.slice(0, 3).map((e: string) => <Badge key={e} className="text-[8px] bg-white/5 text-gray-400 border-none font-black uppercase">{e}</Badge>)}
                                         </div>
                                     </div>
                                 </Card>

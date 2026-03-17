@@ -2,13 +2,14 @@ import {
   Users, 
   Calendar, 
   Clock, 
-  MessageCircle,
-  Star,
-  Check
+  Check,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { mentors } from '@/data/eventData';
+import { useMentors, useMentoringSessions } from '@/hooks/useData';
+import { MentorCard } from '@/components/growth-experience/MentorCard';
+import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
+import { useState } from 'react';
 
 const benefits = [
   "Sessões individuais de 20 minutos",
@@ -42,8 +43,16 @@ const howItWorks = [
 ];
 
 export function Mentorias() {
+  const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
+  const { data: allSessions } = useMentoringSessions();
+  const [modalAberto, setModalAberto] = useState(false);
+
+  const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
+
   return (
     <div className="bg-dark min-h-screen">
+      <MentoriaMultiStepModal isOpen={modalAberto} onClose={() => setModalAberto(false)} />
+
       {/* Hero */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
@@ -70,7 +79,7 @@ export function Mentorias() {
           <div className="flex flex-wrap justify-center gap-8">
             <div className="flex items-center text-gray-300">
               <Users className="h-5 w-5 mr-2 text-teal-400" />
-              <span>30+ mentores disponíveis</span>
+              <span>{approvedMentors.length || '30+'} mentores disponíveis</span>
             </div>
             <div className="flex items-center text-gray-300">
               <Clock className="h-5 w-5 mr-2 text-teal-400" />
@@ -111,7 +120,7 @@ export function Mentorias() {
       </section>
 
       {/* Mentors */}
-      <section className="py-20 lg:py-28 bg-dark-200/30">
+      <section className="py-20 lg:py-28 bg-dark-100 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30">
@@ -122,34 +131,29 @@ export function Mentorias() {
             </h2>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mentors.map((mentor) => (
-              <div
-                key={mentor.id}
-                className="glass-card p-6 hover:border-teal-500/30 transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {mentor.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/30">
-                    <Star className="h-3 w-3 mr-1" />
-                    {mentor.specialty}
-                  </Badge>
-                </div>
-                
-                <h3 className="text-lg font-semibold text-white mb-1">{mentor.name}</h3>
-                <p className="text-gray-400 text-sm mb-4">{mentor.company}</p>
-                
-                <Button variant="outline" size="sm" className="w-full border-dark-300">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Ver perfil
-                </Button>
-              </div>
-            ))}
-          </div>
+          {mentorsLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {approvedMentors.map((mentor) => {
+                const mentorSlots = (allSessions || []).filter(s => 
+                  s.mentorId === mentor.id && 
+                  s.status === 'scheduled' && 
+                  !s.menteeId
+                );
+                return (
+                  <MentorCard 
+                    key={mentor.id} 
+                    mentor={mentor as any} 
+                    availableSlots={mentorSlots}
+                    onBookClick={() => setModalAberto(true)}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

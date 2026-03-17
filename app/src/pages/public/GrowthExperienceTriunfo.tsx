@@ -20,7 +20,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
-import { useCheckIns, useRegistrations, useMentors, useSessions, useCheckInsAtividades } from '@/hooks/useData';
+import { useRegistrations, useMentors, useSessions, useCheckInsAtividades } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -155,7 +155,6 @@ export function GrowthExperienceTriunfo() {
   const [scannerAberto, setScannerAberto] = useState(false);
   const { user } = useAuth();
   const { data: userRegistrations } = useRegistrations();
-  const { create: registerCheckIn } = useCheckIns();
   const { create: registerSessionCheckIn } = useCheckInsAtividades();
   const { data: allSessions } = useSessions();
 
@@ -271,13 +270,13 @@ export function GrowthExperienceTriunfo() {
     }
   }, [selectedProject?.id, setSelectedProject]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     initProject();
   }, [initProject]);
 
   // Sincronizar modais com a URL para facilitar compartilhamento
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const formParam = searchParams.get('form');
     if (formParam === 'inscricao') setModalInscricaoAberto(true);
@@ -324,7 +323,7 @@ export function GrowthExperienceTriunfo() {
     <div className="flex flex-col overflow-x-hidden">
       <SEOHead
         title="Growth Experience Triunfo-PE 2026 | 16 de Abril"
-        description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e oportunidades para PMEs. 16/04/2026 no Espaço Parque."
+        description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria e oportunidades para PMEs. 16/04/2026 no Espaço Parque."
         keywords="growth experience, triunfo pe, evento negócios, sebrae, empreendedorismo, sertão do pajeú"
         url={pageUrl}
       />
@@ -333,7 +332,11 @@ export function GrowthExperienceTriunfo() {
 
       {/* Modais */}
       <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={closeModals} />
-      <MentoriaMultiStepModal isOpen={modalAberto === 'mentor'} onClose={closeModals} />
+      <MentoriaMultiStepModal 
+        isOpen={!!modalAberto && modalAberto !== 'mentor-cadastro' && modalAberto !== 'startup' && modalAberto !== 'b2b' && modalAberto !== 'palestra' && modalAberto !== 'empresa'} 
+        onClose={closeModals} 
+        initialMentorId={modalAberto === 'mentor' ? null : (modalAberto as string)}
+      />
       <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={closeModals} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
       <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={closeModals} />
       <StartupFormModal isOpen={modalAberto === 'startup'} onClose={closeModals} />
@@ -458,11 +461,22 @@ export function GrowthExperienceTriunfo() {
                 ref={scrollRef}
                 className="flex overflow-x-auto gap-6 pb-8 scrollbar-hide snap-x snap-mandatory px-4 -mx-4 cursor-grab active:cursor-grabbing"
               >
-                {approvedMentors.map((mentor) => (
-                  <div key={mentor.id} className="min-w-[280px] sm:min-w-[320px] snap-center">
-                    <MentorCard mentor={mentor as any} />
-                  </div>
-                ))}
+                {approvedMentors.map((mentor) => {
+                  const mentorSlots = (allSessions || []).filter(s => 
+                    s.mentorId === mentor.id && 
+                    s.status === 'scheduled' && 
+                    !s.menteeId
+                  );
+                  return (
+                    <div key={mentor.id} className="min-w-[280px] sm:min-w-[320px] snap-center">
+                      <MentorCard 
+                        mentor={mentor as any} 
+                        availableSlots={mentorSlots}
+                        onBookClick={(id) => setModalAberto(id)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Mobile Scroll Indicator */}

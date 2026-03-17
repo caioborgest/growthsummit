@@ -26,10 +26,22 @@ interface Mentor {
 
 interface MentorCardProps {
     mentor: Mentor;
+    availableSlots?: any[];
+    onBookClick?: (mentorId: string) => void;
 }
 
-export function MentorCard({ mentor }: MentorCardProps) {
+export function MentorCard({ mentor, availableSlots = [], onBookClick }: MentorCardProps) {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+    // Group slots by date
+    const slotsByDate: Record<string, any[]> = {};
+    availableSlots.forEach(s => {
+        const dateKey = new Date(s.scheduledAt).toISOString().split('T')[0];
+        if (!slotsByDate[dateKey]) slotsByDate[dateKey] = [];
+        slotsByDate[dateKey].push(s);
+    });
+
+    const sortedDates = Object.keys(slotsByDate).sort();
 
     // Helper to limit words
     const limitWords = (text: string, limit: number) => {
@@ -50,6 +62,11 @@ export function MentorCard({ mentor }: MentorCardProps) {
                     <div className="absolute bottom-3 right-3 p-1.5 bg-dark-300/60 backdrop-blur-md rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Sparkles className="h-4 w-4 text-brand-orange-coral" />
                     </div>
+                    {availableSlots.length > 0 && (
+                        <div className="absolute top-3 left-3 px-3 py-1 bg-teal-500 rounded-full border border-teal-400 shadow-glow-teal z-10 animate-pulse">
+                            <p className="text-[10px] font-black text-white">{availableSlots.length} SLOTS DISPONÍVEIS</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-2 flex-grow">
@@ -173,11 +190,41 @@ export function MentorCard({ mentor }: MentorCardProps) {
                             </div>
                         </div>
 
+                        {sortedDates.length > 0 && (
+                            <div className="mt-10 space-y-6">
+                                <h4 className="text-xs font-black text-teal-500 uppercase tracking-widest flex items-center gap-2">
+                                    <Clock className="h-4 w-4" /> Horários Disponíveis para Mentoria
+                                </h4>
+                                <div className="space-y-4">
+                                    {sortedDates.map(date => (
+                                        <div key={date} className="space-y-2">
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase ml-1">
+                                                {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', weekday: 'short' })}
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {slotsByDate[date].sort((a,b) => a.scheduledAt.localeCompare(b.scheduledAt)).map((slot, i) => (
+                                                    <Badge key={i} className="bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3 py-2 font-black text-xs rounded-xl">
+                                                        {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="mt-10 pt-10 border-t border-white/5 text-center">
                             <p className="text-gray-500 text-sm mb-6 flex items-center justify-center gap-2">
                                 <Calendar className="h-4 w-4" /> Mentor oficial Growth Experience 2026
                             </p>
-                            <Button className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-6 rounded-2xl text-lg h-auto shadow-glow-orange">
+                            <Button 
+                                onClick={() => {
+                                    setIsDetailsOpen(false);
+                                    onBookClick?.(mentor.id);
+                                }}
+                                className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 py-6 rounded-2xl text-lg h-auto shadow-glow-orange"
+                            >
                                 Agendar Mentoria com {mentor.name?.split(' ')[0] || 'Mentor'}
                             </Button>
                         </div>

@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import type { DadosMentoria } from './mentoria-steps/mentoriaTypes';
@@ -13,15 +12,16 @@ import { Step5ConclusaoMentoria } from './mentoria-steps/Step5ConclusaoMentoria'
 interface MentoriaMultiStepModalProps {
     isOpen: boolean;
     onClose: () => void;
+    initialMentorId?: string | null;
 }
 
-export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepModalProps) {
+export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: MentoriaMultiStepModalProps) {
     const { user, isAuthenticated } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosMentoria>({
-        area: '',
-        mentorId: '',
+        area: 'OUTRO', // Default area if skipping step 1
+        mentorId: initialMentorId || '',
         slotId: '',
         descricaoProblema: '',
         nome: '',
@@ -32,9 +32,17 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
         estagioNegocio: ''
     });
 
+    // Jump to step 2 if initialMentorId is provided on open
+    useEffect(() => {
+        if (isOpen && initialMentorId && dados.mentorId !== initialMentorId) {
+            setDados(prev => ({ ...prev, mentorId: initialMentorId }));
+            setCurrentStep(2);
+        }
+    }, [isOpen, initialMentorId, dados.mentorId]);
+
     // Efeito para preencher dados se o usuário estiver logado
     useEffect(() => {
-        if (isAuthenticated && user && isOpen) {
+        if (isAuthenticated && user && isOpen && !dados.email) {
             setDados(prev => ({
                 ...prev,
                 nome: user.name || prev.nome,
@@ -43,7 +51,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose }: MentoriaMultiStepMod
                 userId: user.id
             }));
         }
-    }, [isAuthenticated, user, isOpen]);
+    }, [isAuthenticated, user, isOpen, dados.email]);
 
     const totalSteps = 5;
     const stepsToSkip = isAuthenticated ? [3] : [];
