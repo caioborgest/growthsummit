@@ -32,7 +32,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     const availableSessionsForMentor = (allSessions || []).filter(s => 
         s.mentorId === tempMentorId && 
         s.status === 'scheduled' && 
-        (!s.menteeId || s.menteeId === PLACEHOLDER_ID)
+        (!s.menteeId || s.menteeId === PLACEHOLDER_ID || s.menteeName === 'Disponível' || s.menteeName === 'Slot Livre')
     );
 
     // Group available slots by date
@@ -53,7 +53,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                     .from('mentores_growth_experience')
                     .select('id,project_id,user_id,nome,email,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
                     .eq('project_id', projectId as any)
-                    .eq('status', 'aprovado' as any);
+                    .in('status', ['aprovado', 'approved']);
 
                 if (error) throw error;
                 // Database returns snake_case, but we use camelCase in the app

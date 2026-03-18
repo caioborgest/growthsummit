@@ -120,7 +120,7 @@ export default function DashboardMentor() {
           topic: 'Disponível para Mentoria',
           notes: 'Slot de disponibilidade criado pelo mentor.',
           // Required fields for GE table to satisfy NOT NULL constraints
-          menteeName: 'Disponível',
+          menteeName: 'Slot Livre',
           menteeEmail: '',
           menteePhone: '',
           menteeId: null

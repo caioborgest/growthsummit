@@ -141,7 +141,7 @@ export function Mentorias() {
                 const mentorSlots = (allSessions || []).filter(s => 
                   s.mentorId === mentor.id && 
                   s.status === 'scheduled' && 
-                  !s.menteeId
+                  (!s.menteeId || s.menteeId === '00000000-0000-0000-0000-000000000000' || s.menteeName === 'Disponível' || s.menteeName === 'Slot Livre')
                 );
                 return (
                   <MentorCard 
