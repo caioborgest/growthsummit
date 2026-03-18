@@ -8,25 +8,31 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { faqs } from '@/data/eventData';
+import { useFAQs } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 
 const categories = [
   { id: 'all', name: 'Todas' },
-  { id: 'ingressos', name: 'Ingressos' },
+  { id: 'ingresso', name: 'Ingressos' },
   { id: 'evento', name: 'Evento' },
-  { id: 'mentorias', name: 'Mentorias' },
+  { id: 'mentoria', name: 'Mentorias' },
   { id: 'b2b', name: 'Rodada B2B' },
 ];
 
 export function FAQ() {
+  const { projectId } = useProject();
+  const { data: faqs, isLoading } = useFAQs();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const filteredFaqs = faqs.filter(faq => 
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredFaqs = (faqs || []).filter(faq => {
+    const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === 'all' || faq.category === activeCategory;
+    const matchesProject = !projectId || faq.projectId === projectId;
+    return matchesSearch && matchesCategory && matchesProject;
+  });
 
   return (
     <div className="bg-dark min-h-screen">
@@ -88,34 +94,40 @@ export function FAQ() {
       </section>
 
       {/* FAQs */}
-      <section className="py-12 lg:py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-4">
-            {filteredFaqs.map((faq, index) => (
-              <div
-                key={index}
-                className="glass-card overflow-hidden"
-              >
-                <button
-                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-left"
+          {isLoading ? (
+            <div className="py-20 text-center">
+              <div className="animate-spin h-10 w-10 border-4 border-teal-500 border-t-transparent rounded-full mx-auto" />
+              <p className="text-gray-500 mt-4 font-medium">Carregando perguntas...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredFaqs.map((faq, index) => (
+                <div
+                  key={index}
+                  className="glass-card overflow-hidden"
                 >
-                  <span className="text-white font-medium pr-4">{faq.question}</span>
-                  <ChevronDown 
-                    className={`h-5 w-5 text-teal-400 flex-shrink-0 transition-transform ${
-                      openIndex === index ? 'rotate-180' : ''
-                    }`} 
-                  />
-                </button>
-                
-                {openIndex === index && (
-                  <div className="px-6 pb-6">
-                    <p className="text-gray-400">{faq.answer}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  <button
+                    onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                    className="w-full flex items-center justify-between p-6 text-left"
+                  >
+                    <span className="text-white font-medium pr-4">{faq.question}</span>
+                    <ChevronDown 
+                      className={`h-5 w-5 text-teal-400 flex-shrink-0 transition-transform ${
+                        openIndex === index ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </button>
+                  
+                  {openIndex === index && (
+                    <div className="px-6 pb-6">
+                      <p className="text-gray-400">{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           
           {filteredFaqs.length === 0 && (
             <div className="text-center py-12">

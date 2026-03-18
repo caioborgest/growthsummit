@@ -81,20 +81,11 @@ export function DashboardSponsor() {
 
   // Encontrar patrocinador vinculado ao usuário logado
   const sponsorData = sponsors.find(s => s.userId === user?.id) || sponsors[0];
+  const { data: deliverablesData, isLoading: isLoadingDeliverables } = useSponsorDeliverables(sponsorData?.id);
+
+  const deliverables = useMemo(() => deliverablesData || [], [deliverablesData]);
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  // Dados mockados dos entregáveis
-  const deliverables = [
-    { id: 1, item: 'Logo em alta resolução', deadline: '2026-04-01', status: 'completed', completedAt: '2026-03-15', notes: 'Enviado via email' },
-    { id: 2, item: 'Palestra 20min - Tema', deadline: '2026-04-15', status: 'completed', completedAt: '2026-04-10', notes: 'Tema: Growth na prática' },
-    { id: 3, item: 'Material do Stand', deadline: '2026-05-01', status: 'in_progress', completedAt: null, notes: 'Aguardando aprovação' },
-    { id: 4, item: 'Release para imprensa', deadline: '2026-04-20', status: 'pending', completedAt: null, notes: '' },
-    { id: 5, item: 'Lista de representantes', deadline: '2026-05-10', status: 'pending', completedAt: null, notes: '' },
-  ];
 
   // Estatísticas e Leads
   const { data: leads, create: createLead } = useLeads();

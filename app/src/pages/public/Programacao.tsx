@@ -12,10 +12,12 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { schedule } from '@/data/eventData';
+import { useSessions } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 
 const eventTypeIcons: Record<string, React.ElementType> = {
   keynote: Mic,
+  talk: Mic,
   workshop: Wrench,
   panel: Users,
   networking: Coffee,
@@ -26,7 +28,8 @@ const eventTypeIcons: Record<string, React.ElementType> = {
 };
 
 const eventTypeLabels: Record<string, string> = {
-  keynote: 'Palestra',
+  keynote: 'Keynote',
+  talk: 'Palestra',
   workshop: 'Workshop',
   panel: 'Painel',
   networking: 'Networking',
@@ -38,6 +41,7 @@ const eventTypeLabels: Record<string, string> = {
 
 const eventTypeColors: Record<string, string> = {
   keynote: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+  talk: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
   workshop: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
   panel: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   networking: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -52,32 +56,33 @@ interface EventItemProps {
   title: string;
   type: string;
   description?: string;
-  speaker?: string | null;
+  speaker?: string | string[] | null;
 }
 
 function EventItem({ time, title, type, description, speaker }: EventItemProps) {
   const Icon = eventTypeIcons[type] || Clock;
+  const speakerText = Array.isArray(speaker) ? speaker.join(', ') : speaker;
 
   return (
-    <div className="flex gap-4 p-4 rounded-xl hover:bg-dark-100/50 transition-colors">
+    <div className="flex gap-4 p-4 rounded-xl hover:bg-dark-100/50 transition-colors border border-transparent hover:border-white/5">
       <div className="flex-shrink-0 w-24 sm:w-32">
         <span className="text-teal-400 font-mono text-sm">{time}</span>
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <Badge className={`${eventTypeColors[type]} text-xs`}>
+          <Badge className={`${eventTypeColors[type] || 'bg-gray-500/20 text-gray-400'} text-xs`}>
             <Icon className="h-3 w-3 mr-1" />
-            {eventTypeLabels[type]}
+            {eventTypeLabels[type] || type}
           </Badge>
-          {speaker && (
-            <span className="text-gray-500 text-sm">{speaker}</span>
+          {speakerText && (
+            <span className="text-gray-500 text-sm">{speakerText}</span>
           )}
         </div>
 
         <h3 className="text-white font-semibold mb-1">{title}</h3>
         {description && (
-          <p className="text-gray-400 text-sm">{description}</p>
+          <p className="text-gray-400 text-sm leading-relaxed">{description}</p>
         )}
       </div>
     </div>
@@ -85,11 +90,12 @@ function EventItem({ time, title, type, description, speaker }: EventItemProps) 
 }
 
 export function Programacao() {
-  const [activeTab, setActiveTab] = useState('day1');
+  const { projectId } = useProject();
+  const { data: sessions, isLoading } = useSessions();
+  const [activeTab, setActiveTab] = useState('1');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-  // load saved filters (only set state once after parsing)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // load saved filters
   useEffect(() => {
     try {
       const saved = localStorage.getItem('programacao_filters');
@@ -106,23 +112,30 @@ export function Programacao() {
     localStorage.setItem('programacao_filters', JSON.stringify(selectedTypes));
   }, [selectedTypes]);
 
+  const filteredSessions = sessions
+    .filter(s => s.day?.toString() === activeTab)
+    .filter(s => selectedTypes.length === 0 || selectedTypes.includes(s.type))
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const days = Array.from(new Set(sessions.map(s => s.day?.toString() || '1'))).sort();
+
   return (
     <div className="bg-dark min-h-screen">
       {/* Hero */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl opacity-50" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30">
-              Programação
+            <Badge className="mb-6 bg-teal-500/10 text-teal-400 border-teal-500/30 px-4 py-1">
+              Programação Real-time
             </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl sm:text-6xl font-black text-white mb-6 tracking-tighter uppercase">
               Agenda do Evento
             </h1>
-            <p className="text-xl text-gray-400">
-              Dois dias intensos de conteúdo, networking e oportunidades de aprendizado
+            <p className="text-xl text-gray-400 leading-relaxed">
+              Confira a programação completa e atualizada em tempo real para os dias do evento.
             </p>
           </div>
         </div>
@@ -131,9 +144,8 @@ export function Programacao() {
       {/* Schedule */}
       <section className="py-12 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* filtros de tipo de evento */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          {/* Filtros de tipo de evento */}
+          <div className="flex flex-wrap gap-2 mb-8 justify-center">
             {Object.entries(eventTypeLabels).map(([type, label]) => {
               const active = selectedTypes.includes(type);
               return (
@@ -144,10 +156,10 @@ export function Programacao() {
                       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
                     );
                   }}
-                  className={`text-xs font-bold px-3 py-1 rounded-full transition-all ${
+                  className={`text-xs font-bold px-4 py-2 rounded-full border transition-all ${
                     active
-                      ? 'bg-brand-orange-coral text-white'
-                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                      ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-lg shadow-brand-orange-coral/20'
+                      : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
                   }`}
                 >
                   {label}
@@ -155,78 +167,64 @@ export function Programacao() {
               );
             })}
           </div>
-          <TabsList className="grid w-full grid-cols-2 bg-dark-200 mb-8">
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-dark-200 p-1 rounded-2xl mb-8">
               <TabsTrigger
-                value="day1"
-                className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
+                value="1"
+                className="data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl h-12 font-bold"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Dia 1 - 16/04
+                Dia 1
               </TabsTrigger>
               <TabsTrigger
-                value="day2"
-                className="data-[state=active]:bg-teal-500 data-[state=active]:text-white"
+                value="2"
+                className="data-[state=active]:bg-teal-500 data-[state=active]:text-white rounded-xl h-12 font-bold"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Dia 2 - 17/04
+                Dia 2
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="day1" className="mt-0">
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-dark-300">
+            <TabsContent value={activeTab} className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <div className="glass-card p-6 sm:p-8 border-white/5">
+                <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Quinta-feira, 16 de abril</h2>
-                    <p className="text-gray-400 text-sm">Dia de abertura e trilhas temáticas</p>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+                      Dia {activeTab}
+                    </h2>
+                    <p className="text-gray-500 text-sm">Listagem completa de atividades confirmadas</p>
                   </div>
-                  <Badge className="bg-teal-500/10 text-teal-400">
-                    {schedule.day1.events.length} atividades
+                  <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 px-3 py-1">
+                    {filteredSessions.length} atividades
                   </Badge>
                 </div>
 
-                <div className="space-y-2">
-                  {schedule.day1.events
-                    .filter(e => selectedTypes.length === 0 || selectedTypes.includes(e.type))
-                    .map((event, index) => (
-                      <EventItem
-                        key={index}
-                        time={event.time}
-                        title={event.title}
-                        type={event.type}
-                        description={event.description}
-                        speaker={event.speaker}
-                      />
-                    ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="day2" className="mt-0">
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-dark-300">
-                  <div>
-                    <h2 className="text-xl font-bold text-white">Sexta-feira, 17 de abril</h2>
-                    <p className="text-gray-400 text-sm">Workshops, mentorias e encerramento</p>
+                {isLoading ? (
+                  <div className="py-20 text-center">
+                    <div className="animate-spin h-8 w-8 border-4 border-teal-500 border-t-transparent rounded-full mx-auto" />
+                    <p className="text-gray-500 mt-4 font-medium">Carregando programação...</p>
                   </div>
-                  <Badge className="bg-teal-500/10 text-teal-400">
-                    {schedule.day2.events.length} atividades
-                  </Badge>
-                </div>
-
-                <div className="space-y-2">
-                  {schedule.day2.events
-                    .filter(e => selectedTypes.length === 0 || selectedTypes.includes(e.type))
-                    .map((event, index) => (
+                ) : filteredSessions.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredSessions.map((event) => (
                       <EventItem
-                        key={index}
-                        time={event.time}
+                        key={event.id}
+                        time={`${event.startTime.substring(0, 5)} - ${event.endTime.substring(0, 5)}`}
                         title={event.title}
                         type={event.type}
                         description={event.description}
-                        speaker={event.speaker}
+                        speaker={event.speakers}
                       />
                     ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="py-20 text-center bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
+                    <Users className="h-12 w-12 text-gray-700 mx-auto mb-4" />
+                    <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Nenhuma atividade encontrada</p>
+                    <p className="text-gray-600 text-xs mt-1">Tente remover os filtros ou escolha outro dia.</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
