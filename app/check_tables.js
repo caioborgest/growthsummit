@@ -5,21 +5,12 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-async function checkTables() {
-  console.log('🚀 Starting table check...');
-  const tables = ['stands', 'stands_ge', 'ge_stands', 'checkins_stands', 'stand_checkins', 'check_ins_stands', 'startups', 'rodada_negocios_b2b', 'mentores_growth_experience'];
-  for (const table of tables) {
-    try {
-      const { error } = await supabase.from(table).select('*').limit(1);
-      if (!error) {
-        console.log(`✅ Table exists: ${table}`);
-      } else {
-        console.log(`❌ Table missing: ${table} (${error.message})`);
-      }
-    } catch (e) {
-      console.log(`💥 Error checking ${table}: ${e.message}`);
-    }
+async function run() {
+  const { data, error } = await supabase.from('check_ins').select('*').limit(1);
+  if (error) {
+    console.error('Error:', error);
+  } else {
+    console.log('Columns:', Object.keys(data[0] || {}));
   }
 }
-
-checkTables();
+run();

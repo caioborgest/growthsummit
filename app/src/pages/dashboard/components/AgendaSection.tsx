@@ -7,6 +7,7 @@ interface AgendaSectionProps {
     isActuallyPaid?: boolean;
     onUpgradeClick?: () => void;
     cursosSelecionados: any[];
+    myMentorships?: any[];
     setIsSelfCheckInOpen: (open: boolean) => void;
     navigate: (path: string) => void;
     activityCheckIns?: any[];
@@ -19,18 +20,52 @@ export function AgendaSection({
     isActuallyPaid,
     onUpgradeClick,
     cursosSelecionados,
+    myMentorships = [],
     setIsSelfCheckInOpen,
     navigate,
     activityCheckIns = [],
     onSessionClick,
     allSessions = []
 }: AgendaSectionProps) {
+    // Transformar mentorias em formato de "sessão" para a agenda
+    const mappedMentorships = myMentorships
+        .filter(m => m.status === 'scheduled' || m.status === 'completed')
+        .map(m => {
+            const date = new Date(m.scheduledAt);
+            const startTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            // Adicionando 20 min para o fim
+            const endDate = new Date(date.getTime() + 20 * 60000);
+            const endTime = endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            return {
+                ...m,
+                id: m.id,
+                title: `Mentoria: ${m.mentorName}`,
+                titulo: `Mentoria: ${m.mentorName}`,
+                startTime,
+                horario_inicio: startTime,
+                endTime,
+                horario_fim: endTime,
+                room: 'Sala de Mentorias',
+                local: 'Sala de Mentorias',
+                type: 'MENTORIA',
+                tipo: 'MENTORIA',
+                category: date.getHours() < 13 ? 'manha' : 'noturna',
+                isMentoring: true
+            };
+        });
+
     // Filtrar sessões noturnas e momentos âncora
-    const nightSessions = allSessions.filter(s => s.category === 'noturna').sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
-    const morningAnchors = allSessions.filter(s => s.category === 'manha_ancora').sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    const untortedNightSessions = allSessions.filter(s => s.category === 'noturna');
+    const nightMentorships = mappedMentorships.filter(m => m.category === 'noturna');
+    const nightSessions = [...untortedNightSessions, ...nightMentorships]
+        .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
+
+    const morningAnchors = allSessions.filter(s => s.category === 'manha_ancora');
+    const morningMentorships = mappedMentorships.filter(m => m.category === 'manha');
     
-    // Unificar manhã: âncoras + cursos selecionados
-    const fullMorningAgenda = [...morningAnchors, ...cursosSelecionados]
+    // Unificar manhã: âncoras + cursos selecionados + mentorias
+    const fullMorningAgenda = [...morningAnchors, ...cursosSelecionados, ...morningMentorships]
         .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i) // unique
         .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
 

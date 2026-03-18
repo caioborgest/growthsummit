@@ -1179,6 +1179,7 @@ export function DashboardParticipante() {
                 isActuallyPaid={isActuallyPaid}
                 onUpgradeClick={() => setShowUpgradeModal(true)}
                 cursosSelecionados={cursosSelecionados}
+                myMentorships={myMentorships}
                 setIsSelfCheckInOpen={setIsSelfCheckInOpen}
                 navigate={navigate}
                 activityCheckIns={activityCheckIns}

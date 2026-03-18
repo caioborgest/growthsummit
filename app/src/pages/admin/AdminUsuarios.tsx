@@ -472,14 +472,10 @@ export default function AdminUsuarios() {
                                         <td className="p-4">
                                             <div className="flex items-center gap-1.5">
                                                 {(() => {
-                                                    const userCheckIns = (checkInsByUserId.get(user.id) || []).filter(c => c.checkInType === 'event');
+                                                    const userCheckIns = (checkInsByUserId.get(user.id) || []).filter(c => c.location && c.location.includes('Credenciamento'));
                                                     const entrance = userCheckIns.length > 0;
-                                                    const kit = userCheckIns.some(c => {
-                                                        try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
-                                                    });
-                                                    const badge = userCheckIns.some(c => {
-                                                        try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
-                                                    });
+                                                    const kit = userCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
+                                                    const badge = userCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
                                                     return (
                                                         <>
                                                             <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>

@@ -86,8 +86,7 @@ export function AdminCheckIn() {
           ticketNumber: registration.ticketNumber,
           timestamp: new Date().toISOString(),
           location: 'Entrada Principal',
-          method: 'manual',
-          checkInType: 'event',
+          method: 'manual'
         });
 
         toast.success(`Check-in GERAL realizado: ${registration.ticketNumber}`);

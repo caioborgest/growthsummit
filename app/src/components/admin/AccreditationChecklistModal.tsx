@@ -55,24 +55,12 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
     useEffect(() => {
         if (isOpen && entity) {
             const userId = getUserId();
-            const existingCheckIns = checkIns.filter(c => c.userId === userId && c.checkInType === 'event');
+            const existingCheckIns = checkIns.filter(c => c.userId === userId && c.location && c.location.includes('Credenciamento'));
 
             setEntranceConfirmed(existingCheckIns.length > 0);
 
-            // Look for kit/badge in any check-in notes
-            const kit = existingCheckIns.some(c => {
-                try {
-                    const notes = JSON.parse(c.notes || '{}');
-                    return notes.kit === true;
-                } catch { return false; }
-            });
-
-            const badge = existingCheckIns.some(c => {
-                try {
-                    const notes = JSON.parse(c.notes || '{}');
-                    return notes.badge === true;
-                } catch { return false; }
-            });
+            const kit = existingCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
+            const badge = existingCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
 
             setKitDelivered(kit);
             setBadgeDelivered(badge);
@@ -87,22 +75,13 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
 
         setIsLoading(true);
         try {
-            const notesObj = {
-                kit: kitDelivered,
-                badge: badgeDelivered,
-                accreditationTime: new Date().toISOString()
-            };
-
             await createCheckIn({
                 projectId: entity.projectId,
                 registrationId: getRegistrationId(),
                 userId: getUserId(),
-                ticketNumber: (entity as any).ticketNumber || role.toUpperCase(),
                 timestamp: new Date().toISOString(),
-                location: 'Credenciamento',
-                method: 'manual',
-                checkInType: 'event',
-                notes: JSON.stringify(notesObj)
+                location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
+                method: 'manual'
             });
 
             toast.success('Credenciamento atualizado com sucesso!');

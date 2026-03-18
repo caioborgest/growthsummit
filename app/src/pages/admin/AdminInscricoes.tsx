@@ -749,14 +749,11 @@ export default function AdminInscricoes() {
                       <td className="p-4">
                         <div className="flex items-center gap-1.5">
                           {(() => {
-                            const regCheckIns = (checkInsByRegId.get(reg.id) || []).filter(c => c.checkInType === 'event');
+                            const regCheckIns = checkInsByRegId.get(reg.id) || [];
+                            const eventCheckIns = regCheckIns.filter(c => c.location && c.location.includes('Credenciamento'));
                             const entrance = regCheckIns.length > 0;
-                            const kit = regCheckIns.some(c => {
-                              try { return JSON.parse(c.notes || '{}').kit === true; } catch { return false; }
-                            });
-                            const badge = regCheckIns.some(c => {
-                              try { return JSON.parse(c.notes || '{}').badge === true; } catch { return false; }
-                            });
+                            const kit = eventCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
+                            const badge = eventCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
                             return (
                               <>
                                 <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>

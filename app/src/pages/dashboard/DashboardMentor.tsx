@@ -415,13 +415,18 @@ export default function DashboardMentor() {
                         </div>
                         <div>
                           <p className="text-white font-black text-lg tracking-tight uppercase italic truncate w-32 md:w-full">{session.menteeName}</p>
-                          <div className="flex items-center gap-3 mt-1">
+                          <div className="flex items-center gap-3 mt-1 mb-2">
                             <div className="flex items-center gap-1.5 bg-dark-300 px-2 py-0.5 rounded-md border border-white/5">
                               <Building2 className="h-3 w-3 text-orange-500" />
                               <span className="text-[10px] text-gray-500 font-bold uppercase truncate max-w-[80px]">{session.startupName || 'Growth Business'}</span>
                             </div>
                             <Badge variant="outline" className="border-teal-500/20 text-teal-400 text-[8px] font-black truncate max-w-[100px]">{session.topic}</Badge>
                           </div>
+                          {session.notes && session.menteeName !== 'Slot Livre' && (
+                            <p className="text-[10px] text-gray-400 max-w-xs mt-1 leading-tight line-clamp-2 italic border-l-2 border-white/10 pl-2">
+                              "{session.notes}"
+                            </p>
+                          )}
                         </div>
                       </div>
 
