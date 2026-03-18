@@ -85,7 +85,10 @@ export function DashboardSponsor() {
 
   const deliverables = useMemo(() => deliverablesData || [], [deliverablesData]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   // Estatísticas e Leads
   const { data: leads, create: createLead } = useLeads();
