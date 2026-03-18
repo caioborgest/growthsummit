@@ -163,7 +163,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         anotacoes: dados.descricaoProblema,
                         nome_startup: dados.nomeNegocio,
                         setor: dados.estagioNegocio,
-                        status: 'pendente',
+                        status: 'scheduled',
                         duracao: 20
                     })
                     .eq('id', slotToUpdate)
@@ -183,7 +183,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         data_mentoria: scheduled_date.toISOString(),
                         nome_startup: dados.nomeNegocio,
                         setor: dados.estagioNegocio,
-                        status: 'pendente',
+                        status: 'scheduled',
                         duracao: 20
                     })
                     .select();
