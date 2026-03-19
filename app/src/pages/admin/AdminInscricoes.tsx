@@ -864,7 +864,15 @@ export default function AdminInscricoes() {
           }}
           entity={selectedReg}
           role="participant"
-          onSuccess={() => {}}
+          onSuccess={async () => {
+            if (selectedReg) {
+              await update(selectedReg.id, {
+                checkedIn: true,
+                checkInTime: new Date().toISOString()
+              } as any);
+              toast.success('Inscrição marcada como concluída no sistema.');
+            }
+          }}
         />
       )}
     </>

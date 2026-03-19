@@ -46,7 +46,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
     // Helper to get registration ID or generic Entity ID
     const getRegistrationId = () => {
         if (role === 'participant') return (entity as Registration).id;
-        return 'GLOBAL_ROLE_' + entity?.id;
+        return null; // Don't send pseudo-IDs to UUID columns
     };
 
     const getUserId = () => entity?.userId || '';
@@ -79,6 +79,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                 projectId: entity.projectId,
                 registrationId: getRegistrationId(),
                 userId: getUserId(),
+                ticketNumber: (entity as Registration).ticketNumber || 'N/A',
                 timestamp: new Date().toISOString(),
                 location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
                 method: 'manual'

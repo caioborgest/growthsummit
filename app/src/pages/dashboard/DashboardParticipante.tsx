@@ -451,17 +451,7 @@ export function DashboardParticipante() {
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
 
 
-  const nightSpeakers = useMemo(() => {
-    const night = allSessions?.filter(s => s.category === 'noturna') || [];
-    if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => {
-      const spks = (s as any).speakers;
-      if (typeof spks === 'string') return spks.split(',').shift();
-      if (Array.isArray(spks)) return spks[0];
-      return null;
-    }).filter(Boolean);
-    return names.join(' + ');
-  }, [allSessions]);
+
 
   // Auto-refetch registration to keep status in sync with backoffice
   useEffect(() => {
