@@ -455,6 +455,7 @@ export default function AdminComunicacao() {
             }`}
         >
           Campanhas
+        </button>
         <button
           onClick={() => setActiveTab('compose')}
           className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'compose'
@@ -875,6 +876,7 @@ export default function AdminComunicacao() {
               </Button>
             </div>
           </div>
+        </div>
       )}
 
       {/* Notifications Tab */}

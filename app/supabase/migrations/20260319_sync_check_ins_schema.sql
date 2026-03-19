@@ -22,9 +22,16 @@ DO $$
 BEGIN 
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'check_ins' AND table_schema = 'public') THEN
         -- Check if it's the old structure (referencing non-existent registrations)
-        -- We just rename it and create the new one
-        ALTER TABLE public.check_ins RENAME TO check_ins_old;
-        ALTER TABLE public.check_ins_new RENAME TO check_ins;
+        -- We just rename it and create the new one, but first check if check_ins_old exists
+        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'check_ins_old' AND table_schema = 'public') THEN
+            ALTER TABLE public.check_ins RENAME TO check_ins_old;
+            ALTER TABLE public.check_ins_new RENAME TO check_ins;
+        ELSE
+            -- If check_ins_old already exists, just drop it or just drop check_ins_new (sync already done probably)
+            -- To be safe, we'll drop check_ins (the old one) since we have the new structure in check_ins_new
+            DROP TABLE public.check_ins;
+            ALTER TABLE public.check_ins_new RENAME TO check_ins;
+        END IF;
     ELSE
         ALTER TABLE public.check_ins_new RENAME TO check_ins;
     END IF;
