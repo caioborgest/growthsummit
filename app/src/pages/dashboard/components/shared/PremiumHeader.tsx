@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Bell, LogOut, HelpCircle, Moon, Sun, Star } from 'lucide-react';
+import { User, Bell, LogOut, HelpCircle, Moon, Sun, Star, Headset } from 'lucide-react';
 import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,6 +18,7 @@ interface PremiumHeaderProps {
     notifications: any[];
     onLogout: () => void;
     onGuideClick: () => void;
+    onSupportClick: () => void;
     onNotificationRead: (id: string) => void;
 }
 
@@ -31,6 +32,7 @@ export function PremiumHeader({
     notifications,
     onLogout,
     onGuideClick,
+    onSupportClick,
     onNotificationRead
 }: PremiumHeaderProps) {
     const unreadCount = (notifications || []).filter(n => n && !n.read && !n.isRead).length;
@@ -61,6 +63,14 @@ export function PremiumHeader({
                         className="bg-white/5 hover:bg-white/10 text-gray-400 h-8 px-3 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 border border-white/5"
                     >
                         <HelpCircle className="h-3 w-3" /> GUIA
+                    </button>
+
+                    <button
+                        onClick={onSupportClick}
+                        className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-teal-500/20"
+                        title="Abrir Ticket de Suporte"
+                    >
+                        <Headset className="h-3.5 w-3.5" />
                     </button>
 
                     <Popover>

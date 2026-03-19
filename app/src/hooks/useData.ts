@@ -8,7 +8,7 @@ import type {
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
-  Stand, StandCheckIn
+  Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
@@ -432,7 +432,7 @@ function getSelectFields(entity: string, projectId?: string): string {
 
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
-    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,foto_url,created_at,nome,telefone,empresa,cargo',
+    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,photo,created_at',
     mentoring_sessions: 'id,project_id,mentor_id,mentee_id,status,created_at,scheduled_at,duration,topic,notes,mentor_name,mentee_name',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
@@ -447,12 +447,16 @@ function getSelectFields(entity: string, projectId?: string): string {
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
     empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
-    users: 'id,email,name,role,created_at,avatar',
+    users: 'id,email,name,role,created_at,avatar_url',
     speakers: 'id,project_id,name,role,company,bio,image,linkedin,twitter,website,track,is_featured,order_index',
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
-    notifications: 'id,project_id,user_id,title,message,type,is_read,created_at'
+    notifications: 'id,user_id,title,message,type,read,created_at,action_url',
+    support_tickets: 'id,project_id,user_id,name,email,subject,message,status,priority,created_at,updated_at',
+    support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
+    raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
+    raffle_participants: 'id,raffle_id,registration_id,created_at'
   };
   return fields[entity] ?? '*';
 }
@@ -993,3 +997,16 @@ export function useB2BChat(matchId?: string) {
   };
 }
 
+export function useSupportTickets() { return useData<SupportTicket>([], 'support_tickets'); }
+export function useSupportMessages(ticketId?: string) { 
+  const hook = useData<SupportMessage>([], 'support_ticket_messages');
+  const filteredData = ticketId ? hook.data.filter(m => m.ticketId === ticketId) : hook.data;
+  return { ...hook, data: filteredData };
+}
+
+export function useRaffles() { return useData<Raffle>([], 'raffles'); }
+export function useRaffleParticipants(raffleId?: string) {
+  const hook = useData<RaffleParticipant>([], 'raffle_participants');
+  const filteredData = raffleId ? hook.data.filter(p => p.raffleId === raffleId) : hook.data;
+  return { ...hook, data: filteredData };
+}

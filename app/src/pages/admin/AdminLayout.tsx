@@ -23,7 +23,8 @@ import {
   Bell,
   Settings,
   Award,
-  Store
+  Store,
+  Gift
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProfileModal } from '@/components/profile/ProfileModal';
@@ -68,6 +69,7 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'check-in', name: 'Check-in (QR)', icon: QrCode, path: '/admin/check-in' },
       { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },
       { id: 'stands', name: 'Circuito de Stands', icon: Store, path: '/admin/stands' },
+      { id: 'sorteio', name: 'Sorteios & Prêmios', icon: Gift, path: '/admin/sorteio' },
       { id: 'certificados', name: 'Certificados', icon: Award, path: '/admin/certificados' },
     ]
   },

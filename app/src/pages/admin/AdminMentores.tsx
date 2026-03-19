@@ -619,7 +619,6 @@ export function AdminMentores() {
         yearsExperience: formData.yearsExperience,
         maxMentories: formData.maxMentories,
         specialties: formData.specialties,
-        tracks: ['Geral'],
         linkedin: formData.linkedin,
         photo: photoUrl,
         status: 'approved',

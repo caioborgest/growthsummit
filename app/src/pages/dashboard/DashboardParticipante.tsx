@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -58,6 +58,13 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { notificationService } from '@/services/notificationService';
+import { supportService } from '@/services/supportService';
+import { raffleService } from '@/services/raffleService';
+import { Headset, HelpCircle, Bell, Send } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
@@ -437,6 +444,11 @@ export function DashboardParticipante() {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const { data: dbNotifications, refetch: refetchNotifications } = useNotifications();
+  const [supportFormData, setSupportFormData] = useState({ subject: '', message: '', priority: 'medium' as const });
+  const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+
 
   const nightSpeakers = useMemo(() => {
     const night = allSessions?.filter(s => s.category === 'noturna') || [];
@@ -622,9 +634,23 @@ export function DashboardParticipante() {
 
   // ── Notificações dinâmicas ─────────────────────────────────────────────────
   const notifications = useMemo(() => {
-    const items: { id: number; title: string; message: string; time: string; read: boolean; type?: 'info' | 'warning' | 'alert' }[] = [
-      { id: 1, title: 'Bem-vindo!', message: 'Acesse o Guia do Participante para ver o mapa e a programação completa.', time: '', read: true, type: 'info' },
-    ];
+    const items: any[] = [];
+    
+    // Notificações do Banco de Dados
+    if (dbNotifications && dbNotifications.length > 0) {
+      dbNotifications
+        .filter(n => !n.read) // Mostrar apenas as não lidas no sino
+        .forEach(n => {
+          items.push({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            time: new Date(n.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            read: n.read,
+            type: n.type as any
+          });
+        });
+    }
 
     const now = new Date();
 
@@ -816,6 +842,14 @@ export function DashboardParticipante() {
         return;
       }
 
+      // Caso 5: Sorteio em Tempo Real (RAFFLE:ID)
+      if (decodedText.startsWith('RAFFLE:')) {
+        const raffleId = decodedText.replace('RAFFLE:', '');
+        await raffleService.enterRaffle(raffleId, myRegistration.id);
+        toast.success('Você entrou no sorteio! Boa sorte! 🍀');
+        return;
+      }
+
       throw new Error('QR Code inválido ou não reconhecido por este App');
     } catch (error: any) {
       console.error(error);
@@ -897,6 +931,35 @@ export function DashboardParticipante() {
     name: string; fullPath: string; size: string; updatedAt: string; url: string;
   }>>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
+
+  const handleCreateSupportTicket = async () => {
+    if (!supportFormData.subject || !supportFormData.message) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    setIsSubmittingSupport(true);
+    try {
+      await supportService.createTicket({
+        name: myRegistration?.nome || user?.name || 'Participante',
+        email: myRegistration?.email || user?.email || '',
+        subject: supportFormData.subject,
+        message: supportFormData.message,
+        priority: supportFormData.priority,
+        user_id: user?.id,
+        project_id: selectedProject?.id
+      });
+
+      toast.success('Ticket de suporte criado! Nossa equipe responderá em breve.');
+      setIsSupportModalOpen(false);
+      setSupportFormData({ subject: '', message: '', priority: 'medium' });
+    } catch (error) {
+      toast.error('Erro ao criar ticket de suporte');
+    } finally {
+      setIsSubmittingSupport(false);
+    }
+  };
+
 
   const fetchDocumentos = useCallback(async () => {
     if (!selectedProject?.slug) return;
@@ -1054,8 +1117,10 @@ export function DashboardParticipante() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
-          onNotificationRead={(_id) => {
-            // handle notification read
+          onSupportClick={() => setIsSupportModalOpen(true)}
+          onNotificationRead={async (id) => {
+            await notificationService.markAsRead(id);
+            refetchNotifications();
           }}
         />
 
@@ -1374,6 +1439,85 @@ export function DashboardParticipante() {
           onClose={() => setIsStartupModalOpen(false)}
         />
       )}
+
+      {/* Modal de Suporte */}
+      <Dialog open={isSupportModalOpen} onOpenChange={setIsSupportModalOpen}>
+        <DialogContent className="bg-dark-200 border-white/10 text-white max-w-lg rounded-[2.5rem] overflow-hidden">
+          <DialogHeader className="p-4 border-b border-white/5 bg-teal-500/5">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-teal-500/20 rounded-2xl flex items-center justify-center text-teal-400">
+                <Headset className="h-6 w-6" />
+              </div>
+              <div className="text-left">
+                <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Central de <span className="text-teal-400">Ajuda</span></DialogTitle>
+                <DialogDescription className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-none">Estamos aqui para apoiar sua jornada</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Assunto / Categoria</Label>
+                <Input 
+                  placeholder="Ex: Problema com agendamento" 
+                  value={supportFormData.subject}
+                  onChange={(e) => setSupportFormData({ ...supportFormData, subject: e.target.value })}
+                  className="bg-white/5 border-white/10 rounded-2xl h-12 focus:border-teal-400 transition-all"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Urgência</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['low', 'medium', 'high'] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setSupportFormData({ ...supportFormData, priority: p })}
+                      className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                        supportFormData.priority === p 
+                        ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' 
+                        : 'bg-white/5 border-white/5 text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      {p === 'low' ? 'Baixa' : p === 'medium' ? 'Média' : 'Alta'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Como podemos ajudar?</Label>
+                <Textarea 
+                  placeholder="Descreva seu problema ou dúvida com detalhes..." 
+                  value={supportFormData.message}
+                  onChange={(e) => setSupportFormData({ ...supportFormData, message: e.target.value })}
+                  className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] focus:border-teal-400 transition-all resize-none"
+                />
+              </div>
+            </div>
+
+            <Button 
+               onClick={handleCreateSupportTicket}
+               disabled={isSubmittingSupport}
+               className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-black h-12 rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 group"
+            >
+              {isSubmittingSupport ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  Enviar Solicitação
+                </>
+              )}
+            </Button>
+
+            <p className="text-[9px] text-center text-gray-500 font-bold uppercase tracking-tighter leading-relaxed">
+              Nosso time de suporte responderá diretamente neste painel<br/>e você também receberá um alerta por notificação.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

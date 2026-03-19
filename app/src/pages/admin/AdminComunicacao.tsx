@@ -9,7 +9,17 @@ import {
   Plus,
   Save,
   Trash2,
-  Copy
+  Copy,
+  Bell,
+  MessageSquare,
+  Headset,
+  CheckCircle,
+  Clock,
+  Smartphone,
+  Info,
+  AlertTriangle,
+  CheckCircle2,
+  Filter
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +34,9 @@ import {
   DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { useRegistrations } from '@/hooks/useData';
+import { useRegistrations, useNotifications, useSupportTickets, useUsers } from '@/hooks/useData';
+import { notificationService } from '@/services/notificationService';
+import { supportService } from '@/services/supportService';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
@@ -115,7 +127,11 @@ const initialEmailCampaigns = [
 ];
 
 export default function AdminComunicacao() {
-  const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose'>('templates');
+  const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose' | 'notifications' | 'support'>('templates');
+  
+  const { data: users } = useUsers();
+  const { data: notificationsList, refetch: refetchNotifications } = useNotifications();
+  const { data: tickets, refetch: refetchTickets } = useSupportTickets();
   
   // Persistence with localStorage
   const [templates, setTemplates] = useState(() => {
@@ -159,6 +175,17 @@ export default function AdminComunicacao() {
     body: '',
     recipients: 'all',
   });
+
+  const [notificationFormData, setNotificationFormData] = useState({
+    title: '',
+    message: '',
+    type: 'info' as 'info' | 'success' | 'warning' | 'error',
+    recipients: 'all'
+  });
+
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [replyMessage, setReplyMessage] = useState('');
+
 
   const [selectedTemplate, setSelectedTemplate] = useState<typeof initialEmailTemplates[0] | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -355,6 +382,58 @@ export default function AdminComunicacao() {
     setIsPreviewModalOpen(true);
   };
 
+  const handleSendNotification = async () => {
+    if (!notificationFormData.title || !notificationFormData.message) {
+      toast.error('Preencha título e mensagem');
+      return;
+    }
+
+    try {
+      let targetUserIds: string[] = [];
+      if (notificationFormData.recipients === 'all') {
+        targetUserIds = users?.map(u => u.id) || [];
+      } else {
+        targetUserIds = users?.filter(u => u.role === notificationFormData.recipients).map(u => u.id) || [];
+      }
+
+      if (targetUserIds.length === 0) {
+        toast.error('Nenhum destinatário encontrado');
+        return;
+      }
+
+      await notificationService.sendBulk(targetUserIds, {
+        title: notificationFormData.title,
+        message: notificationFormData.message,
+        type: notificationFormData.type
+      });
+
+      toast.success(`${targetUserIds.length} notificações enviadas com sucesso!`);
+      setNotificationFormData({ ...notificationFormData, title: '', message: '' });
+      refetchNotifications();
+    } catch (error) {
+      toast.error('Erro ao enviar notificações');
+    }
+  };
+
+  const handleReplyTicket = async () => {
+    if (!selectedTicket || !replyMessage) return;
+
+    try {
+      await supportService.addMessage({
+        ticket_id: selectedTicket.id,
+        message: replyMessage,
+        is_admin: true
+      });
+
+      toast.success('Resposta enviada!');
+      setReplyMessage('');
+      // Refetch logic would be handled by real-time soon or manual refetch
+      refetchTickets();
+    } catch (error) {
+      toast.error('Erro ao enviar resposta');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Tabs */}
@@ -376,7 +455,6 @@ export default function AdminComunicacao() {
             }`}
         >
           Campanhas
-        </button>
         <button
           onClick={() => setActiveTab('compose')}
           className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'compose'
@@ -385,6 +463,24 @@ export default function AdminComunicacao() {
             }`}
         >
           Compor Email
+        </button>
+        <button
+          onClick={() => setActiveTab('notifications')}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'notifications'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
+            }`}
+        >
+          Notificações In-App
+        </button>
+        <button
+          onClick={() => setActiveTab('support')}
+          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'support'
+            ? 'text-teal-400 border-b-2 border-teal-400'
+            : 'text-gray-400 hover:text-white'
+            }`}
+        >
+          Central de Suporte
         </button>
       </div>
 
@@ -777,6 +873,265 @@ export default function AdminComunicacao() {
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Rascunho
               </Button>
+            </div>
+          </div>
+      )}
+
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 bg-dark-200 border border-dark-300 rounded-2xl p-6 space-y-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Bell className="h-5 w-5 text-orange-400" />
+                Nova Notificação
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Destinatários</Label>
+                  <select
+                    value={notificationFormData.recipients}
+                    onChange={(e) => setNotificationFormData({ ...notificationFormData, recipients: e.target.value })}
+                    className="w-full mt-1.5 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="all">Todos os Usuários</option>
+                    <option value="participant">Participantes</option>
+                    <option value="mentor">Mentores</option>
+                    <option value="startup">Startups</option>
+                    <option value="company">Empresas</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Tipo</Label>
+                  <select
+                    value={notificationFormData.type}
+                    onChange={(e) => setNotificationFormData({ ...notificationFormData, type: e.target.value as any })}
+                    className="w-full mt-1.5 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                  >
+                    <option value="info">💡 Informação</option>
+                    <option value="success">✅ Sucesso</option>
+                    <option value="warning">⚠️ Aviso</option>
+                    <option value="error">🚨 Erro / Alerta</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Título</Label>
+                  <Input
+                    placeholder="Ex: Nova mentoria disponível"
+                    value={notificationFormData.title}
+                    onChange={(e) => setNotificationFormData({ ...notificationFormData, title: e.target.value })}
+                    className="bg-dark-100 border-dark-300 text-white mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Mensagem</Label>
+                  <Textarea
+                    placeholder="Digite a mensagem curta..."
+                    value={notificationFormData.message}
+                    onChange={(e) => setNotificationFormData({ ...notificationFormData, message: e.target.value })}
+                    className="bg-dark-100 border-dark-300 text-white mt-1.5 h-32"
+                  />
+                </div>
+                <Button 
+                  onClick={handleSendNotification}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-orange-500/20"
+                >
+                  <Send className="h-4 w-4 mr-2" /> Disparar Notificação
+                </Button>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 bg-dark-200 border border-dark-300 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-6 flex justify-between items-center">
+                Histórico Recente
+                <Badge className="bg-white/5 text-gray-400 border-none px-3">{notificationsList?.length || 0} enviadas</Badge>
+              </h3>
+              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                {notificationsList && notificationsList.length > 0 ? (
+                  notificationsList.slice(0, 20).map((n: any) => (
+                    <div key={n.id} className="p-4 bg-white/5 border border-white/5 rounded-xl flex gap-4">
+                      <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${
+                        n.type === 'success' ? 'bg-green-500/10 text-green-400' :
+                        n.type === 'warning' ? 'bg-amber-500/10 text-amber-400' :
+                        n.type === 'error' ? 'bg-red-500/10 text-red-400' :
+                        'bg-blue-500/10 text-blue-400'
+                      }`}>
+                        {n.type === 'success' ? <CheckCircle2 className="h-5 w-5" /> : 
+                         n.type === 'warning' ? <AlertTriangle className="h-5 w-5" /> :
+                         n.type === 'error' ? <AlertTriangle className="h-5 w-5" /> :
+                         <Info className="h-5 w-5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="text-white font-bold text-sm truncate">{n.title}</h4>
+                          <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">{new Date(n.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-gray-400 text-xs line-clamp-2">{n.message}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 text-gray-600 uppercase font-black tracking-widest text-xs opacity-50">
+                    Nenhuma notificação enviada
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Support Tab */}
+      {activeTab === 'support' && (
+        <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-black text-white italic">
+              Central de <span className="text-teal-400">Atendimento</span>
+              <span className="text-teal-400 not-italic ml-1">.</span>
+            </h2>
+            <div className="flex gap-2">
+              <Button variant="outline" className="border-white/5 text-gray-400 hover:bg-white/5" onClick={() => refetchTickets()}>
+                <Clock className="h-4 w-4 mr-2" /> Atualizar
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-4">
+              <div className="bg-dark-200 border border-white/10 rounded-2xl p-4 overflow-hidden relative group">
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-1">Abertos</p>
+                    <p className="text-3xl font-black text-white">{tickets?.filter(t => t.status === 'open').length || 0}</p>
+                  </div>
+                  <div className="h-12 w-12 bg-teal-500/20 rounded-xl flex items-center justify-center text-teal-400">
+                    <MessageSquare className="h-6 w-6" />
+                  </div>
+                </div>
+                <div className="absolute -right-4 -bottom-4 h-24 w-24 bg-teal-500/5 rounded-full blur-2xl group-hover:bg-teal-500/10 transition-all"></div>
+              </div>
+
+              <div className="bg-dark-200 border border-white/10 rounded-2xl overflow-hidden">
+                <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tickets Recentes</span>
+                  <Filter className="h-3.5 w-3.5 text-gray-500" />
+                </div>
+                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto custom-scrollbar">
+                  {tickets && tickets.length > 0 ? (
+                    tickets.map((t: any) => (
+                      <div 
+                        key={t.id} 
+                        onClick={() => setSelectedTicket(t)}
+                        className={`p-4 cursor-pointer transition-all hover:bg-white/5 ${selectedTicket?.id === t.id ? 'bg-teal-500/10 border-l-2 border-teal-500' : ''}`}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
+                            t.status === 'open' ? 'bg-teal-500 text-white' :
+                            t.status === 'in_progress' ? 'bg-orange-500 text-white' :
+                            'bg-gray-700 text-gray-300'
+                          }`}>
+                            {t.status.toUpperCase()}
+                          </span>
+                          <span className="text-[9px] text-gray-500 font-bold">{new Date(t.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <h4 className="text-white text-sm font-bold truncate mb-0.5">{t.subject}</h4>
+                        <p className="text-gray-500 text-[10px] font-medium truncate">{t.name} • {t.email}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-10 text-center text-gray-700 font-black text-xs uppercase tracking-widest">
+                      Nenhum ticket
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              {selectedTicket ? (
+                <div className="bg-dark-200 border border-white/10 rounded-3xl overflow-hidden flex flex-col h-[700px] shadow-2xl">
+                  {/* Header do Chat */}
+                  <div className="p-6 bg-white/5 border-b border-white/10 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 bg-teal-500/10 rounded-full flex items-center justify-center text-teal-400 font-black text-lg">
+                        {selectedTicket.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-black text-lg leading-tight uppercase tracking-tight">{selectedTicket.subject}</h3>
+                        <p className="text-teal-400 text-xs font-bold">{selectedTicket.name} • {selectedTicket.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                       <Button 
+                         onClick={() => {
+                           if (window.confirm('Marcar como resolvido?')) {
+                             supportService.updateTicket(selectedTicket.id, { status: 'resolved' }).then(() => {
+                               refetchTickets();
+                               setSelectedTicket(null);
+                               toast.success('Ticket resolvido');
+                             });
+                           }
+                         }}
+                         className="bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20 text-xs font-black uppercase h-9"
+                       >
+                         Resolvido
+                       </Button>
+                    </div>
+                  </div>
+
+                  {/* Mensagens */}
+                  <div className="flex-1 p-6 overflow-y-auto space-y-6 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+                    {/* Mensagem Original */}
+                    <div className="flex flex-col items-start max-w-[85%]">
+                      <div className="bg-dark-300 border border-white/5 p-4 rounded-2xl rounded-tl-none text-gray-200 text-sm shadow-xl">
+                        <p className="font-black text-teal-400 text-[10px] uppercase mb-2 tracking-widest">Solicitação Inicial</p>
+                        {selectedTicket.message}
+                      </div>
+                      <span className="text-[9px] text-gray-600 mt-2 font-bold ml-2 uppercase tracking-tighter">
+                        {new Date(selectedTicket.created_at).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Aqui entrariam as mensagens da tabela support_ticket_messages se tivéssemos um hook pra elas */}
+                    <div className="text-center">
+                       <span className="px-4 py-1 bg-white/5 rounded-full text-[10px] text-gray-500 font-bold uppercase tracking-widest">Fim do Histórico</span>
+                    </div>
+                  </div>
+
+                  {/* Input de Resposta */}
+                  <div className="p-6 bg-dark-300 border-t border-white/5">
+                    <div className="relative group">
+                      <textarea
+                        value={replyMessage}
+                        onChange={(e) => setReplyMessage(e.target.value)}
+                        placeholder="Escreva sua resposta para o participante..."
+                        className="w-full bg-dark-100 border border-white/10 rounded-2xl p-4 pr-16 text-white text-sm focus:border-teal-400 transition-all outline-none min-h-[100px] resize-none"
+                      ></textarea>
+                      <button 
+                        onClick={handleReplyTicket}
+                        disabled={!replyMessage}
+                        className="absolute right-3 bottom-3 h-10 w-10 bg-teal-500 hover:bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:bg-gray-700 transition-all group-hover:scale-105 active:scale-95"
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <p className="text-[10px] text-gray-600 font-bold uppercase tracking-tighter italic">O status será atualizado automaticamente para Em Progresso</p>
+                      <div className="flex gap-4">
+                         <span className="flex items-center gap-1.5 text-[10px] text-gray-400 font-black uppercase tracking-widest"><Users className="h-3 w-3" /> Time Growth</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full bg-dark-200 border border-white/5 border-dashed rounded-3xl flex flex-col items-center justify-center p-12 text-center">
+                  <div className="h-20 w-20 bg-teal-500/5 rounded-full flex items-center justify-center text-teal-500/20 mb-6 border border-teal-500/10">
+                    <Headset className="h-10 w-10" />
+                  </div>
+                  <h3 className="text-white font-black text-xl mb-2 italic">Selecione um Ticket</h3>
+                  <p className="text-gray-500 text-xs max-w-xs font-bold leading-relaxed uppercase tracking-tighter">Escolha um chamado na lista ao lado para ver os detalhes e responder ao participante.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

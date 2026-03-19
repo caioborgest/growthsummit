@@ -57,6 +57,7 @@ export interface User {
   phone?: string;
   role: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'admin' | 'staff' | 'speaker';
   avatar?: string;
+  avatar_url?: string;
   department?: string;
   staffRole?: string;
   permissions?: string[];
@@ -374,6 +375,52 @@ export interface Notification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   read: boolean;
+  readAt?: string;
+  actionUrl?: string;
+  createdAt: string;
+}
+
+export interface SupportTicket {
+  id: string;
+  projectId?: string;
+  userId?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  ticketId: string;
+  userId?: string;
+  message: string;
+  isAdmin: boolean;
+  createdAt: string;
+}
+
+export interface Raffle {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  type: 'stand_checkin' | 'realtime_qr';
+  status: 'draft' | 'open' | 'completed' | 'cancelled';
+  standId?: string;
+  winnerRegistrationId?: string;
+  drawnAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RaffleParticipant {
+  id: string;
+  raffleId: string;
+  registrationId: string;
   createdAt: string;
 }
 

@@ -19,7 +19,7 @@ export interface Database {
           name: string;
           phone: string | null;
           role: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'admin' | 'staff';
-          avatar: string | null;
+          avatar_url: string | null;
           email_verified: boolean;
           phone_verified: boolean;
           two_factor_enabled?: boolean;
@@ -33,7 +33,7 @@ export interface Database {
           name: string;
           phone?: string | null;
           role?: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'admin' | 'staff';
-          avatar?: string | null;
+          avatar_url?: string | null;
           email_verified?: boolean;
           phone_verified?: boolean;
           two_factor_enabled?: boolean;
@@ -47,7 +47,7 @@ export interface Database {
           name?: string;
           phone?: string | null;
           role?: 'visitor' | 'participant' | 'mentor' | 'company' | 'startup' | 'admin' | 'staff';
-          avatar?: string | null;
+          avatar_url?: string | null;
           email_verified?: boolean;
           phone_verified?: boolean;
           two_factor_enabled?: boolean;
