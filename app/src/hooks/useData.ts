@@ -461,8 +461,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     support_tickets: 'id,project_id,user_id,name,email,subject,message,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
-    raffle_participants: 'id,raffle_id,registration_id,created_at',
-    mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at'
+    raffle_participants: 'id,raffle_id,registration_id,created_at'
   };
   return fields[entity] ?? '*';
 }
