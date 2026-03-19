@@ -446,6 +446,7 @@ export function DashboardParticipante() {
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const { data: dbNotifications, refetch: refetchNotifications } = useNotifications();
+  const { create: joinWaitlist } = useMentoringWaitlist();
   const [supportFormData, setSupportFormData] = useState({ subject: '', message: '', priority: 'medium' as const });
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
 
@@ -611,6 +612,27 @@ export function DashboardParticipante() {
     }
   };
 
+  const handleJoinWaitlist = async (challenge: string) => {
+    if (!myRegistration || !selectedProject) return;
+
+    try {
+      await joinWaitlist({
+        projectId: selectedProject.id,
+        registrationId: myRegistration.id,
+        challenge,
+        status: 'pending'
+      } as any);
+      
+      toast.success('Você entrou na fila de espera! Avisaremos assim que um mentor estiver disponível.', {
+        duration: 5000,
+        icon: '🚀'
+      });
+    } catch (err) {
+      logger.error('Erro ao entrar na fila:', err);
+      toast.error('Erro ao entrar na fila de espera.');
+    }
+  };
+
   // ── Mapeamento e Enriquecimento de Mentorias ──────────────────────────────
   const enrichedMentorships = useMemo(() => {
     if (!mentoringSessions || !mentors) return [];
@@ -626,7 +648,7 @@ export function DashboardParticipante() {
   }, [mentoringSessions, mentors]);
 
   const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
-  const myMentorships = enrichedMentorships.filter(s => s.menteeId === myRegistration?.id);
+  const myMentorships = enrichedMentorships.filter(s => s.menteeId === user?.id);
   const availableSlots = enrichedMentorships.filter(s => 
     (!s.menteeId || s.menteeId === PLACEHOLDER_ID) && 
     (s.status === 'scheduled' || s.status === 'agendado')
@@ -1260,6 +1282,7 @@ export function DashboardParticipante() {
                 availableSlots={availableSlots}
                 handleBookMentoring={handleBookMentoring}
                 handleCancelMentoring={handleCancelMentoring}
+                handleJoinWaitlist={handleJoinWaitlist}
                 setRatingModal={setRatingModal}
                 setIsMentoriaModalOpen={setIsMentoriaModalOpen}
                 setShowUpgradeModal={setShowUpgradeModal}

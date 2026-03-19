@@ -61,6 +61,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'companies': return 'rodada_negocios_b2b';
       case 'mentoring_sessions': return 'mentorias_agendadas';
       case 'mentors': return 'mentores_growth_experience';
+      case 'mentoring_waitlist': return 'mentoring_waitlist';
       case 'sessions': return 'programacao_evento';
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
@@ -428,12 +429,16 @@ function getSelectFields(entity: string, projectId?: string): string {
     if (entity === 'leads') {
       return 'id,project_id,visitor_name,visitor_email,visitor_phone,visitor_company,interest_level,notes,created_at,startup_id,company_id';
     }
+    if (entity === 'mentoring_waitlist') {
+      return 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at';
+    }
   }
 
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,photo,created_at',
-    mentoring_sessions: 'id,project_id,mentor_id,mentee_id,status,created_at,scheduled_at,duration,topic,notes,mentor_name,mentee_name',
+    mentoring_sessions: 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em',
+    mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
@@ -456,7 +461,8 @@ function getSelectFields(entity: string, projectId?: string): string {
     support_tickets: 'id,project_id,user_id,name,email,subject,message,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
-    raffle_participants: 'id,raffle_id,registration_id,created_at'
+    raffle_participants: 'id,raffle_id,registration_id,created_at',
+    mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at'
   };
   return fields[entity] ?? '*';
 }
@@ -1009,4 +1015,8 @@ export function useRaffleParticipants(raffleId?: string) {
   const hook = useData<RaffleParticipant>([], 'raffle_participants');
   const filteredData = raffleId ? hook.data.filter(p => p.raffleId === raffleId) : hook.data;
   return { ...hook, data: filteredData };
+}
+
+export function useMentoringWaitlist() { 
+  return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
 }
