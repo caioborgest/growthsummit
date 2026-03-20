@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -20,7 +20,6 @@ import {
   AlertCircle,
   BookOpen,
   ChevronDown,
-  Bell,
   Settings,
   Award,
   Store,
@@ -115,6 +114,14 @@ export function AdminLayout() {
   const { data: projects } = useProjects();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Limpa rascunhos de formulários de participantes quando admin acessa o painel
+  // Previne que dados obsoletos (de quando projetos@cbxgrowth.com.br tinha role 'company')
+  // causem redirects inesperados para /empresa-area ou /startup-area
+  useEffect(() => {
+    localStorage.removeItem('b2b_form_draft');
+    localStorage.removeItem('startup_form_draft');
+  }, []);
 
   const handleLogout = () => {
     logout();

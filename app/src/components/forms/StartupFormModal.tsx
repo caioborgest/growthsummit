@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface StartupFormModalProps {
     isOpen: boolean;
@@ -45,6 +46,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<Record<string,string>>({});
     const { projectId } = useProject();
+    const { user } = useAuth();
 
     // Carregar rascunho
     useEffect(() => {
@@ -209,12 +211,13 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             setIsSuccess(true);
             localStorage.removeItem(DRAFT_KEY);
 
-            // Redirecionar para o app após 3 segundos
+            // Redirecionar para a área correta baseada no role
             setTimeout(() => {
                 clearDraft();
                 setIsSuccess(false);
                 onClose();
-                window.location.href = '/startup-area';
+                const redirectPath = (user?.role === 'admin') ? '/admin' : '/startup-area';
+                window.location.href = redirectPath;
             }, 3000);
         } catch (err: unknown) {
             logger.error('Erro na inscrição de startup:', { error: err });

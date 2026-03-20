@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface B2BFormModalProps {
     isOpen: boolean;
@@ -49,6 +50,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const { projectId } = useProject();
+    const { user } = useAuth();
 
     // Carregar rascunho
     useEffect(() => {
@@ -246,12 +248,14 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
             setIsSuccess(true);
             localStorage.removeItem(DRAFT_KEY);
 
-            // Redirecionar para o app após 3 segundos
+            // Redirecionar para a área correta baseada no role do usuário
             setTimeout(() => {
                 clearDraft();
                 setIsSuccess(false);
                 onClose();
-                window.location.href = '/empresa-area';
+                // Super admin fica no admin; empresa vai para área empresa
+                const redirectPath = (user?.role === 'admin') ? '/admin' : '/empresa-area';
+                window.location.href = redirectPath;
             }, 3000);
         } catch (err: unknown) {
             logger.error('Erro na inscrição B2B:', { error: err });
