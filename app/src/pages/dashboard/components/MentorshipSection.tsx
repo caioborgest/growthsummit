@@ -1,4 +1,4 @@
-import { Users, Sparkles, CheckCircle2, Star, MapPin, Calendar, Clock, AlertCircle, MessageSquare } from 'lucide-react';
+import { Users, Sparkles, CheckCircle2, Star, MapPin, Calendar, Clock, AlertCircle, MessageSquare, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
