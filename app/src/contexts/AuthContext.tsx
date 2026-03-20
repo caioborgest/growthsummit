@@ -103,30 +103,37 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map((e
 
 function isAdminEmail(email?: string): boolean {
   if (!email) return false;
-  const lowerEmail = email.toLowerCase();
+  const lowerEmail = email.toLowerCase().trim();
   // Verificar se o email está na lista de admin emails
   if (ADMIN_EMAILS.includes(lowerEmail)) return true;
+  // Fallback extra para o super admin principal para evitar erros de env vindo de build/runtime
+  if (lowerEmail === 'projetos@cbxgrowth.com.br') return true;
   // Verificar se o domínio do email está na lista de admin domains
   return ADMIN_DOMAINS.some(domain => lowerEmail.endsWith(`@${domain}`));
 }
 
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
-  // 1. PRIORIDADE MÁXIMA: Se o email estiver na lista de admins configurada via env,
-  //    sempre forçar role 'admin' — independentemente do que está no banco de dados.
-  //    Isso garante que o super admin nunca seja redirecionado para outra área.
-  if (isAdminEmail(supabaseUser.email)) {
+  // 1. PRIORIDADE MÁXIMA: Identificar se é Admin por qualquer fonte de email disponível
+  // Tentamos o email da sessão (Auth), do banco (Metadata) ou do JWT (user_metadata)
+  const candidateEmail = (supabaseUser.email || metadata?.email || supabaseUser.user_metadata?.email || '').toLowerCase().trim();
+  
+  const isSuperAdmin = candidateEmail === 'projetos@cbxgrowth.com.br' || isAdminEmail(candidateEmail);
+
+  if (isSuperAdmin) {
     const role = 'admin';
+    logger.debug('[Auth] Super admin identificado:', { email: candidateEmail, source: metadata ? 'db' : 'auth' });
+    
     return {
       id: supabaseUser.id,
-      email: supabaseUser.email || '',
-      name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+      email: candidateEmail || supabaseUser.email || '',
+      name: metadata?.name || supabaseUser.user_metadata?.name || candidateEmail.split('@')[0] || 'Super Admin',
       role,
       avatar: metadata?.avatar_url || supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatar || undefined,
       phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
       department: metadata?.department || undefined,
       staffRole: metadata?.staff_role || undefined,
-      permissions: metadata?.permissions || [],
+      permissions: metadata?.permissions || ['*'], // Super admins têm todas as permissões
       createdAt: supabaseUser.created_at,
       twoFactorEnabled: metadata?.two_factor_enabled || false,
     };
@@ -137,6 +144,10 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
 
   // Fallback final
   if (!rawRole) rawRole = 'participant';
+
+  // Se o role vindo for 'superadmin', mapeamos para 'admin' para consistência interna do app
+  if (rawRole === 'superadmin') rawRole = 'admin';
+  if (rawRole === 'empresa') rawRole = 'company';
 
   const role = ROLE_MAPPING[rawRole] || rawRole;
 
@@ -206,21 +217,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     lastSyncedSessionIdRef.current = currentSession.user.id;
     lastSyncTimeRef.current = now;
 
-    // --- ABORDAGEM OTIMISTA ---
     // Definimos o usuário IMEDIATAMENTE usando os metadados do JWT (Supabase Auth)
     const optimisticUser = mapSupabaseUserToUser(currentSession.user);
     const hasCoreData = !!(optimisticUser.name && optimisticUser.role);
 
     setSession(currentSession);
 
-    // Só definimos usuário otimista se não tivermos nenhum ou se for um usuário diferente
-    // Usamos atualização funcional para evitar dependência de 'user'
-    setUser(prevUser => {
-      if (!prevUser || prevUser.id !== currentSession.user.id) {
-        return optimisticUser;
-      }
-      return prevUser;
-    });
+    // CRITICO: Sempre atualizar com dados otimistas para garantir que roles prioritários
+    // (como o override de admin por email) sejam aplicados sem esperar o banco.
+    setUser(optimisticUser);
 
     if (hasCoreData) {
       setIsLoading(false);
