@@ -405,7 +405,7 @@ export default function AdminComunicacao() {
         title: notificationFormData.title,
         message: notificationFormData.message,
         type: notificationFormData.type
-      });
+      }, selectedProject?.id || '');
 
       toast.success(`${targetUserIds.length} notificações enviadas com sucesso!`);
       setNotificationFormData({ ...notificationFormData, title: '', message: '' });

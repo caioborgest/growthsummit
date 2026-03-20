@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 
 export interface NotificationParams {
     userId: string;
+    projectId: string; // Mandatory for scoping
     title: string;
     message: string;
     type?: 'info' | 'success' | 'warning' | 'error';
@@ -17,6 +18,7 @@ export const notificationService = {
                 .from('notifications')
                 .insert({
                     user_id: params.userId,
+                    project_id: params.projectId,
                     title: params.title,
                     message: params.message,
                     type: params.type || 'info',
@@ -35,10 +37,11 @@ export const notificationService = {
         }
     },
 
-    async sendBulk(userIds: string[], params: Omit<NotificationParams, 'userId'>) {
+    async sendBulk(userIds: string[], params: Omit<NotificationParams, 'userId' | 'projectId'>, projectId: string) {
         try {
             const notifications = userIds.map(userId => ({
                 user_id: userId,
+                project_id: projectId,
                 title: params.title,
                 message: params.message,
                 type: params.type || 'info',
