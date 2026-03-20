@@ -90,6 +90,10 @@ export function AdminStartups() {
   };
 
   const filteredStartups = startups.filter(startup => {
+    // Exclude super admin from startup founding teams for display
+    const isSuperAdminFounder = startup.foundingTeam?.some(f => f.email?.toLowerCase() === 'projetos@cbxgrowth.com.br');
+    if (isSuperAdminFounder) return false;
+
     const matchesSearch =
       (startup.nome_startup?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.sector?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||

@@ -35,6 +35,9 @@ export default function AdminEmpresasIncentivadoras() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const filteredEmpresas = (empresas || []).filter(emp => {
+        // Exclude super admin from company specific lists
+        if (emp.email?.toLowerCase() === 'projetos@cbxgrowth.com.br') return false;
+
         const q = searchQuery.toLowerCase();
         return (
             (emp.nomeEmpresa?.toLowerCase() || '').includes(q) ||

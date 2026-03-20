@@ -140,6 +140,9 @@ export default function AdminUsuarios() {
         // Base filtering: Internal team and partners only
         if (user.role === 'participant' || user.role === 'visitor') return false;
 
+        // Ensure super admin is only shown as admin and not in other categorizations
+        if (user.email === 'projetos@cbxgrowth.com.br' && user.role !== 'admin') return false;
+
         const matchesSearch =
             user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             user.email.toLowerCase().includes(searchQuery.toLowerCase());

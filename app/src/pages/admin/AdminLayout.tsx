@@ -266,10 +266,10 @@ export function AdminLayout() {
         </nav>
 
         {/* User Profile Section Premium */}
-        <div className="p-6">
+        <div className="p-4 lg:p-6 mt-auto border-t border-white/5 bg-white/[0.02]">
           <div
             onClick={() => setIsProfileOpen(true)}
-            className="bg-white/5 border border-white/10 rounded-3xl p-4 transition-all hover:bg-white/10 hover:border-white/20 group cursor-pointer"
+            className="bg-white/5 border border-white/10 rounded-2xl lg:rounded-3xl p-3 lg:p-4 transition-all hover:bg-white/10 hover:border-white/20 group cursor-pointer"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">
