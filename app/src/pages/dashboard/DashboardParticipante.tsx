@@ -10,39 +10,33 @@ import {
   Award,
   Loader2,
   CheckCircle2,
-  BookOpen,
-  XCircle,
-  CheckCircle,
-  Tag,
-  Copy,
-  AlertCircle,
-  MapPin,
-  Clock,
-  Info,
-  ArrowRight,
   ChevronRight,
   Building2,
   Trophy,
-  Handshake
+  Handshake,
+  Headset,
+  Send,
+  Clock,
+  XCircle,
+  Tag,
+  Copy,
+  AlertCircle,
+  MapPin
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Tabs
-} from '@/components/ui/tabs';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlist } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -61,7 +55,6 @@ import { supabase } from '@/lib/supabase';
 import { notificationService } from '@/services/notificationService';
 import { supportService } from '@/services/supportService';
 import { raffleService } from '@/services/raffleService';
-import { Headset, HelpCircle, Bell, Send } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -168,7 +161,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 
       // 3. Mark in DB
       const isPaid = precoFinal === 0;
-      const { error } = await (supabase.from('inscricoes_growth_experience' as never) as any)
+      await (supabase.from('inscricoes_growth_experience' as never) as any)
         .update({
           palestras_noturnas: true,
           status_pagamento: isPaid ? 'pago' : 'pendente',
@@ -179,8 +172,6 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
           valor_desconto_palestra: cupomValido ? PRECO_BASE - precoFinal : 0,
         })
         .eq('id', registrationId);
-
-      if (error) throw error;
 
       // Incrementar uso do cupom se aplicado
       if (cupomValido && cupom) {
@@ -309,7 +300,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
                   onClick={handleCopyPix}
                   className="bg-orange-500 hover:bg-orange-600 p-2.5 rounded-lg text-white shadow-lg transition-all active:scale-95"
                 >
-                  {copied ? <CheckCircle className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                  {copied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                 </button>
               </div>
 
@@ -428,8 +419,6 @@ export function DashboardParticipante() {
         return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0]; // Fallback to first session if none found
   }, [allSessions, activityCheckIns, myRegistration?.id]);
-
-  // Manual notifications can be added here if needed
   const [extraNotifications] = useState<any[]>([]);
   
   const myBatches = useMemo(() => {
@@ -631,7 +620,7 @@ export function DashboardParticipante() {
       return {
         ...session,
         mentorName: mentor ? mentor.name : session.mentorName,
-        mentorAvatar: mentor ? (mentor.photo || mentor.foto_url) : null,
+        mentorAvatar: mentor ? mentor.photo : null,
         mentorSpecialties: mentor ? mentor.specialties : []
       };
     });
@@ -641,7 +630,7 @@ export function DashboardParticipante() {
   const myMentorships = enrichedMentorships.filter(s => s.menteeId === user?.id);
   const availableSlots = enrichedMentorships.filter(s => 
     (!s.menteeId || s.menteeId === PLACEHOLDER_ID) && 
-    (s.status === 'scheduled' || s.status === 'agendado')
+    (s.status === 'scheduled')
   );
 
   // ── Notificações dinâmicas ─────────────────────────────────────────────────

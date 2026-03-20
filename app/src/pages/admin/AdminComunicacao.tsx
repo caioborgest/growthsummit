@@ -258,34 +258,34 @@ export default function AdminComunicacao() {
 
       // 1. Buscar destinatários baseados no filtro
       if (composeData.recipients === 'all') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'paid') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pago') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pago') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'pending') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pendente') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pendente') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'vip') {
-        const { data } = await supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('tipo_inscricao', 'vip') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('tipo_inscricao', 'vip') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'mentors') {
-        const { data } = await supabase.from('mentores_growth_experience').select('email, nome') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('mentores_growth_experience').select('email, nome') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'startups') {
-        const { data } = await supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome_startup || item.nome_fundador }));
       } else if (composeData.recipients === 'sponsors') {
-        const { data } = await supabase.from('sponsors').select('contact_email, company_name, contact_name') as { data: any[] | null };
-        recipientsData = data || [];
+        const { data } = await (supabase.from('sponsors').select('contact_email, company_name, contact_name') as any);
+        recipientsData = (data || []).map((item: any) => ({ email: item.contact_email, name: item.company_name || item.contact_name }));
       } else if (composeData.recipients === 'companies') {
         const [b2bRes, incentiveRes] = await Promise.all([
-          supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante'),
-          supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel')
+          (supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante') as any),
+          (supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel') as any)
         ]);
         recipientsData = [
-          ...(b2bRes.data || []),
-          ...(incentiveRes.data || [])
+          ...(b2bRes.data || []).map((item: any) => ({ email: item.email, name: item.nome_empresa || item.nome_representante })),
+          ...(incentiveRes.data || []).map((item: any) => ({ email: item.email, name: item.nome_empresa || item.nome_responsavel }))
         ];
       }
 

@@ -8,7 +8,7 @@ import type {
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
-  Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant
+  Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
@@ -37,7 +37,7 @@ const isGEProject = (projectId: string | undefined): boolean => {
       if ((p.id === projectId || p.slug === projectId) &&
         (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-experience'))) return true;
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
   return false;
@@ -188,6 +188,11 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   company_id: 'companyId',
   visitor_phone: 'visitorPhone',
   visitor_cpf: 'visitorCpf',
+  // Raffle / Stand fields
+  stand_id: 'standId',
+  winner_registration_id: 'winnerRegistrationId',
+  drawn_at: 'drawnAt',
+  project_id: 'projectId',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -878,9 +883,9 @@ export function useProfile(userId?: string) {
     if (!userId) return;
     setIsLoading(true);
     try {
-      const { data: supabaseData, error } = await supabase
+      const { data: supabaseData, error } = await (supabase
         .from('profiles' as any)
-        .select('id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,newsletter_opt_in,created_at,updated_at')
+        .select('id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,newsletter_opt_in,created_at,updated_at') as any)
         .eq('user_id', userId)
         .maybeSingle();
 

@@ -289,21 +289,6 @@ export interface Transaction {
   createdAt: string;
 }
 
-export interface CheckIn {
-  id: string;
-  projectId: string;
-  registrationId: string;
-  userId: string;
-  sessionId?: string;
-  ticketNumber: string;
-  timestamp: string;
-  location: string;
-  method: 'qr_code' | 'manual' | 'rfid' | 'facial' | 'self_scan';
-  checkInType: 'event' | 'session';
-  staffId?: string;
-  notes?: string;
-  createdAt: string;
-}
 
 export interface Certificate {
   id: string;
@@ -409,9 +394,10 @@ export interface Raffle {
   name: string;
   description?: string;
   type: 'stand_checkin' | 'realtime_qr';
-  status: 'draft' | 'open' | 'completed' | 'cancelled';
+  status: 'draft' | 'pending' | 'open' | 'active' | 'completed' | 'cancelled';
   standId?: string;
   winnerRegistrationId?: string;
+  winnerName?: string;
   drawnAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -422,6 +408,7 @@ export interface RaffleParticipant {
   raffleId: string;
   registrationId: string;
   createdAt: string;
+  registration?: Registration;
 }
 
 export interface Lead {
@@ -555,52 +542,6 @@ export interface MentoringWaitlist {
   updatedAt: string;
 }
 
-export interface SupportTicket {
-  id: string;
-  projectId: string;
-  userId: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SupportMessage {
-  id: string;
-  ticketId: string;
-  userId?: string;
-  message: string;
-  isAdmin: boolean;
-  createdAt: string;
-}
-
-export interface Raffle {
-  id: string;
-  projectId: string;
-  name: string;
-  description?: string;
-  type: 'stand_checkin' | 'realtime_qr';
-  status: 'pending' | 'active' | 'completed' | 'cancelled';
-  standId?: string;
-  winnerRegistrationId?: string;
-  winnerName?: string;
-  drawnAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RaffleParticipant {
-  id: string;
-  raffleId: string;
-  registrationId: string;
-  createdAt: string;
-  registration?: Registration;
-}
-
 export interface B2BChatMessage {
   id: string;
   projectId: string;
@@ -610,7 +551,6 @@ export interface B2BChatMessage {
   createdAt: string;
   readAt?: string;
 }
-
 
 export interface Stand {
   id: string;
@@ -629,5 +569,21 @@ export interface StandCheckIn {
   projectId: string;
   registrationId: string;
   standId: string;
+  createdAt: string;
+}
+
+export interface CheckIn {
+  id: string;
+  projectId: string;
+  registrationId: string | null;
+  userId: string;
+  sessionId?: string;
+  ticketNumber: string;
+  timestamp: string;
+  location: string;
+  method: 'qr_code' | 'manual' | 'rfid' | 'facial' | 'self_scan' | 'qrcode' | 'face';
+  checkInType?: 'event' | 'session';
+  staffId?: string;
+  notes?: string;
   createdAt: string;
 }

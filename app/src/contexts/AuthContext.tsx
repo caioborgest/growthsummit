@@ -97,22 +97,26 @@ interface UserDBMetadata {
   two_factor_enabled?: boolean;
 }
 
+// Configuração de admin via variáveis de ambiente (nunca hardcoded)
+const ADMIN_DOMAINS = (import.meta.env.VITE_ADMIN_DOMAINS || '').split(',').map((d: string) => d.trim().toLowerCase()).filter(Boolean);
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map((e: string) => e.trim().toLowerCase()).filter(Boolean);
+
+function isAdminEmail(email?: string): boolean {
+  if (!email) return false;
+  const lowerEmail = email.toLowerCase();
+  // Verificar se o email está na lista de admin emails
+  if (ADMIN_EMAILS.includes(lowerEmail)) return true;
+  // Verificar se o domínio do email está na lista de admin domains
+  return ADMIN_DOMAINS.some(domain => lowerEmail.endsWith(`@${domain}`));
+}
+
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
   // 1. Tentar pegar role (Prioridade: Metadata do DB > Metadata do JWT > default)
   let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
 
-  // Forçar admin para o email principal do projeto se necessário
-  if (supabaseUser.email === 'projetos@cbxgrowth.com.br') {
-    rawRole = 'admin';
-  }
-
-  // Se não houver role no metadata nem no JWT, verificamos se é um email admin conhecido 
-  // ou se o metadata do DB existe mas a role está vazia
-  if (!rawRole && (
-    supabaseUser.email?.endsWith('@growthsummit.site') || 
-    supabaseUser.email?.endsWith('@cbxgrowth.com.br')
-  )) {
+  // Se não houver role, verificar se é um email/domínio admin configurado via env
+  if (!rawRole && isAdminEmail(supabaseUser.email)) {
     rawRole = 'admin';
   }
 

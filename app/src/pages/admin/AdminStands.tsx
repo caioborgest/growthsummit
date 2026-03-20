@@ -13,7 +13,9 @@ import {
     Store,
     Download,
     CheckCircle2,
-    XCircle
+    XCircle,
+    AlertCircle,
+    Trophy
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +25,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import type { Stand, Registration } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 export default function AdminStands() {
     const { projectId, isProjectSelected } = useProject();
@@ -40,7 +42,7 @@ export default function AdminStands() {
     const [selectedStandForQR, setSelectedStandForQR] = useState<Stand | null>(null);
     const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
 
-    const [activeTab, setActiveTab] = useState<'stands' | 'sorteio'>('stands');
+    const [activeTab, setActiveTab] = useState<'stands' | 'sorteio' | 'monitoramento'>('stands');
     const [isDrawing, setIsDrawing] = useState(false);
     const [winner, setWinner] = useState<Registration | null>(null);
     const [previousWinners, setPreviousWinners] = useState<Registration[]>([]);
@@ -79,6 +81,28 @@ export default function AdminStands() {
         });
         return map;
     }, [checkins]);
+
+    const standRanking = useMemo(() => {
+        return [...stands].map(s => ({
+            ...s,
+            checkins: checkinCountByStand.get(s.id) || 0
+        })).sort((a, b) => b.checkins - a.checkins);
+    }, [stands, checkinCountByStand]);
+
+    const recentCheckins = useMemo(() => {
+        return [...checkins]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 10)
+            .map(c => {
+                const reg = inscricoes.find(r => r.id === c.registrationId);
+                const stand = stands.find(s => s.id === c.standId);
+                return {
+                    ...c,
+                    participantName: reg?.nome || reg?.name || 'Participante',
+                    standName: stand?.name || 'Stand'
+                };
+            });
+    }, [checkins, inscricoes, stands]);
 
     const eligibleParticipants = useMemo(() => {
         if (stands.length === 0) return [];
@@ -282,6 +306,14 @@ export default function AdminStands() {
                         </Badge>
                     )}
                 </Button>
+                <Button
+                    variant="ghost"
+                    onClick={() => setActiveTab('monitoramento')}
+                    className={`rounded-xl px-6 py-2 h-auto text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'monitoramento' ? 'bg-teal-500 text-white shadow-glow-teal' : 'text-gray-500 hover:text-white'}`}
+                >
+                    Monitoramento
+                    <div className="ml-2 w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
+                </Button>
             </div>
 
             {activeTab === 'stands' ? (
@@ -453,7 +485,7 @@ export default function AdminStands() {
                         </div>
                     </div>
                 </>
-            ) : (
+            ) : activeTab === 'sorteio' ? (
                 <div className="grid lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
                     <div className="lg:col-span-2 space-y-8">
                         <div className="text-left space-y-2">
@@ -585,6 +617,165 @@ export default function AdminStands() {
                                     <p className="text-[10px] text-gray-500 italic leading-relaxed">
                                         Apenas participantes que visitaram os <strong>{stands.length} stands</strong> deste projeto são incluídos no sorteio.
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="glass-card p-6 border-teal-500/20 bg-teal-500/5">
+                            <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-1">Visitantes Ativos</p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-4xl font-black text-white tracking-tighter">
+                                    {new Set(checkins.map(c => c.registrationId)).size}
+                                </p>
+                                <p className="text-gray-500 text-xs font-bold mb-1.5 uppercase">PARTICIPANTES</p>
+                            </div>
+                        </div>
+                        <div className="glass-card p-6 border-blue-500/20 bg-blue-500/5">
+                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Média de Visitas</p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-4xl font-black text-white tracking-tighter">
+                                    {(checkins.length / Math.max(1, new Set(checkins.map(c => c.registrationId)).size)).toFixed(1)}
+                                </p>
+                                <p className="text-gray-500 text-xs font-bold mb-1.5 uppercase">POR PESSOA</p>
+                            </div>
+                        </div>
+                        <div className="glass-card p-6 border-purple-500/20 bg-purple-500/5">
+                            <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Cobertura do Evento</p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-4xl font-black text-white tracking-tighter">
+                                    {stands.length > 0 ? ((new Set(checkins.map(c => c.standId)).size / stands.length) * 100).toFixed(0) : 0}%
+                                </p>
+                                <p className="text-gray-500 text-xs font-bold mb-1.5 uppercase">STANDS VISITADOS</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Rankings Collumn */}
+                        <div className="lg:col-span-2 space-y-8">
+                            {/* Top Ranking */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-black text-white italic tracking-tighter uppercase flex items-center gap-3">
+                                        <TrendingUp className="h-6 w-6 text-teal-400" /> Líderes de <span className="text-teal-400">Engajamento</span>
+                                    </h3>
+                                    <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 px-3 py-1 font-black text-[10px]">MAIS VISITADOS</Badge>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4">
+                                    {standRanking.slice(0, 5).map((stand, index) => {
+                                        const maxCheckins = standRanking[0]?.checkins || 1;
+                                        const percentage = (stand.checkins / maxCheckins) * 100;
+
+                                        return (
+                                            <div key={stand.id} className="glass-card p-6 relative overflow-hidden group hover:bg-white/[0.03] transition-all">
+                                                {/* Progress fill background */}
+                                                <div 
+                                                    className="absolute bottom-0 left-0 h-1 bg-teal-500/30 transition-all duration-1000" 
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                                
+                                                <div className="flex items-center justify-between relative z-10">
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="w-10 h-10 rounded-full bg-dark-300 border border-white/10 flex items-center justify-center font-black text-white text-lg">
+                                                            {index + 1}
+                                                        </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-2">
+                                                                {stand.logoUrl ? (
+                                                                    <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain" />
+                                                                ) : (
+                                                                    <Store className="h-6 w-6 text-gray-600" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="text-white font-black uppercase tracking-tight">{stand.name}</h4>
+                                                                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{stand.location || 'Área de Exposição'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-3xl font-black text-white tracking-tighter">{stand.checkins}</p>
+                                                        <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">VISITAS</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Attention Needed Ranking */}
+                            <div className="space-y-6 pt-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-black text-white italic tracking-tighter uppercase flex items-center gap-3">
+                                        <AlertCircle className="h-6 w-6 text-orange-500" /> Merecem <span className="text-orange-500">Atenção</span>
+                                    </h3>
+                                    <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 px-3 py-1 font-black text-[10px]">MENOR ENGAJAMENTO</Badge>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {[...standRanking].reverse().slice(0, 4).map((stand) => (
+                                        <div key={stand.id} className="glass-card p-5 border-orange-500/10 bg-orange-500/[0.02] flex items-center justify-between group hover:border-orange-500/30 transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-dark-300 border border-orange-500/20 flex items-center justify-center overflow-hidden p-2 opacity-60">
+                                                    {stand.logoUrl ? (
+                                                        <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain grayscale" />
+                                                    ) : (
+                                                        <Store className="h-5 w-5 text-gray-700" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-xs uppercase truncate max-w-[120px]">{stand.name}</h4>
+                                                    <p className="text-orange-500/60 text-[8px] font-black uppercase tracking-tighter">ESTIMULAR VISITAS</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xl font-black text-white opacity-40 capitalize">{stand.checkins}</p>
+                                                <p className="text-[8px] text-gray-600 font-bold uppercase">CHECK-INS</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Activity Feed */}
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                <Users className="h-4 w-4 text-blue-400" /> Feed ao Vivo
+                            </h3>
+                            <div className="glass-card overflow-hidden border-white/5 bg-black/20">
+                                <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Atividade Recente</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse" />
+                                        <span className="text-[9px] font-bold text-teal-500 uppercase">Live</span>
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
+                                    {recentCheckins.length > 0 ? (
+                                        recentCheckins.map((c) => (
+                                            <div key={c.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-center gap-3">
+                                                <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs font-bold text-white truncate">{c.participantName}</p>
+                                                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest truncate">visita <span className="text-orange-500">{c.standName}</span></p>
+                                                </div>
+                                                <div className="text-[9px] font-bold text-gray-600 shrink-0">
+                                                    {new Date(c.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-10 text-center opacity-30 italic text-xs text-gray-500">
+                                            Aguardando as primeiras visitas...
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

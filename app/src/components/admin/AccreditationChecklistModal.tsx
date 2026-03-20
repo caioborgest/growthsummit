@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     CheckCircle2,
     Package,
@@ -49,23 +49,23 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
         return null; // Don't send pseudo-IDs to UUID columns
     };
 
-    const getUserId = () => entity?.userId || '';
+    const getUserId = useCallback(() => entity?.userId || '', [entity]);
 
     // Load existing status from checkIns
     useEffect(() => {
-        if (isOpen && entity) {
-            const userId = getUserId();
-            const existingCheckIns = checkIns.filter(c => c.userId === userId && c.location && c.location.includes('Credenciamento'));
+        if (!isOpen || !entity) return;
 
-            setEntranceConfirmed(existingCheckIns.length > 0);
+        const userId = getUserId();
+        const existingCheckIns = checkIns.filter(c => c.userId === userId && c.location && c.location.includes('Credenciamento'));
 
-            const kit = existingCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
-            const badge = existingCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
+        setEntranceConfirmed(existingCheckIns.length > 0);
 
-            setKitDelivered(kit);
-            setBadgeDelivered(badge);
-        }
-    }, [isOpen, entity, checkIns]);
+        const kit = existingCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
+        const badge = existingCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
+
+        setKitDelivered(kit);
+        setBadgeDelivered(badge);
+    }, [isOpen, entity, checkIns, getUserId]);
 
     const handleAccreditation = async () => {
         if (!entity || !entranceConfirmed) {
@@ -77,7 +77,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
         try {
             await createCheckIn({
                 projectId: entity.projectId,
-                registrationId: getRegistrationId(),
+                registrationId: getRegistrationId() as string, 
                 userId: getUserId(),
                 ticketNumber: (entity as Registration).ticketNumber || 'N/A',
                 timestamp: new Date().toISOString(),

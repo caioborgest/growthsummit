@@ -1,4 +1,4 @@
-import { Users, Sparkles, CheckCircle2, Star, X, Lock, MapPin, Calendar, Clock, ChevronRight, AlertCircle, MessageSquare } from 'lucide-react';
+import { Users, Sparkles, CheckCircle2, Star, MapPin, Calendar, Clock, AlertCircle, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -8,12 +8,10 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
 interface MentorshipSectionProps {
-    myRegistration: any;
     myMentorships: any[];
     availableSlots: any[];
     handleCancelMentoring: (id: string) => void;
@@ -21,11 +19,9 @@ interface MentorshipSectionProps {
     handleJoinWaitlist: (challenge: string) => void;
     setRatingModal: (modal: any) => void;
     setIsMentoriaModalOpen: (open: boolean) => void;
-    setShowUpgradeModal: (show: boolean) => void;
 }
 
 export function MentorshipSection({
-    myRegistration,
     myMentorships,
     availableSlots,
     handleCancelMentoring,
@@ -33,258 +29,244 @@ export function MentorshipSection({
     handleJoinWaitlist,
     setRatingModal,
     setIsMentoriaModalOpen,
-    setShowUpgradeModal
 }: MentorshipSectionProps) {
 
     const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
     const [challenge, setChallenge] = useState('');
 
-    // Mentorship is available for all participants as requested
-    const canAccess = true;
-
-    if (!canAccess) return null;
+    const activeMentorships = myMentorships.filter(m => m.status === 'scheduled' || m.status === 'pending');
+    const pastMentorships = myMentorships.filter(m => m.status === 'completed' || m.status === 'no_show' || m.status === 'cancelled');
 
     return (
-        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Overview & Action */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-                        <span className="text-teal-400 font-black text-[10px] uppercase tracking-widest">Sessões 1-on-1 Ativas</span>
+        <div className="space-y-8">
+            {/* Próximas Mentorias */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-black text-white italic tracking-tighter uppercase">Minhas <span className="text-brand-orange-coral">Mentorias</span></h2>
+                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Acompanhe seus agendamentos</p>
                     </div>
-                    <h2 className="text-3xl font-black text-white italic tracking-tighter">SUA <span className="text-teal-500 text-brand-orange-coral">JORNADA</span> MENTORADA</h2>
                 </div>
-                <Button
-                    onClick={() => setIsMentoriaModalOpen(true)}
-                    className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-14 px-10 rounded-[1.5rem] shadow-2xl shadow-brand-orange-coral/20 flex items-center gap-3 group transition-all hover:scale-[1.05] active:scale-95"
-                >
-                    <Sparkles className="h-6 w-6 text-yellow-300 group-hover:rotate-12 transition-transform" />
-                    AGENDAR AGORA
-                </Button>
-            </div>
 
-            <div className="grid lg:grid-cols-2 gap-10">
-                {/* My Mentorships */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                            <CheckCircle2 className="h-4 w-4 text-teal-400" />
-                        </div>
-                        <h3 className="text-white font-black text-sm uppercase tracking-widest leading-none">Meus Agendamentos</h3>
-                    </div>
-
-                    <div className="space-y-4">
-                        {myMentorships.map(session => (
-                            <div key={session.id} className={`glass-card p-6 border-white/5 relative overflow-hidden group transition-all rounded-[2rem] ${session.status === 'completed' ? 'opacity-70 grayscale-[0.5]' : 'hover:border-teal-500/30'}`}>
-                                <div className="flex items-start gap-5 relative z-10">
-                                    <div className="w-16 h-16 rounded-2xl bg-dark-400 border border-white/10 overflow-hidden flex-shrink-0 group-hover:scale-110 transition-transform">
-                                        {session.mentorAvatar ? (
-                                            <img src={session.mentorAvatar} alt={session.mentorName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-teal-500/10 text-teal-400 font-bold text-xl uppercase italic">
-                                                {session.mentorName?.[0]}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="text-white font-black text-lg uppercase italic truncate leading-none">{session.mentorName}</p>
-                                            {session.status === 'completed' ? (
-                                                <Badge className="bg-dark-300 text-gray-500 border-none text-[8px] font-black uppercase rounded-lg">Finalizada</Badge>
+                {activeMentorships.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {activeMentorships.map((mentorship) => (
+                            <div key={mentorship.id} className="glass-card p-6 border-l-4 border-brand-orange-coral">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 uppercase font-black text-white flex items-center justify-center text-xl">
+                                            {mentorship.mentorAvatar ? (
+                                                <img src={mentorship.mentorAvatar} alt={mentorship.mentorName} className="w-full h-full object-cover" />
                                             ) : (
-                                                <Badge className="bg-green-500/20 text-green-400 border-none text-[8px] font-black uppercase animate-pulse rounded-lg">Confirmada</Badge>
+                                                mentorship.mentorName?.substring(0, 2)
                                             )}
                                         </div>
-                                        <p className="text-teal-400 text-xs font-extrabold truncate mb-4 uppercase tracking-tight">{session.topic || 'Mentoria Estratégica'}</p>
-
-                                        <div className="flex flex-wrap items-center gap-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                            <span className="flex items-center gap-1.5"><Calendar className="h-3 w-3 text-teal-500/50" /> {new Date(session.scheduledAt).toLocaleDateString('pt-BR')}</span>
-                                            <span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-teal-500/50" /> {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                            <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3 text-teal-500/50" /> Lounge Mentorias</span>
+                                        <div>
+                                            <h4 className="font-black text-white uppercase tracking-tight">{mentorship.mentorName}</h4>
+                                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{mentorship.topic || 'Mentoria Estratégica'}</p>
                                         </div>
                                     </div>
+                                    <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral font-black text-[9px] uppercase tracking-widest border-none">
+                                        AGENDADO
+                                    </Badge>
                                 </div>
-
-                                <div className="mt-6 flex items-center justify-end gap-3 border-t border-white/5 pt-4">
-                                    {session.status === 'completed' ? (
-                                        !session.feedback?.avaliadoEm ? (
-                                            <Button
-                                                onClick={() => setRatingModal({
-                                                    isOpen: true,
-                                                    sessionId: session.id,
-                                                    mentorName: session.mentorName,
-                                                    alreadyRated: false
-                                                })}
-                                                className="bg-yellow-500 text-black font-black text-[10px] h-9 rounded-xl px-5 hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/10 uppercase tracking-widest"
-                                            >
-                                                <Star className="h-3 w-3 mr-2 fill-current" /> AVALIAR SESSÃO
-                                            </Button>
-                                        ) : (
-                                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-                                                <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                                                <span className="text-white text-[10px] font-black uppercase tracking-widest">{session.feedback.avaliacaoMentoria}/5 Estrelas</span>
-                                            </div>
-                                        )
-                                    ) : (
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleCancelMentoring(session.id)}
-                                            className="text-red-400/50 hover:text-red-400 hover:bg-red-500/10 text-[9px] font-black uppercase rounded-xl h-9 px-4 transition-colors"
-                                        >
-                                            DESISTIR DA VAGA
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-
-                        {myMentorships.length === 0 && (
-                            <div className="p-16 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5 flex flex-col items-center">
-                                <div className="w-16 h-16 rounded-3xl bg-dark-400 flex items-center justify-center mb-6">
-                                    <Clock className="h-8 w-8 text-gray-700 mx-auto" />
-                                </div>
-                                <p className="text-gray-500 text-sm italic font-medium">Sua agenda de mentorias está livre.</p>
-                                <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest mt-2">GARANTA SEU HORÁRIO COM OS MELHORES</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Available Slots / Waitlist */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                            <Users className="h-4 w-4 text-orange-400" />
-                        </div>
-                        <h3 className="text-white font-black text-sm uppercase tracking-widest leading-none">Vagas de Última Hora</h3>
-                    </div>
-
-                    <div className="grid gap-4">
-                        {availableSlots.slice(0, 4).map(slot => (
-                            <div key={slot.id} className="glass-card p-6 border-white/5 hover:border-orange-500/30 transition-all flex items-center justify-between gap-4 group rounded-[2rem] relative overflow-hidden">
-                                <div className="flex items-center gap-4 relative z-10">
-                                    <div className="w-12 h-12 rounded-xl bg-dark-400 overflow-hidden border border-white/10 grayscale group-hover:grayscale-0 transition-all flex items-center justify-center text-orange-500 font-black italic shadow-inner">
-                                        {slot.mentorAvatar ? <img src={slot.mentorAvatar} alt={slot.mentorName} className="w-full h-full object-cover" /> : slot.mentorName?.[0]}
+                                <div className="space-y-2 mb-4">
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                        <Calendar className="h-3 w-3" />
+                                        <span>{new Date(mentorship.scheduledAt).toLocaleDateString('pt-BR')}</span>
                                     </div>
-                                    <div>
-                                        <p className="text-white font-black uppercase text-sm italic leading-none mb-1.5">{slot.mentorName}</p>
-                                        <div className="flex items-center gap-2">
-                                            <Badge className="bg-orange-500/10 text-orange-500 border-none text-[8px] font-black uppercase py-0 px-2">IMEDIATO</Badge>
-                                            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                                                <Clock className="h-3 w-3" /> {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                        <Clock className="h-3 w-3" />
+                                        <span>{new Date(mentorship.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ({mentorship.duration}min)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                        <MapPin className="h-3 w-3" />
+                                        <span>{mentorship.tableNumber ? `Mesa ${mentorship.tableNumber}` : 'Local: Arena de Mentorias'}</span>
                                     </div>
                                 </div>
-                                <Button
-                                    onClick={() => {
-                                        const topic = prompt('Qual o principal desafio que deseja tratar?');
-                                        if (topic) handleBookMentoring(slot.id, topic);
-                                    }}
-                                    className="bg-white/5 hover:bg-brand-orange-coral text-gray-400 hover:text-white font-black text-[10px] px-6 h-11 rounded-xl transition-all uppercase tracking-widest relative z-10"
+                                <Button 
+                                    variant="outline"
+                                    onClick={() => handleCancelMentoring(mentorship.id)}
+                                    className="w-full border-white/10 hover:bg-red-500/10 hover:text-red-400 text-gray-400 text-[10px] font-black uppercase tracking-widest h-10"
                                 >
-                                    RESERVAR
+                                    CANCELAR AGENDAMENTO
                                 </Button>
                             </div>
                         ))}
+                    </div>
+                ) : (
+                    <div className="glass-card p-10 text-center border-dashed border-white/5">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Calendar className="h-8 w-8 text-gray-600" />
+                        </div>
+                        <p className="text-gray-500 font-bold text-xs uppercase tracking-widest">Nenhuma mentoria agendada</p>
+                        <Button 
+                            onClick={() => setIsMentoriaModalOpen(true)}
+                            className="mt-6 bg-brand-orange-coral hover:bg-orange-600 text-white font-black h-12 rounded-xl px-8"
+                        >
+                            AGENDAR AGORA
+                        </Button>
+                    </div>
+                )}
+            </div>
 
-                        {availableSlots.length === 0 && (
-                            <div className="p-10 bg-dark-200/50 rounded-[3rem] border border-white/5 text-center space-y-6 relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="flex justify-center">
-                                    <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-2">
-                                        <AlertCircle className="h-8 w-8 text-orange-500" />
+            {/* Fila de Espera / Slots Disponíveis */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-4">
+                    <div>
+                        <h2 className="text-xl font-black text-white italic tracking-tighter uppercase">Abertas para <span className="text-brand-orange-coral">Inscrição</span></h2>
+                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Horários disponíveis com mentores</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {availableSlots.length > 0 ? (
+                            availableSlots.slice(0, 6).map((slot) => (
+                                <div key={slot.id} className="glass-card p-5 group hover:border-brand-orange-coral/30 transition-all cursor-pointer" onClick={() => handleBookMentoring(slot.id, 'Mentoria Estratégica')}>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <Badge className="bg-teal-500/20 text-teal-400 font-black text-[9px] uppercase tracking-widest border-none">
+                                            LIVRE
+                                        </Badge>
+                                        <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-black text-white">
+                                            {slot.mentorAvatar ? (
+                                                <img src={slot.mentorAvatar} alt={slot.mentorName} className="w-full h-full object-cover" />
+                                            ) : (
+                                                slot.mentorName?.substring(0, 2)
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white text-sm uppercase tracking-tight">{slot.mentorName}</h4>
+                                            <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">Especialista</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <h4 className="text-white font-black text-lg uppercase italic tracking-tighter mb-2">Todos os slots ocupados</h4>
-                                    <p className="text-gray-500 text-xs font-bold leading-relaxed max-w-[250px] mx-auto uppercase tracking-wide">Os mentores estão em sessões ativas no momento.</p>
+                            ))
+                        ) : (
+                            <div className="col-span-2 glass-card p-10 text-center border-dashed border-white/5">
+                                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <Search className="h-6 w-6 text-gray-600" />
                                 </div>
-                                <Button
+                                <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Sem horários livres no momento</p>
+                                <Button 
                                     onClick={() => setIsWaitlistModalOpen(true)}
-                                    className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 uppercase tracking-widest italic"
+                                    className="mt-4 bg-white/5 hover:bg-white/10 text-white font-black h-10 rounded-xl px-6 text-[10px] uppercase tracking-widest border border-white/10"
                                 >
                                     ENTRAR NA FILA DE ESPERA
                                 </Button>
                             </div>
                         )}
                     </div>
+                </div>
 
-                    {/* Info Card - Rule System */}
-                    <div className="p-8 bg-dark-300 border border-white/5 rounded-[2.5rem] relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
-                            <Sparkles className="h-24 w-24 text-teal-400" />
-                        </div>
-                        <h4 className="text-white font-black text-[10px] uppercase mb-5 flex items-center gap-2 tracking-[0.2em]">
-                            <div className="w-5 h-5 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                                <Sparkles className="h-3 w-3 text-teal-500" />
-                            </div>
-                            Mentoria GS Rules
-                        </h4>
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {[
-                                { t: 'Foco Total', d: '20 min por sessão' },
-                                { t: 'Limite', d: '1 slot por vez' },
-                                { t: 'Tolerância', d: '5 min de atraso' },
-                                { t: 'No-Show', d: 'Libera automático' }
-                            ].map((r, i) => (
-                                <li key={i} className="flex flex-col gap-1">
-                                    <span className="text-teal-400 text-[9px] font-black uppercase tracking-widest">{r.t}</span>
-                                    <span className="text-white text-xs font-bold italic">{r.d}</span>
-                                </li>
-                            ))}
-                        </ul>
+                <div className="space-y-4">
+                    <div>
+                        <h2 className="text-xl font-black text-white italic tracking-tighter uppercase">Desafios <span className="text-brand-orange-coral">Diretos</span></h2>
+                        <p className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">Acesso rápido aos mentores</p>
+                    </div>
+                    <div className="glass-card p-6 bg-gradient-to-br from-brand-orange-coral/10 to-transparent">
+                        <Sparkles className="h-8 w-8 text-brand-orange-coral mb-4" />
+                        <h4 className="text-white font-black uppercase tracking-tight mb-2">Fila Global</h4>
+                        <p className="text-gray-500 text-xs mb-6">Não encontrou o horário que queria? Entre na nossa fila de espera global. Mentores disponíveis podem te chamar a qualquer momento!</p>
+                        <Button 
+                            onClick={() => setIsWaitlistModalOpen(true)}
+                            className="w-full bg-brand-orange-coral hover:bg-orange-600 text-white font-black h-12 rounded-xl uppercase italic tracking-tighter"
+                        >
+                            PEDIR UMA MENTORIA AGORA
+                        </Button>
                     </div>
                 </div>
             </div>
 
-            {/* Waitlist (Fila de Espera) Modal */}
+            {/* Histórico */}
+            <div className="space-y-4">
+                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">Histórico de Sessões</h3>
+                <div className="space-y-3">
+                    {pastMentorships.length > 0 ? (
+                        pastMentorships.map((m) => (
+                            <div key={m.id} className="glass-card p-4 flex items-center justify-between opacity-60 hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-4">
+                                    <CheckCircle2 className={`h-5 w-5 ${m.status === 'completed' ? 'text-teal-400' : 'text-gray-600'}`} />
+                                    <div>
+                                        <h4 className="text-sm font-bold text-white uppercase tracking-tight">{m.mentorName}</h4>
+                                        <p className="text-[10px] text-gray-500 uppercase font-black">{new Date(m.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                                    </div>
+                                </div>
+                                {m.status === 'completed' && !m.feedback ? (
+                                    <Button 
+                                        onClick={() => setRatingModal({ isOpen: true, mentorshipId: m.id, mentorName: m.mentorName })}
+                                        className="h-8 px-4 bg-teal-500 hover:bg-teal-600 text-dark-500 font-black text-[9px] rounded-lg"
+                                    >
+                                        AVALIAR
+                                    </Button>
+                                ) : (
+                                    <div className="flex gap-1 text-teal-400">
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <Star key={s} className={`h-3 w-3 ${m.feedback?.rating >= s ? 'fill-current' : 'opacity-20'}`} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest text-center py-4">Sem histórico de mentorias realizadas.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Modal de Fila de Espera */}
             <Dialog open={isWaitlistModalOpen} onOpenChange={setIsWaitlistModalOpen}>
-                <DialogContent className="bg-dark-200 border border-white/10 text-white rounded-[2.5rem] max-w-md p-8 shadow-2xl shadow-black/80">
+                <DialogContent className="bg-dark-200 border-white/10 text-white max-w-md rounded-[2.5rem] p-8">
                     <DialogHeader>
-                        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-6">
-                            <Users className="h-8 w-8 text-orange-500" />
-                        </div>
-                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tight leading-none mb-2">Fila de <span className="text-orange-500">Demanda</span></DialogTitle>
-                        <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Cadastre seu desafio para ser chamado assim que liberarmos novos mentores</DialogDescription>
+                        <DialogTitle className="text-2xl font-black italic uppercase">Entrar na <span className="text-brand-orange-coral">Fila</span></DialogTitle>
+                        <DialogDescription className="text-gray-500 text-xs font-bold uppercase tracking-widest">Descreva seu desafio para que possamos te direcionar</DialogDescription>
                     </DialogHeader>
-                    
-                    <div className="py-6 space-y-4">
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest flex items-center gap-2">
-                                <MessageSquare className="h-3 w-3 text-orange-500" /> O que você precisa resolver hoje?
-                            </label>
+
+                    <div className="space-y-6 mt-6">
+                        <div className="space-y-2">
+                            <label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Seu Desafio / Problema</label>
                             <Textarea 
-                                placeholder="Ex: Preciso de ajuda com meu pitch deck ou estratégia de vendas para o setor agro..."
-                                className="bg-dark-300 border-white/5 rounded-2xl h-32 focus:border-orange-500/50 transition-colors text-sm font-medium resize-none"
+                                placeholder="Descreva brevemente em que você precisa de ajuda..." 
                                 value={challenge}
                                 onChange={(e) => setChallenge(e.target.value)}
+                                className="bg-white/5 border-white/10 h-32 rounded-2xl p-4 text-sm focus:border-brand-orange-coral focus:ring-1 focus:ring-brand-orange-coral resize-none"
                             />
                         </div>
-                    </div>
 
-                    <DialogFooter className="flex-col sm:flex-col gap-3">
-                        <Button 
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-black h-14 w-full rounded-2xl shadow-xl shadow-orange-500/20 uppercase tracking-widest italic"
-                            onClick={() => {
-                                if (!challenge) return;
-                                handleJoinWaitlist(challenge);
-                                setChallenge('');
-                                setIsWaitlistModalOpen(false);
-                            }}
-                        >
-                            ENVIAR PARA O PAINEL ADMIN
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            className="text-gray-500 hover:text-white text-[10px] font-black uppercase tracking-widest"
-                            onClick={() => setIsWaitlistModalOpen(false)}
-                        >
-                            TALVEZ DEPOIS
-                        </Button>
-                    </DialogFooter>
+                        <div className="glass-card p-4 bg-blue-500/5 border-blue-500/20">
+                            <div className="flex gap-3">
+                                <AlertCircle className="h-5 w-5 text-blue-400 shrink-0" />
+                                <p className="text-[10px] text-blue-400 font-bold leading-relaxed uppercase tracking-widest">
+                                    Seu pedido será enviado a todos os mentores disponíveis. Você receberá uma notificação assim que um mentor aceitar o desafio.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setIsWaitlistModalOpen(false)}
+                                className="flex-1 border-white/10 hover:bg-white/5 text-gray-400 font-black h-12 rounded-xl"
+                            >
+                                CANCELAR
+                            </Button>
+                            <Button 
+                                onClick={() => {
+                                    handleJoinWaitlist(challenge);
+                                    setIsWaitlistModalOpen(false);
+                                    setChallenge('');
+                                }}
+                                disabled={!challenge.trim()}
+                                className="flex-2 bg-brand-orange-coral hover:bg-orange-600 text-white font-black h-12 rounded-xl px-8 shadow-lg shadow-orange-500/20"
+                            >
+                                CONFIRMAR PEDIDO
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

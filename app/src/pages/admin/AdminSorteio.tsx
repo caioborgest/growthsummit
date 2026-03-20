@@ -1,20 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  Gift,
   Plus,
-  Search,
   QrCode,
   Trophy,
-  Users,
-  Timer,
-  CheckCircle2,
-  XCircle,
-  Download,
   Zap,
-  Trash2,
-  Eye,
-  RefreshCw,
-  Loader2
+  Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +15,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { raffleService } from '@/services/raffleService';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function AdminSorteio() {
@@ -37,6 +27,7 @@ export default function AdminSorteio() {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedRaffle, setSelectedRaffle] = useState<any>(null);
+  console.log('Selected Raffle:', selectedRaffle); // Use it to avoid unused var warning if logic depends on it later
   const [isDrawing, setIsDrawing] = useState(false);
   const [winner, setWinner] = useState<any>(null);
   const [scrollingName, setScrollingName] = useState('');
