@@ -15,10 +15,14 @@ export const raffleService = {
 
     const { data: raffle, error } = await supabase
       .from('raffles')
-      .insert([dbData])
-      .select()
+      .insert([dbData as any])
+      .select('id, project_id, name, description, type, status, stand_id, winner_registration_id, drawn_at, created_at, updated_at')
       .single();
-    if (error) throw error;
+    
+    if (error) {
+      console.error('[raffleService] createRaffle error:', error);
+      throw error;
+    }
     return raffle;
   },
 
@@ -36,9 +40,13 @@ export const raffleService = {
       .from('raffles')
       .update(dbData)
       .eq('id', id)
-      .select()
+      .select('id, project_id, name, description, type, status, stand_id, winner_registration_id, drawn_at, created_at, updated_at')
       .single();
-    if (error) throw error;
+    
+    if (error) {
+      console.error('[raffleService] updateRaffle error:', error);
+      throw error;
+    }
     return raffle;
   },
 
@@ -62,10 +70,14 @@ export const raffleService = {
   async getRaffles(projectId: string) {
     const { data, error } = await supabase
       .from('raffles')
-      .select('*')
+      .select('id, project_id, name, description, type, status, stand_id, winner_registration_id, drawn_at, created_at, updated_at')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
-    if (error) throw error;
+    
+    if (error) {
+       console.error('[raffleService] getRaffles error:', error);
+       throw error;
+    }
     return data as any[];
   },
 

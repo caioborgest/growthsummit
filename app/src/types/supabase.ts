@@ -504,7 +504,69 @@ export interface Database {
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
       };
+      raffles: {
+        Row: {
+          id: string;
+          project_id: string | null;
+          name: string;
+          description: string | null;
+          type: 'stand_checkin' | 'realtime_qr';
+          status: 'draft' | 'open' | 'completed' | 'cancelled';
+          stand_id: string | null;
+          winner_registration_id: string | null;
+          drawn_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id?: string | null;
+          name: string;
+          description?: string | null;
+          type: 'stand_checkin' | 'realtime_qr';
+          status?: 'draft' | 'open' | 'completed' | 'cancelled';
+          stand_id?: string | null;
+          winner_registration_id?: string | null;
+          drawn_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string | null;
+          name?: string;
+          description?: string | null;
+          type?: 'stand_checkin' | 'realtime_qr';
+          status?: 'draft' | 'open' | 'completed' | 'cancelled';
+          stand_id?: string | null;
+          winner_registration_id?: string | null;
+          drawn_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      raffle_participants: {
+        Row: {
+          id: string;
+          raffle_id: string;
+          registration_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          raffle_id: string;
+          registration_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          raffle_id?: string;
+          registration_id?: string;
+          created_at?: string;
+        };
+      };
       // Outras tabelas do schema
+
       [key: string]: {
         Row: Record<string, unknown>;
         Insert: Record<string, unknown>;
