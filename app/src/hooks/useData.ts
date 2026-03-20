@@ -785,6 +785,10 @@ export function useMentoringSessions() {
   return useData<MentoringSession>([], 'mentoring_sessions');
 }
 
+export function useMentoringWaitlist() { 
+  return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
+}
+
 export function useCompanies() {
   return useData<Company>([], 'companies');
 }
@@ -1021,6 +1025,3 @@ export function useRaffleParticipants(raffleId?: string) {
   return { ...hook, data: filteredData };
 }
 
-export function useMentoringWaitlist() { 
-  return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
-}

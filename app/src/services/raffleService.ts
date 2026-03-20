@@ -85,7 +85,7 @@ export const raffleService = {
     const { data, error } = await supabase
       .from('raffle_participants')
       .select('*, inscricoes_growth_experience(id, nome, email)')
-      .eq('raffle_id', raffleId);
+      .eq('raffle_id' as any, raffleId);
     if (error) throw error;
     return data;
   }
