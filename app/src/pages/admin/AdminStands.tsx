@@ -25,7 +25,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import type { Stand, Registration } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import * as QRCode from 'qrcode';
+import QRCode from 'qrcode';
 
 export default function AdminStands() {
     const { projectId, isProjectSelected } = useProject();

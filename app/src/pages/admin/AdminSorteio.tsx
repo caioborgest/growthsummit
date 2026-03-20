@@ -15,7 +15,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { raffleService } from '@/services/raffleService';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import * as QRCode from 'qrcode';
+import QRCode from 'qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function AdminSorteio() {
