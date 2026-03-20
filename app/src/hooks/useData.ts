@@ -785,7 +785,7 @@ export function useMentoringSessions() {
   return useData<MentoringSession>([], 'mentoring_sessions');
 }
 
-export function useMentoringWaitlist() { 
+export function useMentoringWaitlistHook() { 
   return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
 }
 

@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlist } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -419,7 +419,6 @@ export function DashboardParticipante() {
         return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0]; // Fallback to first session if none found
   }, [allSessions, activityCheckIns, myRegistration?.id]);
-  const [extraNotifications] = useState<any[]>([]);
   
   const myBatches = useMemo(() => {
     return batches.filter(b => b.emailResponsavel === user?.email);
@@ -435,8 +434,12 @@ export function DashboardParticipante() {
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const { data: dbNotifications, refetch: refetchNotifications } = useNotifications();
-  const { create: joinWaitlist } = useMentoringWaitlist();
-  const [supportFormData, setSupportFormData] = useState({ subject: '', message: '', priority: 'medium' as const });
+  const { create: joinWaitlist } = useMentoringWaitlistHook();
+  const [supportFormData, setSupportFormData] = useState<{
+    subject: string;
+    message: string;
+    priority: 'low' | 'medium' | 'high';
+  }>({ subject: '', message: '', priority: 'medium' });
   const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
 
 
@@ -787,10 +790,10 @@ export function DashboardParticipante() {
         const mentoringId = parts[1];
         const mentorName = parts[2] || 'Mentor';
 
-        const { error } = await supabase.from('mentorias_agendadas').update({
+        const { error } = await (supabase.from('mentorias_agendadas' as any).update({
           status: 'completed',
           updated_at: new Date().toISOString()
-        }).eq('id', mentoringId);
+        } as any) as any).eq('id' as any, mentoringId);
 
         if (error) throw error;
         toast.success(`Mentoria com ${mentorName} confirmada!`);
@@ -869,7 +872,7 @@ export function DashboardParticipante() {
       const { data, error } = await supabase
         .from('certificates' as any)
         .select('*')
-        .eq('registration_id', myRegistration.id)
+        .eq('registration_id' as any, myRegistration.id)
         .order('issue_date', { ascending: false });
 
       if (error) throw error;
@@ -1256,7 +1259,6 @@ export function DashboardParticipante() {
 
             {activeTab === 'mentorias' && (
               <MentorshipSection
-                myRegistration={myRegistration}
                 myMentorships={myMentorships}
                 availableSlots={availableSlots}
                 handleBookMentoring={handleBookMentoring}
@@ -1264,7 +1266,6 @@ export function DashboardParticipante() {
                 handleJoinWaitlist={handleJoinWaitlist}
                 setRatingModal={setRatingModal}
                 setIsMentoriaModalOpen={setIsMentoriaModalOpen}
-                setShowUpgradeModal={setShowUpgradeModal}
               />
             )}
 
@@ -1475,7 +1476,7 @@ export function DashboardParticipante() {
                   {(['low', 'medium', 'high'] as const).map((p) => (
                     <button
                       key={p}
-                      onClick={() => setSupportFormData({ ...supportFormData, priority: p })}
+                      onClick={() => setSupportFormData({ ...supportFormData, priority: p as any })}
                       className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
                         supportFormData.priority === p 
                         ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' 

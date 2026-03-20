@@ -248,6 +248,9 @@ export function GrowthExperienceTriunfo() {
       });
 
       if (project) {
+        initialized.current = true;
+        
+        // Canonical project object with override values if needed
         const canonicalProject = {
           ...project,
           startDate: '2026-04-16',
@@ -261,19 +264,19 @@ export function GrowthExperienceTriunfo() {
         setCurrentProject(canonicalProject);
         
         // Só atualiza se o ID for diferente para evitar loops de render
-        if (selectedProject?.id !== canonicalProject.id) {
+        if (currentSelectedId !== canonicalProject.id) {
           setSelectedProject(canonicalProject);
         }
       }
     } catch (err) {
       console.error('[GrowthExperienceTriunfo] Erro init:', err);
     }
-  }, [selectedProject?.id, setSelectedProject]);
+  }, [setSelectedProject]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    initProject();
-  }, [initProject]);
+    initProject(selectedProject?.id);
+  }, [initProject, selectedProject?.id]);
 
   // Sincronizar modais com a URL para facilitar compartilhamento
   // eslint-disable-next-line react-hooks/exhaustive-deps
