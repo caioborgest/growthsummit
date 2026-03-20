@@ -112,13 +112,28 @@ function isAdminEmail(email?: string): boolean {
 
 // Converter SupabaseUser para User
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
-  // 1. Tentar pegar role (Prioridade: Metadata do DB > Metadata do JWT > default)
-  let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
-
-  // Se não houver role, verificar se é um email/domínio admin configurado via env
-  if (!rawRole && isAdminEmail(supabaseUser.email)) {
-    rawRole = 'admin';
+  // 1. PRIORIDADE MÁXIMA: Se o email estiver na lista de admins configurada via env,
+  //    sempre forçar role 'admin' — independentemente do que está no banco de dados.
+  //    Isso garante que o super admin nunca seja redirecionado para outra área.
+  if (isAdminEmail(supabaseUser.email)) {
+    const role = 'admin';
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email || '',
+      name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+      role,
+      avatar: metadata?.avatar_url || supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatar || undefined,
+      phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
+      department: metadata?.department || undefined,
+      staffRole: metadata?.staff_role || undefined,
+      permissions: metadata?.permissions || [],
+      createdAt: supabaseUser.created_at,
+      twoFactorEnabled: metadata?.two_factor_enabled || false,
+    };
   }
+
+  // 2. Para outros usuários: Prioridade: Metadata do DB > Metadata do JWT > default
+  let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
 
   // Fallback final
   if (!rawRole) rawRole = 'participant';
