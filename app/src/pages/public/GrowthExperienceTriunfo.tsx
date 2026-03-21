@@ -264,7 +264,7 @@ export function GrowthExperienceTriunfo() {
         setCurrentProject(canonicalProject);
         
         // Só atualiza se o ID for diferente para evitar loops de render
-        if (currentSelectedId !== canonicalProject.id) {
+        if (selectedProject?.id !== canonicalProject.id) {
           setSelectedProject(canonicalProject);
         }
       }
