@@ -23,13 +23,21 @@ import {
   Settings,
   Award,
   Store,
-  Gift
+  Gift,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ProfileModal } from '@/components/profile/ProfileModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
-import { useProjects } from '@/hooks/useData';
+import { useProjects, useNotifications } from '@/hooks/useData';
+import { supabase } from '@/lib/supabase';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,6 +120,7 @@ export function AdminLayout() {
   const { user, logout } = useAuth();
   const { selectedProject, setSelectedProject } = useProject();
   const { data: projects } = useProjects();
+  const { data: notifications } = useNotifications();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -367,6 +376,71 @@ export function AdminLayout() {
                   Suporte
                 </Button>
               </div>
+
+              {/* Bell Notification */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 h-10 w-10 flex items-center justify-center rounded-2xl transition-all border border-white/10 group">
+                    <Bell className="h-5 w-5 group-hover:text-brand-orange-coral transition-colors" />
+                    {notifications.filter(n => !n.read && !n.isRead).length > 0 && (
+                      <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-[#0c0e12] animate-pulse"></span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-80 bg-[#161920] border-white/10 p-0 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden" 
+                  align="end"
+                >
+                  <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                    <h3 className="text-white font-bold text-sm tracking-tight">Notificações</h3>
+                    <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral text-[10px] font-black border-none px-2 h-5">
+                      {notifications.filter(n => !n.read && !n.isRead).length} NOVAS
+                    </Badge>
+                  </div>
+                  <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                    {notifications && notifications.length > 0 ? (
+                      <div className="divide-y divide-white/5">
+                        {notifications.slice(0, 10).map((n) => (
+                          <div
+                            key={n.id}
+                            onClick={async () => {
+                              await supabase.from('notifications').update({ is_read: true }).eq('id', n.id);
+                              if (n.actionUrl) navigate(n.actionUrl);
+                            }}
+                            className={`p-4 transition-all cursor-pointer hover:bg-white/5 ${(!n.read && !n.isRead) ? 'bg-brand-orange-coral/5' : ''}`}
+                          >
+                            <div className="flex justify-between items-start gap-3 mb-1">
+                              <p className={`text-[11px] font-bold leading-tight ${(!n.read && !n.isRead) ? 'text-white' : 'text-gray-400'}`}>
+                                {n.title}
+                              </p>
+                              <span className="text-[9px] text-gray-600 font-bold whitespace-nowrap">
+                                {new Date(n.createdAt || n.created_at).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                            <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
+                              {n.message}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-12 text-center">
+                        <Bell className="h-8 w-8 text-gray-800 mx-auto mb-3 opacity-20" />
+                        <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest leading-none">Vazio por aqui</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 bg-white/[0.02] border-t border-white/5 text-center">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full h-8 text-[10px] font-black uppercase text-gray-500 hover:text-white"
+                      onClick={() => navigate('/admin/comunicacao')}
+                    >
+                      Ver Todas Corretamente
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               {/* Status Badge */}
               {selectedProject && (

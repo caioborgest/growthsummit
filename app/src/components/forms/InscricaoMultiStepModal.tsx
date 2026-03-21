@@ -181,6 +181,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                                 palestras_noturnas: true,
                                                 valor_pago: valorComDesconto,
                                                 status_pagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
+                                                status: valorComDesconto > 0 ? 'pendente' : 'ativo',
                                                 cupom_palestra: dados.cupomPalestra || null,
                                                 codigo_palestra: dados.cupomPalestra || null,
                                                 valor_desconto_palestra: (dados.descontoPalestra || 0)

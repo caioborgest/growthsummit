@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Search,
   Building2,
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useProject } from '@/contexts/ProjectContext';
-import { useCompanies, useB2BMeetings, useB2BMatches } from '@/hooks/useData';
+import { useCompanies, useB2BMeetings, useB2BMatches, useB2BAppointmentsTriunfo } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -46,6 +47,7 @@ export function AdminB2B() {
   const { projectId } = useProject();
   const { data: companies, create: createCompany } = useCompanies();
   const { data: meetings, create: createMeeting, update, isLoading: isMeetingLoading } = useB2BMeetings();
+  const { data: appointments } = useB2BAppointmentsTriunfo();
   const { data: matches, refetch: refetchMatches } = useB2BMatches();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -237,7 +239,22 @@ export function AdminB2B() {
     }
   };
 
-  const filteredMeetings = meetings.filter(meeting => {
+  const allMeetings = useMemo(() => {
+    // Unify both table structures for display
+    const standardizedAppointments = appointments.map(a => {
+      const anchor = companies.find(c => c.id === a.companyAId);
+      const vendor = companies.find(c => c.id === a.companyBId);
+      return {
+        ...a,
+        companyAnchorName: anchor?.companyName || anchor?.name || '---',
+        companyVendorName: vendor?.companyName || vendor?.name || '---',
+        duration: a.durationMinutes || 20
+      };
+    });
+    return [...meetings, ...standardizedAppointments];
+  }, [meetings, appointments, companies]);
+
+  const filteredMeetings = allMeetings.filter((meeting: any) => {
     return (
       meeting.companyAnchorName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       meeting.companyVendorName?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -248,24 +265,24 @@ export function AdminB2B() {
     const companyA = companies.find(c => c.id === match.companyAId);
     const companyB = companies.find(c => c.id === match.companyBId);
     return (
-      companyA?.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      companyB?.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+      (companyA?.companyName || companyA?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (companyB?.companyName || companyB?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
   const filteredCompanies = companies.filter(company => {
     return (
-      company.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      company.sector.toLowerCase().includes(searchQuery.toLowerCase())
+      (company.companyName || company.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (company.sector || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
   const stats = {
-    totalMeetings: meetings.length,
-    scheduled: meetings.filter(m => m.status === 'scheduled').length,
-    completed: meetings.filter(m => m.status === 'completed').length,
-    highInterest: meetings.filter(m => m.interestLevel === 'high').length,
-    followUps: meetings.filter(m => m.followUp).length,
+    totalMeetings: allMeetings.length,
+    scheduled: allMeetings.filter(m => m.status === 'scheduled').length,
+    completed: allMeetings.filter(m => m.status === 'completed').length,
+    highInterest: allMeetings.filter(m => (m as any).interestLevel === 'high').length,
+    followUps: allMeetings.filter(m => (m as any).followUp).length,
   };
 
   return (
@@ -351,7 +368,7 @@ export function AdminB2B() {
                     >
                       <option value="">Selecione a empresa âncora</option>
                       {companies.filter(c => c.type === 'anchor').map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                        <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
                       ))}
                     </select>
                   </div>
@@ -365,7 +382,7 @@ export function AdminB2B() {
                     >
                       <option value="">Selecione o fornecedor</option>
                       {companies.filter(c => c.type === 'vendor').map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                        <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
                       ))}
                     </select>
                   </div>

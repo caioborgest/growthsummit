@@ -112,7 +112,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 tipoInscricao: 'standard',
                 valorPago,
                 statusPagamento,
-                status: 'ativo',
+                status: statusPagamento === 'pago' ? 'ativo' : 'pendente',
                 evento: selectedProject?.name || 'Growth Experience',
                 palestrasNoturnas: dados.comprarPalestras ?? false,
                 tipoAtividade: tipoAtividade || null,

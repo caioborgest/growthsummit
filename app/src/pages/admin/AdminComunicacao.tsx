@@ -35,6 +35,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useRegistrations, useNotifications, useSupportTickets, useUsers } from '@/hooks/useData';
+import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
 import { supportService } from '@/services/supportService';
 import { toast } from 'sonner';
@@ -129,6 +130,7 @@ const initialEmailCampaigns = [
 export default function AdminComunicacao() {
   const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose' | 'notifications' | 'support'>('templates');
   
+  const { selectedProject } = useProject();
   const { data: users } = useUsers();
   const { data: notificationsList, refetch: refetchNotifications } = useNotifications();
   const { data: tickets, refetch: refetchTickets } = useSupportTickets();
@@ -256,32 +258,38 @@ export default function AdminComunicacao() {
 
       let recipientsData: any[] = [];
 
-      // 1. Buscar destinatários baseados no filtro
+      // 1. Buscar destinatários baseados no filtro (com isolamento por projeto)
+      if (!selectedProject?.id) {
+        toast.dismiss(loadingToast);
+        toast.error('Nenhum projeto selecionado');
+        return;
+      }
+
       if (composeData.recipients === 'all') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any);
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('project_id', selectedProject.id) as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'paid') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pago') as any);
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('project_id', selectedProject.id).eq('status_pagamento', 'pago') as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'pending') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('status_pagamento', 'pendente') as any);
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('project_id', selectedProject.id).eq('status_pagamento', 'pendente') as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'vip') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('tipo_inscricao', 'vip') as any);
+        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao').eq('project_id', selectedProject.id).eq('tipo_inscricao', 'vip') as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'mentors') {
-        const { data } = await (supabase.from('mentores_growth_experience').select('email, nome') as any);
+        const { data } = await (supabase.from('mentores_growth_experience').select('email, nome').eq('project_id', selectedProject.id) as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'startups') {
-        const { data } = await (supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as any);
+        const { data } = await (supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador').eq('project_id', selectedProject.id) as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome_startup || item.nome_fundador }));
       } else if (composeData.recipients === 'sponsors') {
-        const { data } = await (supabase.from('sponsors').select('contact_email, company_name, contact_name') as any);
+        const { data } = await (supabase.from('sponsors').select('contact_email, company_name, contact_name').eq('project_id', selectedProject.id) as any);
         recipientsData = (data || []).map((item: any) => ({ email: item.contact_email, name: item.company_name || item.contact_name }));
       } else if (composeData.recipients === 'companies') {
         const [b2bRes, incentiveRes] = await Promise.all([
-          (supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante') as any),
-          (supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel') as any)
+          (supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante').eq('project_id', selectedProject.id) as any),
+          (supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel').eq('project_id', selectedProject.id) as any)
         ]);
         recipientsData = [
           ...(b2bRes.data || []).map((item: any) => ({ email: item.email, name: item.nome_empresa || item.nome_representante })),
@@ -411,7 +419,8 @@ export default function AdminComunicacao() {
       setNotificationFormData({ ...notificationFormData, title: '', message: '' });
       refetchNotifications();
     } catch (error) {
-      toast.error('Erro ao enviar notificações');
+      logger.error('Error sending notifications:', error);
+      toast.error('Erro ao enviar notificações: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
     }
   };
 
@@ -424,6 +433,20 @@ export default function AdminComunicacao() {
         message: replyMessage,
         is_admin: true
       });
+
+      // Notificar o participante sobre a resposta
+      if (selectedTicket.user_id && selectedProject?.id) {
+        try {
+          await notificationService.send(selectedTicket.user_id, {
+            title: 'Equipe de Suporte respondeu',
+            message: `Sua solicitação "${selectedTicket.subject}" recebeu uma nova resposta da nossa equipe.`,
+            type: 'info',
+            actionUrl: '/minha-area' // Redireciona para o dashboard principal onde ele verá que foi atendido
+          }, selectedProject.id);
+        } catch (notifyErr) {
+          logger.error('Erro ao notificar participante sobre resposta:', notifyErr);
+        }
+      }
 
       toast.success('Resposta enviada!');
       setReplyMessage('');

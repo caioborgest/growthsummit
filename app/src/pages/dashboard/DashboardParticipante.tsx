@@ -953,6 +953,30 @@ export function DashboardParticipante() {
         user_id: user?.id,
         project_id: selectedProject?.id
       });
+      
+      // Notificar Administradores e Staff sobre o novo ticket
+      try {
+        const { data: adminUsers } = await supabase
+          .from('users' as any)
+          .select('id')
+          .in('role' as any, ['admin', 'staff']);
+
+        if (adminUsers && adminUsers.length > 0 && selectedProject?.id) {
+          const adminIds = adminUsers.map((a: any) => a.id);
+          await notificationService.sendBulk(
+            adminIds,
+            {
+              title: 'Novo Ticket de Suporte',
+              message: `Chamado aberto por ${myRegistration?.nome || user?.name || 'Participante'}: "${supportFormData.subject}"`,
+              type: 'info',
+              actionUrl: '/admin/comunicacao'
+            },
+            selectedProject.id
+          );
+        }
+      } catch (notifyErr) {
+        logger.error('Erro ao notificar admins sobre novo ticket:', notifyErr);
+      }
 
       toast.success('Ticket de suporte criado! Nossa equipe responderá em breve.');
       setIsSupportModalOpen(false);
