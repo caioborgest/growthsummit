@@ -1,4 +1,4 @@
-import { useState, type ImgHTMLAttributes } from 'react';
+import React, { useState, type ImgHTMLAttributes } from 'react';
 import { logger } from '@/lib/logger';
 
 interface SafeImageProps extends ImgHTMLAttributes<HTMLImageElement> {
