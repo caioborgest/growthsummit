@@ -70,6 +70,8 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'registration_batches': return 'lotes_inscricao_empresa';
       case 'stands': return 'stands';
       case 'stand_checkins': return 'stand_checkins';
+      case 'support_tickets': return 'support_tickets';
+      case 'support_ticket_messages': return 'support_ticket_messages';
       default: return entity;
     }
   }
@@ -1011,11 +1013,29 @@ export function useB2BChat(matchId?: string) {
   };
 }
 
-export function useSupportTickets() { return useData<SupportTicket>([], 'support_tickets'); }
-export function useSupportMessages(ticketId?: string) { 
+export function useSupportTickets() {
+  const { user } = useAuth();
+  const hook = useData<SupportTicket>([], 'support_tickets');
+  
+  // For non-admins, we filter by their user_id. 
+  // RLS should also handle this, but it's good for the UI.
+  const filtered = useMemo(() => {
+    if (!user || user.role === 'admin' || user.role === 'staff') return hook.data;
+    return hook.data.filter(t => t.userId === user.id);
+  }, [hook.data, user]);
+
+  return { ...hook, data: filtered };
+}
+
+export function useSupportMessages(ticketId?: string) {
   const hook = useData<SupportMessage>([], 'support_ticket_messages');
-  const filteredData = ticketId ? hook.data.filter(m => m.ticketId === ticketId) : hook.data;
-  return { ...hook, data: filteredData };
+  
+  const filtered = useMemo(() => {
+    if (!ticketId) return [];
+    return hook.data.filter(m => m.ticketId === ticketId);
+  }, [hook.data, ticketId]);
+
+  return { ...hook, data: filtered };
 }
 
 export function useRaffles() { return useData<Raffle>([], 'raffles'); }

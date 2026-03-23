@@ -35,7 +35,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             // Tenta validar como Cupom Social
             const { data, error: cError } = await (supabase
                 .from('cupons_parceria_social') as any)
-                .select('id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento')
+                .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_nome,indicacao_tipo')
                 .eq('codigo', cupom.trim().toUpperCase())
                 .eq('ativo', true)
                 .maybeSingle();

@@ -108,7 +108,8 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
     setLoadingCupom(true);
     try {
       const { data, error } = await (supabase.from('cupons_parceria_social' as never) as any)
-        .select('codigo,porcentagem_desconto,indicacao_nome,ativo,uso_limite,uso_atual,vencimento')
+        .select('id,project_id,codigo,porcentagem_desconto,indicacao_nome,indicacao_tipo,uso_limite,uso_atual,ativo,vencimento')
+        .eq('project_id', selectedProject?.id)
         .eq('codigo', cupom.trim().toUpperCase())
         .eq('ativo', true)
         .maybeSingle();

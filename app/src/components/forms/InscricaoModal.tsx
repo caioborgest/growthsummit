@@ -41,7 +41,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             const { data, error: cError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .from('cupons_parceria_social') as any)
-                .select('id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento')
+                .select('id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_nome,indicacao_tipo')
                 .eq('codigo', codigo.toUpperCase())
                 .eq('ativo', true)
                 .single();
