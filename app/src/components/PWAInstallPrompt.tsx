@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePWA, shouldShowInstallPrompt, getInstallInstructions } from '@/hooks/usePWA';
+import { safeStorage } from '@/utils/safeStorage';
 import { Button } from '@/components/ui/button';
 import {
   X,
@@ -356,10 +357,10 @@ export function IOSInstallBadge() {
 
   const handleDismiss = () => {
     setDismissed(true);
-    localStorage.setItem('ios-install-badge-dismissed', 'true');
+    safeStorage.setItem('ios-install-badge-dismissed', 'true');
   };
 
-  if (!isIOS || isStandalone || dismissed || localStorage.getItem('ios-install-badge-dismissed')) {
+  if (!isIOS || isStandalone || dismissed || safeStorage.getItem('ios-install-badge-dismissed')) {
     return null;
   }
 

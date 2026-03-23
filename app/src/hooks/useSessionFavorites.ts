@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
 
 const STORAGE_KEY = (projectId: string) => `ge_favoritos_${projectId}`;
 
@@ -10,7 +11,7 @@ function getSnapshot(projectId: string | null): string[] {
     if (!projectId) return [];
     
     try {
-        const raw = localStorage.getItem(STORAGE_KEY(projectId));
+        const raw = safeStorage.getItem(STORAGE_KEY(projectId));
         
         // Se o projectId ou o conteúdo do localStorage mudou, recalcula o array
         if (projectId !== lastProjectId || raw !== lastRaw) {
@@ -64,7 +65,7 @@ export function useSessionFavorites(projectId: string | null) {
             const next = current.includes(sessionId)
                 ? current.filter((id) => id !== sessionId)
                 : [...current, sessionId];
-            localStorage.setItem(key, JSON.stringify(next));
+            safeStorage.setItem(key, JSON.stringify(next));
             emitChange();
         },
         [projectId]

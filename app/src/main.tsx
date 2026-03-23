@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import './index.css';
 import { registerSW } from 'virtual:pwa-register';
+import { safeStorage } from '@/utils/safeStorage';
 
 // PWA Registration
 registerSW({
@@ -26,7 +27,7 @@ validateConfig();
 
 // Aplica tema outdoor antes do React (evita flash)
 try {
-  if (localStorage.getItem('ge_theme_outdoor') === '1') {
+  if (safeStorage.getItem('ge_theme_outdoor') === '1') {
     document.documentElement.setAttribute('data-theme', 'outdoor');
   }
 } catch (_) {}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
+import { safeStorage } from '@/utils/safeStorage';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -146,7 +147,7 @@ export function usePWA(): PWAState {
     setDeferredPrompt(null);
     setIsInstallable(false);
     // Store in localStorage to not show again for a while
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    safeStorage.setItem('pwa-install-dismissed', Date.now().toString());
   }, []);
 
   const updateApp = useCallback(() => {
@@ -172,7 +173,7 @@ export function usePWA(): PWAState {
 
 // Helper function to check if user dismissed install recently
 export function shouldShowInstallPrompt(): boolean {
-  const dismissed = localStorage.getItem('pwa-install-dismissed');
+  const dismissed = safeStorage.getItem('pwa-install-dismissed');
   if (!dismissed) return true;
 
   // Show again after 7 days

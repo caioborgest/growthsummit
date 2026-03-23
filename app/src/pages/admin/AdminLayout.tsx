@@ -24,7 +24,8 @@ import {
   Award,
   Store,
   Gift,
-  Bell
+  Bell,
+  Headset
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +103,7 @@ const navigationGroups: SidebarGroup[] = [
     items: [
       { id: 'comunicacao', name: 'E-mail & Push', icon: Mail, path: '/admin/comunicacao' },
       { id: 'whatsapp', name: 'Grupos WhatsApp', icon: MessageCircle, path: '/admin/whatsapp' },
+      { id: 'suporte', name: 'Atendimento Suporte', icon: Headset, path: '/admin/suporte', badge: 'NEW' },
     ]
   },
   {

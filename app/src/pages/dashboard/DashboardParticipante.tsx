@@ -15,7 +15,6 @@ import {
   Trophy,
   Handshake,
   Headset,
-  Send,
   Clock,
   XCircle,
   Tag,
@@ -30,9 +29,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +42,7 @@ import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
 import { ProfileForm } from './components/ProfileForm';
 import { DashboardEquipe } from './components/DashboardEquipe';
+import { SupportSection } from './components/SupportSection';
 import { BottomNavigation } from './components/shared/BottomNavigation';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
@@ -53,11 +50,6 @@ import { generateTicketPDF } from '@/lib/reports';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { notificationService } from '@/services/notificationService';
-import { supportService } from '@/services/supportService';
-import { raffleService } from '@/services/raffleService';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
@@ -433,15 +425,9 @@ export function DashboardParticipante() {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
-  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const { data: dbNotifications, refetch: refetchNotifications } = useNotifications();
   const { create: joinWaitlist } = useMentoringWaitlistHook();
-  const [supportFormData, setSupportFormData] = useState<{
-    subject: string;
-    message: string;
-    priority: 'low' | 'medium' | 'high';
-  }>({ subject: '', message: '', priority: 'medium' });
-  const [isSubmittingSupport, setIsSubmittingSupport] = useState(false);
+
 
 
 
@@ -937,57 +923,7 @@ export function DashboardParticipante() {
   }>>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
 
-  const handleCreateSupportTicket = async () => {
-    if (!supportFormData.subject || !supportFormData.message) {
-      toast.error('Preencha todos os campos obrigatórios');
-      return;
-    }
 
-    setIsSubmittingSupport(true);
-    try {
-      await supportService.createTicket({
-        name: myRegistration?.nome || user?.name || 'Participante',
-        email: myRegistration?.email || user?.email || '',
-        subject: supportFormData.subject,
-        message: supportFormData.message,
-        priority: supportFormData.priority,
-        user_id: user?.id,
-        project_id: selectedProject?.id
-      });
-      
-      // Notificar Administradores e Staff sobre o novo ticket
-      try {
-        const { data: adminUsers } = await supabase
-          .from('users' as any)
-          .select('id')
-          .in('role' as any, ['admin', 'staff']);
-
-        if (adminUsers && adminUsers.length > 0 && selectedProject?.id) {
-          const adminIds = adminUsers.map((a: any) => a.id);
-          await notificationService.sendBulk(
-            adminIds,
-            {
-              title: 'Novo Ticket de Suporte',
-              message: `Chamado aberto por ${myRegistration?.nome || user?.name || 'Participante'}: "${supportFormData.subject}"`,
-              type: 'info',
-              actionUrl: '/admin/comunicacao'
-            },
-            selectedProject.id
-          );
-        }
-      } catch (notifyErr) {
-        logger.error('Erro ao notificar admins sobre novo ticket:', notifyErr);
-      }
-
-      toast.success('Ticket de suporte criado! Nossa equipe responderá em breve.');
-      setIsSupportModalOpen(false);
-      setSupportFormData({ subject: '', message: '', priority: 'medium' });
-    } catch (error) {
-      toast.error('Erro ao criar ticket de suporte');
-    } finally {
-      setIsSubmittingSupport(false);
-    }
-  };
 
 
   const fetchDocumentos = useCallback(async () => {
@@ -1146,7 +1082,7 @@ export function DashboardParticipante() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
-          onSupportClick={() => setIsSupportModalOpen(true)}
+          onSupportClick={() => setActiveTab('suporte')}
           onNotificationRead={async (id) => {
             await notificationService.markAsRead(id);
             refetchNotifications();
@@ -1341,6 +1277,10 @@ export function DashboardParticipante() {
               <DashboardEquipe batches={myBatches} />
             )}
 
+            {activeTab === 'suporte' && (
+              <SupportSection navigate={navigate} />
+            )}
+
             {activeTab === 'dados' && (
               <ProfileForm />
             )}
@@ -1409,6 +1349,7 @@ export function DashboardParticipante() {
           { id: 'mentorias', icon: Users, label: 'Mentor' },
           { id: 'documentos', icon: FileText, label: 'Docs' },
           { id: 'certificados', icon: Award, label: 'Certs' },
+          { id: 'suporte', icon: Headset, label: 'Suporte' },
           ...(myBatches && myBatches.length > 0 ? [{ id: 'equipe', icon: Building2, label: 'Equipe' }] : []),
           { id: 'dados', icon: User, label: 'Perfil' },
         ]}
@@ -1468,84 +1409,6 @@ export function DashboardParticipante() {
         />
       )}
 
-      {/* Modal de Suporte */}
-      <Dialog open={isSupportModalOpen} onOpenChange={setIsSupportModalOpen}>
-        <DialogContent className="bg-dark-200 border-white/10 text-white max-w-lg rounded-[2.5rem] overflow-hidden">
-          <DialogHeader className="p-4 border-b border-white/5 bg-teal-500/5">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-teal-500/20 rounded-2xl flex items-center justify-center text-teal-400">
-                <Headset className="h-6 w-6" />
-              </div>
-              <div className="text-left">
-                <DialogTitle className="text-xl font-black italic uppercase tracking-tighter">Central de <span className="text-teal-400">Ajuda</span></DialogTitle>
-                <DialogDescription className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-none">Estamos aqui para apoiar sua jornada</DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Assunto / Categoria</Label>
-                <Input 
-                  placeholder="Ex: Problema com agendamento" 
-                  value={supportFormData.subject}
-                  onChange={(e) => setSupportFormData({ ...supportFormData, subject: e.target.value })}
-                  className="bg-white/5 border-white/10 rounded-2xl h-12 focus:border-teal-400 transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Urgência</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['low', 'medium', 'high'] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setSupportFormData({ ...supportFormData, priority: p as any })}
-                      className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${
-                        supportFormData.priority === p 
-                        ? 'bg-teal-500 border-teal-500 text-white shadow-lg shadow-teal-500/20' 
-                        : 'bg-white/5 border-white/5 text-gray-500 hover:text-gray-300'
-                      }`}
-                    >
-                      {p === 'low' ? 'Baixa' : p === 'medium' ? 'Média' : 'Alta'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Como podemos ajudar?</Label>
-                <Textarea 
-                  placeholder="Descreva seu problema ou dúvida com detalhes..." 
-                  value={supportFormData.message}
-                  onChange={(e) => setSupportFormData({ ...supportFormData, message: e.target.value })}
-                  className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] focus:border-teal-400 transition-all resize-none"
-                />
-              </div>
-            </div>
-
-            <Button 
-               onClick={handleCreateSupportTicket}
-               disabled={isSubmittingSupport}
-               className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-black h-12 rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 group"
-            >
-              {isSubmittingSupport ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  Enviar Solicitação
-                </>
-              )}
-            </Button>
-
-            <p className="text-[9px] text-center text-gray-500 font-bold uppercase tracking-tighter leading-relaxed">
-              Nosso time de suporte responderá diretamente neste painel<br/>e você também receberá um alerta por notificação.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 }

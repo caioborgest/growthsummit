@@ -1,10 +1,11 @@
 import { useSyncExternalStore, useCallback, useEffect } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
 
 const KEY = 'ge_theme_outdoor';
 
 function getSnapshot(): boolean {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem(KEY) === '1';
+    return safeStorage.getItem(KEY) === '1';
 }
 
 let listeners: Array<() => void> = [];

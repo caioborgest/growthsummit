@@ -7,6 +7,8 @@ import { logAuditEvent, getClientIP } from '@/lib/auth-audit';
 import { withTimeout } from '@/lib/promiseUtils';
 import { toast } from 'sonner';
 
+import { safeStorage } from '@/utils/safeStorage';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -47,7 +49,7 @@ class RateLimiter {
 
     if (recentAttempts.length >= MAX_LOGIN_ATTEMPTS) {
       const lockoutUntil = recentAttempts[0] + LOCKOUT_DURATION;
-      localStorage.setItem(LOCKOUT_UNTIL_KEY, lockoutUntil.toString());
+      safeStorage.setItem(LOCKOUT_UNTIL_KEY, lockoutUntil.toString());
       return true;
     }
 
@@ -61,18 +63,18 @@ class RateLimiter {
     this.attempts.set(email, attempts);
 
     // Salvar no localStorage também
-    const currentAttempts = parseInt(localStorage.getItem(LOGIN_ATTEMPTS_KEY) || '0');
-    localStorage.setItem(LOGIN_ATTEMPTS_KEY, (currentAttempts + 1).toString());
+    const currentAttempts = parseInt(safeStorage.getItem(LOGIN_ATTEMPTS_KEY) || '0');
+    safeStorage.setItem(LOGIN_ATTEMPTS_KEY, (currentAttempts + 1).toString());
   }
 
   clearAttempts(email: string): void {
     this.attempts.delete(email);
-    localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
-    localStorage.removeItem(LOCKOUT_UNTIL_KEY);
+    safeStorage.removeItem(LOGIN_ATTEMPTS_KEY);
+    safeStorage.removeItem(LOCKOUT_UNTIL_KEY);
   }
 
   getRemainingLockoutTime(): number {
-    const lockoutUntil = localStorage.getItem(LOCKOUT_UNTIL_KEY);
+    const lockoutUntil = safeStorage.getItem(LOCKOUT_UNTIL_KEY);
     if (!lockoutUntil) return 0;
 
     const remaining = parseInt(lockoutUntil) - Date.now();
@@ -256,7 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Atualizar o estado com os dados finais do banco
       if (isMountedRef.current) {
         setUser(finalUser);
-        localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+        safeStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
       }
 
     } catch (err: any) {
@@ -408,7 +410,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      localStorage.removeItem(LAST_ACTIVITY_KEY);
+      safeStorage.removeItem(LAST_ACTIVITY_KEY);
     } catch (error: unknown) {
       logger.error('Logout error:', error);
       throw error;
@@ -591,7 +593,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       if (now - lastActivityWrite > 2000) {
         lastActivityWrite = now;
-        localStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
+        safeStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
       }
     };
 
@@ -603,7 +605,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Verificar timeout periodicamente
     const intervalId = setInterval(async () => {
-      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      const lastActivity = safeStorage.getItem(LAST_ACTIVITY_KEY);
       if (lastActivity) {
         const timeSinceLastActivity = Date.now() - parseInt(lastActivity);
         if (timeSinceLastActivity > SESSION_TIMEOUT) {

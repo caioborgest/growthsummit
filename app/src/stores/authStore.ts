@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import apiClient from '@/api/client';
 import { endpoints } from '@/api/endpoints';
 import type { User } from '@/types';
+import { safeStorage } from '@/utils/safeStorage';
 
 interface AuthState {
   // State
@@ -49,8 +50,8 @@ export const useAuthStore = create<AuthState>()(
           
           const { user, accessToken, refreshToken } = response.data;
           
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
+          safeStorage.setItem('accessToken', accessToken);
+          safeStorage.setItem('refreshToken', refreshToken);
           
           set({
             user,
@@ -74,8 +75,8 @@ export const useAuthStore = create<AuthState>()(
           
           const { user, accessToken, refreshToken } = response.data;
           
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
+          safeStorage.setItem('accessToken', accessToken);
+          safeStorage.setItem('refreshToken', refreshToken);
           
           set({
             user,
@@ -96,8 +97,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           await apiClient.post(endpoints.auth.logout);
         } finally {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          safeStorage.removeItem('accessToken');
+          safeStorage.removeItem('refreshToken');
           set({
             user: null,
             isAuthenticated: false,
@@ -109,7 +110,7 @@ export const useAuthStore = create<AuthState>()(
       // Refresh token
       refreshToken: async () => {
         try {
-          const refreshToken = localStorage.getItem('refreshToken');
+          const refreshToken = safeStorage.getItem('refreshToken');
           const response = await apiClient.post(endpoints.auth.refresh, {
             refreshToken,
           });
@@ -161,6 +162,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

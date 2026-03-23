@@ -3,6 +3,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
+import { safeStorage } from '@/utils/safeStorage';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
@@ -30,7 +31,7 @@ const isGEProject = (projectId: string | undefined): boolean => {
   // If projectId is a UUID, we check the global selectedProject from localStorage
   // This is a common pattern in this app to distinguish GE from and others
   try {
-    const saved = localStorage.getItem('selectedProject');
+    const saved = safeStorage.getItem('selectedProject');
     if (saved) {
       const p = JSON.parse(saved);
       // If the ID matches the current projectId and the slug starts with ge- or growth-experience, it's GE

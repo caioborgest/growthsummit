@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
 import type { Project } from '@/types';
 
 interface ProjectContextType {
@@ -13,20 +14,20 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(() => {
     try {
-      const saved = localStorage.getItem('selectedProject');
+      const saved = safeStorage.getItem('selectedProject');
       return saved ? JSON.parse(saved) : null;
     } catch {
       // localStorage corrompido ou JSON inválido — limpar e iniciar sem projeto selecionado
-      localStorage.removeItem('selectedProject');
+      safeStorage.removeItem('selectedProject');
       return null;
     }
   });
 
   useEffect(() => {
     if (selectedProject) {
-      localStorage.setItem('selectedProject', JSON.stringify(selectedProject));
+      safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
     } else {
-      localStorage.removeItem('selectedProject');
+      safeStorage.removeItem('selectedProject');
     }
   }, [selectedProject]);
 

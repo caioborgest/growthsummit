@@ -105,6 +105,7 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     minify: 'esbuild',
+    target: ['es2020', 'safari13'],
     rollupOptions: {
       output: {
         manualChunks: {
