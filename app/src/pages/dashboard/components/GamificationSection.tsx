@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
-import { Trophy, CheckCircle2, QrCode, MapPin, Sparkles, Star } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Trophy, CheckCircle2, QrCode, MapPin, Sparkles, Star, Gift, LayoutGrid } from 'lucide-react';
 import { useStands, useStandCheckIns } from '@/hooks/useData';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RaffleSection } from './RaffleSection';
 
 interface GamificationSectionProps {
   registrationId: string;
@@ -13,13 +14,14 @@ interface GamificationSectionProps {
 export function GamificationSection({ registrationId }: GamificationSectionProps) {
   const { data: stands, isLoading: loadingStands } = useStands();
   const { data: checkins, isLoading: loadingCheckins } = useStandCheckIns();
+  const [activeView, setActiveView] = useState<'stands' | 'raffles'>('stands');
 
   const myCheckins = useMemo(() => {
-    return checkins.filter(c => c.registrationId === registrationId);
+    return (checkins || []).filter(c => c.registrationId === registrationId);
   }, [checkins, registrationId]);
 
   const progress = useMemo(() => {
-    if (!stands.length) return 0;
+    if (!stands || !stands.length) return 0;
     return (myCheckins.length / stands.length) * 100;
   }, [stands, myCheckins]);
 
@@ -84,71 +86,109 @@ export function GamificationSection({ registrationId }: GamificationSectionProps
         </div>
       </Card>
 
-      {/* Lista de Stands */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stands.map((stand, idx) => {
-          const isVisited = visitedStandIds.has(stand.id);
-          
-          return (
-            <motion.div
-              key={stand.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <Card className={`h-full border-white/5 transition-all duration-300 relative group overflow-hidden ${
-                isVisited ? 'bg-green-500/5 border-green-500/20' : 'bg-dark-200 hover:bg-dark-300'
-              }`}>
-                {isVisited && (
-                  <div className="absolute top-0 right-0 p-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  </div>
-                )}
-                
-                <div className="p-6 flex flex-col h-full">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${
-                      isVisited ? 'bg-green-500/10 border-green-500/30' : 'bg-dark-300 border-white/10'
-                    }`}>
-                      {stand.logoUrl ? (
-                        <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain p-2" />
-                      ) : (
-                        <QrCode className={`h-6 w-6 ${isVisited ? 'text-green-500' : 'text-gray-500'}`} />
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold leading-tight">{stand.name}</h4>
-                      {stand.location && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <MapPin className="h-3 w-3 text-gray-500" />
-                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{stand.location}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+      {/* Tabs Internas */}
+      <div className="flex p-1 bg-dark-300 rounded-2xl border border-white/5 w-fit mx-auto sm:mx-0">
+        <button
+          onClick={() => setActiveView('stands')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            activeView === 'stands' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-gray-500 hover:text-white'
+          }`}
+        >
+          <LayoutGrid className="h-4 w-4" /> Stands
+        </button>
+        <button
+          onClick={() => setActiveView('raffles')}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            activeView === 'raffles' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-gray-500 hover:text-white'
+          }`}
+        >
+          <Gift className="h-4 w-4" /> Sorteios
+        </button>
+      </div>
 
-                  <p className="text-sm text-gray-400 line-clamp-2 mb-6 flex-1">
-                    {stand.description || 'Visite este stand para conferir as novidades e garantir seu check-in.'}
-                  </p>
-
-                  <div className="mt-auto">
-                    {isVisited ? (
-                      <Badge className="bg-green-500/10 text-green-400 border-none w-full justify-center py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">
-                        Check-in Realizado
-                      </Badge>
-                    ) : (
-                      <div className="flex items-center gap-2 text-orange-500/50 text-[10px] font-black uppercase tracking-widest justify-center">
-                        <QrCode className="h-3 w-3" />
-                        Aguardando Visita
+      <AnimatePresence mode="wait">
+        {activeView === 'stands' ? (
+          <motion.div
+            key="stands"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {stands.map((stand, idx) => {
+              const isVisited = visitedStandIds.has(stand.id);
+              
+              return (
+                <motion.div
+                  key={stand.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Card className={`h-full border-white/5 transition-all duration-300 relative group overflow-hidden ${
+                    isVisited ? 'bg-green-500/5 border-green-500/20' : 'bg-dark-200 hover:bg-dark-300'
+                  }`}>
+                    {isVisited && (
+                      <div className="absolute top-0 right-0 p-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
                       </div>
                     )}
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
+                    
+                    <div className="p-6 flex flex-col h-full">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${
+                          isVisited ? 'bg-green-500/10 border-green-500/30' : 'bg-dark-300 border-white/10'
+                        }`}>
+                          {stand.logoUrl ? (
+                            <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain p-2" />
+                          ) : (
+                            <QrCode className={`h-6 w-6 ${isVisited ? 'text-green-500' : 'text-gray-500'}`} />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold leading-tight uppercase italic">{stand.name}</h4>
+                          {stand.location && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <MapPin className="h-3 w-3 text-gray-500" />
+                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{stand.location}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-400 line-clamp-2 mb-6 flex-1">
+                        {stand.description || 'Visite este stand para conferir as novidades e garantir seu check-in.'}
+                      </p>
+
+                      <div className="mt-auto">
+                        {isVisited ? (
+                          <Badge className="bg-green-500/10 text-green-400 border-none w-full justify-center py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                            Check-in Realizado
+                          </Badge>
+                        ) : (
+                          <div className="flex items-center gap-2 text-orange-500/50 text-[10px] font-black uppercase tracking-widest justify-center">
+                            <QrCode className="h-3 w-3" />
+                            Aguardando Visita
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="raffles"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <RaffleSection registrationId={registrationId} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

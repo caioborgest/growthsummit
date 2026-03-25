@@ -10,7 +10,10 @@ import {
   Calendar,
   PieChart,
   Filter,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Gift,
+  Headset,
+  QrCode
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -81,6 +84,27 @@ const reportTypes = [
     icon: CheckCircle,
     color: 'yellow',
   },
+  {
+    id: 'sorteios',
+    name: 'Relatório de Sorteios',
+    description: 'Histórico de ganhadores e engajamento em tempo-real',
+    icon: Gift,
+    color: 'orange',
+  },
+  {
+    id: 'suporte',
+    name: 'Relatório de Suporte',
+    description: 'Tempo médio de resposta e tickets resolvidos',
+    icon: Headset,
+    color: 'teal',
+  },
+  {
+    id: 'stands',
+    name: 'Relatório de Stands',
+    description: 'Engajamento no circuito e leads gerados por stand',
+    icon: QrCode,
+    color: 'blue',
+  },
 ];
 
 export function AdminRelatorios() {
@@ -97,6 +121,9 @@ export function AdminRelatorios() {
   const { data: pitchScores } = usePitchScores();
   const { data: attendance } = useCheckInsAtividades();
   const { data: activitySessions } = useSessions();
+  const { data: raffles } = useRaffles();
+  const { data: tickets } = useSupportTickets();
+  const { data: standCheckIns } = useStandCheckIns();
 
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -142,6 +169,9 @@ export function AdminRelatorios() {
           case 'startups': exportData = startups as unknown as Record<string, unknown>[]; break;
           case 'patrocinadores': exportData = sponsors as unknown as Record<string, unknown>[]; break;
           case 'presenca': exportData = attendance as unknown as Record<string, unknown>[]; break;
+          case 'sorteios': exportData = (raffles || []) as unknown as Record<string, unknown>[]; break;
+          case 'suporte': exportData = (tickets || []) as unknown as Record<string, unknown>[]; break;
+          case 'stands': exportData = (standCheckIns || []) as unknown as Record<string, unknown>[]; break;
         }
         exportToCSV(exportData, `relatorio-${reportId}`);
         toast.success(`CSV de ${reportId} exportado!`);
@@ -168,7 +198,8 @@ export function AdminRelatorios() {
           generatePresencaReport(activitySessions, attendance, projectName);
           break;
         default:
-          toast.error(`Relatório não disponível.`);
+          toast.info(`O relatório de ${reportId} está disponível apenas em CSV na v3.0`);
+          return;
       }
 
       toast.success(`PDF de ${reportId} gerado!`);
@@ -187,6 +218,8 @@ export function AdminRelatorios() {
     totalStartups: startups.length,
     totalPatrocinadores: sponsors.length,
     totalReceita: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+    totalTickets: (tickets || []).length,
+    totalSorteios: (raffles || []).length,
   };
 
   return (
@@ -231,28 +264,20 @@ export function AdminRelatorios() {
           </Button>
         </div>
       </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+      
+      {/* Quick Stats Updated */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-4 text-center">
           <p className="text-gray-400 text-sm">Inscrições</p>
           <p className="text-2xl font-bold text-white">{stats.totalInscricoes}</p>
         </div>
         <div className="glass-card p-4 text-center">
-          <p className="text-gray-400 text-sm">Mentores</p>
-          <p className="text-2xl font-bold text-teal-400">{stats.totalMentores}</p>
+          <p className="text-gray-400 text-sm">Tickets Suporte</p>
+          <p className="text-2xl font-bold text-teal-400">{stats.totalTickets}</p>
         </div>
         <div className="glass-card p-4 text-center">
-          <p className="text-gray-400 text-sm">Mentorias</p>
-          <p className="text-2xl font-bold text-blue-400">{stats.totalMentorias}</p>
-        </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-gray-400 text-sm">Startups</p>
-          <p className="text-2xl font-bold text-orange-400">{stats.totalStartups}</p>
-        </div>
-        <div className="glass-card p-4 text-center">
-          <p className="text-gray-400 text-sm">Patrocinadores</p>
-          <p className="text-2xl font-bold text-purple-400">{stats.totalPatrocinadores}</p>
+          <p className="text-gray-400 text-sm">Sorteios Realizados</p>
+          <p className="text-2xl font-bold text-orange-400">{stats.totalSorteios}</p>
         </div>
         <div className="glass-card p-4 text-center">
           <p className="text-gray-400 text-sm">Receita</p>

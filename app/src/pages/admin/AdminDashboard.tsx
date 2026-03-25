@@ -31,9 +31,15 @@ import {
   useStartups,
   useSponsors,
   useTransactions,
-  useCheckIns
+  useCheckIns,
+  useSupportTickets,
+  useRaffles,
+  useStandCheckIns,
+  useWhatsAppGroups
 } from '@/hooks/useData';
 import type { Mentor, Startup } from '@/types';
+import { toast } from 'sonner';
+import { Headset, Gift, MessageCircle } from 'lucide-react';
 
 const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
@@ -100,11 +106,17 @@ export function AdminDashboard() {
   const { data: _sponsors } = useSponsors();
   const { data: transactions } = useTransactions();
   const { data: checkIns } = useCheckIns();
+  const { data: tickets } = useSupportTickets();
+  const { data: raffles } = useRaffles();
+  const { data: standCheckIns } = useStandCheckIns();
+  const { data: waGroups } = useWhatsAppGroups();
 
   const quickActions = [
-    { name: 'Aprovar Mentor', icon: CheckCircle2, color: 'green', path: '/admin/mentores' },
+    { name: 'Sorteios', icon: Gift, color: 'orange', path: '/admin/sorteio' },
+    { name: 'Suporte', icon: Headset, color: 'teal', path: '/admin/suporte' },
+    { name: 'WhatsApps', icon: MessageCircle, color: 'green', path: '/admin/whatsapp' },
     {
-      name: 'Exportar Inscritos',
+      name: 'Entregar Leads',
       icon: Download,
       color: 'blue',
       action: () => {
@@ -129,17 +141,15 @@ export function AdminDashboard() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `inscritos_${selectedProject?.slug || 'evento'}.csv`);
+        link.setAttribute('download', `leads_${selectedProject?.slug || 'evento'}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success('Exportação iniciada');
+        toast.success('Exportação de leads iniciada');
       }
     },
-    { name: 'Enviar Email', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
-    { name: 'Ver Check-ins', icon: QrCode, color: 'teal', path: '/admin/check-in' },
-    { name: 'Matching B2B', icon: Users2, color: 'orange', path: '/admin/rodada-negocios' },
+    { name: 'E-mail Marketing', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
   ];
 
 
@@ -303,7 +313,46 @@ export function AdminDashboard() {
         />
       </div>
 
-      {/* Secondary Stats */}
+      {/* Secondary Stats - Event Operations */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="glass-card p-4 flex items-center group hover:border-orange-500/30 transition-all cursor-pointer" onClick={() => navigate('/admin/sorteio')}>
+          <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center mr-4 group-hover:bg-orange-500/30 transition-colors">
+            <Gift className="h-5 w-5 text-orange-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{raffles.filter(r => r.status === 'open').length}</p>
+            <p className="text-gray-400 text-sm">Sorteios Ativos</p>
+          </div>
+        </div>
+        <div className="glass-card p-4 flex items-center group hover:border-teal-500/30 transition-all cursor-pointer" onClick={() => navigate('/admin/suporte')}>
+          <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center mr-4 group-hover:bg-teal-500/30 transition-colors">
+            <Headset className="h-5 w-5 text-teal-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{tickets.filter(t => t.status === 'open').length}</p>
+            <p className="text-gray-400 text-sm">Tickets Abertos</p>
+          </div>
+        </div>
+        <div className="glass-card p-4 flex items-center group hover:border-blue-400/30 transition-all cursor-pointer" onClick={() => navigate('/admin/stands')}>
+          <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mr-4 group-hover:bg-blue-500/30 transition-colors">
+            <QrCode className="h-5 w-5 text-blue-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{standCheckIns.length}</p>
+            <p className="text-gray-400 text-sm">Check-ins Stands</p>
+          </div>
+        </div>
+        <div className="glass-card p-4 flex items-center group hover:border-green-500/30 transition-all cursor-pointer" onClick={() => navigate('/admin/whatsapp')}>
+          <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mr-4 group-hover:bg-green-500/30 transition-colors">
+            <MessageCircle className="h-5 w-5 text-green-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-white">{waGroups.length}</p>
+            <p className="text-gray-400 text-sm">Grupos Whats</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="glass-card p-4 flex items-center">
           <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center mr-4">
@@ -337,8 +386,8 @@ export function AdminDashboard() {
             <AlertCircle className="h-5 w-5 text-red-400" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white">{pendingMentors.length + pendingStartups.length}</p>
-            <p className="text-gray-400 text-sm">Pendentes</p>
+            <p className="text-2xl font-bold text-white">{tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length}</p>
+            <p className="text-gray-400 text-sm">Ações Pendentes</p>
           </div>
         </div>
       </div>
