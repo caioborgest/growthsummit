@@ -4,16 +4,12 @@ import {
     Plus,
     Search,
     Building2,
-    CheckCircle2,
     XCircle,
     Copy,
     Users,
-    Calendar,
-    Filter,
     CreditCard,
     TrendingDown,
     MoreVertical,
-    Download,
     Eye,
     Trash2,
     Ticket
@@ -316,8 +312,8 @@ export default function AdminBatches() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="glass-card max-w-2xl w-full p-0 overflow-hidden shadow-2xl border-brand-orange-coral/20">
-                        <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30">
+                    <div className="glass-card max-w-2xl w-full p-0 overflow-hidden shadow-2xl border-brand-orange-coral/20 max-h-[95vh] flex flex-col">
+                        <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30 shrink-0">
                             <div>
                                 <h2 className="text-xl font-bold text-white">
                                     {editingBatch ? 'Editar Lote Equipe' : 'Novo Lote Corporativo'}
@@ -329,87 +325,89 @@ export default function AdminBatches() {
                             </Button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Empresa</label>
-                                    <Input required value={formData.nomeEmpresa} onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">CNPJ (Opcional)</label>
-                                    <Input value={formData.cnpj} onChange={e => setFormData({ ...formData, cnpj: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Nome Completo do Portador (Líder da Equipe)</label>
-                                    <Input required value={formData.nomeResponsavel} onChange={e => setFormData({ ...formData, nomeResponsavel: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">E-mail do Líder da Equipe (Esse e-mail terá acesso as métricas)</label>
-                                    <Input value={formData.emailResponsavel} onChange={e => setFormData({ ...formData, emailResponsavel: e.target.value, emailContato: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">E-mail Secundário Contato (NF / Financeiro)</label>
-                                    <Input type="email" value={formData.emailContato} onChange={e => setFormData({ ...formData, emailContato: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Código do Voucher</label>
-                                    <div className="flex gap-2">
-                                        <Input required value={formData.voucherCode} onChange={e => setFormData({ ...formData, voucherCode: e.target.value.toUpperCase() })} className="bg-dark-100 border-white/5 text-brand-orange-coral font-bold uppercase" />
-                                        <Button type="button" variant="outline" size="icon" onClick={generateVoucher} className="border-white/5 text-gray-400">
-                                            <CreditCard className="h-4 w-4" />
-                                        </Button>
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Empresa</label>
+                                        <Input required value={formData.nomeEmpresa} onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">CNPJ (Opcional)</label>
+                                        <Input value={formData.cnpj} onChange={e => setFormData({ ...formData, cnpj: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Qtd de Vagas</label>
-                                    <Input
-                                        type="number"
-                                        min="1"
-                                        value={formData.quantidadeVagas}
-                                        onChange={e => handleQtyChange(Number(e.target.value))}
-                                        className="bg-dark-100 border-dark-300 text-white"
-                                    />
-                                    {formData.quantidadeVagas < 5 && (
-                                        <p className="text-[10px] text-yellow-500">Mínimo de 5 para desconto de 30%</p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Valor Total</label>
-                                    <div className="bg-dark-100 border border-dark-300 rounded-lg h-10 flex items-center px-4 text-white font-bold">
-                                        R$ {formData.valorTotal}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Nome Completo do Portador (Líder da Equipe)</label>
+                                        <Input required value={formData.nomeResponsavel} onChange={e => setFormData({ ...formData, nomeResponsavel: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">E-mail do Líder da Equipe (Esse e-mail terá acesso as métricas)</label>
+                                        <Input value={formData.emailResponsavel} onChange={e => setFormData({ ...formData, emailResponsavel: e.target.value, emailContato: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
                                     </div>
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">E-mail Secundário Contato (NF / Financeiro)</label>
+                                        <Input type="email" value={formData.emailContato} onChange={e => setFormData({ ...formData, emailContato: e.target.value })} className="bg-dark-100 border-dark-300 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Código do Voucher</label>
+                                        <div className="flex gap-2">
+                                            <Input required value={formData.voucherCode} onChange={e => setFormData({ ...formData, voucherCode: e.target.value.toUpperCase() })} className="bg-dark-100 border-white/5 text-brand-orange-coral font-bold uppercase" />
+                                            <Button type="button" variant="outline" size="icon" onClick={generateVoucher} className="border-white/5 text-gray-400">
+                                                <CreditCard className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Qtd de Vagas</label>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            value={formData.quantidadeVagas}
+                                            onChange={e => handleQtyChange(Number(e.target.value))}
+                                            className="bg-dark-100 border-dark-300 text-white"
+                                        />
+                                        {formData.quantidadeVagas < 5 && (
+                                            <p className="text-[10px] text-yellow-500">Mínimo de 5 para desconto de 30%</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Valor Total</label>
+                                        <div className="bg-dark-100 border border-dark-300 rounded-lg h-10 flex items-center px-4 text-white font-bold">
+                                            R$ {formData.valorTotal}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-400 uppercase">Status Pagamento</label>
+                                        <select
+                                            value={formData.statusPagamento}
+                                            onChange={e => setFormData({ ...formData, statusPagamento: e.target.value as any })}
+                                            className="w-full h-10 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
+                                        >
+                                            <option value="pendente">Pendente</option>
+                                            <option value="pago">Pago</option>
+                                            <option value="cancelado">Cancelado</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Status Pagamento</label>
-                                    <select
-                                        value={formData.statusPagamento}
-                                        onChange={e => setFormData({ ...formData, statusPagamento: e.target.value as any })}
-                                        className="w-full h-10 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
-                                    >
-                                        <option value="pendente">Pendente</option>
-                                        <option value="pago">Pago</option>
-                                        <option value="cancelado">Cancelado</option>
-                                    </select>
+                                    <label className="text-xs font-bold text-gray-400 uppercase">Observações Internas</label>
+                                    <textarea value={formData.observacoes} onChange={e => setFormData({ ...formData, observacoes: e.target.value })} className="w-full bg-dark-100 border border-dark-300 rounded-lg p-3 text-white text-sm min-h-[60px]" placeholder="Motivo do desconto, forma de pagamento acertada, etc..." />
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-400 uppercase">Observações Internas</label>
-                                <textarea value={formData.observacoes} onChange={e => setFormData({ ...formData, observacoes: e.target.value })} className="w-full bg-dark-100 border border-dark-300 rounded-lg p-3 text-white text-sm min-h-[60px]" placeholder="Motivo do desconto, forma de pagamento acertada, etc..." />
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
+                            <div className="p-6 border-t border-white/5 flex gap-4 shrink-0 bg-dark-300/30">
                                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 border-white/5 text-gray-400">Cancelar</Button>
-                                <Button type="submit" className="flex-1 bg-brand-orange-coral text-white font-bold" disabled={isLoading}>
+                                <Button type="submit" className="flex-1 bg-brand-orange-coral text-white font-bold shadow-glow-orange" disabled={isLoading}>
                                     {isLoading ? 'Salvando...' : editingBatch ? 'Salvar Lote' : 'Gerar Lote'}
                                 </Button>
                             </div>
