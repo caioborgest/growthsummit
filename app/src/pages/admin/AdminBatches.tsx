@@ -312,14 +312,14 @@ export default function AdminBatches() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto pt-8 md:pt-12">
-                    <div className="glass-card max-w-2xl w-full p-0 overflow-hidden shadow-2xl border-brand-orange-coral/20 flex flex-col my-auto min-h-0">
-                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-dark-300/50 shrink-0">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+                    <div className="glass-card max-w-2xl w-full p-0 overflow-hidden shadow-2xl border-brand-orange-coral/20 flex flex-col min-h-0 max-h-[90vh]">
+                        <div className="p-5 border-b border-white/5 flex justify-between items-center bg-dark-300/50 shrink-0">
                             <div>
-                                <h1 className="text-xl font-black text-white italic tracking-tight uppercase">
+                                <h2 className="text-lg font-black text-white italic tracking-tight uppercase leading-none">
                                     {editingBatch ? 'Editar Lote Equipe' : 'Novo Lote Corporativo'}
-                                </h1>
-                                <p className="text-[#94A3B8] text-[10px] font-bold uppercase tracking-widest mt-1">Configuração de Vouchers em Lote</p>
+                                </h2>
+                                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">Configuração de Vouchers em Lote</p>
                             </div>
                             <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
                                 <XCircle className="h-5 w-5" />
@@ -327,116 +327,116 @@ export default function AdminBatches() {
                         </div>
 
                         <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-                            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar max-h-[60vh] md:max-h-[70vh]">
+                            <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                                 {/* Seção Empresa */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Empresa</Label>
                                         <Input 
                                             required 
                                             value={formData.nomeEmpresa} 
                                             onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })} 
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl focus:border-brand-orange-coral/50 transition-colors" 
-                                            placeholder="Nome da Organização"
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
+                                            placeholder="Ex: Growth & IA Hub"
                                         />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CNPJ (Opcional)</Label>
                                         <Input 
                                             value={formData.cnpj} 
                                             onChange={e => setFormData({ ...formData, cnpj: e.target.value })} 
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl focus:border-brand-orange-coral/50 transition-colors" 
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="00.000.000/0000-00"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Seção Responsável */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Líder da Equipe (Portador)</Label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Responsável (Líder)</Label>
                                         <Input 
                                             required 
                                             value={formData.nomeResponsavel} 
                                             onChange={e => setFormData({ ...formData, nomeResponsavel: e.target.value })} 
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl focus:border-brand-orange-coral/50 transition-colors" 
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="Nome Completo"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Acesso (Dashboard)</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Acesso</Label>
                                         <Input 
                                             required
                                             type="email"
                                             value={formData.emailResponsavel} 
                                             onChange={e => setFormData({ ...formData, emailResponsavel: e.target.value, emailContato: e.target.value })} 
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl focus:border-brand-orange-coral/50 transition-colors" 
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="email@equipe.com"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Seção Financeira/Voucher */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail Financeiro (NF)</Label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail Financeiro</Label>
                                         <Input 
                                             type="email" 
                                             value={formData.emailContato} 
                                             onChange={e => setFormData({ ...formData, emailContato: e.target.value })} 
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl focus:border-brand-orange-coral/50 transition-colors" 
-                                            placeholder="financeiro@empresa.com"
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
+                                            placeholder="pago@empresa.com"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Código do Voucher</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Voucher Personalizado</Label>
                                         <div className="flex gap-2">
                                             <Input 
                                                 required 
                                                 value={formData.voucherCode} 
                                                 onChange={e => setFormData({ ...formData, voucherCode: e.target.value.toUpperCase() })} 
-                                                className="bg-dark-100 border-brand-orange-coral/20 text-brand-orange-coral font-black uppercase h-12 rounded-xl tracking-widest" 
+                                                className="bg-dark-100 border-brand-orange-coral/20 text-brand-orange-coral font-black uppercase h-11 rounded-xl tracking-widest" 
                                             />
                                             <Button 
                                                 type="button" 
                                                 variant="outline" 
                                                 size="icon" 
                                                 onClick={generateVoucher} 
-                                                className="border-white/10 hover:border-brand-orange-coral/50 text-gray-400 hover:text-brand-orange-coral h-12 w-12 rounded-xl"
+                                                className="border-white/5 hover:border-brand-orange-coral/50 text-gray-400 hover:text-brand-orange-coral h-11 w-11 rounded-xl"
                                             >
-                                                <CreditCard className="h-5 w-5" />
+                                                <CreditCard className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Seção Valores/Status */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                                    <div className="space-y-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                                    <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Qtd de Vagas</Label>
                                         <Input
                                             type="number"
                                             min="1"
                                             value={formData.quantidadeVagas}
                                             onChange={e => handleQtyChange(Number(e.target.value))}
-                                            className="bg-dark-100 border-white/10 text-white h-12 rounded-xl font-bold"
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
                                         />
                                         {formData.quantidadeVagas < 5 && (
                                             <p className="text-[9px] text-yellow-500 font-bold uppercase tracking-tighter">Mín. 5 para 30% desc.</p>
                                         )}
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total</Label>
-                                        <div className="bg-dark-100 border border-white/10 rounded-xl h-12 flex items-center px-4 text-white font-black text-lg">
+                                        <div className="bg-dark-100 border border-white/5 rounded-xl h-11 flex items-center px-4 text-white font-black text-lg">
                                             R$ {formData.valorTotal}
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status Pagamento</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</Label>
                                         <select
                                             value={formData.statusPagamento}
                                             onChange={e => setFormData({ ...formData, statusPagamento: e.target.value as any })}
-                                            className="w-full h-12 px-4 bg-dark-100 border border-white/10 rounded-xl text-white text-sm font-bold focus:ring-1 focus:ring-brand-orange-coral/50 outline-none transition-all appearance-none cursor-pointer"
+                                            className="w-full h-11 px-4 bg-dark-100 border border-white/5 rounded-xl text-white text-sm font-bold focus:ring-1 focus:ring-brand-orange-coral/50 outline-none appearance-none cursor-pointer"
                                         >
                                             <option value="pendente">Pendente</option>
                                             <option value="pago">Pago</option>
@@ -445,21 +445,21 @@ export default function AdminBatches() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Observações Internas</Label>
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Observações</Label>
                                     <textarea 
                                         value={formData.observacoes} 
                                         onChange={e => setFormData({ ...formData, observacoes: e.target.value })} 
-                                        className="w-full bg-dark-100 border border-white/10 rounded-xl p-4 text-white text-sm min-h-[100px] focus:border-brand-orange-coral/50 outline-none transition-colors" 
-                                        placeholder="Motivo do desconto, forma de pagamento acertada, etc..." 
+                                        className="w-full bg-dark-100 border border-white/5 rounded-xl p-4 text-white text-sm min-h-[80px] focus:border-brand-orange-coral/30 outline-none transition-colors" 
+                                        placeholder="Forma de pagamento, responsável pela venda..." 
                                     />
                                 </div>
                             </div>
 
-                            <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row gap-4 shrink-0 bg-dark-300/50">
-                                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 border-white/10 text-gray-400 hover:text-white hover:bg-white/5 h-12 rounded-xl font-bold uppercase tracking-widest text-xs">Cancelar</Button>
-                                <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black shadow-lg shadow-brand-orange-coral/20 h-12 rounded-xl uppercase tracking-widest text-xs transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50" disabled={isLoading}>
-                                    {isLoading ? 'Salvando...' : editingBatch ? 'Salvar Lote' : 'Gerar Lote'}
+                            <div className="p-6 border-t border-white/5 flex flex-col sm:flex-row gap-4 shrink-0 bg-dark-300/50">
+                                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 border-white/5 text-gray-400 hover:text-white hover:bg-white/5 h-11 rounded-xl font-bold uppercase tracking-widest text-[10px]">Cancelar</Button>
+                                <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black shadow-lg shadow-brand-orange-coral/20 h-11 rounded-xl uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] disabled:opacity-50" disabled={isLoading}>
+                                    {isLoading ? 'ENVIANDO...' : editingBatch ? 'SALVAR ALTERAÇÕES' : 'GERAR LOTE DE EQUIPE'}
                                 </Button>
                             </div>
                         </form>
