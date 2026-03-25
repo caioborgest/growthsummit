@@ -466,7 +466,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
     notifications: 'id,user_id,title,message,type,read,created_at,action_url',
-    support_tickets: 'id,project_id,user_id,name,email,subject,message,status,priority,created_at,updated_at',
+    support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at'
@@ -1044,5 +1044,59 @@ export function useRaffleParticipants(raffleId?: string) {
   const hook = useData<RaffleParticipant>([], 'raffle_participants');
   const filteredData = raffleId ? hook.data.filter(p => p.raffleId === raffleId) : hook.data;
   return { ...hook, data: filteredData };
+}
+
+export function useSupportQualityStats() {
+  const { data: tickets } = useSupportTickets();
+  const { data: allMessages } = useData<SupportMessage>([], 'support_ticket_messages');
+
+  const stats = useMemo(() => {
+    if (!tickets.length) return null;
+
+    const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+    const resolutionRate = (resolved / tickets.length) * 100;
+
+    // Calculate Average First Response Time
+    let totalResponseTime = 0;
+    let responsiveCount = 0;
+
+    tickets.forEach(ticket => {
+      const ticketMessages = allMessages.filter(m => m.ticketId === ticket.id);
+      const firstAdminMsg = ticketMessages.find(m => m.isAdmin);
+
+      if (firstAdminMsg) {
+        const diff = new Date(firstAdminMsg.createdAt).getTime() - new Date(ticket.createdAt).getTime();
+        totalResponseTime += diff;
+        responsiveCount++;
+      }
+    });
+
+    const avgResponseTime = responsiveCount > 0 ? totalResponseTime / responsiveCount / (1000 * 60) : 0; // in minutes
+
+    // Group by category
+    const byCategory = tickets.reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Group by priority
+    const byPriority = tickets.reduce((acc, t) => {
+      acc[t.priority] = (acc[t.priority] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      total: tickets.length,
+      resolved,
+      resolutionRate,
+      avgResponseTime,
+      byCategory,
+      byPriority,
+      openCount: tickets.filter(t => t.status === 'open').length,
+      urgentCount: tickets.filter(t => t.priority === 'urgent' && t.status !== 'closed').length
+    };
+  }, [tickets, allMessages]);
+
+  return stats;
 }
 

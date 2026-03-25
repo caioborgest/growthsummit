@@ -378,6 +378,8 @@ export interface SupportTicket {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
+  rating?: number;
+  feedback?: string;
 }
 
 export interface SupportMessage {
