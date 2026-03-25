@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, MapPin, Settings, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { Switch } from '@/components/ui/switch';
 import type { Project, ProjectType, ProjectStatus } from '@/types';
 
 const projectTypeLabels: Record<ProjectType, string> = {
@@ -437,6 +438,68 @@ export default function AdminProjetos() {
                   />
                 </div>
               </div>
+
+              <div className="border-t border-[#334155] pt-4">
+                <h4 className="text-sm font-medium text-[#94A3B8] mb-4">Módulos e Funcionalidades</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-bold">Mentorias VIP</Label>
+                      <p className="text-[10px] text-[#94A3B8]">Habilitar agendamento de mentorias</p>
+                    </div>
+                    <Switch
+                      checked={formData.settings?.enableMentoring ?? true}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        settings: { ...defaultSettings, ...formData.settings, enableMentoring: checked }
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-bold">Rodada de Negócios (B2B)</Label>
+                      <p className="text-[10px] text-[#94A3B8]">Habilitar matchmaking entre empresas</p>
+                    </div>
+                    <Switch
+                      checked={formData.settings?.enableB2B ?? true}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        settings: { ...defaultSettings, ...formData.settings, enableB2B: checked }
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-bold">Arena StartUp</Label>
+                      <p className="text-[10px] text-[#94A3B8]">Habilitar inscrições de startups</p>
+                    </div>
+                    <Switch
+                      checked={formData.settings?.enableStartups ?? true}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        settings: { ...defaultSettings, ...formData.settings, enableStartups: checked }
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-bold">Check-in Digital</Label>
+                      <p className="text-[10px] text-[#94A3B8]">Habilitar controle de acesso via App</p>
+                    </div>
+                    <Switch
+                      checked={formData.settings?.enableCheckIn ?? true}
+                      onCheckedChange={(checked) => setFormData({
+                        ...formData,
+                        settings: { ...defaultSettings, ...formData.settings, enableCheckIn: checked }
+                      })}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Calculadora de Receita */}
               <div className="mt-4 p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
                 <p className="text-xs uppercase font-black text-teal-400 mb-2">Simulador de Faturamento (Baseado na Meta)</p>

@@ -203,30 +203,33 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
       <div className="w-full max-w-md bg-dark-200 rounded-3xl border border-white/10 shadow-2xl my-auto relative overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-orange-500/20 to-transparent">
-          <div>
-            <h2 className="text-white font-black text-xl">Upgrade para Pro</h2>
-            <p className="text-gray-400 text-sm mt-1">Palestras Noturnas + Mentorias Exclusivas</p>
+            <div>
+              <h2 className="text-white font-black text-xl">Upgrade para Pro</h2>
+              <p className="text-gray-400 text-sm mt-1">
+                Palestras Noturnas {selectedProject?.settings?.enableMentoring !== false && '+ Mentorias Exclusivas'}
+              </p>
+            </div>
+            <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
+              <XCircle className="h-6 w-6" />
+            </button>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
-            <XCircle className="h-6 w-6" />
-          </button>
-        </div>
 
-        <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
-{/* Benefícios */}
-<div className="space-y-2">
-  {[
-    `Acesso às ${allSessions?.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`, 
-    nightSpeakers, 
-    'Networking exclusivo pós-evento', 
-    'Certificado de participação completo'
-  ].map((b, i) => (
-    <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
-      <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
-      <span>{b}</span>
-    </div>
-  ))}
-</div>
+          <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            {/* Benefícios */}
+            <div className="space-y-2">
+              {[
+                `Acesso às ${allSessions?.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`,
+                nightSpeakers,
+                'Networking exclusivo pós-evento',
+                ...(selectedProject?.settings?.enableMentoring !== false ? ['Agendamento de Mentorias VIP'] : []),
+                'Certificado de participação completo'
+              ].map((b, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
+                  <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                  <span>{b}</span>
+                </div>
+              ))}
+            </div>
 
           {/* Cupom */}
           <div className="space-y-2">
@@ -1124,13 +1127,15 @@ export function DashboardParticipante() {
                   <Calendar className="h-6 w-6 text-brand-orange-coral" />
                   <span className="text-white font-black text-sm text-left leading-tight">Minha<br/>Agenda</span>
                </button>
-               <button 
-                  onClick={() => setActiveTab('networking' as any)}
-                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                  <Users className="h-6 w-6 text-brand-orange-coral" />
-                  <span className="text-white font-black text-sm text-left leading-tight">Networking</span>
-               </button>
+               {(selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false) && (
+                 <button 
+                    onClick={() => setActiveTab('networking' as any)}
+                    className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+                 >
+                    <Users className="h-6 w-6 text-brand-orange-coral" />
+                    <span className="text-white font-black text-sm text-left leading-tight">Networking</span>
+                 </button>
+               )}
                {/* Tab Circuito */}
                <button
                  onClick={() => setActiveTab('circuito')}
@@ -1154,7 +1159,9 @@ export function DashboardParticipante() {
                   onStartupClick={() => setIsStartupModalOpen(true)}
                   onB2BClick={() => setIsB2BModalOpen(true)}
                   onMentoriaClick={() => myRegistration?.palestrasNoturnas ? setActiveTab('mentorias' as any) : setShowUpgradeModal(true)}
-                  showMentoria={true}
+                  showMentoria={selectedProject?.settings?.enableMentoring ?? true}
+                  showStartup={selectedProject?.settings?.enableStartups ?? true}
+                  showB2B={selectedProject?.settings?.enableB2B ?? true}
                />
             </div>
 
@@ -1308,7 +1315,9 @@ export function DashboardParticipante() {
               onB2BClick={() => setIsB2BModalOpen(true)}
               onStartupClick={() => setIsStartupModalOpen(true)}
               onMentoriaClick={() => activeTab !== 'mentorias' ? setActiveTab('mentorias') : setIsMentoriaModalOpen(true)}
-              showMentoria={true}
+              showMentoria={selectedProject?.settings?.enableMentoring ?? true}
+              showStartup={selectedProject?.settings?.enableStartups ?? true}
+              showB2B={selectedProject?.settings?.enableB2B ?? true}
             />
           </div>
 
@@ -1359,8 +1368,8 @@ export function DashboardParticipante() {
           { id: 'agenda', icon: Calendar, label: 'Agenda' },
           { id: 'circuito', icon: Trophy, label: 'Circuito' },
           { id: 'sorteios', icon: Gift, label: 'Sorteios' },
-          { id: 'networking', icon: Handshake, label: 'Match' },
-          { id: 'mentorias', icon: Users, label: 'Mentor' },
+          ...(selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false ? [{ id: 'networking', icon: Handshake, label: 'Match' }] : []),
+          ...(selectedProject?.settings?.enableMentoring !== false ? [{ id: 'mentorias', icon: Users, label: 'Mentor' }] : []),
           { id: 'documentos', icon: FileText, label: 'Docs' },
           { id: 'certificados', icon: Award, label: 'Certs' },
           { id: 'suporte', icon: Headset, label: 'Suporte' },
