@@ -20,6 +20,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { useSupportTickets, useSupportMessages } from '@/hooks/useData';
 import { supportService } from '@/services/supportService';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
+import { Star, ThumbsUp } from 'lucide-react';
 
 interface SupportSectionProps {
   navigate: (path: string) => void;
@@ -40,6 +42,9 @@ export function SupportSection({ navigate }: SupportSectionProps) {
   });
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [rating, setRating] = useState<number>(0);
+  const [feedback, setFeedback] = useState('');
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
   const selectedTicket = useMemo(() => 
     tickets.find(t => t.id === selectedTicketId), 
@@ -60,7 +65,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
         email: user.email,
         subject: newTicket.subject,
         message: newTicket.message,
-        category: newTicket.category as any,
+        category: newTicket.category,
         priority: newTicket.priority as any,
         status: 'open'
       });
@@ -94,6 +99,27 @@ export function SupportSection({ navigate }: SupportSectionProps) {
       logger.error('Erro ao enviar mensagem:', err);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleSubmitRating = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicketId || rating === 0) return;
+
+    setIsSubmittingRating(true);
+    try {
+      await supportService.updateTicket(selectedTicketId, { 
+        rating, 
+        feedback,
+        status: 'closed'
+      });
+      toast.success('Obrigado pela sua avaliação!');
+      await refetchTickets();
+    } catch (err) {
+      logger.error('Erro ao enviar avaliação:', err);
+      toast.error('Falha ao enviar avaliação.');
+    } finally {
+      setIsSubmittingRating(false);
     }
   };
 
@@ -278,6 +304,75 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                     </Button>
                   </div>
                 </form>
+              )}
+
+              {/* CSAT Evaluation View */}
+              {selectedTicket && (selectedTicket.status === 'resolved' || selectedTicket.status === 'closed') && !selectedTicket.rating && (
+                <div className="mx-6 mb-6 p-8 bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-3xl animate-in fade-in zoom-in duration-500">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 bg-brand-orange-coral rounded-2xl flex items-center justify-center shadow-glow-orange animate-bounce">
+                      <ThumbsUp className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">O que achou do nosso atendimento?</h4>
+                      <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Sua opinião é fundamental para evoluirmos.</p>
+                    </div>
+
+                    <div className="flex gap-2 py-4">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRating(star)}
+                          onMouseEnter={() => setRating(star)}
+                          className="transition-all active:scale-95"
+                        >
+                          <Star 
+                            className={`h-10 w-10 ${rating >= star ? 'text-brand-orange-coral fill-brand-orange-coral shadow-[0_0_15px_rgba(255,112,67,0.5)]' : 'text-gray-800'}`} 
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                    {rating > 0 && (
+                      <form onSubmit={handleSubmitRating} className="w-full space-y-4 animate-in slide-in-from-top-4 duration-300">
+                        <textarea
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value)}
+                          placeholder="Deixe um comentário opcional..."
+                          className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-brand-orange-coral/50 outline-none resize-none h-24"
+                        />
+                        <Button 
+                          type="submit"
+                          disabled={isSubmittingRating}
+                          className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 rounded-xl shadow-xl shadow-brand-orange-coral/20 uppercase tracking-widest"
+                        >
+                          {isSubmittingRating ? 'Enviando...' : 'Enviar Avaliação Final'}
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Rating Displayed if already rated */}
+              {selectedTicket && selectedTicket.rating && (
+                <div className="mx-6 mb-6 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle2 className="h-6 w-6 text-green-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-green-400 uppercase tracking-widest">Atendimento Avaliado</p>
+                    <div className="flex gap-1 mt-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`h-3 w-3 ${s <= selectedTicket.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-gray-800'}`} />
+                      ))}
+                    </div>
+                    {selectedTicket.feedback && (
+                      <p className="text-[11px] text-gray-500 mt-2 italic">"{ selectedTicket.feedback }"</p>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           ) : (

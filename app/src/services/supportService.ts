@@ -12,6 +12,8 @@ export interface SupportTicket {
     category?: 'technical' | 'finance' | 'registration' | 'general' | string;
     status: 'open' | 'in_progress' | 'resolved' | 'closed';
     priority: 'low' | 'medium' | 'high' | 'urgent';
+    rating?: number;
+    feedback?: string;
     created_at: string;
     updated_at: string;
 }

@@ -15,7 +15,9 @@ import {
   BarChart2,
   PieChart,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  Star,
+  Quote
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -440,17 +442,22 @@ export default function AdminSupport() {
 
               <div className="glass-card p-6 border-white/5 flex flex-col justify-between group hover:border-blue-500/30 transition-all">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                    <Activity className="h-6 w-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
+                    <Star className="h-6 w-6" />
                   </div>
+                  <Badge className="bg-teal-500 text-white font-black text-[8px] uppercase tracking-tighter">CSAT</Badge>
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Novas Solicitações</h3>
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Satisfação Média</h3>
                   <div className="flex items-end gap-2">
                     <span className="text-3xl font-black text-white italic leading-none">
-                      {qualityStats?.openCount || '0'}
+                      {qualityStats?.avgRating?.toFixed(1) || '0.0'}
                     </span>
-                    <span className="text-[10px] text-blue-500 font-bold mb-1">Aguardando triagem</span>
+                    <div className="flex gap-1 mb-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`h-3 w-3 ${s <= Math.round(qualityStats?.avgRating || 0) ? 'text-teal-400 fill-teal-400' : 'text-gray-800'}`} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -506,6 +513,35 @@ export default function AdminSupport() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Recent Feedbacks */}
+            <div className="glass-card p-8 border-white/5 relative overflow-hidden">
+                <h3 className="text-sm font-black text-white uppercase italic tracking-widest mb-6 border-l-2 border-teal-500 pl-4">Feedbacks Recentes</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(tickets as any).filter((t: any) => t.feedback).slice(0, 6).map((ticket: any) => (
+                    <div key={ticket.id} className="p-5 rounded-[2rem] bg-white/[0.02] border border-white/5 relative">
+                      <Quote className="absolute top-4 right-4 h-8 w-8 text-teal-500/10" />
+                      <div className="flex gap-1 mb-3">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={`h-3 w-3 ${s <= ticket.rating ? 'text-teal-400 fill-teal-400' : 'text-gray-800'}`} />
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-300 italic mb-4 leading-relaxed line-clamp-3">"{ticket.feedback}"</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                          <User className="h-3 w-3 text-teal-400" />
+                        </div>
+                        <span className="text-[10px] font-black text-gray-500 uppercase">{ticket.name || 'Participante'}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {(tickets as any).filter((t: any) => t.feedback).length === 0 && (
+                    <div className="col-span-full py-10 text-center opacity-30">
+                      <p className="text-xs font-black uppercase tracking-widest">Nenhum feedback recebido ainda.</p>
+                    </div>
+                  )}
+                </div>
             </div>
 
             <div className="p-10 text-center bg-teal-500/5 rounded-[3rem] border border-teal-500/10">

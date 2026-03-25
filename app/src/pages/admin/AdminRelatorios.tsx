@@ -27,7 +27,12 @@ import {
   useTransactions,
   usePitchScores,
   useCheckInsAtividades,
-  useSessions
+  useSessions,
+  useRaffles,
+  useSupportTickets,
+  useStandCheckIns,
+  useStands,
+  useSupportQualityStats
 } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
@@ -38,7 +43,10 @@ import {
   generateMentoriasReport,
   generateStartupsReport,
   generatePatrocinadoresReport,
-  generatePresencaReport
+  generatePresencaReport,
+  generateSupportReport,
+  generateRafflesReport,
+  generateStandsReport
 } from '@/lib/reports';
 
 const reportTypes = [
@@ -124,6 +132,8 @@ export function AdminRelatorios() {
   const { data: raffles } = useRaffles();
   const { data: tickets } = useSupportTickets();
   const { data: standCheckIns } = useStandCheckIns();
+  const { data: stands } = useStands();
+  const qualityStats = useSupportQualityStats();
 
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -196,6 +206,15 @@ export function AdminRelatorios() {
           break;
         case 'presenca':
           generatePresencaReport(activitySessions, attendance, projectName);
+          break;
+        case 'suporte':
+          generateSupportReport(tickets, qualityStats, projectName);
+          break;
+        case 'sorteios':
+          generateRafflesReport(raffles, projectName);
+          break;
+        case 'stands':
+          generateStandsReport(stands, standCheckIns, projectName);
           break;
         default:
           toast.info(`O relatório de ${reportId} está disponível apenas em CSV na v3.0`);

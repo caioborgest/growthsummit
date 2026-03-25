@@ -1085,11 +1085,17 @@ export function useSupportQualityStats() {
       return acc;
     }, {} as Record<string, number>);
 
+    const ticketsWithRating = tickets.filter(t => (t as any).rating > 0);
+    const avgRating = ticketsWithRating.length > 0 
+      ? ticketsWithRating.reduce((sum, t) => sum + (t as any).rating, 0) / ticketsWithRating.length
+      : 0;
+
     return {
       total: tickets.length,
       resolved,
       resolutionRate,
       avgResponseTime,
+      avgRating,
       byCategory,
       byPriority,
       openCount: tickets.filter(t => t.status === 'open').length,

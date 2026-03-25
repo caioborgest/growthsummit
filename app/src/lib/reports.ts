@@ -249,3 +249,120 @@ export const generateTicketPDF = async (registration: any, projectName: string) 
     doc.text(`#${(registration.id || '').slice(0, 8).toUpperCase()}`, 50, 100, { align: 'center' });
     doc.save(`ticket-${registration.id?.slice(0, 8)}.pdf`);
 };
+
+/**
+ * Gera relatório de suporte com indicadores de qualidade e CSAT
+ */
+export const generateSupportReport = async (tickets: any[], stats: any, projectName: string) => {
+    const { jsPDF } = await getJsPDF();
+    const doc = new jsPDF();
+    const dateStr = format(new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR });
+
+    doc.setFontSize(22);
+    doc.setTextColor(20, 184, 166); // teal-500
+    doc.text('Relatório de Qualidade de Suporte', 14, 22);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Evento: ${projectName}`, 14, 30);
+    doc.text(`Gerado em: ${dateStr}`, 14, 35);
+
+    // Resumo de Qualidade
+    if (stats) {
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text('Indicadores de Performance (SLA/CSAT)', 14, 45);
+        doc.setFontSize(9);
+        doc.text(`Total de Chamados: ${stats.total}`, 14, 52);
+        doc.text(`Taxa de Resolução: ${stats.resolutionRate.toFixed(1)}%`, 14, 57);
+        doc.text(`Tempo Médio de Resposta: ${stats.avgResponseTime.toFixed(0)} min`, 70, 52);
+        doc.text(`Satisfação Média (CSAT): ${stats.avgRating?.toFixed(1) || '0.0'} / 5.0`, 70, 57);
+    }
+
+    const tableColumn = ["Assunto", "Categoria", "Status", "Prioridade", "Avaliação", "Data"];
+    const tableRows = tickets.map(t => [
+        t.subject || '---',
+        t.category || 'general',
+        (t.status || '---').toUpperCase(),
+        (t.priority || '---').toUpperCase(),
+        t.rating ? `${t.rating} / 5` : 'N/A',
+        t.createdAt ? format(new Date(t.createdAt), 'dd/MM/yyyy HH:mm') : '---'
+    ]);
+
+    (doc as any).autoTable({
+        startY: stats ? 65 : 45,
+        head: [tableColumn],
+        body: tableRows,
+        headStyles: { fillColor: [20, 184, 166] },
+        bodyStyles: { fontSize: 8 },
+    });
+
+    doc.save(`relatorio-suporte-${projectName.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+};
+
+/**
+ * Gera relatório de sorteios e ganhadores
+ */
+export const generateRafflesReport = async (raffles: any[], projectName: string) => {
+    const { jsPDF } = await getJsPDF();
+    const doc = new jsPDF();
+
+    doc.setFontSize(22);
+    doc.setTextColor(255, 112, 67); // orange-600
+    doc.text('Relatório de Sorteios e Premiações', 14, 22);
+
+    const tableColumn = ["Sorteio", "Tipo", "Status", "Ganhador", "ID Vencedor"];
+    const tableRows = raffles.map(r => [
+        r.name || '---',
+        r.type === 'realtime_qr' ? 'QR Real-time' : 'Check-in Stand',
+        (r.status || '---').toUpperCase(),
+        r.winner_name || '---',
+        r.winnerRegistrationId?.slice(0, 8) || '---'
+    ]);
+
+    (doc as any).autoTable({
+        startY: 40,
+        head: [tableColumn],
+        body: tableRows,
+        headStyles: { fillColor: [255, 112, 67] },
+        bodyStyles: { fontSize: 9 },
+    });
+
+    doc.save(`relatorio-sorteios-${projectName.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+};
+
+/**
+ * Gera relatório de engajamento nos stands (lead generation)
+ */
+export const generateStandsReport = async (stands: any[], checkins: any[], projectName: string) => {
+    const { jsPDF } = await getJsPDF();
+    const doc = new jsPDF();
+
+    doc.setFontSize(22);
+    doc.setTextColor(59, 130, 246); // blue-600
+    doc.text('Relatório de Engajamento em Stands', 14, 22);
+
+    const tableColumn = ["Stand / Empresa", "Responsável", "Total Visitas", "Leads Únicos", "Conversão"];
+    const tableRows = stands.map(s => {
+        const standVisits = checkins.filter(c => c.standId === s.id);
+        const uniqueLeads = new Set(standVisits.map(v => v.registrationId)).size;
+        
+        return [
+            s.name || '---',
+            s.responsavel || '---',
+            standVisits.length.toString(),
+            uniqueLeads.toString(),
+            `${uniqueLeads > 0 ? ((uniqueLeads / standVisits.length) * 100).toFixed(0) : 0}%`
+        ];
+    });
+
+    (doc as any).autoTable({
+        startY: 40,
+        head: [tableColumn],
+        body: tableRows,
+        headStyles: { fillColor: [59, 130, 246] },
+        bodyStyles: { fontSize: 9 },
+    });
+
+    doc.save(`relatorio-stands-${projectName.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+};

@@ -20,7 +20,8 @@ import {
   Tag,
   Copy,
   AlertCircle,
-  MapPin
+  MapPin,
+  Gift
 } from 'lucide-react';
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook, useRaffles } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -43,6 +44,7 @@ import { CertificatesSection } from './components/CertificatesSection';
 import { ProfileForm } from './components/ProfileForm';
 import { DashboardEquipe } from './components/DashboardEquipe';
 import { SupportSection } from './components/SupportSection';
+import { RaffleSection } from './components/RaffleSection';
 import { BottomNavigation } from './components/shared/BottomNavigation';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
@@ -1137,6 +1139,13 @@ export function DashboardParticipante() {
                  <Trophy className="h-6 w-6 text-brand-orange-coral" />
                  <span className="text-white font-black text-sm text-left leading-tight">Circuito<br/>GE-STAND</span>
                </button>
+               <button
+                 onClick={() => setActiveTab('sorteios')}
+                 className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
+               >
+                 <Gift className="h-6 w-6 text-brand-orange-coral" />
+                 <span className="text-white font-black text-sm text-left leading-tight">Sorteios &<br/>Ganhadores</span>
+               </button>
             </div>
 
             {/* Quick Actions Grid */}
@@ -1281,6 +1290,10 @@ export function DashboardParticipante() {
               <SupportSection navigate={navigate} />
             )}
 
+            {activeTab === 'sorteios' && myRegistration?.id && (
+              <RaffleSection registrationId={myRegistration.id} />
+            )}
+
             {activeTab === 'dados' && (
               <ProfileForm />
             )}
@@ -1345,6 +1358,7 @@ export function DashboardParticipante() {
           { id: 'ingresso', icon: QrCode, label: 'Ticket' },
           { id: 'agenda', icon: Calendar, label: 'Agenda' },
           { id: 'circuito', icon: Trophy, label: 'Circuito' },
+          { id: 'sorteios', icon: Gift, label: 'Sorteios' },
           { id: 'networking', icon: Handshake, label: 'Match' },
           { id: 'mentorias', icon: Users, label: 'Mentor' },
           { id: 'documentos', icon: FileText, label: 'Docs' },
