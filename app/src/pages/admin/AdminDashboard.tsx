@@ -100,18 +100,18 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
 export function AdminDashboard() {
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
-  const { data: registrations } = useRegistrations();
-  const { filter: filterMentors } = useMentors();
-  const { data: sessions } = useMentoringSessions();
-  const { data: b2bMeetings } = useB2BMeetings();
-  const { data: startups, filter: filterStartups } = useStartups();
-  const { data: _sponsors } = useSponsors();
-  const { data: transactions } = useTransactions();
-  const { data: checkIns } = useCheckIns();
-  const { data: tickets } = useSupportTickets();
-  const { data: raffles } = useRaffles();
-  const { data: standCheckIns } = useStandCheckIns();
-  const { data: waGroups } = useWhatsAppGroups();
+  const { data: registrations = [] } = useRegistrations();
+  const { filter: filterMentors = () => [] } = useMentors();
+  const { data: sessions = [] } = useMentoringSessions();
+  const { data: b2bMeetings = [] } = useB2BMeetings();
+  const { data: startups = [], filter: filterStartups = () => [] } = useStartups();
+  const { data: _sponsors = [] } = useSponsors();
+  const { data: transactions = [] } = useTransactions();
+  const { data: checkIns = [] } = useCheckIns();
+  const { data: tickets = [] } = useSupportTickets();
+  const { data: raffles = [] } = useRaffles();
+  const { data: standCheckIns = [] } = useStandCheckIns();
+  const { data: waGroups = [] } = useWhatsAppGroups();
 
   const quickActions = [
     { name: 'Sorteios', icon: Gift, color: 'orange', path: '/admin/sorteio' },
