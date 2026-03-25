@@ -16,7 +16,10 @@ import {
   Mail,
   Download,
   Users2,
-  FolderOpen
+  FolderOpen,
+  Headset,
+  Gift,
+  MessageCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,7 +42,6 @@ import {
 } from '@/hooks/useData';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
-import { Headset, Gift, MessageCircle } from 'lucide-react';
 
 const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';

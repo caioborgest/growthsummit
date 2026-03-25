@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useWhatsAppGroups } from './useWhatsAppGroups';
+export { useWhatsAppGroups };
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
