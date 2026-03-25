@@ -9,6 +9,7 @@ export interface SupportTicket {
     email: string;
     subject: string;
     message: string;
+    category?: 'technical' | 'finance' | 'registration' | 'general' | string;
     status: 'open' | 'in_progress' | 'resolved' | 'closed';
     priority: 'low' | 'medium' | 'high' | 'urgent';
     created_at: string;

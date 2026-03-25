@@ -82,7 +82,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles'].includes(entity);
+  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants'].includes(entity);
 };
 
 function toCamelCase(str: string): string {

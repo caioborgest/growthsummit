@@ -70,12 +70,14 @@ export default function AdminSupport() {
 
       // Notificar o participante
       if (selectedTicket.userId && selectedProject?.id) {
-        await notificationService.send(selectedTicket.userId, {
+        await notificationService.send({
+          userId: selectedTicket.userId,
+          projectId: selectedProject.id,
           title: 'Suporte Respondeu',
           message: `Sua solicitação "${selectedTicket.subject}" recebeu uma nova resposta da nossa equipe.`,
           type: 'info',
           actionUrl: '/minha-area?tab=suporte'
-        }, selectedProject.id).catch(err => logger.error('Erro ao notificar usuário:', err));
+        }).catch(err => logger.error('Erro ao notificar usuário:', err));
       }
 
       setReplyMessage('');
