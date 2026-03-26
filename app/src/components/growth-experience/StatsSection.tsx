@@ -109,8 +109,8 @@ export function StatsSection({ project }: StatsSectionProps) {
         },
         {
             icon: Target,
-            value: 20,
-            label: 'Workshops e Cursos',
+            value: isTriunfo ? 4 : 20,
+            label: isTriunfo ? 'Palestras Magnas' : 'Workshops e Cursos',
             suffix: '+'
         },
         {
@@ -118,18 +118,6 @@ export function StatsSection({ project }: StatsSectionProps) {
             value: isTriunfo ? 10 : 2,
             label: 'Milhões em Negócios',
             suffix: 'M+'
-        },
-        {
-            icon: TrendingUp,
-            value: 10,
-            label: 'Experiências Únicas',
-            suffix: '+'
-        },
-        {
-            icon: Award,
-            value: 2000,
-            label: 'Prêmios Arena Pitch',
-            suffix: 'R$+'
         }
     ];
 

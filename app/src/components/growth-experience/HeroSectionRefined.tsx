@@ -25,7 +25,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
     useEffect(() => {
         const dateStr = isTriunfo ? '2026-04-16' : (selectedProject?.startDate || '');
         if (!dateStr) return;
-        const eventDate = new Date(`${dateStr}T08:00:00`);
+        const eventDate = new Date(`${dateStr}T${isTriunfo ? '17:00:00' : '08:00:00'}`);
 
         const updateCountdown = () => {
             const now = new Date().getTime();
@@ -151,7 +151,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 >
                     {[
                         { icon: Calendar, text: isTriunfo ? '16 Abr 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : 'Data a definir') },
-                        { icon: Clock, text: '08:00 - 23:00' },
+                        { icon: Clock, text: isTriunfo ? '17:00 - 22:30' : '08:00 - 23:00' },
                         { icon: MapPin, text: selectedProject?.city || 'Local a definir' }
                     ].map((info, idx) => (
                         <div key={idx} className="flex items-center gap-2.5 group">

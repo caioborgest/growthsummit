@@ -3,34 +3,22 @@ import { useSearchParams } from 'react-router-dom';
 import type { Project } from '@/types';
 import {
   TrendingUp,
-  Handshake,
   Building2,
   GraduationCap,
   Mic2,
-  Award,
-  Target,
   Zap,
-  Rocket,
   Trophy,
   ArrowRight,
-  Sparkles,
   CheckCircle,
   QrCode,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
-import { useRegistrations, useMentors, useSessions, useCheckInsAtividades } from '@/hooks/useData';
+import { useRegistrations, useSessions, useCheckInsAtividades } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/card';
 import { InscricaoModal } from '@/components/forms/InscricaoModal';
-import { StartupFormModal } from '@/components/forms/StartupFormModal';
-import { B2BFormModal } from '@/components/forms/B2BFormModal';
-import { MentorFormModal } from '@/components/forms/MentorFormModal';
-import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getPalestranteImage, getStandImage } from '@/lib/storage';
@@ -38,7 +26,6 @@ import { InscricaoSection } from '@/components/growth-experience/InscricaoSectio
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
-import { ProgramacaoCircuitoSection } from '@/components/growth-experience/ProgramacaoCircuitoSection';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 import { HeroSectionRefined } from '@/components/growth-experience/HeroSectionRefined';
 import { StatsSection } from '@/components/growth-experience/StatsSection';
@@ -51,11 +38,17 @@ import { ensureProject } from '@/lib/ensureProject';
 import { CertificateService } from '@/lib/certificateService';
 import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { MentorCard } from '@/components/growth-experience/MentorCard';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 // Dados do evento
 const palestrantes = [
+  {
+    nome: "Jeronimo Freire",
+    cargo: "Consultor e Mentor de Negócios",
+    descricao: "Especialista em gestão estratégica e expansão de negócios",
+    tema: "Gestão Exponencial: O Caminho para o Próximo Nível",
+    horario: "18:00 - 18:50"
+  },
   {
     nome: "Leandro Batista",
     cargo: "CEO, Fitness Exclusive",
@@ -64,10 +57,17 @@ const palestrantes = [
     horario: "19:00 - 19:50"
   },
   {
+    nome: "Carolinne Castro",
+    cargo: "Especialista em Vendas e CX",
+    descricao: "Expert em experiência do cliente e fechamento de alto valor",
+    tema: "Vendas e Encantamento: Como Transformar Clientes em Fãs",
+    horario: "20:10 - 21:00"
+  },
+  {
     nome: "Vanylton Matias",
     cargo: "CEO, Grupo Núcleo",
     descricao: "CEO de grupo empresarial multisetorial, reconhecido em gestão e inovação a nível nacional",
-    tema: "Inovação Corporativa: Como Empresas se Mantêm Competitivos em Tempos de Transformação",
+    tema: "Inovação Corporativa: Como Empresas se Mantêm Competitivas em Tempos de Transformação",
     horario: "21:10 - 22:30"
   }
 ];
@@ -220,7 +220,7 @@ export function GrowthExperienceTriunfo() {
         name: 'Growth Experience Triunfo-PE 2026',
         slug: 'ge-triunfo-2026',
         type: 'growth_experience',
-        description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria 1:1 e Arena Pitch para startups. Programação especial das 08:00 às 23:00 em 16 de abril de 2026 no Espaço Parque.',
+        description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e conexões estratégicas. Programação especial a partir das 17:00 em 16 de abril de 2026 no Espaço Parque.',
         shortDescription: 'Edição Triunfo-PE',
         location: 'Espaço Parque',
         city: 'Triunfo',
@@ -235,9 +235,9 @@ export function GrowthExperienceTriunfo() {
           maxMentors: 30,
           maxStartups: 20,
           maxCompanies: 40,
-          enableB2B: true,
-          enableMentoring: true,
-          enableStartups: true,
+          enableB2B: false,
+          enableMentoring: false,
+          enableStartups: false,
           enableCheckIn: true,
           ticketPrices: {
             standard: 0,
@@ -271,19 +271,19 @@ export function GrowthExperienceTriunfo() {
     } catch (err) {
       console.error('[GrowthExperienceTriunfo] Erro init:', err);
     }
-  }, [setSelectedProject]);
+  }, [setSelectedProject, selectedProject?.id]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    initProject(selectedProject?.id);
+    if (selectedProject?.id) {
+      initProject();
+    }
   }, [initProject, selectedProject?.id]);
 
   // Sincronizar modais com a URL para facilitar compartilhamento
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const formParam = searchParams.get('form');
     if (formParam === 'inscricao') setModalInscricaoAberto(true);
-    else if (['mentor', 'mentor-cadastro', 'startup', 'b2b', 'palestra', 'empresa'].includes(formParam || '')) {
+    else if (['palestra', 'empresa'].includes(formParam || '')) {
       setModalAberto(formParam as any);
     }
   }, [searchParams]);
@@ -308,25 +308,13 @@ export function GrowthExperienceTriunfo() {
     setSearchParams(newParams, { replace: true });
   };
 
-  const { data: mentorsData, isLoading: mentorsLoading } = useMentors();
   const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
-
-  const approvedMentors = (mentorsData || []).filter(m => m.status === 'approved');
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-  };
 
   return (
     <div className="flex flex-col overflow-x-hidden">
       <SEOHead
         title="Growth Experience Triunfo-PE 2026 | 16 de Abril"
-        description="A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking, mentoria e oportunidades para PMEs. 16/04/2026 no Espaço Parque."
+        description="A Maior Exposição de Negócios do Sertão do Pajeú. Redes, networking e palestras exclusivas. Programação a partir das 17:00 no Espaço Parque."
         keywords="growth experience, triunfo pe, evento negócios, sebrae, empreendedorismo, sertão do pajeú"
         url={pageUrl}
       />
@@ -335,15 +323,7 @@ export function GrowthExperienceTriunfo() {
 
       {/* Modais */}
       <InscricaoMultiStepModal isOpen={modalInscricaoAberto} onClose={closeModals} />
-      <MentoriaMultiStepModal 
-        isOpen={!!modalAberto && modalAberto !== 'mentor-cadastro' && modalAberto !== 'startup' && modalAberto !== 'b2b' && modalAberto !== 'palestra' && modalAberto !== 'empresa'} 
-        onClose={closeModals} 
-        initialMentorId={modalAberto === 'mentor' ? null : (modalAberto as string)}
-      />
       <InscricaoModal isOpen={modalAberto === 'palestra'} onClose={closeModals} tipo="palestra" eventoNome="Growth Experience Triunfo-PE 2026" />
-      <MentorFormModal isOpen={modalAberto === 'mentor-cadastro'} onClose={closeModals} />
-      <StartupFormModal isOpen={modalAberto === 'startup'} onClose={closeModals} />
-      <B2BFormModal isOpen={modalAberto === 'b2b'} onClose={closeModals} />
       <EmpresaIncentivadoraModal isOpen={modalAberto === 'empresa'} onClose={closeModals} />
 
       <LotePromocionalPopUp />
@@ -374,15 +354,13 @@ export function GrowthExperienceTriunfo() {
                 Acelere seu Crescimento com quem <span className="text-gradient">faz na prática</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                O Growth Experience Triunfo é um divisor de águas para o empreendedorismo regional. Reunimos especialistas, tecnologia e capital em um único dia de imersão total para transformar pequenas e médias empresas do Sertão do Pajeú.
+                O Growth Experience Triunfo é um divisor de águas para o empreendedorismo regional. Reunimos especialistas, tecnologia e networking em uma noite de imersão total para transformar pequenas e médias empresas do Sertão do Pajeú.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-8 mb-8">
                 {[
-                  { icon: TrendingUp, title: 'Capacitação', desc: 'Trilhas práticas de marketing, vendas e IA' },
-                  { icon: Handshake, title: 'Rodada B2B', desc: 'Conexões diretas com grandes marcas' },
-                  { icon: Award, title: 'Arena Pitch', desc: 'Prêmios de até R$ 2.000 + mentorias' },
-                  { icon: Zap, title: '10 Experiências', desc: 'Circuito contínuo de aprendizado' }
+                  { icon: TrendingUp, title: 'Palestras Magnas', desc: '4 grandes nomes no palco principal' },
+                  { icon: Zap, title: 'Networking VIP', desc: 'Conexões de alto nível com decisores' }
                 ].map((item, idx) => (
                   <div key={idx} className="flex gap-4 group">
                     <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center group-hover:bg-brand-orange-coral group-hover:scale-110 transition-all duration-300">
@@ -423,101 +401,6 @@ export function GrowthExperienceTriunfo() {
 
       {/* ── Edição Pocket: Juazeiro do Norte ── */}
       <EdicaoAnteriorVideo showTriunfoTeaser={true} />
-
-      {/* Mentores do Evento */}
-      <section id="mentores" className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[30%] h-[30%] bg-brand-orange-coral/5 blur-[100px] rounded-full pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-              CONSELHORES ESTRATÉGICOS
-            </Badge>
-            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">
-              Mentores <span className="text-gradient">Confirmados</span>
-            </h2>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-              Especialistas prontos para diagnosticar seu negócio e acelerar seus resultados.
-            </p>
-          </div>
-
-          {!mentorsLoading && approvedMentors.length > 0 ? (
-            <div className="relative group animate-fade-in-up">
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 rounded-full bg-dark-200/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 backdrop-blur-md hover:bg-brand-orange-coral hover:border-brand-orange-coral hidden md:flex"
-                aria-label="Anterior"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              
-              <button
-                onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 rounded-full bg-dark-200/80 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 backdrop-blur-md hover:bg-brand-orange-coral hover:border-brand-orange-coral hidden md:flex"
-                aria-label="Próximo"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-
-              <div 
-                ref={scrollRef}
-                className="flex overflow-x-auto gap-6 pb-8 scrollbar-hide snap-x snap-mandatory px-4 -mx-4 cursor-grab active:cursor-grabbing"
-              >
-                {approvedMentors.map((mentor) => {
-                  const mentorSlots = (allSessions || []).filter(s => 
-                    s.mentorId === mentor.id && 
-                    s.status === 'scheduled' && 
-                    !s.menteeId
-                  );
-                  return (
-                    <div key={mentor.id} className="min-w-[280px] sm:min-w-[320px] snap-center">
-                      <MentorCard 
-                        mentor={mentor as any} 
-                        availableSlots={mentorSlots}
-                        onBookClick={(id) => setModalAberto(id)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Scroll Indicator */}
-              <div className="flex justify-center gap-2 mt-4 md:hidden">
-                <div className="h-1.5 w-12 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-orange-coral w-1/3 rounded-full" />
-                </div>
-              </div>
-            </div>
-          ) : mentorsLoading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral"></div>
-            </div>
-          ) : (
-            <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl mb-16">
-              <Sparkles className="h-10 w-10 text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">Novos mentores estão sendo aprovados...</p>
-              <Button
-                variant="link"
-                className="text-brand-orange-coral mt-4 font-bold"
-                onClick={() => handleOpenModal('mentor-cadastro')}
-              >
-                Quero ser um mentor confirmado
-              </Button>
-            </div>
-          )}
-
-          <div className="text-center animate-fade-in-up">
-            <Button
-              size="lg"
-              className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white border border-brand-orange-coral/30 font-black px-12 py-8 text-lg rounded-2xl transition-all duration-300 h-auto"
-              onClick={() => handleOpenModal('mentor-cadastro')}
-            >
-              Candidatar-se como Mentor
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Palestrantes */}
       <section id="palestrantes" className="py-16 sm:py-24 bg-dark-200 relative overflow-hidden">
@@ -564,9 +447,39 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      {/* Programação Completa */}
-      {/* Programação - Circuito de Experiências */}
-      <ProgramacaoCircuitoSection onInscricao={() => handleOpenModal('inscricao')} />
+      {/* Programação - Timeline Simples */}
+      <section id="programacao" className="py-24 bg-dark relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+              PROGRAMAÇÃO NOTURNA
+            </Badge>
+            <h2 className="text-4xl font-bold text-white">Cronograma Oficial</h2>
+          </div>
+
+          <div className="space-y-8">
+            {[
+              { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking no hall de entrada' },
+              { time: '18:00', event: 'Jeronimo Freire: Gestão Exponencial', desc: 'Palestra de Abertura' },
+              { time: '19:00', event: 'Leandro Batista: Estratégias de Escala', desc: 'Palestra Magna' },
+              { time: '20:10', event: 'Carolinne Castro: Vendas e Encantamento', desc: 'Palestra Magna' },
+              { time: '21:10', event: 'Vanylton Matias: Inovação Corporativa', desc: 'Palestra de Encerramento' },
+              { time: '22:30', event: 'Sorteios e Networking Final', desc: 'Encerramento Oficial' }
+            ].map((item, idx) => (
+              <div key={idx} className="flex gap-6 items-start group">
+                <div className="flex flex-col items-center">
+                  <div className="text-brand-orange-coral font-black text-xl italic">{item.time}</div>
+                  <div className="w-px h-16 bg-white/10 group-last:hidden" />
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex-1 hover:border-brand-orange-coral/40 transition-all">
+                  <h4 className="text-white font-bold text-lg mb-1 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
+                  <p className="text-gray-400 text-sm">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Seção Inovadora: Incentivo de Equipe */}
       <section className="py-16 sm:py-24 bg-dark-100 relative overflow-hidden">
@@ -631,99 +544,7 @@ export function GrowthExperienceTriunfo() {
       {/* Seção de Inscrição Social */}
       <SocialRegistrationSection onInscrever={() => handleOpenModal('inscricao')} />
 
-      {/* Seções de Inscrição */}
-      <div id="inscricoes">
-        <InscricaoSection
-          id="cursos-workshops"
-          icon={GraduationCap}
-          titulo="Cursos e Workshops Gratuitos"
-          subtitulo="Acesso limitado a todas as trilhas diurnas"
-          descricao="Participe de workshops práticos e oficinas mão na massa com especialistas."
-          beneficios={[
-            "Acesso a todos os workshops e oficinas",
-            "Certificado de participação digital",
-            "Material didático exclusivo"
-          ]}
-          gratuito
-          onInscrever={() => setModalInscricaoAberto(true)}
-          imagemUrl="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
-        />
 
-        <InscricaoSection
-          id="mentorias"
-          icon={Target}
-          titulo="Solicitar Mentoria Individual"
-          subtitulo="30 minutos exclusivos com especialistas"
-          descricao="Sessões personalizadas com mentores especializados."
-          beneficios={[
-            "Sessão individual de 30 minutos",
-            "Diagnóstico personalizado",
-            "Plano de ação de 30 dias"
-          ]}
-          gratuito
-          onInscrever={() => setModalAberto('mentor')}
-          imagemUrl="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
-        />
-      </div>
-
-      {/* Ecossistema e Negócios */}
-      <section className="py-24 bg-dark relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            <Card className="glass-card p-6 sm:p-10 border-orange-500/30 hover:bg-orange-500/10 transition-all group relative overflow-hidden animate-fade-in-up">
-              <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
-                <div className="w-16 h-16 rounded-2xl bg-orange-500/20 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                  <Rocket className="h-8 w-8 text-orange-400" />
-                </div>
-                <SectionShare sectionId="arena-pitch" title="Arena Pitch - Growth Experience" />
-              </div>
-              <h3 id="arena-pitch" className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
-                Expo StartUp
-                <Badge className="bg-orange-500 text-white border-none animate-pulse">10 VAGAS</Badge>
-              </h3>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-                Apresente sua startup na <strong>Arena Pitch</strong>, tenha um espaço exclusivo de <strong>exposição</strong> e ganhe <strong>2 ingressos</strong> para as palestras noturnas.
-              </p>
-              <div className="mb-8">
-                <span className="text-4xl font-black text-white">R$ 999,00</span>
-                <p className="text-sm text-gray-400 mt-1">Pacote completo para startups</p>
-              </div>
-              <Button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-8 rounded-2xl h-auto"
-                onClick={() => setModalAberto('startup')}
-              >
-                GARANTIR EXPO STARTUP
-              </Button>
-            </Card>
-
-            <Card className="glass-card p-6 sm:p-10 border-teal-500/30 hover:bg-teal-500/10 transition-all group relative overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <div className="flex items-center justify-between mb-8 group-hover:scale-110 transition-transform">
-                <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center shadow-lg shadow-teal-500/20">
-                  <Handshake className="h-8 w-8 text-teal-400" />
-                </div>
-                <SectionShare sectionId="rodada-negocios" title="Rodada de Negócios B2B - Growth Experience" />
-              </div>
-              <h3 id="rodada-negocios" className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
-                Rodada de Negócios B2B
-                <Badge className="bg-teal-500 text-white border-none">PREMIUM</Badge>
-              </h3>
-              <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-                Conectamos grandes empresas com fornecedores qualificados.
-              </p>
-              <div className="mb-8">
-                <span className="text-4xl font-black text-teal-400 uppercase">Gratuito</span>
-                <p className="text-sm text-gray-400 mt-1">Sua empresa conectada com o mercado</p>
-              </div>
-              <Button
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-black py-8 rounded-2xl h-auto"
-                onClick={() => setModalAberto('b2b')}
-              >
-                QUERO PARTICIPAR DA RODADA
-              </Button>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Patrocínios */}
       <section id="patrocinios" className="py-16 sm:py-24 bg-dark-200">
