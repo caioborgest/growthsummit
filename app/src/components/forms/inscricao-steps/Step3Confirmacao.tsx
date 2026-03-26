@@ -7,7 +7,6 @@ import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById } from '@/data/programacao';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
-import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { registrationService } from '@/services/registrationService';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
@@ -140,19 +139,6 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             const finalInscricaoId = rpcResult.inscricao_id || null;
 
-            // ── ETAPA 4: Auto-convite WhatsApp (não bloqueante, apenas em produção)
-            if (finalInscricaoId && import.meta.env.PROD) {
-                const currentProjectId = projectId || selectedProject?.id;
-                if (currentProjectId) {
-                    autoInviteOnRegistration(
-                        finalInscricaoId,
-                        currentProjectId,
-                        'standard'
-                    ).catch(e => {
-                        logger.info('WhatsApp auto-invite skipped or failed:', e.message || e);
-                    });
-                }
-            }
 
             // ── ETAPA 5: Sucesso
             onConfirmar(userId, finalInscricaoId || '', statusPagamento);
@@ -264,38 +250,56 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 </div>
             </Card>
 
-            {/* Cursos Selecionados */}
+            {/* Cursos Selecionados ou Passaporte Triunfo */}
             <Card className="glass-card p-4 sm:p-6 border-white/10">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
                         <BookOpen className="h-5 w-5 text-brand-orange-coral" />
                     </div>
                     <h4 className="font-bold text-white text-lg">
-                        Atividade Selecionada
+                        {selectedProject?.slug === 'ge-triunfo-2026' ? 'Seu Acesso' : 'Atividade Selecionada'}
                     </h4>
                 </div>
 
                 <div className="space-y-3">
-                    {cursosSelecionados.map((curso) => (
-                        <div
-                            key={curso?.id}
-                            className="flex items-start gap-3 p-3 rounded-lg bg-dark-200/50 border border-white/5"
-                        >
+                    {cursosSelecionados.length > 0 ? (
+                        cursosSelecionados.map((curso) => (
+                            <div
+                                key={curso?.id}
+                                className="flex items-start gap-3 p-3 rounded-lg bg-dark-200/50 border border-white/5"
+                            >
+                                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white font-semibold leading-tight">
+                                        {curso?.titulo}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-2 text-sm">
+                                        <span className="text-brand-orange-coral font-semibold">
+                                            {curso?.horario_inicio} - {curso?.horario_fim}
+                                        </span>
+                                        <span className="text-gray-500">•</span>
+                                        <span className="text-gray-400">{curso?.local}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : selectedProject?.slug === 'ge-triunfo-2026' ? (
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-dark-200/50 border border-white/5">
                             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-semibold leading-tight">
-                                    {curso?.titulo}
+                                    Passaporte GX Growth Experience Triunfo
                                 </p>
                                 <div className="flex items-center gap-3 mt-2 text-sm">
-                                    <span className="text-brand-orange-coral font-semibold">
-                                        {curso?.horario_inicio} - {curso?.horario_fim}
-                                    </span>
+                                    <span className="text-brand-orange-coral font-semibold">17h às 23h</span>
                                     <span className="text-gray-500">•</span>
-                                    <span className="text-gray-400">{curso?.local}</span>
+                                    <span className="text-gray-400">Espaço Parque</span>
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    ) : (
+                        <p className="text-gray-500 text-sm italic">Nenhuma atividade específica selecionada.</p>
+                    )}
                 </div>
             </Card>
 

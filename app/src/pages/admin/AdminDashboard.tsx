@@ -37,8 +37,7 @@ import {
   useCheckIns,
   useSupportTickets,
   useRaffles,
-  useStandCheckIns,
-  useWhatsAppGroups
+  useStandCheckIns
 } from '@/hooks/useData';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
@@ -111,12 +110,10 @@ export function AdminDashboard() {
   const { data: tickets = [] } = useSupportTickets();
   const { data: raffles = [] } = useRaffles();
   const { data: standCheckIns = [] } = useStandCheckIns();
-  const { data: waGroups = [] } = useWhatsAppGroups();
 
   const quickActions = [
     { name: 'Sorteios', icon: Gift, color: 'orange', path: '/admin/sorteio' },
     { name: 'Suporte', icon: Headset, color: 'teal', path: '/admin/suporte' },
-    { name: 'WhatsApps', icon: MessageCircle, color: 'green', path: '/admin/whatsapp' },
     {
       name: 'Entregar Leads',
       icon: Download,
@@ -342,15 +339,6 @@ export function AdminDashboard() {
           <div>
             <p className="text-2xl font-bold text-white">{standCheckIns.length}</p>
             <p className="text-gray-400 text-sm">Check-ins Stands</p>
-          </div>
-        </div>
-        <div className="glass-card p-4 flex items-center group hover:border-green-500/30 transition-all cursor-pointer" onClick={() => navigate('/admin/whatsapp')}>
-          <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mr-4 group-hover:bg-green-500/30 transition-colors">
-            <MessageCircle className="h-5 w-5 text-green-400" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-white">{waGroups.length}</p>
-            <p className="text-gray-400 text-sm">Grupos Whats</p>
           </div>
         </div>
       </div>

@@ -97,6 +97,38 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
     }, [dados, currentStep, isOpen]);
 
+    // Skip seguro do Step 1 para o evento Triunfo (sem workshops diurnos)
+    useEffect(() => {
+        if (currentStep === 1 && selectedProject?.slug === 'ge-triunfo-2026') {
+            nextStep(true);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentStep, selectedProject?.slug]);
+
+    // Para Triunfo: todas as inscrições têm pagamento obrigatório — define comprarPalestras=true automaticamente
+    useEffect(() => {
+        if (selectedProject?.slug === 'ge-triunfo-2026') {
+            updateDados({ comprarPalestras: true });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedProject?.slug]);
+
+    // Skip Step 4 para Triunfo (oferta de palestras não é necessária — todas já incluem pagamento)
+    useEffect(() => {
+        if (currentStep === 4 && selectedProject?.slug === 'ge-triunfo-2026') {
+            nextStep(true);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentStep, selectedProject?.slug]);
+
+    // Skip seguro do Step 5 quando não há pagamento pendente
+    useEffect(() => {
+        if (currentStep === 5 && !(dados.comprarPalestras && dados.statusPagamento !== 'pago')) {
+            nextStep(true);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentStep, dados.comprarPalestras, dados.statusPagamento]);
+
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setDados({
@@ -120,6 +152,12 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     const renderStep = () => {
         switch (currentStep) {
             case 1:
+                // Para Triunfo, não há programação diurna/workshops, então pulamos para os dados pessoais
+                if (selectedProject?.slug === 'ge-triunfo-2026') {
+                    // Bug fix: não chamar nextStep() dentro do render — isso causa cascading renders.
+                    // O useEffect abaixo cuida do skip de forma segura.
+                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" /></div>;
+                }
                 return (
                     <Step1SelecionarCursos
                         cursosSelecionados={dados.cursosSelecionados}
@@ -154,6 +192,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     />
                 );
             case 4:
+                // Passo skipado no Triunfo
+                if (selectedProject?.slug === 'ge-triunfo-2026') {
+                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" /></div>;
+                }
                 return (
                     <Step4OfertaPalestras
                         dados={dados}
@@ -234,8 +276,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         />
                     );
                 } else {
-                    // Pula automaticamente se não houver pagamento pendente
-                    nextStep(true);
+                    // Bug fix: não chamar nextStep() no corpo do render — useEffect abaixo cuida disso
                     return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin" /></div>;
                 }
             case 6:
@@ -267,6 +308,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     <Step7Conclusao
                         dados={dados}
                         onFechar={() => {
+                            clearDraft();
                             onClose();
                             setCurrentStep(1);
                         }}
@@ -313,11 +355,11 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         />
 
                         {[
-                            'Cursos',
+                            selectedProject?.slug === 'ge-triunfo-2026' ? '-' : 'Cursos',
                             'Dados',
                             'Confirmar',
-                            'Upgrade',
-                            'Pix',
+                            selectedProject?.slug === 'ge-triunfo-2026' ? '-' : 'Upgrade',
+                            'Pagamento',
                             'App',
                             'OK'
                         ].map((label, index) => {

@@ -13,8 +13,8 @@ export interface RegistrationParams {
     valorPago?: number;
     statusPagamento?: string;
     appInstalado?: boolean;
-    loteId?: string;
-    voucherEmpresa?: string;
+    loteId?: string | null;
+    voucherEmpresa?: string | null;
     status?: string;
     evento?: string;
     palestrasNoturnas?: boolean;
@@ -27,8 +27,6 @@ export interface RegistrationParams {
     codigoSocial?: string | null;
     codigoPalestra?: string | null;
     extraData?: Record<string, unknown>;
-    loteId?: string | null;
-    voucherEmpresa?: string | null;
 }
 
 export const registrationService = {

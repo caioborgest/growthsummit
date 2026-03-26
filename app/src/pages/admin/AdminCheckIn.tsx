@@ -411,6 +411,9 @@ export function AdminCheckIn() {
                           </Badge>
                         </div>
                         <p className="text-gray-400 text-xs font-mono">{item.ticketNumber || (item.email || item.contactEmail)}</p>
+                        {item._role === 'participant' && item.status_pagamento === 'pendente' && (
+                          <Badge className="bg-red-500/20 text-red-400 text-[8px] animate-pulse">PAGAMENTO PENDENTE</Badge>
+                        )}
                       </div>
                     </div>
                     <Button

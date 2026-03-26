@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Rocket, ArrowRight, Loader2, CheckCircle, Smartphone } from 'lucide-react';
+import { ArrowRight, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
-import { autoInviteOnRegistration } from '@/hooks/useWhatsAppGroups';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
@@ -48,8 +47,7 @@ export function PetrolinaRegistrationForm() {
             // 2. Sincronização robusta (Para FK)
             await waitForUserSync(userId);
 
-            // 3. Insert Registration
-            const { data: inscricaoData, error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
+            const { error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
                 project_id: selectedProject?.id,
                 user_id: userId || null,
                 nome: formData.nome,
@@ -67,15 +65,6 @@ export function PetrolinaRegistrationForm() {
 
             if (regError) throw regError;
 
-            // 3.5. Auto-invite to WhatsApp Group (Async)
-            const finalInscricaoId = (inscricaoData as any)?.[0]?.id;
-            if (finalInscricaoId && selectedProject?.id) {
-                autoInviteOnRegistration(
-                    finalInscricaoId,
-                    selectedProject.id,
-                    'standard'
-                ).catch(e => logger.info('WhatsApp invite info (CORS/SKIP):', e.message || e));
-            }
 
             /* 
             // 4. Send Confirmation Email (Async, non-blocking) - DESATIVADO A PEDIDO DO USUÁRIO
@@ -134,12 +123,6 @@ export function PetrolinaRegistrationForm() {
                 <p className="text-gray-400 mb-8 max-w-sm mx-auto">
                     Você já está garantido no evento. Estamos te redirecionando para o login...
                 </p>
-                <Button
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-6 rounded-xl"
-                    onClick={() => window.open("https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9", '_blank')}
-                >
-                    Entrar no Grupo Agora
-                </Button>
             </div>
         );
     }

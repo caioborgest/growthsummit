@@ -3,6 +3,7 @@ import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProject } from '@/contexts/ProjectContext';
+import { getStorageUrl } from '@/lib/storage';
 import type { Project } from '@/types';
 
 interface HeroSectionProps {
@@ -53,9 +54,11 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 {selectedProject?.slug !== 'ge-petrolina-2026' && (
                     <div className="relative w-full h-full">
                         <img
-                            src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                            src={getStorageUrl('caretas-triunfo', 'caretas-triunfo.jpeg', { quality: 80, format: 'webp' })}
                             alt={selectedProject?.city || "Growth Experience"}
                             className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-40 sm:opacity-60"
+                            //@ts-ignore - fetchPriority is supported in modern browsers but might not be in all TS types yet
+                            fetchPriority="high"
                         />
                         {/* Layered Gradients for Depth */}
                         <div className="absolute inset-0 bg-gradient-to-b from-brand-black via-transparent to-brand-black opacity-80" />
@@ -198,7 +201,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 >
                     <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-brand-orange-intense/10 border border-brand-orange-intense/20 text-brand-orange-intense font-black text-xs sm:text-sm tracking-widest uppercase animate-pulse">
                         <Sparkles className="h-4 w-4" />
-                        Capacidade Limitada: 1.500 Ingressos
+                        Capacidade Limitada: {isTriunfo ? '300' : '500'} Ingressos
                     </div>
                 </div>
             </div>

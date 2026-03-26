@@ -85,9 +85,14 @@ export function AdminFinanceiro() {
     .filter(t => t.type === 'expense' && t.status === 'completed')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const paidRegistrations = registrations.filter(r => r.status === 'paid' || r.status === 'pago' || (r as any).paymentStatus === 'pago');
+  const paidRegistrations = registrations.filter(r => 
+    r.status_pagamento === 'pago' || 
+    r.status_pagamento === 'paid' || 
+    (r as any).paymentStatus === 'pago' ||
+    (r.status === 'pago' && !r.status_pagamento) // Fallback para registros legados
+  );
   const paidRegistrationsCount = paidRegistrations.length;
-  const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
 
   const registrationDiscounts = registrations
     .reduce((sum, r) => sum + (r.discountAmount || 0), 0);

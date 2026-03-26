@@ -76,12 +76,12 @@ const TriumphSpeakers = [
   {
     name: "Vanylton Matias",
     role: "CEO do Grupo Núcleo",
-    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
   },
   {
     name: "Leandro Batista",
     role: "CEO da Fitness Exclusive",
-    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg"
   }
 ];
 
@@ -89,12 +89,12 @@ const PetrolinaSpeakers = [
   {
     name: "Caio Borges",
     role: "Especialista em Growth e IA",
-    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
   },
   {
     name: "Leandro Batista",
     role: "CEO Rede de Academias",
-    image: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg"
   }
 ];
 
@@ -255,7 +255,7 @@ export function GrowthExperience() {
             <div className="relative">
               <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.png"
+                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.jpeg"
                   alt="Experiência Triunfo"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -274,7 +274,7 @@ export function GrowthExperience() {
             <div className="order-2 lg:order-1 relative">
               <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
                   alt="Experiência Petrolina"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -597,7 +597,7 @@ export function GrowthExperience() {
             <div className="lg:w-2/5 relative">
               <div className="aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/10 group shadow-2xl">
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
                   alt="Expansão Growth Experience"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

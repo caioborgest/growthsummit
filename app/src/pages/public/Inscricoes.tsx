@@ -34,7 +34,7 @@ const editions = [
     description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Imersão completa em Growth e IA.',
     price: 0,
     proPrice: 179.99,
-    image: 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
+    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
     slug: 'ge-triunfo-2026',
     color: 'orange',
     tag: 'Edição Flagship',
@@ -53,7 +53,7 @@ const editions = [
     description: 'Edição Vale - Imersão intensiva de Growth e IA no Vale do São Francisco.',
     price: 0,
     proPrice: 179.99,
-    image: 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg',
+    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg',
     slug: 'ge-petrolina-2026',
     color: 'teal',
     tag: 'Edição Vale',
@@ -305,7 +305,7 @@ export function Inscricoes() {
             <div className="lg:w-1/3 relative">
               <div className="aspect-square rounded-[2rem] overflow-hidden border border-white/10 group">
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/growth-talk.png"
+                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-talk.png"
                   alt="Expansão Growth Experience"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-0 hover:grayscale-0"
                 />

@@ -109,7 +109,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                     PASSAPORTE <span className="text-brand-orange-coral italic not-italic">NIGHT</span>
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-base max-w-lg mx-auto font-medium leading-relaxed">
-                    Transforme sua mentoria em uma imersão completa com acesso ao Palco Principal.
+                    Vivencie uma imersão completa com acesso às 5 palestras exclusivas no Palco Principal do Espaço Parque.
                 </p>
             </div>
 
@@ -123,9 +123,10 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                         {/* Benefícios com layout melhorado */}
                         <div className="space-y-4">
                             {[
-                                'Acesso às 2 palestras magnas do palco principal',
-                                'Coffee Break & Networking Premium',
-                                'Lugar reservado em frente ao palco',
+                                '5 Palestras exclusivas (Gestão, Liderança, Mkt, Vendas e Inovação)',
+                                'Keynotes: Jeronimo Freire, Leandro Batista, Carolinne Castro e Vanylton Matias',
+                                'Coffee Break & Networking Premium com Expositores',
+                                'Lugar reservado em frente ao palco principal',
                                 'Certificado de participação especial (4h)',
                                 'Kit exclusivo do evento GX 2026'
                             ].map((item, index) => (

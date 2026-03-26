@@ -103,7 +103,6 @@ const AdminSecurity = lazyWithRetry(() => import('./pages/admin/AdminSecurity'),
 const AdminCupons = lazyWithRetry(() => import('./pages/admin/AdminCupons'));
 const AdminUsuarios = lazyWithRetry(() => import('./pages/admin/AdminUsuarios'));
 const AdminGrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/admin/AdminGrowthExperienceTriunfo'), 'AdminGrowthExperienceTriunfo');
-const AdminWhatsAppGroups = lazyWithRetry(() => import('./pages/admin/AdminWhatsAppGroups'), 'AdminWhatsAppGroups');
 const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'));
 const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
 const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
@@ -370,7 +369,6 @@ function AppRoutes() {
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="cupons" element={<AdminCupons />} />
           <Route path="growth-experience" element={<AdminGrowthExperienceTriunfo />} />
-          <Route path="whatsapp" element={<AdminWhatsAppGroups />} />
           <Route path="certificados" element={<AdminCertificados />} />
           <Route path="lotes-equipes" element={<AdminBatches />} />
           <Route path="stands" element={<AdminStands />} />

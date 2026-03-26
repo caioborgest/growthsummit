@@ -45,7 +45,7 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   pago: 'Pago', paid: 'Pago',
-  pendente: 'Pendente', pending: 'Pendente',
+  pendente: 'Aguardando', pending: 'Aguardando',
   cancelled: 'Cancelado', cancelado: 'Cancelado',
   refunded: 'Reembolsado',
 };
@@ -102,10 +102,10 @@ function DetalhesModal({
             { label: 'Nº Inscrição', value: reg.ticketNumber },
             { label: 'CPF', value: reg.cpf || '—' },
             {
-              label: 'Status',
-              value: (reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Grátis/Cortesia' : (statusLabels[reg.status] || reg.status)
+              label: 'Status Financeiro',
+              value: (reg.status_pagamento === 'pago' || reg.status === 'pago') ? 'Confirmado' : 'Pendente'
             },
-            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00' },
+            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,99' : 'R$ 0,00' },
             {
               label: 'Desconto',
               value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—',
@@ -292,12 +292,17 @@ export default function AdminInscricoes() {
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
 
-      // Se mudar para Grátis, zerar o valor e desativar palestras noturnas (tier Free Morning)
-      if (updates.status === 'free') {
+      // Se mudar para Pago ou Grátis, sincronizar status_pagamento
+      if (status === 'paid' || status === 'pago' || status === 'free') {
+        updates.status_pagamento = 'pago';
+        updates.status = 'ativo';
+      }
+
+      // Se mudar para Grátis, zerar o valor e desativar palestras noturnas
+      if (status === 'free') {
         updates.amount = 0;
-        updates.status = 'pago'; // Financeiramente resolvido
-        updates.palestrasNoturnas = false; // Grátis = Free Morning
-        updates.statusPagamento = 'pago';
+        updates.valor_pago = 0;
+        updates.palestrasNoturnas = false;
       }
 
       await update(id, updates);
@@ -728,17 +733,19 @@ export default function AdminInscricoes() {
                         )}
                       </td>
                       <td className="p-4">
-                        <Badge className={statusColors[reg.status] || 'bg-gray-500/20 text-gray-400'}>
-                          {['pago', 'paid'].includes(reg.status)
+                        <Badge className={statusColors[reg.status_pagamento || reg.status] || 'bg-gray-500/20 text-gray-400'}>
+                          {['pago', 'paid'].includes(reg.status_pagamento || reg.status)
                             ? <CheckCircle2 className="h-3 w-3 mr-1" />
-                            : ['pendente', 'pending'].includes(reg.status)
+                            : ['pendente', 'pending'].includes(reg.status_pagamento || reg.status)
                               ? <Clock className="h-3 w-3 mr-1" />
                               : <XCircle className="h-3 w-3 mr-1" />}
-                          {(reg.amount === 0 && ['pago', 'paid'].includes(reg.status)) ? 'Cortesia' : (statusLabels[reg.status] || reg.status)}
+                          {((reg.amount === 0 || reg.valor_pago === 0) && ['pago', 'paid'].includes(reg.status_pagamento || reg.status)) 
+                            ? 'Liberado' 
+                            : (statusLabels[reg.status_pagamento] || statusLabels[reg.status] || reg.status_pagamento || reg.status)}
                         </Badge>
                       </td>
-                      <td className="p-4 text-white text-sm">
-                        R$ {reg.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+                      <td className="p-4 text-white text-sm font-bold">
+                        R$ {(reg.valor_pago !== undefined ? reg.valor_pago : (reg.amount || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="p-4">
                         {reg.palestrasNoturnas

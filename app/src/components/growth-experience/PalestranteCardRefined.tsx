@@ -38,6 +38,8 @@ export function PalestranteCardRefined({
                     src={foto || placeholderPalestrante}
                     alt={nome}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                         e.currentTarget.src = placeholderPalestrante;
                     }}

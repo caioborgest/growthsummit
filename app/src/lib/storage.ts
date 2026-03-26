@@ -6,16 +6,47 @@
 
 // URL do projeto Supabase - Growth Summit 2026
 // Encontre em: Supabase Dashboard > Settings > API > Project URL
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zczfutmymobgypbbamme.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xeuqtxxhncvechrxerqw.supabase.co';
 
 /**
- * Retorna a URL pública de uma imagem no Supabase Storage
+ * Opções para transformação de imagem do Supabase
+ */
+export interface TransformationOptions {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'avif' | 'origin';
+    resize?: 'cover' | 'contain' | 'fill';
+}
+
+/**
+ * Retorna a URL pública de uma imagem no Supabase Storage com suporte a transformações
  * @param bucket - Nome do bucket
  * @param path - Caminho do arquivo dentro do bucket
- * @returns URL pública da imagem
+ * @param options - Opções de transformação (opcional)
+ * @returns URL pública da imagem otimizada
  */
-export function getStorageUrl(bucket: string, path: string): string {
-    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+export function getStorageUrl(bucket: string, path: string, options?: TransformationOptions): string {
+    // URL base para objetos públicos
+    let url = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+
+    // Se houver opções, muda para o endpoint de renderização (se o projeto for Pro/Supabase suportar)
+    // Nota: O endpoint padrão /object/public/ também aceita parâmetros de query em versões recentes
+    if (options) {
+        const params = new URLSearchParams();
+        if (options.width) params.append('width', options.width.toString());
+        if (options.height) params.append('height', options.height.toString());
+        if (options.quality) params.append('quality', options.quality.toString());
+        if (options.format) params.append('format', options.format);
+        if (options.resize) params.append('resize', options.resize);
+        
+        // Sempre forçar webp se não especificado para economia de egress
+        if (!options.format) params.append('format', 'webp');
+
+        url += `?${params.toString()}`;
+    }
+
+    return url;
 }
 
 /**
@@ -33,8 +64,11 @@ export const standImages = {
  * URLs das imagens dos palestrantes
  */
 export const palestrantesImages = {
-    leandroBatista: getStorageUrl('event-images', 'palestrantes/leandro-batista.png'),
+    leandroBatista: getStorageUrl('event-images', 'palestrantes/leandro-batista.jpeg'),
     vanyltonMatias: getStorageUrl('event-images', 'palestrantes/vanylton-matias.png'),
+    carolinneCastro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp',
+    jeronimoFreire: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp',
+    joaoDaniel: getStorageUrl('event-images', 'palestrantes/joao-daniel.jpeg'),
     palestrantesJuntos: getStorageUrl('event-images', 'palestrantes/palestrantes-juntos.png'),
 };
 
@@ -60,6 +94,9 @@ export function getPalestranteImage(nome: string): string {
     const mapping: Record<string, string> = {
         'Leandro Batista': palestrantesImages.leandroBatista,
         'Vanylton Matias': palestrantesImages.vanyltonMatias,
+        'Carolinne Castro': palestrantesImages.carolinneCastro,
+        'Jeronimo Freire': palestrantesImages.jeronimoFreire,
+        'João Daniel': palestrantesImages.joaoDaniel,
     };
 
     return mapping[nome] || placeholderPalestrante;

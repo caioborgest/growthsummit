@@ -25,14 +25,14 @@ const conselheiros = [
         cargo: "CEO da CBX Growth & IA",
         bio: "Especialista em growth e inteligência artificial para performance de negócios.",
         empresa: "CBX Growth & IA",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
+        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
     },
     {
         nome: "Leandro Batista",
         cargo: "CEO da Fitness Exclusive",
         bio: "CEO da rede de academias que mais cresce no interior do Nordeste.",
         empresa: "Fitness Exclusive",
-        foto: "https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.png"
+        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg"
     }
 ];
 
@@ -135,7 +135,7 @@ export function GrowthExperiencePetrolina() {
 
                         <div className="relative">
                             <img
-                                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
                                 className="rounded-3xl shadow-2xl border border-white/5"
                                 alt="Petrolina-PE"
                             />
@@ -166,7 +166,7 @@ export function GrowthExperiencePetrolina() {
                                             alt={mentor.nome}
                                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                                             onError={(e) => {
-                                                e.currentTarget.src = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png';
+                                                e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png';
                                             }}
                                         />
                                     </div>

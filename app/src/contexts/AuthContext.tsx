@@ -106,10 +106,8 @@ const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map((e
 function isAdminEmail(email?: string): boolean {
   if (!email) return false;
   const lowerEmail = email.toLowerCase().trim();
-  // Verificar se o email está na lista de admin emails
+  // Verificar se o email está na lista de admin emails (configurado via VITE_ADMIN_EMAILS)
   if (ADMIN_EMAILS.includes(lowerEmail)) return true;
-  // Fallback extra para o super admin principal para evitar erros de env vindo de build/runtime
-  if (lowerEmail === 'projetos@cbxgrowth.com.br') return true;
   // Verificar se o domínio do email está na lista de admin domains
   return ADMIN_DOMAINS.some(domain => lowerEmail.endsWith(`@${domain}`));
 }
@@ -120,7 +118,7 @@ function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMeta
   // Tentamos o email da sessão (Auth), do banco (Metadata) ou do JWT (user_metadata)
   const candidateEmail = (supabaseUser.email || metadata?.email || supabaseUser.user_metadata?.email || '').toLowerCase().trim();
   
-  const isSuperAdmin = candidateEmail === 'projetos@cbxgrowth.com.br' || isAdminEmail(candidateEmail);
+  const isSuperAdmin = isAdminEmail(candidateEmail);
 
   if (isSuperAdmin) {
     const role = 'admin';

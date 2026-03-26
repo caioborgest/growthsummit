@@ -14,8 +14,6 @@ interface Step7ConclusaoProps {
 export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
     const { selectedProject } = useProject();
 
-    // Link do Grupo Oficial
-    const GROUP_LINK = "https://chat.whatsapp.com/DupSWw5K4Ot4BKEjGG2Ndn?mode=hq1tcla";
 
     // Disparar toast de confirmação uma única vez ao montar (corretamente com useEffect)
     useEffect(() => {
@@ -49,30 +47,6 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                 </p>
             </div>
 
-            {/* WhatsApp Group Invitation Card */}
-            <Card className="glass-card p-6 border-green-500/30 bg-green-500/5 max-w-2xl mx-auto text-center relative overflow-hidden group hover:border-green-500/50 transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-green-500/10 transition-colors" />
-
-                <div className="relative z-10 space-y-4">
-                    <div className="w-16 h-16 bg-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <MessageCircle className="h-8 w-8 text-green-500" />
-                    </div>
-
-                    <h4 className="text-xl sm:text-2xl font-bold text-white">Grupo Oficial do Evento</h4>
-                    <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">
-                        Entre no grupo oficial para receber avisos importantes, conferir cronogramas em tempo real e fazer networking.
-                    </p>
-
-                    <Button
-                        size="lg"
-                        className="w-full sm:w-auto px-8 h-14 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl shadow-lg shadow-green-600/20 transition-all hover:scale-105"
-                        onClick={() => window.open(GROUP_LINK, '_blank')}
-                    >
-                        <MessageCircle className="h-5 w-5 mr-2" />
-                        ENTRAR NO GRUPO DO WHATSAPP
-                    </Button>
-                </div>
-            </Card>
 
             {/* Benefícios Info */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto px-4 sm:px-0">

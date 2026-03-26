@@ -155,7 +155,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     if (indicacaoTipo === 'empresa') {
                         const { data, error } = await supabase
                             .from('lotes_inscricao_empresa')
-                            .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso')
+                            .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                             .eq('project_id', projectId)
                             .eq('voucher_code', codigo.trim().toUpperCase())
                             .single();

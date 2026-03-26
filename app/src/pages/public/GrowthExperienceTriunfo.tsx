@@ -21,7 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { InscricaoModal } from '@/components/forms/InscricaoModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getPalestranteImage, getStandImage } from '@/lib/storage';
+import { getPalestranteImage, getStandImage, getStorageUrl } from '@/lib/storage';
 import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
@@ -46,28 +46,35 @@ const palestrantes = [
     nome: "Jeronimo Freire",
     cargo: "Consultor e Mentor de Negócios",
     descricao: "Especialista em gestão estratégica e expansão de negócios",
-    tema: "Gestão Exponencial: O Caminho para o Próximo Nível",
+    tema: "Gestão e Liderança em Momentos Desafiadores",
     horario: "18:00 - 18:50"
   },
   {
     nome: "Leandro Batista",
     cargo: "CEO, Fitness Exclusive",
     descricao: "CEO da rede de academias que mais cresce no interior do Nordeste",
-    tema: "Crescimento Exponencial em Mercado Competitivo: Estratégias de Escala",
+    tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
+    horario: "19:00 - 19:50"
+  },
+  {
+    nome: "João Daniel",
+    cargo: "CEO, Cedan Rações",
+    descricao: "CEO de uma das maiores indústrias de rações do Nordeste",
+    tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
     horario: "19:00 - 19:50"
   },
   {
     nome: "Carolinne Castro",
-    cargo: "Especialista em Vendas e CX",
-    descricao: "Expert em experiência do cliente e fechamento de alto valor",
-    tema: "Vendas e Encantamento: Como Transformar Clientes em Fãs",
+    cargo: "Advogada Empresarial e Conselheira OAB",
+    descricao: "Expert em liderança inteligente e redução de riscos jurídicos",
+    tema: "Liderança Inteligente: Redução de Riscos e Engajamento",
     horario: "20:10 - 21:00"
   },
   {
     nome: "Vanylton Matias",
     cargo: "CEO, Grupo Núcleo",
-    descricao: "CEO de grupo empresarial multisetorial, reconhecido em gestão e inovação a nível nacional",
-    tema: "Inovação Corporativa: Como Empresas se Mantêm Competitivas em Tempos de Transformação",
+    descricao: "Especialista em métodos de gestão para escalar negócios",
+    tema: "Escalando Negócios com Equilíbrio e Humanidade",
     horario: "21:10 - 22:30"
   }
 ];
@@ -220,7 +227,7 @@ export function GrowthExperienceTriunfo() {
         name: 'Growth Experience Triunfo-PE 2026',
         slug: 'ge-triunfo-2026',
         type: 'growth_experience',
-        description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Capacitação, networking e conexões estratégicas. Programação especial a partir das 17:00 em 16 de abril de 2026 no Espaço Parque.',
+        description: 'GX Growth Experience Triunfo – Noite de Palestras e Negócios. Programação especial das 17h às 23h em 16 de abril de 2026 no Espaço Parque. Palestras, talk shows e networking.',
         shortDescription: 'Edição Triunfo-PE',
         location: 'Espaço Parque',
         city: 'Triunfo',
@@ -231,10 +238,10 @@ export function GrowthExperienceTriunfo() {
         primaryColor: '#FE4C38',
         secondaryColor: '#FF6B35',
         settings: {
-          maxRegistrations: 1500,
+          maxRegistrations: 300,
           maxMentors: 30,
           maxStartups: 20,
-          maxCompanies: 40,
+          maxCompanies: 6,
           enableB2B: false,
           enableMentoring: false,
           enableStartups: false,
@@ -257,7 +264,7 @@ export function GrowthExperienceTriunfo() {
           endDate: '2026-04-16',
           settings: {
             ...project.settings,
-            maxRegistrations: 1500
+            maxRegistrations: 300
           }
         };
 
@@ -279,14 +286,18 @@ export function GrowthExperienceTriunfo() {
     }
   }, [initProject, selectedProject?.id]);
 
-  // Sincronizar modais com a URL para facilitar compartilhamento
+  // Sincronizar modais com a URL apenas uma vez no mount ou quando o parâmetro muda
   useEffect(() => {
     const formParam = searchParams.get('form');
-    if (formParam === 'inscricao') setModalInscricaoAberto(true);
-    else if (['palestra', 'empresa'].includes(formParam || '')) {
-      setModalAberto(formParam as any);
+    if (!formParam) return;
+
+    if (formParam === 'inscricao') {
+        setModalInscricaoAberto(true);
+    } else if (['palestra', 'empresa'].includes(formParam)) {
+        setModalAberto(formParam as any);
     }
-  }, [searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.get('form')]); // Dependência específica para o valor do parâmetro
 
   const closeModals = () => {
     setModalInscricaoAberto(false);
@@ -313,9 +324,9 @@ export function GrowthExperienceTriunfo() {
   return (
     <div className="flex flex-col overflow-x-hidden">
       <SEOHead
-        title="Growth Experience Triunfo-PE 2026 | 16 de Abril"
-        description="A Maior Exposição de Negócios do Sertão do Pajeú. Redes, networking e palestras exclusivas. Programação a partir das 17:00 no Espaço Parque."
-        keywords="growth experience, triunfo pe, evento negócios, sebrae, empreendedorismo, sertão do pajeú"
+        title="GX Growth Experience Triunfo | Noite de Palestras e Negócios"
+        description="Uma noite inteira dedicada a palestras, talk shows e exposição de marcas para quem movimenta a economia do Sertão do Pajeú. 16 de abril, 17h às 23h."
+        keywords="gx growth experience, triunfo pe, evento negócios, palestrantes, talk show, networking"
         url={pageUrl}
       />
 
@@ -354,12 +365,12 @@ export function GrowthExperienceTriunfo() {
                 Acelere seu Crescimento com quem <span className="text-gradient">faz na prática</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                O Growth Experience Triunfo é um divisor de águas para o empreendedorismo regional. Reunimos especialistas, tecnologia e networking em uma noite de imersão total para transformar pequenas e médias empresas do Sertão do Pajeú.
+                No dia 16 de abril, Triunfo recebe uma noite inteira dedicada a palestras, talk shows e exposição de marcas. Um encontro estratégico para empreendedores e gestores que movimentam a economia do Sertão do Pajeú.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-8 mb-8">
                 {[
-                  { icon: TrendingUp, title: 'Palestras Magnas', desc: '4 grandes nomes no palco principal' },
+                  { icon: TrendingUp, title: 'Palestras Magnas', desc: '5 grandes nomes no palco principal' },
                   { icon: Zap, title: 'Networking VIP', desc: 'Conexões de alto nível com decisores' }
                 ].map((item, idx) => (
                   <div key={idx} className="flex gap-4 group">
@@ -379,9 +390,10 @@ export function GrowthExperienceTriunfo() {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-brand-orange-coral/20 blur-2xl rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                  src={getStorageUrl('event-images', 'espaco/gxexperience-noite.png')}
                   className="rounded-2xl shadow-2xl border border-white/10 relative z-10 w-full hover:scale-[1.02] transition-transform duration-500"
                   alt="Evento de Negócios"
+                  loading="lazy"
                 />
               </div>
               <div className="absolute -bottom-8 -left-8 glass-card p-6 border-brand-orange-coral/30 max-w-xs shadow-glow-orange z-20 animate-float">
@@ -389,7 +401,7 @@ export function GrowthExperienceTriunfo() {
                   <div className="p-2 bg-brand-orange-coral rounded-lg">
                     <Building2 className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-brand-orange-coral font-black text-4xl tracking-tighter">25+</p>
+                  <p className="text-brand-orange-coral font-black text-4xl tracking-tighter">6+</p>
                 </div>
                 <p className="text-white font-bold text-lg leading-tight">Empresas expositoras confirmadas</p>
                 <div className="mt-2 h-1 w-12 bg-brand-orange-coral rounded-full" />
@@ -459,12 +471,12 @@ export function GrowthExperienceTriunfo() {
 
           <div className="space-y-8">
             {[
-              { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking no hall de entrada' },
-              { time: '18:00', event: 'Jeronimo Freire: Gestão Exponencial', desc: 'Palestra de Abertura' },
-              { time: '19:00', event: 'Leandro Batista: Estratégias de Escala', desc: 'Palestra Magna' },
-              { time: '20:10', event: 'Carolinne Castro: Vendas e Encantamento', desc: 'Palestra Magna' },
-              { time: '21:10', event: 'Vanylton Matias: Inovação Corporativa', desc: 'Palestra de Encerramento' },
-              { time: '22:30', event: 'Sorteios e Networking Final', desc: 'Encerramento Oficial' }
+              { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
+              { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
+              { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
+              { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
+              { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
+              { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h)' }
             ].map((item, idx) => (
               <div key={idx} className="flex gap-6 items-start group">
                 <div className="flex flex-col items-center">
@@ -530,9 +542,10 @@ export function GrowthExperienceTriunfo() {
               <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient rounded-[2.5rem] blur opacity-20" />
               <div className="aspect-square lg:aspect-video rounded-[2rem] overflow-hidden border-2 border-white/10 shadow-2xl relative">
                 <img
-                  src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                  src={getStorageUrl('event-images', 'espaco/gxexperience-noite.png')}
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                   alt="Homenagem e Premiação"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent" />
               </div>
@@ -591,23 +604,26 @@ export function GrowthExperienceTriunfo() {
           <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 md:gap-24 px-4">
             <div className="group transition-all duration-500">
               <img 
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/acmt.png" 
+                src={getStorageUrl('marcas-apoio', 'acmt.png')} 
                 alt="ACMT" 
                 className="h-12 sm:h-16 md:h-20 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+                loading="lazy"
               />
             </div>
             <div className="group transition-all duration-500">
               <img 
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/sebrae.png" 
+                src={getStorageUrl('marcas-apoio', 'sebrae.png')} 
                 alt="SEBRAE" 
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+                loading="lazy"
               />
             </div>
             <div className="group transition-all duration-500">
               <img 
-                src="https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/marcas-apoio/sest-senat.png" 
+                src={getStorageUrl('marcas-apoio', 'sest-senat.png')} 
                 alt="SEST SENAT" 
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
+                loading="lazy"
               />
             </div>
           </div>

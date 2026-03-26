@@ -10,7 +10,7 @@ interface EdicaoAnteriorVideoProps {
 
 
 export function EdicaoAnteriorVideo({
-    videoSrc = 'https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov',
+    videoSrc = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov',
     showTriunfoTeaser = false,
 }: EdicaoAnteriorVideoProps) {
     const { selectedProject } = useProject();
@@ -53,8 +53,8 @@ export function EdicaoAnteriorVideo({
                         transforma o empreendedorismo do interior.
                         {showTriunfoTeaser && (
                             <>
-                                {' '}A edição {selectedProject?.city || 'Triunfo'} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'} chega com tudo amplificado:{' '}
-                                <strong className="text-white">2.000 participantes</strong> durante toda a programação.
+                                {' '}A edição Triunfo 2026 chega com tudo amplificado:{' '}
+                                <strong className="text-white">300 participantes</strong> durante toda a programação.
                             </>
                         )}
                     </p>
@@ -154,8 +154,8 @@ export function EdicaoAnteriorVideo({
                                     ? [
                                         {
                                             icon: Sparkles,
-                                            title: `${selectedProject?.city || 'Triunfo'} — A Versão Expandida`,
-                                            desc: `2.000 participantes durante toda a programação · ${selectedProject?.state === 'PE' ? 'Pernambuco' : 'Região'}`,
+                                            title: `Triunfo — A Versão Expandida`,
+                                            desc: `300 participantes durante toda a programação · Pernambuco`,
                                         },
                                     ]
                                     : [
@@ -188,9 +188,9 @@ export function EdicaoAnteriorVideo({
                                             {selectedProject?.city || 'Triunfo'} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'} será grandiosa e ampliada 🚀
                                         </p>
                                         <p className="text-gray-400 text-xs leading-relaxed">
-                                            Inspirada no sucesso do Juazeiro do Norte, a edição de {selectedProject?.city || 'Triunfo'} chega
-                                            com formato completo — <strong className="text-white">2.000 participantes</strong>,
-                                            circuito de experiências, Arena Pitch, Rodada B2B e manhã + noite de capacitação.
+                                            Inspirada no sucesso do Juazeiro do Norte, a edição de Triunfo chega
+                                            com peso amplificado — <strong className="text-white">300 participantes</strong>,
+                                            exposição de marcas e uma noite inteira de palestras, talk shows e networking.
                                         </p>
                                     </div>
                                 </div>

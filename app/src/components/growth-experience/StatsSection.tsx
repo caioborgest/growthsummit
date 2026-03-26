@@ -97,25 +97,25 @@ export function StatsSection({ project }: StatsSectionProps) {
     const stats = [
         {
             icon: Users,
-            value: (isTriunfo && (project?.settings?.maxRegistrations || 0) < 1500) ? 1500 : (project?.settings?.maxRegistrations || 500),
-            label: 'Participantes',
+            value: 300,
+            label: 'Empreendedores e Profissionais',
             suffix: '+'
         },
         {
             icon: Building2,
-            value: project?.settings?.maxCompanies || (isTriunfo ? 25 : 10),
+            value: 6,
             label: 'Empresas Expositoras',
             suffix: '+'
         },
         {
             icon: Target,
-            value: isTriunfo ? 4 : 20,
-            label: isTriunfo ? 'Palestras Magnas' : 'Workshops e Cursos',
-            suffix: '+'
+            value: 5,
+            label: 'Palestras de Gestão, Liderança, Mkt e Vendas',
+            suffix: ''
         },
         {
             icon: Handshake,
-            value: isTriunfo ? 10 : 2,
+            value: 10,
             label: 'Milhões em Negócios',
             suffix: 'M+'
         }

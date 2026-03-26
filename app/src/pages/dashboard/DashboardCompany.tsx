@@ -16,7 +16,8 @@ import {
   QrCode,
   Download,
   Mail,
-  Home
+  Home,
+  Phone
 } from 'lucide-react';
 import { BottomNavigation } from './components/shared/BottomNavigation';
 import { exportToCSV } from '@/utils/csv';
@@ -28,7 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompanies, useB2BDiscoveryCompanies, useB2BMeetings, useB2BSwipes, useB2BAppointmentsTriunfo, useB2BMatches, useSessions, useNotifications, useCheckInsAtividades, useMyRegistration, useLeads } from '@/hooks/useData';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
-import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -218,6 +218,7 @@ export function DashboardCompany() {
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
           onNotificationRead={handleMarkAsRead}
+          onSupportClick={() => window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=Preciso de suporte.`, '_blank')}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
@@ -789,7 +790,7 @@ export function DashboardCompany() {
                         >
                           WHATSAPP B2B
                         </Button>
-                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl" onClick={() => window.open('https://zczfutmymobgypbbamme.supabase.co/storage/v1/object/public/event-images/mapa-evento.png', '_blank')}>
+                        <Button variant="outline" className="w-full border-dark-300 text-gray-400 hover:text-white rounded-xl" onClick={() => window.open('https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/mapa-evento.png', '_blank')}>
                           <MapPin className="h-4 w-4 mr-2" />
                           Mapa Interativo
                         </Button>
