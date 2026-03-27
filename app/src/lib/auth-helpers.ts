@@ -88,6 +88,12 @@ export async function getOrCreateUser({
         if (signInError.message.includes('429') || signInError.message.toLowerCase().includes('too many requests')) {
             throw new Error('Muitas tentativas de login. Aguarde um momento e tente novamente.');
         }
+
+        // NOVO: Tratar e-mail não confirmado explicitamente
+        if (signInError.message.toLowerCase().includes('email not confirmed')) {
+            throw new Error('Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada ou peça uma nova confirmação.');
+        }
+
         throw signInError;
     }
 

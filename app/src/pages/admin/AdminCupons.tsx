@@ -94,7 +94,7 @@ export default function AdminCupons() {
         try {
             if (editingCoupon) {
                 await update(editingCoupon.id, {
-                    codigo: formData.codigo.toUpperCase(),
+                    codigo: (formData.codigo || '').toUpperCase(),
                     indicacaoTipo: formData.indicacaoTipo,
                     indicacaoNome: formData.indicacaoNome,
                     porcentagemDesconto: Number(formData.porcentagemDesconto),
@@ -107,7 +107,7 @@ export default function AdminCupons() {
             } else {
                 await create({
                     projectId: projectId || '',
-                    codigo: formData.codigo.toUpperCase(),
+                    codigo: (formData.codigo || '').toUpperCase(),
                     indicacaoTipo: formData.indicacaoTipo,
                     indicacaoNome: formData.indicacaoNome,
                     porcentagemDesconto: Number(formData.porcentagemDesconto),

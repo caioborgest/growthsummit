@@ -228,6 +228,10 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'inscricoes_growth_experience' AND column_name = 'extra_data') THEN
         ALTER TABLE public.inscricoes_growth_experience ADD COLUMN extra_data JSONB DEFAULT '{}'::JSONB;
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'inscricoes_growth_experience' AND column_name = 'cpf') THEN
+        ALTER TABLE public.inscricoes_growth_experience ADD COLUMN cpf TEXT;
+    END IF;
 END $$;
 
 CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
@@ -236,6 +240,7 @@ CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
         p_nome TEXT,
         p_email TEXT,
         p_telefone TEXT,
+        p_cpf TEXT,
         p_session_ids UUID [],
         p_tipo_inscricao TEXT DEFAULT 'standard',
         p_valor_pago NUMERIC DEFAULT 0,
@@ -285,14 +290,14 @@ IF array_length(v_full_sessions, 1) > 0 THEN
 END IF;
 
 INSERT INTO public.inscricoes_growth_experience (
-        project_id, user_id, nome, email, telefone, cursos_selecionados,
+        project_id, user_id, nome, email, telefone, cpf, cursos_selecionados,
         tipo_inscricao, valor_pago, status_pagamento, status, evento, palestras_noturnas,
         tipo_atividade_selecionada, sala_atividade, horario_atividade, nivel_atividade,
         indicacao_tipo, indicacao_nome, codigo_social, codigo_palestra, cupom_palestra,
         app_instalado, extra_data, lote_id, voucher_empresa, created_at
     )
 VALUES (
-        p_project_id, p_user_id, p_nome, p_email, p_telefone, p_session_ids,
+        p_project_id, p_user_id, p_nome, p_email, p_telefone, p_cpf, p_session_ids,
         p_tipo_inscricao, p_valor_pago, p_status_pagamento, p_status, p_evento, p_palestras_noturnas,
         p_tipo_atividade, p_sala_atividade, p_horario_atividade, p_nivel_atividade,
         p_indicacao_tipo, p_indicacao_nome, p_codigo_social, p_codigo_palestra, p_codigo_palestra,

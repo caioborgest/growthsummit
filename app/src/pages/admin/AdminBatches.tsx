@@ -75,9 +75,9 @@ export default function AdminBatches() {
     }
 
     const filteredBatches = batches.filter(b => {
-        const matchesSearch = b.nomeEmpresa.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            b.voucherCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            b.emailContato.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (b.nomeEmpresa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (b.voucherCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (b.emailContato || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || b.statusPagamento === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -110,7 +110,7 @@ export default function AdminBatches() {
             if (editingBatch) {
                 await update(editingBatch.id, {
                     ...formData,
-                    voucherCode: formData.voucherCode.toUpperCase()
+                    voucherCode: (formData.voucherCode || '').toUpperCase()
                 });
                 toast.success('Lote atualizado com sucesso!');
             } else {
@@ -118,7 +118,7 @@ export default function AdminBatches() {
                     ...formData,
                     projectId: projectId || '',
                     vagasUtilizadas: 0,
-                    voucherCode: formData.voucherCode.toUpperCase()
+                    voucherCode: (formData.voucherCode || '').toUpperCase()
                 });
                 toast.success('Lote corporativo criado com sucesso!');
             }
@@ -280,7 +280,7 @@ export default function AdminBatches() {
                                                 batch.statusPagamento === 'pendente' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                                                     'bg-red-500/10 text-red-500 border-red-500/20'
                                         }>
-                                            {batch.statusPagamento.toUpperCase()}
+                                            {(batch.statusPagamento || 'pendente').toUpperCase()}
                                         </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-right">

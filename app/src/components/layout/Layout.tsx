@@ -42,9 +42,8 @@ export function Layout() {
         });
       });
 
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
-      });
+      // Removido listener de controllerchange que causava loop infinito no Ctrl+Shift+R
+      // O recarregamento agora é gerenciado via onNeedRefresh no main.tsx
     }
   }, []);
 
