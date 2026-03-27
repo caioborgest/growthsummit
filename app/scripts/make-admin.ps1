@@ -1,4 +1,4 @@
-$url = "https://zczfutmymobgypbbamme.supabase.co"
+$url = "https://xeuqtxxhncvechrxerqw.supabase.co"
 $key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpjemZ1dG15bW9iZ3lwYmJhbW1lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MjA4NTc4NDU1MH0.2Zv0vEXpIiNeC0aWSqTXsRSA4nvW1L6jZS5J-FdOdlU"
 $email = "projetos@cbxgrowth.com.br"
 

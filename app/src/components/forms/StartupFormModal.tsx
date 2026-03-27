@@ -249,7 +249,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-xl w-full p-4 sm:p-6 max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
+            <div className="glass-card max-w-xl w-full p-4 sm:p-6 max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
                 {/* Close Button */}
                 <button
                     onClick={onClose}

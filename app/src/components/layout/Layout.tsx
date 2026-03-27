@@ -16,10 +16,14 @@ export function Layout() {
   const [waitingSW, setWaitingSW] = useState<ServiceWorker | null>(null);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
+  const searchParams = new URLSearchParams(location.search);
+  const isEmbed = searchParams.get('embed') === 'true';
+
   const isLandingPage = location.pathname === '/' || 
                         location.pathname.includes('growth-experience-triunfo') || 
                         location.pathname.includes('growth-experience-petrolina') ||
-                        location.pathname.includes('sobre');
+                        location.pathname.includes('sobre') ||
+                        isEmbed;
 
   // PWA: listen for update available
   useEffect(() => {
@@ -96,9 +100,9 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-dark text-white overflow-x-hidden">
-      <Header />
+      {!isEmbed && <Header />}
       {/* offline indicator */}
-      {!online && showOfflineBanner && (
+      {!online && showOfflineBanner && !isEmbed && (
         <div
           className="fixed top-16 inset-x-0 text-white text-center py-1 z-50 flex items-center justify-center"
           style={{ background: colors.error }}
@@ -113,7 +117,7 @@ export function Layout() {
           </button>
         </div>
       )}
-      <main className={isLandingPage ? "" : "pt-18 lg:pt-20"}>
+      <main className={isLandingPage || isEmbed ? "" : "pt-18 lg:pt-20"}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -126,8 +130,8 @@ export function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
-      <Footer />
-      <MobileQuickActions />
+      {!isEmbed && <Footer />}
+      {!isEmbed && <MobileQuickActions />}
     </div>
   );
 }

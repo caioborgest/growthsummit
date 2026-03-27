@@ -141,7 +141,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Banco</p>
                                     <div className="p-2 rounded-lg bg-dark-200/50 border border-white/5">
-                                        <p className="text-[10px] font-bold text-white uppercase">SANTANDER / INTER</p>
+                                        <p className="text-[10px] font-bold text-white uppercase">CORA</p>
                                     </div>
                                 </div>
                             </div>

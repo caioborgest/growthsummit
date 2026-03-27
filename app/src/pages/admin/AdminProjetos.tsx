@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useProjects } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
@@ -36,11 +37,25 @@ const defaultSettings = {
   enableStartups: true,
   enableCheckIn: true,
   ticketPrices: { standard: 197, pro: 347, vip: 1500 },
+  publicContent: {
+    heroTitle: 'Growth Experience 2026',
+    heroSubtitle: 'O MAIOR EVENTO DE CRECHIMENTO DO NORDESTE',
+    popup: {
+      active: false,
+      title: 'OFERTA ESPECIAL',
+      subtitle: 'LOTE PROMOCIONAL',
+      description: 'Garanta sua vaga agora!',
+      buttonText: 'QUERO DESCONTO'
+    }
+  }
 };
 
 export default function AdminProjetos() {
   const { data: projects, create, update, remove, isLoading } = useProjects();
   const { selectedProject, setSelectedProject } = useProject();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<Partial<Project>>({
@@ -133,6 +148,52 @@ export default function AdminProjetos() {
     setIsDialogOpen(true);
   };
 
+  useEffect(() => {
+    if (editId && projects.length > 0 && !isDialogOpen) {
+      const projectToEdit = projects.find(p => p.id === editId);
+      if (projectToEdit) {
+        openEditDialog(projectToEdit);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [editId, projects, isDialogOpen, setSearchParams]);
+
+  const addPalestrante = () => {
+    const currentPalestrantes = formData.settings?.publicContent?.palestrantes || [];
+    setFormData({
+      ...formData,
+      settings: {
+        ...defaultSettings,
+        ...formData.settings,
+        publicContent: {
+          ...formData.settings?.publicContent,
+          palestrantes: [
+            ...currentPalestrantes,
+            { nome: '', cargo: '', descricao: '', tema: '', horario: '' }
+          ]
+        }
+      }
+    });
+  };
+
+  const addVaga = () => {
+    const currentVagas = formData.settings?.publicContent?.vagas || [];
+    setFormData({
+      ...formData,
+      settings: {
+        ...defaultSettings,
+        ...formData.settings,
+        publicContent: {
+          ...formData.settings?.publicContent,
+          vagas: [
+            ...currentVagas,
+            { nome: '', espaco: '', ingressos: 0, beneficios: [], vagas: 0 }
+          ]
+        }
+      }
+    });
+  };
+
   const openCreateDialog = () => {
     setEditingProject(null);
     setFormData({
@@ -178,346 +239,527 @@ export default function AdminProjetos() {
               <DialogTitle>{editingProject ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome do Evento *</Label>
-                  <Input
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ex: Growth Experience - Edição..."
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo *</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value: ProjectType) => setFormData({ ...formData, type: value })}
-                  >
-                    <SelectTrigger className="bg-[#0F172A] border-[#334155]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#1E293B] border-[#334155]">
-                      <SelectItem value="growth_summit">Growth Summit</SelectItem>
-                      <SelectItem value="growth_experience">Growth Experience</SelectItem>
-                      <SelectItem value="growth_conference">Growth Conference</SelectItem>
-                      <SelectItem value="growth_festival">Growth Festival</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <Tabs defaultValue="geral" className="w-full">
+                <TabsList className="bg-[#0F172A] border-[#334155] mb-4 flex flex-wrap h-auto p-1">
+                  <TabsTrigger value="geral">Geral</TabsTrigger>
+                  <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
+                  <TabsTrigger value="modulos">Módulos</TabsTrigger>
+                  <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
+                  <TabsTrigger value="popup">Pop-up</TabsTrigger>
+                  <TabsTrigger value="integracao">Integração</TabsTrigger>
+                </TabsList>
 
-              <div className="space-y-2">
-                <Label>Descrição</Label>
-                <Input
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descrição completa do evento"
-                  className="bg-[#0F172A] border-[#334155]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Descrição Curta</Label>
-                <Input
-                  value={formData.shortDescription || ''}
-                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                  placeholder="Ex: Edição Triunfo"
-                  className="bg-[#0F172A] border-[#334155]"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Local *</Label>
-                  <Input
-                    value={formData.location || ''}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Nome do local"
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Cidade *</Label>
-                  <Input
-                    value={formData.city || ''}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    placeholder="Cidade"
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Estado *</Label>
-                  <Input
-                    value={formData.state || ''}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    placeholder="UF"
-                    maxLength={2}
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Data Início *</Label>
-                  <Input
-                    type="date"
-                    value={formData.startDate || ''}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Data Fim *</Label>
-                  <Input
-                    type="date"
-                    value={formData.endDate || ''}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Cor Primária</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={formData.primaryColor || '#21808D'}
-                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                      className="w-12 p-1 bg-[#0F172A] border-[#334155]"
-                    />
-                    <Input
-                      value={formData.primaryColor || '#21808D'}
-                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                      placeholder="#000000"
-                      className="flex-1 bg-[#0F172A] border-[#334155]"
-                    />
+                <TabsContent value="geral" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Nome do Evento *</Label>
+                      <Input
+                        value={formData.name || ''}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Ex: Growth Experience - Edição..."
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tipo *</Label>
+                      <Select
+                        value={formData.type}
+                        onValueChange={(value: ProjectType) => setFormData({ ...formData, type: value })}
+                      >
+                        <SelectTrigger className="bg-[#0F172A] border-[#334155]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1E293B] border-[#334155]">
+                          <SelectItem value="growth_summit">Growth Summit</SelectItem>
+                          <SelectItem value="growth_experience">Growth Experience</SelectItem>
+                          <SelectItem value="growth_conference">Growth Conference</SelectItem>
+                          <SelectItem value="growth_festival">Growth Festival</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Cor Secundária</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={formData.secondaryColor || '#FE4C38'}
-                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
-                      className="w-12 p-1 bg-[#0F172A] border-[#334155]"
-                    />
-                    <Input
-                      value={formData.secondaryColor || '#FE4C38'}
-                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
-                      placeholder="#000000"
-                      className="flex-1 bg-[#0F172A] border-[#334155]"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: ProjectStatus) => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger className="bg-[#0F172A] border-[#334155]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1E293B] border-[#334155]">
-                    <SelectItem value="draft">Rascunho</SelectItem>
-                    <SelectItem value="active">Ativo</SelectItem>
-                    <SelectItem value="paused">Pausado</SelectItem>
-                    <SelectItem value="completed">Concluído</SelectItem>
-                    <SelectItem value="cancelled">Cancelado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="border-t border-[#334155] pt-4">
-                <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Configurações de Preços</h4>
-                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Standard (R$)</Label>
+                    <Label>Descrição</Label>
                     <Input
-                      type="number"
-                      value={formData.settings?.ticketPrices?.standard || 0}
+                      value={formData.description || ''}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Descrição completa do evento"
+                      className="bg-[#0F172A] border-[#334155]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Local *</Label>
+                      <Input
+                        value={formData.location || ''}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        placeholder="Nome do local"
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cidade *</Label>
+                      <Input
+                        value={formData.city || ''}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="Cidade"
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Estado *</Label>
+                      <Input
+                        value={formData.state || ''}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        placeholder="UF"
+                        maxLength={2}
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Data Início *</Label>
+                      <Input
+                        type="date"
+                        value={formData.startDate || ''}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Data Fim *</Label>
+                      <Input
+                        type="date"
+                        value={formData.endDate || ''}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        className="bg-[#0F172A] border-[#334155]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Cor Primária</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={formData.primaryColor || '#21808D'}
+                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                          className="w-12 p-1 bg-[#0F172A] border-[#334155]"
+                        />
+                        <Input
+                          value={formData.primaryColor || '#21808D'}
+                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                          placeholder="#000000"
+                          className="flex-1 bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Status</Label>
+                      <Select
+                        value={formData.status}
+                        onValueChange={(value: ProjectStatus) => setFormData({ ...formData, status: value })}
+                      >
+                        <SelectTrigger className="bg-[#0F172A] border-[#334155]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1E293B] border-[#334155]">
+                          <SelectItem value="draft">Rascunho</SelectItem>
+                          <SelectItem value="active">Ativo</SelectItem>
+                          <SelectItem value="paused">Pausado</SelectItem>
+                          <SelectItem value="completed">Concluído</SelectItem>
+                          <SelectItem value="cancelled">Cancelado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="financeiro" className="space-y-6">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-[#94A3B8]">Preços dos Ingressos</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Standard (R$)</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.ticketPrices?.standard || 0}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              ticketPrices: { ...formData.settings?.ticketPrices, standard: parseFloat(e.target.value) || 0 }
+                            }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Pro (R$)</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.ticketPrices?.pro || 0}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              ticketPrices: { ...formData.settings?.ticketPrices, pro: parseFloat(e.target.value) || 0 }
+                            }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>VIP (R$)</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.ticketPrices?.vip || 0}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              ticketPrices: { ...formData.settings?.ticketPrices, vip: parseFloat(e.target.value) || 0 }
+                            }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#334155] pt-4 space-y-4">
+                    <h4 className="text-sm font-medium text-[#94A3B8]">Metas e Limites</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Meta de Público *</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.goalRegistrations || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: { ...formData.settings!, goalRegistrations: parseInt(e.target.value) || 0 }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Limite Físico</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.maxRegistrations || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: { ...formData.settings!, maxRegistrations: parseInt(e.target.value) || undefined }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="modulos" className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold">Mentorias VIP</Label>
+                        <p className="text-[10px] text-[#94A3B8]">Habilitar agendamento de mentorias</p>
+                      </div>
+                      <Switch
+                        checked={formData.settings?.enableMentoring ?? true}
+                        onCheckedChange={(checked) => setFormData({
+                          ...formData,
+                          settings: { ...defaultSettings, ...formData.settings, enableMentoring: checked }
+                        })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold">Rodada de Negócios (B2B)</Label>
+                        <p className="text-[10px] text-[#94A3B8]">Matchmaking entre empresas</p>
+                      </div>
+                      <Switch
+                        checked={formData.settings?.enableB2B ?? true}
+                        onCheckedChange={(checked) => setFormData({
+                          ...formData,
+                          settings: { ...defaultSettings, ...formData.settings, enableB2B: checked }
+                        })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold">Arena StartUp</Label>
+                        <p className="text-[10px] text-[#94A3B8]">Inscrições de startups</p>
+                      </div>
+                      <Switch
+                        checked={formData.settings?.enableStartups ?? true}
+                        onCheckedChange={(checked) => setFormData({
+                          ...formData,
+                          settings: { ...defaultSettings, ...formData.settings, enableStartups: checked }
+                        })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-bold">Check-in Digital</Label>
+                        <p className="text-[10px] text-[#94A3B8]">Controle via App</p>
+                      </div>
+                      <Switch
+                        checked={formData.settings?.enableCheckIn ?? true}
+                        onCheckedChange={(checked) => setFormData({
+                          ...formData,
+                          settings: { ...defaultSettings, ...formData.settings, enableCheckIn: checked }
+                        })}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="conteudo" className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Título Hero</Label>
+                       <Input
+                         value={formData.settings?.publicContent?.heroTitle || ''}
+                         onChange={(e) => setFormData({
+                           ...formData,
+                           settings: {
+                             ...defaultSettings,
+                             ...formData.settings,
+                             publicContent: { ...formData.settings?.publicContent, heroTitle: e.target.value }
+                           }
+                         })}
+                         placeholder="Ex: O Maior Evento de Inovação"
+                         className="bg-[#0F172A] border-[#334155]"
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label>Subtítulo Hero</Label>
+                       <Input
+                         value={formData.settings?.publicContent?.heroSubtitle || ''}
+                         onChange={(e) => setFormData({
+                           ...formData,
+                           settings: {
+                             ...defaultSettings,
+                             ...formData.settings,
+                             publicContent: { ...formData.settings?.publicContent, heroSubtitle: e.target.value }
+                           }
+                         })}
+                         placeholder="Ex: 16 de Abril em Triunfo"
+                         className="bg-[#0F172A] border-[#334155]"
+                       />
+                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Sobre o Evento (Texto)</Label>
+                    <textarea
+                      value={formData.settings?.publicContent?.aboutText || ''}
                       onChange={(e) => setFormData({
                         ...formData,
                         settings: {
                           ...defaultSettings,
                           ...formData.settings,
-                          ticketPrices: {
-                            ...defaultSettings.ticketPrices,
-                            ...formData.settings?.ticketPrices,
-                            standard: parseFloat(e.target.value) || 0
-                          }
+                          publicContent: { ...formData.settings?.publicContent, aboutText: e.target.value }
                         }
                       })}
-                      className="bg-[#0F172A] border-[#334155]"
+                      className="w-full min-h-[100px] bg-[#0F172A] border-[#334155] rounded-md p-3 text-sm text-white"
+                      placeholder="Descreva o evento para o público..."
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Pro (R$)</Label>
-                    <Input
-                      type="number"
-                      value={formData.settings?.ticketPrices?.pro || 0}
-                      onChange={(e) => setFormData({
+
+                  <div className="space-y-4 border-t border-[#334155] pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-lg font-bold">Palestrantes</Label>
+                      <Button size="sm" onClick={addPalestrante} variant="outline" className="border-[#21808D] text-[#21808D]">
+                        <Plus className="w-4 h-4 mr-1" /> Add Palestrante
+                      </Button>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {formData.settings?.publicContent?.palestrantes?.map((p, i) => (
+                        <div key={i} className="p-4 bg-[#0F172A] rounded-lg border border-[#334155] space-y-2">
+                          <Input placeholder="Nome" value={p.nome} onChange={(e) => {
+                             const list = [...(formData.settings?.publicContent?.palestrantes || [])];
+                             list[i].nome = e.target.value;
+                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
+                          }} className="bg-[#1E293B]" />
+                          <Input placeholder="Cargo" value={p.cargo} onChange={(e) => {
+                             const list = [...(formData.settings?.publicContent?.palestrantes || [])];
+                             list[i].cargo = e.target.value;
+                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
+                          }} className="bg-[#1E293B]" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 border-t border-[#334155] pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-lg font-bold">Cotas de Patrocínio</Label>
+                      <Button size="sm" onClick={addVaga} variant="outline" className="border-[#21808D] text-[#21808D]">
+                        <Plus className="w-4 h-4 mr-1" /> Add Cota
+                      </Button>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {formData.settings?.publicContent?.vagas?.map((v, i) => (
+                        <div key={i} className="p-4 bg-[#0F172A] rounded-lg border border-[#334155] space-y-2">
+                          <Input placeholder="Tipo de Cota (Ex: Ouro)" value={v.nome} onChange={(e) => {
+                             const list = [...(formData.settings?.publicContent?.vagas || [])];
+                             list[i].nome = e.target.value;
+                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
+                          }} className="bg-[#1E293B]" />
+                          <Input placeholder="Espaço (Ex: STAND 10m2)" value={v.espaco} onChange={(e) => {
+                             const list = [...(formData.settings?.publicContent?.vagas || [])];
+                             list[i].espaco = e.target.value;
+                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
+                          }} className="bg-[#1E293B]" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="popup" className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-bold text-brand-orange-coral">Ativar Pop-up Promocional</Label>
+                      <p className="text-[10px] text-[#94A3B8]">Exibir oferta na tela inicial após 20 segundos</p>
+                    </div>
+                    <Switch
+                      checked={formData.settings?.publicContent?.popup?.active ?? false}
+                      onCheckedChange={(checked) => setFormData({
                         ...formData,
                         settings: {
                           ...defaultSettings,
                           ...formData.settings,
-                          ticketPrices: {
-                            ...defaultSettings.ticketPrices,
-                            ...formData.settings?.ticketPrices,
-                            pro: parseFloat(e.target.value) || 0
+                          publicContent: { 
+                            ...formData.settings?.publicContent, 
+                            popup: { ...formData.settings?.publicContent?.popup, active: checked } as any
                           }
                         }
                       })}
-                      className="bg-[#0F172A] border-[#334155]"
+                      className="data-[state=checked]:bg-brand-orange-coral"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>VIP (R$)</Label>
-                    <Input
-                      type="number"
-                      value={formData.settings?.ticketPrices?.vip || 0}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        settings: {
-                          ...defaultSettings,
-                          ...formData.settings,
-                          ticketPrices: {
-                            ...defaultSettings.ticketPrices,
-                            ...formData.settings?.ticketPrices,
-                            vip: parseFloat(e.target.value) || 0
-                          }
-                        }
-                      })}
-                      className="bg-[#0F172A] border-[#334155]"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <h4 className="text-sm font-medium text-[#94A3B8] mb-3">Metas, Limites e Vagas</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Meta de Público (Quantidade) *</Label>
-                  <Input
-                    type="number"
-                    required
-                    value={formData.settings?.goalRegistrations || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      settings: {
-                        ...defaultSettings,
-                        ...formData.settings,
-                        goalRegistrations: parseInt(e.target.value) || 0
-                      }
-                    })}
-                    className="bg-[#0F172A] border-[#334155]"
-                    placeholder="Ex: 1500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Limite Máximo (Físico)</Label>
-                  <Input
-                    type="number"
-                    value={formData.settings?.maxRegistrations || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      settings: {
-                        ...defaultSettings,
-                        ...formData.settings,
-                        maxRegistrations: parseInt(e.target.value) || undefined
-                      }
-                    })}
-                    className="bg-[#0F172A] border-[#334155]"
-                  />
-                </div>
-              </div>
-
-              <div className="border-t border-[#334155] pt-4">
-                <h4 className="text-sm font-medium text-[#94A3B8] mb-4">Módulos e Funcionalidades</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-bold">Mentorias VIP</Label>
-                      <p className="text-[10px] text-[#94A3B8]">Habilitar agendamento de mentorias</p>
+                  {formData.settings?.publicContent?.popup?.active && (
+                    <div className="space-y-4 p-4 border border-[#334155] rounded-xl bg-[#0F172A]/50">
+                      <div className="space-y-2">
+                        <Label>Selo Superior (Subtítulo)</Label>
+                        <Input
+                          value={formData.settings?.publicContent?.popup?.subtitle || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              publicContent: { 
+                                ...formData.settings?.publicContent, 
+                                popup: { ...formData.settings?.publicContent?.popup, subtitle: e.target.value } as any
+                              }
+                            }
+                          })}
+                          placeholder="Ex: Lote Promocional"
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Título Principal</Label>
+                        <Input
+                          value={formData.settings?.publicContent?.popup?.title || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              publicContent: { 
+                                ...formData.settings?.publicContent, 
+                                popup: { ...formData.settings?.publicContent?.popup, title: e.target.value } as any
+                              }
+                            }
+                          })}
+                          placeholder="Ex: Compre 2 GanhE 3!"
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Descrição</Label>
+                        <Input
+                          value={formData.settings?.publicContent?.popup?.description || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              publicContent: { 
+                                ...formData.settings?.publicContent, 
+                                popup: { ...formData.settings?.publicContent?.popup, description: e.target.value } as any
+                              }
+                            }
+                          })}
+                          placeholder="Ex: Reúna sua equipe e economize."
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Texto do Botão (CTA via WhatsApp)</Label>
+                        <Input
+                          value={formData.settings?.publicContent?.popup?.buttonText || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: {
+                              ...defaultSettings,
+                              ...formData.settings,
+                              publicContent: { 
+                                ...formData.settings?.publicContent, 
+                                popup: { ...formData.settings?.publicContent?.popup, buttonText: e.target.value } as any
+                              }
+                            }
+                          })}
+                          placeholder="Ex: GARANTIR 3x2"
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
                     </div>
-                    <Switch
-                      checked={formData.settings?.enableMentoring ?? true}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
-                        settings: { ...defaultSettings, ...formData.settings, enableMentoring: checked }
-                      })}
-                    />
-                  </div>
+                  )}
+                </TabsContent>
 
-                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-bold">Rodada de Negócios (B2B)</Label>
-                      <p className="text-[10px] text-[#94A3B8]">Habilitar matchmaking entre empresas</p>
+                <TabsContent value="integracao" className="space-y-4">
+                  <div className="p-4 bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-lg">
+                    <h4 className="font-bold text-brand-orange-coral mb-2 flex items-center gap-2">
+                       <Plus className="w-4 h-4 rotate-45" /> Widget de Inscrição
+                    </h4>
+                    <p className="text-xs text-gray-400 mb-4">Incorpore o formulário oficial em sites como WordPress, Webflow ou Landing Pages próprias.</p>
+                    <div className="relative">
+                      <pre className="bg-black/50 p-4 rounded-xl text-[10px] overflow-x-auto text-teal-400 border border-white/10">
+                        {`<iframe \n  src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" \n  width="100%" \n  height="800px" \n  frameborder="0"\n></iframe>`}
+                      </pre>
+                      <Button 
+                        size="sm" 
+                        className="absolute top-2 right-2 bg-brand-orange-coral" 
+                        onClick={() => {
+                          const code = `<iframe src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" width="100%" height="800px" frameborder="0"></iframe>`;
+                          navigator.clipboard.writeText(code);
+                          toast.success('Código copiado!');
+                        }}
+                      >
+                        Copiar
+                      </Button>
                     </div>
-                    <Switch
-                      checked={formData.settings?.enableB2B ?? true}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
-                        settings: { ...defaultSettings, ...formData.settings, enableB2B: checked }
-                      })}
-                    />
                   </div>
-
-                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-bold">Arena StartUp</Label>
-                      <p className="text-[10px] text-[#94A3B8]">Habilitar inscrições de startups</p>
-                    </div>
-                    <Switch
-                      checked={formData.settings?.enableStartups ?? true}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
-                        settings: { ...defaultSettings, ...formData.settings, enableStartups: checked }
-                      })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-xl border border-[#334155]">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-bold">Check-in Digital</Label>
-                      <p className="text-[10px] text-[#94A3B8]">Habilitar controle de acesso via App</p>
-                    </div>
-                    <Switch
-                      checked={formData.settings?.enableCheckIn ?? true}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
-                        settings: { ...defaultSettings, ...formData.settings, enableCheckIn: checked }
-                      })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Calculadora de Receita */}
-              <div className="mt-4 p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                <p className="text-xs uppercase font-black text-teal-400 mb-2">Simulador de Faturamento (Baseado na Meta)</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-400">Receita Prevista (Média):</p>
-                    <p className="text-xl font-bold text-white">
-                      {(((formData.settings?.goalRegistrations || 0) *
-                        ((formData.settings?.ticketPrices?.standard || 0) + (formData.settings?.ticketPrices?.pro || 0) + (formData.settings?.ticketPrices?.vip || 0)) / 3)
-                      ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Total de Pessoas:</p>
-                    <p className="text-xl font-bold text-white">{formData.settings?.goalRegistrations || 0}</p>
-                  </div>
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex justify-end gap-3 pt-4">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-[#334155] text-[#94A3B8]">

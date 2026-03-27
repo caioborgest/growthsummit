@@ -65,23 +65,39 @@ const benefits = [
 ];
 
 const schedule = [
-  { time: "07:30", activity: "Coffee Morning VIP com Palestrantes" },
-  { time: "08:30", activity: "Palestras Principais (área VIP)" },
-  { time: "12:30", activity: "Almoço VIP Exclusivo" },
-  { time: "15:00", activity: "Mentorias 1:1 Premium" },
-  { time: "19:30", activity: "Jantar de Encerramento VIP" },
+  { time: "17:00", activity: "Credenciamento e Exposição de Marcas" },
+  { time: "18:00", activity: "Palestra Magna: Jerônimo Freire" },
+  { time: "19:00", activity: "Talk Show: Bastidores de Negócios" },
+  { time: "20:30", activity: "Networking VIP & Coffee Break" },
+  { time: "21:10", activity: "Palestra Magna: Vanylton Matias" },
+  { time: "22:30", activity: "Encerramento e Networking Final" },
 ];
 
 const TriumphSpeakers = [
   {
-    name: "Vanylton Matias",
-    role: "CEO do Grupo Núcleo",
-    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
+    name: "Jerônimo Freire",
+    role: "Consultor e Mentor de Negócios",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp"
   },
   {
     name: "Leandro Batista",
-    role: "CEO da Fitness Exclusive",
+    role: "CEO Fitness Exclusive",
     image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg"
+  },
+  {
+    name: "Carolinne Castro",
+    role: "Advogada Empresarial",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp"
+  },
+  {
+    name: "João Daniel",
+    role: "CEO Cedan Rações",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.jpeg"
+  },
+  {
+    name: "Vanylton Matias",
+    role: "CEO do Grupo Núcleo",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
   }
 ];
 
@@ -196,7 +212,7 @@ export function GrowthExperience() {
                   </div>
                 </div>
                 <p className="text-lg text-gray-400 leading-relaxed mb-8">
-                  A nossa edição flagship no coração da serra. Uma imersão exclusiva focada em <span className="text-white">estratégias de escala para varejo, agro e serviços no interior</span>. Networking de altíssimo nível com empresários que faturam múltiplos milhões.
+                  A nossa edição flagship no coração da serra. Uma imersão exclusiva das <span className="text-white">17h às 23h</span>, focada em <span className="text-white">estratégias de escala para varejo, agro e serviços no interior</span>. Networking de altíssimo nível com empresários convidados.
                 </p>
               </div>
 

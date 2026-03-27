@@ -356,7 +356,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                     ) : (
                         <>
                             <CheckCircle className="h-6 w-6 mr-3" />
-                            FINALIZAR INSCRIÇÃO
+                            AVANÇAR
                         </>
                     )}
                 </Button>

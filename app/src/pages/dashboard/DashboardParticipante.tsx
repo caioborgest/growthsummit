@@ -56,6 +56,7 @@ import { SelfCheckInModal } from './components/SelfCheckInModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
+import { raffleService } from '@/services/raffleService';
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
 import { QuickActions } from './components/shared/QuickActions';
@@ -214,7 +215,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
             </button>
           </div>
 
-          <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <div className="p-6 space-y-5 max-h-[65dvh] overflow-y-auto custom-scrollbar">
             {/* Benefícios */}
             <div className="space-y-2">
               {[

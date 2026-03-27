@@ -46,8 +46,36 @@ export interface ProjectSettings {
   goalRevenue?: number;
   goalSponsorship?: number;
   goalRegistrations?: number;
-  targetRegistrations?: number;
   targetRevenue?: number;
+  publicContent?: {
+    heroTitle?: string;
+    heroSubtitle?: string;
+    heroVideo?: string;
+    aboutTitle?: string;
+    aboutText?: string;
+    popup?: {
+      active: boolean;
+      title: string;
+      subtitle: string;
+      description: string;
+      buttonText: string;
+    };
+    palestrantes?: {
+      nome: string;
+      cargo: string;
+      descricao: string;
+      tema: string;
+      horario: string;
+    }[];
+    vagas?: {
+      nome: string;
+      espaco: string;
+      ingressos: number;
+      beneficios: string[];
+      vagas: number;
+      destaque?: boolean;
+    }[];
+  };
 }
 
 export interface User {

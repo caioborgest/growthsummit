@@ -7,6 +7,9 @@ import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 export function LotePromocionalPopUp() {
+    const { selectedProject } = useProject();
+    const popupConfig = selectedProject?.settings?.publicContent?.popup;
+
     const [isOpen, setIsOpen] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
 
@@ -32,8 +35,6 @@ export function LotePromocionalPopUp() {
         localStorage.setItem('lotePromocionalLastShown', new Date().toDateString());
     };
 
-    const { selectedProject } = useProject();
-
     const handleWhatsApp = () => {
         const projectName = selectedProject?.name || 'Growth Experience';
         const message = encodeURIComponent(`Olá! Tenho interesse na Oferta de Lote Promocional (Compre 2, Leve 3) para o ${projectName}.`);
@@ -41,7 +42,7 @@ export function LotePromocionalPopUp() {
         handleClose();
     };
 
-    if (!shouldRender) return null;
+    if (!popupConfig?.active || !shouldRender) return null;
 
     return (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -94,24 +95,23 @@ export function LotePromocionalPopUp() {
                         </div>
 
                         {/* Título */}
-                        <h2 className="text-xl sm:text-3xl font-black text-white mb-2 leading-none tracking-tighter uppercase italic">
-                            Compre 2
+                        <h2 className="text-xl sm:text-3xl font-black text-brand-orange-coral drop-shadow-sm mb-3 sm:mb-4 leading-none tracking-tighter uppercase italic">
+                            {popupConfig?.title || 'Compre 2 GanhE 3!'}
                         </h2>
-                        <span className="text-xl sm:text-3xl font-black text-brand-orange-coral drop-shadow-sm italic block mb-3 sm:mb-4">
-                            GanhE 3!
-                        </span>
 
                         {/* Subtítulo */}
                         <div className="flex items-center justify-center gap-2">
                             <Star className="h-3 w-3 sm:h-4 sm:w-4 text-brand-orange-coral fill-brand-orange-coral" />
-                            <p className="text-gray-300 font-medium text-[11px] sm:text-sm uppercase tracking-widest">Lote Promocional</p>
+                            <p className="text-gray-300 font-medium text-[11px] sm:text-sm uppercase tracking-widest">{popupConfig?.subtitle || 'Lote Promocional'}</p>
                             <Star className="h-3 w-3 sm:h-4 sm:w-4 text-brand-orange-coral fill-brand-orange-coral" />
                         </div>
                     </div>
 
                     {/* Descrição */}
                     <p className="text-gray-400 text-sm sm:text-base leading-relaxed max-w-sm mx-auto text-center mb-5 sm:mb-6">
-                        Reúna sua equipe e economize. O terceiro ingresso é um <span className="text-white font-bold border-b-2 border-brand-orange-coral/50">investimento nosso</span> no seu time.
+                        {popupConfig?.description || (
+                            <>Reúna sua equipe e economize. O terceiro ingresso é um <span className="text-white font-bold border-b-2 border-brand-orange-coral/50">investimento nosso</span> no seu time.</>
+                        )}
                     </p>
 
                     {/* Vantagens */}
@@ -143,7 +143,7 @@ export function LotePromocionalPopUp() {
                             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                             <div className="relative z-10 flex items-center gap-2">
                                 <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
-                                <span>GARANTIR 3x2</span>
+                                <span>{popupConfig?.buttonText || 'GARANTIR 3x2'}</span>
                             </div>
                             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-2 relative z-10" />
                         </Button>

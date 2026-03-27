@@ -309,8 +309,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     }
 
     // Clean up: convert empty strings to null for ID/foreign key fields to avoid UUID errors
-    const isIdField = key.toLowerCase().includes('id') || key.toLowerCase().includes('uid');
-    if (isIdField && typeof value === 'string' && value.trim() === '') {
+    if (typeof value === 'string' && value.trim() === '') {
       result[dbKey] = null;
     } else {
       result[dbKey] = value;
@@ -328,9 +327,14 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       result.ticket_price_pro = Math.round((tp.pro || 0) * 100);
       result.ticket_price_vip = Math.round((tp.vip || 0) * 100);
     }
+    if (s.enableB2B !== undefined) result.enable_b2b = s.enableB2B;
+    if (s.enableMentoring !== undefined) result.enable_mentoring = s.enableMentoring;
+    if (s.enableStartups !== undefined) result.enable_startups = s.enableStartups;
+    if (s.enableCheckIn !== undefined) result.enable_check_in = s.enableCheckIn;
     if (s.goalRevenue !== undefined) result.goal_revenue = s.goalRevenue;
     if (s.goalSponsorship !== undefined) result.goal_sponsorship = s.goalSponsorship;
     if (s.goalRegistrations !== undefined) result.goal_registrations = s.goalRegistrations;
+    if (s.publicContent !== undefined) result.public_content = s.publicContent;
     // Remove the raw settings object — it was expanded above into flat columns
     delete result.settings;
   }
@@ -454,17 +458,17 @@ function getSelectFields(entity: string, projectId?: string): string {
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,public_content',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
     empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
-    users: 'id,email,name,role,created_at,avatar_url',
+    users: 'id,email,name,role,phone,avatar,created_at',
     speakers: 'id,project_id,name,role,company,bio,image,linkedin,twitter,website,track,is_featured,order_index',
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
-    profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,newsletter_opt_in',
+    profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,phone,newsletter_opt_in',
     notifications: 'id,user_id,title,message,type,read,created_at,action_url',
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
@@ -587,6 +591,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
             goalRevenue: item['goal_revenue'],
             goalSponsorship: item['goal_sponsorship'],
             goalRegistrations: item['goal_registrations'],
+            publicContent: item['public_content'] || {},
           };
         }
 

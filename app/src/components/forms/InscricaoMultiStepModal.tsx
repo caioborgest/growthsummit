@@ -28,6 +28,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     const [dados, setDados] = useState<DadosInscricao>({
         cursosSelecionados: [],
         nome: '',
+        cpf: '',
         email: '',
         telefone: '',
         senha: '',
@@ -76,8 +77,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 setDados(prev => ({ ...prev, ...parsed.data }));
                 setCurrentStep(parsed.step || 1);
                 logger.debug('Rascunho de inscrição carregado');
-            } catch (e) {
-                logger.warn('Erro ao carregar rascunho de inscrição:', e);
+            } catch (e: unknown) {
+                const errorMsg = e instanceof Error ? e.message : String(e);
+                logger.warn('Erro ao carregar rascunho de inscrição:', { error: errorMsg });
             }
         }
     }, []);
@@ -134,6 +136,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         setDados({
             cursosSelecionados: [],
             nome: '',
+            cpf: '',
             email: '',
             telefone: '',
             senha: '',
@@ -144,8 +147,21 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     const prevStep = () => {
         if (isProcessing) return;
-        if (currentStep > 1) {
-            setCurrentStep(prev => prev - 1);
+        
+        let targetStep = currentStep - 1;
+
+        // Lógica reversa de skip
+        if (targetStep === 5) {
+            const hasPendingPayment = dados.comprarPalestras && dados.statusPagamento !== 'pago';
+            if (!hasPendingPayment) targetStep = 4;
+        }
+        
+        if (targetStep === 4 && selectedProject?.slug === 'ge-triunfo-2026') {
+            targetStep = 3;
+        }
+
+        if (targetStep >= 1) {
+            setCurrentStep(targetStep);
         }
     };
 
@@ -176,7 +192,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             updateDados(dadosPessoais);
                             nextStep();
                         }}
-                        onVoltar={prevStep}
+                        onVoltar={selectedProject?.slug === 'ge-triunfo-2026' ? handleClose : prevStep}
                     />
                 );
             case 3:
@@ -321,7 +337,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[94vh] sm:h-auto sm:max-h-[92vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
+            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[88dvh] sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
                 {/* Header com Progresso */}
                 <div className="bg-dark-100/50 backdrop-blur-md pb-3 pt-4 sm:pb-6 sm:pt-6 px-4 sm:px-10 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
                     <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -405,7 +421,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 {/* Content com Scrollbar Customizada */}
                 <div
                     ref={scrollContainerRef}
-                    className="flex-1 px-4 py-6 sm:px-12 sm:py-10 overflow-y-auto custom-scrollbar bg-dark-100/30"
+                    className="flex-1 px-4 pt-6 pb-20 sm:px-12 sm:py-10 overflow-y-auto custom-scrollbar bg-dark-100/30"
                 >
                     <div className="max-w-3xl mx-auto w-full">
                         {renderStep()}

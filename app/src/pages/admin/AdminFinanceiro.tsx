@@ -86,10 +86,10 @@ export function AdminFinanceiro() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const paidRegistrations = registrations.filter(r => 
-    r.status_pagamento === 'pago' || 
-    r.status_pagamento === 'paid' || 
+    (r.status_pagamento as unknown as string) === 'pago' || 
+    (r.status_pagamento as unknown as string) === 'paid' || 
     (r as any).paymentStatus === 'pago' ||
-    (r.status === 'pago' && !r.status_pagamento) // Fallback para registros legados
+    ((r.status as unknown as string) === 'pago' && !r.status_pagamento) // Fallback para registros legados
   );
   const paidRegistrationsCount = paidRegistrations.length;
   const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);

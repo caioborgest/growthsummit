@@ -156,7 +156,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
 
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-xl w-full max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border-brand-orange-coral/20 rounded-2xl sm:rounded-3xl">
+            <div className="glass-card max-w-xl w-full max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border-brand-orange-coral/20 rounded-2xl sm:rounded-3xl">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-white transition-colors z-10 p-2"

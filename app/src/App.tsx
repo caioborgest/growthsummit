@@ -62,6 +62,7 @@ const Patrocinio = lazyWithRetry(() => import('./pages/public/Patrocinio'), 'Pat
 const GrowthExperience = lazyWithRetry(() => import('./pages/public/GrowthExperience'));
 const GrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/public/GrowthExperienceTriunfo'));
 const GrowthExperiencePetrolina = lazyWithRetry(() => import('./pages/public/GrowthExperiencePetrolina'));
+const DynamicEventPage = lazyWithRetry(() => import('./pages/public/DynamicEventPage'));
 const FAQ = lazyWithRetry(() => import('./pages/public/FAQ'), 'FAQ');
 const Contato = lazyWithRetry(() => import('./pages/public/Contato'), 'Contato');
 const SejaMentor = lazyWithRetry(() => import('./pages/public/SejaMentor'), 'SejaMentor');
@@ -214,6 +215,11 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   const userRole = (user?.role || '').toLowerCase().trim();
   const normalizedAllowedRoles = allowedRoles?.map(r => r.toLowerCase().trim()) || [];
 
+  // Superadmin sempre tem acesso a tudo
+  if (userRole === 'superadmin') {
+    return <>{children}</>;
+  }
+
   if (allowedRoles && !normalizedAllowedRoles.includes(userRole)) {
     console.warn(`[ProtectedRoute] Acesso negado para role: ${userRole}. Permitidos: ${normalizedAllowedRoles}. Redirecionando para Home.`);
     return <Navigate to="/" replace />;
@@ -226,6 +232,7 @@ function Home() {
   const { isAuthenticated, user } = useAuth();
   if (isAuthenticated && user) {
     const rolesToPaths: Record<string, string> = {
+      'superadmin': '/admin',
       'admin': '/admin',
       'staff': '/admin/check-in',
       'mentor': '/mentor-area',
@@ -269,6 +276,7 @@ function AppRoutes() {
           <Route path="lgpd" element={<LegalPage title="LGPD" />} />
           <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
           <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
+          <Route path="evento/:slug" element={<DynamicEventPage />} />
           <Route path="validar" element={<ValidarCertificado />} />
           <Route path="validar/:code" element={<ValidarCertificado />} />
           <Route path="meus-certificados" element={

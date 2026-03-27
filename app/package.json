@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist node_modules/.cache",
-    "types:gen": "npx supabase gen types typescript --project-id zczfutmymobgypbbamme > src/types/supabase.ts",
+    "types:gen": "npx supabase gen types typescript --project-id xeuqtxxhncvechrxerqw > src/types/supabase.ts",
     "types:check": "npm run type-check"
   },
   "dependencies": {
