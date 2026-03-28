@@ -50,7 +50,7 @@ export function FAQ() {
               Perguntas Frequentes
             </h1>
             <p className="text-xl text-gray-400">
-              Encontre respostas para as dúvidas mais comuns sobre o Growth Summit 2026
+              Encontre respostas para as dúvidas mais comuns sobre o Growth Experience 2026
             </p>
           </div>
         </div>

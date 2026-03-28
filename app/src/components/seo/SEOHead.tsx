@@ -19,7 +19,7 @@ export function SEOHead({
     type = 'website',
 }: SEOHeadProps) {
     // Update document title for now
-    const siteName = 'Growth Summit';
+    const siteName = 'Growth Experience';
     const fullTitle = `${title} | ${siteName}`;
     
     if (typeof document !== 'undefined') {

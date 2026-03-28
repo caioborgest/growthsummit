@@ -62,7 +62,7 @@ export function Sobre() {
               Sobre o Evento
             </Badge>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Growth Summit 2026
+              Growth Experience 2026
             </h1>
             <p className="text-xl text-gray-400">
               A maior conferência de Growth, Marketing, Vendas e IA do Nordeste,
@@ -141,7 +141,7 @@ export function Sobre() {
                 Uma experiência completa de aprendizado e networking
               </h2>
               <p className="text-gray-400 mb-6">
-                O Growth Summit 2026 acontece nos dias 21 e 22 de maio no Boulevard Hotel
+                O Growth Experience 2026 acontece nos dias 21 e 22 de maio no Boulevard Hotel
                 em Juazeiro do Norte, Ceará. São dois dias intensos de conteúdo, conexões
                 e oportunidades de negócio.
               </p>
@@ -171,7 +171,7 @@ export function Sobre() {
               <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-teal-500/20 to-orange-500/20 border border-dark-300">
                 <img
                   src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=450&fit=crop"
-                  alt="Growth Summit"
+                  alt="Growth Experience"
                   className="w-full h-full object-cover opacity-80"
                 />
               </div>

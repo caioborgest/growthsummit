@@ -15,7 +15,7 @@ export function LocalViagem() {
               Local do Evento
             </Badge>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Como Chegar ao <span className="text-teal-400">Growth Summit</span>
+              Como Chegar ao <span className="text-teal-400">Growth Experience</span>
             </h1>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Todas as informações que você precisa para chegar ao evento em Juazeiro do Norte, Ceará.
@@ -203,7 +203,7 @@ export function LocalViagem() {
               Onde Ficar
             </h2>
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-              Descontos especiais para participantes do Growth Summit em hotéis parceiros.
+              Descontos especiais para participantes do Growth Experience em hotéis parceiros.
               Use o código <span className="text-teal-400 font-semibold">GROWTH2026</span>.
             </p>
           </div>

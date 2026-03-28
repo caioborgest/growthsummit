@@ -1,7 +1,7 @@
-// Growth Summit 2026 - Event Data
+// Growth Experience 2026 - Event Data
 
 export const eventInfo = {
-  name: "Growth Summit 2026",
+  name: "Growth Experience 2026",
   subtitle: "Gestão e Inovação",
   tagline: "A maior conferência de Growth, Marketing, Vendas e IA do Nordeste",
   dates: "16 de abril de 2026",
@@ -228,7 +228,7 @@ export const faqs = [
   },
   {
     question: "Onde será o evento?",
-    answer: "O Growth Summit 2026 será no Boulevard Hotel em Juazeiro do Norte, Ceará. O hotel fica próximo ao aeroporto regional e oferece fácil acesso.",
+    answer: "O Growth Experience 2026 será no Boulevard Hotel em Juazeiro do Norte, Ceará. O hotel fica próximo ao aeroporto regional e oferece fácil acesso.",
   },
   {
     question: "Haverá transmissão online?",
@@ -236,7 +236,7 @@ export const faqs = [
   },
   {
     question: "Como me torno um patrocinador?",
-    answer: "Temos cotas de patrocínio de R$ 10k a R$ 60k. Entre em contato pelo formulário de patrocínio ou envie email para contato@growthsummit.site",
+    answer: "Temos cotas de patrocínio de R$ 10k a R$ 60k. Entre em contato pelo formulário de patrocínio ou envie email para contato@growthexperience.site",
   },
 ];
 
@@ -261,7 +261,7 @@ export const testimonials = [
     name: "Roberto Almeida",
     role: "CEO",
     company: "StartupXYZ",
-    content: "O Growth Summit transformou minha visão sobre growth hacking. As mentorias foram incríveis e já apliquei várias estratégias na minha empresa.",
+    content: "O Growth Experience transformou minha visão sobre growth hacking. As mentorias foram incríveis e já apliquei várias estratégias na minha empresa.",
     rating: 5,
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop",
   },
