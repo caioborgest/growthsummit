@@ -44,7 +44,7 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 const palestrantes = [
   {
     nome: "Jeronimo Freire",
-    cargo: "Consultor e Mentor de Negócios",
+    cargo: "Empresário, Consultor e Mentor de Negócios",
     descricao: "Especialista em gestão estratégica e expansão de negócios",
     tema: "Gestão e Liderança em Momentos Desafiadores",
     horario: "18:00 - 18:50"
@@ -256,7 +256,7 @@ export function GrowthExperienceTriunfo() {
 
       if (project) {
         initialized.current = true;
-        
+
         // Canonical project object with override values if needed
         const canonicalProject = {
           ...project,
@@ -269,7 +269,7 @@ export function GrowthExperienceTriunfo() {
         };
 
         setCurrentProject(canonicalProject);
-        
+
         // Só atualiza se o ID for diferente para evitar loops de render
         if (selectedProject?.id !== canonicalProject.id) {
           setSelectedProject(canonicalProject);
@@ -292,11 +292,11 @@ export function GrowthExperienceTriunfo() {
     if (!formParam) return;
 
     if (formParam === 'inscricao') {
-        setModalInscricaoAberto(true);
+      setModalInscricaoAberto(true);
     } else if (['palestra', 'empresa'].includes(formParam)) {
-        setModalAberto(formParam as any);
+      setModalAberto(formParam as any);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.get('form')]); // Dependência específica para o valor do parâmetro
 
   const closeModals = () => {
@@ -603,25 +603,25 @@ export function GrowthExperienceTriunfo() {
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 md:gap-24 px-4">
             <div className="group transition-all duration-500">
-              <img 
-                src={getStorageUrl('marcas-apoio', 'acmt.png')} 
-                alt="ACMT" 
+              <img
+                src={getStorageUrl('marcas-apoio', 'acmt.png')}
+                alt="ACMT"
                 className="h-12 sm:h-16 md:h-20 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"
               />
             </div>
             <div className="group transition-all duration-500">
-              <img 
-                src={getStorageUrl('marcas-apoio', 'sebrae.png')} 
-                alt="SEBRAE" 
+              <img
+                src={getStorageUrl('marcas-apoio', 'sebrae.png')}
+                alt="SEBRAE"
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"
               />
             </div>
             <div className="group transition-all duration-500">
-              <img 
-                src={getStorageUrl('marcas-apoio', 'sest-senat.png')} 
-                alt="SEST SENAT" 
+              <img
+                src={getStorageUrl('marcas-apoio', 'sest-senat.png')}
+                alt="SEST SENAT"
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"
               />
