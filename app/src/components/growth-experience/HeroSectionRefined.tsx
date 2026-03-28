@@ -15,6 +15,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
     const { selectedProject: contextProject } = useProject();
     const selectedProject = propProject || contextProject;
     const isTriunfo = selectedProject?.slug === 'ge-triunfo-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
+    const isPetrolina = selectedProject?.slug === 'ge-petrolina-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('petrolina'));
     const [timeLeft, setTimeLeft] = useState({
         dias: 0,
         horas: 0,
@@ -51,25 +52,50 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
         <section className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center overflow-hidden bg-brand-black">
             {/* Background Image with Enhanced Overlay */}
             <div className="absolute inset-0 z-0">
-                {selectedProject?.slug !== 'ge-petrolina-2026' && (
+                {isTriunfo && (
                     <div className="relative w-full h-full">
                         <img
                             src={getStorageUrl('caretas-triunfo', 'caretas-triunfo.jpeg', { quality: 80, format: 'webp' })}
-                            alt={selectedProject?.city || "Growth Experience"}
+                            alt="Triunfo-PE"
                             className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-40 sm:opacity-60"
-                            //@ts-ignore - fetchPriority is supported in modern browsers but might not be in all TS types yet
+                            //@ts-ignore
                             fetchPriority="high"
                         />
-                        {/* Layered Gradients for Depth */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-brand-black via-transparent to-brand-black opacity-80" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-brand-black/40 to-brand-black opacity-90" />
+                    </div>
+                )}
+
+                {isPetrolina && (
+                    <div className="relative w-full h-full">
+                        <img
+                            src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                            alt="Petrolina-PE"
+                            className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-40 sm:opacity-60"
+                            //@ts-ignore
+                            fetchPriority="high"
+                        />
+                    </div>
+                )}
+
+                {!isTriunfo && !isPetrolina && (
+                    <div className="relative w-full h-full bg-brand-black">
+                         <img
+                            src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+                            alt="Growth Experience"
+                            className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-30 sm:opacity-40"
+                            //@ts-ignore
+                            fetchPriority="high"
+                        />
                     </div>
                 )}
                 
+                {/* Layered Gradients for Depth */}
+                <div className="absolute inset-0 bg-gradient-to-b from-brand-black via-transparent to-brand-black opacity-80" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${isPetrolina ? 'from-dark via-dark/40 to-dark' : 'from-brand-black via-brand-black/40 to-brand-black'} opacity-90`} />
+                
                 {/* Animated Mesh Gradients */}
                 <div className="absolute inset-0 opacity-40 mix-blend-overlay">
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-orange-coral/30 blur-[120px] rounded-full animate-pulse-slow" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-orange-intense/20 blur-[120px] rounded-full animate-pulse-slow-reverse" />
+                    <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] ${isPetrolina ? 'bg-teal-500/20' : 'bg-brand-orange-coral/30'} blur-[120px] rounded-full animate-pulse-slow`} />
+                    <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] ${isPetrolina ? 'bg-teal-400/10' : 'bg-brand-orange-intense/20'} blur-[120px] rounded-full animate-pulse-slow-reverse`} />
                 </div>
             </div>
 
@@ -106,7 +132,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         <span className="block opacity-80 text-lg sm:text-3xl lg:text-4xl uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium mb-2 sm:mb-4">
                             Growth Experience
                         </span>
-                        <span className="bg-gradient-to-r from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense bg-clip-text text-transparent drop-shadow-sm">
+                        <span className={`bg-gradient-to-r ${isPetrolina ? 'from-teal-400 to-teal-600' : 'from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense'} bg-clip-text text-transparent drop-shadow-sm`}>
                             {selectedProject?.city} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
                         </span>
                     </h1>
@@ -115,7 +141,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         className="text-balance sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up leading-relaxed px-4 sm:px-0"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior encontro de inteligência de negócios do {selectedProject?.city === 'Triunfo' ? 'Sertão do Pajeú' : 'Vale do São Francisco'}. 
+                        O maior encontro de inteligência de negócios do {isTriunfo ? 'Sertão do Pajeú' : 'Vale do São Francisco'}. 
                         <span className="hidden sm:inline"> Prepare-se para uma imersão total em estratégias de escala e networking de alto nível.</span>
                     </p>
                 </div>
@@ -127,7 +153,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 >
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 bg-white/5 p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-white/5 backdrop-blur-xl shadow-inner-glow relative">
                         {/* Decorative glow behind countdown */}
-                        <div className="absolute inset-0 bg-brand-orange-coral/5 rounded-inherit blur-xl -z-10 group-hover:bg-brand-orange-coral/10 transition-colors" />
+                        <div className={`absolute inset-0 ${isPetrolina ? 'bg-teal-500/5' : 'bg-brand-orange-coral/5'} rounded-inherit blur-xl -z-10 group-hover:bg-brand-orange-coral/10 transition-colors`} />
                         
                         {[
                             { label: 'Dias', value: timeLeft.dias },
@@ -158,8 +184,8 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         { icon: MapPin, text: selectedProject?.city || 'Local a definir' }
                     ].map((info, idx) => (
                         <div key={idx} className="flex items-center gap-2.5 group">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-brand-orange-coral/10 group-hover:border-brand-orange-coral/30 transition-all">
-                                <info.icon className="h-4 w-4 sm:h-5 sm:w-5 text-brand-orange-gradient" />
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-${isPetrolina ? 'teal-500' : 'brand-orange-coral'}/10 group-hover:border-${isPetrolina ? 'teal-400' : 'brand-orange-coral'}/30 transition-all`}>
+                                <info.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isPetrolina ? 'text-teal-400' : 'text-brand-orange-gradient'}`} />
                             </div>
                             <span className="text-white/80 font-bold text-sm sm:text-base group-hover:text-white transition-colors">
                                 {info.text}
@@ -176,7 +202,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     <Button
                         size="lg"
                         onClick={onCTAClick}
-                        className="w-full sm:w-auto h-auto px-8 sm:px-12 py-5 sm:py-7 bg-brand-orange-coral hover:bg-brand-orange-intense text-white rounded-2xl sm:rounded-3xl text-lg sm:text-xl font-black shadow-[0_20px_50px_rgba(255,112,67,0.3)] hover:shadow-[0_20px_50px_rgba(255,112,67,0.5)] hover:-translate-y-1 transition-all duration-300 group"
+                        className={`w-full sm:w-auto h-auto px-8 sm:px-12 py-5 sm:py-7 ${isPetrolina ? 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/30' : 'bg-brand-orange-coral hover:bg-brand-orange-intense shadow-brand-orange-coral/30'} text-white rounded-2xl sm:rounded-3xl text-lg sm:text-xl font-black shadow-[0_20px_50px_rgba(255,112,67,0.3)] hover:shadow-[0_20px_50px_rgba(255,112,67,0.5)] hover:-translate-y-1 transition-all duration-300 group`}
                     >
                         Garantir Minha Vaga
                         <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
@@ -209,7 +235,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
             {/* Premium Scroll Indicator */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-3 animate-fade-in" style={{ animationDelay: '1s' }}>
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 rotate-180 [writing-mode:vertical-lr]">Scroll</span>
-                <div className="w-[1px] h-12 bg-gradient-to-b from-brand-orange-coral to-transparent animate-shimmer-v" />
+                <div className={`w-[1px] h-12 bg-gradient-to-b ${isPetrolina ? 'from-teal-400' : 'from-brand-orange-coral'} to-transparent animate-shimmer-v`} />
             </div>
             
             {/* Custom Animations to be added to index.css or local style */}

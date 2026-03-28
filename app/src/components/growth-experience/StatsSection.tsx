@@ -94,32 +94,35 @@ function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatIte
 
 export function StatsSection({ project }: StatsSectionProps) {
     const isTriunfo = project?.slug === 'ge-triunfo-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
-    const stats = [
-        {
-            icon: Users,
-            value: 300,
-            label: 'Empreendedores e Profissionais',
-            suffix: '+'
-        },
-        {
-            icon: Building2,
-            value: 6,
-            label: 'Empresas Expositoras',
-            suffix: '+'
-        },
-        {
-            icon: Target,
-            value: 5,
-            label: 'Palestras de Gestão, Liderança, Mkt e Vendas',
-            suffix: ''
-        },
-        {
-            icon: Handshake,
-            value: 10,
-            label: 'Milhões em Negócios',
-            suffix: 'M+'
+    const isPetrolina = project?.slug === 'ge-petrolina-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('petrolina'));
+
+    const getStats = () => {
+        if (isTriunfo) {
+            return [
+                { icon: Users, value: 300, label: 'Empreendedores e Profissionais', suffix: '+' },
+                { icon: Building2, value: 6, label: 'Empresas Expositoras', suffix: '+' },
+                { icon: Target, value: 5, label: 'Palestras de Alto Impacto', suffix: '' },
+                { icon: Handshake, value: 10, label: 'Milhões em Negócios', suffix: 'M+' }
+            ];
         }
-    ];
+        if (isPetrolina) {
+            return [
+                { icon: Users, value: 500, label: 'Líderes e Profissionais', suffix: '+' },
+                { icon: Building2, value: 15, label: 'Empresas e Marcas', suffix: '+' },
+                { icon: Target, value: 8, label: 'Atividades Práticas', suffix: '' },
+                { icon: Handshake, value: 50, label: 'Milhões em Negócios', suffix: 'M+' }
+            ];
+        }
+        // Home Geral / Default
+        return [
+            { icon: Users, value: 2000, label: 'Pessoas Impactadas', suffix: '+' },
+            { icon: Building2, value: 50, label: 'Empresas Parceiras', suffix: '+' },
+            { icon: Target, value: 20, label: 'Temas e Workshops', suffix: '+' },
+            { icon: Handshake, value: 100, label: 'Milhões em Volume', suffix: 'M+' }
+        ];
+    };
+
+    const stats = getStats();
 
     return (
         <section className="relative py-24 overflow-hidden">
