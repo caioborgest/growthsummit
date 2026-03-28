@@ -27,6 +27,10 @@ IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'mentores_growth_experience_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'mentores_growth_experience' AND column_name = 'email') THEN
+    ALTER TABLE public.mentores_growth_experience ADD COLUMN email TEXT;
+END IF;
 ALTER TABLE public.mentores_growth_experience
 ADD CONSTRAINT mentores_growth_experience_email_key UNIQUE (email);
 END IF;
@@ -35,6 +39,13 @@ IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'startups_arena_pitch_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'startups_arena_pitch' AND column_name = 'email') THEN
+    ALTER TABLE public.startups_arena_pitch ADD COLUMN email TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'startups_arena_pitch' AND column_name = 'telefone') THEN
+    ALTER TABLE public.startups_arena_pitch ADD COLUMN telefone TEXT;
+END IF;
 ALTER TABLE public.startups_arena_pitch
 ADD CONSTRAINT startups_arena_pitch_email_key UNIQUE (email);
 END IF;
@@ -43,6 +54,34 @@ IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'rodada_negocios_b2b_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'email') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN email TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'telefone') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN telefone TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'setor') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN setor TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'porte') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN porte TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'nome_empresa') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN nome_empresa TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'cargo') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN cargo TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'descricao_empresa') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN descricao_empresa TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'produtos_servicos') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN produtos_servicos TEXT;
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'descricao_objetivos') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN descricao_objetivos TEXT;
+END IF;
 ALTER TABLE public.rodada_negocios_b2b
 ADD CONSTRAINT rodada_negocios_b2b_email_key UNIQUE (email);
 END IF;
@@ -61,6 +100,9 @@ IF NOT EXISTS (
 ) THEN
 ALTER TABLE public.sponsors
 ADD CONSTRAINT sponsors_contact_email_key UNIQUE (contact_email);
+END IF;
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'notifications' AND column_name = 'project_id') THEN
+    ALTER TABLE public.notifications ADD COLUMN project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
 END IF;
 END $$;
 -- 2. FUNÇÃO AUXILIAR PARA CRIAR USUÁRIO (AUTH + PUBLIC)
@@ -110,7 +152,7 @@ INSERT INTO auth.identities (
         user_id,
         identity_data,
         provider,
-        last_login_at,
+        provider_id,
         created_at,
         updated_at
     )
@@ -119,7 +161,7 @@ VALUES (
         p_id,
         jsonb_build_object('sub', p_id, 'email', p_email),
         'email',
-        now(),
+        p_id::text, -- many versions use the UID as provider_id for email provider
         now(),
         now()
     );
@@ -210,7 +252,7 @@ VALUES (
         '81999990001',
         'Especialista em Growth e SaaS.',
         ARRAY ['Growth Hacking', 'SaaS'],
-        'aprovado'
+        'approved'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id
@@ -259,7 +301,7 @@ VALUES (
         'IA',
         'Traction',
         'Plataforma de automação inteligente.',
-        'selecionada'
+        'confirmed'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id;
@@ -298,7 +340,7 @@ VALUES (
         'fornecedores',
         'Tecnologia',
         'Networking e novos parceiros.',
-        'confirmada'
+        'approved'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id;
@@ -321,38 +363,23 @@ VALUES (
         75000,
         'closed'
     ) ON CONFLICT (contact_email) DO NOTHING;
--- G. NOTIFICAÇÕES (Corrigido is_read)
-INSERT INTO public.notifications (
-        project_id,
-        user_id,
-        title,
-        message,
-        type,
-        is_read
-    )
-VALUES (
-        v_project_id,
-        v_mentor_id,
-        'Nova Mentoria',
-        'Joaquim Silva agendou com você.',
-        'info',
-        false
-    ),
-    (
-        v_project_id,
-        v_startup_id,
-        'Pitch Aprovado',
-        'Prepare seu deck para amanhã!',
-        'success',
-        false
-    ),
-    (
-        v_project_id,
-        v_company_id,
-        'Match no B2B',
-        'Você tem um novo match.',
-        'info',
-        false
-    );
+-- G. NOTIFICAÇÕES (Corrigido is_read, com verificação de segurança)
+IF EXISTS (SELECT 1 FROM auth.users WHERE id = v_mentor_id) THEN
+    INSERT INTO public.notifications (project_id, user_id, title, message, type, read)
+    VALUES (v_project_id, v_mentor_id, 'Nova Mentoria', 'Joaquim Silva agendou com você.', 'info', false)
+    ON CONFLICT DO NOTHING;
+END IF;
+
+IF EXISTS (SELECT 1 FROM auth.users WHERE id = v_startup_id) THEN
+    INSERT INTO public.notifications (project_id, user_id, title, message, type, read)
+    VALUES (v_project_id, v_startup_id, 'Pitch Aprovado', 'Prepare seu deck para amanhã!', 'success', false)
+    ON CONFLICT DO NOTHING;
+END IF;
+
+IF EXISTS (SELECT 1 FROM auth.users WHERE id = v_company_id) THEN
+    INSERT INTO public.notifications (project_id, user_id, title, message, type, read)
+    VALUES (v_project_id, v_company_id, 'Match no B2B', 'Você tem um novo match.', 'info', false)
+    ON CONFLICT DO NOTHING;
+END IF;
 END $$;
 DROP FUNCTION public.seed_full_user;

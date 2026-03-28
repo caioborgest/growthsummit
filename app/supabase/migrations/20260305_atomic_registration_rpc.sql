@@ -178,11 +178,11 @@ WHEN OTHERS THEN RETURN jsonb_build_object(
 );
 END;
 $$;
-ALTER FUNCTION public.register_participant_with_slots OWNER TO postgres;
+ALTER FUNCTION public.register_participant_with_slots(UUID, UUID, TEXT, TEXT, TEXT, UUID[], TEXT, NUMERIC, TEXT, TEXT, TEXT, BOOLEAN, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB) OWNER TO postgres;
 -- Grants: authenticated e anon (formulário público)
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO authenticated;
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO anon;
-GRANT EXECUTE ON FUNCTION public.register_participant_with_slots TO service_role;
+GRANT EXECUTE ON FUNCTION public.register_participant_with_slots(UUID, UUID, TEXT, TEXT, TEXT, UUID[], TEXT, NUMERIC, TEXT, TEXT, TEXT, BOOLEAN, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.register_participant_with_slots(UUID, UUID, TEXT, TEXT, TEXT, UUID[], TEXT, NUMERIC, TEXT, TEXT, TEXT, BOOLEAN, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB) TO anon;
+GRANT EXECUTE ON FUNCTION public.register_participant_with_slots(UUID, UUID, TEXT, TEXT, TEXT, UUID[], TEXT, NUMERIC, TEXT, TEXT, TEXT, BOOLEAN, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, JSONB) TO service_role;
 -- ============================================================
 -- 3. GARANTIR COLUNA max_vagas em programacao_evento
 --    (pode ter sido nomeada max_capacity em algumas migrações)

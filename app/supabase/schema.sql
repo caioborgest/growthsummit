@@ -8,6 +8,32 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================
+-- PRE-FLIGHT CLEANUP: Remove overloaded functions
+-- ============================================================
+DO $$ 
+DECLARE 
+    r RECORD;
+BEGIN
+    -- register_participant_with_slots
+    FOR r IN (SELECT proname, oidvectortypes(proargtypes) as args 
+              FROM pg_proc p 
+              JOIN pg_namespace n ON p.pronamespace = n.oid 
+              WHERE n.nspname = 'public' AND p.proname = 'register_participant_with_slots') 
+    LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS public.' || r.proname || '(' || r.args || ')';
+    END LOOP;
+    
+    -- increment_session_count
+    FOR r IN (SELECT proname, oidvectortypes(proargtypes) as args 
+              FROM pg_proc p 
+              JOIN pg_namespace n ON p.pronamespace = n.oid 
+              WHERE n.nspname = 'public' AND p.proname = 'increment_session_count') 
+    LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS public.' || r.proname || '(' || r.args || ')';
+    END LOOP;
+END $$;
+
+-- ============================================================
 -- TABELAS PRINCIPAIS
 -- ============================================================
 
@@ -122,6 +148,34 @@ CREATE TABLE IF NOT EXISTS public.registrations (
     UNIQUE(project_id, user_id)
 );
 
+-- Tabela específica Growth Experience
+CREATE TABLE IF NOT EXISTS public.inscricoes_growth_experience (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    nome TEXT NOT NULL,
+    email TEXT NOT NULL,
+    telefone TEXT,
+    cpf TEXT,
+    tipo_inscricao TEXT DEFAULT 'standard',
+    status TEXT DEFAULT 'ativo',
+    valor_pago DECIMAL(10, 2) DEFAULT 0,
+    status_pagamento TEXT DEFAULT 'pendente',
+    ticket_number TEXT UNIQUE,
+    qr_code TEXT,
+    palestras_noturnas BOOLEAN DEFAULT FALSE,
+    cursos_selecionados TEXT[] DEFAULT '{}',
+    cupom_palestra TEXT,
+    valor_desconto_palestra DECIMAL(10, 2) DEFAULT 0,
+    app_instalado BOOLEAN DEFAULT FALSE,
+    indicacao_tipo TEXT DEFAULT 'nenhum',
+    indicacao_nome TEXT,
+    codigo_social TEXT,
+    codigo_palestra TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Sessões do evento (palestras, workshops)
 CREATE TABLE IF NOT EXISTS public.sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -140,6 +194,45 @@ CREATE TABLE IF NOT EXISTS public.sessions (
     video_url TEXT,
     slides_url TEXT,
     materials JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Alias para compatibilidade regional (Programação)
+CREATE TABLE IF NOT EXISTS public.programacao_evento (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    type TEXT,
+    day INTEGER,
+    start_time TIME,
+    end_time TIME,
+    room TEXT,
+    max_vagas INTEGER,
+    registered_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela regional de mentores
+CREATE TABLE IF NOT EXISTS public.mentores_growth_experience (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id),
+    nome TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    telefone TEXT,
+    empresa TEXT,
+    cargo TEXT,
+    especialidades TEXT[],
+    bio TEXT,
+    linkedin_url TEXT,
+    foto_url TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'inactive')),
+    rejection_reason TEXT,
+    years_experience INTEGER,
+    max_mentories INTEGER DEFAULT 5,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -260,6 +353,51 @@ CREATE TABLE IF NOT EXISTS public.companies (
 );
 
 -- Reuniões B2B
+-- Tabela regional B2B (Mapeada em migrações legadas)
+CREATE TABLE IF NOT EXISTS public.rodada_negocios_b2b (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    nome_empresa TEXT,
+    nome_representante TEXT,
+    cargo TEXT,
+    email TEXT UNIQUE,
+    telefone TEXT,
+    setor TEXT,
+    porte TEXT,
+    faturamento_anual NUMERIC,
+    numero_funcionarios INTEGER,
+    site_url TEXT,
+    linkedin_url TEXT,
+    logo_url TEXT,
+    descricao_empresa TEXT,
+    produtos_servicos TEXT,
+    tipo_interesse TEXT,
+    areas_interesse TEXT,
+    descricao_objetivos TEXT,
+    status TEXT DEFAULT 'pendente',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabela regional de mentorias agendadas
+CREATE TABLE IF NOT EXISTS public.mentorias_agendadas (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+    mentor_id UUID REFERENCES public.mentores_growth_experience(id) ON DELETE CASCADE,
+    mentorado_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    nome_mentorado TEXT,
+    email_mentorado TEXT,
+    anotacoes TEXT,
+    data_mentoria TIMESTAMP WITH TIME ZONE,
+    duracao INTEGER DEFAULT 20,
+    status TEXT DEFAULT 'agendada',
+    nome_startup TEXT,
+    setor TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS public.b2b_meetings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
@@ -322,6 +460,33 @@ CREATE TABLE IF NOT EXISTS public.startups (
 );
 
 -- Leads (visitantes nas startups)
+-- Tabela regional Startups (Arena Pitch)
+CREATE TABLE IF NOT EXISTS public.startups_arena_pitch (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    nome_startup TEXT,
+    descricao_startup TEXT,
+    setor TEXT,
+    estagio TEXT,
+    problema TEXT,
+    solucao TEXT,
+    diferencial TEXT,
+    nome_fundador TEXT,
+    faturamento_mensal NUMERIC,
+    investimento_buscado NUMERIC,
+    email TEXT,
+    telefone TEXT,
+    video_pitch_url TEXT,
+    pitch_deck_url TEXT,
+    status TEXT DEFAULT 'pendente',
+    pontuacao NUMERIC,
+    feedback TEXT,
+    avaliado_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS public.leads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
@@ -481,6 +646,7 @@ CREATE TABLE IF NOT EXISTS public.email_campaigns (
 -- Notificações
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     -- Dados
     title TEXT NOT NULL,
@@ -576,51 +742,67 @@ END;
 $$ language 'plpgsql';
 
 -- Aplicar trigger em todas as tabelas
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_projects_updated_at ON public.projects;
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON public.projects
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_registrations_updated_at ON public.registrations;
 CREATE TRIGGER update_registrations_updated_at BEFORE UPDATE ON public.registrations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_sessions_updated_at ON public.sessions;
 CREATE TRIGGER update_sessions_updated_at BEFORE UPDATE ON public.sessions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_speakers_updated_at ON public.speakers;
 CREATE TRIGGER update_speakers_updated_at BEFORE UPDATE ON public.speakers
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_mentors_updated_at ON public.mentors;
 CREATE TRIGGER update_mentors_updated_at BEFORE UPDATE ON public.mentors
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_mentoring_sessions_updated_at ON public.mentoring_sessions;
 CREATE TRIGGER update_mentoring_sessions_updated_at BEFORE UPDATE ON public.mentoring_sessions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON public.companies
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_b2b_meetings_updated_at ON public.b2b_meetings;
 CREATE TRIGGER update_b2b_meetings_updated_at BEFORE UPDATE ON public.b2b_meetings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_startups_updated_at ON public.startups;
 CREATE TRIGGER update_startups_updated_at BEFORE UPDATE ON public.startups
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_sponsors_updated_at ON public.sponsors;
 CREATE TRIGGER update_sponsors_updated_at BEFORE UPDATE ON public.sponsors
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_sponsor_deliverables_updated_at ON public.sponsor_deliverables;
 CREATE TRIGGER update_sponsor_deliverables_updated_at BEFORE UPDATE ON public.sponsor_deliverables
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_transactions_updated_at ON public.transactions;
 CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON public.transactions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_email_templates_updated_at ON public.email_templates;
 CREATE TRIGGER update_email_templates_updated_at BEFORE UPDATE ON public.email_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_email_campaigns_updated_at ON public.email_campaigns;
 CREATE TRIGGER update_email_campaigns_updated_at BEFORE UPDATE ON public.email_campaigns
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -652,6 +834,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_ticket_number ON public.registrations;
 CREATE TRIGGER set_ticket_number BEFORE INSERT ON public.registrations
     FOR EACH ROW EXECUTE FUNCTION generate_ticket_number();
 
@@ -702,25 +885,30 @@ ALTER TABLE public.email_campaigns ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para usuários
+DROP POLICY IF EXISTS "Usuários podem ver seu próprio perfil" ON public.users;
 CREATE POLICY "Usuários podem ver seu próprio perfil"
     ON public.users FOR SELECT
     USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Admins podem ver todos os usuários" ON public.users;
 CREATE POLICY "Admins podem ver todos os usuários"
     ON public.users FOR SELECT
     USING (EXISTS (
         SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin'
-    ));
+     ));
 
+DROP POLICY IF EXISTS "Usuários podem atualizar seu próprio perfil" ON public.users;
 CREATE POLICY "Usuários podem atualizar seu próprio perfil"
     ON public.users FOR UPDATE
     USING (auth.uid() = id);
 
 -- Políticas para projetos
+DROP POLICY IF EXISTS "Projetos ativos são visíveis para todos" ON public.projects;
 CREATE POLICY "Projetos ativos são visíveis para todos"
     ON public.projects FOR SELECT
     USING (status = 'active');
 
+DROP POLICY IF EXISTS "Admins podem gerenciar projetos" ON public.projects;
 CREATE POLICY "Admins podem gerenciar projetos"
     ON public.projects FOR ALL
     USING (EXISTS (
@@ -728,21 +916,25 @@ CREATE POLICY "Admins podem gerenciar projetos"
     ));
 
 -- Políticas para inscrições
+DROP POLICY IF EXISTS "Usuários veem suas próprias inscrições" ON public.registrations;
 CREATE POLICY "Usuários veem suas próprias inscrições"
     ON public.registrations FOR SELECT
     USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins veem todas as inscrições" ON public.registrations;
 CREATE POLICY "Admins veem todas as inscrições"
     ON public.registrations FOR SELECT
     USING (EXISTS (
         SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'staff')
     ));
 
+DROP POLICY IF EXISTS "Usuários podem criar inscrições" ON public.registrations;
 CREATE POLICY "Usuários podem criar inscrições"
     ON public.registrations FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 -- Políticas para mentorias
+DROP POLICY IF EXISTS "Mentores veem suas sessões" ON public.mentoring_sessions;
 CREATE POLICY "Mentores veem suas sessões"
     ON public.mentoring_sessions FOR SELECT
     USING (
@@ -751,10 +943,12 @@ CREATE POLICY "Mentores veem suas sessões"
     );
 
 -- Políticas para notificações
+DROP POLICY IF EXISTS "Usuários veem suas próprias notificações" ON public.notifications;
 CREATE POLICY "Usuários veem suas próprias notificações"
     ON public.notifications FOR SELECT
     USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Usuários podem marcar notificações como lidas" ON public.notifications;
 CREATE POLICY "Usuários podem marcar notificações como lidas"
     ON public.notifications FOR UPDATE
     USING (user_id = auth.uid());

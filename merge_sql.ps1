@@ -1,6 +1,6 @@
 $baseDir = "c:\Users\Cristiano D. Borges\Downloads\Plataforma Growth Summit 2026\app\supabase"
 $migrationsDir = "$baseDir\migrations"
-$outputFile = "c:\Users\Cristiano D. Borges\Downloads\Plataforma Growth Summit 2026\migracao_completa_growth_summit.sql"
+$outputFile = "growth_summit_migracao_v8.sql"
 
 "-- ============================================================`n-- GROWTH SUMMIT 2026 - MIGRACAO COMPLETA E UNICA`n-- Data: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')`n-- ============================================================`n`n" | Out-File -FilePath $outputFile -Encoding utf8
 

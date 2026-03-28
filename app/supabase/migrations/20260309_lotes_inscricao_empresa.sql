@@ -64,4 +64,4 @@ GRANT ALL ON TABLE public.lotes_inscricao_empresa TO service_role;
 GRANT SELECT,
     INSERT ON TABLE public.lotes_inscricao_empresa TO authenticated;
 GRANT SELECT ON TABLE public.lotes_inscricao_empresa TO anon;
-RAISE NOTICE 'Migration lotes_inscricao_empresa completed successfully';
+DO $$ BEGIN RAISE NOTICE 'Migration lotes_inscricao_empresa completed successfully'; END $$;

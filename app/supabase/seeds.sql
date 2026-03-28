@@ -1223,45 +1223,28 @@ UPDATE
 SET status = EXCLUDED.status,
     updated_at = NOW();
 -- ============================================================
--- NOTIFICAÇÕES
+-- NOTIFICAÇÕES (Idempotente)
 -- ============================================================
-INSERT INTO public.notifications (
-        user_id,
-        title,
-        message,
-        type,
-        action_url,
-        action_text,
-        read,
-        created_at
-    )
-VALUES (
-        '00000000-0000-0000-0000-000000000002',
-        'Bem-vindo ao Growth Summit 2026!',
-        'Sua inscrição foi confirmada. Estamos ansiosos para vê-lo no evento.',
-        'success',
-        '/minha-area',
-        'Ver minha área',
-        FALSE,
-        NOW()
-    ),
-    (
-        '00000000-0000-0000-0000-000000000002',
-        'Complete seu perfil',
-        'Adicione mais informações ao seu perfil para aproveitar melhor o evento.',
-        'info',
-        '/minha-area/dados',
-        'Completar perfil',
-        FALSE,
-        NOW()
-    ),
-    (
-        '00000000-0000-0000-0000-000000000003',
-        'Nova solicitação de mentoria',
-        'Você recebeu uma nova solicitação de mentoria.',
-        'info',
-        '/mentor-area/mentorias',
-        'Ver solicitações',
-        FALSE,
-        NOW()
-    ) ON CONFLICT DO NOTHING;
+DO $$
+BEGIN
+    -- Notificação para João Silva
+    IF EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000002') THEN
+        INSERT INTO public.notifications (user_id, title, message, type, action_url, action_text, read, created_at)
+        VALUES ('00000000-0000-0000-0000-000000000002', 'Bem-vindo ao Growth Summit 2026!', 'Sua inscrição foi confirmada. Estamos ansiosos para vê-lo no evento.', 'success', '/minha-area', 'Ver minha área', FALSE, NOW())
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    -- Notificação para João Silva (Perfil)
+    IF EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000002') THEN
+        INSERT INTO public.notifications (user_id, title, message, type, action_url, action_text, read, created_at)
+        VALUES ('00000000-0000-0000-0000-000000000002', 'Complete seu perfil', 'Adicione mais informações ao seu perfil para aproveitar melhor o evento.', 'info', '/minha-area/dados', 'Completar perfil', FALSE, NOW())
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    -- Notificação para Dr. Fernando Lima
+    IF EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000003') THEN
+        INSERT INTO public.notifications (user_id, title, message, type, action_url, action_text, read, created_at)
+        VALUES ('00000000-0000-0000-0000-000000000003', 'Nova solicitação de mentoria', 'Você recebeu uma nova solicitação de mentoria.', 'info', '/mentor-area/mentorias', 'Ver solicitações', FALSE, NOW())
+        ON CONFLICT DO NOTHING;
+    END IF;
+END $$;

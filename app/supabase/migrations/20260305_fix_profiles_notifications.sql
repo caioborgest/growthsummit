@@ -46,9 +46,15 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     type TEXT DEFAULT 'info',
-    is_read BOOLEAN DEFAULT FALSE,
+    read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+-- Ensure the column is named 'read' even if the table was created with 'is_read'
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'notifications' AND column_name = 'is_read') THEN
+        ALTER TABLE public.notifications RENAME COLUMN is_read TO read;
+    END IF;
+END $$;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can see their own notifications" ON public.notifications;
 CREATE POLICY "Users can see their own notifications" ON public.notifications FOR
@@ -69,20 +75,26 @@ END IF;
 EXCEPTION
 WHEN OTHERS THEN -- If neither avatar nor avatar_url exist, or other error
 END $$;
--- 4. Seed some initial notifications for the test mentor
--- Mentor ID: 00000000-0000-0000-0000-000000000001
-INSERT INTO public.notifications (user_id, title, message, type, created_at)
-VALUES (
-        '00000000-0000-0000-0000-000000000001',
-        'Nova Mentoria!',
-        'Um novo participante se inscreveu para sua mentoria.',
-        'success',
-        now() - interval '5 minutes'
-    ),
-    (
-        '00000000-0000-0000-0000-000000000001',
-        'Agenda Confirmada',
-        'Seu cronograma de mentorias para hoje está pronto.',
-        'info',
-        now() - interval '1 hour'
-    ) ON CONFLICT DO NOTHING;
+-- 4. Seed some initial notifications for the test mentor (if user exists)
+DO $$
+DECLARE
+    v_target_user_id UUID := '00000000-0000-0000-0000-000000000001';
+BEGIN
+    IF EXISTS (SELECT 1 FROM auth.users WHERE id = v_target_user_id) THEN
+        INSERT INTO public.notifications (user_id, title, message, type, created_at)
+        VALUES (
+                v_target_user_id,
+                'Nova Mentoria!',
+                'Um novo participante se inscreveu para sua mentoria.',
+                'success',
+                now() - interval '5 minutes'
+            ),
+            (
+                v_target_user_id,
+                'Agenda Confirmada',
+                'Seu cronograma de mentorias para hoje está pronto.',
+                'info',
+                now() - interval '1 hour'
+            ) ON CONFLICT DO NOTHING;
+    END IF;
+END $$;

@@ -3,7 +3,7 @@ import path from 'path';
 
 const baseDir = 'c:/Users/Cristiano D. Borges/Downloads/Plataforma Growth Summit 2026/app/supabase';
 const migrationsDir = path.join(baseDir, 'migrations');
-const outputFile = 'c:/Users/Cristiano D. Borges/Downloads/Plataforma Growth Summit 2026/migracao_completa_growth_summit.sql';
+const outputFile = 'c:/Users/Cristiano D. Borges/Downloads/Plataforma Growth Summit 2026/growth_summit_migracao_v6.sql';
 
 const files = [
   path.join(baseDir, 'schema.sql'),

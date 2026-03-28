@@ -12,6 +12,10 @@ DO $$ BEGIN IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'mentores_growth_experience_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'mentores_growth_experience' AND column_name = 'email') THEN
+    ALTER TABLE public.mentores_growth_experience ADD COLUMN email TEXT;
+END IF;
 ALTER TABLE public.mentores_growth_experience
 ADD CONSTRAINT mentores_growth_experience_email_key UNIQUE (email);
 END IF;
@@ -20,6 +24,10 @@ IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'startups_arena_pitch_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'startups_arena_pitch' AND column_name = 'email') THEN
+    ALTER TABLE public.startups_arena_pitch ADD COLUMN email TEXT;
+END IF;
 ALTER TABLE public.startups_arena_pitch
 ADD CONSTRAINT startups_arena_pitch_email_key UNIQUE (email);
 END IF;
@@ -28,6 +36,10 @@ IF NOT EXISTS (
     FROM pg_constraint
     WHERE conname = 'rodada_negocios_b2b_email_key'
 ) THEN
+-- Garantir que a coluna email existe antes da constraint
+IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'rodada_negocios_b2b' AND column_name = 'email') THEN
+    ALTER TABLE public.rodada_negocios_b2b ADD COLUMN email TEXT;
+END IF;
 ALTER TABLE public.rodada_negocios_b2b
 ADD CONSTRAINT rodada_negocios_b2b_email_key UNIQUE (email);
 END IF;
@@ -100,7 +112,7 @@ INSERT INTO auth.identities (
         user_id,
         identity_data,
         provider,
-        last_login_at,
+        provider_id,
         created_at,
         updated_at
     )
@@ -109,7 +121,7 @@ VALUES (
         p_id,
         jsonb_build_object('sub', p_id, 'email', p_email),
         'email',
-        now(),
+        p_id::text,
         now(),
         now()
     );
@@ -197,7 +209,7 @@ VALUES (
         '81999990001',
         'Especialista em Growth e IA.',
         ARRAY ['Growth Hacking', 'IA para Negócios'],
-        'aprovado'
+        'approved'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id;
@@ -220,7 +232,7 @@ VALUES (
         '81999990002',
         'SaaS / AI',
         'Traction',
-        'selecionada'
+        'confirmed'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id;
@@ -241,7 +253,7 @@ VALUES (
         'empresa@test.com',
         '81999990003',
         'Logística',
-        'confirmada'
+        'approved'
     ) ON CONFLICT (email) DO
 UPDATE
 SET user_id = EXCLUDED.user_id;
