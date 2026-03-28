@@ -4,7 +4,6 @@ import type { Project } from '@/types';
 import {
   TrendingUp,
   Building2,
-  GraduationCap,
   Mic2,
   Zap,
   Trophy,
@@ -22,7 +21,6 @@ import { InscricaoModal } from '@/components/forms/InscricaoModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getPalestranteImage, getStandImage, getStorageUrl } from '@/lib/storage';
-import { InscricaoSection } from '@/components/growth-experience/InscricaoSection';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
@@ -614,7 +612,7 @@ export function GrowthExperienceTriunfo() {
           <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 md:gap-24 px-4">
             <div className="group transition-all duration-500">
               <img
-                src={getStorageUrl('marcas-apoio', 'acmt.png')}
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/marcas-apoio/acmt.png"
                 alt="ACMT"
                 className="h-12 sm:h-16 md:h-20 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"
@@ -622,7 +620,7 @@ export function GrowthExperienceTriunfo() {
             </div>
             <div className="group transition-all duration-500">
               <img
-                src={getStorageUrl('marcas-apoio', 'sebrae.png')}
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/marcas-apoio/sebrae.png"
                 alt="SEBRAE"
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"
@@ -630,7 +628,7 @@ export function GrowthExperienceTriunfo() {
             </div>
             <div className="group transition-all duration-500">
               <img
-                src={getStorageUrl('marcas-apoio', 'sest-senat.png')}
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/marcas-apoio/sest-senat.png"
                 alt="SEST SENAT"
                 className="h-10 sm:h-14 md:h-16 w-auto grayscale brightness-200 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500 object-contain"
                 loading="lazy"

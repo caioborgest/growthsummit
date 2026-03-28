@@ -12,6 +12,7 @@ import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
 import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
+import { useSessions } from '@/hooks/useData';
 
 const DRAFT_KEY = 'inscricao_form_draft';
 
@@ -22,6 +23,7 @@ interface InscricaoMultiStepModalProps {
 
 export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepModalProps) {
     const { selectedProject } = useProject();
+    const { data: allSessions } = useSessions();
     const [currentStep, setCurrentStep] = useState(1);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -108,12 +110,20 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     }, [currentStep, selectedProject?.slug]);
 
     // Para Triunfo: todas as inscrições têm pagamento obrigatório — define comprarPalestras=true automaticamente
+    // E pré-seleciona todas as sessões do cronograma
     useEffect(() => {
-        if (selectedProject?.slug === 'ge-triunfo-2026') {
-            updateDados({ comprarPalestras: true });
+        if (selectedProject?.slug === 'ge-triunfo-2026' && allSessions && allSessions.length > 0) {
+            const TriumphSessions = allSessions
+                .filter(s => s.projectId === selectedProject.id)
+                .map(s => s.id);
+            
+            updateDados({ 
+                comprarPalestras: true,
+                cursosSelecionados: TriumphSessions
+            });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedProject?.slug]);
+    }, [selectedProject?.slug, allSessions?.length]);
 
     // Skip Step 4 para Triunfo (oferta de palestras não é necessária — todas já incluem pagamento)
     useEffect(() => {

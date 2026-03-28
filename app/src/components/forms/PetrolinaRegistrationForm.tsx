@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ArrowRight, Loader2, CheckCircle } from 'lucide-react';
+import { ArrowRight, Loader2, CheckCircle, Contact } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
+import { registrationService } from '@/services/registrationService';
 
 export function PetrolinaRegistrationForm() {
     const { selectedProject } = useProject();
@@ -13,6 +13,7 @@ export function PetrolinaRegistrationForm() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [formData, setFormData] = useState({
         nome: '',
+        cpf: '',
         empresa: '',
         whatsapp: '',
         email: '',
@@ -23,12 +24,49 @@ export function PetrolinaRegistrationForm() {
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        
+        if (name === 'cpf') {
+            const numbers = value.replace(/\D/g, '');
+            const formatted = numbers
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+                .substring(0, 14);
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+            return;
+        }
+
+        if (name === 'whatsapp') {
+            const numbers = value.replace(/\D/g, '');
+            let formatted = numbers;
+            if (numbers.length <= 11) {
+                formatted = numbers
+                    .replace(/(\d{2})(\d)/, '($1) $2')
+                    .replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+            return;
+        }
+
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const validateCPF = (cpf: string) => {
+        const numbers = cpf.replace(/\D/g, '');
+        if (numbers.length !== 11) return false;
+        if (/^(\d)\1{10}$/.test(numbers)) return false;
+        return true;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting) return;
+
+        if (!validateCPF(formData.cpf)) {
+            toast.error('CPF inválido');
+            return;
+        }
 
         setIsSubmitting(true);
 
@@ -47,55 +85,30 @@ export function PetrolinaRegistrationForm() {
             // 2. Sincronização robusta (Para FK)
             await waitForUserSync(userId);
 
-            const { error: regError } = await (supabase.from('inscricoes_growth_experience') as any).insert({
-                project_id: selectedProject?.id,
-                user_id: userId || null,
+            // 3. Inscrição via Service Layer (Centralizado)
+            const rpcResult = await registrationService.registerWithSlots({
+                projectId: selectedProject?.id || '',
+                userId: userId || '',
                 nome: formData.nome,
                 email: formData.email,
                 telefone: formData.whatsapp,
-                empresa: formData.empresa,
-                tipo_inscricao: 'standard',
+                cpf: formData.cpf,
+                sessionIds: [], // Petrolina ainda não tem sessões específicas no seletor
+                tipoInscricao: 'standard',
                 evento: selectedProject?.name || 'Growth Experience Petrolina',
                 status_pagamento: 'pago',
                 status: 'ativo',
-                numero_colaboradores: formData.colaboradores,
-                faturamento_anual: formData.faturamento,
-                cupom_palestra: formData.cupom || null
-            }).select();
+                extraData: {
+                    empresa: formData.empresa,
+                    numero_colaboradores: formData.colaboradores,
+                    faturamento_anual: formData.faturamento
+                },
+                codigoPalestra: formData.cupom || null
+            });
 
-            if (regError) throw regError;
-
-
-            /* 
-            // 4. Send Confirmation Email (Async, non-blocking) - DESATIVADO A PEDIDO DO USUÁRIO
-            supabase.functions.invoke('send-email', {
-                body: {
-                    to: formData.email,
-                    subject: `Bem-vindo ao ${selectedProject?.name || 'Growth Experience Petrolina'}!`,
-                    html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0f172a; color: #ffffff; padding: 40px; border-radius: 20px;">
-                            <h2 style="color: #fe4c38;">Olá, ${formData.nome}!</h2>
-                            <p>Sua inscrição no <strong>Growth Experience Petrolina</strong> foi confirmada com sucesso!</p>
-                            <p>Estamos muito felizes em ter você conosco nesta jornada de Growth e Inteligência Artificial.</p>
-                            
-                            <div style="background: rgba(254, 76, 56, 0.1); border: 1px solid rgba(254, 76, 56, 0.2); padding: 20px; border-radius: 12px; margin: 20px 0;">
-                                <h3 style="margin-top: 0; color: #fe4c38;">Informações Importantes:</h3>
-                                <ul style="list-style: none; padding: 0;">
-                                    <li>📍 <strong>Local:</strong> Petrolina-PE (Local exato no WhatsApp)</li>
-                                    <li>📅 <strong>Data:</strong> 30 de Abril de 2026</li>
-                                    <li>📱 <strong>App do Evento:</strong> Baixe o app e acesse com seu email.</li>
-                                </ul>
-                            </div>
-                            
-                            <p>Para garantir que você não perca nenhuma atualização importante, entre no nosso grupo exclusivo do WhatsApp:</p>
-                            <a href="https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9" style="display: inline-block; background: #25d366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Entrar no Grupo do WhatsApp</a>
-                            
-                            <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Nos vemos lá!<br/>Equipe Growth Experience</p>
-                        </div>
-                    `
-                }
-            }).catch(e => logger.warn('Email confirmation not sent (CORS/SKIP):', e.message || e));
-            */
+            if (!rpcResult?.success) {
+                throw new Error(rpcResult?.message || 'Erro ao processar inscrição no banco');
+            }
 
             setIsSuccess(true);
             toast.success('Inscrição confirmada com sucesso!');
@@ -103,7 +116,7 @@ export function PetrolinaRegistrationForm() {
             // 4. Redirect to Login after delay
             setTimeout(() => {
                 window.location.href = '/login';
-            }, 2000);
+            }, 2500);
 
         } catch (err: any) {
             logger.error('Error:', err);
@@ -143,15 +156,15 @@ export function PetrolinaRegistrationForm() {
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome da Empresa</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">CPF</label>
                     <input
                         required
                         type="text"
-                        name="empresa"
-                        value={formData.empresa}
+                        name="cpf"
+                        value={formData.cpf}
                         onChange={handleChange}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
-                        placeholder="Sua empresa ou projeto"
+                        placeholder="000.000.000-00"
                     />
                 </div>
                 <div className="space-y-2">
@@ -176,6 +189,18 @@ export function PetrolinaRegistrationForm() {
                         onChange={handleChange}
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
                         placeholder="seu@email.com"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome da Empresa</label>
+                    <input
+                        required
+                        type="text"
+                        name="empresa"
+                        value={formData.empresa}
+                        onChange={handleChange}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        placeholder="Sua empresa ou projeto"
                     />
                 </div>
                 <div className="space-y-2">
@@ -224,7 +249,7 @@ export function PetrolinaRegistrationForm() {
                         <option value="10m+">Acima de R$ 10M</option>
                     </select>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Cupom (Opcional)</label>
                     <input
                         type="text"
@@ -240,7 +265,7 @@ export function PetrolinaRegistrationForm() {
             <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient hover:scale-[1.02] text-white font-black py-7 text-xl rounded-2xl shadow-glow-orange mt-8 transition-all group"
+                className="w-full bg-gradient-to-r from-teal-600 to-teal-400 hover:scale-[1.02] text-white font-black py-7 text-xl rounded-2xl shadow-glow-teal mt-8 transition-all group border-none"
             >
                 {isSubmitting ? (
                     <>

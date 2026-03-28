@@ -52,12 +52,18 @@ export function getStorageUrl(bucket: string, path: string, options?: Transforma
 /**
  * URLs das imagens dos stands do Growth Experience Triunfo-PE
  */
+export const eventImages = {
+    heroBackground: getStorageUrl('event-images', 'espaco/background-hero.png'),
+    espacoEvento: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
+    mapaEvento: getStorageUrl('event-images', 'espaco/mapa-evento.png'),
+};
+
 export const standImages = {
-    diamante: getStorageUrl('event-images', 'stands/stand-diamante.png'),
-    ouro: getStorageUrl('event-images', 'stands/stand-ouro.png'),
-    prataPlus: getStorageUrl('event-images', 'stands/stand-prataplus.png'),
-    prata: getStorageUrl('event-images', 'stands/stand-prata.png'),
-    bronze: getStorageUrl('event-images', 'stands/stand-bronze.png'),
+    diamante: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/stands/stand%20diamante.png',
+    ouro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/stands/stand%20ouro.png',
+    prataPlus: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/stands/stand-prata.png',
+    prata: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/stands/stand-prata.png',
+    bronze: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/stands/stand%20bronze.png',
 };
 
 /**
@@ -65,7 +71,7 @@ export const standImages = {
  */
 export const palestrantesImages = {
     leandroBatista: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg',
-    vanyltonMatias: getStorageUrl('event-images', 'palestrantes/vanylton-matias.png'),
+    vanyltonMatias: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png',
     carolinneCastro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp',
     jeronimoFreire: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp',
     joaoDaniel: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png',

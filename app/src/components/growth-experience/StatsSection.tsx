@@ -1,4 +1,4 @@
-import { Users, Building2, Handshake, TrendingUp, Target, Award } from 'lucide-react';
+import { Users, Building2, TrendingUp, Target } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { Project } from '@/types';
 
@@ -101,24 +101,21 @@ export function StatsSection({ project }: StatsSectionProps) {
             return [
                 { icon: Users, value: 300, label: 'Empreendedores e Profissionais', suffix: '+' },
                 { icon: Building2, value: 6, label: 'Empresas Expositoras', suffix: '+' },
-                { icon: Target, value: 5, label: 'Palestras de Alto Impacto', suffix: '' },
-                { icon: Handshake, value: 10, label: 'Milhões em Negócios', suffix: 'M+' }
+                { icon: Target, value: 5, label: 'Palestras de Alto Impacto', suffix: '' }
             ];
         }
         if (isPetrolina) {
             return [
                 { icon: Users, value: 500, label: 'Líderes e Profissionais', suffix: '+' },
                 { icon: Building2, value: 15, label: 'Empresas e Marcas', suffix: '+' },
-                { icon: Target, value: 8, label: 'Atividades Práticas', suffix: '' },
-                { icon: Handshake, value: 50, label: 'Milhões em Negócios', suffix: 'M+' }
+                { icon: Target, value: 8, label: 'Atividades Práticas', suffix: '' }
             ];
         }
         // Home Geral / Default
         return [
             { icon: Users, value: 2000, label: 'Pessoas Impactadas', suffix: '+' },
             { icon: Building2, value: 50, label: 'Empresas Parceiras', suffix: '+' },
-            { icon: Target, value: 20, label: 'Temas e Workshops', suffix: '+' },
-            { icon: Handshake, value: 100, label: 'Milhões em Volume', suffix: 'M+' }
+            { icon: Target, value: 20, label: 'Temas e Workshops', suffix: '+' }
         ];
     };
 
