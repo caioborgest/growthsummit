@@ -25,7 +25,7 @@ const conselheiros = [
         cargo: "CEO da CBX Growth & IA",
         bio: "Especialista em growth e inteligência artificial para performance de negócios.",
         empresa: "CBX Growth & IA",
-        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
+        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/fff7192a-3479-4d82-b896-4b05fe081c6f-1774627071551.png"
     },
     {
         nome: "Leandro Batista",
@@ -59,8 +59,8 @@ export function GrowthExperiencePetrolina() {
             startDate: '2026-04-30',
             endDate: '2026-04-30',
             status: 'active',
-            primaryColor: '#FE4C38',
-            secondaryColor: '#FF6B35',
+            primaryColor: '#0D9488',
+            secondaryColor: '#10B981',
             settings: {
                 maxRegistrations: 500,
                 maxMentors: 0,
@@ -110,7 +110,7 @@ export function GrowthExperiencePetrolina() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-fade-in-up">
-                            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">O EVENTO PETROLINA</Badge>
+                            <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30 px-4 py-1">O EVENTO PETROLINA</Badge>
                             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">O Vale do São Francisco entra na <span className="text-gradient">Nova Era</span></h2>
                             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                                 Petrolina recebe a edição especial do Growth Experience. Um dia focado em transformar o potencial agrícola e comercial da região através da Inteligência Artificial e estratégias avançadas de Gestão e Growth.
@@ -139,8 +139,8 @@ export function GrowthExperiencePetrolina() {
                                 className="rounded-3xl shadow-2xl border border-white/5"
                                 alt="Petrolina-PE"
                             />
-                            <div className="absolute -bottom-6 -right-6 glass-card p-6 border-brand-orange-coral/30 animate-float">
-                                <p className="text-brand-orange-coral font-black text-4xl">30/04</p>
+                            <div className="absolute -bottom-6 -right-6 glass-card p-6 border-teal-500/30 animate-float">
+                                <p className="text-teal-400 font-black text-4xl">30/04</p>
                                 <p className="text-white font-bold">Petrolina-PE</p>
                             </div>
                         </div>
@@ -151,16 +151,16 @@ export function GrowthExperiencePetrolina() {
             <section id="mentores" className="py-20 bg-dark-200 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">CONSELHORES ESTRATÉGICOS</Badge>
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Apoio <span className="text-gradient">Especialista</span></h2>
-                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Mentores selecionados para guiar a transformação digital do Vale.</p>
+                        <Badge className="mb-4 bg-teal-500/20 text-teal-400 border-teal-500/30 px-4 py-1 uppercase tracking-widest font-black">Palestrantes Âncoras</Badge>
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Mestres da <span className="text-teal-400">Estratégia</span></h2>
+                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Os especialistas que guiarão a imersão de Growth e Alta Performance no Vale.</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         {conselheiros.map((mentor, idx) => (
                             <div key={idx} className="group relative glass-card p-8 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2">
                                 <div className="flex items-center gap-6">
-                                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-brand-orange-coral/30 transition-all">
+                                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-teal-500/30 transition-all">
                                         <img
                                             src={mentor.foto}
                                             alt={mentor.nome}
@@ -171,8 +171,8 @@ export function GrowthExperiencePetrolina() {
                                         />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-extrabold text-white group-hover:text-brand-orange-coral transition-colors">{mentor.nome}</h3>
-                                        <p className="text-brand-orange-coral font-bold text-sm uppercase tracking-widest mb-2">{mentor.cargo}</p>
+                                        <h3 className="text-2xl font-extrabold text-white group-hover:text-teal-400 transition-colors">{mentor.nome}</h3>
+                                        <p className="text-teal-400 font-bold text-sm uppercase tracking-widest mb-2">{mentor.cargo}</p>
                                         <p className="text-gray-400 text-sm leading-relaxed">{mentor.bio}</p>
                                     </div>
                                 </div>
@@ -186,11 +186,11 @@ export function GrowthExperiencePetrolina() {
             <section id="programacao" className="py-24 bg-dark-100 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+                        <Badge className="mb-4 bg-teal-500/20 text-teal-400 border-teal-500/30 px-4 py-1">
                             CRONOGRAMA OFICIAL
                         </Badge>
                         <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
-                            Programação <span className="text-gradient">Night Experience</span>
+                            Programação <span className="text-teal-400">Night Experience</span>
                         </h2>
                         <p className="text-gray-400 max-w-2xl mx-auto">
                             Uma noite intensiva de aprendizado, estratégias práticas e mentoria direta com os grandes nomes do mercado.
@@ -231,13 +231,13 @@ export function GrowthExperiencePetrolina() {
                                 icon: Handshake
                             }
                         ].map((item, i) => (
-                            <div key={i} className={`flex gap-6 p-6 rounded-2xl border transition-all ${item.destaque ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 shadow-glow-orange' : 'bg-dark-200 border-white/5 hover:border-white/10'}`}>
-                                <div className="text-brand-orange-coral font-black text-lg sm:text-xl whitespace-nowrap pt-1">
+                            <div key={i} className={`flex gap-6 p-6 rounded-2xl border transition-all ${item.destaque ? 'bg-teal-500/10 border-teal-500/30 shadow-glow-teal' : 'bg-dark-200 border-white/5 hover:border-white/10'}`}>
+                                <div className="text-teal-400 font-black text-lg sm:text-xl whitespace-nowrap pt-1">
                                     {item.hora}
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-3 mb-1">
-                                        <item.icon className={`h-5 w-5 ${item.destaque ? 'text-brand-orange-coral' : 'text-gray-500'}`} />
+                                        <item.icon className={`h-5 w-5 ${item.destaque ? 'text-teal-400' : 'text-gray-500'}`} />
                                         <h4 className="text-white font-bold text-lg sm:text-xl">{item.titulo}</h4>
                                     </div>
                                     <p className="text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
@@ -252,12 +252,12 @@ export function GrowthExperiencePetrolina() {
 
             <section id="registro" className="py-24 bg-dark relative overflow-hidden border-t border-white/5">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
-                    <div className="glass-card p-8 sm:p-12 border-brand-orange-coral/20 shadow-glow-orange/10">
+                    <div className="glass-card p-8 sm:p-12 border-teal-500/20 shadow-glow-teal/10">
                         <div className="text-center mb-10">
-                            <div className="w-16 h-16 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center mx-auto mb-6 border border-brand-orange-coral/30">
-                                <Rocket className="h-8 w-8 text-brand-orange-coral" />
+                            <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center mx-auto mb-6 border border-teal-500/30">
+                                <Rocket className="h-8 w-8 text-teal-400" />
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">Garanta sua <span className="text-gradient">Vaga no Vale</span></h2>
+                            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">Garanta sua <span className="text-teal-400">Vaga no Vale</span></h2>
                             <p className="text-gray-400">Preencha os dados abaixo para confirmar sua participação no Night Experience Petrolina.</p>
                         </div>
 

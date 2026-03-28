@@ -470,14 +470,24 @@ export function GrowthExperienceTriunfo() {
           </div>
 
           <div className="space-y-8">
-            {[
-              { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
-              { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
-              { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
-              { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
-              { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
-              { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h)' }
-            ].map((item, idx) => (
+            {(allSessions && allSessions.length > 0 ? 
+              allSessions
+                .filter(s => s.projectId === currentProject?.id)
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                .map(s => ({
+                  time: new Date(s.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
+                  event: s.title,
+                  desc: s.description
+                })) 
+              : [
+                { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
+                { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
+                { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
+                { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
+                { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
+                { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h)' }
+              ]
+            ).map((item, idx) => (
               <div key={idx} className="flex gap-6 items-start group">
                 <div className="flex flex-col items-center">
                   <div className="text-brand-orange-coral font-black text-xl italic">{item.time}</div>

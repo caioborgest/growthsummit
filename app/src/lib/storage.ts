@@ -64,11 +64,12 @@ export const standImages = {
  * URLs das imagens dos palestrantes
  */
 export const palestrantesImages = {
-    leandroBatista: getStorageUrl('event-images', 'palestrantes/leandro-batista.jpeg'),
+    leandroBatista: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg',
     vanyltonMatias: getStorageUrl('event-images', 'palestrantes/vanylton-matias.png'),
     carolinneCastro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp',
     jeronimoFreire: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp',
-    joaoDaniel: getStorageUrl('event-images', 'palestrantes/joao-daniel.jpeg'),
+    joaoDaniel: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png',
+    caioBorges: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/fff7192a-3479-4d82-b896-4b05fe081c6f-1774627071551.png',
     palestrantesJuntos: getStorageUrl('event-images', 'palestrantes/palestrantes-juntos.png'),
 };
 
@@ -97,6 +98,7 @@ export function getPalestranteImage(nome: string): string {
         'Carolinne Castro': palestrantesImages.carolinneCastro,
         'Jeronimo Freire': palestrantesImages.jeronimoFreire,
         'João Daniel': palestrantesImages.joaoDaniel,
+        'Caio Borges': palestrantesImages.caioBorges,
     };
 
     return mapping[nome] || placeholderPalestrante;

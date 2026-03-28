@@ -92,7 +92,7 @@ const TriumphSpeakers = [
   {
     name: "João Daniel",
     role: "CEO Cedan Rações",
-    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.jpeg"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png"
   },
   {
     name: "Vanylton Matias",
@@ -105,7 +105,7 @@ const PetrolinaSpeakers = [
   {
     name: "Caio Borges",
     role: "Especialista em Growth e IA",
-    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/caioborges-perfil.png"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/fff7192a-3479-4d82-b896-4b05fe081c6f-1774627071551.png"
   },
   {
     name: "Leandro Batista",
