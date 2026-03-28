@@ -540,7 +540,7 @@ export function AdminMentorias() {
                           </div>
                           <div>
                             <p className="text-white font-black text-sm uppercase italic">{session.menteeName || 'Livre'}</p>
-                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-tight">{session.startupName || 'Growth Summit'}</p>
+                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-tight">{session.startupName || 'Growth Experience'}</p>
                           </div>
                         </div>
                       </td>

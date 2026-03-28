@@ -113,21 +113,21 @@ export function Palestrantes() {
           </h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
             Estamos sempre em busca de novos talentos e especialistas para compartilhar
-            conhecimento no Growth Summit.
+            conhecimento no Growth Experience.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="mailto:contato@growthsummit.site"
+              href="mailto:contato@growthexperience.site"
               className="inline-flex items-center px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors"
             >
               Enviar proposta
             </a>
             <a
-              href="mailto:contato@growthsummit.site"
+              href="mailto:contato@growthexperience.site"
               className="text-gray-400 hover:text-teal-400 transition-colors"
             >
-              contato@growthsummit.site
+              contato@growthexperience.site
             </a>
           </div>
         </div>

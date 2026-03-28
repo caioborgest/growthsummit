@@ -306,7 +306,7 @@ export function ProfileForm() {
                             <Input
                                 value={formData.company}
                                 onChange={e => setFormData({ ...formData, company: e.target.value })}
-                                placeholder="Ex: Growth Summit"
+                                placeholder="Ex: Growth Experience"
                                 className="pl-12 bg-dark-100 border-dark-300"
                             />
                         </div>

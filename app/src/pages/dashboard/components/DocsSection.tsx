@@ -15,7 +15,7 @@ export function DocsSection({ documentos, loadingDocs }: DocsSectionProps) {
                     <FolderOpen className="h-6 w-6 text-teal-400" />
                 </div>
                 <h2 className="text-3xl font-black text-white italic tracking-tight uppercase">Base de Conhecimento</h2>
-                <p className="text-gray-500 text-sm max-w-sm mx-auto">Acesso rápido aos materiais, apresentações e guias oficiais do Growth Summit 2026.</p>
+                <p className="text-gray-500 text-sm max-w-sm mx-auto">Acesso rápido aos materiais, apresentações e guias oficiais do Growth Experience 2026.</p>
             </div>
 
             <div className="glass-card p-8 border-white/5 relative overflow-hidden">

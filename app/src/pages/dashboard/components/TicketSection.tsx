@@ -128,7 +128,7 @@ export function TicketSection({
                                 {/* Ticket Inner */}
                                 <div className="p-8 pb-4 bg-gradient-to-br from-teal-500/10 to-orange-500/10 border-b border-white/5 text-center">
                                     <p className="text-[9px] text-teal-400 font-black uppercase tracking-widest mb-1">SUA CREDENCIAL</p>
-                                    <p className="text-white font-mono text-base font-bold tracking-tighter uppercase">{myRegistration?.id?.slice(0, 13).toUpperCase() || 'GS2026-PENDENTE'}</p>
+                                    <p className="text-white font-mono text-base font-bold tracking-tighter uppercase">{myRegistration?.id?.slice(0, 13).toUpperCase() || 'GE2026-PENDENTE'}</p>
                                 </div>
                                 <div className="p-10 flex flex-col items-center bg-white">
                                     <div className="relative group">
@@ -190,7 +190,7 @@ export function TicketSection({
                                 className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
                                 onClick={async () => {
                                     if (!myRegistration) return;
-                                    await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Summit');
+                                    await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
                                     toast.success('Ingresso PDF gerado!');
                                 }}
                             >
@@ -209,7 +209,7 @@ export function TicketSection({
                 </div>
 
                 <p className="text-[9px] text-gray-600 font-black uppercase tracking-[0.2em] max-w-xs text-center leading-relaxed">
-                    Uso exclusivo para check-in. Válido conforme os termos do Growth Summit 2026.
+                    Uso exclusivo para check-in. Válido conforme os termos do Growth Experience 2026.
                 </p>
             </div>
         </div>

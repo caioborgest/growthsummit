@@ -169,7 +169,7 @@ export function Mentorias() {
                 Por que participar das mentorias?
               </h2>
               <p className="text-gray-400 mb-8">
-                As mentorias 1:1 são uma das experiências mais valiosas do Growth Summit. 
+                As mentorias 1:1 são uma das experiências mais valiosas do Growth Experience. 
                 Você terá acesso direto a especialistas que já passaram pelos desafios 
                 que você enfrenta hoje.
               </p>

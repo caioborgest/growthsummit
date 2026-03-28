@@ -32,9 +32,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutos
 const SESSION_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 dias de inatividade
-const LAST_ACTIVITY_KEY = 'growth_summit_last_activity';
-const LOGIN_ATTEMPTS_KEY = 'growth_summit_login_attempts';
-const LOCKOUT_UNTIL_KEY = 'growth_summit_lockout_until';
+const LAST_ACTIVITY_KEY = 'growth_experience_last_activity';
+const LOGIN_ATTEMPTS_KEY = 'growth_experience_login_attempts';
+const LOCKOUT_UNTIL_KEY = 'growth_experience_lockout_until';
 
 // Rate Limiting para login
 class RateLimiter {

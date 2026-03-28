@@ -468,7 +468,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
               </div>
             </div>
             <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
-              Nossa equipe administrativa está online e processando chamados em tempo recorde para garantir que sua experiência no Growth Summit 2026 seja perfeita.
+              Nossa equipe administrativa está online e processando chamados em tempo recorde para garantir que sua experiência no Growth Experience 2026 seja perfeita.
             </p>
           </div>
         </div>

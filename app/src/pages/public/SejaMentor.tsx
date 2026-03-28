@@ -148,7 +148,7 @@ export function SejaMentor() {
               Compartilhe seu <span className="text-teal-400">Conhecimento</span>
             </h1>
             <p className="text-xl text-gray-400">
-              Junte-se ao time de mentores do Growth Summit 2026 e ajude a transformar
+              Junte-se ao time de mentores do Growth Experience 2026 e ajude a transformar
               negócios e carreiras no maior evento de Growth do Nordeste.
             </p>
           </div>
@@ -163,7 +163,7 @@ export function SejaMentor() {
               Por que ser Mentor?
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Ser mentor no Growth Summit é uma oportunidade única de impactar
+              Ser mentor no Growth Experience é uma oportunidade única de impactar
               empreendedores e profissionais em crescimento.
             </p>
           </div>

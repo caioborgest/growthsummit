@@ -164,7 +164,7 @@ export default function DashboardMentor() {
       <PremiumHeader
         userName={mentorData?.name || user?.name}
         userAvatar={mentorData?.photo}
-        projectName="GROWTH SUMMIT 2026"
+        projectName="GROWTH EXPERIENCE 2026"
         roleLabel="MENTOR OFICIAL"
         notifications={notificationsData || []}
         onLogout={handleLogout}

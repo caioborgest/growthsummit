@@ -167,7 +167,7 @@ export function AdminRelatorios() {
     setGenerating(`${reportId}-${format}`);
 
     try {
-      const projectName = selectedProject?.name || 'Growth Summit';
+      const projectName = selectedProject?.name || 'Growth Experience';
       await new Promise(resolve => setTimeout(resolve, 600));
 
       if (format === 'csv') {

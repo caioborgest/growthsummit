@@ -32,7 +32,7 @@ export const mentoresTriunfo: Mentor[] = [
         id: 'cristiano-borges',
         nome: 'Cristiano Borges',
         cargo: 'Founder',
-        empresa: 'Growth Summit',
+        empresa: 'Growth Experience',
         bio: 'Especialista em Growth Marketing e estratégias de aquisição acelerada de clientes.',
         foto: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/palestrantes/Cristiano%20Borges.png',
         especialidades: ['Growth Marketing', 'Vendas', 'Inteligência Artificial']

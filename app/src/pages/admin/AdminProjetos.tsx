@@ -17,7 +17,6 @@ import { Switch } from '@/components/ui/switch';
 import type { Project, ProjectType, ProjectStatus } from '@/types';
 
 const projectTypeLabels: Record<ProjectType, string> = {
-  growth_summit: 'Growth Summit',
   growth_experience: 'Growth Experience',
   growth_conference: 'Growth Conference',
   growth_festival: 'Growth Festival',
@@ -270,7 +269,7 @@ export default function AdminProjetos() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-[#1E293B] border-[#334155]">
-                          <SelectItem value="growth_summit">Growth Summit</SelectItem>
+                          <SelectItem value="growth_experience">Growth Experience</SelectItem>
                           <SelectItem value="growth_experience">Growth Experience</SelectItem>
                           <SelectItem value="growth_conference">Growth Conference</SelectItem>
                           <SelectItem value="growth_festival">Growth Festival</SelectItem>

@@ -1,7 +1,7 @@
-// Growth Summit - TypeScript Types
+// Growth Experience - TypeScript Types
 // Multi-Project Event Management Platform
 
-export type ProjectType = 'growth_summit' | 'growth_experience' | 'growth_conference' | 'growth_festival';
+export type ProjectType = 'growth_experience' | 'growth_conference' | 'growth_festival';
 
 export type ProjectStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 

@@ -152,7 +152,7 @@ export function RodadaB2B() {
                 Por que participar da Rodada B2B?
               </h2>
               <p className="text-gray-400 mb-8">
-                A Rodada B2B do Growth Summit é uma oportunidade única de conectar 
+                A Rodada B2B do Growth Experience é uma oportunidade única de conectar 
                 sua empresa com potenciais parceiros, fornecedores e clientes em 
                 um ambiente profissional e focado em resultados.
               </p>

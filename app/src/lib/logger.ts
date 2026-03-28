@@ -1,5 +1,5 @@
 /**
- * Sistema de Logging Centralizado — Growth Summit 2026
+ * Sistema de Logging Centralizado — Growth Experience 2026
  * ─────────────────────────────────────────────────────────────
  * Em desenvolvimento: Mostra todos os logs no console com emojis
  * Em produção: Silencia logs de debug/info e envia ERROS para telemetria
@@ -57,7 +57,7 @@ function captureError(message: string, error?: unknown, context?: LogContext): v
             }
 
             // Ainda mostra no console de produção para facilitar depuração
-            console.error(`❌ [GrowthSummit] ${message}`, error || '', context || '');
+            console.error(`❌ [GrowthExperience] ${message}`, error || '', context || '');
         }
     } catch (_captureErr) {
         // Nunca deixar o sistema de log causar crash na aplicação

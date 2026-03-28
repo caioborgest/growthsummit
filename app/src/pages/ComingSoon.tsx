@@ -47,7 +47,7 @@ export function ComingSoon() {
           </h1>
           
           <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-            Nossa equipe de engenharia está trabalhando intensamente para entregar esta funcionalidade com o padrão de excelência do <strong>Growth Summit 2026</strong>.
+            Nossa equipe de engenharia está trabalhando intensamente para entregar esta funcionalidade com o padrão de excelência do <strong>Growth Experience 2026</strong>.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">

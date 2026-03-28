@@ -593,7 +593,7 @@ export function AdminWhatsAppGroups() {
               <Input
                 value={newGroup.group_name}
                 onChange={(e) => setNewGroup({ ...newGroup, group_name: e.target.value })}
-                placeholder="Ex: Growth Summit 2026 - Participantes VIP"
+                placeholder="Ex: Growth Experience 2026 - Participantes VIP"
                 className="bg-[#0F172A] border-[#334155] text-white"
               />
             </div>
@@ -722,7 +722,7 @@ export function AdminWhatsAppGroups() {
               <Input
                 value={newGroup.group_name}
                 onChange={(e) => setNewGroup({ ...newGroup, group_name: e.target.value })}
-                placeholder="Ex: Growth Summit 2026 - Participantes VIP"
+                placeholder="Ex: Growth Experience 2026 - Participantes VIP"
                 className="bg-[#0F172A] border-[#334155] text-white"
               />
             </div>

@@ -178,7 +178,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
                         <X className="h-6 w-6" />
                     </button>
                     <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">Mentoria <span className="text-brand-orange-coral">EXPERIENCE</span></DialogTitle>
-                    <p className="text-gray-500 text-xs font-medium tracking-widest mt-2 uppercase">Growth Summit 2026 · 20min Spots</p>
+                    <p className="text-gray-500 text-xs font-medium tracking-widest mt-2 uppercase">Growth Experience 2026 · 20min Spots</p>
                 </div>
                 <div className="relative z-10 px-0 sm:px-2">{renderStep()}</div>
             </DialogContent>

@@ -225,7 +225,7 @@ async function sendLinkInvite(
   // Como Z-API, Evolution API, Twilio, etc.
 
   const message = customMessage ||
-    `Olá! Você foi convidado(a) para participar do nosso grupo no WhatsApp.\n\nClique no link para entrar: ${inviteLink}\n\nAtenciosamente, Equipe Growth Summit`;
+    `Olá! Você foi convidado(a) para participar do nosso grupo no WhatsApp.\n\nClique no link para entrar: ${inviteLink}\n\nAtenciosamente, Equipe Growth Experience`;
 
   // Simulação de envio bem-sucedido
   console.log(`[SIMULAÇÃO] Enviando para ${phoneNumber}: ${message}`);

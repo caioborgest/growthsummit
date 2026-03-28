@@ -43,7 +43,7 @@ export function PremiumHeader({
             {/* Top Utility Bar */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-0.5">Growth Summit</span>
+                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-0.5">Growth Experience</span>
                     <span className="text-white/40 font-bold text-[9px] uppercase tracking-widest">{projectName || 'Growth Experience 2026'}</span>
                 </div>
 

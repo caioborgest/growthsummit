@@ -4,7 +4,7 @@
  * IMPORTANTE: Atualize a variável SUPABASE_URL com a URL do seu projeto
  */
 
-// URL do projeto Supabase - Growth Summit 2026
+// URL do projeto Supabase - Growth Experience 2026
 // Encontre em: Supabase Dashboard > Settings > API > Project URL
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xeuqtxxhncvechrxerqw.supabase.co';
 

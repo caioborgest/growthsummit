@@ -211,7 +211,7 @@ export function DashboardCompany() {
       <div className="relative z-10 pb-24">
         <PremiumHeader
           userName={user?.name}
-          projectName="GROWTH SUMMIT 2026"
+          projectName="GROWTH EXPERIENCE 2026"
           roleLabel="REPRESENTANTE B2B"
           isPro={true}
           notifications={notifications}

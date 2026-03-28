@@ -106,7 +106,7 @@ export function Startups() {
                 Por que expor sua startup?
               </h2>
               <p className="text-gray-400 mb-8">
-                O Startup Expo do Growth Summit é a oportunidade perfeita para
+                O Startup Expo do Growth Experience é a oportunidade perfeita para
                 apresentar sua empresa para um público qualificado de investidores,
                 potenciais clientes e parceiros estratégicos.
               </p>

@@ -90,7 +90,7 @@ export function PetrolinaRegistrationForm() {
                             <p>Para garantir que você não perca nenhuma atualização importante, entre no nosso grupo exclusivo do WhatsApp:</p>
                             <a href="https://chat.whatsapp.com/L1MhM2f9m9n0M9m9M9m9M9" style="display: inline-block; background: #25d366; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Entrar no Grupo do WhatsApp</a>
                             
-                            <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Nos vemos lá!<br/>Equipe Growth Summit</p>
+                            <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">Nos vemos lá!<br/>Equipe Growth Experience</p>
                         </div>
                     `
                 }

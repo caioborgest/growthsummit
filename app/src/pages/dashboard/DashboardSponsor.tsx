@@ -175,7 +175,7 @@ export function DashboardSponsor() {
       <div className="relative z-10 pb-24">
         <PremiumHeader
           userName={user?.name}
-          projectName="GROWTH SUMMIT 2026"
+          projectName="GROWTH EXPERIENCE 2026"
           roleLabel="PATROCINADOR"
           isPro={true}
           notifications={notifications}
