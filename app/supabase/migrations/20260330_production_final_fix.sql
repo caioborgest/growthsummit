@@ -26,6 +26,16 @@ ADD COLUMN IF NOT EXISTS topics TEXT[],
 ADD COLUMN IF NOT EXISTS color TEXT,
 ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
+-- 2.1 FIX USERS (Rename avatar to avatar_url for Auth compatibility)
+DO $$ 
+BEGIN 
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'avatar') THEN
+        ALTER TABLE public.users RENAME COLUMN avatar TO avatar_url;
+    ELSE
+        ALTER TABLE IF EXISTS public.users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    END IF;
+END $$;
+
 -- 2. ENSURE MISSING TABLES EXIST (For Production Cache)
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -96,11 +106,30 @@ CREATE TABLE IF NOT EXISTS public.pitch_scores (
 
 CREATE TABLE IF NOT EXISTS public.check_ins_atividades (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     session_id UUID REFERENCES public.programacao_evento(id) ON DELETE CASCADE,
     registration_id UUID,
     user_id UUID REFERENCES public.users(id),
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- 2.2 FIX PROJECTS (Missing Target Columns for Analytics)
+ALTER TABLE IF EXISTS public.projects 
+ADD COLUMN IF NOT EXISTS target_registrations INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS target_revenue NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS goal_registrations INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS goal_revenue NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'BR',
+ADD COLUMN IF NOT EXISTS address TEXT,
+ADD COLUMN IF NOT EXISTS banner TEXT,
+ADD COLUMN IF NOT EXISTS logo TEXT,
+ADD COLUMN IF NOT EXISTS short_description TEXT,
+ADD COLUMN IF NOT EXISTS max_startups INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS max_companies INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS enable_b2b BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS enable_mentoring BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS enable_startups BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS enable_check_in BOOLEAN DEFAULT TRUE;
 
 -- 3. FIX CERTIFICATES RELATIONSHIP
 -- Add columns if missing

@@ -188,7 +188,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         // Lógica padrão para cupons sociais
                         const { data, error } = await (supabase
                             .from('cupons_parceria_social') as any)
-                            .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento')
+                            .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
                             .eq('project_id', projectId)
                             .eq('codigo', codigo.trim().toUpperCase())
                             .eq('ativo', true)
