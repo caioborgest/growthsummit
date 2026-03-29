@@ -2,8 +2,9 @@ import { useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Home, Smartphone, Mail, MessageCircle } from 'lucide-react';
+import { CheckCircle, Home, Smartphone, Mail, MessageCircle, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePWA } from '@/hooks/usePWA';
 import type { DadosInscricao } from './inscricaoTypes';
 
 interface Step7ConclusaoProps {
@@ -13,7 +14,19 @@ interface Step7ConclusaoProps {
 
 export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
     const { selectedProject } = useProject();
+    const { isInstallable, isStandalone, promptInstall } = usePWA();
 
+    const handleConcluirEBaixar = async () => {
+        if (isInstallable && !isStandalone) {
+            try {
+                await promptInstall();
+            } catch (err) {
+                console.error('Erro ao instalar PWA:', err);
+            }
+        }
+        onFechar();
+        window.location.href = '/login';
+    };
 
     // Disparar toast de confirmação uma única vez ao montar (corretamente com useEffect)
     useEffect(() => {
@@ -84,13 +97,11 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
 
                 <Button
                     size="lg"
-                    onClick={() => {
-                        onFechar();
-                        window.location.href = '/login';
-                    }}
-                    className="flex-1 bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-16 rounded-2xl transition-all shadow-2xl hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm"
+                    onClick={handleConcluirEBaixar}
+                    className="flex-[1.5] bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-16 rounded-2xl transition-all shadow-2xl hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm flex items-center justify-center gap-2"
                 >
-                    CONCLUIR CADASTRO
+                    <Download className="h-5 w-5 text-brand-orange-coral" />
+                    CONCLUIR E BAIXAR APP
                 </Button>
             </div>
 

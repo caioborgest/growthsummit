@@ -246,6 +246,30 @@ export function AdminLayout() {
         {/* Navigation Groups Refined */}
         <nav className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
           {navigationGroups.map((group) => {
+            // Filtrar itens do grupo baseado nas configurações do projeto selecionado
+            const filteredItems = group.items.filter(item => {
+              if (!selectedProject) return true; // Se não tem projeto selecionado, mostra tudo (ou Core)
+              
+              const settings = selectedProject.settings || {};
+              
+              // Regras de visibilidade por ID de navegação
+              if (item.id === 'rodada-negocios' && settings.enableB2B === false) return false;
+              if (item.id === 'mentorias' && settings.enableMentoring === false) return false;
+              if (item.id === 'mentores' && settings.enableMentoring === false) return false;
+              if (item.id === 'startups' && settings.enableStartups === false) return false;
+              if (item.id === 'check-in' && settings.enableCheckIn === false) return false;
+              
+              // Se o projeto for Triunfo, esconder módulos que não se aplicam (ex: Stands, Mentorias)
+              // se o usuário não os configurou explicitamente
+              if (selectedProject.slug === 'ge-triunfo-2026') {
+                 // Adicione aqui regras específicas para o Triunfo se necessário
+              }
+
+              return true;
+            });
+
+            if (filteredItems.length === 0) return null;
+
             return (
               <div key={group.title} className="space-y-1">
                 <h3 className="text-[10px] text-gray-600 uppercase font-black tracking-[0.25em] mb-3 px-2 flex items-center">
@@ -253,7 +277,7 @@ export function AdminLayout() {
                   <div className="h-[1px] bg-white/5 flex-1 ml-4" />
                 </h3>
                 <div className="space-y-1">
-                  {group.items.map((item) => {
+                  {filteredItems.map((item) => {
                     const active = isActive(item.path);
                     return (
                       <Link

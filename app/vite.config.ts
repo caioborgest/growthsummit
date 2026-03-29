@@ -15,6 +15,7 @@ export default defineConfig({
         name: 'Growth Experience 2026',
         short_name: 'GX 2026',
         description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA.',
+        version: '1.0.1', // Bumped version to force PWA update
         start_url: '/',
         theme_color: '#21808D',
         background_color: '#0c0e12',

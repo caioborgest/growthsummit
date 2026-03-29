@@ -113,6 +113,14 @@ CREATE TABLE IF NOT EXISTS public.check_ins_atividades (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Ensure project_id exists in check_ins_atividades
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'check_ins_atividades' AND column_name = 'project_id') THEN
+        ALTER TABLE public.check_ins_atividades ADD COLUMN project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
 -- 2.2 FIX PROJECTS (Missing Target Columns for Analytics)
 ALTER TABLE IF EXISTS public.projects 
 ADD COLUMN IF NOT EXISTS target_registrations INTEGER DEFAULT 0,
@@ -130,6 +138,21 @@ ADD COLUMN IF NOT EXISTS enable_b2b BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS enable_mentoring BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS enable_startups BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS enable_check_in BOOLEAN DEFAULT TRUE;
+
+-- 2.3 FIX INSCRICOES_GROWTH_EXPERIENCE (Missing Columns for Registration)
+ALTER TABLE IF EXISTS public.inscricoes_growth_experience 
+ADD COLUMN IF NOT EXISTS cpf TEXT,
+ADD COLUMN IF NOT EXISTS tipo_atividade_selecionada TEXT,
+ADD COLUMN IF NOT EXISTS sala_atividade TEXT,
+ADD COLUMN IF NOT EXISTS horario_atividade TEXT,
+ADD COLUMN IF NOT EXISTS nivel_atividade TEXT,
+ADD COLUMN IF NOT EXISTS indicacao_tipo TEXT DEFAULT 'nenhum',
+ADD COLUMN IF NOT EXISTS indicacao_nome TEXT,
+ADD COLUMN IF NOT EXISTS codigo_social TEXT,
+ADD COLUMN IF NOT EXISTS cupom_palestra TEXT,
+ADD COLUMN IF NOT EXISTS valor_desconto_palestra NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN IF NOT EXISTS voucher_empresa TEXT;
 
 -- 3. FIX CERTIFICATES RELATIONSHIP
 -- Add columns if missing
@@ -193,19 +216,53 @@ GRANT INSERT ON public.support_tickets TO anon;
 -- Objective: Only count usage when payment is confirmed or for free tickets (already pago).
 -- This prevents "abandoned carts" from blocking other users.
 
--- 7.1 MODIFIED RPC: register_participant_with_slots (Remove premature batch increment)
+-- 7.0 CLEANUP: Drop conflicting overloads of register_participant_with_slots
+-- This resolves PGRST203 Ambiguous candidate
+DROP FUNCTION IF EXISTS public.register_participant_with_slots(uuid,uuid,text,text,text,uuid[],text,numeric,text,text,text,boolean,text,text,text,text,text,text,text,text,jsonb,uuid,text,text);
+DROP FUNCTION IF EXISTS public.register_participant_with_slots(uuid,uuid,text,text,text,text,uuid[],text,numeric,text,text,text,boolean,text,text,text,text,text,text,text,text,jsonb,uuid,text);
+
+-- 7.0.1 ADD MISSING validate_inscricao_dados RPC (LGPD/Security)
+CREATE OR REPLACE FUNCTION public.validate_inscricao_dados(
+    p_nome TEXT,
+    p_email TEXT,
+    p_telefone TEXT
+) RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+    IF length(p_nome) < 3 THEN
+        RETURN jsonb_build_object('valid', false, 'error_message', 'Nome completo é obrigatório.');
+    END IF;
+    IF p_email NOT LIKE '%@%' THEN
+        RETURN jsonb_build_object('valid', false, 'error_message', 'E-mail inválido.');
+    END IF;
+    RETURN jsonb_build_object('valid', true);
+END; $$;
+
+-- 7.1 MODIFIED RPC: register_participant_with_slots (Aligned with Frontend Order)
 CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
-    p_project_id UUID, p_user_id UUID, p_nome TEXT, p_email TEXT, p_telefone TEXT, 
-    p_session_ids UUID [], p_tipo_inscricao TEXT DEFAULT 'standard', 
-    p_valor_pago NUMERIC DEFAULT 0, p_status_pagamento TEXT DEFAULT 'pendente', 
-    p_status TEXT DEFAULT 'pendente', p_evento TEXT DEFAULT NULL, 
-    p_palestras_noturnas BOOLEAN DEFAULT FALSE, p_tipo_atividade TEXT DEFAULT NULL, 
-    p_sala_atividade TEXT DEFAULT NULL, p_horario_atividade TEXT DEFAULT NULL, 
-    p_nivel_atividade TEXT DEFAULT NULL, p_indicacao_tipo TEXT DEFAULT 'nenhum', 
-    p_indicacao_nome TEXT DEFAULT NULL, p_codigo_social TEXT DEFAULT NULL, 
-    p_codigo_palestra TEXT DEFAULT NULL, p_extra_data JSONB DEFAULT '{}'::JSONB, 
-    p_lote_id UUID DEFAULT NULL, p_voucher_empresa TEXT DEFAULT NULL, 
-    p_cpf TEXT DEFAULT NULL
+    p_project_id UUID, 
+    p_user_id UUID, 
+    p_nome TEXT, 
+    p_email TEXT, 
+    p_telefone TEXT, 
+    p_cpf TEXT DEFAULT NULL,
+    p_session_ids UUID [] DEFAULT '{}', 
+    p_tipo_inscricao TEXT DEFAULT 'standard', 
+    p_valor_pago NUMERIC DEFAULT 0, 
+    p_status_pagamento TEXT DEFAULT 'pendente', 
+    p_status TEXT DEFAULT 'pendente', 
+    p_evento TEXT DEFAULT NULL, 
+    p_palestras_noturnas BOOLEAN DEFAULT FALSE, 
+    p_tipo_atividade TEXT DEFAULT NULL, 
+    p_sala_atividade TEXT DEFAULT NULL, 
+    p_horario_atividade TEXT DEFAULT NULL, 
+    p_nivel_atividade TEXT DEFAULT NULL, 
+    p_indicacao_tipo TEXT DEFAULT 'nenhum', 
+    p_indicacao_nome TEXT DEFAULT NULL, 
+    p_codigo_social TEXT DEFAULT NULL, 
+    p_codigo_palestra TEXT DEFAULT NULL, 
+    p_extra_data JSONB DEFAULT '{}'::JSONB, 
+    p_lote_id UUID DEFAULT NULL, 
+    p_voucher_empresa TEXT DEFAULT NULL
 ) RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE 
     v_insc_id UUID; 
@@ -235,14 +292,14 @@ BEGIN
         project_id, user_id, nome, email, telefone, cpf, cursos_selecionados, 
         tipo_inscricao, valor_pago, status_pagamento, status, evento, 
         palestras_noturnas, tipo_atividade_selecionada, sala_atividade, 
-        horario_atividade, indicacao_tipo, indicacao_nome, codigo_social, 
-        codigo_palestra, cupom_palestra, extra_data, lote_id, voucher_empresa, created_at
+        horario_atividade, nivel_atividade, indicacao_tipo, indicacao_nome, 
+        codigo_social, codigo_palestra, cupom_palestra, extra_data, lote_id, voucher_empresa, created_at
     ) VALUES (
         p_project_id, p_user_id, p_nome, p_email, p_telefone, p_cpf, p_session_ids,
         p_tipo_inscricao, p_valor_pago, p_status_pagamento, p_status, p_evento,
         p_palestras_noturnas, p_tipo_atividade, p_sala_atividade, p_horario_atividade,
-        p_indicacao_tipo, p_indicacao_nome, p_codigo_social, p_codigo_palestra, p_codigo_palestra, 
-        p_extra_data, p_lote_id, p_voucher_empresa, NOW()
+        p_nivel_atividade, p_indicacao_tipo, p_indicacao_nome, p_codigo_social, 
+        p_codigo_palestra, p_codigo_palestra, p_extra_data, p_lote_id, p_voucher_empresa, NOW()
     ) RETURNING id INTO v_insc_id;
 
     -- Incrementar Sessões (Reserva)
@@ -358,5 +415,31 @@ CREATE TRIGGER trig_sync_registration_usage
 AFTER INSERT OR UPDATE OF status_pagamento ON public.inscricoes_growth_experience
 FOR EACH ROW EXECUTE FUNCTION public.handle_registration_usage();
 
+-- 8. AUTH AUTO-CONFIRM (Bypass Email Validation)
+-- Objective: Automatically confirm emails for new users to prevent blocking the registration flow.
+-- Note: Requires superuser access (default in Supabase SQL Editor).
+
+CREATE OR REPLACE FUNCTION public.auto_confirm_user_email()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE auth.users 
+    SET email_confirmed_at = NOW(), 
+        last_sign_in_at = NOW()
+    WHERE id = NEW.id AND email_confirmed_at IS NULL;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger AFTER INSERT on auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created_confirm ON auth.users;
+CREATE TRIGGER on_auth_user_created_confirm
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE PROCEDURE public.auto_confirm_user_email();
+
+-- Backup: Confirm all existing users that are pending (using only email_confirmed_at)
+UPDATE auth.users 
+SET email_confirmed_at = NOW()
+WHERE email_confirmed_at IS NULL;
+
 -- Validation Message
-DO $$ BEGIN RAISE NOTICE 'Production Final Fix + Usage Sync applied successfully.'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Production Final Fix + Usage Sync + Auto-Confirm applied successfully.'; END $$;
