@@ -24,9 +24,35 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    // 1. Prioridade: Parâmetro da URL (projeto externo ou embed)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlProjectId = urlParams.get('project');
+
+    if (urlProjectId && (!selectedProject || selectedProject.id !== urlProjectId)) {
+      // Tentar buscar do Supabase se o ID for diferente do atual
+      import('@/lib/supabase').then(({ supabase }) => {
+        supabase.from('projects' as any)
+          .select('*')
+          .eq('id', urlProjectId)
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              // Simple mapping to avoid importing complex useData logic here
+              const mapped = Object.entries(data).reduce((acc, [key, val]) => {
+                const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
+                acc[camelKey] = val;
+                return acc;
+              }, {} as any);
+              setSelectedProject(mapped);
+            }
+          });
+      });
+    }
+
+    // 2. Persistência
     if (selectedProject) {
       safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
-    } else {
+    } else if (!urlProjectId) {
       safeStorage.removeItem('selectedProject');
     }
   }, [selectedProject]);

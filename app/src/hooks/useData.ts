@@ -179,7 +179,6 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   // Mentoria additional business info
   // nome_startup: 'startupName', // Already defined at line 104
   // Registration Batch
-  nome_empresa: 'nomeEmpresa',
   nome_responsavel: 'nomeResponsavel',
   email_responsavel: 'emailResponsavel',
   email_contato: 'emailContato',
@@ -221,6 +220,8 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
   // Cross-entity specific logic
   if (item.project_id) result.projectId = item.project_id;
   if (item.user_id) result.userId = item.user_id;
+  // Handle company name cross-naming (AdminBatches uses nomeEmpresa)
+  if (item.nome_empresa) result.nomeEmpresa = item.nome_empresa;
   if (!result.ticketNumber && item.id && (item.id as string).length > 20) {
     result.ticketNumber = (item.id as string).split('-')[0].toUpperCase();
   }
@@ -236,6 +237,11 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
   if (item.status !== undefined) {
     const rawStatus = String(item.status);
     result.status = STATUS_MAPPING[rawStatus] ?? rawStatus;
+  }
+  
+  // Sync statusPagamento for entities using that naming (RegistrationBatch)
+  if (result.paymentStatus && !result.statusPagamento) {
+    result.statusPagamento = result.paymentStatus;
   }
 
   return result;
@@ -341,18 +347,18 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     delete result.settings;
   }
 
-  // Special status mapping for registrations
-  if (entity === 'registrations' && data.status) {
-    const s = String(data.status).toLowerCase();
+  // Special status mapping for registrations and batches
+  if ((entity === 'registrations' || entity === 'registration_batches') && (data.status || data.statusPagamento)) {
+    const s = String(data.status || data.statusPagamento).toLowerCase();
     if (s === 'paid' || s === 'pago') {
       result.status_pagamento = 'pago';
-      result.status = 'ativo';
+      if (entity === 'registrations') result.status = 'ativo';
     } else if (s === 'pending' || s === 'pendente') {
       result.status_pagamento = 'pendente';
-      result.status = 'pendente';
+      if (entity === 'registrations') result.status = 'pendente';
     } else if (s === 'cancelled' || s === 'cancelado') {
-      result.status_pagamento = 'pendente';
-      result.status = 'cancelado';
+      result.status_pagamento = 'cancelado';
+      if (entity === 'registrations') result.status = 'cancelado';
     }
   }
 
@@ -471,7 +477,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,phone,newsletter_opt_in',
-    notifications: 'id,user_id,title,message,type,read,created_at,action_url',
+    notifications: 'id,user_id,title,message,type,is_read,created_at,action_url',
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',

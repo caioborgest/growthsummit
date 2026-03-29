@@ -527,7 +527,7 @@ export interface RegistrationBatch {
   vagasUtilizadas: number;
   tipoIngresso: string;
   valorTotal: number;
-  statusPagamento: 'pendente' | 'pago' | 'cancelado';
+  statusPagamento: 'pending' | 'paid' | 'cancelled';
   observacoes?: string;
   createdAt: string;
   updatedAt: string;

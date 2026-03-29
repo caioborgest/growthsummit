@@ -35,7 +35,7 @@ export default function AdminBatches() {
     const navigate = useNavigate();
     const { data: batches, create, update, remove, isLoading } = useRegistrationBatches();
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'pendente' | 'pago' | 'cancelado'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBatch, setEditingBatch] = useState<RegistrationBatch | null>(null);
 
@@ -49,7 +49,7 @@ export default function AdminBatches() {
         quantidadeVagas: 5,
         tipoIngresso: 'pro' as 'morning' | 'pro',
         valorTotal: 0,
-        statusPagamento: 'pendente' as 'pendente' | 'pago' | 'cancelado',
+        statusPagamento: 'pending' as 'pending' | 'paid' | 'cancelled',
         observacoes: ''
     });
 
@@ -142,7 +142,7 @@ export default function AdminBatches() {
             quantidadeVagas: 5,
             tipoIngresso: 'pro',
             valorTotal: calculateTotal(5),
-            statusPagamento: 'pendente',
+            statusPagamento: 'pending',
             observacoes: ''
         });
     };
@@ -190,9 +190,9 @@ export default function AdminBatches() {
                         className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
                     >
                         <option value="all">Todos os Status</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="pago">Pago</option>
-                        <option value="cancelado">Cancelado</option>
+                        <option value="pending">Pendente</option>
+                        <option value="paid">Pago</option>
+                        <option value="cancelled">Cancelado</option>
                     </select>
                 </div>
                 <Button
@@ -210,7 +210,7 @@ export default function AdminBatches() {
                     { label: 'Total de Lotes', value: batches.length, icon: Building2, color: 'blue' },
                     { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.quantidadeVagas, 0), icon: Users, color: 'emerald' },
                     { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.vagasUtilizadas, 0), icon: Ticket, color: 'orange' },
-                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.statusPagamento === 'pago').reduce((sum, b) => sum + Number(b.valorTotal), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
+                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.statusPagamento === 'paid').reduce((sum, b) => sum + Number(b.valorTotal), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card p-6 border-l-4 border-brand-orange-coral shadow-lg">
                         <div className="flex items-start justify-between">
@@ -276,11 +276,13 @@ export default function AdminBatches() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <Badge className={
-                                            batch.statusPagamento === 'pago' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                batch.statusPagamento === 'pendente' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                            batch.statusPagamento === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                batch.statusPagamento === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                                                     'bg-red-500/10 text-red-500 border-red-500/20'
                                         }>
-                                            {(batch.statusPagamento || 'pendente').toUpperCase()}
+                                            {(batch.statusPagamento === 'paid' ? 'PAGO' : 
+                                              batch.statusPagamento === 'pending' ? 'PENDENTE' : 
+                                              'CANCELADO')}
                                         </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -438,9 +440,9 @@ export default function AdminBatches() {
                                             onChange={e => setFormData({ ...formData, statusPagamento: e.target.value as any })}
                                             className="w-full h-11 px-4 bg-dark-100 border border-white/5 rounded-xl text-white text-sm font-bold focus:ring-1 focus:ring-brand-orange-coral/50 outline-none appearance-none cursor-pointer"
                                         >
-                                            <option value="pendente">Pendente</option>
-                                            <option value="pago">Pago</option>
-                                            <option value="cancelado">Cancelado</option>
+                                            <option value="pending">Pendente</option>
+                                            <option value="paid">Pago</option>
+                                            <option value="cancelled">Cancelado</option>
                                         </select>
                                     </div>
                                 </div>
