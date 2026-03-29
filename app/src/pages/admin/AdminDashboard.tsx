@@ -42,8 +42,11 @@ import {
   useCheckIns,
   useSupportTickets,
   useRaffles,
-  useStandCheckIns
+  useStandCheckIns,
+  useSessions,
+  useCoupons
 } from '@/hooks/useData';
+import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
 
@@ -174,6 +177,15 @@ export function AdminDashboard() {
   const { data: tickets = [] } = useSupportTickets();
   const { data: raffles = [] } = useRaffles();
   const { data: standCheckIns = [] } = useStandCheckIns();
+  const { data: allSessions = [] } = useSessions();
+  const { data: allCoupons = [] } = useCoupons();
+
+  const isInitialSetup = useMemo(() => {
+    return (
+      (selectedProject?.status === 'draft') || 
+      (registrations.length === 0 && allSessions.length === 0)
+    );
+  }, [selectedProject, registrations.length, allSessions.length]);
 
   const quickActions = [
     { name: 'Sorteios', icon: Gift, color: 'orange', path: '/admin/sorteio' },
@@ -315,6 +327,21 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-10 py-4 animate-in fade-in duration-700">
+      {/* Onboarding / Setup Flow */}
+      {isInitialSetup && (
+        <div className="mb-4">
+          <SetupWizard 
+            project={selectedProject!} 
+            data={{
+              sessionsCount: allSessions.length,
+              mentorsCount: filterMentors(() => true).length,
+              registrationsCount: registrations.length,
+              couponsCount: allCoupons.length
+            }} 
+          />
+        </div>
+      )}
+
       {/* Welcome & Project Info */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-2">
         <div>

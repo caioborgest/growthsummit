@@ -63,39 +63,43 @@ const navigationGroups: SidebarGroup[] = [
   {
     title: 'Visão Geral',
     items: [
-      { id: '', name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-      { id: 'relatorios', name: 'Relatórios', icon: BarChart3, path: '/admin/relatorios' },
-      { id: 'projetos', name: 'Projetos', icon: FolderOpen, path: '/admin/projetos' },
+      { id: 'dashboard', name: 'Dashboard Central', icon: LayoutDashboard, path: '/admin' },
     ]
   },
   {
-    title: 'Evento & Inscrições',
+    title: 'Planejamento e Estrutura',
     items: [
-      { id: 'inscricoes', name: 'Participantes', icon: Users, path: '/admin/inscricoes' },
-      { id: 'lotes-equipes', name: 'Lotes de Equipes', icon: Ticket, path: '/admin/lotes-equipes' },
-      { id: 'empresas-incentivadoras', name: 'Empresas Incentivadoras', icon: Gem, path: '/admin/empresas-incentivadoras' },
-      { id: 'check-in', name: 'Check-in (QR)', icon: QrCode, path: '/admin/check-in' },
-      { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },
+      { id: 'projetos', name: 'Gestão de Projetos', icon: FolderOpen, path: '/admin/projetos' },
+      { id: 'programacao', name: 'Grade de Programação', icon: Calendar, path: '/admin/programacao' },
+      { id: 'patrocinadores', name: 'Patrocinadores & Cotas', icon: Gem, path: '/admin/patrocinadores' },
       { id: 'stands', name: 'Circuito de Stands', icon: Store, path: '/admin/stands' },
-      { id: 'sorteio', name: 'Sorteios & Prêmios', icon: Gift, path: '/admin/sorteio' },
-      { id: 'certificados', name: 'Certificados', icon: Award, path: '/admin/certificados' },
     ]
   },
   {
-    title: 'Experiências 1:1',
+    title: 'Experiências e Conteúdo',
     items: [
-      { id: 'mentorias', name: 'Gestão de Mentorias', icon: Calendar, path: '/admin/mentorias' },
       { id: 'mentores', name: 'Time de Mentores', icon: UserCircle, path: '/admin/mentores' },
+      { id: 'mentorias', name: 'Agenda de Mentorias', icon: Calendar, path: '/admin/mentorias' },
       { id: 'rodada-negocios', name: 'Rodada B2B', icon: Handshake, path: '/admin/rodada-negocios' },
-      { id: 'startups', name: 'Arena Pitch', icon: Rocket, path: '/admin/startups' },
+      { id: 'startups', name: 'Arena Pitch (Startups)', icon: Rocket, path: '/admin/startups' },
     ]
   },
   {
-    title: 'Comercial & Marketing',
+    title: 'Participantes e Vendas',
     items: [
-      { id: 'financeiro', name: 'Financeiro', icon: DollarSign, path: '/admin/financeiro' },
-      { id: 'patrocinadores', name: 'Patrocinadores', icon: Gem, path: '/admin/patrocinadores' },
-      { id: 'cupons', name: 'Vouchers & Cupons', icon: Ticket, path: '/admin/cupons' },
+      { id: 'inscricoes', name: 'Base de Participantes', icon: Users, path: '/admin/inscricoes' },
+      { id: 'lotes-equipes', name: 'Inscrições em Lote', icon: Ticket, path: '/admin/lotes-equipes' },
+      { id: 'cupons', name: 'Cupons e Vouchers', icon: Ticket, path: '/admin/cupons' },
+      { id: 'financeiro', name: 'Financeiro e Vendas', icon: DollarSign, path: '/admin/financeiro' },
+    ]
+  },
+  {
+    title: 'Operação e Pós-Evento',
+    items: [
+      { id: 'check-in', name: 'Check-in Digital (QR)', icon: QrCode, path: '/admin/check-in' },
+      { id: 'sorteio', name: 'Central de Sorteios', icon: Gift, path: '/admin/sorteio' },
+      { id: 'certificados', name: 'Certificados Digitais', icon: Award, path: '/admin/certificados' },
+      { id: 'relatorios', name: 'Relatórios de ROI', icon: BarChart3, path: '/admin/relatorios' },
     ]
   },
   {

@@ -68,7 +68,7 @@ F++WyzIcjmiLl9LDt69warrXJmbyjLmFktQgT8IrVURJb7jyu8k=
 
 const CORA_BASE_URL = 'https://matls-clients.api.cora.com.br';
 const WEBHOOK_API_URL = 'https://api.cora.com.br';
-const WEBHOOK_URL = 'https://zczfutmymobgypbbamme.supabase.co/functions/v1/cora-gateway/webhook';
+const WEBHOOK_URL = 'https://xeuqtxxhncvechrxerqw.supabase.co/functions/v1/cora-gateway/webhook';
 
 const pathsToTest = ['/endpoints', '/endpoints/'];
 

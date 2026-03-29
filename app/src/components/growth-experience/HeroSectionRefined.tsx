@@ -27,7 +27,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
     useEffect(() => {
         const dateStr = isTriunfo ? '2026-04-16' : (selectedProject?.startDate || '');
         if (!dateStr) return;
-        const eventDate = new Date(`${dateStr}T${isTriunfo ? '17:00:00' : '08:00:00'}`);
+        const eventDate = new Date(`${dateStr}T${isTriunfo ? '17:00:00' : '23:00:00'}`);
 
         const updateCountdown = () => {
             const now = new Date().getTime();
@@ -78,7 +78,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
                 {!isTriunfo && !isPetrolina && (
                     <div className="relative w-full h-full bg-brand-black">
-                         <img
+                        <img
                             src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
                             alt="Growth Experience"
                             className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-30 sm:opacity-40"
@@ -87,11 +87,11 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         />
                     </div>
                 )}
-                
+
                 {/* Layered Gradients for Depth */}
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-black via-transparent to-brand-black opacity-80" />
                 <div className={`absolute inset-0 bg-gradient-to-r ${isPetrolina ? 'from-dark via-dark/40 to-dark' : 'from-brand-black via-brand-black/40 to-brand-black'} opacity-90`} />
-                
+
                 {/* Animated Mesh Gradients */}
                 <div className="absolute inset-0 opacity-40 mix-blend-overlay">
                     <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] ${isPetrolina ? 'bg-teal-500/20' : 'bg-brand-orange-coral/30'} blur-[120px] rounded-full animate-pulse-slow`} />
@@ -108,7 +108,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
 
             {/* Content Container */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 sm:pt-40 sm:pb-24 lg:pt-48 lg:pb-32 flex flex-col items-center text-center">
-                
+
                 {/* Premium Location Badge */}
                 <div
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 mb-8 sm:mb-12 animate-fade-in-up backdrop-blur-md shadow-2xl"
@@ -141,7 +141,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                         className="text-balance sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up leading-relaxed px-4 sm:px-0"
                         style={{ animationDelay: '0.3s' }}
                     >
-                        O maior encontro de inteligência de negócios do {isTriunfo ? 'Sertão do Pajeú' : 'Vale do São Francisco'}. 
+                        O maior encontro de inteligência de negócios do {isTriunfo ? 'Sertão do Pajeú' : 'Vale do São Francisco'}.
                         <span className="hidden sm:inline"> Prepare-se para uma imersão total em estratégias de escala e networking de alto nível.</span>
                     </p>
                 </div>
@@ -154,7 +154,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 bg-white/5 p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-white/5 backdrop-blur-xl shadow-inner-glow relative">
                         {/* Decorative glow behind countdown */}
                         <div className={`absolute inset-0 ${isPetrolina ? 'bg-teal-500/5' : 'bg-brand-orange-coral/5'} rounded-inherit blur-xl -z-10 group-hover:bg-brand-orange-coral/10 transition-colors`} />
-                        
+
                         {[
                             { label: 'Dias', value: timeLeft.dias },
                             { label: 'Horas', value: timeLeft.horas },
@@ -181,7 +181,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     {[
                         { icon: Calendar, text: isTriunfo ? '16 Abr 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : 'Data a definir') },
                         { icon: Clock, text: isTriunfo ? '17:00 - 22:30' : '08:00 - 23:00' },
-                        { icon: MapPin, text: selectedProject?.city || 'Local a definir' }
+                        { icon: MapPin, text: selectedProject?.city || 'Espaço Parque' }
                     ].map((info, idx) => (
                         <div key={idx} className="flex items-center gap-2.5 group">
                             <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-${isPetrolina ? 'teal-500' : 'brand-orange-coral'}/10 group-hover:border-${isPetrolina ? 'teal-400' : 'brand-orange-coral'}/30 transition-all`}>
@@ -221,7 +221,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 </div>
 
                 {/* Scarcity Badge */}
-                <div 
+                <div
                     className="mt-10 sm:mt-12 animate-fade-in-up"
                     style={{ animationDelay: '0.7s' }}
                 >
@@ -237,9 +237,10 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 rotate-180 [writing-mode:vertical-lr]">Scroll</span>
                 <div className={`w-[1px] h-12 bg-gradient-to-b ${isPetrolina ? 'from-teal-400' : 'from-brand-orange-coral'} to-transparent animate-shimmer-v`} />
             </div>
-            
+
             {/* Custom Animations to be added to index.css or local style */}
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes slow-zoom {
                     0% { transform: scale(1.1); }
                     100% { transform: scale(1.2); }
