@@ -189,5 +189,174 @@ GRANT INSERT ON public.inscricoes_growth_experience TO anon;
 GRANT INSERT ON public.lotes_inscricao_empresa TO anon;
 GRANT INSERT ON public.support_tickets TO anon;
 
+-- 7. SYNC REGISTRATION USAGE (Fix Premature Coupon/Lote Increment)
+-- Objective: Only count usage when payment is confirmed or for free tickets (already pago).
+-- This prevents "abandoned carts" from blocking other users.
+
+-- 7.1 MODIFIED RPC: register_participant_with_slots (Remove premature batch increment)
+CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
+    p_project_id UUID, p_user_id UUID, p_nome TEXT, p_email TEXT, p_telefone TEXT, 
+    p_session_ids UUID [], p_tipo_inscricao TEXT DEFAULT 'standard', 
+    p_valor_pago NUMERIC DEFAULT 0, p_status_pagamento TEXT DEFAULT 'pendente', 
+    p_status TEXT DEFAULT 'pendente', p_evento TEXT DEFAULT NULL, 
+    p_palestras_noturnas BOOLEAN DEFAULT FALSE, p_tipo_atividade TEXT DEFAULT NULL, 
+    p_sala_atividade TEXT DEFAULT NULL, p_horario_atividade TEXT DEFAULT NULL, 
+    p_nivel_atividade TEXT DEFAULT NULL, p_indicacao_tipo TEXT DEFAULT 'nenhum', 
+    p_indicacao_nome TEXT DEFAULT NULL, p_codigo_social TEXT DEFAULT NULL, 
+    p_codigo_palestra TEXT DEFAULT NULL, p_extra_data JSONB DEFAULT '{}'::JSONB, 
+    p_lote_id UUID DEFAULT NULL, p_voucher_empresa TEXT DEFAULT NULL, 
+    p_cpf TEXT DEFAULT NULL
+) RETURNS JSONB LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE 
+    v_insc_id UUID; 
+    v_sess RECORD; 
+    v_full_sess TEXT [] := '{}';
+    v_sess_id UUID;
+BEGIN
+    -- Validar Sessões (Reserva Antecipada)
+    IF p_session_ids IS NOT NULL AND array_length(p_session_ids, 1) > 0 THEN
+        FOREACH v_sess_id IN ARRAY p_session_ids LOOP
+            SELECT id, title, max_vagas, registered_count INTO v_sess
+            FROM public.programacao_evento WHERE id = v_sess_id FOR UPDATE;
+            IF FOUND AND v_sess.max_vagas IS NOT NULL AND v_sess.max_vagas > 0 THEN
+                IF COALESCE(v_sess.registered_count, 0) >= v_sess.max_vagas THEN
+                    v_full_sess := array_append(v_full_sess, v_sess.title);
+                END IF;
+            END IF;
+        END LOOP;
+    END IF;
+
+    IF array_length(v_full_sess, 1) > 0 THEN
+        RETURN jsonb_build_object('success', false, 'error', 'SESSION_FULL', 'message', 'Vagas esgotadas: ' || array_to_string(v_full_sess, ', '));
+    END IF;
+
+    -- Inserir Inscrição
+    INSERT INTO public.inscricoes_growth_experience (
+        project_id, user_id, nome, email, telefone, cpf, cursos_selecionados, 
+        tipo_inscricao, valor_pago, status_pagamento, status, evento, 
+        palestras_noturnas, tipo_atividade_selecionada, sala_atividade, 
+        horario_atividade, indicacao_tipo, indicacao_nome, codigo_social, 
+        codigo_palestra, cupom_palestra, extra_data, lote_id, voucher_empresa, created_at
+    ) VALUES (
+        p_project_id, p_user_id, p_nome, p_email, p_telefone, p_cpf, p_session_ids,
+        p_tipo_inscricao, p_valor_pago, p_status_pagamento, p_status, p_evento,
+        p_palestras_noturnas, p_tipo_atividade, p_sala_atividade, p_horario_atividade,
+        p_indicacao_tipo, p_indicacao_nome, p_codigo_social, p_codigo_palestra, p_codigo_palestra, 
+        p_extra_data, p_lote_id, p_voucher_empresa, NOW()
+    ) RETURNING id INTO v_insc_id;
+
+    -- Incrementar Sessões (Reserva)
+    IF p_session_ids IS NOT NULL AND array_length(p_session_ids, 1) > 0 THEN
+        UPDATE public.programacao_evento SET registered_count = COALESCE(registered_count, 0) + 1 
+        WHERE id = ANY(p_session_ids);
+    END IF;
+
+    -- REMOVIDO: Incremento de Lote/Cupom (Agora feito via trigger no status 'pago')
+
+    RETURN jsonb_build_object('success', true, 'inscricao_id', v_insc_id);
+END; $$;
+
+-- 7.1.1 MODIFIED RPC: aplicar_voucher_empresa (Remove premature batch increment)
+CREATE OR REPLACE FUNCTION public.aplicar_voucher_empresa(p_inscricao_id UUID, p_voucher_code TEXT) 
+RETURNS BOOLEAN AS $$
+DECLARE 
+    v_lote_id UUID;
+    v_vagas INTEGER;
+    v_utilizadas INTEGER;
+    v_status TEXT;
+BEGIN 
+    -- Obter os dados do lote relacionado ao voucher
+    SELECT id, quantidade_vagas, vagas_utilizadas, status_pagamento INTO v_lote_id, v_vagas, v_utilizadas, v_status
+    FROM public.lotes_inscricao_empresa
+    WHERE voucher_code = p_voucher_code FOR UPDATE;
+
+    -- Validar se o lote existe
+    IF v_lote_id IS NULL THEN RAISE EXCEPTION 'Voucher Invalido ou Nao Encontrado.';
+    END IF;
+
+    -- Validar pagamento do lote
+    IF v_status != 'pago' THEN RAISE EXCEPTION 'O pagamento desse lote se encontra pendente. Entre em contato com o responsavel da sua empresa.';
+    END IF;
+
+    -- Validar limite de vagas
+    IF v_utilizadas >= v_vagas THEN RAISE EXCEPTION 'Este voucher ja atingiu o limite maximo de % vagas.', v_vagas;
+    END IF;
+
+    -- REMOVIDO: UPDATE public.lotes_inscricao_empresa SET vagas_utilizadas = vagas_utilizadas + 1...
+    -- O Trigger handle_registration_usage() cuidará disso ao detectar a mudança de status para 'pago'.
+
+    -- Vincular e concluir o acesso na inscricao
+    UPDATE public.inscricoes_growth_experience
+    SET lote_id = v_lote_id,
+        voucher_empresa_usado = p_voucher_code,
+        palestras_noturnas = true,
+        status_pagamento = 'pago',
+        status = 'ativo',
+        valor_pago = 0,
+        cupom_palestra = p_voucher_code,
+        valor_desconto_palestra = 179.99,
+        updated_at = NOW(),
+        paid_at = NOW()
+    WHERE id = p_inscricao_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 7.2 TRIGGER FUNCTION: handle_registration_usage()
+CREATE OR REPLACE FUNCTION public.handle_registration_usage() 
+RETURNS TRIGGER AS $$
+BEGIN
+    -- CASO 1: Inscrição marcada como PAGA (Nova ou Atualizada)
+    -- Incrementar contadores
+    IF (NEW.status_pagamento = 'pago') AND (OLD IS NULL OR OLD.status_pagamento != 'pago') THEN
+        
+        -- Atualizar Cupom Social
+        IF NEW.codigo_social IS NOT NULL THEN
+            UPDATE public.cupons_parceria_social 
+            SET uso_atual = COALESCE(uso_atual, 0) + 1 
+            WHERE codigo = NEW.codigo_social;
+        END IF;
+
+        -- Atualizar Lote de Empresa
+        IF NEW.lote_id IS NOT NULL THEN
+            UPDATE public.lotes_inscricao_empresa 
+            SET vagas_utilizadas = COALESCE(vagas_utilizadas, 0) + 1 
+            WHERE id = NEW.lote_id;
+        END IF;
+
+        -- Registrar data de pagamento se não houver
+        NEW.paid_at = COALESCE(NEW.paid_at, NOW());
+    
+    -- CASO 2: Inscrição deixa de ser PAGA (Cancelamento/Estorno)
+    -- Decrementar contadores
+    ELSIF (OLD.status_pagamento = 'pago') AND (NEW.status_pagamento != 'pago') THEN
+
+        -- Estornar Cupom Social
+        IF NEW.codigo_social IS NOT NULL THEN
+            UPDATE public.cupons_parceria_social 
+            SET uso_atual = GREATEST(0, COALESCE(uso_atual, 0) - 1) 
+            WHERE codigo = NEW.codigo_social;
+        END IF;
+
+        -- Estornar Lote de Empresa
+        IF NEW.lote_id IS NOT NULL THEN
+            UPDATE public.lotes_inscricao_empresa 
+            SET vagas_utilizadas = GREATEST(0, COALESCE(vagas_utilizadas, 0) - 1) 
+            WHERE id = NEW.lote_id;
+        END IF;
+
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 7.3 ATTACH TRIGGER TO TABLE
+DROP TRIGGER IF EXISTS trig_sync_registration_usage ON public.inscricoes_growth_experience;
+CREATE TRIGGER trig_sync_registration_usage
+AFTER INSERT OR UPDATE OF status_pagamento ON public.inscricoes_growth_experience
+FOR EACH ROW EXECUTE FUNCTION public.handle_registration_usage();
+
 -- Validation Message
-DO $$ BEGIN RAISE NOTICE 'Production Final Fix applied successfully. Schema cache reloaded.'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Production Final Fix + Usage Sync applied successfully.'; END $$;
