@@ -26,7 +26,7 @@ import { STATUS_MAPPING } from '@/lib/constants';
 const isGEProject = (projectId: string | undefined): boolean => {
   if (!projectId) return false;
   // Slug-based detection (works when slug is stored as projectId)
-  if (projectId.startsWith('ge-') || projectId.startsWith('growth-experience')) return true;
+  if (projectId.startsWith('ge-') || projectId.startsWith('growth-')) return true;
 
   // If projectId is a UUID, we check the global selectedProject from localStorage
   // This is a common pattern in this app to distinguish GE from and others
@@ -54,6 +54,9 @@ const getTableName = (projectId: string | undefined, entity: string) => {
   if (entity === 'notifications') return 'notifications';
   if (entity === 'audit_logs') return 'audit_logs';
 
+  // Specific mapping for registration batches (always points to this table)
+  if (entity === 'registration_batches') return 'lotes_inscricao_empresa';
+
   // Specific mappings for Growth Experience projects (ge-*)
   if (isGEProject(projectId)) {
     switch (entity) {
@@ -68,7 +71,6 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_chat_messages': return 'b2b_chat_messages';
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
-      case 'registration_batches': return 'lotes_inscricao_empresa';
       case 'stands': return 'stands';
       case 'stand_checkins': return 'stand_checkins';
       case 'support_tickets': return 'support_tickets';
@@ -177,7 +179,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   // Mentoria additional business info
   // nome_startup: 'startupName', // Already defined at line 104
   // Registration Batch
-  // nome_empresa: 'nomeEmpresa', // Already defined at line 108
+  nome_empresa: 'nomeEmpresa',
   nome_responsavel: 'nomeResponsavel',
   email_responsavel: 'emailResponsavel',
   email_contato: 'emailContato',

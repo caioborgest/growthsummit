@@ -483,7 +483,7 @@ export function GrowthExperienceTriunfo() {
                 { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
                 { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
                 { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
-                { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h)' }
+                { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h).' }
               ]
             ).map((item, idx) => (
               <div key={idx} className="flex gap-6 items-start group">

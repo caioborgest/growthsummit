@@ -25,7 +25,8 @@ import {
   Store,
   Gift,
   Bell,
-  Headset
+  Headset,
+  Share2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,6 +114,7 @@ const navigationGroups: SidebarGroup[] = [
     title: 'Configurações',
     items: [
       { id: 'usuarios', name: 'Usuários Admin', icon: Users, path: '/admin/usuarios' },
+      { id: 'integracoes', name: 'Integrações Externas', icon: Share2, path: '/admin/integracoes', badge: 'NEW' },
       { id: 'seguranca', name: 'Segurança & Logs', icon: AlertCircle, path: '/admin/seguranca' },
       { id: 'guia', name: 'Manual do Sistema', icon: BookOpen, path: '/guia' },
     ]
