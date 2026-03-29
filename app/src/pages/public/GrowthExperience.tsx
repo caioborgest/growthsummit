@@ -261,7 +261,7 @@ export function GrowthExperience() {
                 asChild
                 className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-6 sm:px-12 h-16 rounded-2xl text-base sm:text-lg transition-transform hover:scale-105"
               >
-                <Link to="/growth-experience-triunfo">
+                <Link to="/triunfo">
                   QUERO PARTICIPAR EM TRIUNFO
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -368,7 +368,7 @@ export function GrowthExperience() {
                 asChild
                 className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-black px-6 sm:px-12 h-16 rounded-2xl text-base sm:text-lg transition-transform hover:scale-105"
               >
-                <Link to="/growth-experience-petrolina">
+                <Link to="/petrolina">
                   CONHECER EDIÇÃO PETROLINA
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -684,7 +684,7 @@ export function GrowthExperience() {
 
           <div className="grid gap-4 py-4">
             <button
-              onClick={() => handleEventChoose('growth-experience-triunfo')}
+              onClick={() => handleEventChoose('triunfo')}
               className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all text-left group"
             >
               <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
@@ -698,7 +698,7 @@ export function GrowthExperience() {
             </button>
 
             <button
-              onClick={() => handleEventChoose('growth-experience-petrolina')}
+              onClick={() => handleEventChoose('petrolina')}
               className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20 transition-all text-left group"
             >
               <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">

@@ -101,13 +101,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
     }, [dados, currentStep, isOpen]);
 
-    // Skip seguro do Step 1 para o evento Triunfo (sem workshops diurnos)
-    useEffect(() => {
-        if (currentStep === 1 && selectedProject?.slug === 'ge-triunfo-2026') {
-            nextStep(true);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStep, selectedProject?.slug]);
+    // Skip seguro do Step 1 removido para permitir visualizar programação em Triunfo
 
     // Para Triunfo: todas as inscrições têm pagamento obrigatório — define comprarPalestras=true automaticamente
     // E pré-seleciona todas as sessões do cronograma
@@ -178,12 +172,6 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     const renderStep = () => {
         switch (currentStep) {
             case 1:
-                // Para Triunfo, não há programação diurna/workshops, então pulamos para os dados pessoais
-                if (selectedProject?.slug === 'ge-triunfo-2026') {
-                    // Bug fix: não chamar nextStep() dentro do render — isso causa cascading renders.
-                    // O useEffect abaixo cuida do skip de forma segura.
-                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" /></div>;
-                }
                 return (
                     <Step1SelecionarCursos
                         cursosSelecionados={dados.cursosSelecionados}
@@ -202,7 +190,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             updateDados(dadosPessoais);
                             nextStep();
                         }}
-                        onVoltar={selectedProject?.slug === 'ge-triunfo-2026' ? handleClose : prevStep}
+                        onVoltar={prevStep}
                     />
                 );
             case 3:

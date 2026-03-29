@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSessions } from '@/hooks/useData';
 import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface Step1SelecionarCursosProps {
     cursosSelecionados: string[];
@@ -16,27 +17,37 @@ export function Step1SelecionarCursos({
     onVoltar
 }: Step1SelecionarCursosProps) {
     const { data: sessions, isLoading } = useSessions();
+    const { selectedProject } = useProject();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
+
+    const isTriunfo = selectedProject?.slug === 'ge-triunfo-2026';
 
     // Mostrar toda a programação diurna disponível no banco
     const cursosDisponiveis = sessions.filter(s => {
         const category = (s.category as string)?.toLowerCase();
 
         // Excluir apenas atividades noturnas (que possuem fluxo de upgrade próprio no passo 4)
-        if (category === 'noturna') return false;
+        // EXCETO para Triunfo, onde a programação principal É noturna
+        if (category === 'noturna' && !isTriunfo) return false;
 
         // Inclui tudo que for diurno (Salão Principal, Salas 1, 2, 3, etc)
         return true;
     });
 
+    // Para Triunfo, derivamos os selecionados diretamente dos cursos disponíveis
+    const selecionadosFinal = isTriunfo ? cursosDisponiveis.map(c => c.id) : selecionados;
+
     const selectCurso = (cursoId: string) => {
-        // Apenas 1 seleção permitida
+        // Para Triunfo, não permitimos desmarcar pois é pacote único
+        if (isTriunfo) return;
+
+        // Apenas 1 seleção permitida para outros eventos
         setSelecionados([cursoId]);
     };
 
     const handleContinuar = () => {
-        if (selecionados.length === 1) {
-            onContinuar(selecionados);
+        if (selecionadosFinal.length > 0) {
+            onContinuar(selecionadosFinal);
         }
     };
 
@@ -48,9 +59,11 @@ export function Step1SelecionarCursos({
                     TRILHAS <span className="text-brand-orange-coral italic underline decoration-brand-orange-coral/30">DISPONÍVEIS</span>
                 </h3>
                 <p className="text-gray-400 text-base sm:text-lg max-w-xl font-medium">
-                    Selecione uma atividade para personalizar sua jornada. Cada atividade tem vagas limitadas.
+                    {isTriunfo 
+                        ? 'Confira a programação completa inclusa no seu ingresso.' 
+                        : 'Selecione uma atividade para personalizar sua jornada. Cada atividade tem vagas limitadas.'}
                 </p>
-                {selecionados.length > 0 && (
+                {selecionadosFinal.length > 0 && (
                     <div className="mt-4 flex animate-bounce-subtle">
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-1.5 text-[10px] uppercase tracking-widest font-black shadow-glow-green">
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -69,7 +82,7 @@ export function Step1SelecionarCursos({
                     </div>
                 ) : cursosDisponiveis.length > 0 ? (
                     cursosDisponiveis.map((curso) => {
-                        const isSelected = selecionados.includes(curso.id);
+                        const isSelected = selecionadosFinal.includes(curso.id);
                         const isFull = (curso.maxCapacity ?? 0) > 0 && (curso.registeredCount || 0) >= (curso.maxCapacity ?? 0);
 
                         return (
@@ -195,14 +208,14 @@ export function Step1SelecionarCursos({
                     )}
                     <Button
                         size="lg"
-                        disabled={selecionados.length === 0}
+                        disabled={selecionadosFinal.length === 0}
                         onClick={handleContinuar}
-                        className={`flex-1 h-16 rounded-2xl font-black text-lg sm:text-x; tracking-tight transition-all duration-300 shadow-2xl ${selecionados.length === 0
+                        className={`flex-1 h-16 rounded-2xl font-black text-lg sm:text-x; tracking-tight transition-all duration-300 shadow-2xl ${selecionadosFinal.length === 0
                             ? 'bg-dark-400 text-gray-600 border border-white/5'
                             : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-[0_15px_40px_rgba(255,112,67,0.3)] hover:scale-[1.02] active:scale-[0.98]'
                             }`}
                     >
-                        {selecionados.length === 0
+                        {selecionadosFinal.length === 0
                             ? 'Selecione uma Trilhas'
                             : 'Confirmar Escolha & Próximo Passo'}
                     </Button>

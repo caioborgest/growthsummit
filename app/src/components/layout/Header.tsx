@@ -15,8 +15,8 @@ import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 
 const navLinks = [
   { name: 'Início', href: '/' },
-  { name: 'Triunfo 2026', href: '/growth-experience-triunfo' },
-  { name: 'Petrolina 2026', href: '/growth-experience-petrolina' },
+  { name: 'Triunfo 2026', href: '/triunfo' },
+  { name: 'Petrolina 2026', href: '/petrolina' },
   { name: 'Inscrições', href: '/inscricoes' },
 ];
 

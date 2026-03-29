@@ -12,8 +12,8 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const footerLinks = {
   evento: [
-    { name: 'Triunfo-PE', href: '/growth-experience-triunfo' },
-    { name: 'Petrolina-PE', href: '/growth-experience-petrolina' },
+    { name: 'Triunfo-PE', href: '/triunfo' },
+    { name: 'Petrolina-PE', href: '/petrolina' },
     { name: 'Inscrições', href: '/inscricoes' },
     { name: 'Validar Certificado', href: '/validar' },
     { name: 'FAQ', href: '/faq' },

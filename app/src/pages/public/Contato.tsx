@@ -21,8 +21,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "contato@growthsummit.site",
-    href: "mailto:contato@growthsummit.site"
+    value: "projetos@cbxgrowth.com.br",
+    href: "projetos@cbxgrowth.com.bre"
   },
   {
     icon: Phone,
@@ -45,7 +45,7 @@ const contactInfo = [
 ];
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/growthsummit2026' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/growthexperience2026/' },
   { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/caioborgesgrowth/' },
 ];
 
@@ -299,7 +299,7 @@ export function Contato() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Geral</span>
-                    <a href="mailto:contato@growthsummit.site" className="text-teal-400 hover:underline text-sm">
+                    <a href="mailto:projetos@cbxgrowth.com.br" className="text-teal-400 hover:underline text-sm">
                       contato@
                     </a>
                   </div>

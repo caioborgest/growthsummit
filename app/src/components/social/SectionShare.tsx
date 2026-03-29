@@ -16,7 +16,7 @@ interface SectionShareProps {
 
 export function SectionShare({ sectionId, title }: SectionShareProps) {
     const [copied, setCopied] = useState(false);
-    const baseUrl = 'https://www.growthsummit.site/growth-experience-triunfo';
+    const baseUrl = 'https://www.gxexperience.site/triunfo';
     const fullUrl = `${baseUrl}#${sectionId}`;
 
     const handleCopy = async () => {

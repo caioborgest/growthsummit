@@ -317,7 +317,7 @@ export function GrowthExperienceTriunfo() {
     setSearchParams(newParams, { replace: true });
   };
 
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-triunfo';
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/triunfo';
 
   return (
     <div className="flex flex-col overflow-x-hidden">

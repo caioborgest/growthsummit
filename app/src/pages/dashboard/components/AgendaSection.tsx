@@ -89,7 +89,7 @@ export function AgendaSection({
                         className={`${isActuallyPaid ? 'bg-white text-black hover:bg-gray-100' : 'bg-orange-500 text-white hover:bg-orange-600'} rounded-xl font-black h-12 px-6 shadow-xl uppercase tracking-tight flex-1 sm:flex-none`}
                         onClick={() => {
                             if (isActuallyPaid) {
-                                navigate('/growth-experience-triunfo');
+                                navigate('/triunfo');
                             } else if (onUpgradeClick) {
                                 onUpgradeClick();
                             } else {
@@ -182,7 +182,7 @@ export function AgendaSection({
                                 <Button
                                     variant="outline"
                                     className="border-teal-500/20 text-teal-400 hover:bg-teal-500/10 h-9 rounded-xl text-xs"
-                                    onClick={() => navigate('/growth-experience-triunfo')}
+                                    onClick={() => navigate('/triunfo')}
                                 >
                                     ESCOLHER ATIVIDADES
                                 </Button>

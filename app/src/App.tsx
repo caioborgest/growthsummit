@@ -273,9 +273,10 @@ function AppRoutes() {
           <Route path="local-e-viagem" element={<LocalViagem />} />
           <Route path="termos" element={<LegalPage title="Termos de Uso" />} />
           <Route path="privacidade" element={<LegalPage title="Política de Privacidade" />} />
-          <Route path="lgpd" element={<LegalPage title="LGPD" />} />
-          <Route path="growth-experience-triunfo" element={<GrowthExperienceTriunfo />} />
-          <Route path="growth-experience-petrolina" element={<GrowthExperiencePetrolina />} />
+          <Route path="growth-experience-triunfo" element={<Navigate to="/triunfo" replace />} />
+          <Route path="growth-experience-petrolina" element={<Navigate to="/petrolina" replace />} />
+          <Route path="triunfo" element={<GrowthExperienceTriunfo />} />
+          <Route path="petrolina" element={<GrowthExperiencePetrolina />} />
           <Route path="evento/:slug" element={<DynamicEventPage />} />
           <Route path="validar" element={<ValidarCertificado />} />
           <Route path="validar/:code" element={<ValidarCertificado />} />

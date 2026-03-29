@@ -12,8 +12,8 @@ export function MobileQuickActions() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  const isTriunfoPage = location.pathname.includes('growth-experience-triunfo');
-  const agendaLink = isTriunfoPage ? "/growth-experience-triunfo#programacao" : "/programacao";
+  const isTriunfoPage = location.pathname.includes('triunfo');
+  const agendaLink = isTriunfoPage ? "/triunfo#programacao" : "/programacao";
   const qrLink = isAuthenticated ? "/minha-area?tab=ingresso" : "/login";
 
   return (

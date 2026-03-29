@@ -20,8 +20,8 @@ export function Layout() {
   const isEmbed = searchParams.get('embed') === 'true';
 
   const isLandingPage = location.pathname === '/' || 
-                        location.pathname.includes('growth-experience-triunfo') || 
-                        location.pathname.includes('growth-experience-petrolina') ||
+                        location.pathname.includes('triunfo') || 
+                        location.pathname.includes('petrolina') ||
                         location.pathname.includes('sobre') ||
                         isEmbed;
 

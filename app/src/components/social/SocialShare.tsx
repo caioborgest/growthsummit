@@ -36,7 +36,7 @@ export function SocialShare({ url, title, description }: SocialShareProps) {
                 shareLink = `https://wa.me/?text=${shareTitle}%20${shareUrl}`;
                 break;
             case 'instagram':
-                shareLink = `https://www.instagram.com/growthsummit2026`;
+                shareLink = `https://www.instagram.com/growthexperience2026`;
                 break;
             default:
                 return;

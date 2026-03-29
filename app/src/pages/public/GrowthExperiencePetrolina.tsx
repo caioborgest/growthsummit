@@ -92,7 +92,7 @@ export function GrowthExperiencePetrolina() {
         }
     }, [initProject]);
 
-    const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/growth-experience-petrolina';
+    const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.growthsummit.site/petrolina';
 
     return (
         <div className="flex flex-col overflow-x-hidden">
