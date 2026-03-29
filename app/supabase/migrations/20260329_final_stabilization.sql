@@ -92,12 +92,21 @@ ON public.inscricoes_growth_experience
 FOR INSERT 
 WITH CHECK (true);
 
--- 6. RESTRUTURA RLS PARA TRANSPORTE (Transactions)
+-- 6. RESTRUTURA RLS PARA TRANSACOES (Transactions)
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins can manage transactions" ON public.transactions;
 CREATE POLICY "Admins can manage transactions" ON public.transactions FOR ALL USING (public.is_admin());
 
--- 7. RECARREGAMENTO DO CACHE E PERMISSÕES GLOBAIS
+-- 7. RESTRUTURA RLS PARA PROJECTS
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can manage all projects" ON public.projects;
+CREATE POLICY "Admins can manage all projects" ON public.projects FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Public can view projects" ON public.projects;
+CREATE POLICY "Public can view projects" ON public.projects FOR SELECT USING (true);
+
+
+-- 8. RECARREGAMENTO DO CACHE E PERMISSÕES GLOBAIS
 
 -- ── 6. LIMPEZA DE PROJETOS DUPLICADOS ──────────────────────────────────────────
 -- Remove projetos com o mesmo slug, mantendo apenas o mais recente (maior data de criação)
