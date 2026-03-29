@@ -237,10 +237,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                                     <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
                                     {dados.descontoSocial && dados.descontoSocial > 0 && (
                                         <div className="mt-1 flex items-center gap-2">
-                                            <Badge className="bg-green-500/20 text-green-500 border-green-500/30 text-[10px] px-1.5 py-0">
-                                                -{dados.descontoSocial}% OFF
+                                            <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
+                                                {descontoEfetivo}% de desconto aplicado {dados.codigo && `(Code: ${dados.codigo})`}
                                             </Badge>
-                                            <span className="text-[10px] text-gray-400">Desconto aplicado</span>
                                         </div>
                                     )}
                                 </div>
@@ -299,6 +298,56 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         </div>
                     ) : (
                         <p className="text-gray-500 text-sm italic">Nenhuma atividade específica selecionada.</p>
+                    )}
+                </div>
+            </Card>
+
+            {/* Resumo do Investimento */}
+            <Card className="glass-card p-6 border-brand-orange-coral/20 bg-brand-orange-coral/[0.03] shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <Award className="h-5 w-5 text-green-500" />
+                    </div>
+                    <h4 className="font-bold text-white text-lg uppercase tracking-tight">Resumo do Investimento</h4>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-400">Passaporte Night Experience</span>
+                        <span className="text-white font-mono">R$ 179,99</span>
+                    </div>
+
+                    {dados.descontoSocial && dados.descontoSocial > 0 ? (
+                        <div className="flex justify-between items-center text-sm">
+                            <div className="flex items-center gap-2">
+                                <span className="text-green-500 font-bold">Desconto Aplicado</span>
+                                <Badge className="bg-green-500/10 text-green-500 border-none px-1.5 py-0 text-[10px] font-bold">
+                                    {dados.codigo || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Sócio')}
+                                </Badge>
+                            </div>
+                            <span className="text-green-500 font-mono">- R$ {((179.99 * dados.descontoSocial) / 100).toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    ) : null}
+
+                    <div className="pt-4 border-t border-white/5 flex justify-between items-end">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Saldo a Pagar</p>
+                            <p className="text-[10px] text-gray-400">PIX ou Cartão</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-3xl font-black text-white leading-none">
+                                R$ {Number(179.99 * (1 - (dados.descontoSocial || 0) / 100)).toFixed(2).replace('.', ',')}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {dados.descontoSocial === 100 && (
+                        <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center animate-pulse">
+                            <p className="text-green-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                Inscrição Gratuita (Liberação Imediata)
+                            </p>
+                        </div>
                     )}
                 </div>
             </Card>

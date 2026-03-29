@@ -55,6 +55,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [validating, setValidating] = useState(false);
     const [desconto, setDesconto] = useState(dados.descontoSocial || 0);
+    const [codigoValidado, setCodigoValidado] = useState(!!dados.codigo);
     const { projectId } = useProject();
 
     const formatTelefone = (value: string) => {
@@ -101,6 +102,78 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         return re.test(email);
     };
 
+    const validarCodigo = async () => {
+        if (!codigo.trim()) return;
+        
+        setValidating(true);
+        setErrors(prev => ({ ...prev, codigo: '' }));
+        try {
+            if (indicacaoTipo === 'empresa') {
+                const { data, error } = await supabase
+                    .from('lotes_inscricao_empresa')
+                    .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
+                    .eq('project_id', projectId)
+                    .eq('voucher_code', codigo.trim().toUpperCase())
+                    .single();
+
+                if (error || !data) {
+                    setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
+                } else if (data.status_pagamento !== 'pago') {
+                    setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento da empresa' }));
+                } else if (data.vagas_utilizadas >= data.quantidade_vagas) {
+                    setErrors(prev => ({ ...prev, codigo: 'Limite de vagas deste voucher esgotado' }));
+                } else {
+                    setDesconto(100);
+                    setCodigoValidado(true);
+                    setIndicacaoNome(data.nome_empresa);
+                    toast.success('PAGAMENTO CONFIRMADO PELA EMPRESA! 🎉');
+                }
+            } else {
+                const { data, error } = await (supabase
+                    .from('cupons_parceria_social') as any)
+                    .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
+                    .eq('project_id', projectId)
+                    .eq('codigo', codigo.trim().toUpperCase())
+                    .eq('ativo', true)
+                    .single();
+
+                if (error || !data) {
+                    setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
+                } else {
+                    const couponData = data;
+                    const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
+
+                    if (!isCompatible) {
+                        const CATEGORY_LABELS: Record<string, string> = {
+                            promocional: 'Promocional',
+                            empresa: 'Empresa',
+                            prefeitura: 'Prefeitura',
+                            politico: 'Político',
+                            influenciador: 'Influenciador',
+                            associacao: 'Associação',
+                            instituicao: 'Instituição',
+                            outro: 'Outro'
+                        };
+                        const categoriaNome = CATEGORY_LABELS[couponData.indicacao_tipo] || couponData.indicacao_tipo;
+                        setErrors(prev => ({ ...prev, codigo: `Este código pertence à categoria ${categoriaNome}. Selecione a categoria correta acima.` }));
+                    } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
+                        setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
+                    } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
+                        setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
+                    } else {
+                        setDesconto(couponData.porcentagem_desconto);
+                        setCodigoValidado(true);
+                        toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
+                    }
+                }
+            }
+        } catch (err) {
+            setErrors(prev => ({ ...prev, codigo: 'Erro ao validar código' }));
+        } finally {
+            setValidating(false);
+        }
+    };
+
     const handleContinuar = async () => {
         const newErrors: Record<string, string> = {};
 
@@ -141,99 +214,9 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             newErrors.confirmSenha = 'As senhas não coincidem';
         }
 
-        // Validação de Código (se houver indicação)
-        if (indicacaoTipo !== 'nenhum') {
-            if (!indicacaoNome) {
-                newErrors.indicacaoNome = 'Identificação é obrigatória';
-            }
-            if (!codigo.trim()) {
-                newErrors.codigo = 'O código da parceria é obrigatório';
-            } else {
-                setValidating(true);
-                try {
-                    // Lógica específica para Voucher de Equipe (Empresa)
-                    if (indicacaoTipo === 'empresa') {
-                        const { data, error } = await supabase
-                            .from('lotes_inscricao_empresa')
-                            .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
-                            .eq('project_id', projectId)
-                            .eq('voucher_code', codigo.trim().toUpperCase())
-                            .single();
-
-                        if (error || !data) {
-                            newErrors.codigo = 'Voucher corporativo não encontrado';
-                        } else if (data.status_pagamento !== 'pago') {
-                            newErrors.codigo = 'Este voucher aguarda confirmação de pagamento da empresa';
-                        } else if (data.vagas_utilizadas >= data.quantidade_vagas) {
-                            newErrors.codigo = 'Limite de vagas deste voucher esgotado';
-                        } else {
-                            // Sucesso
-                            setDesconto(100); // 100% de desconto pois a empresa já pagou o lote
-                            onContinuar({
-                                nome,
-                                cpf,
-                                email,
-                                telefone,
-                                senha,
-                                indicacaoTipo,
-                                indicacaoNome: data.nome_empresa,
-                                codigo: codigo.trim().toUpperCase(),
-                                descontoSocial: 100,
-                                loteId: data.id,
-                                voucherEmpresa: codigo.trim().toUpperCase()
-                            });
-                            return; // Encerra pois já chamou onContinuar
-                        }
-                    } else {
-                        // Lógica padrão para cupons sociais
-                        const { data, error } = await (supabase
-                            .from('cupons_parceria_social') as any)
-                            .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
-                            .eq('project_id', projectId)
-                            .eq('codigo', codigo.trim().toUpperCase())
-                            .eq('ativo', true)
-                            .single();
-
-                        if (error || !data) {
-                            newErrors.codigo = 'Código inválido ou inativo';
-                        } else {
-                            const couponData = data;
-                            const couponCategory = couponData.indicacao_tipo || 'não definida';
-                            
-                            // Mapeamento amigável para a mensagem de erro
-                            const CATEGORY_LABELS: Record<string, string> = {
-                                promocional: 'Promocional',
-                                empresa: 'Empresa',
-                                prefeitura: 'Prefeitura',
-                                politico: 'Político',
-                                influenciador: 'Influenciador',
-                                associacao: 'Associação',
-                                instituicao: 'Instituição',
-                                outro: 'Outro'
-                            };
-
-                            // Se o cupom for 'promocional', permitimos o uso independente da seleção do usuário
-                            const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
-
-                            if (!isCompatible) {
-                                const categoriaNome = CATEGORY_LABELS[couponData.indicacao_tipo] || couponCategory;
-                                newErrors.codigo = `Este código pertence à categoria ${categoriaNome}. Selecione a categoria correta acima.`;
-                            } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
-                                newErrors.codigo = 'Este código de parceria já expirou';
-                            } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
-                                newErrors.codigo = 'Limite de usos atingido para este código';
-                            } else {
-                                setDesconto(couponData.porcentagem_desconto);
-                            }
-                        }
-                    }
-                } catch (validationError) {
-                    logger.error('Erro na validação pública:', { error: validationError });
-                    newErrors.codigo = 'Erro ao validar código';
-                } finally {
-                    setValidating(false);
-                }
-            }
+        // Validação de Código (se houver indicação e não estiver validado)
+        if (indicacaoTipo !== 'nenhum' && !codigoValidado) {
+            newErrors.codigo = 'Por favor, valide o código antes de continuar';
         }
 
         setErrors(newErrors);
@@ -540,23 +523,42 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                     <Key className="h-4 w-4 text-brand-orange-coral" />
                                     {indicacaoTipo === 'empresa' ? 'Código do Voucher Corporativo' : 'Código da Parceria'}
                                 </Label>
-                                <Input
-                                    id="codigo"
-                                    type="text"
-                                    value={codigo}
-                                    onChange={(e) => {
-                                        setCodigo(e.target.value);
-                                        if (errors.codigo) setErrors({ ...errors, codigo: '' });
-                                    }}
-                                    placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-EQUIPE-XYZ' : 'INSIRA O CÓDIGO AQUI'}
-                                    className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest ${errors.codigo ? 'border-red-500' : ''}`}
-                                />
-                                {errors.codigo && (
-                                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <AlertCircle className="h-3 w-3" />
-                                        {errors.codigo}
-                                    </p>
-                                )}
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="codigo"
+                                            type="text"
+                                            value={codigo}
+                                            onChange={(e) => {
+                                                setCodigo(e.target.value);
+                                                setCodigoValidado(false);
+                                                if (errors.codigo) setErrors({ ...errors, codigo: '' });
+                                            }}
+                                            disabled={validating}
+                                            placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-EQUIPE-XYZ' : 'INSIRA O CÓDIGO AQUI'}
+                                            className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest flex-1 ${errors.codigo ? 'border-red-500' : ''}`}
+                                        />
+                                        <Button
+                                            type="button"
+                                            onClick={validarCodigo}
+                                            disabled={validating || !codigo.trim() || codigoValidado}
+                                            className={`px-6 h-11 font-bold rounded-xl transition-all ${codigoValidado ? 'bg-green-500/20 text-green-500 border-green-500/30' : 'bg-brand-orange-coral text-white'}`}
+                                        >
+                                            {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                                             codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'VALIDAR'}
+                                        </Button>
+                                    </div>
+                                    {errors.codigo && (
+                                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                            <AlertCircle className="h-3 w-3" />
+                                            {errors.codigo}
+                                        </p>
+                                    )}
+                                    {codigoValidado && (
+                                        <p className="text-green-500 text-xs mt-1 flex items-center gap-1 font-bold animate-in fade-in slide-in-from-top-1">
+                                            <CheckCircle className="h-3 w-3" />
+                                            CÓDIGO CONFIRMADO! (-{desconto}% OFF)
+                                        </p>
+                                    )}
                                 <p className="text-[10px] text-gray-500 mt-2">
                                     {indicacaoTipo === 'empresa'
                                         ? 'Este código foi enviado para o email do responsável pela compra do lote da sua empresa.'

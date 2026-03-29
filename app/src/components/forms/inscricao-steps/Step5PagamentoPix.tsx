@@ -106,7 +106,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                             </p>
                             {descontoEfetivo > 0 && (
                                 <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
-                                    {descontoEfetivo}% de desconto aplicado
+                                    {descontoEfetivo}% de desconto aplicado {dados.codigo && `(Cód: ${dados.codigo})`}
                                 </Badge>
                             )}
                         </div>
