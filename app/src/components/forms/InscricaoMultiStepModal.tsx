@@ -203,6 +203,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             nextStep(true); // Force next step
                         }}
                         onVoltar={prevStep}
+                        onUpdate={updateDados}
                     />
                 );
             case 4:
@@ -221,7 +222,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     const { supabase } = await import('@/lib/supabase');
                                     // Cálculo de valor (mesma lógica do Step 3)
                                     const valorOriginal = 179.99;
-                                    const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+                                    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
                                     const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
 
                                     if (dados.voucherEmpresa) {
@@ -247,7 +248,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
                                     updateDados({
                                         comprarPalestras: true,
-                                        statusPagamento: valorComDesconto > 0 ? 'pendente' : 'pago'
+                                        statusPagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
+                                        valorFinal: valorComDesconto
                                     });
                                 } catch (err) {
                                     logger.error('Erro ao atualizar compra de palestras:', { error: err });

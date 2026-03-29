@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, Star, ArrowRight, X, Loader2, Ticket } from 'lucide-react';
+import { CheckCircle, Star, ArrowRight, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricaoTypes';
@@ -23,7 +22,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
     const [cupomAplicado, setCupomAplicado] = useState(!!dados.descontoPalestra);
 
     const valorOriginal = 179.99;
-    const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
     const precoFinal = valorOriginal * (1 - descontoEfetivo / 100);
 
     const handleValidarCupom = async () => {
@@ -33,7 +32,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
 
         try {
             // Tenta validar como Cupom Social
-            const { data, error: cError } = await (supabase
+            const { data } = await (supabase
                 .from('cupons_parceria_social') as any)
                 .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_nome,indicacao_tipo')
                 .eq('codigo', cupom.trim().toUpperCase())
@@ -59,11 +58,11 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             }
 
             // Tenta validar como Lote Corporativo (Voucher Empresa)
-            const { data: batchData, error: bError } = await supabase
+            const { data: batchData } = await supabase
                 .from('lotes_inscricao_empresa')
-                .select('id,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso')
+                .select('id,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                 .eq('voucher_code', cupom.trim().toUpperCase())
-                .maybeSingle();
+                .maybeSingle() as any;
 
             if (batchData) {
                 if (batchData.status_pagamento !== 'pago') {

@@ -31,8 +31,8 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
     const merchantName = EVENT_CONFIG.pix.beneficiario;
 
     // Cálculo do valor
-    const valorOriginal = 179.99;
-    const descontoEfetivo = dados.descontoPalestra !== undefined ? dados.descontoPalestra : (dados.descontoSocial || 0);
+    const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
+    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
     const valorFinal = valorOriginal * (1 - descontoEfetivo / 100);
     const valorFormatado = valorFinal.toFixed(2);
 

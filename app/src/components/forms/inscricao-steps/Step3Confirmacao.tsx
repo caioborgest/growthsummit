@@ -10,19 +10,28 @@ import { useSessions } from '@/hooks/useData';
 import { registrationService } from '@/services/registrationService';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
     onConfirmar: (userId: string, inscricaoId: string, statusPagamento: string) => void;
     onVoltar: () => void;
+    onUpdate?: (novos: Partial<DadosInscricao>) => void;
 }
 
-export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3ConfirmacaoProps) {
+export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Step3ConfirmacaoProps) {
     const [loading, setLoading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const { projectId, selectedProject } = useProject();
     const { data: sessions } = useSessions();
+
+    // Cálculo do valor (Source of Truth: dados.valorFinal ou recalcular como fallback)
+    const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
+    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
+    const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
+    const valorFormatado = valorFinal.toFixed(2);
+    const valorPagoTotal = dados.comprarPalestras ? valorFinal : 0;
 
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => {
@@ -85,15 +94,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
             // ── ETAPA 1.5: Aguardar sincronização (Prevenção de race condition no FK)
             await waitForUserSync(userId);
 
-            // ── ETAPA 2: Calcular valor
-            const valorOriginal = 179.99;
-            const descontoEfetivo = dados.descontoPalestra !== undefined
-                ? dados.descontoPalestra
-                : (dados.descontoSocial || 0);
-            const valorPago = dados.comprarPalestras
-                ? valorOriginal * (1 - descontoEfetivo / 100)
-                : 0;
-            const statusPagamento = (dados.comprarPalestras && valorPago > 0) ? 'pendente' : 'pago';
+            // ── ETAPA 2: Calcular valor (já feito no escopo superior)
+            const statusPagamento = (dados.comprarPalestras && valorPagoTotal > 0) ? 'pendente' : 'pago';
 
             // ── ETAPA 3: Inscrição atômica via Service Layer (verifica vagas + insere + incrementa)
             const sessionIds = dados.cursosSelecionados
@@ -109,7 +111,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 cpf: dados.cpf,
                 sessionIds: sessionIds.length > 0 ? sessionIds : [],
                 tipoInscricao: 'standard',
-                valorPago,
+                valorPago: valorPagoTotal,
                 statusPagamento,
                 status: statusPagamento === 'pago' ? 'ativo' : 'pendente',
                 evento: selectedProject?.name || 'Growth Experience',
@@ -139,9 +141,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
 
             const finalInscricaoId = rpcResult.inscricao_id || null;
 
-
             // ── ETAPA 5: Sucesso
             onConfirmar(userId, finalInscricaoId || '', statusPagamento);
+            
+            // Salvar o valor final calculado no estado global
+            onUpdate?.({ valorFinal: valorFinal });
 
         } catch (err: unknown) {
             const error = err as Error;
@@ -314,10 +318,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                 <div className="space-y-4">
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-400">Passaporte Night Experience</span>
-                        <span className="text-white font-mono">R$ 179,99</span>
+                        <span className="text-white font-mono">R$ {valorOriginal.toFixed(2).replace('.', ',')}</span>
                     </div>
 
-                    {dados.descontoSocial && dados.descontoSocial > 0 ? (
+                    {descontoEfetivo > 0 ? (
                         <div className="flex justify-between items-center text-sm">
                             <div className="flex items-center gap-2">
                                 <span className="text-green-500 font-bold">Desconto Aplicado</span>
@@ -325,7 +329,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                                     {dados.codigo || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Sócio')}
                                 </Badge>
                             </div>
-                            <span className="text-green-500 font-mono">- R$ {((179.99 * dados.descontoSocial) / 100).toFixed(2).replace('.', ',')}</span>
+                            <span className="text-green-500 font-mono">- R$ {((valorOriginal * descontoEfetivo) / 100).toFixed(2).replace('.', ',')}</span>
                         </div>
                     ) : null}
 
@@ -336,12 +340,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar }: Step3Confirma
                         </div>
                         <div className="text-right">
                             <p className="text-3xl font-black text-white leading-none">
-                                R$ {Number(179.99 * (1 - (dados.descontoSocial || 0) / 100)).toFixed(2).replace('.', ',')}
+                                R$ {valorFormatado.replace('.', ',')}
                             </p>
                         </div>
                     </div>
                     
-                    {dados.descontoSocial === 100 && (
+                    {descontoEfetivo === 100 && (
                         <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center animate-pulse">
                             <p className="text-green-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                                 <CheckCircle className="h-4 w-4" />

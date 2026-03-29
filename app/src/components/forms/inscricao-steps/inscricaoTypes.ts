@@ -32,4 +32,6 @@ export interface DadosInscricao {
     appInstalado?: boolean;
     loteId?: string;
     voucherEmpresa?: string;
+    tipoInscricao?: 'standard' | 'pro' | 'vip' | 'social';
+    valorFinal?: number;
 }
