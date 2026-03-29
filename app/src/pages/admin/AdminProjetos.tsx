@@ -73,11 +73,16 @@ export default function AdminProjetos() {
     }
 
     try {
-      const slug = formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const nameSlug = (formData.name || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // remove acentos
+        .replace(/growth\s+experience/g, 'ge')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-2026$/g, '');
 
       await create({
         ...formData,
-        slug: `${slug}-2026`,
+        slug: `${nameSlug}-2026`,
         description: formData.description || '',
         settings: formData.settings || defaultSettings,
       } as any);
@@ -269,7 +274,6 @@ export default function AdminProjetos() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-[#1E293B] border-[#334155]">
-                          <SelectItem value="growth_experience">Growth Experience</SelectItem>
                           <SelectItem value="growth_experience">Growth Experience</SelectItem>
                           <SelectItem value="growth_conference">Growth Conference</SelectItem>
                           <SelectItem value="growth_festival">Growth Festival</SelectItem>

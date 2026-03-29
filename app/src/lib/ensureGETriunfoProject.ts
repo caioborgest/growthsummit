@@ -18,7 +18,7 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 const GE_TRIUNFO_SLUG = 'ge-triunfo-2026';
 const GE_TRIUNFO_FIXED_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
-const PROJECT_DATA: ProjectInsert = {
+const PROJECT_DATA: any = {
     id: GE_TRIUNFO_FIXED_ID,
     name: 'Growth Experience Triunfo-PE 2026',
     slug: GE_TRIUNFO_SLUG,
@@ -48,6 +48,8 @@ const PROJECT_DATA: ProjectInsert = {
     ticket_price_vip: 0,
     target_registrations: 2000,
     target_revenue: 8_000_000,
+    goal_registrations: 2000,
+    goal_revenue: 8_000_000,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
 };
@@ -62,15 +64,15 @@ function rowToProject(row: ProjectRow): Project {
         name: row.name,
         slug: row.slug,
         type: row.type as ProjectType,
-        description: row.description,
+        description: row.description ?? '',
         shortDescription: row.short_description ?? '',
-        location: row.location,
-        city: row.city,
-        state: row.state,
-        country: row.country,
+        location: row.location ?? '',
+        city: row.city ?? '',
+        state: row.state ?? '',
+        country: row.country ?? '',
         address: row.address ?? '',
-        startDate: row.start_date,
-        endDate: row.end_date,
+        startDate: row.start_date ?? '',
+        endDate: row.end_date ?? '',
         status: row.status as ProjectStatus,
         banner: row.banner ?? '',
         logo: row.logo ?? '',
@@ -83,17 +85,17 @@ function rowToProject(row: ProjectRow): Project {
             maxMentors: row.max_mentors ?? undefined,
             maxStartups: row.max_startups ?? undefined,
             maxCompanies: row.max_companies ?? undefined,
-            enableB2B: row.enable_b2b,
-            enableMentoring: row.enable_mentoring,
-            enableStartups: row.enable_startups,
-            enableCheckIn: row.enable_check_in,
+            enableB2B: row.enable_b2b ?? true,
+            enableMentoring: row.enable_mentoring ?? true,
+            enableStartups: row.enable_startups ?? true,
+            enableCheckIn: row.enable_check_in ?? true,
             ticketPrices: {
                 standard: (row.ticket_price_standard ?? 0) / 100,
                 pro: (row.ticket_price_pro ?? 0) / 100,
                 vip: (row.ticket_price_vip ?? 0) / 100,
             },
-            targetRegistrations: row.target_registrations,
-            targetRevenue: row.target_revenue,
+            targetRegistrations: row.target_registrations ?? undefined,
+            targetRevenue: row.target_revenue ?? undefined,
         },
     };
 }
@@ -106,7 +108,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
     try {
         // 1. Buscar pelo slug
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,target_registrations,target_revenue,created_at,updated_at';
+        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,goal_registrations,goal_revenue,target_registrations,target_revenue,created_at,updated_at';
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
             .select(projCols)
             .eq('slug', GE_TRIUNFO_SLUG)
@@ -130,6 +132,7 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
                         status: 'active',
                         max_registrations: 2000,
                         target_registrations: 2000,
+                        goal_registrations: 2000,
                         location: 'Espaço Parque',
                         updated_at: new Date().toISOString()
                     } as ProjectUpdate)
@@ -142,32 +145,9 @@ export async function ensureGETriunfoProject(): Promise<Project | null> {
             return rowToProject(existingTyped);
         }
 
-        // 2. Criar se não existe (upsert por id fixo para evitar duplicatas)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: created, error: createError } = await (supabase.from('projects') as any)
-            .upsert(PROJECT_DATA, { onConflict: 'id' })
-            .select()
-            .single();
-
-        if (createError) {
-            // Pode falhar por RLS (não-admin) — não é fatal para a página pública
-            logger.warn('[ensureGETriunfoProject] Não foi possível criar o projeto (RLS?):', { error: createError.message });
-
-            // Tentar buscar novamente — pode ter sido criado por outra aba/instância
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: retry } = await (supabase.from('projects') as any)
-                .select(projCols)
-                .eq('slug', GE_TRIUNFO_SLUG)
-                .maybeSingle();
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return retry ? rowToProject(retry as any as ProjectRow) : null;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        logger.info('[ensureGETriunfoProject] Projeto criado:', { id: (created as any)?.id });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return created ? rowToProject(created as any as ProjectRow) : null;
+        // 2. Não cria automaticamente se não existe no Admin
+        logger.warn('[ensureGETriunfoProject] Projeto não encontrado no banco. O Admin deve criá-lo.');
+        return null;
     } catch (err) {
         logger.error('[ensureGETriunfoProject] Erro inesperado:', { error: err });
         return null;

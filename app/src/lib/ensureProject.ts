@@ -13,7 +13,7 @@ type ProjectRow = Database['public']['Tables']['projects']['Row'];
 export async function ensureProject(projectConfig: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Project | null> {
     try {
         // 1. Try to find by slug
-        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,target_registrations,target_revenue,created_at,updated_at';
+        const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,goal_registrations,goal_revenue,target_registrations,target_revenue,created_at,updated_at';
         const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
             .select(projCols)
             .eq('slug', projectConfig.slug)
@@ -129,8 +129,10 @@ function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> 
         ticket_price_standard: Math.round((tp.standard || 0) * 100),
         ticket_price_pro: Math.round((tp.pro || 0) * 100),
         ticket_price_vip: Math.round((tp.vip || 0) * 100),
-        target_registrations: s.targetRegistrations || 500,
-        target_revenue: s.targetRevenue || 0,
+        target_registrations: s.goalRegistrations || s.targetRegistrations || 500,
+        target_revenue: s.goalRevenue || s.targetRevenue || 0,
+        goal_registrations: s.goalRegistrations || s.targetRegistrations || 500,
+        goal_revenue: s.goalRevenue || s.targetRevenue || 0,
         settings: {
             maxRegistrations: s.maxRegistrations,
             maxMentors: s.maxMentors,
@@ -141,6 +143,8 @@ function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> 
             enableStartups: s.enableStartups ?? false,
             enableCheckIn: s.enableCheckIn ?? true,
             ticketPrices: tp,
+            goalRegistrations: s.goalRegistrations || s.targetRegistrations,
+            goalRevenue: s.goalRevenue || s.targetRevenue,
         },
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

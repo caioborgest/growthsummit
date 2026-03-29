@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { FileText, Home as HomeIcon, ArrowLeft } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useEffect } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
 
@@ -393,6 +394,22 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    // Interceptador de erros do Zod para facilitar o diagnóstico de campos obrigatórios vazios
+    const originalError = console.error;
+    console.error = (...args) => {
+      const errorMsg = args.join(' ');
+      if (errorMsg.includes('ZodError') || errorMsg.includes('String must contain at least 1 character(s)')) {
+        console.group('🔍 GROWTH PLATFORM - DETECTOR DE ERRO DE VALIDAÇÃO');
+        console.warn('Campo(s) com erro:', errorMsg);
+        console.info('DICA: Procure por campos marcados como .min(1) que estão recebendo strings vazias.');
+        console.trace('Rastro do Erro (Stack Trace):');
+        console.groupEnd();
+      }
+      originalError.apply(console, args);
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <BrowserRouter>
