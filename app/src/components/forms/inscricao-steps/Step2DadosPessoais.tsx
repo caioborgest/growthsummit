@@ -198,8 +198,26 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             newErrors.codigo = 'Código inválido ou inativo';
                         } else {
                             const couponData = data;
-                            if (couponData.indicacao_tipo !== indicacaoTipo) {
-                                newErrors.codigo = `Este código pertence à categoria ${couponData.indicacao_tipo}`;
+                            const couponCategory = couponData.indicacao_tipo || 'não definida';
+                            
+                            // Mapeamento amigável para a mensagem de erro
+                            const CATEGORY_LABELS: Record<string, string> = {
+                                promocional: 'Promocional',
+                                empresa: 'Empresa',
+                                prefeitura: 'Prefeitura',
+                                politico: 'Político',
+                                influenciador: 'Influenciador',
+                                associacao: 'Associação',
+                                instituicao: 'Instituição',
+                                outro: 'Outro'
+                            };
+
+                            // Se o cupom for 'promocional', permitimos o uso independente da seleção do usuário
+                            const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
+
+                            if (!isCompatible) {
+                                const categoriaNome = CATEGORY_LABELS[couponData.indicacao_tipo] || couponCategory;
+                                newErrors.codigo = `Este código pertence à categoria ${categoriaNome}. Selecione a categoria correta acima.`;
                             } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
                                 newErrors.codigo = 'Este código de parceria já expirou';
                             } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
