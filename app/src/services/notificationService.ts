@@ -24,7 +24,6 @@ export const notificationService = {
                     type: params.type || 'info',
                     action_url: params.actionUrl || null,
                     metadata: params.metadata || {},
-                    read: false
                 })
                 .select()
                 .single();
@@ -47,7 +46,6 @@ export const notificationService = {
                 type: params.type || 'info',
                 action_url: params.actionUrl || null,
                 metadata: params.metadata || {},
-                read: false
             }));
 
             const { data, error } = await (supabase
@@ -65,9 +63,15 @@ export const notificationService = {
 
     async markAsRead(notificationId: string) {
         try {
+            const updateData: Record<string, unknown> = { read: true };
+            // Inclui read_at apenas se for possível (coluna pode não existir em versões antigas)
+            try {
+                updateData.read_at = new Date().toISOString();
+            } catch { /* ignore */ }
+
             const { error } = await (supabase
                 .from('notifications') as any)
-                .update({ read: true, read_at: new Date().toISOString() })
+                .update(updateData)
                 .eq('id', notificationId);
 
             if (error) throw error;

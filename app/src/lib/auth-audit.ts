@@ -69,8 +69,12 @@ export function logAuditEvent(event: string, userId?: string, metadata?: unknown
                 // Ignorar 23503 (FK violation - user ainda não existe no DB público)
                 // Ignorar 42501 (RLS permission denied)
                 // Ignorar PGRST301 (schema cache outdated)
-                const ignoredCodes = ['23503', '42501', 'PGRST301'];
-                if (!ignoredCodes.includes(error.code)) {
+                // Ignorar 42P01 (table does not exist - audit_logs pode não existir)
+                // Ignorar PGRST204/PGRST116 (404 - recurso não encontrado)
+                const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116'];
+                const msg = error.message || '';
+                const isTableMissing = msg.includes('does not exist') || msg.includes('not found') || msg.includes('404');
+                if (!ignoredCodes.includes(error.code) && !isTableMissing) {
                     logger.debug('Auditoria info:', error.message);
                 }
             }

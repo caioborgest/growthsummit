@@ -83,7 +83,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins'].includes(entity);
+  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates'].includes(entity);
 };
 
 function toCamelCase(str: string): string {
@@ -440,7 +440,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,name,description,logo_url,location,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
-      return 'id,registration_id,stand_id,created_at';
+      return 'id,registration_id,stand_id';
     }
     if (entity === 'leads') {
       return 'id,project_id,visitor_name,visitor_email,visitor_phone,visitor_company,interest_level,notes,created_at,startup_id,company_id';
@@ -464,16 +464,16 @@ function getSelectFields(entity: string, projectId?: string): string {
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,end_date,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,target_revenue,target_registrations,public_content',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
-    b2b_meetings: 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at',
+    b2b_meetings: 'id,project_id,status,scheduled_at,duration_minutes,table_number,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
-    b2b_matches: 'id,project_id,company_a_id,company_b_id,status,created_at',
+    b2b_matches: 'id,project_id,status,created_at',
     empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
     users: 'id,email,name,role,phone,avatar_url,created_at',
     speakers: 'id,project_id,name,role,company,bio,image,linkedin,twitter,website,track,is_featured,order_index',
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,phone,newsletter_opt_in',
-    notifications: 'id,user_id,title,message,type,read,created_at',
+    notifications: '*',
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
@@ -528,13 +528,15 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       return;
     }
 
+
     // Proteção: não buscar entidades não globais sem projectId
-    const globalTables = ['projects', 'users', 'checkins', 'profiles', 'empresas_incentivadoras', 'vouchers', 'cupons', 'campanhas_whatsapp', 'programacao', 'atividades', 'locais', 'palestrantes', 'mentorias', 'matches_b2b', 'matches', 'registration_batches', 'leads_scanner'];
+    const globalTables = ['projects', 'users', 'checkins', 'profiles', 'empresas_incentivadoras', 'vouchers', 'cupons', 'campanhas_whatsapp', 'programacao', 'atividades', 'locais', 'palestrantes', 'mentorias', 'matches_b2b', 'matches', 'registration_batches', 'leads_scanner', 'notifications', 'certificates', 'support_ticket_messages', 'stand_checkins', 'raffle_participants'];
     if (!globalTables.includes(entityName) && !projectId) {
       logger.debug(`[useData] Ignorando busca de ${entityName} (requer projectId)`);
       setIsLoading(false);
       return;
     }
+
 
     lastFetchTimeRef.current = now;
 
