@@ -79,11 +79,13 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                 projectId: entity.projectId,
                 registrationId: getRegistrationId() as string, 
                 userId: getUserId(),
-                ticketNumber: (entity as Registration).ticketNumber || 'N/A',
+                ticketNumber: (entity as Registration).ticketNumber || `ROLE_${role.toUpperCase()}`,
                 timestamp: new Date().toISOString(),
                 location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
-                method: 'manual'
-            });
+                method: 'manual',
+                checkInType: role, // Store the role in the new column
+                notes: `Accreditation for ${role}: ${entity.name || entity.nome}`
+            } as any);
 
             toast.success('Credenciamento atualizado com sucesso!');
             onSuccess();

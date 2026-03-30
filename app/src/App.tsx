@@ -397,6 +397,20 @@ function AppRoutes() {
 
 function App() {
   useEffect(() => {
+    // Sistema de Atualização Forçada (Cache Buster)
+    // Se a versão do app mudar, força um recarregamento para limpar caches antigos do Service Worker
+    const APP_VERSION = '1.1.0';
+    const lastVersion = localStorage.getItem('ge_app_version');
+
+    if (lastVersion && lastVersion !== APP_VERSION) {
+      console.info(`[PWA] Atualizando da versão ${lastVersion} para ${APP_VERSION}...`);
+      localStorage.setItem('ge_app_version', APP_VERSION);
+      // Aguarda o SW registrar a nova versão e recarrega
+      setTimeout(() => window.location.reload(), 500);
+    } else if (!lastVersion) {
+      localStorage.setItem('ge_app_version', APP_VERSION);
+    }
+
     // Interceptador de erros do Zod para facilitar o diagnóstico de campos obrigatórios vazios
     const originalError = console.error;
     console.error = (...args) => {

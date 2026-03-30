@@ -320,7 +320,10 @@ export function AdminCheckIn() {
           <p className="text-gray-400 text-sm">Mentores & VIPs</p>
           <div className="flex items-baseline gap-2">
             <p className="text-2xl font-bold text-blue-400">
-              {checkIns.filter(c => c.registrationId?.startsWith('GLOBAL_ROLE_')).length}
+              {checkIns.filter(c => 
+                (c.checkInType && c.checkInType !== 'event') || 
+                (c.ticketNumber || '').startsWith('ROLE_')
+              ).length}
             </p>
             <p className="text-xs text-gray-500">Credenciados</p>
           </div>
@@ -480,11 +483,11 @@ export function AdminCheckIn() {
             .slice(0, 6)
             .map((item, idx) => {
               const reg = registrations.find(r => r.id === (item.registrationId || item.registration_id));
-              const mentor = mentors.find(m => 'GLOBAL_ROLE_' + m.id === item.registrationId);
-              const company = companies.find(c => 'GLOBAL_ROLE_' + c.id === item.registrationId);
-              const startup = startups.find(s => 'GLOBAL_ROLE_' + s.id === item.registrationId);
+              const mentor = mentors.find(m => m.id === item.userId || (item.ticketNumber || '').includes(m.id));
+              const company = companies.find(c => c.id === item.userId || (item.ticketNumber || '').includes(c.id));
+              const startup = startups.find(s => s.id === item.userId || (item.ticketNumber || '').includes(s.id));
               
-              const ts = item.timestamp || item.checkInAt;
+              const currentRoleCode = item.checkInType || (item.ticketNumber || '').split('_')[1]?.toLowerCase();
               const name = reg?.nome || reg?.name || mentor?.name || company?.name || startup?.name || item.ticketNumber || 'Visitante';
               const role = reg ? 'PARTICIPANTE' : mentor ? 'MENTOR' : company ? 'EMPRESA' : startup ? 'STARTUP' : 'SESSÃO';
 

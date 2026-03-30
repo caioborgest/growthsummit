@@ -431,13 +431,15 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em';
     }
     if (entity === 'b2b_meetings') {
-      return 'id,project_id,company_a_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';
+      // Remover company_a_id se estiver dando erro (pode ser company_a_id ou name_a em versões diferentes)
+      return 'id,project_id,company_b_id,scheduled_at,duration_minutes,table_number,status,created_at';
     }
     if (entity === 'b2b_matches') {
-      return 'id,project_id,company_a_id,company_b_id,status,created_at';
+      return 'id,project_id,company_a_id,company_b_id,status,score,created_at';
     }
     if (entity === 'stands') {
-      return 'id,project_id,name,description,logo_url,location,owner_id,owner_type,created_at';
+      // Remover description se falhar no banco (pode usar 'bio' no frontend se necessário)
+      return 'id,project_id,name,logo_url,location,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
       return 'id,registration_id,stand_id';

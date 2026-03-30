@@ -244,6 +244,10 @@ function DetalhesModal({
 
 // ── Componente Principal ──────────────────────────────────────
 export default function AdminInscricoes() {
+  // Use windows to expose the check-in hook for cross-component logging
+  const checkInHookReference = useCheckIns();
+  (window as any).checkInsHook = checkInHookReference;
+
   const { data: registrations, update, remove } = useRegistrations();
   const { data: checkIns } = useCheckIns();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
@@ -432,18 +436,42 @@ export default function AdminInscricoes() {
     if (isUpdating) return;
     setIsUpdating(true);
     try {
+      const registration = registrations.find(r => r.id === id);
+      if (!registration) return;
+
+      const newStatus = !currentStatus;
       await update(id, {
-        checkedIn: !currentStatus,
-        checkInTime: !currentStatus ? new Date().toISOString() : null
+        checkedIn: newStatus,
+        checkInTime: newStatus ? new Date().toISOString() : null
       } as any);
 
-      toast.success(currentStatus ? 'Credenciamento removido.' : 'Credenciamento realizado com sucesso!');
+      // Log the event for historical records if it's a check-in (not removal)
+      if (newStatus) {
+        try {
+          const { create: createLog } = (window as any).checkInsHook;
+          if (createLog) {
+            await createLog({
+              projectId: registration.projectId,
+              registrationId: registration.id,
+              userId: registration.userId,
+              ticketNumber: registration.ticketNumber,
+              timestamp: new Date().toISOString(),
+              location: 'Manual (Inscrições)',
+              method: 'manual'
+            });
+          }
+        } catch (logErr) {
+          console.error('[AdminInscricoes] Erro ao registrar log de check-in:', logErr);
+        }
+      }
+
+      toast.success(newStatus ? 'Credenciamento realizado com sucesso!' : 'Credenciamento removido.');
 
       if (detalhes && detalhes.id === id) {
         setDetalhes(prev => prev ? {
           ...prev,
-          checkedIn: !currentStatus,
-          checkInTime: !currentStatus ? new Date().toISOString() : null
+          checkedIn: newStatus,
+          checkInTime: newStatus ? new Date().toISOString() : null
         } : null);
       }
     } catch (error) {

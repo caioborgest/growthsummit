@@ -179,7 +179,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
         {/* Main Content Area */}
         <div className="lg:col-span-2">
           {isNewTicketOpen ? (
-            <div className="glass-card p-8 border-brand-orange-coral/20 animate-fade-in-up">
+            <div className="glass-card p-4 sm:p-8 border-brand-orange-coral/20 animate-fade-in-up">
               <h3 className="text-xl font-black text-white uppercase italic mb-6">Novo Atendimento</h3>
               <form onSubmit={handleCreateTicket} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -238,7 +238,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
           ) : selectedTicketId && selectedTicket ? (
             <div className="flex flex-col h-[600px] glass-card border-white/5 overflow-hidden animate-fade-in">
               {/* Chat Header */}
-              <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+              <div className="p-4 sm:p-6 border-b border-white/5 bg-white/[0.02]">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-black text-white italic truncate max-w-[70%] uppercase">{selectedTicket.subject}</h3>
                   {getStatusBadge(selectedTicket.status)}
@@ -254,7 +254,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
               </div>
 
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
                 {/* Initial Ticket Message */}
                 <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
@@ -293,7 +293,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
 
               {/* User Actions & Chat Input */}
               {selectedTicket.status !== 'closed' && (
-                <div className="p-6 bg-white/[0.02] border-t border-white/5 space-y-4">
+                <div className="p-4 sm:p-6 bg-white/[0.02] border-t border-white/5 space-y-4">
                   <div className="flex gap-3">
                     <input 
                       value={newMessage}
@@ -335,7 +335,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
 
               {/* CSAT Evaluation View */}
               {selectedTicket && (selectedTicket.status === 'resolved' || selectedTicket.status === 'closed') && !selectedTicket.rating && (
-                <div className="mx-6 mb-6 p-8 bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-3xl animate-in fade-in zoom-in duration-500">
+                <div className="mx-4 sm:mx-6 mb-6 p-6 sm:p-8 bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-2xl sm:rounded-3xl animate-in fade-in zoom-in duration-500">
                   <div className="flex flex-col items-center text-center space-y-4">
                     <div className="w-16 h-16 bg-brand-orange-coral rounded-2xl flex items-center justify-center shadow-glow-orange animate-bounce">
                       <ThumbsUp className="h-8 w-8 text-white" />
@@ -413,7 +413,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   <div 
                     key={ticket.id}
                     onClick={() => setSelectedTicketId(ticket.id)}
-                    className="glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 hover:bg-brand-orange-coral/[0.02] transition-all group cursor-pointer relative overflow-hidden"
+                    className="glass-card p-4 sm:p-6 border-white/5 hover:border-brand-orange-coral/30 hover:bg-brand-orange-coral/[0.02] transition-all group cursor-pointer relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all"></div>
                     
@@ -447,7 +447,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   </div>
                 ))
               ) : (
-                <div className="p-6 sm:p-20 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10 w-full overflow-hidden">
+                <div className="p-6 sm:p-12 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10 w-full overflow-hidden">
                   <LifeBuoy className="h-12 w-12 text-gray-800 mx-auto mb-4 opacity-30" />
                   <p className="text-gray-500 font-bold uppercase tracking-widest text-xs sm:text-sm mb-6">Nenhum chamado aberto</p>
                   <Button 

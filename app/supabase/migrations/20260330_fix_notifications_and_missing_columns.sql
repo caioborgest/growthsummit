@@ -4,6 +4,8 @@
 -- Erro: "column notifications.read does not exist"
 --        "column stand_checkins.created_at does not exist"
 --        "column b2b_meetings.company_a_id does not exist"
+--        "column inscricoes_growth_experience.checked_in does not exist"
+--        "registration_id in check_ins is NOT NULL (prevents non-participant check-in)"
 -- ============================================================
 
 -- ── 1. NOTIFICATIONS ────────────────────────────────────────────────────────
@@ -245,11 +247,59 @@ ALTER TABLE public.b2b_matches
 ALTER TABLE public.b2b_matches
     ADD COLUMN IF NOT EXISTS company_b_id UUID;
 
--- ── 5. PERMISSÕES ───────────────────────────────────────────────────────────
+-- ── 5. CHECK_INS (Fix Structure & Constraints) ──────────────────────────────
+-- Garante que registration_id é NULLABLE para permitir Mentores e Empresas
+ALTER TABLE IF EXISTS public.check_ins 
+    ALTER COLUMN registration_id DROP NOT NULL;
+
+-- Adiciona colunas que podem faltar no Master Schema
+ALTER TABLE IF EXISTS public.check_ins
+    ADD COLUMN IF NOT EXISTS ticket_number TEXT,
+    ADD COLUMN IF NOT EXISTS check_in_type TEXT DEFAULT 'event',
+    ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- ── 6. INSCRICOES_GROWTH_EXPERIENCE (Add Check-in Columns) ──────────────────
+-- Garante que o controle de check-in básico existe na tabela principal
+ALTER TABLE IF EXISTS public.inscricoes_growth_experience
+    ADD COLUMN IF NOT EXISTS checked_in BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS check_in_at TIMESTAMPTZ;
+
+-- ── 7. CHECK_INS_ATIVIDADES (Fix Structure) ─────────────────────────────────
+-- Garante que o check-in de atividades (sessões) tenha os campos corretos
+ALTER TABLE IF EXISTS public.check_ins_atividades
+    ADD COLUMN IF NOT EXISTS check_in_at TIMESTAMPTZ DEFAULT now(),
+    ADD COLUMN IF NOT EXISTS check_in_type TEXT DEFAULT 'manual';
+
+-- Renomeia 'timestamp' para 'check_in_at' se necessário
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'check_ins_atividades' AND column_name = 'timestamp'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'check_ins_atividades' AND column_name = 'check_in_at'
+    ) THEN
+        ALTER TABLE public.check_ins_atividades RENAME COLUMN timestamp TO check_in_at;
+    END IF;
+END $$;
+
+-- ── 8. PERMISSÕES ───────────────────────────────────────────────────────────
 GRANT ALL ON public.notifications TO postgres, service_role, authenticated;
 GRANT ALL ON public.stand_checkins TO postgres, service_role, authenticated;
 GRANT ALL ON public.b2b_meetings TO postgres, service_role, authenticated;
 GRANT ALL ON public.b2b_matches TO postgres, service_role, authenticated;
+GRANT ALL ON public.check_ins TO postgres, service_role, authenticated;
+GRANT ALL ON public.check_ins_atividades TO postgres, service_role, authenticated;
 
--- ── 6. RELOAD CACHE DO POSTGREST ────────────────────────────────────────────
+-- Garante RLS para check_ins
+ALTER TABLE public.check_ins ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can manage check_ins" ON public.check_ins;
+CREATE POLICY "Admins can manage check_ins" ON public.check_ins FOR ALL USING (public.is_admin());
+
+ALTER TABLE public.check_ins_atividades ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can manage check_ins_atividades" ON public.check_ins_atividades;
+CREATE POLICY "Admins can manage check_ins_atividades" ON public.check_ins_atividades FOR ALL USING (public.is_admin());
+
+-- ── 9. RELOAD CACHE DO POSTGREST ────────────────────────────────────────────
 NOTIFY pgrst, 'reload schema';

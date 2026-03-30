@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { User as UserIcon, Mail, Phone, Building2, Briefcase, Globe, Linkedin, MapPin, Calendar, Camera, Shield, Bell, Save, Loader2, Target } from 'lucide-react';
 import { useProfile, useMentors } from '@/hooks/useData';
+import { supabase } from '@/lib/supabase';
 
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';

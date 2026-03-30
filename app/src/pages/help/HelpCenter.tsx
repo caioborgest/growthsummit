@@ -164,7 +164,11 @@ export function HelpCenter() {
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     Entendi, ir para o módulo
                                 </Button>
-                                <Button variant="ghost" className="text-gray-400 hover:text-white underline underline-offset-4">
+                                <Button 
+                                    variant="ghost" 
+                                    onClick={() => navigate('/minha-area?tab=suporte')}
+                                    className="text-gray-400 hover:text-white underline underline-offset-4"
+                                >
                                     Abrir ticket de suporte
                                 </Button>
                             </div>

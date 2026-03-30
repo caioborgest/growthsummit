@@ -279,10 +279,9 @@ export function GrowthExperienceTriunfo() {
   }, [setSelectedProject, selectedProject?.id]);
 
   useEffect(() => {
-    if (selectedProject?.id) {
-      initProject();
-    }
-  }, [initProject, selectedProject?.id]);
+    // Always attempt initialization for Triunfo ge-project
+    initProject();
+  }, [initProject]);
 
   // Sincronizar modais com a URL apenas uma vez no mount ou quando o parâmetro muda
   useEffect(() => {
@@ -468,35 +467,39 @@ export function GrowthExperienceTriunfo() {
           </div>
 
           <div className="space-y-8">
-            {(allSessions && allSessions.length > 0 ? 
-              allSessions
-                .filter(s => s.projectId === currentProject?.id)
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-                .map(s => ({
-                  time: new Date(s.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
-                  event: s.title,
-                  desc: s.description
-                })) 
-              : [
-                { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
-                { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
-                { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
-                { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
-                { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
-                { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h).' }
-              ]
-            ).map((item, idx) => (
-              <div key={idx} className="flex gap-6 items-start group">
-                <div className="flex flex-col items-center">
-                  <div className="text-brand-orange-coral font-black text-xl italic">{item.time}</div>
-                  <div className="w-px h-16 bg-white/10 group-last:hidden" />
+            {(() => {
+              const displaySessions = (allSessions || []).filter(s => s.projectId === currentProject?.id);
+              
+              const sessionsToRender = displaySessions.length > 0 
+                ? displaySessions
+                  .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                  .map(s => ({
+                    time: new Date(s.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
+                    event: s.title,
+                    desc: s.description
+                  }))
+                : [
+                  { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
+                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
+                  { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
+                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
+                  { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
+                  { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h).' }
+                ];
+
+              return sessionsToRender.map((item, idx) => (
+                <div key={idx} className="flex gap-6 items-start group">
+                  <div className="flex flex-col items-center">
+                    <div className="text-brand-orange-coral font-black text-xl italic">{item.time}</div>
+                    <div className="w-px h-16 bg-white/10 group-last:hidden" />
+                  </div>
+                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex-1 hover:border-brand-orange-coral/40 transition-all">
+                    <h4 className="text-white font-bold text-lg mb-1 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
+                    <p className="text-gray-400 text-sm">{item.desc}</p>
+                  </div>
                 </div>
-                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex-1 hover:border-brand-orange-coral/40 transition-all">
-                  <h4 className="text-white font-bold text-lg mb-1 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
-                  <p className="text-gray-400 text-sm">{item.desc}</p>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
       </section>

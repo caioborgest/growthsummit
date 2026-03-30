@@ -13,22 +13,41 @@ export interface NotificationParams {
 
 export const notificationService = {
     async send(params: NotificationParams) {
+        const payload: any = {
+            user_id: params.userId,
+            project_id: params.projectId && params.projectId.length > 20 ? params.projectId : null,
+            title: params.title,
+            message: params.message,
+            type: params.type || 'info',
+            metadata: params.metadata || {},
+        };
+
+        // Só inclui action_url se fornecido, mas pode falhar se a coluna não existir no DB
+        if (params.actionUrl) {
+            payload.action_url = params.actionUrl;
+        }
+
         try {
             const { data, error } = await (supabase
                 .from('notifications') as any)
-                .insert({
-                    user_id: params.userId,
-                    project_id: params.projectId && params.projectId.length > 20 ? params.projectId : null,
-                    title: params.title,
-                    message: params.message,
-                    type: params.type || 'info',
-                    action_url: params.actionUrl || null,
-                    metadata: params.metadata || {},
-                })
+                .insert(payload)
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                // Se o erro for de coluna inexistente (action_url), tenta sem ela
+                if (error.code === 'PGRST204' || (error.message && error.message.includes('action_url'))) {
+                    delete payload.action_url;
+                    const { data: retryData, error: retryError } = await (supabase
+                        .from('notifications') as any)
+                        .insert(payload)
+                        .select()
+                        .single();
+                    if (retryError) throw retryError;
+                    return retryData;
+                }
+                throw error;
+            }
             return data;
         } catch (err) {
             logger.error('Error sending notification:', err);
@@ -37,29 +56,47 @@ export const notificationService = {
     },
 
     async sendBulk(userIds: string[], params: Omit<NotificationParams, 'userId' | 'projectId'>, projectId: string) {
-        try {
-            const notifications = userIds.map(userId => ({
+        const createPayload = (userId: string, includeActionUrl = true) => {
+            const payload: any = {
                 user_id: userId,
                 project_id: projectId && projectId.length > 20 ? projectId : null,
                 title: params.title,
                 message: params.message,
                 type: params.type || 'info',
-                action_url: params.actionUrl || null,
                 metadata: params.metadata || {},
-            }));
+            };
+            if (includeActionUrl && params.actionUrl) {
+                payload.action_url = params.actionUrl;
+            }
+            return payload;
+        };
 
+        try {
+            const notifications = userIds.map(uid => createPayload(uid));
             const { data, error } = await (supabase
                 .from('notifications') as any)
                 .insert(notifications)
                 .select();
 
-            if (error) throw error;
+            if (error) {
+                if (error.code === 'PGRST204' || (error.message && error.message.includes('action_url'))) {
+                    const fallbackNotifications = userIds.map(uid => createPayload(uid, false));
+                    const { data: retryData, error: retryError } = await (supabase
+                        .from('notifications') as any)
+                        .insert(fallbackNotifications)
+                        .select();
+                    if (retryError) throw retryError;
+                    return retryData;
+                }
+                throw error;
+            }
             return data;
         } catch (err) {
             logger.error('Error sending bulk notifications:', err);
             throw err;
         }
     },
+
 
     async markAsRead(notificationId: string) {
         try {

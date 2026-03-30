@@ -65,62 +65,78 @@ export function SecurityDashboard() {
     const loadSecurityData = async () => {
         setLoading(true);
         try {
+            // Cada busca é independente e falha silenciosamente se a tabela não existir
+            
             // Carregar logs de auditoria (últimos 100)
-            const { data: logs } = await supabase
-                .from('audit_logs')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(100);
-
-            if (logs) setAuditLogs(logs);
+            try {
+                const { data: logs, error: logsErr } = await supabase
+                    .from('audit_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
+                if (logsErr) throw logsErr;
+                if (logs) setAuditLogs(logs);
+            } catch { /* Table potentially missing */ }
 
             // Carregar logins suspeitos
-            const { data: suspicious } = await supabase
-                .from('security_suspicious_logins')
-                .select('*');
-
-            if (suspicious) setSuspiciousLogins(suspicious);
+            try {
+                const { data: suspicious, error: suspErr } = await supabase
+                    .from('security_suspicious_logins')
+                    .select('*');
+                if (suspErr) throw suspErr;
+                if (suspicious) setSuspiciousLogins(suspicious);
+            } catch { /* Table potentially missing */ }
 
             // Carregar atividade de usuários
-            const { data: activity } = await supabase
-                .from('security_user_activity')
-                .select('*')
-                .order('last_login_at', { ascending: false });
-
-            if (activity) setUserActivity(activity);
+            try {
+                const { data: activity, error: actErr } = await supabase
+                    .from('security_user_activity')
+                    .select('*')
+                    .order('last_login_at', { ascending: false });
+                if (actErr) throw actErr;
+                if (activity) setUserActivity(activity);
+            } catch { /* Table potentially missing */ }
 
             // Calcular estatísticas básicas com cautela
-            const { data: users } = await supabase
-                .from('users')
-                .select('id, two_factor_enabled');
+            let usersData: any[] = [];
+            try {
+                const { data: users, error: usersErr } = await supabase
+                    .from('users')
+                    .select('id, two_factor_enabled');
+                if (usersErr) throw usersErr;
+                if (users) usersData = users;
+            } catch { /* ignore */ }
 
-            // active_sessions pode não existir no banco do usuário
             let activeSessionsCount = 0;
             try {
                 const { data: sessions } = await supabase
                     .from('active_sessions')
                     .select('id')
                     .gt('expires_at', new Date().toISOString())
-                    .limit(1); // just checking exists
+                    .limit(1);
                 if (sessions) activeSessionsCount = sessions.length;
-            } catch (e) {
-                // Silently fail if table doesn't exist
-            }
+            } catch { /* ignore */ }
 
-            const { data: recentLogins } = await supabase
-                .from('login_attempts')
-                .select('id, success')
-                .gte('attempted_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+            let recentLoginsData: any[] = [];
+            try {
+                const { data: recentLogins } = await supabase
+                    .from('login_attempts')
+                    .select('id, success')
+                    .gte('attempted_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+                if (recentLogins) recentLoginsData = recentLogins;
+            } catch { /* ignore */ }
 
             setStats({
-                totalUsers: users?.length || 0,
-                users2FA: (users as any[])?.filter(u => u.two_factor_enabled).length || 0,
+                totalUsers: usersData.length,
+                users2FA: usersData.filter(u => u.two_factor_enabled).length,
                 activeSessions: activeSessionsCount,
-                recentLogins: recentLogins?.filter(l => l.success).length || 0,
-                failedLogins: recentLogins?.filter(l => !l.success).length || 0,
+                recentLogins: recentLoginsData.filter(l => l.success).length,
+                failedLogins: recentLoginsData.filter(l => !l.success).length,
             });
 
         } catch (error) {
+            logger.debug('Algumas tabelas de segurança estão indisponíveis.');
+
             logger.error('Erro ao carregar dados de segurança:', error);
         } finally {
             setLoading(false);
