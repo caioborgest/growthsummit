@@ -14,7 +14,7 @@ import {
 import { QRScanner } from '@/components/app/QRScanner';
 import { toast } from 'sonner';
 import { CertificateService } from '@/lib/certificateService';
-import { QRData } from '@/lib/qrUtils';
+import type { QRData } from '@/lib/qrUtils';
 import { useProjects, useRegistrations, useCheckInsAtividades } from '@/hooks/useData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
