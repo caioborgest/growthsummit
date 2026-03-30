@@ -488,8 +488,9 @@ export function AdminCheckIn() {
               const startup = startups.find(s => s.id === item.userId || (item.ticketNumber || '').includes(s.id));
               
               const currentRoleCode = item.checkInType || (item.ticketNumber || '').split('_')[1]?.toLowerCase();
+              const ts = item.timestamp || item.checkInAt || item.check_in_at;
               const name = reg?.nome || reg?.name || mentor?.name || company?.name || startup?.name || item.ticketNumber || 'Visitante';
-              const role = reg ? 'PARTICIPANTE' : mentor ? 'MENTOR' : company ? 'EMPRESA' : startup ? 'STARTUP' : 'SESSÃO';
+              const role = reg ? 'PARTICIPANTE' : (mentor || currentRoleCode === 'mentor') ? 'MENTOR' : (company || currentRoleCode === 'company') ? 'EMPRESA' : (startup || currentRoleCode === 'startup') ? 'STARTUP' : 'SESSÃO';
 
               return (
                 <div key={idx} className="flex items-center justify-between p-4 bg-dark-100 rounded-xl border border-white/5">
