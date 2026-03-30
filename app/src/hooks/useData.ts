@@ -167,7 +167,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   areas_interesse: 'interestAreas',
   descricao_objetivos: 'objectives',
   // Notifications
-  is_read: 'read',
+  read: 'read',
   read_at: 'readAt',
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
@@ -470,7 +470,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,phone,newsletter_opt_in',
-    notifications: 'id,user_id,title,message,type,is_read,created_at',
+    notifications: 'id,user_id,title,message,type,read,created_at',
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',

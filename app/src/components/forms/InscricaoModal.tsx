@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { emailService } from '@/services/emailService';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface InscricaoModalProps {
@@ -163,6 +164,9 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 });
 
             if (insError) throw insError;
+            
+            // 2.5. Enviar e-mail de Boas-vindas (Automação Resend)
+            await emailService.sendWelcome(formData.email, formData.nome).catch(e => logger.warn('Erro ao enviar boas-vindas:', e));
 
             // 3. Atualizar uso do cupom se existir
             if (formData.cupom && cupomValido) {

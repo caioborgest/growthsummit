@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { emailService } from './emailService';
 
 export interface RegistrationParams {
     projectId: string;
@@ -100,6 +101,11 @@ export const registrationService = {
             if (error) {
                 logger.error('[registrationService] Erro na RPC:', error);
                 throw error;
+            }
+
+            // Enviar e-mail de Boas-vindas (Automação Resend)
+            if (params.email && params.nome) {
+                emailService.sendWelcome(params.email, params.nome).catch(e => logger.warn('[registrationService] Erro ao enviar boas-vindas:', e));
             }
 
             return data;

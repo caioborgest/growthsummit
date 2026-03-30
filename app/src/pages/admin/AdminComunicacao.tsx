@@ -41,64 +41,99 @@ import { logger } from '@/lib/logger';
 
 const initialEmailTemplates = [
   {
-    id: '1',
-    name: 'Confirmação de Inscrição',
-    subject: 'Sua inscrição no Growth Experience 2026 foi confirmada! 🚀',
+    id: 'pay-conf',
+    name: 'Confirmação de Pagamento ✅',
+    subject: 'Pagamento Confirmado! Seu lugar no Growth Experience está garantido 🎟️',
     category: 'Inscrições',
-    lastUsed: '2024-03-02',
-    body: `<h1>Olá {{nome}}!</h1>
-<p>É uma alegria confirmar sua presença no <strong>Growth Experience 2026</strong>.</p>
-<p>Seu ingresso está garantido. Prepare-se para uma experiência transformadora de gestão e networking.</p>
-<p><strong>Detalhes do Acesso:</strong><br/>
-Tipo: {{ticket}}<br/>
-Data: {{data}}</p>
-<p>Nos vemos em breve!</p>`
+    lastUsed: '2024-03-30',
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; background-color: #ffffff; padding: 40px; border-radius: 16px; border: 1px solid #f1f5f9;">
+    <h1 style="color: #ff7043; font-size: 24px; text-align: center;">Tudo certo, {{nome}}!</h1>
+    <p style="font-size: 16px; line-height: 1.6; text-align: center;">Recebemos a confirmação do seu pagamento para o <strong>Growth Experience 2026</strong>. Seu ingresso já está disponível no seu painel.</p>
+    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 30px 0;">
+        <p style="margin: 0 0 10px 0;"><strong>Inscrição:</strong> #{{id}}</p>
+        <p style="margin: 0 0 10px 0;"><strong>Tipo:</strong> {{ticket}}</p>
+        <p style="margin: 0;"><strong>Status:</strong> Confirmado ✅</p>
+    </div>
+    <div style="text-align: center;">
+        <a href="https://www.gxexperience.site/minha-area" style="display: inline-block; background-color: #ff7043; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; margin: 10px 0;">Acessar Meu Ingresso</a>
+    </div>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;" />
+    <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+</div>`
   },
   {
-    id: '2',
-    name: 'Convite para Mentor',
-    subject: 'Convite Especial: Mentoria no Growth Experience',
-    category: 'Mentorias',
-    lastUsed: '2024-03-02',
-    body: `<h1>Olá {{nome}},</h1>
-<p>Temos o prazer de convidá-lo para atuar como mentor no <strong>Growth Experience</strong>.</p>
-<p>Sua expertise será fundamental para impulsionar os negócios da nossa região.</p>
-<p>Por favor, confirme sua disponibilidade e complete seu perfil no nosso painel.</p>`
+    id: 'welcome-inst',
+    name: 'Boas-vindas + Social 📣',
+    subject: 'Bem-vindo(a) ao Growth Experience! Vamos compartilhar no Instagram? 🚀',
+    category: 'Engajamento',
+    lastUsed: '2024-03-30',
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; background-color: #ffffff; padding: 40px; border-radius: 16px;">
+    <h1 style="color: #ff7043; font-size: 24px;">Prepare-se para o Maior Encontro de Gestão da Região! 🚀</h1>
+    <p>Olá, <strong>{{nome}}</strong>!</p>
+    <p>Sua jornada no <strong>Growth Experience 2026</strong> começa agora. Estamos preparando algo épico para Triunfo e Petrolina.</p>
+    <div style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); padding: 25px; border-radius: 16px; color: white; margin: 30px 0; text-align: center;">
+        <h2 style="margin-top: 0;">Poste e nos marque! 📸</h2>
+        <p>Poste seu ingresso ou uma foto sua se preparando com a hashtag <strong>#GrowthExperience2026</strong> e mencione <strong>@gxexperience</strong>.</p>
+        <p>Os melhores posts ganham pontos extras na nossa Gamificação!</p>
+        <a href="https://instagram.com/gxexperience" style="display: inline-block; background: white; color: #d62976; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Seguir no Instagram</a>
+    </div>
+    <p>Acesse seu painel para ver sua pontuação atual e começar a subir de nível!</p>
+</div>`
   },
   {
-    id: '3',
-    name: 'Boas-vindas Patrocinador',
-    subject: 'Bem-vindo ao Growth Experience: Guia do Patrocinador',
-    category: 'Patrocinadores',
-    lastUsed: '2024-03-02',
-    body: `<h1>Parceiro Growth Experience,</h1>
-<p>Estamos entusiasmados em ter sua marca conosco nesta edição.</p>
-<p>Anexamos o manual da marca e o cronograma de montagem dos stands.</p>
-<p>Qualquer dúvida, nossa equipe de sucesso do parceiro está à disposição.</p>`
+    id: 'reminder-h-24',
+    name: 'Lembrete (24h antes) ⏳',
+    subject: 'Amanhã é o Grande Dia! Tudo o que você precisa saber ⏳',
+    category: 'Lembretes',
+    lastUsed: '2024-03-30',
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; padding: 40px;">
+    <h1 style="color: #ff7043; font-size: 24px;">Chegou a Hora, {{nome}}! ⌛</h1>
+    <p>Faltam apenas 24 horas para o início do <strong>Growth Experience 2026</strong>.</p>
+    <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
+        <p style="margin: 0 0 10px 0;">📍 <strong>Local:</strong> Espaço Parque, Triunfo/PE</p>
+        <p style="margin: 0 0 10px 0;">🕗 <strong>Credenciamento:</strong> A partir das 08:00h</p>
+        <p style="margin: 0;">🎟️ <strong>Importante:</strong> Tenha seu QR Code em mãos (digital ou impresso).</p>
+    </div>
+    <p>Não esqueça de carregar seu celular para participar das votações e interações em tempo real.</p>
+    <div style="text-align: center;">
+        <a href="https://www.gxexperience.site/minha-area" style="display: inline-block; background-color: #ff7043; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold;">Abrir Meu QR Code</a>
+    </div>
+</div>`
   },
   {
-    id: '4',
-    name: 'Inscrição de Equipe - Empresa',
-    subject: 'Confirmação de Inscrição em Grupo: Equipe {{empresa}}',
-    category: 'Empresas',
-    lastUsed: '2024-03-02',
-    body: `<h1>Olá {{nome}},</h1>
-<p>A inscrição da sua equipe da <strong>{{empresa}}</strong> no Growth Experience foi recebida.</p>
-<p><strong>🚨 Informação Importante:</strong> A empresa que apresentar a maior quantidade de colaboradores participando das programações diurna e noturna (paga) receberá o prêmio <strong>"Empresa incentivadora na educação empreendedora"</strong> durante o evento.</p>
-<p>Em breve enviaremos os códigos de acesso individual para cada colaborador.</p>`
+    id: 'raffle-winner',
+    name: 'Ganhador Sorteio 🏆',
+    subject: 'Parabéns! Você acaba de ganhar um prêmio no Growth Experience! 🎁',
+    category: 'Gamificação',
+    lastUsed: '2024-03-30',
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; padding: 40px; text-align: center;">
+    <div style="font-size: 50px; margin-bottom: 20px;">🏆</div>
+    <h1 style="color: #ff7043; font-size: 28px;">VOCÊ GANHOU, {{nome}}!</h1>
+    <p style="font-size: 18px;">Seu nome foi sorteado no <strong>{{id}}</strong>!</p>
+    <div style="background: #fffbeb; padding: 30px; border-radius: 20px; border: 2px dashed #fbbf24; margin: 30px 0;">
+        <p style="margin: 0; font-size: 22px; color: #92400e; font-weight: bold;">🎁 {{ticket}}</p>
+    </div>
+    <p>Dirija-se ao palco central ou balcão de prêmios com seu QR Code para retirar sua recompensa.</p>
+    <p style="color: #64748b; font-size: 14px;">Código de Verificação: {{email}}_{{data}}</p>
+</div>`
   },
   {
-    id: '5',
-    name: 'Feedback Arena Pitch',
-    subject: 'Feedback e Notas: Sua participação na Arena Pitch 🚀',
-    category: 'Startups',
-    lastUsed: '2024-03-09',
-    body: `<h1>Olá {{fundador}}!</h1>
-<p>Parabéns pela apresentação na <strong>Arena Pitch</strong> do Growth Experience.</p>
-<p>Sua dedicação e visão foram notáveis. Segue o resumo da sua avaliação pelos jurados:</p>
-<p><strong>Média Geral:</strong> {{media}}<br/>
-<strong>Pontos Fortes:</strong> {{pontos_fortes}}</p>
-<p>Desejamos muito sucesso na jornada de crescimento da {{startup}}!</p>`
+    id: 'gamification-rank-up',
+    name: 'Subiu de Nível 🎖️',
+    subject: 'UAU! Você subiu de nível na Gamificação do evento! 🎖️',
+    category: 'Gamificação',
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; padding: 40px; text-align: center;">
+    <h1 style="color: #ff7043; font-size: 24px;">Novo Ranking Alcançado! 🎖️</h1>
+    <p>Parabéns, <strong>{{nome}}</strong>!</p>
+    <p>Você acaba de alcançar o nível <strong>{{ticket}}</strong> no Growth Experience.</p>
+    <div style="margin: 30px 0;">
+        <div style="height: 12px; background: #e2e8f0; border-radius: 6px; position: relative;">
+            <div style="width: 80%; height: 100%; background: #ff7043; border-radius: 6px;"></div>
+        </div>
+        <p style="font-size: 14px; color: #64748b; margin-top: 10px;">{{id}} pontos acumulados — Falta pouco para o próximo prêmio!</p>
+    </div>
+    <p>Continue fazendo check-ins nas palestras e participando das mentorias para ganhar mais pontos.</p>
+</div>`
   }
 ];
 
@@ -174,10 +209,11 @@ export default function AdminComunicacao() {
   });
 
   const [notificationFormData, setNotificationFormData] = useState({
+    recipients: 'all',
+    type: 'info' as const,
     title: '',
     message: '',
-    type: 'info' as 'info' | 'success' | 'warning' | 'error',
-    recipients: 'all'
+    actionUrl: ''
   });
 
 
@@ -272,7 +308,7 @@ export default function AdminComunicacao() {
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'mentors') {
         const { data } = await (supabase.from('mentores_growth_experience').select('email, nome') as any).eq('project_id', selectedProject.id);
-        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.nome_fundador }));
       } else if (composeData.recipients === 'startups') {
         const { data } = await (supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome_startup || item.nome_fundador }));
@@ -389,10 +425,16 @@ export default function AdminComunicacao() {
 
     try {
       let targetUserIds: string[] = [];
+      // Se for GE, filtramos melhor usando as tabelas específicas
       if (notificationFormData.recipients === 'all') {
-        targetUserIds = users?.map(u => u.id) || [];
+        // Pega todos que têm inscrição no projeto atual
+        targetUserIds = registrations?.map(r => r.userId).filter(Boolean) as string[] || [];
       } else {
-        targetUserIds = users?.filter(u => u.role === notificationFormData.recipients).map(u => u.id) || [];
+        // Filtra por papel (role) e que tenha inscrição no projeto
+        const projectUserIds = new Set(registrations?.map(r => r.userId));
+        targetUserIds = users?.filter(u => 
+          u.role === notificationFormData.recipients && projectUserIds.has(u.id)
+        ).map(u => u.id) || [];
       }
 
       if (targetUserIds.length === 0) {
@@ -403,11 +445,17 @@ export default function AdminComunicacao() {
       await notificationService.sendBulk(targetUserIds, {
         title: notificationFormData.title,
         message: notificationFormData.message,
-        type: notificationFormData.type
+        type: notificationFormData.type,
+        actionUrl: notificationFormData.actionUrl
       }, selectedProject?.id || '');
 
-      toast.success(`${targetUserIds.length} notificações enviadas com sucesso!`);
-      setNotificationFormData({ ...notificationFormData, title: '', message: '' });
+      toast.success('Notificações enviadas com sucesso!');
+      setNotificationFormData(prev => ({
+        ...prev,
+        title: '',
+        message: '',
+        actionUrl: ''
+      }));
       refetchNotifications();
     } catch (error) {
       logger.error('Error sending notifications:', error);
@@ -900,13 +948,27 @@ export default function AdminComunicacao() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Mensagem</Label>
-                  <Textarea
-                    placeholder="Digite a mensagem curta..."
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Mensagem</label>
+                  <textarea
+                    className="w-full bg-dark-300 border border-dark-400 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none min-h-[100px]"
+                    placeholder="Conteúdo da notificação..."
                     value={notificationFormData.message}
                     onChange={(e) => setNotificationFormData({ ...notificationFormData, message: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white mt-1.5 h-32"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Link de Ação (Opcional)</label>
+                  <input
+                    type="text"
+                    className="w-full bg-dark-300 border border-dark-400 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    placeholder="Ex: https://youtube.com/live/xyz ou /certificados"
+                    value={notificationFormData.actionUrl}
+                    onChange={(e) => setNotificationFormData({ ...notificationFormData, actionUrl: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    O usuário será redirecionado para este link ao clicar na notificação.
+                  </p>
                 </div>
                 <Button 
                   onClick={handleSendNotification}

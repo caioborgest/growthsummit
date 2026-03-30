@@ -14,15 +14,15 @@ export interface NotificationParams {
 export const notificationService = {
     async send(params: NotificationParams) {
         try {
-            const { data, error } = await supabase
-                .from('notifications')
+            const { data, error } = await (supabase
+                .from('notifications') as any)
                 .insert({
                     user_id: params.userId,
-                    project_id: params.projectId,
+                    project_id: params.projectId && params.projectId.length > 20 ? params.projectId : null,
                     title: params.title,
                     message: params.message,
                     type: params.type || 'info',
-                    action_url: params.actionUrl,
+                    action_url: params.actionUrl || null,
                     metadata: params.metadata || {},
                     read: false
                 })
@@ -41,17 +41,17 @@ export const notificationService = {
         try {
             const notifications = userIds.map(userId => ({
                 user_id: userId,
-                project_id: projectId,
+                project_id: projectId && projectId.length > 20 ? projectId : null,
                 title: params.title,
                 message: params.message,
                 type: params.type || 'info',
-                action_url: params.actionUrl,
+                action_url: params.actionUrl || null,
                 metadata: params.metadata || {},
                 read: false
             }));
 
-            const { data, error } = await supabase
-                .from('notifications')
+            const { data, error } = await (supabase
+                .from('notifications') as any)
                 .insert(notifications)
                 .select();
 
@@ -65,8 +65,8 @@ export const notificationService = {
 
     async markAsRead(notificationId: string) {
         try {
-            const { error } = await supabase
-                .from('notifications')
+            const { error } = await (supabase
+                .from('notifications') as any)
                 .update({ read: true, read_at: new Date().toISOString() })
                 .eq('id', notificationId);
 
@@ -80,8 +80,8 @@ export const notificationService = {
 
     async getUserNotifications(userId: string) {
         try {
-            const { data, error } = await supabase
-                .from('notifications')
+            const { data, error } = await (supabase
+                .from('notifications') as any)
                 .select('*')
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false });

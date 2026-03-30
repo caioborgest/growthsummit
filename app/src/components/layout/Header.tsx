@@ -12,6 +12,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileModal } from '@/components/profile/ProfileModal';
 import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
+import { useNotifications } from '@/hooks/useData';
+import { notificationService } from '@/services/notificationService';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const navLinks = [
   { name: 'Início', href: '/' },
@@ -31,7 +35,10 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { data: notifications, refetch: refetchNotifications } = useNotifications();
   const location = useLocation();
+
+  const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -223,22 +230,69 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <button className="relative w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-all">
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-brand-orange-coral rounded-full border border-dark"></span>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-dark animate-pulse"></span>
+                    )}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80 bg-[#161920]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl" align="end">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-bold text-sm">Notificações</h3>
-                    <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[9px] uppercase font-black">1 Nova</Badge>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-brand-orange-coral/5 border border-brand-orange-coral/10">
-                      <p className="text-white text-xs font-bold font-montserrat">Bem-vindo(a) ao Growth Experience!</p>
-                      <p className="text-gray-400 text-[11px] mt-1 leading-tight">Complete seu perfil para aproveitar ao máximo o evento.</p>
-                      <span className="text-[9px] text-gray-500 mt-2 block">Agora mesmo</span>
+                  <DropdownMenuContent className="w-80 bg-[#161920]/95 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl" align="end">
+                    <div className="flex items-center justify-between mb-4 px-2">
+                      <h3 className="text-white font-bold text-sm">Notificações</h3>
+                      {unreadCount > 0 && (
+                        <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[9px] uppercase font-black">
+                          {unreadCount} Novas
+                        </Badge>
+                      )}
                     </div>
-                  </div>
-                </DropdownMenuContent>
+                    <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                      {notifications && notifications.length > 0 ? (
+                        notifications.slice(0, 5).map((notif) => (
+                          <div 
+                            key={notif.id}
+                            onClick={async () => {
+                              if (!notif.read) {
+                                await notificationService.markAsRead(notif.id);
+                                refetchNotifications();
+                              }
+                              if (notif.actionUrl) {
+                                window.location.href = notif.actionUrl;
+                              }
+                            }}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer group ${
+                              !notif.read 
+                                ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 hover:bg-brand-orange-coral/20' 
+                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <p className={`text-xs font-bold font-montserrat truncate ${!notif.read ? 'text-white' : 'text-gray-300'}`}>
+                                {notif.title}
+                              </p>
+                              {!notif.read && <div className="w-2 h-2 bg-brand-orange-coral rounded-full mt-1 flex-shrink-0" />}
+                            </div>
+                            <p className="text-gray-400 text-[11px] mt-1 leading-tight line-clamp-2">
+                              {notif.message}
+                            </p>
+                            <span className="text-[9px] text-gray-500 mt-2 block italic">
+                              {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: ptBR })}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="py-8 text-center">
+                          <Bell className="h-8 w-8 text-white/10 mx-auto mb-2" />
+                          <p className="text-gray-500 text-xs italic">Nenhuma notificação por enquanto.</p>
+                        </div>
+                      )}
+                    </div>
+                    {notifications && notifications.length > 5 && (
+                      <div className="mt-4 pt-3 border-t border-white/5 text-center">
+                        <Link to="/perfil/notificacoes" className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest hover:underline">
+                          Ver todas as notificações
+                        </Link>
+                      </div>
+                    )}
+                  </DropdownMenuContent>
               </DropdownMenu>
             )}
             <button
