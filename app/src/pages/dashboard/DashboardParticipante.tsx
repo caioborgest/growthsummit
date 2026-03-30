@@ -1123,7 +1123,9 @@ export function DashboardParticipante() {
                 (selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false)
                   ? { tab: 'networking', Icon: Users, label: 'Networking', color: '#14b8a6', bg: 'rgba(20,184,166,0.1)', border: 'rgba(20,184,166,0.2)' }
                   : null,
-                { tab: 'circuito', Icon: Trophy, label: 'Circuito\nGE-STAND', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' },
+                selectedProject?.settings?.enableCheckIn !== false
+                  ? { tab: 'circuito', Icon: Trophy, label: 'Circuito\nGE-STAND', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
+                  : null,
                 { tab: 'sorteios', Icon: Gift, label: 'Sorteios\nGanhadores', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.2)' },
               ].filter(Boolean).map((item: any, i: number) => (
                 <motion.button
@@ -1252,7 +1254,10 @@ export function DashboardParticipante() {
             )}
 
             {activeTab === 'circuito' && myRegistration?.id && (
-              <GamificationSection registrationId={myRegistration.id} />
+              <GamificationSection 
+                registrationId={myRegistration.id} 
+                setIsScanOpen={setIsSelfCheckInOpen}
+              />
             )}
 
             {activeTab === 'networking' && (
@@ -1299,7 +1304,10 @@ export function DashboardParticipante() {
             )}
 
             {activeTab === 'sorteios' && myRegistration?.id && (
-              <RaffleSection registrationId={myRegistration.id} />
+              <RaffleSection 
+                registrationId={myRegistration.id} 
+                setIsScanOpen={setIsSelfCheckInOpen}
+              />
             )}
 
             {activeTab === 'dados' && (
@@ -1367,7 +1375,7 @@ export function DashboardParticipante() {
         tabs={[
           { id: 'ingresso', icon: QrCode, label: 'Ticket' },
           { id: 'agenda', icon: Calendar, label: 'Agenda' },
-          { id: 'circuito', icon: Trophy, label: 'Circuito' },
+          ...(selectedProject?.settings?.enableCheckIn !== false ? [{ id: 'circuito', icon: Trophy, label: 'Circuito' }] : []),
           { id: 'sorteios', icon: Gift, label: 'Sorteios' },
           ...(selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false ? [{ id: 'networking', icon: Handshake, label: 'Match' }] : []),
           ...(selectedProject?.settings?.enableMentoring !== false ? [{ id: 'mentorias', icon: Users, label: 'Mentor' }] : []),

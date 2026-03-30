@@ -10,6 +10,7 @@ import {
     Building2,
     Rocket
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Dialog,
     DialogContent,
@@ -35,6 +36,7 @@ interface AccreditationChecklistModalProps {
 }
 
 export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onSuccess }: AccreditationChecklistModalProps) {
+    const { user } = useAuth();
     const { data: checkIns, create: createCheckIn } = useCheckIns();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +86,8 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                 location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
                 method: 'manual',
                 checkInType: role, // Store the role in the new column
-                notes: `Accreditation for ${role}: ${entity.name || entity.nome}`
+                notes: `Accreditation for ${role}: ${entity.name || (entity as any).nome}`,
+                operatorId: user?.id
             } as any);
 
             toast.success('Credenciamento atualizado com sucesso!');

@@ -608,13 +608,24 @@ export interface CheckIn {
   projectId: string;
   registrationId: string | null;
   userId: string;
-  sessionId?: string;
   ticketNumber: string;
   timestamp: string;
   location: string;
   method: 'qr_code' | 'manual' | 'rfid' | 'facial' | 'self_scan' | 'qrcode' | 'face';
-  checkInType?: 'event' | 'session';
-  staffId?: string;
+  checkInType?: 'event' | string;
+  operatorId?: string;
   notes?: string;
+  createdAt: string;
+}
+
+export interface ActivityAttendance {
+  id: string;
+  projectId: string;
+  sessionId: string;
+  registrationId: string | null;
+  userId: string;
+  checkInAt: string;
+  checkInType: 'qr' | 'manual';
+  operatorId?: string;
   createdAt: string;
 }

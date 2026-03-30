@@ -16,51 +16,74 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
     const [error, setError] = useState<string | null>(null);
     const [isScanning, setIsScanning] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
+    const [cameras, setCameras] = useState<{ id: string; label: string }[]>([]);
+    const [selectedCameraId, setSelectedCameraId] = useState<string>('');
     const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
+
+    const startScanner = async (html5QrCode: any, cameraIdOrConfig: any) => {
+        try {
+            await html5QrCode.start(
+                cameraIdOrConfig,
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                },
+                async (decodedText: string) => {
+                    const parsed = parseQRString(decodedText);
+                    if (parsed) {
+                        try {
+                            await html5QrCode.stop();
+                        } catch (e) { /* silent */ }
+                        setIsScanning(false);
+                        onSuccess(parsed);
+                    } else {
+                        toast.error("QR Code inválido para este evento.");
+                    }
+                },
+                () => { } // silent scan failures
+            );
+            return true;
+        } catch (err) {
+            console.error("Failed to start scanner:", err);
+            return false;
+        }
+    };
 
     useEffect(() => {
         let isMounted = true;
 
-        // Dynamic import to avoid build-time resolution failure on Vercel
-        import('html5-qrcode').then(async ({ Html5Qrcode, Html5QrcodeSupportedFormats }) => {
+        import('html5-qrcode').then(async ({ Html5Qrcode }) => {
             if (!isMounted) return;
-            setIsLoading(false);
+            
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                if (isMounted && devices && devices.length > 0) {
+                    setCameras(devices.map(d => ({ id: d.id, label: d.label })));
+                    // Prioritize back camera if found
+                    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira'));
+                    setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
+                }
+            } catch (err) {
+                console.error("Error getting cameras:", err);
+            }
 
-            // Small delay to ensure DOM element is ready after isLoading becomes false
+            setIsLoading(false);
+            
             setTimeout(async () => {
+                if (!isMounted) return;
                 const html5QrCode = new Html5Qrcode(readerId.current);
                 html5QrCodeRef.current = html5QrCode;
 
-                try {
-                    await html5QrCode.start(
-                        { facingMode: "environment" },
-                        {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
-                            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
-                        },
-                        async (decodedText) => {
-                            const parsed = parseQRString(decodedText);
-                            if (parsed) {
-                                await html5QrCode.stop();
-                                setIsScanning(false);
-                                onSuccess(parsed);
-                            } else {
-                                toast.error("QR Code inválido para este evento.");
-                            }
-                        },
-                        () => { } // silent scan failures
-                    );
-                } catch (err) {
-                    if (isMounted) {
-                        setError('Não foi possível iniciar a câmera. Verifique as permissões.');
-                        console.error("Camera error:", err);
-                    }
+                const config = selectedCameraId ? selectedCameraId : { facingMode: "environment" };
+                const success = await startScanner(html5QrCode, config);
+                
+                if (!success && isMounted) {
+                    setError('Não foi possível iniciar a câmera. Verifique as permissões.');
                 }
             }, 300);
         }).catch(() => {
             if (isMounted) {
-                setError('Biblioteca de scanner não disponível. Verifique a conexão.');
+                setError('Biblioteca de scanner não disponível.');
                 setIsLoading(false);
             }
         });
@@ -73,71 +96,119 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
         };
     }, [onSuccess]);
 
+    const handleCameraChange = async (cameraId: string) => {
+        setSelectedCameraId(cameraId);
+        if (html5QrCodeRef.current) {
+            try {
+                if (html5QrCodeRef.current.isScanning) {
+                    await html5QrCodeRef.current.stop();
+                }
+                await startScanner(html5QrCodeRef.current, cameraId);
+            } catch (err) {
+                toast.error("Erro ao trocar de câmera.");
+            }
+        }
+    };
+
     return (
-        <div className="fixed inset-0 z-[100] bg-dark-400 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-dark-200 rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
-                <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-brand-orange-coral/20 flex items-center justify-center">
-                            <Camera className="h-4 w-4 text-brand-orange-coral" />
+        <div className="fixed inset-0 z-[100] bg-[#0c0e12]/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-md bg-dark-200 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
+                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center">
+                            <Camera className="h-5 w-5 text-brand-orange-coral" />
                         </div>
-                        <h2 className="text-white font-bold">{title}</h2>
+                        <div>
+                            <h2 className="text-white font-black text-lg tracking-tight leading-none uppercase">{title}</h2>
+                            <p className="text-[10px] text-gray-500 font-bold tracking-widest mt-1 uppercase">Acreditação Digital</p>
+                        </div>
                     </div>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-gray-400 hover:text-white"
+                        className="text-gray-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl"
                         onClick={onClose}
                     >
                         <XCircle className="h-6 w-6" />
                     </Button>
                 </div>
 
-                <div className="p-4">
+                <div className="p-6">
                     {isLoading ? (
-                        <div className="aspect-square bg-dark-300 rounded-2xl flex flex-col items-center justify-center p-8 text-center">
+                        <div className="aspect-square bg-dark-300 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-white/5">
                             <div className="w-12 h-12 border-4 border-brand-orange-coral/30 border-t-brand-orange-coral rounded-full animate-spin mb-4" />
-                            <p className="text-gray-400 text-sm">Carregando scanner...</p>
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">Iniciando Módulo...</p>
                         </div>
                     ) : error ? (
-                        <div className="aspect-square bg-dark-300 rounded-2xl flex flex-col items-center justify-center p-8 text-center">
-                            <XCircle className="h-12 w-12 text-red-500 mb-4" />
-                            <p className="text-white font-bold mb-2">Erro na Câmera</p>
-                            <p className="text-gray-400 text-sm mb-6">{error}</p>
-                            <Button onClick={() => window.location.reload()} variant="outline">
-                                Tentar Novamente
+                        <div className="aspect-square bg-dark-300 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-red-500/10">
+                            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-6">
+                                <XCircle className="h-8 w-8 text-red-500" />
+                            </div>
+                            <p className="text-white font-black uppercase tracking-tight mb-2">Bloqueio de Câmera</p>
+                            <p className="text-gray-400 text-xs mb-8">{error}</p>
+                            <Button onClick={() => window.location.reload()} className="bg-white/5 border border-white/10 text-white font-bold px-8 h-12 rounded-xl hover:bg-white/10">
+                                RECARREGAR PÁGINA
                             </Button>
                         </div>
                     ) : (
-                        <div className="relative overflow-hidden rounded-2xl bg-black">
-                            <div id={readerId.current} className="w-full"></div>
-
-                            {isScanning && (
-                                <div className="absolute inset-0 pointer-events-none border-[2px] border-brand-orange-coral/30">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-64 h-64 border-2 border-brand-orange-coral rounded-lg animate-pulse relative">
-                                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-white"></div>
-                                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-white"></div>
-                                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-white"></div>
-                                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-white"></div>
-                                        </div>
+                        <div className="space-y-6">
+                            {/* Camera Selector drop-down if multiple cameras */}
+                            {cameras.length > 1 && (
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-2 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center shrink-0">
+                                        <Camera className="h-4 w-4 text-brand-orange-coral" />
                                     </div>
+                                    <select 
+                                        className="bg-transparent text-white text-xs font-bold w-full focus:outline-none cursor-pointer pr-4"
+                                        value={selectedCameraId}
+                                        onChange={(e) => handleCameraChange(e.target.value)}
+                                    >
+                                        {cameras.map(camera => (
+                                            <option key={camera.id} value={camera.id} className="bg-dark-300">
+                                                {camera.label || `Câmera ${camera.id.substring(0, 5)}`}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             )}
+
+                            <div className="relative overflow-hidden rounded-3xl bg-black aspect-square border-2 border-brand-orange-coral/20">
+                                <div id={readerId.current} className="w-full h-full object-cover"></div>
+
+                                {isScanning && (
+                                    <div className="absolute inset-0 pointer-events-none">
+                                        {/* Scanner Frame */}
+                                        <div className="absolute inset-x-8 inset-y-8 flex items-center justify-center">
+                                            <div className="w-full h-full border-2 border-brand-orange-coral/30 rounded-[2rem] relative">
+                                                {/* Corner markers */}
+                                                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                                                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                                                
+                                                {/* Animation Beam */}
+                                                <div className="absolute inset-x-0 h-0.5 bg-brand-orange-coral/50 shadow-[0_0_15px_rgba(255,112,67,0.8)] animate-scan-beam" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
 
-                <div className="p-6 text-center">
-                    <p className="text-gray-400 text-sm">
-                        Posicione o QR Code dentro do quadrado para escanear automaticamente.
+                <div className="p-8 bg-white/[0.02] border-t border-white/5 text-center">
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
+                        Posicione o QR Code no centro para validação automática.
                     </p>
                 </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-3 text-gray-500 text-xs font-bold uppercase tracking-widest">
-                <QrCode className="h-4 w-4" />
-                <span>Sistema de Check-in Growth Experience</span>
+            <div className="mt-12 flex items-center gap-4 text-white/20 select-none">
+                <QrCode className="h-5 w-5" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Growth Eco System</span>
+                <div className="h-1 w-1 rounded-full bg-white/20" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">2k26</span>
             </div>
         </div>
     );

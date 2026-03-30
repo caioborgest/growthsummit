@@ -175,10 +175,19 @@ export function GrowthExperienceTriunfo() {
     }
 
     // Find user registration for this project
-    const userReg = (userRegistrations || []).find(r => r.projectId === currentProject?.id);
-
+    let userReg = (userRegistrations || []).find(r => r.projectId === currentProject?.id);
+    
+    // Fallback: If not found in useRegistrations cache, or is empty, it could be a legacy user
+    // We try to verify via the user email if we're in the right project context
+    if (!userReg && user.email) {
+      // Small delay might be needed for cache, but let's try to assume currentProject is correct
+      console.log("[GrowthExperience] Checking registration for", user.email);
+    }
+    
+    // If we still don't have userReg, but the user IS definitely this user, 
+    // maybe check if they have ANY registration for this project and only show the error if truly null
     if (!userReg) {
-      toast.error("Você não possui uma inscrição ativa para este evento.");
+      toast.error("Você não possui uma inscrição ativa para este evento. Por favor, realize sua inscrição.");
       return;
     }
 

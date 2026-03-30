@@ -430,31 +430,31 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all"></div>
                     
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10 w-full overflow-hidden">
                       <div className="flex items-start gap-3 sm:gap-4 overflow-hidden w-full">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hidden sm:flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                          <MessageCircle className="h-6 w-6 text-brand-orange-coral/70" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/5 border border-white/10 hidden sm:flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-brand-orange-coral/70" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2 break-words leading-tight text-sm sm:text-base">
+                        <div className="flex-1 min-w-0 max-w-full">
+                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2 break-words leading-tight text-sm sm:text-base pr-4">
                              {ticket.subject}
                           </h3>
-                          <div className="flex flex-wrap items-center gap-4">
-                            <span className="text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <span className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5 shrink-0">
                               {getPriorityIcon(ticket.priority)} Prioridade {ticket.priority}
                             </span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5">
-                              <Tag className="h-3 w-3 opacity-30" /> {ticket.category}
+                            <span className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5 shrink-0">
+                              <Tag className="h-2.5 w-2.5 sm:h-3 sm:w-3 opacity-30" /> {ticket.category}
                             </span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5">
-                              <Clock className="h-3 w-3 opacity-30" /> {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
+                            <span className="text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase flex items-center gap-1.5 shrink-0">
+                              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 opacity-30" /> {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 flex-shrink-0">
                         {getStatusBadge(ticket.status)}
-                        <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-brand-orange-coral transition-all group-hover:translate-x-1" />
+                        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-800 group-hover:text-brand-orange-coral transition-all group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>

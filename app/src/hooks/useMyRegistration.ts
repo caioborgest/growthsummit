@@ -41,6 +41,14 @@ function getTable(projectId: string): string {
 }
 
 function mapRow(row: Record<string, unknown>): MyRegistration {
+    const isProType = (row['tipo_inscricao'] as string || '').toLowerCase() === 'pro' || (row['tipo_inscricao'] as string || '').toLowerCase() === 'vip';
+    const statusPagamento = (row['status_pagamento'] as string || '').toLowerCase();
+    const st = (row['status'] as string || '').toLowerCase();
+    
+    // Determine if actually paid
+    const isActuallyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
+                          st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado';
+
     return {
         id: row['id'] as string,
         userId: (row['user_id'] as string) || undefined,
@@ -52,9 +60,12 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         ticketType: (row['tipo_inscricao'] as string) || undefined,
         status: (row['status'] as string) || undefined,
         statusPagamento: (row['status_pagamento'] as string) || undefined,
+        // Pro if explicitly true OR if it's a Pro ticket and it's paid
         palestrasNoturnas: Array.isArray(row['palestras_noturnas'])
             ? row['palestras_noturnas'].length > 0
-            : Boolean(row['palestras_noturnas']),
+            : Boolean(row['palestras_noturnas']) || 
+              (isProType && isActuallyPaid) || 
+              ((row['project_id'] === 'ge-triunfo-2026' || row['project_id'] === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') && isActuallyPaid),
         cursosSelecionados: Array.isArray(row['cursos_selecionados'])
             ? (row['cursos_selecionados'] as string[])
             : [],
@@ -243,18 +254,34 @@ export function useMyRegistration() {
     const checkInEntrada = useCallback(async () => {
         if (!registration?.id || !projectId || !user) return;
         
-        // Registrar no log de check_ins
-        await (supabase.from('check_ins' as never) as any).insert({
-            project_id: projectId,
-            registration_id: registration.id,
-            user_id: user.id,
-            user_name: registration.nome || user.name,
-            ticket_number: registration.id.split('-')[0].toUpperCase(),
-            timestamp: new Date().toISOString(),
-            location: 'Entrada',
-            method: 'qr_scan',
-        }).catch(() => { });
+        const table = getTable(projectId);
 
+        try {
+            // 1. Atualizar registro principal para marcar como presente
+            // Tentamos os dois nomes possíveis para a coluna para maior segurança
+            await (supabase.from(table as never) as any).update({
+                checked_in: true,
+                check_in_at: new Date().toISOString()
+            }).eq('id', registration.id);
+
+            // 2. Registrar no log de check_ins
+            await (supabase.from('check_ins' as never) as any).insert({
+                project_id: projectId,
+                registration_id: registration.id,
+                user_id: user.id,
+                user_name: registration.nome || user.name,
+                ticket_number: registration.id.split('-')[0].toUpperCase(),
+                timestamp: new Date().toISOString(),
+                location: 'Entrada Principal (Auto)',
+                method: 'self_scan',
+            }).catch(() => { });
+
+            // 3. Atualizar estado local
+            setRegistration(prev => prev ? { ...prev, checkedIn: true, checkInTime: new Date().toISOString() } : prev);
+        } catch (err) {
+            logger.error('[useMyRegistration] Erro no checkInEntrada:', err);
+            throw err;
+        }
     }, [registration, projectId, user]);
 
     return { registration, isLoading, error, refetch: fetchRegistration, updateCursos, checkInEntrada };

@@ -5,14 +5,14 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
-  X,
-  User,
-  Camera,
   Calendar,
   Filter,
   Building2,
-  Rocket
+  Rocket,
+  User,
+  Camera
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ import { AccreditationChecklistModal } from '@/components/admin/AccreditationChe
 import { useSearchParams } from 'react-router-dom';
 
 export function AdminCheckIn() {
+  const { user } = useAuth();
   const { data: mentors } = useMentors();
   const { data: companies } = useCompanies();
   const { data: startups } = useStartups();
@@ -39,11 +40,9 @@ export function AdminCheckIn() {
   const [isScanning, setIsScanning] = useState(searchParams.get('scan') === 'true');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
 
-  const [lastCheckIn, setLastCheckIn] = useState<Registration | null>(null);
   const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
 
-  // New states for Robust Accreditation
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup'>('participant');
@@ -54,18 +53,19 @@ export function AdminCheckIn() {
   );
 
   const triggerVibrate = (type: 'success' | 'error') => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      if (type === 'success') {
-        navigator.vibrate(200);
-      } else {
-        navigator.vibrate([100, 50, 100]);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        if (type === 'success') {
+          navigator.vibrate(200);
+        } else {
+          navigator.vibrate([100, 50, 100]);
+        }
       }
-    }
+    } catch { /* silent */ }
   };
 
   const handleManualCheckIn = useCallback(async (registration: Registration) => {
     try {
-      // 1. Check if it's GLOBAL event check-in
       if (selectedSessionId === 'all') {
         if (registration.checkedIn) {
           setScanResult('duplicate');
@@ -86,14 +86,12 @@ export function AdminCheckIn() {
           ticketNumber: registration.ticketNumber,
           timestamp: new Date().toISOString(),
           location: 'Entrada Principal',
-          method: 'manual'
+          method: 'manual',
+          operatorId: user?.id
         });
 
         toast.success(`Check-in GERAL realizado: ${registration.ticketNumber}`);
-      }
-      // 2. Check if it's SESSION check-in
-      else {
-        // Check if already checked in for THIS session
+      } else {
         const alreadyAttending = sessionAttendance.some(
           a => a.sessionId === selectedSessionId && (a.registrationId === registration.id || a.userId === registration.userId)
         );
@@ -113,14 +111,12 @@ export function AdminCheckIn() {
           userId: registration.userId,
           checkInAt: new Date().toISOString(),
           checkInType: 'manual',
+          operatorId: user?.id
         });
 
         toast.success(`Presença registrada em: ${selectedSession?.title}`);
       }
 
-      setLastCheckIn(registration);
-      setResultRegistration(registration);
-      setScanResult('success');
       triggerVibrate('success');
       setSearchQuery('');
     } catch (err: unknown) {
@@ -129,12 +125,11 @@ export function AdminCheckIn() {
       triggerVibrate('error');
       toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
-  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession]);
+  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id]);
 
   const handleScannerSuccess = useCallback((res: QRData | null) => {
     if (!res) return;
 
-    // Direct logic for Robust Accreditation
     if (['mentor', 'company', 'startup', 'registration'].includes(res.type)) {
       let entity: any = null;
       let role: any = 'participant';
@@ -164,7 +159,30 @@ export function AdminCheckIn() {
       return;
     }
 
-    const registration = registrations.find(r => r.id === res.id);
+    let registration = registrations.find(r => r.id === res.id);
+    
+    if (!registration && res.type === 'registration') {
+      toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
+      import('@/lib/supabase').then(async ({ supabase }) => {
+        const { data, error } = await supabase.from('inscricoes_growth_experience').select('*').eq('id', res.id).maybeSingle();
+        if (data && !error) {
+           const mapped = Object.entries(data).reduce((acc, [key, val]) => {
+                const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
+                acc[camelKey] = val;
+                return acc;
+            }, {} as Record<string, unknown>);
+           handleManualCheckIn(mapped as unknown as Registration);
+           toast.dismiss('fetch-reg');
+        } else {
+          setScanResult('error');
+          setResultRegistration(null);
+          triggerVibrate('error');
+          toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
+        }
+      });
+      return;
+    }
+
     if (registration) {
       handleManualCheckIn(registration);
     } else {
@@ -195,7 +213,6 @@ export function AdminCheckIn() {
 
   const checkedInCount = registrations.filter(r => r.checkedIn).length;
   const totalRegistrations = registrations.length;
-  const checkInRate = totalRegistrations > 0 ? (checkedInCount / totalRegistrations) * 100 : 0;
 
   const unifiedResults = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -203,7 +220,6 @@ export function AdminCheckIn() {
 
     const results: any[] = [];
 
-    // 1. Search Participants
     registrations.filter(r => 
       r.id.toLowerCase().includes(query) ||
       (r.nome || r.name || '').toLowerCase().includes(query) ||
@@ -211,21 +227,18 @@ export function AdminCheckIn() {
       r.ticketNumber.toLowerCase().includes(query)
     ).forEach(r => results.push({ ...r, _role: 'participant', _name: r.nome || r.name }));
 
-    // 2. Search Mentors
     mentors.filter(m => 
       m.id.toLowerCase().includes(query) ||
       (m.name || '').toLowerCase().includes(query) ||
       (m.email || '').toLowerCase().includes(query)
     ).forEach(m => results.push({ ...m, _role: 'mentor', _name: m.name }));
 
-    // 3. Search Startups
     startups.filter(s => 
       s.id.toLowerCase().includes(query) ||
       (s.name || '').toLowerCase().includes(query) ||
       (s.email || '').toLowerCase().includes(query)
     ).forEach(s => results.push({ ...s, _role: 'startup', _name: s.name }));
 
-    // 4. Search Companies
     companies.filter(c => 
       c.id.toLowerCase().includes(query) ||
       (c.name || '').toLowerCase().includes(query) ||
@@ -262,13 +275,10 @@ export function AdminCheckIn() {
           }}
           entity={selectedEntity}
           role={selectedRole}
-          onSuccess={() => {
-            // Stats will refetch via useData hooks update/create
-          }}
+          onSuccess={() => {}}
         />
       )}
 
-      {/* Header with Mode Toggle */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -303,7 +313,6 @@ export function AdminCheckIn() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card p-4">
           <p className="text-gray-400 text-sm">Check-ins Hoje</p>
@@ -336,7 +345,6 @@ export function AdminCheckIn() {
         </div>
       </div>
 
-      {/* Mode Indicator */}
       {selectedSession && (
         <div className="bg-teal-500/10 border border-teal-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 animate-in fade-in slide-in-from-top-4">
           <div className="w-16 h-16 rounded-2xl bg-teal-500/20 flex items-center justify-center shrink-0">
@@ -360,14 +368,12 @@ export function AdminCheckIn() {
             className="text-gray-500 hover:text-white"
             onClick={() => setSelectedSessionId('all')}
           >
-            <X className="h-5 w-5" />
+            <Filter className="h-5 w-5" />
           </Button>
         </div>
       )}
 
-      {/* Scanner & Search Area */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Search */}
         <div className="glass-card p-6 border-teal-500/30 shadow-[0_0_20px_rgba(20,184,166,0.1)] h-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white uppercase tracking-tighter">Busca de Participante</h2>

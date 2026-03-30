@@ -6,9 +6,10 @@ import { RaffleSection } from './RaffleSection';
 
 interface GamificationSectionProps {
   registrationId: string;
+  setIsScanOpen: (open: boolean) => void;
 }
 
-export function GamificationSection({ registrationId }: GamificationSectionProps) {
+export function GamificationSection({ registrationId, setIsScanOpen }: GamificationSectionProps) {
   const { data: stands, isLoading: loadingStands } = useStands();
   const { data: checkins, isLoading: loadingCheckins } = useStandCheckIns();
   const [activeView, setActiveView] = useState<'stands' | 'raffles'>('stands');
@@ -188,15 +189,17 @@ export function GamificationSection({ registrationId }: GamificationSectionProps
 
                   <div className="mt-auto">
                     {isVisited ? (
-                      <div className="flex items-center justify-center gap-2 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-green-400"
+                      <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-green-400"
                         style={{ background: 'rgba(34,197,94,0.1)' }}>
                         <CheckCircle2 className="h-3.5 w-3.5" />Check-in Realizado
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-foreground/30"
-                        style={{ background: 'var(--surface-2)', border: '1px dashed var(--border-subtle)' }}>
-                        <QrCode className="h-3.5 w-3.5" />Aguardando Visita
-                      </div>
+                      <button 
+                        onClick={() => setIsScanOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-orange-coral hover:bg-brand-orange-coral/10 transition-all border border-dashed border-brand-orange-coral/30"
+                        style={{ background: 'var(--surface-2)' }}>
+                        <QrCode className="h-3.5 w-3.5" />Escanear Stand
+                      </button>
                     )}
                   </div>
                 </motion.div>

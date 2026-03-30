@@ -156,32 +156,22 @@ export function AgendaSection({
 
             <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-8">
-                    {/* Morning timeline */}
-                    <div className="relative pl-6 border-l-2 space-y-3" style={{ borderColor: 'rgba(20,184,166,0.2)' }}>
-                        <div className="absolute -left-[9px] top-0 w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
-                            style={{ background: '#14b8a6', boxShadow: '0 0 16px rgba(20,184,166,0.5)' }}>
-                            <Sun className="h-3 w-3 text-white" />
-                        </div>
-                        <div className="flex items-center justify-between mb-4 pl-2">
-                            <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Manhã · Growth Experience</h3>
-                            <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 text-[9px] font-black uppercase">Gratuito</Badge>
-                        </div>
-                        {fullMorningAgenda.length > 0 ? (
-                            fullMorningAgenda.map((item, i) => (
-                                <SessionCard key={i} item={item} color="#14b8a6" delay={i * 0.06} />
-                            ))
-                        ) : (
-                            <div className="p-8 text-center rounded-[2rem] border border-dashed" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
-                                <BookOpen className="h-8 w-8 mx-auto mb-3 text-foreground/20" />
-                                <p className="text-foreground/40 text-sm mb-4">Nenhuma atividade selecionada para a manhã.</p>
-                                <button onClick={() => navigate('/triunfo')}
-                                    className="px-5 h-9 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all"
-                                    style={{ borderColor: 'rgba(20,184,166,0.3)', color: '#14b8a6' }}>
-                                    Escolher Atividades
-                                </button>
+                    {/* Morning timeline - only show if there are sessions */}
+                    {fullMorningAgenda.length > 0 && (
+                        <div className="relative pl-6 border-l-2 space-y-3" style={{ borderColor: 'rgba(20,184,166,0.2)' }}>
+                            <div className="absolute -left-[9px] top-0 w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
+                                style={{ background: '#14b8a6', boxShadow: '0 0 16px rgba(20,184,166,0.5)' }}>
+                                <Sun className="h-3 w-3 text-white" />
                             </div>
-                        )}
-                    </div>
+                            <div className="flex items-center justify-between mb-4 pl-2">
+                                <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Conteúdo Diurno</h3>
+                                <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 text-[9px] font-black uppercase">Opcional</Badge>
+                            </div>
+                            {fullMorningAgenda.map((item, i) => (
+                                <SessionCard key={i} item={item} color="#14b8a6" delay={i * 0.06} />
+                            ))}
+                        </div>
+                    )}
 
                     {/* Night timeline */}
                     <div className="relative pl-6 border-l-2 space-y-3" style={{ borderColor: 'rgba(255,112,67,0.2)' }}>
@@ -190,31 +180,19 @@ export function AgendaSection({
                             <Moon className="h-3 w-3 text-white" />
                         </div>
                         <div className="flex items-center justify-between mb-4 pl-2">
-                            <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Noite · Passaporte Night</h3>
-                            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 text-[9px] font-black uppercase">Premium</Badge>
+                            <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Programação Oficial · Triunfo</h3>
+                            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 text-[9px] font-black uppercase">Principal</Badge>
                         </div>
 
-                        {isActuallyPaid ? (
-                            nightSessions.length > 0 ? (
-                                nightSessions.map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
-                            ) : (
-                                [
-                                    { startTime: '18:30', title: 'Abertura Night Summit', room: 'Arena Principal', type: 'ABERTURA' },
-                                    { startTime: '19:00', title: 'Growth Strategies for 2026', room: 'Arena Principal', type: 'PALESTRA' },
-                                    { startTime: '20:30', title: 'Data Driven Culture', room: 'Arena Principal', type: 'PALESTRA' },
-                                ].map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
-                            )
+                        {nightSessions.length > 0 ? (
+                            nightSessions.map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
                         ) : (
-                            <div className="p-8 text-center rounded-[2rem]" style={{ background: 'rgba(255,112,67,0.05)', border: '1px solid rgba(255,112,67,0.15)' }}>
-                                <Moon className="h-8 w-8 mx-auto mb-3 text-brand-orange-coral/30" />
-                                <p className="text-foreground/40 text-sm mb-4">Acesso às palestras noturnas não está incluso no seu pacote.</p>
-                                <button
-                                    className="px-6 h-10 rounded-xl font-black text-xs text-white uppercase tracking-wide transition-all active:scale-95"
-                                    style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 4px 16px rgba(255,112,67,0.3)' }}
-                                    onClick={() => navigate('/upgrade')}
-                                >
-                                    Adquirir Passaporte Night
-                                </button>
+                            <div className="p-8 text-center rounded-[2rem] border border-dashed" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
+                                <Zap className="h-8 w-8 mx-auto mb-3 text-brand-orange-coral/30" />
+                                <p className="text-foreground/40 text-sm mb-4">Aguardando definição da grade oficial.</p>
+                                <p className="text-[10px] text-foreground/20 font-bold uppercase tracking-widest leading-relaxed">
+                                    O evento Triunfo acontece no dia 16/04.<br/>Fique atento às notificações do App.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -228,10 +206,10 @@ export function AgendaSection({
                         </h3>
                         <ul className="space-y-3">
                             {[
-                                'O credenciamento começa às 07:30.',
-                                'Chegue 15 min antes na sua oficina.',
-                                'O almoço não está incluso no Free.',
-                                'Certificados exigem check-in na sala.',
+                                'O credenciamento Triunfo abre às 17h.',
+                                'Local: Arena Principal (Espaço Parque).',
+                                'Check-in 100% digital via App.',
+                                'Networking ativo durante todo o evento.',
                             ].map((note, i) => (
                                 <li key={i} className="flex items-start gap-3 text-xs text-foreground/50 leading-relaxed font-medium">
                                     <div className="h-1.5 w-1.5 rounded-full bg-teal-500 mt-1.5 shrink-0" />

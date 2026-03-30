@@ -3,13 +3,13 @@ import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
-import { safeStorage } from '@/utils/safeStorage';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
   Startup, Sponsor, Transaction, CheckIn, Session, Lead, Project, Coupon,
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
-  Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist
+  Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist,
+  ActivityAttendance
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
@@ -881,7 +881,7 @@ export function useCoupons() {
 }
 
 export function useCheckInsAtividades() {
-  return useData<any>([], 'check_ins_atividades');
+  return useData<ActivityAttendance>([], 'check_ins_atividades');
 }
 
 export function usePitchScores() {

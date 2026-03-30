@@ -131,7 +131,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                                 'Coffee Break & Networking Premium com Expositores',
                                 'Lugar reservado em frente ao palco principal',
                                 'Certificado de participação especial (4h)',
-                                'Kit exclusivo do evento GX 2026'
+                                'Kit exclusivo do evento Growth Experience'
                             ].map((item, index) => (
                                 <div key={index} className="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl hover:bg-white/[0.04] transition-colors">
                                     <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">

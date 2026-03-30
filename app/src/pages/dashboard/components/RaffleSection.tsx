@@ -7,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface RaffleSectionProps {
     registrationId: string;
+    setIsScanOpen: (open: boolean) => void;
 }
 
-export function RaffleSection({ registrationId }: RaffleSectionProps) {
+export function RaffleSection({ registrationId, setIsScanOpen }: RaffleSectionProps) {
     const { projectId } = useProject();
     const { data: raffles, isLoading } = useRaffles();
     const { data: inscricoes } = useInscricoes();
@@ -91,12 +92,14 @@ export function RaffleSection({ registrationId }: RaffleSectionProps) {
                                     </p>
 
                                     {raffle.type === 'realtime_qr' ? (
-                                        <div className="text-center p-4 rounded-2xl border border-dashed transition-all group-hover:border-brand-orange-coral/30"
+                                        <button 
+                                            onClick={() => setIsScanOpen(true)}
+                                            className="w-full text-center p-4 rounded-2xl border border-dashed transition-all hover:border-brand-orange-coral/50 hover:bg-brand-orange-coral/10 group/scan"
                                             style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
-                                            <QrCode className="h-6 w-6 text-brand-orange-coral mx-auto mb-2" />
-                                            <p className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">Escanear QR Code no Telão</p>
-                                            <p className="text-[8px] text-foreground/30 font-bold mt-1 uppercase">Para entrar automaticamente</p>
-                                        </div>
+                                            <QrCode className="h-6 w-6 text-brand-orange-coral mx-auto mb-2 group-hover/scan:scale-110 transition-transform" />
+                                            <p className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Escanear QR Code no Telão</p>
+                                            <p className="text-[8px] text-foreground/30 font-bold mt-1 uppercase">Clique para abrir a câmera</p>
+                                        </button>
                                     ) : (
                                         <div className="flex items-center gap-3 p-4 rounded-2xl"
                                             style={{ background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.2)' }}>
