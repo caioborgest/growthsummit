@@ -399,7 +399,7 @@ function App() {
   useEffect(() => {
     // Sistema de Atualização Forçada (Cache Buster)
     // Se a versão do app mudar, força um recarregamento para limpar caches antigos do Service Worker
-    const APP_VERSION = '1.1.0';
+    const APP_VERSION = '1.1.2';
     const lastVersion = localStorage.getItem('ge_app_version');
 
     if (lastVersion && lastVersion !== APP_VERSION) {

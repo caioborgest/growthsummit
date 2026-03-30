@@ -438,8 +438,7 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,company_a_id,company_b_id,status,score,created_at';
     }
     if (entity === 'stands') {
-      // Remover description se falhar no banco (pode usar 'bio' no frontend se necessário)
-      return 'id,project_id,name,logo_url,location,owner_id,owner_type,created_at';
+      return 'id,project_id,nome,logo_url,localizacao,descricao,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
       return 'id,registration_id,stand_id';

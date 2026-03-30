@@ -753,7 +753,7 @@ export function DashboardParticipante() {
           project_id: selectedProject?.id,
           registration_id: myRegistration.id,
           session_id: sessionId,
-          timestamp: new Date().toISOString()
+          check_in_at: new Date().toISOString()
         });
 
         if (error) throw error;
@@ -764,10 +764,9 @@ export function DashboardParticipante() {
           project_id: selectedProject?.id,
           registration_id: myRegistration.id,
           user_id: user?.id,
-          session_id: sessionId,
           activity_name: sessionTitle,
           status: 'disponivel',
-          type: 'lecture', // ou workshop dependendo do contexto, mas lecture é o padrão
+          type: 'lecture',
           code: certCode,
           issue_date: new Date().toISOString()
         }).catch(() => { });

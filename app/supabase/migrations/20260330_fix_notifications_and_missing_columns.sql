@@ -284,22 +284,159 @@ BEGIN
     END IF;
 END $$;
 
--- ── 8. PERMISSÕES ───────────────────────────────────────────────────────────
-GRANT ALL ON public.notifications TO postgres, service_role, authenticated;
-GRANT ALL ON public.stand_checkins TO postgres, service_role, authenticated;
-GRANT ALL ON public.b2b_meetings TO postgres, service_role, authenticated;
-GRANT ALL ON public.b2b_matches TO postgres, service_role, authenticated;
-GRANT ALL ON public.check_ins TO postgres, service_role, authenticated;
-GRANT ALL ON public.check_ins_atividades TO postgres, service_role, authenticated;
+-- ── 8. SUPPORT SYSTEM ───────────────────────────────────────────────────────
+-- Tabela de Tickets
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    category TEXT DEFAULT 'general',
+    status TEXT DEFAULT 'open', -- open, in_progress, resolved, closed
+    priority TEXT DEFAULT 'medium', -- low, medium, high, urgent
+    rating INTEGER,
+    feedback TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
--- Garante RLS para check_ins
-ALTER TABLE public.check_ins ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Admins can manage check_ins" ON public.check_ins;
-CREATE POLICY "Admins can manage check_ins" ON public.check_ins FOR ALL USING (public.is_admin());
+-- Tabela de Mensagens
+CREATE TABLE IF NOT EXISTS public.support_ticket_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-ALTER TABLE public.check_ins_atividades ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Admins can manage check_ins_atividades" ON public.check_ins_atividades;
-CREATE POLICY "Admins can manage check_ins_atividades" ON public.check_ins_atividades FOR ALL USING (public.is_admin());
+-- RLS para Support
+ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.support_ticket_messages ENABLE ROW LEVEL SECURITY;
 
--- ── 9. RELOAD CACHE DO POSTGREST ────────────────────────────────────────────
+DROP POLICY IF EXISTS "Users can manage their own tickets" ON public.support_tickets;
+CREATE POLICY "Users can manage their own tickets" ON public.support_tickets
+    FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can manage all tickets" ON public.support_tickets;
+CREATE POLICY "Admins can manage all tickets" ON public.support_tickets
+    FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Users can see messages from their tickets" ON public.support_ticket_messages;
+CREATE POLICY "Users can see messages from their tickets" ON public.support_ticket_messages
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.support_tickets 
+            WHERE id = ticket_id AND user_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Users can add messages to their tickets" ON public.support_ticket_messages;
+CREATE POLICY "Users can add messages to their tickets" ON public.support_ticket_messages
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.support_tickets 
+            WHERE id = ticket_id AND user_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Admins can manage all support messages" ON public.support_ticket_messages;
+CREATE POLICY "Admins can manage all support messages" ON public.support_ticket_messages
+    FOR ALL USING (public.is_admin());
+
+-- Trigger para atualizar updated_at
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_support_tickets_updated_at
+    BEFORE UPDATE ON public.support_tickets
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- ── 9. ADMIN NOTIFICATIONS TRIGGER ──────────────────────────────────────────
+-- Notifica admins quando um ticket é criado ou respondido por usuário
+CREATE OR REPLACE FUNCTION public.notify_admins_on_support()
+RETURNS TRIGGER AS $$
+DECLARE
+    admin_record RECORD;
+    notif_title TEXT;
+    notif_msg TEXT;
+    target_project_id UUID;
+BEGIN
+    IF (TG_TABLE_NAME = 'support_tickets') THEN
+        notif_title := 'Novo Chamado de Suporte';
+        notif_msg := 'Participante ' || NEW.name || ' abriu um chamado: ' || NEW.subject;
+        target_project_id := NEW.project_id;
+    ELSIF (TG_TABLE_NAME = 'support_ticket_messages' AND NEW.is_admin = FALSE) THEN
+        notif_title := 'Nova Mensagem no Suporte';
+        notif_msg := 'Participante enviou uma nova mensagem em um chamado aberto.';
+        -- Busca project_id do ticket pai
+        SELECT project_id INTO target_project_id FROM public.support_tickets WHERE id = NEW.ticket_id;
+    ELSE
+        RETURN NEW;
+    END IF;
+
+    -- Cria notificação para todos os admins
+    FOR admin_record IN (SELECT id FROM public.users WHERE role = 'admin' OR role = 'staff') LOOP
+        INSERT INTO public.notifications (user_id, project_id, title, message, type, action_url)
+        VALUES (admin_record.id, target_project_id, notif_title, notif_msg, 'info', '/admin/suporte');
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tr_notify_admin_new_ticket ON public.support_tickets;
+CREATE TRIGGER tr_notify_admin_new_ticket
+    AFTER INSERT ON public.support_tickets
+    FOR EACH ROW EXECUTE FUNCTION public.notify_admins_on_support();
+
+DROP TRIGGER IF EXISTS tr_notify_admin_new_message ON public.support_ticket_messages;
+CREATE TRIGGER tr_notify_admin_new_message
+    AFTER INSERT ON public.support_ticket_messages
+    FOR EACH ROW EXECUTE FUNCTION public.notify_admins_on_support();
+
+-- ── 10. AUDIT & LOG TABLES (Garante existência para evitar 404) ─────────────
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    action TEXT,
+    table_name TEXT,
+    old_data JSONB,
+    new_data JSONB,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.login_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT,
+    ip_address TEXT,
+    success BOOLEAN,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.login_attempts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins manage audit logs" ON public.audit_logs;
+CREATE POLICY "Admins manage audit logs" ON public.audit_logs FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admins manage login attempts" ON public.login_attempts;
+CREATE POLICY "Admins manage login attempts" ON public.login_attempts FOR ALL USING (public.is_admin());
+
+-- ── 11. PERMISSÕES ──────────────────────────────────────────────────────────
+GRANT ALL ON public.support_tickets TO postgres, service_role, authenticated;
+GRANT ALL ON public.support_ticket_messages TO postgres, service_role, authenticated;
+GRANT ALL ON public.audit_logs TO postgres, service_role, authenticated;
+GRANT ALL ON public.login_attempts TO postgres, service_role, authenticated;
+
+-- ── 12. RELOAD CACHE ────────────────────────────────────────────────────────
 NOTIFY pgrst, 'reload schema';

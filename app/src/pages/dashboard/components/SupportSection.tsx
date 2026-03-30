@@ -54,9 +54,18 @@ export function SupportSection({ navigate }: SupportSectionProps) {
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !selectedProject) return;
-
     setIsSending(true);
+    if (!user) {
+        toast.error('Usuário não autenticado.');
+        setIsSending(false);
+        return;
+    }
+    if (!selectedProject) {
+        toast.error('Projeto não identificado. Recarregue a página.');
+        setIsSending(false);
+        return;
+    }
+
     try {
       const ticket = await supportService.createTicket({
         user_id: user.id,
@@ -74,8 +83,10 @@ export function SupportSection({ navigate }: SupportSectionProps) {
       setIsNewTicketOpen(false);
       setSelectedTicketId(ticket.id);
       setNewTicket({ subject: '', category: 'general', priority: 'medium', message: '' });
+      toast.success('Chamado aberto com sucesso!');
     } catch (err) {
       logger.error('Erro ao criar chamado:', err);
+      toast.error('Erro ao abrir chamado. Tente novamente.');
     } finally {
       setIsSending(false);
     }
@@ -95,8 +106,10 @@ export function SupportSection({ navigate }: SupportSectionProps) {
       });
       setNewMessage('');
       await refetchMessages();
+      toast.success('Mensagem enviada!');
     } catch (err) {
       logger.error('Erro ao enviar mensagem:', err);
+      toast.error('Gosh! Erro ao enviar a resposta.');
     } finally {
       setIsSending(false);
     }
@@ -179,7 +192,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
         {/* Main Content Area */}
         <div className="lg:col-span-2">
           {isNewTicketOpen ? (
-            <div className="glass-card p-4 sm:p-8 border-brand-orange-coral/20 animate-fade-in-up">
+            <div className="glass-card p-4 sm:p-8 border-brand-orange-coral/20 animate-fade-in-up overflow-hidden">
               <h3 className="text-xl font-black text-white uppercase italic mb-6">Novo Atendimento</h3>
               <form onSubmit={handleCreateTicket} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -413,7 +426,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   <div 
                     key={ticket.id}
                     onClick={() => setSelectedTicketId(ticket.id)}
-                    className="glass-card p-4 sm:p-6 border-white/5 hover:border-brand-orange-coral/30 hover:bg-brand-orange-coral/[0.02] transition-all group cursor-pointer relative overflow-hidden"
+                    className="glass-card p-4 border-white/5 hover:border-brand-orange-coral/30 hover:bg-brand-orange-coral/[0.02] transition-all group cursor-pointer relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all"></div>
                     
@@ -423,7 +436,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                           <MessageCircle className="h-6 w-6 text-brand-orange-coral/70" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2 break-words">
+                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2 break-words leading-tight text-sm sm:text-base">
                              {ticket.subject}
                           </h3>
                           <div className="flex flex-wrap items-center gap-4">
