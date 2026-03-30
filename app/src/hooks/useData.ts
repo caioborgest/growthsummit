@@ -29,7 +29,10 @@ const isGEProject = (projectId: string | undefined): boolean => {
   if (projectId.startsWith('ge-') || projectId.startsWith('growth-')) return true;
 
   // If projectId is a UUID, we check the global selectedProject from localStorage
-  // This is a common pattern in this app to distinguish GE from and others
+  try {
+    const selectedProjectStr = localStorage.getItem('selectedProject');
+    if (selectedProjectStr) {
+      const p = JSON.parse(selectedProjectStr);
       // If the ID matches the current projectId and the slug starts with ge- or growth-, it's GE
       if ((p.id === projectId || p.slug === projectId) &&
         (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-'))) return true;
