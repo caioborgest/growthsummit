@@ -15,7 +15,7 @@ export default defineConfig({
         name: 'Growth Experience 2026',
         short_name: 'GX 2026',
         description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA.',
-        version: '1.0.1', // Bumped version to force PWA update
+        version: '1.0.2',
         start_url: '/',
         theme_color: '#21808D',
         background_color: '#0c0e12',
@@ -40,33 +40,12 @@ export default defineConfig({
           }
         ]
       },
-      devOptions: {
-        enabled: false,
-        type: 'module',
-        navigateFallback: 'index.html',
-        suppressWarnings: true,
-      },
       workbox: {
-        globPatterns: ['index.html', 'assets/**/*.{js,css,png,svg,woff,woff2}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-assets',
-              cacheableResponse: {
-                statuses: [0, 200]
-              },
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 horas
-              }
-            }
-          }
-        ]
       }
     })
   ],

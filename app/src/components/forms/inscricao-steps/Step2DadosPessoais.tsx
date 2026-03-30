@@ -162,13 +162,16 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
                     } else {
                         setDesconto(couponData.porcentagem_desconto);
+                        setErrors(prev => ({ ...prev, codigo: '' }));
                         setCodigoValidado(true);
                         toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
                     }
                 }
             }
         } catch (err) {
-            setErrors(prev => ({ ...prev, codigo: 'Erro ao validar código' }));
+            logger.error('[Step2] Erro ao validar código', err);
+            setErrors(prev => ({ ...prev, codigo: 'Erro de conexão ou sistema ao validar' }));
+            setCodigoValidado(false);
         } finally {
             setValidating(false);
         }
@@ -532,6 +535,12 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                                 setCodigo(e.target.value);
                                                 setCodigoValidado(false);
                                                 if (errors.codigo) setErrors({ ...errors, codigo: '' });
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    validarCodigo();
+                                                }
                                             }}
                                             disabled={validating}
                                             placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-EQUIPE-XYZ' : 'INSIRA O CÓDIGO AQUI'}

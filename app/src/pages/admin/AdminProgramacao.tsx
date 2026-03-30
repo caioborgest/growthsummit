@@ -117,13 +117,16 @@ export function AdminProgramacao() {
 
   const filteredSessions = useMemo(() => {
     return sessions.filter(s => {
+      // Garantir que a atividade pertence ao projeto selecionado
+      if (projectId && s.projectId !== projectId) return false;
+      
       const category = s.category || '';
       if (activeTab === 'diurna') return category.startsWith('manha_') || category.startsWith('tarde_');
       if (activeTab === 'noturna') return category === 'noturna';
       if (activeTab === 'circuito') return category === 'circuito';
       return true;
     }).sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
-  }, [sessions, activeTab]);
+  }, [sessions, activeTab, projectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

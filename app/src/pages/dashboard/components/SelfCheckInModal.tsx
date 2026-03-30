@@ -282,10 +282,18 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                                     onChange={(e) => setManualCode(e.target.value.toUpperCase())}
                                     placeholder="Ex: GE-EVENT-ENTRY"
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white font-black text-lg focus:outline-none focus:border-teal-500/50 transition-all placeholder:text-gray-700"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !loading) {
+                                            e.preventDefault();
+                                            // Chamar via trigger do botão para consistência
+                                            document.getElementById('btn-confirmar-codigo')?.click();
+                                        }
+                                    }}
                                 />
                             </div>
 
                             <Button
+                                id="btn-confirmar-codigo"
                                 onClick={async () => {
                                     if (!manualCode.trim()) {
                                         toast.error('Insira um código válido');

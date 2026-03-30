@@ -340,7 +340,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 // ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
 function CheckInModal({ registration, onClose }: { registration: MyRegistration; onClose: () => void }) {
   const [token] = useState(() => Date.now());
-  const qrValue = `GE - CHECKIN | ${registration.id}| ${registration.email || ''}| ${token} `;
+  const qrValue = `GE-CHECKIN|${registration.id}|${registration.email || ''}`;
 
   return (
     <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
@@ -414,7 +414,7 @@ export function DashboardParticipante() {
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     
     return sorted.find(s => {
-        const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === myRegistration?.id);
+        const isAlreadyCheckedIn = activityCheckIns?.some(c => (c.sessionId || c.session_id) === s.id && (c.registrationId || c.registration_id) === myRegistration?.id);
         return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0]; // Fallback to first session if none found
   }, [allSessions, activityCheckIns, myRegistration?.id]);
@@ -1115,7 +1115,7 @@ export function DashboardParticipante() {
                 subtitle={`${nextActivity.speakers || 'Leandro Batista'} • ${nextActivity.room || 'Auditório'}`}
                 time={nextActivity.startTime || '19:00'}
                 duration="50 min"
-                isConfirmed={activityCheckIns?.some((c: any) => c.session_id === nextActivity.id && c.registration_id === myRegistration?.id)}
+                isConfirmed={activityCheckIns?.some((c: any) => (c.session_id || c.sessionId) === nextActivity.id && c.registration_id === myRegistration?.id)}
                 onClick={() => setSelectedSession(nextActivity)}
               />
             )}

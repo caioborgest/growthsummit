@@ -135,7 +135,7 @@ export function TicketSection({
                                         <div className="w-48 h-48">
                                             {myRegistration?.id ? (
                                                 <QRCode
-                                                    value={`GE-CHECKIN|${myRegistration.id}|${user?.email || ''}|${myRegistration.id}`}
+                                                    value={`GE-CHECKIN|${myRegistration.id}|${user?.email || ''}`}
                                                     size={192}
                                                     viewBox={`0 0 256 256`}
                                                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}

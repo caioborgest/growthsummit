@@ -527,6 +527,9 @@ export function AdminMentores() {
 
   const filteredMentors = useMemo(() => {
     return mentors.filter(mentor => {
+      // Filtros técnicos: projeto atual
+      if (projectId && mentor.projectId !== projectId) return false;
+
       const matchesSearch =
         (mentor.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (mentor.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
@@ -534,7 +537,7 @@ export function AdminMentores() {
       const matchesStatus = statusFilter === 'all' || mentor.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [mentors, searchQuery, statusFilter]);
+  }, [mentors, searchQuery, statusFilter, projectId]);
 
   // Auto-scroll to top when step changes
   useEffect(() => {

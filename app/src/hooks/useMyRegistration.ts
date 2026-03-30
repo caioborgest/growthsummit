@@ -75,20 +75,52 @@ export function useMyRegistration() {
     const [error, setError] = useState<string | null>(null);
 
     const fetchRegistration = useCallback(async () => {
-        if (!user || !projectId) return;
+        if (!user) return;
 
         setIsLoading(true);
         setError(null);
 
         try {
-            const table = getTable(projectId);
+            // Se não tiver projectId, tenta descobrir o projeto mais recente do usuário
+            let targetProjectId = projectId;
+            
+            if (!targetProjectId) {
+                const { data: latestReg } = await supabase
+                    .from('inscricoes_growth_experience')
+                    .select('project_id')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                
+                if (latestReg) {
+                    targetProjectId = latestReg.project_id;
+                } else {
+                    // Tenta por email
+                    const { data: emailReg } = await supabase
+                        .from('inscricoes_growth_experience')
+                        .select('project_id')
+                        .eq('email', user.email)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    if (emailReg) targetProjectId = emailReg.project_id;
+                }
+            }
+
+            if (!targetProjectId) {
+                setRegistration(null);
+                return;
+            }
+
+            const table = getTable(targetProjectId);
             const fields = 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,status_pagamento,valor_pago,palestras_noturnas,cursos_selecionados,checked_in,created_at';
 
             // 1) Tenta por user_id
             let { data, error: err } = (await withTimeout(
                 async (signal) => {
                     const q = (supabase.from(table as never).select(fields) as any)
-                        .eq('project_id', projectId)
+                        .eq('project_id', targetProjectId)
                         .eq('user_id', user.id)
                         .maybeSingle();
                     return await (q as any).abortSignal(signal);
@@ -102,7 +134,7 @@ export function useMyRegistration() {
                 const result = (await withTimeout(
                     async (signal) => {
                         const q = (supabase.from(table as never).select(fields) as any)
-                            .eq('project_id', projectId)
+                            .eq('project_id', targetProjectId)
                             .eq('email', user.email)
                             .maybeSingle();
                         return await (q as any).abortSignal(signal);
@@ -135,7 +167,9 @@ export function useMyRegistration() {
 
     // 1. Efeito para buscar a inscrição inicial
     useEffect(() => {
-        if (!user || !projectId) {
+        // Se não tiver user, não tem o que buscar.
+        // Mas se tiver user e não tiver projectId, podemos tentar buscar a ultima inscrição dele em QUALQUER projeto GE
+        if (!user) {
             setRegistration(null);
             return;
         }
