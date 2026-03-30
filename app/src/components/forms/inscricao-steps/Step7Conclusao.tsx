@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { CheckCircle, Home, Smartphone, Mail, MessageCircle, Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { CheckCircle, Home, Smartphone, Download } from 'lucide-react';
 import { usePWA } from '@/hooks/usePWA';
 import type { DadosInscricao } from './inscricaoTypes';
 
@@ -80,29 +77,23 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                 </div>
             </div>
 
-            {/* Botões Finais */}
-            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mt-10 px-4 sm:px-0">
-                <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => {
-                        onFechar();
-                        window.location.href = '/login';
-                    }}
-                    className="flex-1 h-16 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
+            <div className="form-actions max-w-2xl mx-auto mt-10 px-4 sm:px-0">
+                <button
+                    type="button"
+                    onClick={() => { onFechar(); window.location.href = '/login'; }}
+                    className="btn-form-back flex-1"
                 >
-                    <Home className="h-5 w-5 mr-3" />
+                    <Home className="h-5 w-5" />
                     PÁGINA DE LOGIN
-                </Button>
-
-                <Button
-                    size="lg"
+                </button>
+                <button
+                    type="button"
                     onClick={handleConcluirEBaixar}
-                    className="flex-[1.5] bg-white hover:bg-dark-100 text-dark hover:text-white font-black h-16 rounded-2xl transition-all shadow-2xl hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+                    className="btn-form-primary flex-[1.5]"
                 >
                     <Download className="h-5 w-5 text-brand-orange-coral" />
                     CONCLUIR E BAIXAR APP
-                </Button>
+                </button>
             </div>
 
             <p className="text-[10px] text-gray-600 uppercase tracking-widest font-black">

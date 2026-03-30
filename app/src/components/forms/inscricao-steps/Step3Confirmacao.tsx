@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, Landmark, Contact } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
-import { getAtividadeById } from '@/data/programacao';
+import { getAtividadeById, type TipoAtividade } from '@/data/programacao';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
 import { registrationService } from '@/services/registrationService';
@@ -27,7 +26,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     const { data: sessions } = useSessions();
 
     // Cálculo do valor (Source of Truth: dados.valorFinal ou recalcular como fallback)
-    const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
+    const valorOriginal = EVENT_CONFIG.proPrice;
     const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
     const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
     const valorFormatado = valorFinal.toFixed(2);
@@ -47,10 +46,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                     local: dbSession.room || 'Auditório',
                     horario_inicio: dbSession.startTime,
                     horario_fim: dbSession.endTime,
-                    tipo: dbSession.type as any,
+                    tipo: dbSession.type as TipoAtividade,
                     descricao: dbSession.description || '',
                     gratuito: true,
-                    tags: dbSession.topics || []
+                    tags: dbSession.topics || [],
+                    nivel: 'Iniciante' // Default level for DB sessions
                 };
             }
             return null;
@@ -62,7 +62,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     const tipoAtividade = primeiraAtividade?.tipo || (sessions.find(s => s.id === dados.cursosSelecionados[0])?.type) || null;
     const salaAtividade = primeiraAtividade?.local || '';
     const horarioAtividade = primeiraAtividade?.horario_inicio || '';
-    const nivelAtividade = (primeiraAtividade as any)?.nivel || '';
+    const nivelAtividade = primeiraAtividade?.nivel || '';
 
     const handleConfirmar = async () => {
         if (isProcessing) return;
@@ -384,35 +384,22 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 </Card>
             )}
 
-            {/* Botões */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={onVoltar}
-                    disabled={loading}
-                    className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
-                >
+            <div className="form-actions">
+                <button type="button" onClick={onVoltar} disabled={loading} className="btn-form-back">
                     Voltar
-                </Button>
-                <Button
-                    size="lg"
+                </button>
+                <button
+                    type="button"
                     onClick={handleConfirmar}
                     disabled={loading}
-                    className="flex-1 h-16 rounded-2xl font-black text-lg sm:text-xl tracking-tight transition-all duration-300 shadow-2xl bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-[0_15px_40px_rgba(255,112,67,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                    className="btn-form-primary flex-1"
                 >
                     {loading ? (
-                        <>
-                            <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                            CONFIRMANDO...
-                        </>
+                        <><Loader2 className="h-5 w-5 animate-spin" />Confirmando...</>
                     ) : (
-                        <>
-                            <CheckCircle className="h-6 w-6 mr-3" />
-                            AVANÇAR
-                        </>
+                        <><CheckCircle className="h-5 w-5" />Avançar</>
                     )}
-                </Button>
+                </button>
             </div>
         </div>
     );

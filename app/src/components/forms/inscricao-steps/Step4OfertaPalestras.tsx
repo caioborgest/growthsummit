@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { CheckCircle, Star, ArrowRight, X, Loader2 } from 'lucide-react';
+import { CheckCircle, Star, ArrowRight, X, Loader2, Key } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type { DadosInscricao } from './inscricaoTypes';
+import type { RegistrationBatch } from '@/types';
 
 interface Step4OfertaPalestrasProps {
     dados: DadosInscricao;
@@ -58,18 +56,24 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             }
 
             // Tenta validar como Lote Corporativo (Voucher Empresa)
-            const { data: batchData } = await supabase
-                .from('lotes_inscricao_empresa')
+            const { data: batchData } = await (supabase
+                .from('lotes_inscricao_empresa') as any)
                 .select('id,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                 .eq('voucher_code', cupom.trim().toUpperCase())
-                .maybeSingle() as any;
+                .maybeSingle();
 
             if (batchData) {
-                if (batchData.status_pagamento !== 'pago') {
+                const batch = batchData as unknown as RegistrationBatch;
+                // Check both English and Portuguese field names from Supabase mapping
+                const isPaid = batch.statusPagamento === 'paid' || (batchData as any).status_pagamento === 'pago';
+                const used = batch.vagasUtilizadas ?? (batchData as any).vagas_utilizadas ?? 0;
+                const total = batch.quantidadeVagas ?? (batchData as any).quantidade_vagas ?? 0;
+
+                if (!isPaid) {
                     setError('O pagamento desse lote se encontra pendente. Entre em contato com o responsável da sua empresa.');
                     return;
                 }
-                if (batchData.vagas_utilizadas >= batchData.quantidade_vagas) {
+                if (used >= total && total > 0) {
                     setError('Todas as vagas deste lote já foram utilizadas.');
                     return;
                 }
@@ -78,8 +82,8 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                     descontoPalestra: 100, // Corporate passes are fully paid by the batch
                     cupomPalestra: cupom.trim().toUpperCase(),
                     tipoSocioPalestra: 'Lote Empresarial',
-                    loteId: batchData.id,
-                    voucherEmpresa: batchData.voucher_code
+                    loteId: batch.id,
+                    voucherEmpresa: batch.voucherCode || (batchData as any).voucher_code
                 });
                 return;
             }
@@ -113,11 +117,11 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             </div>
 
             {/* Oferta Card Premium */}
-            <div className="relative mx-auto max-w-2xl group">
+            <div className="relative mx-auto max-w-2xl group px-4">
                 {/* Glow Effects */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient rounded-[2rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
 
-                <Card className="relative glass-card border-white/5 bg-dark-200/50 backdrop-blur-3xl overflow-hidden rounded-[2rem] p-4 sm:p-10 shadow-2xl">
+                <div className="relative glass-card border-white/5 bg-dark-200/50 backdrop-blur-3xl overflow-hidden rounded-[2rem] p-6 sm:p-10 shadow-2xl">
                     <div className="grid grid-cols-1 gap-8">
                         {/* Benefícios com layout melhorado */}
                         <div className="space-y-4">
@@ -129,7 +133,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                                 'Certificado de participação especial (4h)',
                                 'Kit exclusivo do evento GX 2026'
                             ].map((item, index) => (
-                                <div key={index} className="flex items-start gap-4 p-3 bg-white/[0.02] border border-white/[0.05] rounded-2xl hover:bg-white/[0.04] transition-colors">
+                                <div key={index} className="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl hover:bg-white/[0.04] transition-colors">
                                     <div className="h-6 w-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
                                         <CheckCircle className="h-4 w-4 text-green-500" />
                                     </div>
@@ -176,28 +180,26 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
 
                             {/* CTAs */}
                             <div className="space-y-6 pt-4">
-                                <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="form-actions">
                                     {onVoltar && (
-                                        <Button
-                                            variant="outline"
-                                            size="lg"
+                                        <button
+                                            type="button"
                                             onClick={onVoltar}
-                                            className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
+                                            className="btn-form-back"
                                         >
                                             Voltar
-                                        </Button>
+                                        </button>
                                     )}
-                                    <Button
-                                        size="lg"
+                                    <button
+                                        type="button"
                                         onClick={onComprar}
-                                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-16 sm:h-20 text-xl sm:text-2xl rounded-2xl shadow-[0_15px_40px_rgba(255,112,67,0.4)] group relative overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        className="btn-form-primary flex-1 !h-16 sm:!h-20 !text-xl"
                                     >
-                                        <div className="absolute inset-y-0 left-0 w-12 bg-white/20 -skew-x-12 -translate-x-full group-hover:animate-shimmer" />
                                         <span className="relative flex items-center justify-center gap-3">
                                             {descontoEfetivo === 100 ? 'RESGATAR MEU ACESSO' : 'GARANTIR MEU PASSAPORTE'}
                                             <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
                                         </span>
-                                    </Button>
+                                    </button>
                                 </div>
 
                                 <button
@@ -210,30 +212,34 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                             </div>
                         </div>
                     </div>
-                </Card>
+                </div>
             </div>
 
-            {/* Cupom Section - Refined */}
+            {/* Cupom Section - Refined using design system */}
             <div className="max-w-md mx-auto w-full px-4">
-                <div className="p-1 px-1.5 bg-white/5 rounded-2xl border border-white/10 flex gap-2">
-                    <div className="flex-1 relative">
-                        <Input
+                <div className="form-card !p-4 !bg-white/5 backdrop-blur-xl">
+                    <label className="form-label !mb-2 !text-[10px] !text-white/40">
+                        <Key className="h-3 w-3" /> POSSUI CÓDIGO DE PARCERIA OU SOCIAL?
+                    </label>
+                    <div className="form-code-row">
+                        <input
                             placeholder="CÓDIGO SOCIAL"
                             value={cupom}
                             onChange={(e) => setCupom(e.target.value.toUpperCase())}
-                            className={`bg-transparent border-none text-white font-mono tracking-[0.2em] pl-4 h-12 uppercase focus-visible:ring-0 ${cupomAplicado ? 'text-green-400' : ''}`}
+                            className={`form-input form-code-input !font-mono !tracking-[0.2em] ${cupomAplicado ? 'text-green-400' : ''}`}
                         />
-                        {isValidating && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-orange-coral animate-spin" />}
+                        <button
+                            type="button"
+                            onClick={handleValidarCupom}
+                            disabled={isValidating || !cupom.trim()}
+                            className={`form-code-validate-btn ${cupomAplicado ? 'validated' : ''}`}
+                        >
+                            {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+                             cupomAplicado ? <CheckCircle className="h-4 w-4" /> : 'APLICAR'}
+                        </button>
                     </div>
-                    <Button
-                        onClick={handleValidarCupom}
-                        disabled={isValidating || !cupom.trim()}
-                        className={`h-12 px-6 font-black rounded-xl transition-all ${cupomAplicado ? 'bg-green-500 text-white shadow-glow-green' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                    >
-                        {cupomAplicado ? 'APLICADO' : 'APLICAR'}
-                    </Button>
+                    {error && <p className="form-error !justify-center !mt-2">{error}</p>}
                 </div>
-                {error && <p className="text-red-400 text-[10px] mt-2 text-center font-bold px-4">{error}</p>}
             </div>
         </div>
     );

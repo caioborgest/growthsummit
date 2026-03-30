@@ -1,8 +1,4 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import {
     Select,
     SelectContent,
@@ -15,23 +11,13 @@ import type { DadosInscricao } from './inscricaoTypes';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
 const CIDADES_PAJEU = [
-    'SERRA TALHADA',
-    'AFOGADOS DA INGAZEIRA',
-    'SÃO JOSÉ DO EGITO',
-    'TRIUNFO',
-    'TABIRA',
-    'FLORES',
-    'CARNAÍBA',
-    'ITAPETIM',
-    'BREJINHO',
-    'SANTA CRUZ DA BAIXA VERDE',
-    'IGUARACI',
-    'SANTA TEREZINHA',
-    'TUPARETAMA',
-    'QUIXABA',
-    'SOLIDÃO'
+    'SERRA TALHADA', 'AFOGADOS DA INGAZEIRA', 'SÃO JOSÉ DO EGITO', 'TRIUNFO',
+    'TABIRA', 'FLORES', 'CARNAÍBA', 'ITAPETIM', 'BREJINHO',
+    'SANTA CRUZ DA BAIXA VERDE', 'IGUARACI', 'SANTA TEREZINHA',
+    'TUPARETAMA', 'QUIXABA', 'SOLIDÃO'
 ].sort();
 
 interface Step2DadosPessoaisProps {
@@ -81,30 +67,23 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         const numbers = cpf.replace(/\D/g, '');
         if (numbers.length !== 11) return false;
         if (/^(\d)\1{10}$/.test(numbers)) return false;
-        
         let sum = 0;
         for (let i = 0; i < 9; i++) sum += parseInt(numbers.charAt(i)) * (10 - i);
         let rev = 11 - (sum % 11);
         if (rev === 10 || rev === 11) rev = 0;
         if (rev !== parseInt(numbers.charAt(9))) return false;
-        
         sum = 0;
         for (let i = 0; i < 10; i++) sum += parseInt(numbers.charAt(i)) * (11 - i);
         rev = 11 - (sum % 11);
         if (rev === 10 || rev === 11) rev = 0;
         if (rev !== parseInt(numbers.charAt(10))) return false;
-        
         return true;
     };
 
-    const validateEmail = (email: string) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    };
+    const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const validarCodigo = async () => {
         if (!codigo.trim()) return;
-        
         setValidating(true);
         setErrors(prev => ({ ...prev, codigo: '' }));
         try {
@@ -115,11 +94,10 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .eq('project_id', projectId)
                     .eq('voucher_code', codigo.trim().toUpperCase())
                     .single();
-
                 if (error || !data) {
                     setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
                 } else if (data.status_pagamento !== 'pago') {
-                    setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento da empresa' }));
+                    setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento' }));
                 } else if (data.vagas_utilizadas >= data.quantidade_vagas) {
                     setErrors(prev => ({ ...prev, codigo: 'Limite de vagas deste voucher esgotado' }));
                 } else {
@@ -136,33 +114,19 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .eq('codigo', codigo.trim().toUpperCase())
                     .eq('ativo', true)
                     .single();
-
                 if (error || !data) {
                     setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
                 } else {
                     const couponData = data;
                     const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
-
                     if (!isCompatible) {
-                        const CATEGORY_LABELS: Record<string, string> = {
-                            promocional: 'Promocional',
-                            empresa: 'Empresa',
-                            prefeitura: 'Prefeitura',
-                            politico: 'Político',
-                            influenciador: 'Influenciador',
-                            associacao: 'Associação',
-                            instituicao: 'Instituição',
-                            outro: 'Outro'
-                        };
-                        const categoriaNome = CATEGORY_LABELS[couponData.indicacao_tipo] || couponData.indicacao_tipo;
-                        setErrors(prev => ({ ...prev, codigo: `Este código pertence à categoria ${categoriaNome}. Selecione a categoria correta acima.` }));
+                        setErrors(prev => ({ ...prev, codigo: `Este código pertence à outra categoria. Selecione a correta acima.` }));
                     } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
                         setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
                     } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
                         setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
                     } else {
                         setDesconto(couponData.porcentagem_desconto);
-                        setErrors(prev => ({ ...prev, codigo: '' }));
                         setCodigoValidado(true);
                         toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
                     }
@@ -170,7 +134,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             }
         } catch (err) {
             logger.error('[Step2] Erro ao validar código', err);
-            setErrors(prev => ({ ...prev, codigo: 'Erro de conexão ou sistema ao validar' }));
+            setErrors(prev => ({ ...prev, codigo: 'Erro de conexão ao validar' }));
             setCodigoValidado(false);
         } finally {
             setValidating(false);
@@ -179,59 +143,23 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
 
     const handleContinuar = async () => {
         const newErrors: Record<string, string> = {};
-
-        // Validações Básicas
-        if (!nome.trim()) {
-            newErrors.nome = 'Nome é obrigatório';
-        } else if (nome.trim().length < 3) {
-            newErrors.nome = 'Nome deve ter pelo menos 3 caracteres';
-        }
-
-        if (!cpf.trim()) {
-            newErrors.cpf = 'CPF é obrigatório';
-        } else if (!validateCPF(cpf)) {
-            newErrors.cpf = 'CPF inválido';
-        }
-
-        if (!email.trim()) {
-            newErrors.email = 'Email é obrigatório';
-        } else if (!validateEmail(email)) {
-            newErrors.email = 'Email inválido';
-        }
-
-        if (!telefone.trim()) {
-            newErrors.telefone = 'Telefone é obrigatório';
-        } else if (telefone.replace(/\D/g, '').length < 10) {
-            newErrors.telefone = 'Telefone inválido';
-        }
-
-        if (!senha) {
-            newErrors.senha = 'Senha é obrigatória';
-        } else if (senha.length < 8) {
-            newErrors.senha = 'Senha deve ter pelo menos 8 caracteres';
-        }
-
-        if (!confirmSenha) {
-            newErrors.confirmSenha = 'Confirme sua senha';
-        } else if (senha !== confirmSenha) {
-            newErrors.confirmSenha = 'As senhas não coincidem';
-        }
-
-        // Validação de Código (se houver indicação e não estiver validado)
-        if (indicacaoTipo !== 'nenhum' && !codigoValidado) {
-            newErrors.codigo = 'Por favor, valide o código antes de continuar';
-        }
-
+        if (!nome.trim()) newErrors.nome = 'Nome é obrigatório';
+        else if (nome.trim().length < 3) newErrors.nome = 'Nome deve ter pelo menos 3 caracteres';
+        if (!cpf.trim()) newErrors.cpf = 'CPF é obrigatório';
+        else if (!validateCPF(cpf)) newErrors.cpf = 'CPF inválido';
+        if (!email.trim()) newErrors.email = 'Email é obrigatório';
+        else if (!validateEmail(email)) newErrors.email = 'Email inválido';
+        if (!telefone.trim()) newErrors.telefone = 'Telefone é obrigatório';
+        else if (telefone.replace(/\D/g, '').length < 10) newErrors.telefone = 'Telefone inválido';
+        if (!senha) newErrors.senha = 'Senha é obrigatória';
+        else if (senha.length < 8) newErrors.senha = 'Senha deve ter pelo menos 8 caracteres';
+        if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
+        else if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
+        if (indicacaoTipo !== 'nenhum' && !codigoValidado) newErrors.codigo = 'Por favor, valide o código antes de continuar';
         setErrors(newErrors);
-
-        // Se não houver erros, continuar
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
-                nome,
-                cpf,
-                email,
-                telefone,
-                senha,
+                nome, cpf, email, telefone, senha,
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
                 codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
@@ -243,255 +171,166 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="text-left sm:text-center">
-                <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">
+            <div>
+                <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-1">
                     Seus Dados Pessoais
                 </h3>
-                <p className="text-gray-400 text-sm sm:text-lg">
+                <p className="text-foreground/40 text-sm sm:text-base font-medium">
                     Preencha seus dados para criar sua conta
                 </p>
             </div>
 
             {/* Formulário */}
-            <Card className="glass-card p-4 sm:p-8 border-white/10 bg-dark-200/50">
-                <div className="space-y-6">
-                    {/* Nome Completo */}
-                    <div>
-                        <Label htmlFor="nome" className="text-white mb-2 flex items-center gap-2">
-                            <User className="h-4 w-4 text-brand-orange-coral" />
-                            Nome Completo
-                        </Label>
-                        <Input
-                            id="nome"
-                            type="text"
-                            value={nome}
-                            onChange={(e) => {
-                                setNome(e.target.value);
-                                if (errors.nome) setErrors({ ...errors, nome: '' });
-                            }}
+            <div className="form-card">
+                <div className="space-y-5">
+
+                    {/* Nome */}
+                    <div className="form-field">
+                        <label htmlFor="nome" className="form-label">
+                            <User className="h-4 w-4" />Nome Completo
+                        </label>
+                        <input
+                            id="nome" type="text" value={nome} autoComplete="name"
+                            onChange={e => { setNome(e.target.value); if (errors.nome) setErrors({ ...errors, nome: '' }); }}
                             placeholder="Seu nome completo"
-                            className={`bg-dark-200 border-white/10 text-white ${errors.nome ? 'border-red-500' : ''
-                                }`}
+                            className={`form-input${errors.nome ? ' error' : ''}`}
                         />
-                        {errors.nome && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.nome}
-                            </p>
-                        )}
+                        {errors.nome && <p className="form-error"><AlertCircle />{errors.nome}</p>}
                     </div>
 
                     {/* CPF */}
-                    <div>
-                        <Label htmlFor="cpf" className="text-white mb-2 flex items-center gap-2">
-                            <Contact className="h-4 w-4 text-brand-orange-coral" />
-                            CPF
-                        </Label>
-                        <Input
-                            id="cpf"
-                            type="text"
-                            value={cpf}
-                            onChange={(e) => {
-                                setCpf(formatCPF(e.target.value));
-                                if (errors.cpf) setErrors({ ...errors, cpf: '' });
-                            }}
+                    <div className="form-field">
+                        <label htmlFor="cpf" className="form-label">
+                            <Contact className="h-4 w-4" />CPF
+                        </label>
+                        <input
+                            id="cpf" type="text" inputMode="numeric" value={cpf} autoComplete="off"
+                            onChange={e => { setCpf(formatCPF(e.target.value)); if (errors.cpf) setErrors({ ...errors, cpf: '' }); }}
                             placeholder="000.000.000-00"
-                            className={`bg-dark-200 border-white/10 text-white ${errors.cpf ? 'border-red-500' : ''
-                                }`}
+                            className={`form-input${errors.cpf ? ' error' : ''}`}
                         />
-                        {errors.cpf && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.cpf}
-                            </p>
-                        )}
+                        {errors.cpf && <p className="form-error"><AlertCircle />{errors.cpf}</p>}
                     </div>
 
                     {/* Email */}
-                    <div>
-                        <Label htmlFor="email" className="text-white mb-2 flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-brand-orange-coral" />
-                            Email
-                        </Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                                if (errors.email) setErrors({ ...errors, email: '' });
-                            }}
+                    <div className="form-field">
+                        <label htmlFor="email" className="form-label">
+                            <Mail className="h-4 w-4" />Email
+                        </label>
+                        <input
+                            id="email" type="email" inputMode="email" value={email} autoComplete="email"
+                            onChange={e => { setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: '' }); }}
                             placeholder="seu@email.com"
-                            className={`bg-dark-200 border-white/10 text-white ${errors.email ? 'border-red-500' : ''
-                                }`}
+                            className={`form-input${errors.email ? ' error' : ''}`}
                         />
-                        {errors.email && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.email}
-                            </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                            Você usará este email para fazer login no app
-                        </p>
+                        {errors.email && <p className="form-error"><AlertCircle />{errors.email}</p>}
+                        <p className="form-hint">Você usará este email para fazer login no app</p>
                     </div>
 
                     {/* Telefone */}
-                    <div>
-                        <Label htmlFor="telefone" className="text-white mb-2 flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-brand-orange-coral" />
-                            Telefone/WhatsApp
-                        </Label>
-                        <Input
-                            id="telefone"
-                            type="tel"
-                            value={telefone}
-                            onChange={(e) => {
-                                setTelefone(formatTelefone(e.target.value));
-                                if (errors.telefone) setErrors({ ...errors, telefone: '' });
-                            }}
+                    <div className="form-field">
+                        <label htmlFor="telefone" className="form-label">
+                            <Phone className="h-4 w-4" />Telefone / WhatsApp
+                        </label>
+                        <input
+                            id="telefone" type="tel" inputMode="tel" value={telefone} autoComplete="tel"
+                            onChange={e => { setTelefone(formatTelefone(e.target.value)); if (errors.telefone) setErrors({ ...errors, telefone: '' }); }}
                             placeholder="(88) 98843-2310"
-                            className={`bg-dark-200 border-white/10 text-white ${errors.telefone ? 'border-red-500' : ''
-                                }`}
+                            className={`form-input${errors.telefone ? ' error' : ''}`}
                         />
-                        {errors.telefone && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.telefone}
-                            </p>
-                        )}
+                        {errors.telefone && <p className="form-error"><AlertCircle />{errors.telefone}</p>}
                     </div>
 
                     {/* Senha */}
-                    <div>
-                        <Label htmlFor="senha" className="text-white mb-2 flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-brand-orange-coral" />
-                            Criar Senha
-                        </Label>
-                        <div className="relative">
-                            <Input
-                                id="senha"
-                                type={showSenha ? 'text' : 'password'}
-                                value={senha}
-                                onChange={(e) => {
-                                    setSenha(e.target.value);
-                                    if (errors.senha) setErrors({ ...errors, senha: '' });
-                                }}
+                    <div className="form-field">
+                        <label htmlFor="senha" className="form-label">
+                            <Lock className="h-4 w-4" />Criar Senha
+                        </label>
+                        <div className="form-input-wrapper">
+                            <input
+                                id="senha" type={showSenha ? 'text' : 'password'} value={senha} autoComplete="new-password"
+                                onChange={e => { setSenha(e.target.value); if (errors.senha) setErrors({ ...errors, senha: '' }); }}
                                 placeholder="Mínimo 8 caracteres"
-                                className={`bg-dark-200 border-white/10 text-white pr-10 ${errors.senha ? 'border-red-500' : ''
-                                    }`}
+                                className={`form-input${errors.senha ? ' error' : ''}`}
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowSenha(!showSenha)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                            >
-                                {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            <button type="button" onClick={() => setShowSenha(!showSenha)} className="form-input-icon-end">
+                                {showSenha ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>
                         </div>
-                        {errors.senha && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.senha}
-                            </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                            Use esta senha para acessar o app Growth Experience
-                        </p>
+                        {errors.senha && <p className="form-error"><AlertCircle />{errors.senha}</p>}
+                        <p className="form-hint">Use esta senha para acessar o app Growth Experience</p>
                     </div>
 
                     {/* Confirmar Senha */}
-                    <div>
-                        <Label htmlFor="confirmSenha" className="text-white mb-2 flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-brand-orange-coral" />
-                            Confirmar Senha
-                        </Label>
-                        <div className="relative">
-                            <Input
-                                id="confirmSenha"
-                                type={showConfirmSenha ? 'text' : 'password'}
-                                value={confirmSenha}
-                                onChange={(e) => {
-                                    setConfirmSenha(e.target.value);
-                                    if (errors.confirmSenha) setErrors({ ...errors, confirmSenha: '' });
-                                }}
+                    <div className="form-field">
+                        <label htmlFor="confirmSenha" className="form-label">
+                            <Lock className="h-4 w-4" />Confirmar Senha
+                        </label>
+                        <div className="form-input-wrapper">
+                            <input
+                                id="confirmSenha" type={showConfirmSenha ? 'text' : 'password'} value={confirmSenha} autoComplete="new-password"
+                                onChange={e => { setConfirmSenha(e.target.value); if (errors.confirmSenha) setErrors({ ...errors, confirmSenha: '' }); }}
                                 placeholder="Digite a senha novamente"
-                                className={`bg-dark-200 border-white/10 text-white pr-10 ${errors.confirmSenha ? 'border-red-500' : ''
-                                    }`}
+                                className={`form-input${errors.confirmSenha ? ' error' : ''}`}
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmSenha(!showConfirmSenha)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                            >
-                                {showConfirmSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="form-input-icon-end">
+                                {showConfirmSenha ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>
                         </div>
-                        {errors.confirmSenha && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {errors.confirmSenha}
-                            </p>
-                        )}
+                        {errors.confirmSenha && <p className="form-error"><AlertCircle />{errors.confirmSenha}</p>}
                     </div>
 
-                    {/* Indicação Social/Política */}
-                    <div className="pt-4 border-t border-white/5 space-y-4">
-                        <Label className="text-white flex items-center gap-2 text-base">
-                            <Award className="h-5 w-5 text-brand-orange-coral" />
-                            Programa de Inscrição Social
-                        </Label>
-                        <p className="text-xs text-gray-400">
-                            Sua inscrição faz parte de uma parceria com alguma Prefeitura ou Liderança Política da região?
-                        </p>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2">
-                            {[
-                                { id: 'prefeitura', label: 'Prefeitura' },
-                                { id: 'politico', label: 'Político' },
-                                { id: 'empresa', label: 'Empresa' },
-                                { id: 'influenciador', label: 'Influencer' },
-                                { id: 'associacao', label: 'Associação' },
-                                { id: 'instituicao', label: 'Instituição' },
-                                { id: 'promocional', label: 'Promocional' },
-                                { id: 'nenhum', label: 'Nenhum' }
-                            ].map((tipo) => (
-                                <button
-                                    key={tipo.id}
-                                    type="button"
-                                    onClick={() => setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo'])}
-                                    className={`px-2 py-2 rounded-xl border text-[10px] sm:text-xs font-bold transition-all h-full ${indicacaoTipo === tipo.id
-                                        ? 'bg-brand-orange-coral/20 border-brand-orange-coral text-white shadow-glow-orange/20'
-                                        : 'bg-dark-200 border-white/5 text-gray-400 hover:border-white/10'
-                                        }`}
-                                >
-                                    {tipo.label}
-                                </button>
-                            ))}
+                    {/* Programa Social */}
+                    <div className="form-section-divider">
+                        <div className="form-section-divider-label">
+                            <Award className="h-4 w-4" />Programa de Inscrição Social
                         </div>
+                    </div>
+                    <p className="form-hint -mt-2">
+                        Sua inscrição faz parte de uma parceria com Prefeitura, Empresa ou Liderança da região?
+                    </p>
 
-                        {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
-                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                <Label htmlFor="indicacaoNome" className="text-white mb-2 block text-sm">
+                    <div className="form-badge-group">
+                        {[
+                            { id: 'prefeitura', label: '🏛️ Prefeitura' },
+                            { id: 'politico', label: '⚖️ Político' },
+                            { id: 'empresa', label: '🏢 Empresa' },
+                            { id: 'influenciador', label: '📱 Influencer' },
+                            { id: 'associacao', label: '🤝 Associação' },
+                            { id: 'instituicao', label: '🎓 Instituição' },
+                            { id: 'promocional', label: '🎁 Promoção' },
+                            { id: 'nenhum', label: '✕ Nenhum' },
+                        ].map(tipo => (
+                            <button
+                                key={tipo.id} type="button"
+                                onClick={() => { setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo']); setCodigoValidado(false); setCodigo(''); }}
+                                className={`form-badge-btn${indicacaoTipo === tipo.id ? ' active' : ''}`}
+                            >
+                                {tipo.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {/* Nome indicação */}
+                            <div className="form-field">
+                                <label htmlFor="indicacaoNome" className="form-label" style={{ fontSize: '0.72rem' }}>
                                     {indicacaoTipo === 'prefeitura' ? 'Qual Prefeitura?' :
                                         indicacaoTipo === 'politico' ? 'Qual Deputado ou Vereador?' :
-                                            indicacaoTipo === 'empresa' ? 'Nome da Empresa/Equipe?' :
+                                            indicacaoTipo === 'empresa' ? 'Nome da Empresa / Equipe?' :
                                                 indicacaoTipo === 'influenciador' ? 'Nome do Influenciador?' :
                                                     indicacaoTipo === 'associacao' ? 'Nome da Associação?' :
                                                         indicacaoTipo === 'instituicao' ? 'Nome da Instituição?' :
                                                             'Nome da Origem / Parceiro?'}
-                                </Label>
-
+                                </label>
                                 {indicacaoTipo === 'prefeitura' ? (
-                                    <Select
-                                        value={indicacaoNome}
-                                        onValueChange={setIndicacaoNome}
-                                    >
-                                        <SelectTrigger className="w-full bg-dark-200 border-white/10 text-white h-11">
+                                    <Select value={indicacaoNome} onValueChange={setIndicacaoNome}>
+                                        <SelectTrigger className="form-input h-auto">
                                             <SelectValue placeholder="Selecione a cidade" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-dark-100 border-white/10 text-white">
-                                            {CIDADES_PAJEU.map((cidade) => (
+                                            {CIDADES_PAJEU.map(cidade => (
                                                 <SelectItem key={cidade} value={cidade} className="focus:bg-brand-orange-coral/20 focus:text-white">
                                                     {cidade}
                                                 </SelectItem>
@@ -499,113 +338,65 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                         </SelectContent>
                                     </Select>
                                 ) : (
-                                    <Input
-                                        id="indicacaoNome"
-                                        type="text"
-                                        value={indicacaoNome}
-                                        onChange={(e) => {
-                                            setIndicacaoNome(e.target.value);
-                                            if (errors.indicacaoNome) setErrors({ ...errors, indicacaoNome: '' });
-                                        }}
+                                    <input
+                                        id="indicacaoNome" type="text" value={indicacaoNome}
+                                        onChange={e => { setIndicacaoNome(e.target.value); if (errors.indicacaoNome) setErrors({ ...errors, indicacaoNome: '' }); }}
                                         placeholder="Ex: Deputado Fulano de Tal"
-                                        className={`bg-dark-200 border-white/10 text-white ${errors.indicacaoNome ? 'border-red-500' : ''}`}
+                                        className={`form-input${errors.indicacaoNome ? ' error' : ''}`}
                                     />
                                 )}
-                                {errors.indicacaoNome && (
-                                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <AlertCircle className="h-3 w-3" />
-                                        {errors.indicacaoNome}
-                                    </p>
-                                )}
+                                {errors.indicacaoNome && <p className="form-error"><AlertCircle />{errors.indicacaoNome}</p>}
                             </div>
-                        )}
 
-                        {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
-                            <div className="animate-in fade-in slide-in-from-top-2 duration-400">
-                                <Label htmlFor="codigo" className="text-white mb-2 block text-sm flex items-center gap-2">
-                                    <Key className="h-4 w-4 text-brand-orange-coral" />
+                            {/* Código */}
+                            <div className="form-field">
+                                <label className="form-label" style={{ fontSize: '0.72rem' }}>
+                                    <Key className="h-4 w-4" />
                                     {indicacaoTipo === 'empresa' ? 'Código do Voucher Corporativo' : 'Código da Parceria'}
-                                </Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            id="codigo"
-                                            type="text"
-                                            value={codigo}
-                                            onChange={(e) => {
-                                                setCodigo(e.target.value);
-                                                setCodigoValidado(false);
-                                                if (errors.codigo) setErrors({ ...errors, codigo: '' });
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    validarCodigo();
-                                                }
-                                            }}
-                                            disabled={validating}
-                                            placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-EQUIPE-XYZ' : 'INSIRA O CÓDIGO AQUI'}
-                                            className={`bg-dark-200 border-white/10 text-white font-mono tracking-widest flex-1 ${errors.codigo ? 'border-red-500' : ''}`}
-                                        />
-                                        <Button
-                                            type="button"
-                                            onClick={validarCodigo}
-                                            disabled={validating || !codigo.trim() || codigoValidado}
-                                            className={`px-6 h-11 font-bold rounded-xl transition-all ${codigoValidado ? 'bg-green-500/20 text-green-500 border-green-500/30' : 'bg-brand-orange-coral text-white'}`}
-                                        >
-                                            {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : 
-                                             codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'VALIDAR'}
-                                        </Button>
-                                    </div>
-                                    {errors.codigo && (
-                                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                            <AlertCircle className="h-3 w-3" />
-                                            {errors.codigo}
-                                        </p>
-                                    )}
-                                    {codigoValidado && (
-                                        <p className="text-green-500 text-xs mt-1 flex items-center gap-1 font-bold animate-in fade-in slide-in-from-top-1">
-                                            <CheckCircle className="h-3 w-3" />
-                                            CÓDIGO CONFIRMADO! (-{desconto}% OFF)
-                                        </p>
-                                    )}
-                                <p className="text-[10px] text-gray-500 mt-2">
+                                </label>
+                                <div className="form-code-row">
+                                    <input
+                                        type="text" value={codigo} disabled={validating}
+                                        onChange={e => { setCodigo(e.target.value); setCodigoValidado(false); if (errors.codigo) setErrors({ ...errors, codigo: '' }); }}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); validarCodigo(); } }}
+                                        placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-XXX' : 'INSIRA O CÓDIGO'}
+                                        className={`form-input form-code-input${errors.codigo ? ' error' : ''}`}
+                                    />
+                                    <button
+                                        type="button" onClick={validarCodigo}
+                                        disabled={validating || !codigo.trim() || codigoValidado}
+                                        className={`form-code-validate-btn${codigoValidado ? ' validated' : ''}`}
+                                    >
+                                        {validating ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                                            codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validar'}
+                                    </button>
+                                </div>
+                                {errors.codigo && <p className="form-error"><AlertCircle />{errors.codigo}</p>}
+                                {codigoValidado && (
+                                    <p className="form-success-badge"><CheckCircle />CÓDIGO CONFIRMADO! (-{desconto}% OFF)</p>
+                                )}
+                                <p className="form-hint">
                                     {indicacaoTipo === 'empresa'
-                                        ? 'Este código foi enviado para o email do responsável pela compra do lote da sua empresa.'
-                                        : 'Este código é fornecido pela sua Prefeitura ou Liderança Política parceira do evento.'
-                                    }
+                                        ? 'Este código foi enviado ao responsável pela compra do lote da empresa.'
+                                        : 'Este código é fornecido pela sua Prefeitura ou Liderança Política parceira.'}
                                 </p>
                             </div>
-                        )}
-                    </div>
-                </div>
-            </Card>
-
-            {/* Botões */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={onVoltar}
-                    disabled={validating}
-                    className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
-                >
-                    Voltar
-                </Button>
-                <Button
-                    size="lg"
-                    onClick={handleContinuar}
-                    disabled={validating}
-                    className="flex-1 h-16 rounded-2xl font-black text-lg sm:text-xl tracking-tight transition-all duration-300 shadow-2xl bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-[0_15px_40px_rgba(255,112,67,0.3)] hover:scale-[1.02] active:scale-[0.98]"
-                >
-                    {validating ? (
-                        <>
-                            <Loader2 className="h-6 w-6 mr-3 animate-spin" />
-                            VALIDANDO DADOS...
-                        </>
-                    ) : (
-                        'CONTINUAR PARA CONFIRMAÇÃO'
+                        </div>
                     )}
-                </Button>
+                </div>
+            </div>
+
+            {/* Ações */}
+            <div className="form-actions">
+                <button type="button" onClick={onVoltar} disabled={validating} className="btn-form-back">
+                    Voltar
+                </button>
+                <button type="button" onClick={handleContinuar} disabled={validating} className="btn-form-primary flex-1">
+                    {validating
+                        ? <><Loader2 className="h-5 w-5 animate-spin" />Validando...</>
+                        : 'Continuar para Confirmação'
+                    }
+                </button>
             </div>
         </div>
     );

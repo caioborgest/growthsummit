@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSessions } from '@/hooks/useData';
 import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
@@ -74,7 +73,7 @@ export function Step1SelecionarCursos({
             </div>
 
             {/* Lista de Cursos */}
-            <div className="grid gap-6">
+            <div className="grid gap-4">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                         <Loader2 className="h-12 w-12 animate-spin mb-4 text-brand-orange-coral" />
@@ -195,30 +194,22 @@ export function Step1SelecionarCursos({
 
             {/* Sticky Action Footer */}
             <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <div className="form-actions">
                     {onVoltar && (
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={onVoltar}
-                            className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
-                        >
+                        <button type="button" onClick={onVoltar} className="btn-form-back">
                             Sair
-                        </Button>
+                        </button>
                     )}
-                    <Button
-                        size="lg"
+                    <button
+                        type="button"
                         disabled={selecionadosFinal.length === 0}
                         onClick={handleContinuar}
-                        className={`flex-1 h-16 rounded-2xl font-black text-lg sm:text-x; tracking-tight transition-all duration-300 shadow-2xl ${selecionadosFinal.length === 0
-                            ? 'bg-dark-400 text-gray-600 border border-white/5'
-                            : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-[0_15px_40px_rgba(255,112,67,0.3)] hover:scale-[1.02] active:scale-[0.98]'
-                            }`}
+                        className={`btn-form-primary flex-1 ${selecionadosFinal.length === 0 ? 'opacity-40 pointer-events-none' : ''}`}
                     >
                         {selecionadosFinal.length === 0
-                            ? 'Selecione uma Trilhas'
+                            ? 'Selecione sua Trilha'
                             : 'Confirmar Escolha & Próximo Passo'}
-                    </Button>
+                    </button>
                 </div>
 
                 <div className="flex items-center justify-center gap-4 py-2">
@@ -231,6 +222,7 @@ export function Step1SelecionarCursos({
                     <div className="h-1 flex-1 bg-white/5 rounded-full" />
                 </div>
             </div>
+
         </div>
     );
 }

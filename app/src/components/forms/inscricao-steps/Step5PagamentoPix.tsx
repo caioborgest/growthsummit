@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -112,37 +111,30 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                         </div>
                     </div>
 
-                    <div className="grid sm:grid-cols-1 gap-6 items-center">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Chave PIX (CNPJ)</p>
-                                <div className="flex items-center gap-2 bg-dark-300/50 p-1.5 rounded-xl border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
-                                    <code className="text-white font-mono text-lg font-bold flex-1 py-2 px-4">
-                                        {cnpj}
-                                    </code>
-                                    <Button
-                                        size="sm"
-                                        onClick={handleCopy}
-                                        className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-6 h-12 font-bold rounded-lg shadow-lg"
-                                    >
-                                        {copied ? <CheckCircle className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                                        {copied ? "COPIADO" : "COPIAR"}
-                                    </Button>
+                    <div className="space-y-4">
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Chave PIX (CNPJ)</p>
+                        <div className="form-pix-row">
+                            <div className="form-pix-code">{cnpj}</div>
+                            <button
+                                type="button"
+                                onClick={handleCopy}
+                                className={`btn-form-primary shrink-0 ${copied ? 'bg-green-600' : ''}`}
+                            >
+                                {copied ? <CheckCircle className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                                {copied ? 'COPIADO!' : 'COPIAR'}
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Favorecido</p>
+                                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                                    <p className="text-xs font-bold text-foreground uppercase truncate">{merchantName}</p>
                                 </div>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Favorecido</p>
-                                    <div className="p-2 rounded-lg bg-dark-200/50 border border-white/5">
-                                        <p className="text-[10px] font-bold text-white uppercase truncate">{merchantName}</p>
-                                    </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Banco</p>
-                                    <div className="p-2 rounded-lg bg-dark-200/50 border border-white/5">
-                                        <p className="text-[10px] font-bold text-white uppercase">CORA</p>
-                                    </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Banco</p>
+                                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                                    <p className="text-xs font-bold text-foreground uppercase">CORA</p>
                                 </div>
                             </div>
                         </div>
@@ -159,35 +151,29 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <div className="form-actions">
                 {onVoltar && (
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={onVoltar}
-                        className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
-                    >
+                    <button type="button" onClick={onVoltar} className="btn-form-back">
                         Voltar
-                    </Button>
+                    </button>
                 )}
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Button
-                        size="lg"
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                        type="button"
                         onClick={handleStripe}
-                        className="h-16 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm sm:text-base rounded-2xl shadow-xl shadow-blue-500/20 group uppercase tracking-widest transition-all hover:scale-[1.02]"
+                        className="btn-form-primary !bg-gradient-to-r !from-blue-600 !to-blue-700 !shadow-[0_6px_24px_rgba(37,99,235,0.4)]"
                     >
-                        <Landmark className="h-6 w-6 mr-3 group-hover:scale-110 transition-transform hidden sm:block" />
+                        <Landmark className="h-5 w-5 hidden sm:block" />
                         CARTÃO (ATÉ 12X)
-                    </Button>
-
-                    <Button
-                        size="lg"
+                    </button>
+                    <button
+                        type="button"
                         onClick={onContinuar}
-                        className="h-16 bg-white hover:bg-dark-100 text-dark hover:text-white font-black text-sm sm:text-base rounded-2xl transition-all group shadow-xl hover:scale-[1.02]"
+                        className="btn-form-primary !bg-white !text-gray-900 !shadow-xl hover:!bg-gray-100"
                     >
                         PRÓXIMA ETAPA
-                        <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-2 transition-transform" />
-                    </Button>
+                        <ArrowRight className="h-5 w-5" />
+                    </button>
                 </div>
             </div>
 

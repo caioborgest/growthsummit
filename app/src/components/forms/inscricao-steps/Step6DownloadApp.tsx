@@ -61,7 +61,7 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
             </div>
 
             {/* Grid de Benefícios */}
-            <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <div className="grid sm:grid-cols-3 gap-3 mb-4">
                 {[
                     {
                         icon: Zap,
@@ -160,26 +160,16 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
                 </Card>
             </div>
 
-            {/* Botão de Confirmação */}
-            <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+            <div className="form-actions">
                 {onVoltar && (
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={onVoltar}
-                        className="h-16 px-10 rounded-2xl font-black text-gray-400 border-white/10 hover:bg-white/5 uppercase tracking-widest text-xs"
-                    >
+                    <button type="button" onClick={onVoltar} className="btn-form-back">
                         Voltar
-                    </Button>
+                    </button>
                 )}
-                <Button
-                    size="lg"
-                    onClick={onContinuar}
-                    className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-16 rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] text-lg sm:text-xl"
-                >
+                <button type="button" onClick={onContinuar} className="btn-form-primary flex-1">
                     PRÓXIMA ETAPA: CONCLUIR
-                    <ArrowRight className="h-6 w-6 ml-3" />
-                </Button>
+                    <ArrowRight className="h-5 w-5" />
+                </button>
             </div>
         </div>
     );

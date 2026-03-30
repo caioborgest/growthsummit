@@ -13,5 +13,6 @@ export const EVENT_CONFIG = {
         instagram: "https://www.instagram.com/growthexperience2026/",
         linkedin: "https://www.linkedin.com/in/caioborgesgrowth/"
     },
-    stripePaymentLink: "https://buy.stripe.com/bJe28j9f2g4WepP7kL00002"
+    stripePaymentLink: "https://buy.stripe.com/bJe28j9f2g4WepP7kL00002",
+    proPrice: 179.99
 };

@@ -337,7 +337,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[88dvh] sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
+            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[92dvh] sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
                 {/* Header com Progresso */}
                 <div className="bg-dark-100/50 backdrop-blur-md pb-3 pt-4 sm:pb-6 sm:pt-6 px-4 sm:px-10 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
                     <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -354,9 +354,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             variant="ghost"
                             size="icon"
                             onClick={handleClose}
-                            className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full h-8 w-8 sm:h-10 sm:w-10 transition-all shrink-0"
+                            className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-full h-10 w-10 transition-all shrink-0 touch-manipulation"
                         >
-                            <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <X className="h-5 w-5" />
                         </Button>
                     </div>
 
@@ -408,7 +408,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                             : isCompleted
                                                 ? 'text-green-500'
                                                 : 'text-gray-600'
-                                            } hidden xs:block`}
+                                            } hidden sm:block`}
                                     >
                                         {label}
                                     </span>
@@ -421,7 +421,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 {/* Content com Scrollbar Customizada */}
                 <div
                     ref={scrollContainerRef}
-                    className="flex-1 px-4 pt-6 pb-20 sm:px-12 sm:py-10 overflow-y-auto custom-scrollbar bg-dark-100/30"
+                    className="flex-1 px-4 pt-6 pb-24 sm:px-12 sm:pb-10 sm:pt-8 overflow-y-auto custom-scrollbar bg-dark-100/30 ios-scroll"
+                    style={{ paddingBottom: 'max(6rem, calc(1.5rem + env(safe-area-inset-bottom)))' }}
                 >
                     <div className="max-w-3xl mx-auto w-full">
                         {renderStep()}
