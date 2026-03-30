@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         id: 'com.growthexperience.app',
         name: 'Growth Experience 2026',
-        short_name: 'GX 2026',
+        short_name: 'GE 2026',
         description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA.',
         version: '1.0.2',
         start_url: '/',
