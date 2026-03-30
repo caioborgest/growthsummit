@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import QRCode from 'react-qr-code';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook, useRaffles } from '@/hooks/useData';
+import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook } from '@/hooks/useData';
 import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MentorshipSection } from './components/MentorshipSection';
@@ -339,7 +339,7 @@ function UpgradeProModal({ registrationId, onClose, onSuccess }: {
 
 // ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
 function CheckInModal({ registration, onClose }: { registration: MyRegistration; onClose: () => void }) {
-  const [token] = useState(() => Date.now());
+  const [_token] = useState(() => Date.now());
   const qrValue = `GE-CHECKIN|${registration.id}|${registration.email || ''}`;
 
   return (
@@ -1077,7 +1077,6 @@ export function DashboardParticipante() {
       {/* Header Premium Refined */}
       <div className="bg-dark-300 border-b border-white/5 shadow-xl relative overflow-hidden">
         <PremiumBackground />
-
         <PremiumHeader
           userName={myRegistration?.nome || user?.name}
           userAvatar={user?.avatar}
@@ -1095,13 +1094,13 @@ export function DashboardParticipante() {
           }}
         />
 
-        {/* NEW DASHBOARD HOME VIEW (PREMIUM STYLE) */}
         {activeTab === 'inicio' && (
-          <div className="max-w-7xl mx-auto space-y-8 pb-10">
+          <div className="max-w-7xl mx-auto space-y-5 pb-32">
             <PwaDashboardHero 
               eventName={selectedProject?.name || "Growth Experience"}
-              location="Triunfo-PE"
+              location={selectedProject?.location || "Triunfo-PE"}
               date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() : "16 ABR 2026"}
+              eventDate={selectedProject?.startDate}
               stats={{
                 people: "500+",
                 content: "12h",
@@ -1120,42 +1119,35 @@ export function DashboardParticipante() {
               />
             )}
 
-            <div className="px-6 grid grid-cols-2 gap-4">
-               <button 
-                  onClick={() => setActiveTab('agenda')}
-                  className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                  <Calendar className="h-6 w-6 text-brand-orange-coral" />
-                  <span className="text-white font-black text-sm text-left leading-tight">Minha<br/>Agenda</span>
-               </button>
-               {(selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false) && (
-                 <button 
-                    onClick={() => setActiveTab('networking' as any)}
-                    className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-                 >
-                    <Users className="h-6 w-6 text-brand-orange-coral" />
-                    <span className="text-white font-black text-sm text-left leading-tight">Networking</span>
-                 </button>
-               )}
-               {/* Tab Circuito */}
-               <button
-                 onClick={() => setActiveTab('circuito')}
-                 className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                 <Trophy className="h-6 w-6 text-brand-orange-coral" />
-                 <span className="text-white font-black text-sm text-left leading-tight">Circuito<br/>GE-STAND</span>
-               </button>
-               <button
-                 onClick={() => setActiveTab('sorteios')}
-                 className="bg-white/5 border border-white/10 rounded-[2rem] p-6 flex flex-col gap-3 hover:bg-white/10 transition-all active:scale-95"
-               >
-                 <Gift className="h-6 w-6 text-brand-orange-coral" />
-                 <span className="text-white font-black text-sm text-left leading-tight">Sorteios &<br/>Ganhadores</span>
-               </button>
+            {/* Nav Cards Premium Grid */}
+            <div className="px-4 sm:px-6 grid grid-cols-2 gap-3">
+              {[
+                { tab: 'agenda', Icon: Calendar, label: 'Minha\nAgenda', color: '#ff7043', bg: 'rgba(255,112,67,0.1)', border: 'rgba(255,112,67,0.2)' },
+                (selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false)
+                  ? { tab: 'networking', Icon: Users, label: 'Networking', color: '#14b8a6', bg: 'rgba(20,184,166,0.1)', border: 'rgba(20,184,166,0.2)' }
+                  : null,
+                { tab: 'circuito', Icon: Trophy, label: 'Circuito\nGE-STAND', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' },
+                { tab: 'sorteios', Icon: Gift, label: 'Sorteios\nGanhadores', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.2)' },
+              ].filter(Boolean).map((item: any, i: number) => (
+                <motion.button
+                  key={item.tab}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => setActiveTab(item.tab)}
+                  className="relative overflow-hidden rounded-[1.75rem] p-5 flex flex-col gap-3 text-left group transition-all duration-300 hover:-translate-y-1 active:scale-95"
+                  style={{ background: item.bg, border: `1px solid ${item.border}` }}
+                >
+                  {/* Glow hover */}
+                  <div className="absolute inset-0 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(ellipse at top left, ${item.color}20, transparent 70%)` }} />
+                  <item.Icon className="h-6 w-6 relative z-10 transition-transform duration-300 group-hover:scale-110" style={{ color: item.color }} />
+                  <span className="text-foreground font-black text-sm text-left leading-tight relative z-10 whitespace-pre-line">{item.label}</span>
+                </motion.button>
+              ))}
             </div>
 
-            {/* Quick Actions Grid */}
-            <div className="px-6">
+            {/* Quick Actions */}
+            <div className="px-4 sm:px-6">
                <QuickActions 
                   onStartupClick={() => setIsStartupModalOpen(true)}
                   onB2BClick={() => setIsB2BModalOpen(true)}
@@ -1166,14 +1158,24 @@ export function DashboardParticipante() {
                />
             </div>
 
-            {/* Float Action Button Download */}
-            <div className="fixed bottom-24 right-6 z-50">
-               <button 
+            {/* Float Action Button (Ingresso) */}
+            <div className="fixed bottom-28 right-5 z-50">
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => handleDownloadTicket()}
-                className="w-16 h-16 bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense rounded-2xl flex items-center justify-center shadow-2xl shadow-brand-orange-coral/40 active:scale-90 transition-transform"
-               >
-                  <FileText className="h-7 w-7 text-white" />
-               </button>
+                className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)', boxShadow: '0 8px 24px rgba(255,112,67,0.5)' }}
+                title="Baixar Ingresso"
+              >
+                <motion.div
+                  className="absolute inset-0 rounded-2xl"
+                  style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)' }}
+                  animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut' }}
+                />
+                <FileText className="h-6 w-6 text-white relative z-10" />
+              </motion.button>
             </div>
           </div>
         )}
@@ -1396,43 +1398,6 @@ export function DashboardParticipante() {
         isOpen={isMentoriaModalOpen}
         onClose={() => setIsMentoriaModalOpen(false)}
       />
-
-      {showUpgradeModal && myRegistration && (
-        <UpgradeProModal
-          registrationId={myRegistration.id}
-          onClose={() => setShowUpgradeModal(false)}
-          onSuccess={() => refetchRegistration()}
-        />
-      )}
-
-      {showCheckInModal && myRegistration && (
-        <CheckInModal
-          registration={myRegistration}
-          onClose={() => setShowCheckInModal(false)}
-        />
-      )}
-
-      {isSelfCheckInOpen && myRegistration && (
-        <SelfCheckInModal
-          registration={myRegistration}
-          onClose={() => setIsSelfCheckInOpen(false)}
-          onScanSuccess={handleScanSuccess}
-        />
-      )}
-
-      {isB2BModalOpen && (
-        <B2BFormModal
-          isOpen={isB2BModalOpen}
-          onClose={() => setIsB2BModalOpen(false)}
-        />
-      )}
-
-      {isStartupModalOpen && (
-        <StartupFormModal
-          isOpen={isStartupModalOpen}
-          onClose={() => setIsStartupModalOpen(false)}
-        />
-      )}
 
     </motion.div>
   );

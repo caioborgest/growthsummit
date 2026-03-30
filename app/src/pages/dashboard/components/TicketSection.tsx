@@ -1,10 +1,7 @@
-
-import { QrCode, Sparkles, Download, Moon, Sun, CreditCard, CheckCircle2, AlertCircle } from 'lucide-react';
+import { QrCode, Sparkles, Download, Moon, Sun, CreditCard, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import QRCode from 'react-qr-code';
-import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 interface TicketSectionProps {
     myRegistration: any;
@@ -19,207 +16,166 @@ interface TicketSectionProps {
 }
 
 export function TicketSection({
-    myRegistration,
-    user,
-    selectedProject,
-    statusFinanceiro,
-    isActuallyPaid,
-    generateTicketPDF,
-    setShowCheckInModal,
-    setShowUpgradeModal,
-    onRefresh
+    myRegistration, user, selectedProject, statusFinanceiro,
+    isActuallyPaid, generateTicketPDF, setShowCheckInModal, setShowUpgradeModal, onRefresh
 }: TicketSectionProps) {
-    const [refreshing, setRefreshing] = (typeof onRefresh === 'function') ? [false, () => {}] : [false, () => {}]; // Placeholder if state not needed
+
+    const isPro = myRegistration?.palestrasNoturnas;
+    const qrValue = myRegistration?.id || 'sem-id';
 
     return (
-        <div className="flex flex-col gap-8 pb-32">
-            {/* INFORMAÇÕES IMPORTANTES (TOP) */}
-            <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="glass-card p-6 border-white/5 bg-dark-200/50 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Sparkles size={60} className="text-teal-400" />
-                    </div>
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${myRegistration?.palestrasNoturnas ? 'bg-orange-500/10 border-orange-500/20' : 'bg-teal-500/10 border-teal-500/20'}`}>
-                            {myRegistration?.palestrasNoturnas ? <Moon className="h-6 w-6 text-orange-400" /> : <Sun className="h-6 w-6 text-teal-400" />}
+        <div className="space-y-6 pb-8">
+            {/* ── DIGITAL TICKET ──────────────────────────────────────── */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="relative overflow-hidden rounded-[2.5rem]"
+                style={{
+                    background: isPro
+                        ? 'linear-gradient(135deg, rgba(255,112,67,0.12) 0%, rgba(255,64,53,0.06) 100%)'
+                        : 'linear-gradient(135deg, rgba(20,184,166,0.1) 0%, rgba(20,184,166,0.04) 100%)',
+                    border: `1px solid ${isPro ? 'rgba(255,112,67,0.25)' : 'rgba(20,184,166,0.2)'}`,
+                }}
+            >
+                {/* Top shimmer line */}
+                <div className="absolute top-0 left-8 right-8 h-[2px] rounded-b-full"
+                    style={{ background: isPro ? 'linear-gradient(90deg, transparent, rgba(255,112,67,0.6), transparent)' : 'linear-gradient(90deg, transparent, rgba(20,184,166,0.5), transparent)' }} />
+
+                {/* Ticket notches */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full" style={{ background: 'hsl(var(--background))' }} />
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-7 h-7 rounded-full" style={{ background: 'hsl(var(--background))' }} />
+
+                <div className="p-6 sm:p-8 flex flex-col sm:flex-row gap-8">
+                    {/* Left: Info */}
+                    <div className="flex-1 space-y-6">
+                        {/* Badge */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-[1rem] flex items-center justify-center"
+                                style={{ background: isPro ? 'linear-gradient(135deg,#ff7043,#ff4035)' : 'rgba(20,184,166,0.15)', boxShadow: isPro ? '0 0 16px rgba(255,112,67,0.4)' : 'none' }}>
+                                {isPro ? <Moon className="h-6 w-6 text-white" /> : <Sun className="h-6 w-6 text-teal-400" />}
+                            </div>
+                            <div>
+                                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-foreground/40">Ingresso Digital</p>
+                                <h3 className="text-foreground font-black text-lg uppercase italic leading-tight">
+                                    {isPro ? 'Experience Pro' : 'Free Morning'}
+                                </h3>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Status de Inscrição</p>
-                            <h3 className="text-white font-black text-lg uppercase italic tracking-tight">
-                                {myRegistration?.palestrasNoturnas ? 'EXPERIENCE PRO' : 'FREE MORNING'}
-                            </h3>
+
+                        {/* Participant info */}
+                        <div className="space-y-3">
+                            {[
+                                { label: 'Participante', value: myRegistration?.nome || user?.name || '—' },
+                                { label: 'Evento', value: selectedProject?.name || 'Growth Experience 2026' },
+                                { label: 'Tipo', value: isPro ? 'Passaporte Night + Morning' : 'Free Morning (Manhã)' },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                                    <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{label}</span>
+                                    <span className="text-foreground font-black text-xs text-right max-w-[60%] truncate">{value}</span>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-dark-300/50 rounded-xl border border-white/5">
-                            <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Pagamento</span>
-                            <div className="flex flex-col items-end gap-1">
-                                <Badge 
-                                  className={`${statusFinanceiro.color} px-3 py-1 text-[10px] font-black cursor-pointer hover:scale-105 active:scale-95 transition-all`}
-                                  onClick={onRefresh}
-                                  title="Clique para atualizar status"
+
+                        {/* Payment status */}
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+                            <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-foreground/40" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground/50">Pagamento</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Badge
+                                    className={`${statusFinanceiro?.color || ''} text-[9px] font-black px-2.5 py-1 cursor-pointer hover:scale-105 active:scale-95 transition-all border-none`}
+                                    onClick={onRefresh}
+                                    title="Clique para atualizar"
                                 >
-                                    {statusFinanceiro.label}
+                                    {statusFinanceiro?.label || 'Verificando...'}
                                 </Badge>
-                                <span className="text-[8px] text-gray-600 font-bold uppercase mt-1">{statusFinanceiro.info}</span>
+                                {onRefresh && (
+                                    <button onClick={onRefresh} className="text-foreground/30 hover:text-foreground/70 transition-colors">
+                                        <RefreshCw className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        {myRegistration?.palestrasNoturnas && isActuallyPaid ? (
-                            <div className="flex items-center gap-2 p-3 bg-green-500/10 rounded-xl border border-green-500/20">
-                                <CheckCircle2 size={14} className="text-green-400 shrink-0" />
-                                <p className="text-green-400 text-[10px] font-bold leading-tight">Acesso noturno e mentorias liberadas com sucesso!</p>
+
+                        {isPro && isActuallyPaid && (
+                            <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                                <CheckCircle2 className="h-4 w-4 text-green-400 shrink-0" />
+                                <p className="text-green-400 text-[10px] font-bold">Acesso noturno e mentorias liberados!</p>
                             </div>
-                        ) : myRegistration?.palestrasNoturnas ? (
-                            <div className="flex items-center gap-2 p-3 bg-orange-500/10 rounded-xl border border-orange-500/20">
-                                <AlertCircle size={14} className="text-orange-400 shrink-0" />
-                                <p className="text-orange-400 text-[10px] font-bold leading-tight">Aguardando confirmação financeira para liberar extras.</p>
+                        )}
+                        {isPro && !isActuallyPaid && (
+                            <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: 'rgba(255,112,67,0.08)', border: '1px solid rgba(255,112,67,0.2)' }}>
+                                <AlertCircle className="h-4 w-4 text-brand-orange-coral shrink-0" />
+                                <p className="text-brand-orange-coral text-[10px] font-bold">Aguardando confirmação financeira para liberar extras.</p>
                             </div>
-                        ) : null}
+                        )}
                     </div>
-                </Card>
 
-                <Card className="glass-card p-6 border-white/5 bg-dark-200/50">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                            <CreditCard className="h-5 w-5 text-teal-400" />
+                    {/* Right: QR Code */}
+                    <div className="flex flex-col items-center gap-4 sm:pl-8 sm:border-l" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">QR Code de Acesso</p>
+                        <div className="relative p-3 rounded-2xl" style={{ background: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                            <QRCode value={qrValue} size={140} level="H" />
+                            {/* Scanner animation */}
+                            <div className="absolute left-3 right-3 h-0.5 rounded-full animate-scan-move"
+                                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,112,67,0.8), transparent)' }} />
                         </div>
-                        <div>
-                            <h4 className="text-white font-black text-xs uppercase tracking-widest italic">Dados Cadastrais</h4>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <p className="text-white font-bold text-sm truncate uppercase">{myRegistration?.nome || user?.name}</p>
-                        <p className="text-gray-500 text-xs truncate italic">{myRegistration?.email || user?.email}</p>
-                        <p className="text-gray-500 text-xs mt-2 uppercase font-black tracking-widest">{selectedProject?.name || 'Growth Experience'}</p>
-                    </div>
-                </Card>
-            </div>
-
-            {/* UPGRADE AND EXTRA OPTIONS (IF NOT PRO) */}
-            {!myRegistration?.palestrasNoturnas && (
-                <Card className="p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 rounded-[2rem] relative overflow-hidden group">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-                        <div className="flex-1 text-center md:text-left">
-                            <h4 className="text-orange-400 font-black text-xl mb-2 flex items-center justify-center md:justify-start gap-2 italic uppercase">
-                                <Sparkles className="h-5 w-5" /> Turbine sua Experiência
-                            </h4>
-                            <p className="text-gray-400 text-xs leading-relaxed max-w-lg">
-                                O seu ingresso <strong>Free Morning</strong> garante acesso apenas às palestras da manhã.
-                                Faça o upgrade para <strong>Experience Pro</strong> e sinta o poder das sessões noturnas e mentorias 1-on-1.
-                            </p>
-                        </div>
-                        <Button 
-                            className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-black px-10 py-7 rounded-2xl shadow-glow-orange transition-all hover:scale-105 active:scale-95"
-                            onClick={() => setShowUpgradeModal(true)}
-                        >
-                            QUERO ME TORNAR PRO
-                        </Button>
-                    </div>
-                    <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 transition-transform">
-                        <Moon className="h-32 w-32 text-orange-500" />
-                    </div>
-                </Card>
-            )}
-
-            {/* OPÇÕES DE INSCRIÇÃO / TICKET (BOTTOM) */}
-            <div className="flex flex-col items-center gap-10 mt-6 pt-10 border-t border-white/5">
-                <div className="text-center">
-                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-8">Credencial de Acesso</h3>
-
-                    <div className="relative w-full max-w-[340px] mx-auto">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-dark-400 rounded-b-2xl z-20 border-x border-b border-white/10 flex items-center justify-center">
-                            <div className="w-8 h-1 bg-white/20 rounded-full"></div>
-                        </div>
-
-                        <div className="bg-gradient-to-b from-dark-200 to-dark-300 rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden relative group p-1">
-                            <div className="bg-dark-100 rounded-[2.2rem] overflow-hidden">
-                                {/* Ticket Inner */}
-                                <div className="p-8 pb-4 bg-gradient-to-br from-teal-500/10 to-orange-500/10 border-b border-white/5 text-center">
-                                    <p className="text-[9px] text-teal-400 font-black uppercase tracking-widest mb-1">SUA CREDENCIAL</p>
-                                    <p className="text-white font-mono text-base font-bold tracking-tighter uppercase">{myRegistration?.id?.slice(0, 13).toUpperCase() || 'GE2026-PENDENTE'}</p>
-                                </div>
-                                <div className="p-10 flex flex-col items-center bg-white">
-                                    <div className="relative group">
-                                        <div className="w-48 h-48">
-                                            {myRegistration?.id ? (
-                                                <QRCode
-                                                    value={`GE-CHECKIN|${myRegistration.id}|${user?.email || ''}`}
-                                                    size={192}
-                                                    viewBox={`0 0 256 256`}
-                                                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                                                />
-                                            ) : (
-                                                <QrCode className="h-full w-full text-gray-200" />
-                                            )}
-                                        </div>
-                                        <div className="absolute inset-0 border-2 border-teal-500/10 rounded-xl group-hover:border-teal-500/30 transition-all pointer-events-none"></div>
-                                    </div>
-                                    <p className="mt-6 text-[8px] text-dark font-black uppercase tracking-[0.3em] opacity-40">Apresente para leitura no balcão</p>
-                                </div>
-                            </div>
-                        </div>
+                        <p className="text-[8px] font-black text-foreground/30 uppercase tracking-widest text-center max-w-[140px]">
+                            Apresente na entrada ou escanear nas atividades
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 w-full max-w-sm">
-                    <div className="flex flex-col gap-4 w-full">
-                        <Button
-                            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl px-8 w-full h-16 shadow-xl shadow-brand-orange-coral/20 transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 border-none"
-                            onClick={() => {
-                                if (!myRegistration) {
-                                    toast.error('Inscrição não localizada.');
-                                    return;
-                                }
-                                setShowCheckInModal(true);
-                            }}
-                        >
-                            <div className="flex items-center gap-2 uppercase text-[12px] tracking-widest">
-                                <QrCode className="h-5 w-5" /> Confirmar Presença
-                            </div>
-                            <span className="text-[9px] opacity-70 font-bold uppercase tracking-widest">Aponte para o QR Code na sala</span>
-                        </Button>
-
-                        <div className="flex flex-col sm:flex-row gap-4 w-full">
-                            <Button
-                                variant="ghost"
-                                className="bg-teal-500/10 border border-teal-500/30 rounded-2xl hover:bg-teal-500/20 text-teal-400 transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
-                                onClick={() => {
-                                    if (!myRegistration) {
-                                        toast.error('Inscrição não localizada.');
-                                        return;
-                                    }
-                                    setShowCheckInModal(true);
-                                }}
-                            >
-                                <CheckCircle2 className="h-4 w-4 mr-2" /> Autocredenciamento
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className="bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 text-gray-400 hover:text-white transition-all flex-1 h-14 font-black uppercase text-[10px] tracking-widest"
-                                onClick={async () => {
-                                    if (!myRegistration) return;
-                                    await generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
-                                    toast.success('Ingresso PDF gerado!');
-                                }}
-                            >
-                                <Download className="h-4 w-4 mr-2 text-teal-400" /> Baixar PDF
-                            </Button>
-                        </div>
-                    </div>
-
-                    <Button
-                        variant="ghost"
-                        className="w-full bg-[#00C4CC]/10 hover:bg-[#00C4CC]/20 border border-[#00C4CC]/30 hover:border-[#00C4CC]/50 text-[#00C4CC] font-black rounded-2xl h-14 transition-all hover:scale-[1.02] uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
-                        onClick={() => window.open('https://www.canva.com/design/DAHDS-Bkw5w/hmucdo1Un_o-wOxW8zaZ9A/view?utm_content=DAHDS-Bkw5w&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview', '_blank')}
+                {/* Actions */}
+                <div className="px-6 sm:px-8 pb-6 flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={() => setShowCheckInModal(true)}
+                        className="flex-1 flex items-center justify-center gap-2 h-12 rounded-2xl font-black text-xs uppercase tracking-wider text-white transition-all active:scale-95"
+                        style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 4px 16px rgba(255,112,67,0.35)' }}
                     >
-                        <Sparkles className="h-4 w-4" /> Mostre aos seus amigos
-                    </Button>
+                        <QrCode className="h-4 w-4" />Check-in com QR Code
+                    </button>
+                    <button
+                        onClick={() => generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience')}
+                        className="flex items-center justify-center gap-2 h-12 px-5 rounded-2xl font-black text-xs uppercase tracking-wider transition-all active:scale-95"
+                        style={{ background: 'var(--surface-2)', border: '1px solid var(--border-medium)', color: 'var(--text-secondary)' }}
+                    >
+                        <Download className="h-4 w-4" />Baixar PDF
+                    </button>
                 </div>
+            </motion.div>
 
-                <p className="text-[9px] text-gray-600 font-black uppercase tracking-[0.2em] max-w-xs text-center leading-relaxed">
-                    Uso exclusivo para check-in. Válido conforme os termos do Growth Experience 2026.
-                </p>
-            </div>
+            {/* ── UPGRADE CARD (if free) ─────────────────────────────── */}
+            {!isPro && (
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative overflow-hidden rounded-[2rem] p-6 cursor-pointer group"
+                    style={{ background: 'linear-gradient(135deg, rgba(255,112,67,0.1) 0%, rgba(255,64,53,0.05) 100%)', border: '1px solid rgba(255,112,67,0.2)' }}
+                    onClick={() => setShowUpgradeModal(true)}
+                >
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-brand-orange-coral/15 to-transparent rounded-full blur-3xl pointer-events-none" />
+                    <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-[1.25rem] flex items-center justify-center shrink-0"
+                            style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 8px 24px rgba(255,112,67,0.4)' }}>
+                            <Sparkles className="h-7 w-7 text-white" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-orange-coral/70 mb-1">Acesso Premium</p>
+                            <h3 className="text-foreground font-black text-base uppercase italic leading-tight">
+                                Faça Upgrade para Night Experience
+                            </h3>
+                            <p className="text-foreground/40 text-[10px] mt-1">Palestras noturnas, mentorias VIP e muito mais</p>
+                        </div>
+                        <div className="text-brand-orange-coral group-hover:translate-x-1 transition-transform shrink-0">
+                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 }

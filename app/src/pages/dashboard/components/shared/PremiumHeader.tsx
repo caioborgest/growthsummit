@@ -1,12 +1,14 @@
 import React from 'react';
-import { User, Bell, LogOut, HelpCircle, Moon, Sun, Star, Headset } from 'lucide-react';
+import { Bell, LogOut, HelpCircle, Sun, Star, Headset, Moon, Zap } from 'lucide-react';
 import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
+import { useTheme } from '@/hooks/useTheme';
 import { Badge } from '@/components/ui/badge';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PremiumHeaderProps {
     userName?: string;
@@ -36,149 +38,231 @@ export function PremiumHeader({
     onNotificationRead
 }: PremiumHeaderProps) {
     const unreadCount = (notifications || []).filter(n => n && !n.read && !n.isRead).length;
-    const { isOutdoor, toggle } = useOutdoorTheme();
+    const { isOutdoor, toggle: toggleOutdoor } = useOutdoorTheme();
+    const { theme, toggleTheme } = useTheme();
+
+    const initials = userName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 relative">
-            {/* Top Utility Bar */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-0.5">Growth Experience</span>
-                    <span className="text-white/40 font-bold text-[9px] uppercase tracking-widest">{projectName || 'Growth Experience 2026'}</span>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-top relative">
+            {/* ── TOP UTILITY BAR ──────────────────────────────────────────── */}
+            <div className="flex items-center justify-between py-4">
+                {/* Brand */}
+                <motion.div
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center gap-2.5"
+                >
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#ff7043] to-[#ff4035] flex items-center justify-center shadow-[0_0_12px_rgba(255,112,67,0.5)]">
+                        <span className="text-white font-black text-[10px] italic">GX</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-brand-orange-coral uppercase tracking-[0.25em] leading-none">
+                            Growth Experience
+                        </span>
+                        <span className="text-[8px] font-bold text-foreground/30 uppercase tracking-widest leading-none mt-0.5">
+                            {projectName || '2026'}
+                        </span>
+                    </div>
+                </motion.div>
 
-                <div className="flex items-center gap-2">
+                {/* Actions */}
+                <motion.div
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center gap-1.5"
+                >
+                    {/* Theme Toggle */}
                     <button
-                        onClick={toggle}
+                        onClick={toggleTheme}
                         className={`h-8 w-8 flex items-center justify-center rounded-full transition-all border ${
-                            isOutdoor ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-white/5 border-white/5 text-gray-400 hover:text-amber-400'
+                            theme === 'light'
+                                ? 'bg-amber-100 border-amber-300 text-amber-600'
+                                : 'bg-white/5 border-white/10 text-gray-400 hover:text-amber-300 hover:bg-amber-500/10'
                         }`}
-                        aria-label={isOutdoor ? 'Desativar modo outdoor' : 'Modo outdoor'}
-                        title="Modo outdoor - leitura ao sol"
+                        title={theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
                     >
-                        <Sun className="h-3.5 w-3.5" />
+                        <motion.div
+                            key={theme}
+                            initial={{ rotate: -90, scale: 0 }}
+                            animate={{ rotate: 0, scale: 1 }}
+                            transition={{ duration: 0.3, type: 'spring' }}
+                        >
+                            {theme === 'light' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+                        </motion.div>
                     </button>
+
+                    {/* Outdoor toggle */}
+                    <button
+                        onClick={toggleOutdoor}
+                        className={`h-8 px-2.5 flex items-center gap-1 rounded-full transition-all border text-[9px] font-black uppercase tracking-wider ${
+                            isOutdoor
+                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+                                : 'bg-white/5 border-white/10 text-gray-500 hover:text-amber-400 hover:bg-amber-500/10'
+                        }`}
+                        title="Modo outdoor – leitura ao sol"
+                    >
+                        <Zap className="h-3 w-3" />
+                        <span className="hidden sm:inline">Outdoor</span>
+                    </button>
+
+                    {/* Guide */}
                     <button
                         onClick={onGuideClick}
-                        className="bg-white/5 hover:bg-white/10 text-gray-400 h-8 px-3 rounded-full text-[10px] font-bold transition-all flex items-center gap-1.5 border border-white/5"
+                        className="h-8 w-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10"
+                        title="Guia do Participante"
                     >
-                        <HelpCircle className="h-3 w-3" /> GUIA
+                        <HelpCircle className="h-3.5 w-3.5" />
                     </button>
 
+                    {/* Support */}
                     <button
                         onClick={onSupportClick}
-                        className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-teal-500/20"
-                        title="Abrir Ticket de Suporte"
+                        className="h-8 w-8 flex items-center justify-center rounded-full bg-brand-orange-coral/10 hover:bg-brand-orange-coral/20 text-brand-orange-coral transition-all border border-brand-orange-coral/20"
+                        title="Abrir Suporte"
                     >
                         <Headset className="h-3.5 w-3.5" />
                     </button>
 
+                    {/* Notifications */}
                     <Popover>
                         <PopoverTrigger asChild>
-                            <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-white/5">
+                            <button className="relative h-8 w-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10">
                                 <Bell className="h-3.5 w-3.5" />
-                                {unreadCount > 0 && (
-                                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                                )}
+                                <AnimatePresence>
+                                    {unreadCount > 0 && (
+                                        <motion.span
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0 }}
+                                            className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense rounded-full flex items-center justify-center shadow-[0_0_8px_rgba(255,112,67,0.6)]"
+                                        >
+                                            <span className="text-[8px] text-white font-black">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
                             </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80 bg-dark-200 border-white/10 p-4 rounded-2xl shadow-2xl backdrop-blur-xl">
-                            <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-                                <h3 className="text-white font-bold text-sm">Notificações</h3>
-                                <Badge className="bg-teal-500/10 text-teal-400 text-[9px] font-black border-none px-2 h-5">
+                        <PopoverContent className="w-80 bg-card/90 backdrop-blur-2xl border-white/10 p-4 rounded-2xl shadow-2xl">
+                            <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                                <h3 className="text-foreground font-bold text-sm">Notificações</h3>
+                                <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral text-[9px] font-black border-none px-2 h-5">
                                     {unreadCount} NOVAS
                                 </Badge>
                             </div>
-                            <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                            <div className="space-y-2.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
                                 {notifications.length > 0 ? notifications.map(n => (
                                     <div
                                         key={n.id}
                                         onClick={() => onNotificationRead(n.id)}
-                                        className={`p-3 rounded-xl border transition-all cursor-pointer ${n.read || n.isRead ? 'bg-white/5 border-transparent' : 'bg-orange-500/5 border-orange-500/20'}`}
+                                        className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                                            n.read || n.isRead
+                                                ? 'bg-white/3 border-transparent'
+                                                : 'bg-brand-orange-coral/5 border-brand-orange-coral/20 hover:bg-brand-orange-coral/10'
+                                        }`}
                                     >
                                         <div className="flex justify-between items-start gap-2 mb-1">
-                                            <p className="text-white text-[11px] font-bold leading-tight">{n.title}</p>
-                                            <span className="text-[8px] text-gray-500 font-bold">{n.time || (n.createdAt ? new Date(n.createdAt).toLocaleDateString() : '')}</span>
+                                            <p className="text-foreground text-[11px] font-bold leading-tight">{n.title}</p>
+                                            <span className="text-[8px] text-foreground/40 font-bold shrink-0">{n.time}</span>
                                         </div>
-                                        <p className="text-gray-400 text-[10px] leading-tight opacity-70">{n.message}</p>
+                                        <p className="text-foreground/50 text-[10px] leading-tight">{n.message}</p>
                                     </div>
                                 )) : (
-                                    <p className="text-center py-4 text-gray-600 text-[10px] font-bold uppercase">Nenhuma notificação</p>
+                                    <p className="text-center py-6 text-foreground/30 text-[10px] font-black uppercase tracking-widest">
+                                        🎉 Tudo em dia!
+                                    </p>
                                 )}
                             </div>
                         </PopoverContent>
                     </Popover>
 
+                    {/* Logout */}
                     <button
                         onClick={onLogout}
-                        className="bg-red-500/5 hover:bg-red-500/10 text-red-400 h-8 w-8 flex items-center justify-center rounded-full transition-all border border-red-500/10"
+                        className="h-8 w-8 flex items-center justify-center rounded-full bg-red-500/5 hover:bg-red-500/15 text-red-400/70 hover:text-red-400 transition-all border border-red-500/10"
+                        title="Sair"
                     >
                         <LogOut className="h-3.5 w-3.5" />
                     </button>
-                </div>
+                </motion.div>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                {/* Primary Info */}
-                <div className="flex items-center gap-6">
-                    <div className="relative group/avatar">
-                        <div className="w-20 h-20 md:w-28 md:h-28 rounded-[2rem] bg-gradient-to-br from-orange-500/30 to-orange-500/5 p-1 backdrop-blur-md border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 group-hover/avatar:shadow-orange-500/20 group-hover/avatar:scale-[1.02]">
-                            <div className="w-full h-full bg-dark-400 rounded-[1.8rem] flex items-center justify-center overflow-hidden relative">
-                                {userAvatar ? (
-                                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110" />
-                                ) : (
-                                    <div className="text-3xl md:text-4xl font-black text-orange-400 drop-shadow-lg group-hover/avatar:scale-110 transition-transform duration-500">
-                                        {userName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || <User className="h-10 w-10" />}
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/10 via-transparent to-transparent opacity-0 group-hover/avatar:opacity-100 transition-opacity"></div>
-                                <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-dark-400 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] z-10"></div>
+            {/* ── PROFILE SECTION ──────────────────────────────────────────── */}
+            <div className="flex items-center gap-5 pb-8 pt-2">
+                {/* Avatar */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1, type: 'spring', bounce: 0.3 }}
+                    className="relative shrink-0"
+                >
+                    {/* Animated ring */}
+                    <div className="absolute inset-0 rounded-[1.8rem] bg-gradient-to-br from-[#ff7043] to-[#ff4035] animate-spin-slow opacity-60 blur-sm scale-110" />
+                    <div className="relative w-[72px] h-[72px] md:w-24 md:h-24 rounded-[1.8rem] overflow-hidden border-2 border-white/10 shadow-2xl">
+                        {userAvatar ? (
+                            <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[#ff7043]/30 to-[#0c0e12] flex items-center justify-center">
+                                <span className="text-2xl md:text-3xl font-black text-brand-orange-coral drop-shadow-lg">
+                                    {initials || '?'}
+                                </span>
                             </div>
-                        </div>
-                        {/* Shine Effect */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 to-teal-500/20 rounded-[2.2rem] opacity-0 group-hover/avatar:opacity-100 blur transition-opacity -z-10"></div>
+                        )}
+                        {/* Online indicator */}
+                        <div className="absolute bottom-2 right-2 w-3 h-3 bg-green-500 border-2 border-card rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
                     </div>
+                </motion.div>
 
-                    <div className="space-y-3">
-                        <div className="space-y-1">
-                            <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter flex items-center gap-2 italic">
-                                {userName?.split(' ')[0] || 'Bem-vindo'}
-                                <span className="text-orange-500 not-italic text-3xl">.</span>
-                            </h1>
-                            <p className="text-gray-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] opacity-60">
-                                {userName || roleLabel}
-                            </p>
-                        </div>
+                {/* User info */}
+                <motion.div
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex-1 min-w-0"
+                >
+                    <div className="flex items-baseline gap-1.5 mb-1">
+                        <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tighter italic leading-none truncate">
+                            {userName?.split(' ')[0] || 'Bem-vindo'}
+                        </h1>
+                        <span className="text-brand-orange-coral font-black text-2xl leading-none">.</span>
+                    </div>
+                    <p className="text-foreground/40 font-bold uppercase text-[9px] tracking-[0.2em] truncate mb-2.5">
+                        {userName || roleLabel}
+                    </p>
 
-                        <div className="flex flex-wrap gap-2">
-                            {roleLabel.includes('MENTOR') ? (
-                                <Badge className="px-2.5 py-1 bg-orange-500 text-white border-none text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-glow-orange">
-                                    <Star className="h-2.5 w-2.5 fill-current" />
-                                    Mentor Oficial
-                                </Badge>
-                            ) : (
-                                <>
-                                    <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest flex items-center gap-1.5 ${isPro
-                                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-1.5">
+                        {roleLabel.includes('MENTOR') ? (
+                            <Badge className="px-2.5 py-1 text-[9px] font-black border-none uppercase tracking-widest flex items-center gap-1 bg-gradient-to-r from-[#ff7043] to-[#ff4035] text-white shadow-[0_0_12px_rgba(255,112,67,0.4)]">
+                                <Star className="h-2.5 w-2.5 fill-current" />
+                                Mentor Oficial
+                            </Badge>
+                        ) : (
+                            <>
+                                <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest flex items-center gap-1 ${
+                                    isPro
+                                        ? 'bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/25'
                                         : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
-                                        }`}>
-                                        {isPro ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
-                                        {isPro ? 'Exp. Pro' : 'Free Morning'}
-                                    </Badge>
+                                }`}>
+                                    {isPro ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
+                                    {isPro ? 'Exp. Pro' : 'Free Morning'}
+                                </Badge>
 
-                                    {isPro && isActuallyPaid !== undefined && (
-                                        <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${isActuallyPaid
+                                {isPro && isActuallyPaid !== undefined && (
+                                    <Badge className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${
+                                        isActuallyPaid
                                             ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                            : 'bg-orange-500/5 text-orange-500 border-orange-500/20'
-                                            }`}>
-                                            {isActuallyPaid ? 'Acesso Ativo' : 'Pagamento Pendente'}
-                                        </Badge>
-                                    )}
-                                </>
-                            )}
-                        </div>
+                                            : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                    }`}>
+                                        {isActuallyPaid ? '✓ Acesso Ativo' : '⏳ Pendente'}
+                                    </Badge>
+                                )}
+                            </>
+                        )}
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

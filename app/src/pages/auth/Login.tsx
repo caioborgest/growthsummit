@@ -7,10 +7,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Partículas flutuantes decorativas
+function FloatingParticle({ x, y, size, delay, duration }: { x: string; y: string; size: number; delay: number; duration: number }) {
+  return (
+    <motion.div
+      className="absolute rounded-full pointer-events-none"
+      style={{ left: x, top: y, width: size, height: size, background: 'rgba(255,112,67,0.25)' }}
+      animate={{ y: [0, -30, 0], opacity: [0.2, 0.7, 0.2], scale: [1, 1.4, 1] }}
+      transition={{ duration, delay, repeat: Infinity, ease: 'easeInOut' }}
+    />
+  );
+}
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticating, isAuthenticated, user, verify2FA } = useAuth();
+  const { login, isAuthenticating, isAuthenticated, user, verify2FA, loginWithOTP } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,53 +31,28 @@ export function Login() {
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+  const [otpSent, setOtpSent] = useState(false);
 
-  // Redirecionamento automático se já estiver logado
   useEffect(() => {
     if (isAuthenticated && user && !user.requires2FA) {
-      switch (user.role) {
-        case 'admin':
-          navigate('/admin', { replace: true });
-          break;
-        case 'mentor':
-          navigate('/mentor-area', { replace: true });
-          break;
-        case 'company':
-          navigate('/empresa-area', { replace: true });
-          break;
-        case 'startup':
-          navigate('/startup-area', { replace: true });
-          break;
-        case 'sponsor':
-          navigate('/patrocinador-area', { replace: true });
-          break;
-        case 'participant':
-          navigate('/minha-area', { replace: true });
-          break;
-        default:
-          navigate('/', { replace: true });
-      }
+      const paths: Record<string, string> = {
+        admin: '/admin', mentor: '/mentor-area', company: '/empresa-area',
+        startup: '/startup-area', sponsor: '/patrocinador-area',
+        participant: '/minha-area', participante: '/minha-area',
+      };
+      navigate(paths[user.role] || '/', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || isVerifying2FA) return;
-
-    if (twoFactorCode.length !== 6) {
-      toast.error('O código deve ter 6 dígitos');
-      return;
-    }
-
+    if (twoFactorCode.length !== 6) { toast.error('O código deve ter 6 dígitos'); return; }
     setIsVerifying2FA(true);
     try {
       const isValid = await verify2FA(twoFactorCode);
-      if (isValid) {
-        toast.success('Login concluído com sucesso!');
-        // O redirecionamento será tratado pelo useEffect de autenticação
-      } else {
-        toast.error('Código inválido ou expirado');
-      }
+      if (!isValid) toast.error('Código inválido ou expirado');
     } catch (err: any) {
       toast.error(err.message || 'Erro ao verificar código');
     } finally {
@@ -75,43 +63,28 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAuthenticating) return;
-
     setError('');
-
     try {
       if (loginMethod === 'password') {
         const loggedInUser = await login(email, password);
-
-        if (loggedInUser) {
-          if (loggedInUser.requires2FA) {
-            toast.info('Autenticação de dois fatores necessária');
-            return;
-          }
-
-          const rolesToPaths: Record<string, string> = {
-            'admin': '/admin',
-            'mentor': '/mentor-area',
-            'company': '/empresa-area',
-            'startup': '/startup-area',
-            'sponsor': '/patrocinador-area',
-            'participant': '/minha-area',
-            'participante': '/minha-area'
+        if (loggedInUser && !loggedInUser.requires2FA) {
+          const paths: Record<string, string> = {
+            admin: '/admin', mentor: '/mentor-area', company: '/empresa-area',
+            startup: '/startup-area', sponsor: '/patrocinador-area',
+            participant: '/minha-area', participante: '/minha-area',
           };
-
-          const targetPath = rolesToPaths[loggedInUser.role] || '/';
-          navigate(targetPath, { replace: true });
+          navigate(paths[loggedInUser.role] || '/', { replace: true });
         }
       } else {
         await loginWithOTP(email);
         setOtpSent(true);
-        toast.success(`Link de acesso enviado para ${email}! Verifique sua caixa de entrada.`);
+        toast.success(`Link enviado para ${email}!`);
       }
     } catch (err: any) {
       const msg = err?.message || '';
       logger.error('Login error:', err);
-
       if (msg.includes('Email logins are disabled')) {
-        setError('O login por senha está desativado. Por favor, use a opção "Entrar sem Senha" abaixo.');
+        setError('Login por senha desativado. Use "Sem Senha".');
         setLoginMethod('otp');
       } else {
         setError(msg || 'Email ou senha inválidos');
@@ -119,229 +92,235 @@ export function Login() {
     }
   };
 
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
-  const [otpSent, setOtpSent] = useState(false);
-  const { loginWithOTP } = useAuth();
+  const particles = [
+    { x: '8%', y: '12%', size: 6, delay: 0, duration: 5 },
+    { x: '85%', y: '20%', size: 4, delay: 1, duration: 6 },
+    { x: '75%', y: '70%', size: 8, delay: 2, duration: 7 },
+    { x: '15%', y: '75%', size: 5, delay: 0.5, duration: 5.5 },
+    { x: '50%', y: '8%', size: 3, delay: 1.5, duration: 4.5 },
+    { x: '92%', y: '50%', size: 4, delay: 3, duration: 6.5 },
+  ];
 
+  // ── OTP Enviado ─────────────────────────────────────────────────────────
   if (otpSent) {
     return (
-      <div className="h-screen h-[100dvh] bg-dark flex items-center justify-center p-4 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
-        <div className="relative z-10 w-full max-w-md flex flex-col items-center">
-          <div className="glass-card p-8 w-full border-teal-500/30 text-center animate-in fade-in zoom-in duration-500">
-            <div className="w-20 h-20 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-teal-500/10">
-              <Mail className="h-10 w-10 text-teal-400" />
-            </div>
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 20%, rgba(255,112,67,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(255,64,53,0.08) 0%, transparent 60%)' }} />
+        {particles.map((p, i) => <FloatingParticle key={i} {...p} />)}
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-sm text-center">
+          <div className="rounded-[2rem] p-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(24px)' }}>
+            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-20 h-20 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(255,112,67,0.2), rgba(255,64,53,0.1))', border: '1px solid rgba(255,112,67,0.3)' }}>
+              <Mail className="h-9 w-9 text-brand-orange-coral" />
+            </motion.div>
             <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Verifique seu E-mail</h2>
-            <p className="text-gray-400 mb-8">
-              Enviamos um link de acesso para <strong>{email}</strong>. Clique no link para entrar automaticamente.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setOtpSent(false)}
-              className="w-full border-white/10 text-gray-400 hover:text-white"
-            >
+            <p className="text-gray-400 mb-8 text-sm">Enviamos um link de acesso para <strong className="text-white">{email}</strong>. Clique no link para entrar.</p>
+            <Button variant="outline" onClick={() => setOtpSent(false)} className="w-full border-white/10 text-gray-400 hover:text-white rounded-xl h-12">
               Voltar ao Login
             </Button>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen h-[100dvh] bg-dark flex items-center justify-center p-4 overflow-hidden relative">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-orange-coral/10 rounded-full blur-3xl opacity-50" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl opacity-50" />
+    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 20% 20%, rgba(255,112,67,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(255,64,53,0.1) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(255,133,73,0.08) 0%, transparent 45%)' }} />
+        {/* Grid */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.03, backgroundImage: 'linear-gradient(rgba(255,112,67,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,112,67,0.8) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {particles.map((p, i) => <FloatingParticle key={i} {...p} />)}
+      </div>
 
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
         {/* Logo */}
-        <div className="text-center mb-6 sm:mb-8">
-          <Link to="/" className="inline-flex items-center">
-            <img
-              src="/images/logomarca-GX-fundoescuro.png"
-              alt="Growth Experience"
-              className="h-10 sm:h-16 w-auto transition-all"
-            />
+        <motion.div initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} className="text-center">
+          <Link to="/" className="inline-flex items-center justify-center flex-col gap-3">
+            <motion.div
+              animate={{ boxShadow: ['0 0 20px rgba(255,112,67,0.3)', '0 0 40px rgba(255,112,67,0.55)', '0 0 20px rgba(255,112,67,0.3)'] }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)' }}
+            >
+              <span className="text-white font-black text-2xl italic">GX</span>
+            </motion.div>
+            <img src="/images/logomarca-GX-fundoescuro.png" alt="Growth Experience" className="h-8 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </Link>
-        </div>
+        </motion.div>
 
-        {/* 2FA Card or Login Card */}
+        {/* 2FA Card */}
         {user?.requires2FA ? (
-          <div className="glass-card p-6 sm:p-8 w-full border-brand-orange-coral/30 shadow-2xl animate-in fade-in zoom-in duration-300">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full rounded-[2rem] p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,112,67,0.2)', backdropFilter: 'blur(24px)', boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)' }}>
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-brand-orange-coral/20 flex items-center justify-center ring-4 ring-brand-orange-coral/10">
+              <div className="w-16 h-16 rounded-[1.2rem] flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(255,112,67,0.2), rgba(255,64,53,0.1))', border: '1px solid rgba(255,112,67,0.3)' }}>
                 <Lock className="h-8 w-8 text-brand-orange-coral" />
               </div>
             </div>
-
-            <h1 className="text-xl sm:text-2xl font-bold text-white text-center mb-2">
-              Verificação em 2 Etapas
-            </h1>
-            <p className="text-gray-400 text-center mb-8 text-sm sm:text-base">
-              Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador.
-            </p>
-
-            <form onSubmit={handleVerify2FA} className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 text-center uppercase tracking-widest">
-                  Código de Verificação
-                </label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="000 000"
-                    maxLength={6}
-                    value={twoFactorCode}
-                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
-                    className="bg-dark-100/50 border-brand-orange-coral/30 text-white text-center h-16 text-3xl font-black rounded-2xl tracking-[0.3em] focus:border-brand-orange-coral focus:ring-4 focus:ring-brand-orange-coral/10 transition-all"
-                    required
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isVerifying2FA || twoFactorCode.length !== 6}
-                className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white py-6 rounded-2xl font-black text-lg shadow-glow-orange"
+            <h1 className="text-xl font-bold text-white text-center mb-2">Verificação em 2 Etapas</h1>
+            <p className="text-gray-400 text-center mb-6 text-sm">Digite o código de 6 dígitos do seu aplicativo autenticador.</p>
+            <form onSubmit={handleVerify2FA} className="space-y-5">
+              <Input
+                type="text" inputMode="numeric" placeholder="000 000" maxLength={6}
+                value={twoFactorCode} onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                className="bg-white/5 border-white/10 text-white text-center h-16 text-3xl font-black rounded-2xl tracking-[0.3em] focus:border-brand-orange-coral/50"
+                required autoFocus
+              />
+              <Button type="submit" disabled={isVerifying2FA || twoFactorCode.length !== 6}
+                className="w-full h-14 rounded-2xl font-black text-base text-white border-none btn-shimmer"
+                style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)', boxShadow: '0 4px 24px rgba(255,112,67,0.4)' }}
               >
-                {isVerifying2FA ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                ) : (
-                  'Verificar Código'
-                )}
+                {isVerifying2FA ? <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : 'Verificar Código'}
               </Button>
-
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="w-full py-2 text-xs font-bold text-gray-500 hover:text-white transition-colors"
-              >
-                Tentar entrar com outra conta
+              <button type="button" onClick={() => window.location.reload()} className="w-full py-2 text-xs font-bold text-gray-600 hover:text-white transition-colors">
+                Tentar com outra conta
               </button>
             </form>
-          </div>
+          </motion.div>
         ) : (
-          <div className="glass-card p-6 sm:p-8 w-full border-brand-orange-coral/10">
-            <div className="flex justify-center mb-6">
-              <div className="flex p-1 bg-dark-300 rounded-xl">
-                <button
-                  onClick={() => setLoginMethod('password')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${loginMethod === 'password' ? 'bg-brand-orange-coral text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                  Com Senha
-                </button>
-                <button
-                  onClick={() => setLoginMethod('otp')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${loginMethod === 'otp' ? 'bg-teal-500 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-                >
-                  Sem Senha
-                </button>
-              </div>
-            </div>
+          // ── Main Login Card ────────────────────────────────────────────
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full rounded-[2rem] overflow-hidden"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+            }}
+          >
+            {/* Top accent */}
+            <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, #ff7043, #ff4035, transparent)' }} />
 
-            <h1 className="text-xl sm:text-2xl font-bold text-white text-center mb-1">
-              {loginMethod === 'password' ? 'Bem-vindo de volta' : 'Entrar via E-mail'}
-            </h1>
-            <p className="text-gray-400 text-center mb-4 sm:mb-6 text-sm sm:text-base font-medium">
-              {loginMethod === 'password' ? 'Entre com suas credenciais para acessar' : 'Receba um link mágico na sua caixa de entrada'}
-            </p>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <p className="text-red-400 text-xs sm:text-sm text-center">{error}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1 sm:mb-2 text-left w-full">
-                  Seu E-mail registrado
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                  <Input
-                    type="email"
-                    placeholder="exemplo@gmail.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-11 bg-dark-100/50 border-dark-300 text-white placeholder:text-gray-500 h-10 sm:h-12 rounded-xl focus:border-brand-orange-coral/50 transition-all"
-                    required
-                  />
-                </div>
+            <div className="p-6 sm:p-8 space-y-5">
+              {/* Method Toggle */}
+              <div className="flex p-1 rounded-xl gap-1" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                {(['password', 'otp'] as const).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setLoginMethod(m)}
+                    className="flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all"
+                    style={loginMethod === m ? {
+                      background: 'linear-gradient(135deg, #ff7043, #ff4035)',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(255,112,67,0.35)'
+                    } : { color: 'rgba(255,255,255,0.4)' }}
+                  >
+                    {m === 'password' ? 'Com Senha' : 'Sem Senha'}
+                  </button>
+                ))}
               </div>
 
-              {loginMethod === 'password' && (
-                <div>
-                  <div className="flex items-center justify-between mb-1 sm:mb-2">
-                    <label className="block text-xs sm:text-sm font-medium text-gray-400">
-                      Senha
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsForgotModalOpen(true)}
-                      className="text-[10px] text-brand-orange-coral hover:underline font-bold"
-                    >
-                      Esqueceu?
-                    </button>
-                  </div>
-                  <div className="relative border-2 border-brand-orange-coral/20 rounded-xl focus-within:border-brand-orange-coral transition-all">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-11 pr-11 bg-transparent border-none text-white placeholder:text-gray-500 h-10 sm:h-12"
-                      required={loginMethod === 'password'}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Heading */}
+              <div className="text-center">
+                <h1 className="text-xl font-black text-white mb-1">
+                  {loginMethod === 'password' ? 'Bem-vindo de volta' : 'Entrar via E-mail'}
+                </h1>
+                <p className="text-gray-500 text-xs">
+                  {loginMethod === 'password' ? 'Entre com suas credenciais para acessar' : 'Receba um link mágico na sua caixa de entrada'}
+                </p>
+              </div>
 
-              {loginMethod === 'password' && (
-                <div className="flex items-center justify-between py-1">
-                  <label className="flex items-center cursor-pointer group">
-                    <input type="checkbox" className="rounded bg-dark-100 border-dark-300 text-teal-500 mr-2" />
-                    <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">Lembrar-me</span>
-                  </label>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                className={`w-full py-5 sm:py-6 mt-2 rounded-xl font-black text-lg shadow-lg transition-all hover:scale-[1.02] ${loginMethod === 'password' ? 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-brand-orange-coral/20' : 'bg-teal-500 hover:bg-teal-600 text-white shadow-teal-500/20'}`}
-                disabled={isAuthenticating}
-              >
-                {isAuthenticating ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                ) : (
-                  <>
-                    {loginMethod === 'password' ? 'Acessar Painel' : 'Enviar Link de Acesso'}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </>
+              {/* Error */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="p-3 rounded-xl"
+                    style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}
+                  >
+                    <p className="text-red-400 text-xs text-center">{error}</p>
+                  </motion.div>
                 )}
-              </Button>
-            </form>
-          </div>
+              </AnimatePresence>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">E-mail</label>
+                  <div className="relative border-animated" style={{ borderRadius: '0.875rem' }}>
+                    <div
+                      className="relative flex items-center rounded-[0.875rem] overflow-hidden"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <Mail className="absolute left-4 h-4 w-4 text-gray-600 pointer-events-none" />
+                      <Input
+                        type="email" placeholder="exemplo@email.com" value={email}
+                        onChange={e => setEmail(e.target.value)} required
+                        className="pl-11 bg-transparent border-none text-white placeholder:text-gray-600 h-12 focus-visible:ring-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password */}
+                <AnimatePresence>
+                  {loginMethod === 'password' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Senha</label>
+                        <button type="button" onClick={() => setIsForgotModalOpen(true)} className="text-[10px] text-brand-orange-coral hover:underline font-bold">
+                          Esqueceu?
+                        </button>
+                      </div>
+                      <div
+                        className="flex items-center rounded-[0.875rem] overflow-hidden"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,112,67,0.2)' }}
+                      >
+                        <Lock className="ml-4 h-4 w-4 text-gray-600 shrink-0" />
+                        <Input
+                          type={showPassword ? 'text' : 'password'} placeholder="••••••"
+                          value={password} onChange={e => setPassword(e.target.value)}
+                          className="bg-transparent border-none text-white placeholder:text-gray-600 h-12 focus-visible:ring-0 flex-1"
+                          required={loginMethod === 'password'}
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="mr-4 text-gray-600 hover:text-white transition-colors">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Submit */}
+                <Button
+                  type="submit" disabled={isAuthenticating}
+                  className="w-full h-14 rounded-2xl font-black text-base text-white border-none mt-2 btn-shimmer"
+                  style={{
+                    background: 'linear-gradient(135deg, #ff7043 0%, #ff4035 100%)',
+                    boxShadow: '0 4px 24px rgba(255,112,67,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  }}
+                >
+                  {isAuthenticating ? (
+                    <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      {loginMethod === 'password' ? 'Acessar Painel' : 'Enviar Link de Acesso'}
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  )}
+                </Button>
+              </form>
+
+              {/* Footer */}
+              <p className="text-center text-[10px] text-gray-700 font-bold uppercase tracking-widest pt-1">
+                🔒 Plataforma segura · Growth Experience 2026
+              </p>
+            </div>
+          </motion.div>
         )}
       </div>
 
-      <ForgotPasswordModal
-        isOpen={isForgotModalOpen}
-        onClose={() => setIsForgotModalOpen(false)}
-      />
+      <ForgotPasswordModal isOpen={isForgotModalOpen} onClose={() => setIsForgotModalOpen(false)} />
     </div>
   );
 }

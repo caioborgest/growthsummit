@@ -1,6 +1,7 @@
-import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, BookOpen, ChevronRight } from 'lucide-react';
+import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, BookOpen, ChevronRight, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 interface AgendaSectionProps {
     myRegistration: any;
@@ -27,313 +28,234 @@ export function AgendaSection({
     onSessionClick,
     allSessions = []
 }: AgendaSectionProps) {
-    // Transformar mentorias em formato de "sessão" para a agenda
     const mappedMentorships = myMentorships
         .filter(m => m.status === 'scheduled' || m.status === 'completed')
         .map(m => {
             const date = new Date(m.scheduledAt);
             const startTime = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            // Adicionando 20 min para o fim
             const endDate = new Date(date.getTime() + 20 * 60000);
             const endTime = endDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            
             return {
-                ...m,
-                id: m.id,
-                title: `Mentoria: ${m.mentorName}`,
-                titulo: `Mentoria: ${m.mentorName}`,
-                startTime,
-                horario_inicio: startTime,
-                endTime,
-                horario_fim: endTime,
-                room: 'Sala de Mentorias',
-                local: 'Sala de Mentorias',
-                type: 'MENTORIA',
-                tipo: 'MENTORIA',
+                ...m, id: m.id,
+                title: `Mentoria: ${m.mentorName}`, titulo: `Mentoria: ${m.mentorName}`,
+                startTime, horario_inicio: startTime, endTime, horario_fim: endTime,
+                room: 'Sala de Mentorias', local: 'Sala de Mentorias',
+                type: 'MENTORIA', tipo: 'MENTORIA',
                 category: date.getHours() < 13 ? 'manha' : 'noturna',
                 isMentoring: true
             };
         });
 
-    // Filtrar sessões noturnas e momentos âncora
-    const untortedNightSessions = allSessions.filter(s => s.category === 'noturna');
-    const nightMentorships = mappedMentorships.filter(m => m.category === 'noturna');
-    const nightSessions = [...untortedNightSessions, ...nightMentorships]
-        .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
+    const nightSessions = [
+        ...allSessions.filter(s => s.category === 'noturna'),
+        ...mappedMentorships.filter(m => m.category === 'noturna')
+    ].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
-    const morningAnchors = allSessions.filter(s => s.category === 'manha_ancora');
-    const morningMentorships = mappedMentorships.filter(m => m.category === 'manha');
-    
-    // Unificar manhã: âncoras + cursos selecionados + mentorias
-    const fullMorningAgenda = [...morningAnchors, ...cursosSelecionados, ...morningMentorships]
-        .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i) // unique
-        .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
+    const fullMorningAgenda = [
+        ...allSessions.filter(s => s.category === 'manha_ancora'),
+        ...cursosSelecionados,
+        ...mappedMentorships.filter(m => m.category === 'manha')
+    ]
+    .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
+    .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
+
+    const SessionCard = ({ item, color = '#14b8a6', delay = 0 }: { item: any, color?: string, delay?: number }) => {
+        const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
+                onClick={() => onSessionClick?.(item)}
+                className="relative overflow-hidden rounded-[1.5rem] p-5 cursor-pointer group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
+                style={{
+                    background: 'var(--surface-1)',
+                    border: `1px solid ${color}20`
+                }}
+            >
+                {/* Hover glow */}
+                <div className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: `radial-gradient(ellipse at top right, ${color}12, transparent 70%)` }} />
+
+                <div className="flex items-start gap-5 relative z-10">
+                    {/* Time */}
+                    <div className="text-center min-w-[56px] shrink-0">
+                        <p className="font-black text-base leading-tight" style={{ color }}>{item.startTime || item.horario_inicio || '--:--'}</p>
+                        <p className="text-foreground/30 text-[9px] font-black uppercase tracking-widest mt-0.5">{item.endTime || item.horario_fim || ''}</p>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 space-y-2">
+                        <h4 className="text-foreground font-black leading-tight uppercase italic text-sm truncate group-hover:transition-colors"
+                            style={{ '--hover-color': color } as any}>
+                            {item.title || item.titulo}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[9px] text-foreground/40 font-black uppercase tracking-wider flex items-center gap-1">
+                                <MapPin className="h-2.5 w-2.5" />{item.room || item.local || 'Auditório Principal'}
+                            </span>
+                            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                                style={{ background: `${color}15`, color }}>
+                                {item.type || item.tipo || 'PALESTRA'}
+                            </span>
+                        </div>
+
+                        {!isCheckedIn && (
+                            <button
+                                onClick={e => { e.stopPropagation(); setIsSelfCheckInOpen(true); }}
+                                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all border active:scale-95"
+                                style={{ background: `${color}10`, color, borderColor: `${color}25` }}
+                            >
+                                <QrCode className="h-2.5 w-2.5" />Confirmar Presença
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Status indicator */}
+                    <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                        style={{ background: isCheckedIn ? 'rgba(34,197,94,0.15)' : `${color}10` }}>
+                        {isCheckedIn
+                            ? <CheckCircle2 className="h-4 w-4 text-green-400" />
+                            : <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color }} />
+                        }
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
 
     return (
-        <div className="space-y-6">
-            {/* Header with Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-8">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-white italic tracking-tight">Minha Agenda G.S.</h2>
-                    <p className="text-gray-400 text-sm">Organize suas atividades e não perca nenhum momento.</p>
+                    <h2 className="text-2xl font-black text-foreground italic tracking-tight">Minha Agenda</h2>
+                    <p className="text-foreground/40 text-sm font-medium mt-0.5">Organize suas atividades e não perca nenhum momento.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
+                <div className="flex gap-2.5">
+                    <button
                         onClick={() => setIsSelfCheckInOpen(true)}
-                        variant="outline"
-                        className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10 rounded-xl font-bold h-12 flex-1 sm:flex-none px-6"
+                        className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs uppercase tracking-wider transition-all border active:scale-95"
+                        style={{ background: 'rgba(20,184,166,0.1)', color: '#14b8a6', borderColor: 'rgba(20,184,166,0.25)' }}
                     >
-                        <QrCode className="h-4 w-4 mr-2" /> SCAN QR
-                    </Button>
-                    <Button
-                        className={`${isActuallyPaid ? 'bg-white text-black hover:bg-gray-100' : 'bg-orange-500 text-white hover:bg-orange-600'} rounded-xl font-black h-12 px-6 shadow-xl uppercase tracking-tight flex-1 sm:flex-none`}
+                        <QrCode className="h-4 w-4" />Scan QR
+                    </button>
+                    <button
+                        className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs text-white uppercase tracking-wider transition-all active:scale-95"
+                        style={{ background: isActuallyPaid ? 'var(--surface-2)' : 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: isActuallyPaid ? 'none' : '0 4px 16px rgba(255,112,67,0.3)' }}
                         onClick={() => {
-                            if (isActuallyPaid) {
-                                navigate('/triunfo');
-                            } else if (onUpgradeClick) {
-                                onUpgradeClick();
-                            } else {
-                                navigate('/upgrade');
-                            }
+                            if (isActuallyPaid) navigate('/triunfo');
+                            else if (onUpgradeClick) onUpgradeClick();
+                            else navigate('/upgrade');
                         }}
                     >
-                        {isActuallyPaid
-                            ? 'ADICIONAR ATIVIDADES'
-                            : 'UPGRADE PRO'}
-                    </Button>
+                        <Zap className="h-4 w-4" />{isActuallyPaid ? 'Add Atividades' : 'Upgrade Pro'}
+                    </button>
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* Day Timeline */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Section Morning */}
-                    <div className="relative pl-8 border-l border-white/5 space-y-4">
-                        <div className="absolute -left-[11px] top-0 w-5 h-5 rounded-full bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.5)] flex items-center justify-center">
+            <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Morning timeline */}
+                    <div className="relative pl-6 border-l-2 space-y-3" style={{ borderColor: 'rgba(20,184,166,0.2)' }}>
+                        <div className="absolute -left-[9px] top-0 w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
+                            style={{ background: '#14b8a6', boxShadow: '0 0 16px rgba(20,184,166,0.5)' }}>
                             <Sun className="h-3 w-3 text-white" />
                         </div>
-
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-gray-400 font-black text-xs uppercase tracking-widest">Manhã · Growth Experience</h3>
-                            <Badge variant="outline" className="text-[10px] text-teal-400 border-teal-500/20">GRATUITO</Badge>
+                        <div className="flex items-center justify-between mb-4 pl-2">
+                            <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Manhã · Growth Experience</h3>
+                            <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 text-[9px] font-black uppercase">Gratuito</Badge>
                         </div>
-
                         {fullMorningAgenda.length > 0 ? (
-                            <div className="space-y-3">
-                                {fullMorningAgenda.map((item: any, i) => {
-                                    const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
-
-                                    return (
-                                        <div
-                                            key={i}
-                                            onClick={() => onSessionClick?.(item)}
-                                            className="glass-card p-5 border-white/5 hover:border-teal-500/30 transition-all group relative overflow-hidden cursor-pointer active:scale-[0.98]"
-                                        >
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-teal-500/10 transition-all"></div>
-
-                                            <div className="flex items-start gap-5 relative z-10">
-                                                <div className="text-center min-w-[60px]">
-                                                    <p className="text-teal-400 font-black text-lg leading-tight">{item.startTime || item.horario_inicio || '--:--'}</p>
-                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">{item.endTime || item.horario_fim || ''}</p>
-                                                </div>
-
-                                                <div className="flex-1 space-y-3">
-                                                    <div>
-                                                        <h4 className="text-white font-black leading-tight group-hover:text-teal-400 transition-colors uppercase italic truncate max-w-[200px] sm:max-w-none">
-                                                            {item.title || item.titulo}
-                                                        </h4>
-                                                        <div className="flex flex-wrap items-center gap-3 mt-1">
-                                                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tighter flex items-center">
-                                                                <MapPin className="h-3 w-3 mr-1 text-teal-500/50" /> {item.room || item.local || 'Auditório Principial'}
-                                                            </span>
-                                                            <Badge className="bg-white/5 text-gray-400 border-none text-[9px] font-black">{item.type || item.tipo || 'PALESTRA'}</Badge>
-                                                        </div>
-                                                    </div>
-
-                                                    {!isCheckedIn && (
-                                                        <Button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setIsSelfCheckInOpen(true);
-                                                            }}
-                                                            className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
-                                                        >
-                                                            <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
-                                                        </Button>
-                                                    )}
-                                                </div>
-
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isCheckedIn ? 'bg-green-500/20' : 'bg-teal-500/10 group-hover:bg-teal-500/20'}`}>
-                                                    {isCheckedIn ? (
-                                                        <CheckCircle2 className="h-5 w-5 text-green-400" />
-                                                    ) : (
-                                                        <ChevronRight className="h-5 w-5 text-teal-400 group-hover:translate-x-0.5 transition-transform" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            fullMorningAgenda.map((item, i) => (
+                                <SessionCard key={i} item={item} color="#14b8a6" delay={i * 0.06} />
+                            ))
                         ) : (
-                            <div className="p-8 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10">
-                                <BookOpen className="h-8 w-8 text-gray-700 mx-auto mb-3" />
-                                <p className="text-gray-500 text-sm mb-4">Você ainda não selecionou atividades para a manhã.</p>
-                                <Button
-                                    variant="outline"
-                                    className="border-teal-500/20 text-teal-400 hover:bg-teal-500/10 h-9 rounded-xl text-xs"
-                                    onClick={() => navigate('/triunfo')}
-                                >
-                                    ESCOLHER ATIVIDADES
-                                </Button>
+                            <div className="p-8 text-center rounded-[2rem] border border-dashed" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
+                                <BookOpen className="h-8 w-8 mx-auto mb-3 text-foreground/20" />
+                                <p className="text-foreground/40 text-sm mb-4">Nenhuma atividade selecionada para a manhã.</p>
+                                <button onClick={() => navigate('/triunfo')}
+                                    className="px-5 h-9 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all"
+                                    style={{ borderColor: 'rgba(20,184,166,0.3)', color: '#14b8a6' }}>
+                                    Escolher Atividades
+                                </button>
                             </div>
                         )}
                     </div>
 
-                    {/* Section Night */}
-                    <div className="relative pl-8 border-l border-white/5 space-y-4 pt-4">
-                        <div className="absolute -left-[11px] top-4 w-5 h-5 rounded-full bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)] flex items-center justify-center">
+                    {/* Night timeline */}
+                    <div className="relative pl-6 border-l-2 space-y-3" style={{ borderColor: 'rgba(255,112,67,0.2)' }}>
+                        <div className="absolute -left-[9px] top-0 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 0 16px rgba(255,112,67,0.5)' }}>
                             <Moon className="h-3 w-3 text-white" />
                         </div>
-
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-gray-400 font-black text-xs uppercase tracking-widest">Noite · Passaporte Night</h3>
-                            <Badge className="bg-orange-500/20 text-orange-400 border-none text-[10px] font-black tracking-tighter">PREMIUM</Badge>
+                        <div className="flex items-center justify-between mb-4 pl-2">
+                            <h3 className="text-foreground/50 font-black text-[10px] uppercase tracking-[0.25em]">Noite · Passaporte Night</h3>
+                            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 text-[9px] font-black uppercase">Premium</Badge>
                         </div>
 
                         {isActuallyPaid ? (
-                            <div className="space-y-3">
-                                {nightSessions.length > 0 ? (
-                                    nightSessions.map((session, i) => (
-                                        <div key={i} onClick={() => onSessionClick?.(session)} className="glass-card p-5 border-white/5 hover:border-orange-500/30 transition-all group relative overflow-hidden cursor-pointer">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-all"></div>
-                                            <div className="flex items-start gap-5 relative z-10">
-                                                <div className="text-center min-w-[60px]">
-                                                    <p className="text-orange-400 font-black text-lg leading-tight">{session.startTime || '--:--'}</p>
-                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
-                                                </div>
-                                                <div className="flex-1 space-y-3">
-                                                    <div>
-                                                        <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
-                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">
-                                                            SPEAKER: {typeof session.speakers === 'string' 
-                                                                ? session.speakers.split(',').shift() 
-                                                                : Array.isArray(session.speakers) 
-                                                                    ? session.speakers[0] 
-                                                                    : 'Equipe Growth'}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
-                                                                <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> {session.room || 'Arena Principal'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setIsSelfCheckInOpen(true);
-                                                        }}
-                                                        className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
-                                                    >
-                                                        <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
-                                                    </Button>
-                                                </div>
-                                                <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    // Fallback legacy sessions if none found in DB
-                                    [
-                                        { time: '18:30', title: 'Abertura Night Summit', speaker: 'Equipe Growth' },
-                                        { time: '19:00', title: 'Growth Strategies for 2026', speaker: 'Leandro Batista' },
-                                        { time: '20:30', title: 'Data Driven Culture', speaker: 'Vanylton Matias' }
-                                    ].map((session, i) => (
-                                        <div key={i} className="glass-card p-5 border-white/5 hover:border-orange-500/30 transition-all group relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl -mr-16 -mt-16 group-hover:bg-orange-500/10 transition-all"></div>
-                                            <div className="flex items-start gap-5 relative z-10">
-                                                <div className="text-center min-w-[60px]">
-                                                    <p className="text-orange-400 font-black text-lg leading-tight">{session.time}</p>
-                                                    <p className="text-gray-600 text-[10px] font-bold uppercase">CHECK-IN</p>
-                                                </div>
-                                                <div className="flex-1 space-y-3">
-                                                    <div>
-                                                        <h4 className="text-white font-black leading-tight uppercase italic group-hover:text-orange-400 transition-colors">{session.title}</h4>
-                                                        <p className="text-gray-500 text-xs mt-1 font-bold tracking-tight">SPEAKER: {session.speaker}</p>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <span className="text-[9px] text-gray-600 flex items-center uppercase font-black tracking-widest">
-                                                                <MapPin className="h-2.5 w-2.5 mr-1 text-orange-500/50" /> Arena Principal
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setIsSelfCheckInOpen(true);
-                                                        }}
-                                                        className="bg-brand-orange-coral/10 hover:bg-brand-orange-coral text-brand-orange-coral hover:text-white font-black text-[10px] h-8 px-4 rounded-xl border border-brand-orange-coral/20 transition-all flex items-center gap-2"
-                                                    >
-                                                        <QrCode className="h-3 w-3" /> CONFIRMAR PRESENÇA
-                                                    </Button>
-                                                </div>
-                                                <ChevronRight className="h-5 w-5 text-gray-800 group-hover:text-orange-400 transition-colors" />
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
+                            nightSessions.length > 0 ? (
+                                nightSessions.map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
+                            ) : (
+                                [
+                                    { startTime: '18:30', title: 'Abertura Night Summit', room: 'Arena Principal', type: 'ABERTURA' },
+                                    { startTime: '19:00', title: 'Growth Strategies for 2026', room: 'Arena Principal', type: 'PALESTRA' },
+                                    { startTime: '20:30', title: 'Data Driven Culture', room: 'Arena Principal', type: 'PALESTRA' },
+                                ].map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
+                            )
                         ) : (
-                            <div className="p-8 text-center bg-orange-500/5 rounded-3xl border border-orange-500/10">
-                                <Moon className="h-8 w-8 text-orange-600/50 mx-auto mb-3" />
-                                <p className="text-gray-400 text-sm mb-4">O acesso às palestras noturnas não está incluso em seu pacote.</p>
-                                <Button
-                                    className="bg-orange-500 hover:bg-orange-600 text-white font-black h-10 rounded-xl text-xs px-6"
+                            <div className="p-8 text-center rounded-[2rem]" style={{ background: 'rgba(255,112,67,0.05)', border: '1px solid rgba(255,112,67,0.15)' }}>
+                                <Moon className="h-8 w-8 mx-auto mb-3 text-brand-orange-coral/30" />
+                                <p className="text-foreground/40 text-sm mb-4">Acesso às palestras noturnas não está incluso no seu pacote.</p>
+                                <button
+                                    className="px-6 h-10 rounded-xl font-black text-xs text-white uppercase tracking-wide transition-all active:scale-95"
+                                    style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 4px 16px rgba(255,112,67,0.3)' }}
                                     onClick={() => navigate('/upgrade')}
                                 >
-                                    ADQUIRIR PASSAPORTE NIGHT
-                                </Button>
+                                    Adquirir Passaporte Night
+                                </button>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Info Column / Perks */}
-                <div className="space-y-6">
-                    <div className="glass-card p-8 border-teal-500/10 bg-teal-500/5">
-                        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                            <CalendarIcon className="h-5 w-5 text-teal-400" /> Notas da Agenda
+                {/* Sidebar */}
+                <div className="space-y-4">
+                    <div className="rounded-[2rem] p-6" style={{ background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.15)' }}>
+                        <h3 className="text-foreground font-black text-sm mb-5 flex items-center gap-2 uppercase">
+                            <CalendarIcon className="h-4 w-4 text-teal-400" />Notas da Agenda
                         </h3>
-                        <ul className="space-y-4">
+                        <ul className="space-y-3">
                             {[
                                 'O credenciamento começa às 07:30.',
                                 'Chegue 15 min antes na sua oficina.',
                                 'O almoço não está incluso no Free.',
-                                'Certificados exigem check-in na sala.'
+                                'Certificados exigem check-in na sala.',
                             ].map((note, i) => (
-                                <li key={i} className="flex items-start gap-3 text-xs text-gray-400 leading-relaxed">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-teal-500 mt-1.5"></div>
+                                <li key={i} className="flex items-start gap-3 text-xs text-foreground/50 leading-relaxed font-medium">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-teal-500 mt-1.5 shrink-0" />
                                     {note}
                                 </li>
                             ))}
                         </ul>
                     </div>
 
-                    <div className="glass-card p-8 border-white/5">
-                        <h3 className="text-white font-bold mb-6">Networking do Dia</h3>
-                        <div className="flex -space-x-3 mb-6">
-                            {[1, 2, 3, 4, 5].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-dark-300 bg-dark-400 overflow-hidden shadow-xl shadow-black/40">
-                                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="user" className="w-full h-full object-cover grayscale opacity-80" />
+                    <div className="rounded-[2rem] p-6" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+                        <h3 className="text-foreground font-black text-sm mb-4">Networking do Dia</h3>
+                        <div className="flex -space-x-2 mb-4">
+                            {[1,2,3,4,5].map(i => (
+                                <div key={i} className="w-9 h-9 rounded-full border-2 overflow-hidden" style={{ borderColor: 'var(--surface-1)' }}>
+                                    <img src={`https://i.pravatar.cc/80?img=${i+10}`} alt="" className="w-full h-full object-cover grayscale opacity-70" />
                                 </div>
                             ))}
-                            <div className="w-10 h-10 rounded-full border-2 border-dark-300 bg-teal-500 flex items-center justify-center text-[10px] font-black text-white">
+                            <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-[9px] font-black text-white"
+                                style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', borderColor: 'var(--surface-1)' }}>
                                 +250
                             </div>
                         </div>
-                        <p className="text-gray-500 text-xs leading-relaxed">
-                            Mais de 250 participantes estarão na sua mesma trilha de conhecimento. Use o intervalo para trocar experiências!
+                        <p className="text-foreground/40 text-xs leading-relaxed">
+                            Mais de 250 participantes na sua trilha. Use o intervalo para trocar experiências!
                         </p>
                     </div>
                 </div>

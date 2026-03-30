@@ -1,6 +1,7 @@
 import React from 'react';
-import { Bell, Clock } from 'lucide-react';
+import { Bell, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 interface NextActivityCardProps {
     title: string;
@@ -20,38 +21,83 @@ export function NextActivityCard({
     onClick
 }: NextActivityCardProps) {
     return (
-        <div 
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             onClick={onClick}
-            className="mx-6 p-8 bg-white/5 border border-white/10 rounded-[2.5rem] space-y-6 cursor-pointer hover:bg-white/10 transition-all active:scale-[0.98]"
+            className="mx-4 sm:mx-6 cursor-pointer group"
         >
-            <div className="flex items-center gap-2 text-brand-orange-coral">
-                <Bell className="h-4 w-4" />
-                <span className="font-black text-[10px] uppercase tracking-[0.2em]">Próximo</span>
-            </div>
+            <div
+                className="relative overflow-hidden rounded-[2rem] p-6 sm:p-7 transition-all duration-300 group-hover:scale-[1.01] group-active:scale-[0.99]"
+                style={{
+                    background: 'linear-gradient(135deg, rgba(255,112,67,0.1) 0%, rgba(255,64,53,0.05) 100%)',
+                    border: '1px solid rgba(255,112,67,0.2)'
+                }}
+            >
+                {/* Hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-orange-coral/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]" />
 
-            <div className="space-y-2">
-                <h3 className="text-2xl font-black text-white leading-tight tracking-tight">
-                    {title}
-                </h3>
-                <p className="text-gray-500 text-sm font-medium">
-                    {subtitle}
-                </p>
-            </div>
+                {/* Top accent line */}
+                <div
+                    className="absolute top-0 left-8 right-8 h-[2px] rounded-b-full"
+                    style={{ background: 'linear-gradient(90deg, transparent, rgba(255,112,67,0.6), transparent)' }}
+                />
 
-            <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-3">
-                    <div className="bg-brand-orange-coral rounded-xl px-3 py-2 flex items-center justify-center">
-                        <span className="text-white font-black text-sm">{time}</span>
+                <div className="relative z-10 space-y-4">
+                    {/* Label */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-brand-orange-coral">
+                            <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            >
+                                <Bell className="h-3.5 w-3.5" />
+                            </motion.div>
+                            <span className="font-black text-[9px] uppercase tracking-[0.25em]">Próxima Atividade</span>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-foreground/20 group-hover:text-brand-orange-coral group-hover:translate-x-1 transition-all" />
                     </div>
-                    <span className="text-gray-500 font-bold text-xs">{duration}</span>
-                </div>
 
-                {isConfirmed && (
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black text-[9px] uppercase tracking-widest px-3 py-1">
-                        Confirmado
-                    </Badge>
-                )}
+                    {/* Title & subtitle */}
+                    <div className="space-y-1">
+                        <h3 className="text-lg sm:text-xl font-black text-foreground leading-tight tracking-tight line-clamp-2">
+                            {title}
+                        </h3>
+                        <p className="text-foreground/50 text-xs font-medium line-clamp-1">
+                            {subtitle}
+                        </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-2.5">
+                            <div
+                                className="rounded-xl px-3 py-1.5 flex items-center gap-1.5"
+                                style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)', boxShadow: '0 4px 12px rgba(255,112,67,0.3)' }}
+                            >
+                                <Clock className="h-3 w-3 text-white/80" />
+                                <span className="text-white font-black text-xs">{time}</span>
+                            </div>
+                            <span className="text-foreground/40 font-bold text-xs">{duration}</span>
+                        </div>
+
+                        {isConfirmed ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 font-black text-[9px] uppercase tracking-widest px-2.5 py-1 flex items-center gap-1">
+                                <CheckCircle2 className="h-2.5 w-2.5" />
+                                Confirmado
+                            </Badge>
+                        ) : (
+                            <Badge
+                                className="font-black text-[9px] uppercase tracking-widest px-2.5 py-1 text-white border-none animate-pulse"
+                                style={{ background: 'rgba(255,112,67,0.2)', border: '1px solid rgba(255,112,67,0.3)' }}
+                            >
+                                Confirmar ›
+                            </Badge>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
