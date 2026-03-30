@@ -1217,6 +1217,7 @@ export function DashboardParticipante() {
                 generateTicketPDF={generateTicketPDF}
                 setShowCheckInModal={setShowCheckInModal}
                 setShowUpgradeModal={setShowUpgradeModal}
+                onRefresh={refetchRegistration}
               />
             )}
 

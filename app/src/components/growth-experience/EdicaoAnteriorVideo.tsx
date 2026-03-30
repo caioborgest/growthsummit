@@ -10,7 +10,7 @@ interface EdicaoAnteriorVideoProps {
 
 
 export function EdicaoAnteriorVideo({
-    videoSrc = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento%20.mov',
+    videoSrc = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/edicao-jn/Cobertura%20do%20Evento.mp4',
     showTriunfoTeaser = false,
 }: EdicaoAnteriorVideoProps) {
     const { selectedProject } = useProject();
@@ -121,7 +121,7 @@ export function EdicaoAnteriorVideo({
                         {/* Stats do evento anterior */}
                         <div className="grid grid-cols-2 gap-4 mb-10">
                             {[
-                                { value: '200+', label: 'Participantes', sub: 'edição 2025' },
+                                { value: '60', label: 'Participantes', sub: 'pessoas' },
                                 { value: '6+', label: 'Palestrantes', sub: 'especialistas' },
                                 { value: '4h', label: 'Imersão', sub: 'intensiva' },
                                 { value: '100%', label: 'Aprovação', sub: 'dos presentes' },

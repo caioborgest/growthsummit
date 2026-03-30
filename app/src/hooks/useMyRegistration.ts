@@ -173,7 +173,18 @@ export function useMyRegistration() {
             setRegistration(null);
             return;
         }
+        
+        // Refetch inicial
         fetchRegistration();
+
+        // Refetch ao focar na janela (volta para o app)
+        const handleFocus = () => {
+            logger.debug('[useMyRegistration] Window focused, refetching...');
+            fetchRegistration();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, [user, projectId, fetchRegistration]);
 
     // 2. Efeito para subscrição em tempo real (apenas se tiver registration.id)

@@ -15,6 +15,7 @@ interface TicketSectionProps {
     generateTicketPDF: (reg: any, projectName: string) => Promise<void>;
     setShowCheckInModal: (show: boolean) => void;
     setShowUpgradeModal: (show: boolean) => void;
+    onRefresh?: () => void;
 }
 
 export function TicketSection({
@@ -25,8 +26,11 @@ export function TicketSection({
     isActuallyPaid,
     generateTicketPDF,
     setShowCheckInModal,
-    setShowUpgradeModal
+    setShowUpgradeModal,
+    onRefresh
 }: TicketSectionProps) {
+    const [refreshing, setRefreshing] = (typeof onRefresh === 'function') ? [false, () => {}] : [false, () => {}]; // Placeholder if state not needed
+
     return (
         <div className="flex flex-col gap-8 pb-32">
             {/* INFORMAÇÕES IMPORTANTES (TOP) */}
@@ -49,8 +53,12 @@ export function TicketSection({
                     <div className="space-y-3">
                         <div className="flex items-center justify-between p-3 bg-dark-300/50 rounded-xl border border-white/5">
                             <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Pagamento</span>
-                            <div className="flex flex-col items-end">
-                                <Badge className={`${statusFinanceiro.color} px-3 py-1 text-[10px] font-black`}>
+                            <div className="flex flex-col items-end gap-1">
+                                <Badge 
+                                  className={`${statusFinanceiro.color} px-3 py-1 text-[10px] font-black cursor-pointer hover:scale-105 active:scale-95 transition-all`}
+                                  onClick={onRefresh}
+                                  title="Clique para atualizar status"
+                                >
                                     {statusFinanceiro.label}
                                 </Badge>
                                 <span className="text-[8px] text-gray-600 font-bold uppercase mt-1">{statusFinanceiro.info}</span>
