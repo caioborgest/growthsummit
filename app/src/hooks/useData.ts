@@ -30,13 +30,9 @@ const isGEProject = (projectId: string | undefined): boolean => {
 
   // If projectId is a UUID, we check the global selectedProject from localStorage
   // This is a common pattern in this app to distinguish GE from and others
-  try {
-    const saved = safeStorage.getItem('selectedProject');
-    if (saved) {
-      const p = JSON.parse(saved);
-      // If the ID matches the current projectId and the slug starts with ge- or growth-experience, it's GE
+      // If the ID matches the current projectId and the slug starts with ge- or growth-, it's GE
       if ((p.id === projectId || p.slug === projectId) &&
-        (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-experience'))) return true;
+        (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-'))) return true;
     }
   } catch {
     // ignore
@@ -84,7 +80,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants'].includes(entity);
+  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins'].includes(entity);
 };
 
 function toCamelCase(str: string): string {
@@ -302,9 +298,6 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'mentoring_sessions' && key === 'duration') dbKey = isGEProject(projectId) ? 'duracao' : 'duration';
       else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
       else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
-      else if (entity === 'stands' && key === 'name') dbKey = 'nome';
-      else if (entity === 'stands' && key === 'location') dbKey = 'localizacao';
-      else if (entity === 'stands' && key === 'description') dbKey = 'descricao';
       else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'transactions' && key === 'amount') dbKey = 'amount';
@@ -441,10 +434,10 @@ function getSelectFields(entity: string, projectId?: string): string {
       return 'id,project_id,company_a_id,company_b_id,status,created_at';
     }
     if (entity === 'stands') {
-      return 'id,project_id,nome,descricao,logo_url,localizacao,owner_id,owner_type,created_at';
+      return 'id,project_id,name,description,logo_url,location,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
-      return 'id,project_id,registration_id,stand_id,created_at';
+      return 'id,registration_id,stand_id,created_at';
     }
     if (entity === 'leads') {
       return 'id,project_id,visitor_name,visitor_email,visitor_phone,visitor_company,interest_level,notes,created_at,startup_id,company_id';
@@ -477,7 +470,7 @@ function getSelectFields(entity: string, projectId?: string): string {
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
     faqs: 'id,project_id,question,answer,category,order_index',
     profiles: 'id,user_id,company,position,bio,website,linkedin,city,state,country,birth_date,gender,cpf,cnpj,phone,newsletter_opt_in',
-    notifications: 'id,user_id,title,message,type,is_read,created_at,action_url',
+    notifications: 'id,user_id,title,message,type,is_read,created_at',
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
@@ -506,6 +499,12 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     }
 
     if (isFetchingRef.current && !force) return;
+
+    if (entityName === 'mentoring_waitlist') {
+      setIsLoading(false);
+      isFetchingRef.current = false;
+      return;
+    }
 
     // logger.debug(`[useData:${entityName}] Iniciando busca...`, { force, projectId });
 

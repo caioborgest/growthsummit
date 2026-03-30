@@ -172,9 +172,9 @@ export function AdminLayout() {
         <div className="p-8 relative">
           <Link to="/admin" className="flex items-center justify-center">
             <img
-              src="/images/logomarca-GX-fundoescuro.png"
-              alt="Growth Experience"
-              className="h-9 w-auto hover:scale-105 transition-transform duration-300"
+              src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png"
+              alt="Logo"
+              className="h-10 w-auto hover:scale-105 transition-transform duration-300"
             />
           </Link>
           <div className="absolute bottom-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />

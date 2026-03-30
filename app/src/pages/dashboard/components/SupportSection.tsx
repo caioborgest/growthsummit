@@ -146,7 +146,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
   const sortedTickets = [...tickets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden max-w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -159,7 +159,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
         {!isNewTicketOpen && !selectedTicketId && (
           <Button 
             onClick={() => setIsNewTicketOpen(true)}
-            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-brand-orange-coral/20 transition-all uppercase tracking-tight"
+            className="w-full md:w-auto bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 px-6 rounded-2xl shadow-xl shadow-brand-orange-coral/20 transition-all uppercase tracking-tight"
           >
             <Plus className="h-5 w-5 mr-2" /> Novo Chamado
           </Button>
@@ -203,7 +203,13 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                       <option value="general">Dúvida Geral</option>
                       <option value="technical">Problema Técnico / App</option>
                       <option value="finance">Financeiro / Pagamento</option>
-                      <option value="registration">Erro na Inscrição</option>
+                      <option value="registration">Inscrição / Credenciamento</option>
+                      <option value="mentorship">Mentorias (Agendamento)</option>
+                      <option value="agenda">Programação / Horários</option>
+                      <option value="certificates">Certificados</option>
+                      <option value="networking">Networking / B2B</option>
+                      <option value="venue">Localização / Infraestrutura</option>
+                      <option value="feedback">Sugestão / Feedback</option>
                     </select>
                   </div>
                 </div>
@@ -285,9 +291,9 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                 )}
               </div>
 
-              {/* Chat Input */}
+              {/* User Actions & Chat Input */}
               {selectedTicket.status !== 'closed' && (
-                <form onSubmit={handleSendMessage} className="p-6 bg-white/[0.02] border-t border-white/5">
+                <div className="p-6 bg-white/[0.02] border-t border-white/5 space-y-4">
                   <div className="flex gap-3">
                     <input 
                       value={newMessage}
@@ -296,14 +302,35 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                       className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-brand-orange-coral/50 transition-all h-12 text-sm"
                     />
                     <Button 
-                      type="submit"
+                      onClick={handleSendMessage}
                       disabled={isSending || !newMessage.trim()}
-                      className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white w-12 h-12 p-0 rounded-xl transition-all flex items-center justify-center"
+                      className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white w-12 h-12 p-0 rounded-xl transition-all flex items-center justify-center shrink-0"
                     >
                       <Send className="h-5 w-5" />
                     </Button>
                   </div>
-                </form>
+                  
+                  {selectedTicket.status !== 'resolved' && (
+                    <button 
+                      onClick={() => {
+                        setRating(0); // Reset for new rating
+                        // Mark as resolved locally then let the CSAT form handle the actual DB update
+                        setSelectedTicketId(selectedTicketId); 
+                        setIsSending(true);
+                        supportService.updateTicket(selectedTicketId, { status: 'resolved' })
+                          .then(() => {
+                            refetchTickets();
+                            setIsSending(false);
+                            toast.success('Chamado marcado como resolvido. Por favor, avalie o atendimento!');
+                          })
+                          .catch(() => setIsSending(false));
+                      }}
+                      className="w-full py-2.5 rounded-xl border border-green-500/30 text-green-400 text-[10px] font-black uppercase tracking-widest hover:bg-green-500/10 transition-all flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 className="h-4 w-4" /> Marcar como Resolvido & Avaliar
+                    </button>
+                  )}
+                </div>
               )}
 
               {/* CSAT Evaluation View */}
@@ -390,13 +417,13 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all"></div>
                     
-                    <div className="flex items-start justify-between gap-4 relative z-10">
-                      <div className="flex gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10 w-full">
+                      <div className="flex items-start gap-3 sm:gap-4 overflow-hidden w-full">
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hidden sm:flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                           <MessageCircle className="h-6 w-6 text-brand-orange-coral/70" />
                         </div>
-                        <div>
-                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-black uppercase italic tracking-tight group-hover:text-brand-orange-coral transition-colors mb-2 break-words">
                              {ticket.subject}
                           </h3>
                           <div className="flex flex-wrap items-center gap-4">
@@ -420,13 +447,13 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                   </div>
                 ))
               ) : (
-                <div className="p-20 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10">
+                <div className="p-6 sm:p-20 text-center bg-dark-200/50 rounded-3xl border border-dashed border-white/10 w-full overflow-hidden">
                   <LifeBuoy className="h-12 w-12 text-gray-800 mx-auto mb-4 opacity-30" />
-                  <p className="text-gray-500 font-bold uppercase tracking-widest text-sm mb-6">Nenhum chamado aberto</p>
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-xs sm:text-sm mb-6">Nenhum chamado aberto</p>
                   <Button 
                     onClick={() => setIsNewTicketOpen(true)}
                     variant="outline"
-                    className="border-brand-orange-coral/30 text-brand-orange-coral hover:bg-brand-orange-coral/10 h-11 rounded-xl font-black px-8"
+                    className="w-full sm:w-auto border-brand-orange-coral/30 text-brand-orange-coral hover:bg-brand-orange-coral/10 h-auto py-3 rounded-xl font-black px-4 sm:px-8 text-xs sm:text-sm whitespace-normal"
                   >
                     ABRIR MEU PRIMEIRO CHAMADO
                   </Button>

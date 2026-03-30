@@ -48,7 +48,7 @@ serve(async (req: Request) => {
                 'Authorization': `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: from || 'Growth Experience <no-reply@growthsummit.site>',
+                from: from || 'Growth Experience <no-reply@gxexperience.site>',
                 to: Array.isArray(to) ? to : [to],
                 subject,
                 html: html || text,

@@ -83,9 +83,19 @@ export function parseQRString(qrString: string): QRData | null {
                 default:
                     return null;
             }
-        } catch (e) {
+        } catch {
             return null;
         }
+    }
+
+    // 3. Fallback: Raw UUID-like IDs (often used in PWA TicketSection)
+    if (qrString.length >= 32 && /^[0-9a-fA-F-]{32,36}$/.test(qrString)) {
+        return {
+            type: 'registration',
+            projectId: '', // Context-neutral
+            id: qrString,
+            timestamp: new Date().toISOString()
+        };
     }
 
     return null;

@@ -158,7 +158,7 @@ export default function DashboardMentor() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-400 text-gray-100 flex flex-col font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-dark-400 text-gray-100 flex flex-col font-sans selection:bg-orange-500/30 overflow-x-hidden">
       <PremiumBackground />
 
       <PremiumHeader

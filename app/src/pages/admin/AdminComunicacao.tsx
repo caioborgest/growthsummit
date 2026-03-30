@@ -33,6 +33,7 @@ import {
 import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
+import { emailService } from '@/services/emailService';
 
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -315,12 +316,10 @@ export default function AdminComunicacao() {
           .replace(/{{data}}/g, new Date().toLocaleDateString('pt-BR'))
           .replace(/{{evento}}/g, 'Growth Experience 2026');
 
-        return supabase.functions.invoke('send-email', {
-          body: {
-            to: [recipient.email],
-            subject: composeData.subject,
-            html: personalizedBody.replace(/\n/g, '<br/>')
-          }
+        return emailService.send({
+          to: [recipient.email],
+          subject: composeData.subject,
+          html: personalizedBody.replace(/\n/g, '<br/>')
         });
       });
 

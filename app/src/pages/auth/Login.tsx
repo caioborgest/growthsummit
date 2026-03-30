@@ -137,15 +137,7 @@ export function Login() {
         {/* Logo */}
         <motion.div initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} className="text-center">
           <Link to="/" className="inline-flex items-center justify-center flex-col gap-3">
-            <motion.div
-              animate={{ boxShadow: ['0 0 20px rgba(255,112,67,0.3)', '0 0 40px rgba(255,112,67,0.55)', '0 0 20px rgba(255,112,67,0.3)'] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)' }}
-            >
-              <span className="text-white font-black text-2xl italic">GX</span>
-            </motion.div>
-            <img src="/images/logomarca-GX-fundoescuro.png" alt="Growth Experience" className="h-8 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" alt="Growth Experience" className="h-20 w-auto drop-shadow-[0_0_15px_rgba(255,112,67,0.3)] hover:scale-105 transition-transform" />
           </Link>
         </motion.div>
 

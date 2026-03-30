@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Calendar, Zap, MapPin, Clock } from 'lucide-react';
+import { Users, Calendar, TrendingUp, MapPin, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface StatItemProps {
@@ -134,10 +134,13 @@ export function PwaDashboardHero({
                     <motion.div
                         animate={{ boxShadow: ['0 0 20px rgba(255,112,67,0.3)', '0 0 40px rgba(255,112,67,0.55)', '0 0 20px rgba(255,112,67,0.3)'] }}
                         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] flex items-center justify-center shrink-0"
-                        style={{ background: 'linear-gradient(135deg, #ff7043 0%, #ff4035 100%)' }}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] flex items-center justify-center shrink-0 overflow-hidden bg-white/5"
                     >
-                        <span className="text-white font-black text-2xl sm:text-3xl italic">GX</span>
+                        <img 
+                            src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" 
+                            alt="Logo" 
+                            className="w-12 h-12 object-contain"
+                        />
                     </motion.div>
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -194,7 +197,7 @@ export function PwaDashboardHero({
             <div className="grid grid-cols-3 gap-2.5">
                 <StatItem icon={<Users className="h-5 w-5" />} value={stats.people} label="Pessoas" delay={0.1} />
                 <StatItem icon={<Calendar className="h-5 w-5" />} value={stats.content} label="Conteúdo" delay={0.2} />
-                <StatItem icon={<Zap className="h-5 w-5" />} value={stats.activities} label="Atividades" delay={0.3} />
+                <StatItem icon={<TrendingUp className="h-5 w-5" />} value={stats.activities} label="Atividades" delay={0.3} />
             </div>
         </div>
     );

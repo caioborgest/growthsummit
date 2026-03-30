@@ -64,6 +64,7 @@ import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 import { GamificationSection } from './components/GamificationSection';
 import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
+import { emailService } from '@/services/emailService';
 import { logger } from '@/lib/logger';
 
 // ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
@@ -486,28 +487,27 @@ export function DashboardParticipante() {
         status: 'scheduled'
       });
 
-      // Envia notificação por e-mail para o mentor
+      // Notifica o mentor por e-mail (usando emailService que já integra com Resend)
       if (mentor?.email) {
-        await supabase.functions.invoke('send-email', {
-          body: {
-            to: [mentor.email],
-            subject: `🚀 Novo Agendamento de Mentoria: ${myRegistration.nome}`,
-            html: `
-              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                <h1 style="color: #14b8a6;">Olá, ${mentor.name}!</h1>
-                <p>Você tem um novo agendamento de mentoria confirmado na plataforma <strong>Growth Experience</strong>.</p>
-                <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
-                  <p style="margin: 0 0 10px 0;"><strong>Mentorado:</strong> ${myRegistration.nome}</p>
-                  <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                  <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                  <p style="margin: 0;"><strong>Assunto/Tópico:</strong> ${topic || 'Mentoria Geral'}</p>
-                </div>
-                <p>Acesse seu painel para ver mais detalhes e preparar sua mentoria.</p>
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-                <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+        await emailService.send({
+          to: [mentor.email],
+          subject: `🚀 Nova Mentoria Agendada - ${myRegistration.nome}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #ff7043;">Nova Mentoria!</h1>
+              <p>Olá, <strong>${mentor.name}</strong>!</p>
+              <p>Você tem um novo agendamento de mentoria na plataforma.</p>
+              <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
+                <p style="margin: 0 0 10px 0;"><strong>Mentorado:</strong> ${myRegistration.nome}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p style="margin: 0;"><strong>Assunto/Tópico:</strong> ${topic || 'Mentoria Geral'}</p>
               </div>
-            `
-          }
+              <p>Acesse seu painel para ver mais detalhes e preparar sua mentoria.</p>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+            </div>
+          `
         });
       }
 
@@ -559,25 +559,23 @@ export function DashboardParticipante() {
 
       // Notifica o mentor por e-mail sobre o cancelamento
       if (mentor?.email && session) {
-        await supabase.functions.invoke('send-email', {
-          body: {
-            to: [mentor.email],
-            subject: `❌ Cancelamento de Mentoria - ${myRegistration?.nome || 'Participante'}`,
-            html: `
-              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                <h1 style="color: #ef4444;">Cancelamento de Mentoria</h1>
-                <p>Olá, <strong>${mentor.name}</strong>!</p>
-                <p>O participante <strong>${myRegistration?.nome || 'Participante'}</strong> cancelou a mentoria agendada.</p>
-                <div style="background: #fef2f2; padding: 25px; border-radius: 12px; border: 1px solid #fecaca; margin: 25px 0;">
-                  <p style="margin: 0 0 10px 0;"><strong>Data/Hora:</strong> ${new Date(session.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}</p>
-                  <p style="margin: 0;"><strong>Tópico cancelado:</strong> ${session.topic || 'Mentoria Geral'}</p>
-                </div>
-                <p>O horário voltou a ficar <strong style="color: #16a34a;">disponível</strong> e pode ser agendado por outro participante — inclusive presencialmente.</p>
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-                <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+        await emailService.send({
+          to: [mentor.email],
+          subject: `❌ Cancelamento de Mentoria - ${myRegistration?.nome || 'Participante'}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #ef4444;">Cancelamento de Mentoria</h1>
+              <p>Olá, <strong>${mentor.name}</strong>!</p>
+              <p>O participante <strong>${myRegistration?.nome || 'Participante'}</strong> cancelou a mentoria agendada.</p>
+              <div style="background: #fef2f2; padding: 25px; border-radius: 12px; border: 1px solid #fecaca; margin: 25px 0;">
+                <p style="margin: 0 0 10px 0;"><strong>Data/Hora:</strong> ${new Date(session.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                <p style="margin: 0;"><strong>Tópico cancelado:</strong> ${session.topic || 'Mentoria Geral'}</p>
               </div>
-            `
-          }
+              <p>O horário voltou a ficar <strong style="color: #16a34a;">disponível</strong> e pode ser agendado por outro participante — inclusive presencialmente.</p>
+              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+            </div>
+          `
         });
       }
 
@@ -971,7 +969,7 @@ export function DashboardParticipante() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-dark-400 pb-20 mesh-gradient"
+      className="min-h-screen bg-dark-400 pb-20 mesh-gradient overflow-x-hidden"
     >
       {/* Modals */}
       {showUpgradeModal && myRegistration && (

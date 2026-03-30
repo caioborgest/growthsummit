@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { User, Mail, Phone, Loader2, Target, ShieldCheck, Clock, Building2, BarChart } from 'lucide-react';
 import type { DadosMentoria } from './mentoriaTypes';
 import { MENTORSHIP_TIME_SLOTS } from './mentoriaTypes';
-import { supabase } from '@/lib/supabase';
+import { emailService } from '@/services/emailService';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
@@ -194,27 +194,25 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
             // Notify mentor
             if (mentor?.email) {
-                await supabase.functions.invoke('send-email', {
-                    body: {
-                        to: [mentor.email],
-                        subject: `🚀 Novo Agendamento de Mentoria: ${dados.nome}`,
-                        html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                            <h1 style="color: #14b8a6;">Olá, ${mentor.nome}!</h1>
-                            <p>Você tem um novo agendamento de mentoria confirmado.</p>
-                            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
-                            <p style="margin: 0 0 10px 0;"><strong>Participante:</strong> ${dados.nome}</p>
-                            <p style="margin: 0 0 10px 0;"><strong>Negócio:</strong> ${dados.nomeNegocio || 'Não informado'} (${dados.estagioNegocio || 'Não informado'})</p>
-                            <p style="margin: 0 0 10px 0;"><strong>Horário Spot:</strong> ${timeSlotLabel}</p>
-                            <p style="margin: 0 0 10px 0;"><strong>Área:</strong> ${dados.area}</p>
-                            <p style="margin: 0;"><strong>Desafio/Problema:</strong> ${dados.descricaoProblema}</p>
-                            </div>
-                            <p>Acesse seu painel mentor para ver mais detalhes.</p>
-                            <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-                            <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience</p>
-                        </div>
-                        `
-                    }
+                await emailService.send({
+                  to: [mentor.email],
+                  subject: `🎯 Novo Agendamento de Mentoria: ${dados.nome}`,
+                  html: `
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                      <h1 style="color: #ff7043;">Novo Agendamento Confirmado!</h1>
+                      <p>Olá, <strong>${mentor.nome}</strong>!</p>
+                      <p>Um novo participante agendou uma mentoria com você.</p>
+                      <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
+                        <p style="margin: 0 0 10px 0;"><strong>Participante:</strong> ${dados.nome}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${scheduled_date.toLocaleDateString('pt-BR')}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${timeSlotLabel}</p>
+                        <p style="margin: 0;"><strong>Tipo:</strong> Participante</p>
+                      </div>
+                      <p>Prepare o material necessário para mentorar o projeto.</p>
+                      <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
+                      <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
+                    </div>
+                  `
                 }).catch(e => logger.warn('Failed to send notification email:', e.message));
             }
 

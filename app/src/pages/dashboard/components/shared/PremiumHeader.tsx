@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, LogOut, HelpCircle, Sun, Star, Headset, Moon, Zap } from 'lucide-react';
+import { Bell, LogOut, Sun, Star, Headset, Moon } from 'lucide-react';
 import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 import { useTheme } from '@/hooks/useTheme';
 import { Badge } from '@/components/ui/badge';
@@ -54,8 +54,8 @@ export function PremiumHeader({
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="flex items-center gap-2.5"
                 >
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#ff7043] to-[#ff4035] flex items-center justify-center shadow-[0_0_12px_rgba(255,112,67,0.5)]">
-                        <span className="text-white font-black text-[10px] italic">GX</span>
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center">
+                        <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" alt="Growth Experience" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(255,112,67,0.5)]" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-[10px] font-black text-brand-orange-coral uppercase tracking-[0.25em] leading-none">
@@ -94,28 +94,7 @@ export function PremiumHeader({
                         </motion.div>
                     </button>
 
-                    {/* Outdoor toggle */}
-                    <button
-                        onClick={toggleOutdoor}
-                        className={`h-8 px-2.5 flex items-center gap-1 rounded-full transition-all border text-[9px] font-black uppercase tracking-wider ${
-                            isOutdoor
-                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-                                : 'bg-white/5 border-white/10 text-gray-500 hover:text-amber-400 hover:bg-amber-500/10'
-                        }`}
-                        title="Modo outdoor – leitura ao sol"
-                    >
-                        <Zap className="h-3 w-3" />
-                        <span className="hidden sm:inline">Outdoor</span>
-                    </button>
 
-                    {/* Guide */}
-                    <button
-                        onClick={onGuideClick}
-                        className="h-8 w-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all border border-white/10"
-                        title="Guia do Participante"
-                    >
-                        <HelpCircle className="h-3.5 w-3.5" />
-                    </button>
 
                     {/* Support */}
                     <button

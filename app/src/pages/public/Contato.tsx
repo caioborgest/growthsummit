@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/lib/supabase';
+import { emailService } from '@/services/emailService';
 import { toast } from 'sonner';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
@@ -82,23 +82,20 @@ export function Contato() {
       }
 
       toast.loading('Enviando mensagem...');
-      const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: 'suporte@growthsummit.site',
-          subject: `Formulário de Contato: ${formData.subject} [${formData.department}]`,
-          html: `
-            <h3>Nova mensagem de contato</h3>
-            <p><strong>Nome:</strong> ${formData.name}</p>
-            <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Departamento:</strong> ${formData.department}</p>
-            <hr/>
-            <p>${formData.message.replace(/\n/g, '<br/>')}</p>
-          `,
-          from: `Growth Site <${formData.email}>`
-        }
+      const { success } = await emailService.send({
+        to: 'producao@gxexperience.site',
+        subject: `[Site] Novo Contato: ${formData.subject}`,
+        html: `
+          <h1>Novo Contato via Site</h1>
+          <p><strong>Nome:</strong> ${formData.name}</p>
+          <p><strong>E-mail:</strong> ${formData.email}</p>
+          <p><strong>Assunto:</strong> ${formData.subject}</p>
+          <p><strong>Mensagem:</strong></p>
+          <p>${formData.message}</p>
+        `
       });
 
-      if (error) throw error;
+      if (!success) throw new Error('Falha ao enviar e-mail');
 
       toast.dismiss();
       toast.success('Mensagem enviada com sucesso!');

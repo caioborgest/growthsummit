@@ -2,6 +2,8 @@ import { QrCode, Sparkles, Download, Moon, Sun, CreditCard, CheckCircle2, AlertC
 import { Badge } from '@/components/ui/badge';
 import QRCode from 'react-qr-code';
 import { motion } from 'framer-motion';
+import { generateQRString } from '@/lib/qrUtils';
+
 
 interface TicketSectionProps {
     myRegistration: any;
@@ -21,7 +23,9 @@ export function TicketSection({
 }: TicketSectionProps) {
 
     const isPro = myRegistration?.palestrasNoturnas;
-    const qrValue = myRegistration?.id || 'sem-id';
+    const qrValue = myRegistration?.id 
+        ? generateQRString('registration', myRegistration.projectId || selectedProject?.id || '', myRegistration.id)
+        : 'sem-id';
 
     return (
         <div className="space-y-6 pb-8">

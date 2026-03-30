@@ -25,7 +25,6 @@ export interface MyRegistration {
     cursosSelecionados?: string[];
     valorPago?: number;
     amount?: number;
-    checkedIn?: boolean;
     projectId?: string;
     createdAt?: string;
 }
@@ -61,7 +60,6 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
             : [],
         valorPago: (row['valor_pago'] as number) || 0,
         amount: (row['valor_pago'] as number) || 0,
-        checkedIn: Boolean(row['checked_in']),
         projectId: (row['project_id'] as string) || undefined,
         createdAt: (row['created_at'] as string) || undefined,
     };
@@ -114,7 +112,7 @@ export function useMyRegistration() {
             }
 
             const table = getTable(targetProjectId);
-            const fields = 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,status_pagamento,valor_pago,palestras_noturnas,cursos_selecionados,checked_in,created_at';
+            const fields = 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,status_pagamento,valor_pago,palestras_noturnas,cursos_selecionados,created_at';
 
             // 1) Tenta por user_id
             let { data, error: err } = (await withTimeout(
@@ -244,12 +242,7 @@ export function useMyRegistration() {
     /** Marca check-in de entrada */
     const checkInEntrada = useCallback(async () => {
         if (!registration?.id || !projectId || !user) return;
-        const table = getTable(projectId);
-        const { error } = await (supabase.from(table as never) as any)
-            .update({ checked_in: true, check_in_at: new Date().toISOString() })
-            .eq('id', registration.id);
-        if (error) throw error;
-
+        
         // Registrar no log de check_ins
         await (supabase.from('check_ins' as never) as any).insert({
             project_id: projectId,
@@ -262,7 +255,6 @@ export function useMyRegistration() {
             method: 'qr_scan',
         }).catch(() => { });
 
-        setRegistration(prev => prev ? { ...prev, checkedIn: true } : prev);
     }, [registration, projectId, user]);
 
     return { registration, isLoading, error, refetch: fetchRegistration, updateCursos, checkInEntrada };

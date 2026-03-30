@@ -14,7 +14,6 @@ import {
   TrendingUp,
   BarChart2,
   PieChart,
-  Activity,
   CheckCircle2,
   Star,
   Quote
@@ -102,13 +101,37 @@ export default function AdminSupport() {
     }
   };
 
-  const handleUpdateStatus = async (status: string) => {
-    if (!selectedTicketId) return;
+  const handleUpdateStatus = async (status: 'open' | 'in_progress' | 'resolved' | 'closed') => {
+    if (!selectedTicketId || !selectedTicket) return;
     try {
-      await supportService.updateTicket(selectedTicketId, { status: status as 'open' | 'in_progress' | 'resolved' | 'closed' });
+      await supportService.updateTicket(selectedTicketId, { status });
+      
+      // Auto-reply when marking as resolved
+      if (status === 'resolved') {
+        await supportService.addMessage({
+          ticket_id: selectedTicketId,
+          message: 'Sua solicitação foi marcada como resolvida pela nossa equipe. Poderia dedicar um breve momento para avaliar nosso atendimento? Seu feedback é muito importante para nós!',
+          is_admin: true
+        });
+
+        // Notificar o participante via sistema
+        if (selectedTicket.userId && selectedProject?.id) {
+          await notificationService.send({
+            userId: selectedTicket.userId,
+            projectId: selectedProject.id,
+            title: 'Atendimento Concluído',
+            message: `O chamado "${selectedTicket.subject}" foi resolvido. Por favor, avalie a experiência!`,
+            type: 'success',
+            actionUrl: '/minha-area?tab=suporte'
+          }).catch(err => logger.error('Erro ao notificar usuário:', err));
+        }
+      }
+
       await refetchTickets();
+      await refetchMessages();
       toast.success(`Ticket atualizado para ${status}`);
-    } catch {
+    } catch (err) {
+      logger.error('Erro ao atualizar ticket:', err);
       toast.error('Erro ao atualizar ticket.');
     }
   };
@@ -161,13 +184,31 @@ export default function AdminSupport() {
             <select 
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="h-10 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-black text-gray-400"
+              className="h-10 bg-white/5 border border-white/10 rounded-xl px-4 text-[9px] font-black text-gray-400 uppercase"
             >
-              <option value="all">STATUS</option>
+              <option value="all">TODOS STATUS</option>
               <option value="open">ABERTOS</option>
               <option value="in_progress">EM PROGRESSO</option>
               <option value="resolved">RESOLVIDOS</option>
               <option value="closed">FECHADOS</option>
+            </select>
+
+            <select 
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="h-10 bg-white/5 border border-white/10 rounded-xl px-4 text-[9px] font-black text-gray-400 uppercase"
+            >
+              <option value="all">TODAS CATEGORIAS</option>
+              <option value="general">GERAL</option>
+              <option value="technical">TÉCNICO</option>
+              <option value="finance">FINANCEIRO</option>
+              <option value="registration">INSCRIÇÃO</option>
+              <option value="mentorship">MENTORIAS</option>
+              <option value="agenda">PROGRAMAÇÃO</option>
+              <option value="certificates">CERTIFICADOS</option>
+              <option value="networking">NETWORKING</option>
+              <option value="venue">INFRAESTRUTURA</option>
+              <option value="feedback">FEEDBACK</option>
             </select>
           </div>
         ) : (
@@ -519,12 +560,12 @@ export default function AdminSupport() {
             <div className="glass-card p-8 border-white/5 relative overflow-hidden">
                 <h3 className="text-sm font-black text-white uppercase italic tracking-widest mb-6 border-l-2 border-teal-500 pl-4">Feedbacks Recentes</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(tickets as any).filter((t: any) => t.feedback).slice(0, 6).map((ticket: any) => (
+                  {tickets.filter(t => t.feedback).slice(0, 6).map((ticket) => (
                     <div key={ticket.id} className="p-5 rounded-[2rem] bg-white/[0.02] border border-white/5 relative">
                       <Quote className="absolute top-4 right-4 h-8 w-8 text-teal-500/10" />
                       <div className="flex gap-1 mb-3">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={`h-3 w-3 ${s <= ticket.rating ? 'text-teal-400 fill-teal-400' : 'text-gray-800'}`} />
+                          <Star key={s} className={`h-3 w-3 ${s <= (ticket.rating || 0) ? 'text-teal-400 fill-teal-400' : 'text-gray-800'}`} />
                         ))}
                       </div>
                       <p className="text-xs text-gray-300 italic mb-4 leading-relaxed line-clamp-3">"{ticket.feedback}"</p>
@@ -536,7 +577,7 @@ export default function AdminSupport() {
                       </div>
                     </div>
                   ))}
-                  {(tickets as any).filter((t: any) => t.feedback).length === 0 && (
+                  {tickets.filter(t => t.feedback).length === 0 && (
                     <div className="col-span-full py-10 text-center opacity-30">
                       <p className="text-xs font-black uppercase tracking-widest">Nenhum feedback recebido ainda.</p>
                     </div>
