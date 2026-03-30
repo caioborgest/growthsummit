@@ -36,6 +36,7 @@ const PAGE_SIZE = 20;
 const statusColors: Record<string, string> = {
   pago: 'bg-green-500/20 text-green-400',
   paid: 'bg-green-500/20 text-green-400',
+  ativo: 'bg-green-500/20 text-green-400',
   pendente: 'bg-yellow-500/20 text-yellow-400',
   pending: 'bg-yellow-500/20 text-yellow-400',
   cancelled: 'bg-red-500/20 text-red-400',
@@ -44,7 +45,7 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  pago: 'Pago', paid: 'Pago',
+  pago: 'Pago', paid: 'Pago', ativo: 'Pago',
   pendente: 'Aguardando', pending: 'Aguardando',
   cancelled: 'Cancelado', cancelado: 'Cancelado',
   refunded: 'Reembolsado',
@@ -103,7 +104,7 @@ function DetalhesModal({
             { label: 'CPF', value: reg.cpf || '—' },
             {
               label: 'Status Financeiro',
-              value: (reg.status_pagamento === 'pago' || reg.status === 'pago') ? 'Confirmado' : 'Pendente'
+              value: (reg.status_pagamento === 'pago' || reg.status === 'pago' || reg.status === 'ativo' || (reg as any).paymentStatus === 'pago') ? 'Confirmado' : 'Pendente'
             },
             { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,99' : 'R$ 0,00' },
             {
@@ -295,6 +296,7 @@ export default function AdminInscricoes() {
       // Se mudar para Pago ou Grátis, sincronizar status_pagamento
       if (status === 'paid' || status === 'pago' || status === 'free') {
         updates.status_pagamento = 'pago';
+        updates.paymentStatus = 'pago'; // Sincroniza propriedade mapeada para UI local
         updates.status = 'ativo';
       }
 

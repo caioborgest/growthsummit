@@ -234,7 +234,13 @@ export function AdminDashboard() {
 
     const registrationRevenue = isGE
       ? registrations
-        .filter(r => r.status === 'ativo' || r.status === 'pago')
+        .filter(r => 
+          r.status === 'ativo' || 
+          r.status === 'pago' || 
+          r.status === 'paid' || 
+          (r as any).status_pagamento === 'pago' ||
+          (r as any).paymentStatus === 'pago'
+        )
         .reduce((sum, r) => sum + (r.amount || 0), 0)
       : 0;
 

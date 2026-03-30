@@ -37,7 +37,7 @@ export function AdminFinanceiro() {
   const { data: registrations } = useRegistrations();
   const { update: updateProject } = useProjects();
   const { data: companies } = useEmpresasIncentivadoras();
-  const { selectedProject } = useProject();
+  const { selectedProject, setSelectedProject } = useProject();
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [activeView, setActiveView] = useState<'overview' | 'transactions'>('overview');
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -56,17 +56,27 @@ export function AdminFinanceiro() {
     if (!selectedProject?.id) return;
     setIsUpdatingGoals(true);
     try {
+      const updatedSettings = {
+        ...selectedProject.settings,
+        goalRevenue: tempGoals.revenue,
+        goalSponsorship: tempGoals.sponsorship,
+        goalRegistrations: tempGoals.registrations
+      };
+
       await updateProject(selectedProject.id, {
-        settings: {
-          ...selectedProject.settings,
-          goalRevenue: tempGoals.revenue,
-          goalSponsorship: tempGoals.sponsorship,
-          goalRegistrations: tempGoals.registrations
-        }
+        settings: updatedSettings
       });
+
+      // Sincronizar o contexto global para que as outras páginas (Dashboard) vejam a mudança
+      setSelectedProject({
+        ...selectedProject,
+        settings: updatedSettings
+      });
+
       toast.success('Metas atualizadas com sucesso!');
       setShowGoalModal(false);
-    } catch {
+    } catch (err) {
+      console.error('Erro ao atualizar metas:', err);
       toast.error('Erro ao atualizar metas');
     } finally {
       setIsUpdatingGoals(false);
@@ -86,10 +96,14 @@ export function AdminFinanceiro() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const paidRegistrations = registrations.filter(r => 
-    (r.status_pagamento as unknown as string) === 'pago' || 
-    (r.status_pagamento as unknown as string) === 'paid' || 
+    (r as any).status_pagamento === 'pago' || 
+    (r as any).status_pagamento === 'paid' || 
     (r as any).paymentStatus === 'pago' ||
-    ((r.status as unknown as string) === 'pago' && !r.status_pagamento) // Fallback para registros legados
+    (r as any).paymentStatus === 'paid' ||
+    r.status === 'paid' ||
+    r.status === 'pago' ||
+    r.status === 'ativo' || // 'ativo' é o status de inscricoes pagas no banco
+    ((r.status as unknown as string) === 'pago' && !(r as any).status_pagamento)
   );
   const paidRegistrationsCount = paidRegistrations.length;
   const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
