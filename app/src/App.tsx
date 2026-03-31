@@ -158,7 +158,7 @@ function LegalPage({ title }: { title: string }) {
 // ── 404 Not Found
 function NotFound() {
   return (
-    <div className="min-h-screen bg-[#0c0e12] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-300">
       {/* Dynamic Background Elements */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/10 rounded-full blur-[120px] -z-10 -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] -z-10 translate-y-1/2 -translate-x-1/2" />

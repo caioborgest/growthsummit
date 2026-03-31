@@ -12,9 +12,10 @@ interface EmpresaIncentivadoraModalProps {
     isOpen: boolean;
     onClose: () => void;
     isAdmin?: boolean;
+    editingData?: any; // New prop for editing
 }
 
-export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: EmpresaIncentivadoraModalProps) {
+export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, editingData }: EmpresaIncentivadoraModalProps) {
     const DRAFT_KEY = 'empresa_form_draft';
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -30,6 +31,22 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
         objetivo: '',
         amount: ''
     });
+
+    useEffect(() => {
+        if (editingData) {
+            setFormData({
+                nomeResponsavel: editingData.nomeResponsavel || '',
+                email: editingData.email || '',
+                phone: editingData.phone || editingData.telefone || '',
+                nomeEmpresa: editingData.nomeEmpresa || '',
+                quantidadeNoite: String(editingData.quantidadeNoite || '0'),
+                objetivo: editingData.objetivo || '',
+                amount: String(editingData.amount || editingData.valorInvestido || '0')
+            });
+        } else {
+            clearDraft();
+        }
+    }, [editingData, isOpen]);
 
     // Carregar rascunho
     useEffect(() => {
@@ -98,9 +115,8 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 });
             }
 
-            // 2. Salvar na tabela de inscrições (INSERT para permitir múltiplas inscrições)
-            // @ts-expect-error - bypass never type inference issue
-            const { error: dbError } = await supabase.from('inscricoes_empresas_incentivadoras').insert([{
+            // 2. Salvar na tabela de inscrições
+            const dbData = {
                 project_id: projectId || null,
                 nome_responsavel: formData.nomeResponsavel,
                 email: formData.email,
@@ -109,8 +125,23 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                 quantidade_noite: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
                 valor_investido: parseFloat(formData.amount) || 0,
-                status: isAdmin ? 'aprovado' : 'pendente'
-            }]);
+                status: isAdmin ? (editingData?.status || 'aprovado') : 'pendente'
+            };
+
+            if (editingData?.id) {
+                const { error: dbError } = await (supabase as any)
+                    .from('inscricoes_empresas_incentivadoras')
+                    .update(dbData)
+                    .eq('id', editingData.id);
+                if (dbError) throw dbError;
+                logger.info('Empresa atualizada com sucesso');
+            } else {
+                const { error: dbError } = await (supabase as any)
+                    .from('inscricoes_empresas_incentivadoras')
+                    .insert([dbData]);
+                if (dbError) throw dbError;
+                logger.info('Nova empresa inserida com sucesso');
+            }
 
             if (dbError) {
                 logger.error('Erro ao salvar no banco (Empresa):', dbError);
@@ -121,7 +152,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
             const valorTotal = parseFloat(formData.amount) || 0;
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            if (!isAdmin) {
+            if (!isAdmin && !editingData) {
                 const mensagem = encodeURIComponent(
                     `🚀 *INSCRIÇÃO EM LOTE - GE TRIUNFO*\n\n` +
                     `Olá! Acabo de finalizar a inscrição da minha equipe e gostaria de receber o *QR Code para pagamento* e o meu *Cupom de Acesso*.\n\n` +
@@ -184,9 +215,11 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                             <div className="mb-6 sm:mb-8">
                                 <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
                                     <Trophy className="h-3 w-3 mr-2" />
-                                    Voucher Corporativo
+                                    {editingData ? 'Editar Registro' : 'Voucher Corporativo'}
                                 </Badge>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">Inscrição em Lote (Equipe)</h2>
+                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">
+                                    {editingData ? `Editar ${formData.nomeEmpresa}` : 'Inscrição em Lote (Equipe)'}
+                                </h2>
                                 <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Garante desconto de 30% para sua equipe atingir o próximo nível.</p>
                             </div>
 
@@ -331,7 +364,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false }: 
                                     {isSubmitting ? (
                                         <Loader2 className="h-5 w-5 animate-spin" />
                                     ) : (
-                                        'Finalizar Inscrição de Equipe'
+                                        editingData ? 'Salvar Alterações' : 'Finalizar Inscrição de Equipe'
                                     )}
                                 </Button>
                             </form>

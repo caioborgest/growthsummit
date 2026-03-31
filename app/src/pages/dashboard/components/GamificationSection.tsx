@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
-import { Trophy, CheckCircle2, QrCode, MapPin, Sparkles, Star, Gift, LayoutGrid } from 'lucide-react';
+import { useMemo } from 'react';
+import { Trophy, CheckCircle2, QrCode, MapPin, Sparkles, Star, LayoutGrid } from 'lucide-react';
 import { useStands, useStandCheckIns } from '@/hooks/useData';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RaffleSection } from './RaffleSection';
+import { motion } from 'framer-motion';
 
 interface GamificationSectionProps {
   registrationId: string;
@@ -12,7 +11,6 @@ interface GamificationSectionProps {
 export function GamificationSection({ registrationId, setIsScanOpen }: GamificationSectionProps) {
   const { data: stands, isLoading: loadingStands } = useStands();
   const { data: checkins, isLoading: loadingCheckins } = useStandCheckIns();
-  const [activeView, setActiveView] = useState<'stands' | 'raffles'>('stands');
 
   const myCheckins = useMemo(() => (checkins || []).filter(c => c.registrationId === registrationId), [checkins, registrationId]);
 
@@ -113,105 +111,85 @@ export function GamificationSection({ registrationId, setIsScanOpen }: Gamificat
         </div>
       </motion.div>
 
-      {/* Tab switcher */}
       <div className="flex p-1.5 rounded-2xl w-fit" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
-        {[{ key: 'stands', label: 'Stands', Icon: LayoutGrid }, { key: 'raffles', label: 'Sorteios', Icon: Gift }].map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveView(key as any)}
-            className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all"
-            style={{
-              background: activeView === key ? 'linear-gradient(135deg,#ff7043,#ff4035)' : 'transparent',
-              color: activeView === key ? 'white' : 'var(--text-secondary)',
-              boxShadow: activeView === key ? '0 4px 12px rgba(255,112,67,0.3)' : 'none'
-            }}
-          >
-            <Icon className="h-3.5 w-3.5" />{label}
-          </button>
-        ))}
+        <div
+          className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all"
+          style={{
+            background: 'linear-gradient(135deg,#ff7043,#ff4035)',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(255,112,67,0.3)'
+          }}
+        >
+          <LayoutGrid className="h-3.5 w-3.5" />Roteiro de Visitação
+        </div>
       </div>
 
       {/* Content */}
-      <AnimatePresence mode="wait">
-        {activeView === 'stands' ? (
-          <motion.div
-            key="stands"
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
-            transition={{ duration: 0.25 }}
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
-            {(stands || []).map((stand: any, idx: number) => {
-              const isVisited = visitedStandIds.has(stand.id);
-              return (
-                <motion.div
-                  key={stand.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative overflow-hidden rounded-[2rem] p-5 transition-all duration-300 group"
-                  style={{
-                    background: isVisited ? 'rgba(34,197,94,0.06)' : 'var(--surface-1)',
-                    border: `1px solid ${isVisited ? 'rgba(34,197,94,0.2)' : 'var(--border-subtle)'}`,
-                  }}
-                >
-                  {isVisited && (
-                    <div className="absolute top-4 right-4">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.15)' }}>
-                        <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      </div>
-                    </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {(stands || []).map((stand: any, idx: number) => {
+          const isVisited = visitedStandIds.has(stand.id);
+          return (
+            <motion.div
+              key={stand.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative overflow-hidden rounded-[2rem] p-5 transition-all duration-300 group"
+              style={{
+                background: isVisited ? 'rgba(34,197,94,0.06)' : 'var(--surface-1)',
+                border: `1px solid ${isVisited ? 'rgba(34,197,94,0.2)' : 'var(--border-subtle)'}`,
+              }}
+            >
+              {isVisited && (
+                <div className="absolute top-4 right-4">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.15)' }}>
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-[1rem] flex items-center justify-center overflow-hidden"
+                  style={{ background: isVisited ? 'rgba(34,197,94,0.12)' : 'var(--surface-2)', border: `1px solid ${isVisited ? 'rgba(34,197,94,0.2)' : 'var(--border-subtle)'}` }}>
+                  {stand.logoUrl ? (
+                    <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain p-1.5" />
+                  ) : (
+                    <QrCode className="h-5 w-5" style={{ color: isVisited ? '#22c55e' : 'var(--text-muted)' }} />
                   )}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-foreground font-black text-sm italic uppercase truncate">{stand.name}</h4>
+                  {stand.location && (
+                    <p className="text-foreground/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                      <MapPin className="h-2.5 w-2.5" />{stand.location}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-[1rem] flex items-center justify-center overflow-hidden"
-                      style={{ background: isVisited ? 'rgba(34,197,94,0.12)' : 'var(--surface-2)', border: `1px solid ${isVisited ? 'rgba(34,197,94,0.2)' : 'var(--border-subtle)'}` }}>
-                      {stand.logoUrl ? (
-                        <img src={stand.logoUrl} alt={stand.name} className="w-full h-full object-contain p-1.5" />
-                      ) : (
-                        <QrCode className="h-5 w-5" style={{ color: isVisited ? '#22c55e' : 'var(--text-muted)' }} />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-foreground font-black text-sm italic uppercase truncate">{stand.name}</h4>
-                      {stand.location && (
-                        <p className="text-foreground/40 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
-                          <MapPin className="h-2.5 w-2.5" />{stand.location}
-                        </p>
-                      )}
-                    </div>
+              <p className="text-foreground/40 text-xs leading-relaxed mb-4 line-clamp-2">
+                {stand.description || 'Visite este stand e escaneie o QR Code para registrar sua visita.'}
+              </p>
+
+              <div className="mt-auto">
+                {isVisited ? (
+                  <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-green-400"
+                    style={{ background: 'rgba(34,197,94,0.1)' }}>
+                    <CheckCircle2 className="h-3.5 w-3.5" />Check-in Realizado
                   </div>
-
-                  <p className="text-foreground/40 text-xs leading-relaxed mb-4 line-clamp-2">
-                    {stand.description || 'Visite este stand e escaneie o QR Code para registrar sua visita.'}
-                  </p>
-
-                  <div className="mt-auto">
-                    {isVisited ? (
-                      <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-green-400"
-                        style={{ background: 'rgba(34,197,94,0.1)' }}>
-                        <CheckCircle2 className="h-3.5 w-3.5" />Check-in Realizado
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={() => setIsScanOpen(true)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-orange-coral hover:bg-brand-orange-coral/10 transition-all border border-dashed border-brand-orange-coral/30"
-                        style={{ background: 'var(--surface-2)' }}>
-                        <QrCode className="h-3.5 w-3.5" />Escanear Stand
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        ) : (
-          <motion.div key="raffles" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.25 }}>
-            <RaffleSection registrationId={registrationId} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+                ) : (
+                  <button 
+                    onClick={() => setIsScanOpen(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-brand-orange-coral hover:bg-brand-orange-coral/10 transition-all border border-dashed border-brand-orange-coral/30"
+                    style={{ background: 'var(--surface-2)' }}>
+                    <QrCode className="h-3.5 w-3.5" />Escanear Stand
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }

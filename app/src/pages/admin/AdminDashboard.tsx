@@ -136,22 +136,22 @@ function StatCard({ title, value, target, progress, icon: Icon, trend, trendValu
               {trendValue}
             </div>
           )}
-          <button className="text-gray-600 hover:text-white transition-colors p-1">
+          <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
             <MoreVertical className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       <div className="relative z-10">
-        <p className="text-4xl font-black text-white mb-1 tracking-tighter">{value}</p>
-        <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.15em] mb-4">{title}</p>
+        <p className="text-4xl font-black text-foreground mb-1 tracking-tighter">{value}</p>
+        <p className="text-muted-foreground text-xs font-bold uppercase tracking-[0.15em] mb-4">{title}</p>
         
-        <div className="flex items-center justify-between text-[10px] font-black uppercase text-gray-600 mb-2 tracking-widest">
+        <div className="flex items-center justify-between text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">
           <span>Meta: {target}</span>
           <span className={colorClasses.text}>{progress}%</span>
         </div>
         
-        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-accent/30 rounded-full h-1.5 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(progress, 100)}%` }}
@@ -314,12 +314,12 @@ export function AdminDashboard() {
   if (!isProjectSelected) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Card className="bg-[#1E293B] border-[#334155] max-w-lg w-full">
+        <Card className="bg-card border-border-theme max-w-lg w-full shadow-premium">
           <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-[#21808D]/20 flex items-center justify-center mx-auto mb-6">
-              <FolderOpen className="w-10 h-10 text-[#21808D]" />
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <FolderOpen className="w-10 h-10 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">
+            <h2 className="text-2xl font-bold text-foreground mb-3">
               Selecione um Projeto
             </h2>
             <p className="text-[#94A3B8] mb-6">
@@ -361,22 +361,22 @@ export function AdminDashboard() {
       {/* Welcome & Project Info */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-2">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter mb-2">
+          <h1 className="text-3xl font-black text-foreground tracking-tighter mb-2">
             Olá, Admin <span className="text-brand-orange-coral">👋</span>
           </h1>
-          <p className="text-gray-500 text-sm font-medium">
-            Aqui está o panorama geral do ecossistema <span className="text-white font-bold">{selectedProject?.name}</span>
+          <p className="text-muted-foreground text-sm font-medium">
+            Aqui está o panorama geral do ecossistema <span className="text-foreground font-bold">{selectedProject?.name}</span>
           </p>
         </div>
         
-        <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 p-2 rounded-2xl group transition-all hover:bg-white/[0.05]">
+        <div className="flex items-center gap-3 bg-card/50 border border-border-theme p-2 rounded-2xl group transition-all hover:bg-card hover:shadow-premium">
           <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 shrink-0">
             <Zap className="h-6 w-6 text-teal-400" />
           </div>
           <div className="pr-4">
-            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1">Status do Evento</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Status do Evento</p>
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold text-sm tracking-tight">Em Execução</span>
+              <span className="text-foreground font-bold text-sm tracking-tight">Em Execução</span>
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
             </div>
           </div>
@@ -384,7 +384,7 @@ export function AdminDashboard() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl h-10 px-4 group-hover:text-teal-400 transition-all font-bold text-xs"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-xl h-10 px-4 group-hover:text-teal-400 transition-all font-bold text-xs"
             >
               Configurações
             </Button>
@@ -395,9 +395,9 @@ export function AdminDashboard() {
 
       {/* Strategic Actions */}
       <div>
-        <h2 className="text-sm font-black text-gray-600 uppercase tracking-[0.2em] mb-6 flex items-center">
+        <h2 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em] mb-6 flex items-center">
           Ações Estratégicas
-          <div className="h-px bg-white/5 flex-1 ml-6" />
+          <div className="h-px bg-border-theme flex-1 ml-6" />
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.button 
@@ -407,15 +407,15 @@ export function AdminDashboard() {
             className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:rotate-6 transition-all">
                 <Gift className="h-6 w-6 text-orange-400" />
               </div>
               <div className="text-left">
-                <p className="text-white font-bold text-sm tracking-tight leading-none mb-1">Sorteios</p>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{raffles.filter(r => r.status === 'open').length} ATIVOS</p>
+                <p className="text-foreground font-bold text-sm tracking-tight leading-none mb-1">Sorteios</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{raffles.filter(r => r.status === 'open').length} ATIVOS</p>
               </div>
             </div>
-            <ArrowUpRight className="h-4 w-4 text-gray-700 group-hover:text-orange-400 transition-colors" />
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-400 transition-colors" />
           </motion.button>
 
           <motion.button 
@@ -425,15 +425,15 @@ export function AdminDashboard() {
             className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:bg-teal-500/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:rotate-6 transition-all">
                 <Headset className="h-6 w-6 text-teal-400" />
               </div>
               <div className="text-left">
-                <p className="text-white font-bold text-sm tracking-tight leading-none mb-1">Suporte</p>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{tickets.filter(t => t.status === 'open').length} TICKETS</p>
+                <p className="text-foreground font-bold text-sm tracking-tight leading-none mb-1">Suporte</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{tickets.filter(t => t.status === 'open').length} TICKETS</p>
               </div>
             </div>
-            <ArrowUpRight className="h-4 w-4 text-gray-700 group-hover:text-teal-400 transition-colors" />
+            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-teal-400 transition-colors" />
           </motion.button>
 
           <motion.button 
@@ -585,8 +585,8 @@ export function AdminDashboard() {
                 <AlertCircle className="h-5 w-5 text-red-400" />
               </div>
               <div>
-                <p className="text-2xl font-black text-white tracking-tighter">{tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length}</p>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pendências</p>
+                <p className="text-2xl font-black text-foreground tracking-tighter">{tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length}</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Pendências</p>
               </div>
             </div>
           </div>
@@ -700,11 +700,11 @@ export function AdminDashboard() {
       </div>
 
       {/* Upcoming Sessions */}
-      <div className="glass-card p-8 border-white/5 relative overflow-hidden">
+      <div className="glass-card p-8 border-border-theme relative overflow-hidden shadow-premium">
         <div className="flex items-center justify-between mb-8 relative z-10">
           <div>
-            <h2 className="text-xl font-black text-white tracking-tight">Próximas Mentorias</h2>
-            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">AGENDA EM TEMPO REAL</p>
+            <h2 className="text-xl font-black text-foreground tracking-tight">Próximas Mentorias</h2>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">AGENDA EM TEMPO REAL</p>
           </div>
           <Button variant="ghost" size="sm" className="text-teal-400 hover:bg-teal-500/10 rounded-xl font-bold text-xs" onClick={() => toast.info('Gestão completa em breve')}>
             Ver agenda completa
@@ -712,7 +712,7 @@ export function AdminDashboard() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
           {sessions.slice(0, 3).map((session) => (
-            <div key={session.id} className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl group hover:bg-white/[0.05] transition-all">
+            <div key={session.id} className="p-5 bg-accent/30 border border-border-theme rounded-2xl group hover:bg-accent transition-all shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <Badge className={
                   session.status === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
@@ -726,10 +726,10 @@ export function AdminDashboard() {
                   {new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-              <p className="text-white font-black text-lg tracking-tight mb-1 group-hover:text-teal-400 transition-colors">{session.mentorName}</p>
-              <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">{session.menteeName}</p>
+              <p className="text-foreground font-black text-lg tracking-tight mb-1 group-hover:text-teal-400 transition-colors">{session.mentorName}</p>
+              <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">{session.menteeName}</p>
               {session.topic && (
-                <p className="text-gray-400 text-[11px] leading-relaxed italic border-l-2 border-teal-500/30 pl-3">{session.topic}</p>
+                <p className="text-muted-foreground text-[11px] leading-relaxed italic border-l-2 border-teal-500/30 pl-3">{session.topic}</p>
               )}
             </div>
           ))}

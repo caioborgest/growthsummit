@@ -50,6 +50,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        header: {
+          DEFAULT: "var(--header-background)",
+        },
+        "border-theme": "var(--border-theme)",
         // Growth Experience Brand Colors - Paleta Oficial
         brand: {
           // Cores Primárias

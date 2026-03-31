@@ -55,14 +55,36 @@ export default function AdminPatrocinadores() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    companyName: '',
-    level: 'silver' as 'bronze' | 'silver' | 'gold' | 'diamond',
-    investment: 0,
-    contactName: '',
-    contactEmail: '',
-    contactPhone: '',
     status: 'prospect' as 'prospect' | 'negotiation' | 'closed' | 'cancelled'
   });
+  const [editingSponsor, setEditingSponsor] = useState<any>(null);
+
+  const handleOpenModal = (sponsor?: any) => {
+    if (sponsor) {
+      setEditingSponsor(sponsor);
+      setFormData({
+        companyName: sponsor.companyName || '',
+        level: sponsor.level || 'silver',
+        investment: sponsor.investment || 0,
+        contactName: sponsor.contactName || '',
+        contactEmail: sponsor.contactEmail || '',
+        contactPhone: sponsor.contactPhone || '',
+        status: sponsor.status || 'prospect'
+      });
+    } else {
+      setEditingSponsor(null);
+      setFormData({
+        companyName: '',
+        level: 'silver',
+        investment: 0,
+        contactName: '',
+        contactEmail: '',
+        contactPhone: '',
+        status: 'prospect'
+      });
+    }
+    setIsModalOpen(true);
+  };
 
   // const [_selectedSponsor, _setSelectedSponsor] = useState<string | null>(null);
 
@@ -82,23 +104,21 @@ export default function AdminPatrocinadores() {
         return;
       }
 
-      await create({
-        projectId: projectId || '',
-        ...formData,
-        deliverables: []
-      } as any);
-
-      toast.success('Patrocinador adicionado com sucesso!');
+      if (editingSponsor) {
+        await update(editingSponsor.id, {
+          ...formData
+        } as any);
+        toast.success('Patrocinador atualizado!');
+      } else {
+        await create({
+          projectId: projectId || '',
+          ...formData,
+          deliverables: []
+        } as any);
+        toast.success('Patrocinador adicionado com sucesso!');
+      }
       setIsModalOpen(false);
-      setFormData({
-        companyName: '',
-        level: 'silver',
-        investment: 0,
-        contactName: '',
-        contactEmail: '',
-        contactPhone: '',
-        status: 'prospect'
-      });
+      setEditingSponsor(null);
     } catch (err: any) {
       logger.error('Erro ao adicionar patrocinador:', err);
       toast.error('Erro ao adicionar patrocinador: ' + (err.message || 'Erro desconhecido'));
@@ -146,14 +166,14 @@ export default function AdminPatrocinadores() {
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold" onClick={() => toast.info('A integração com a ferramenta de exportação será lançada na v2')}>
+            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold" onClick={() => handleOpenModal()}>
               <Plus className="h-4 w-4 mr-2" />
               Novo Patrocinador
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-dark-200 border-dark-300 text-white">
             <DialogHeader>
-              <DialogTitle>Adicionar Novo Patrocinador</DialogTitle>
+            <DialogTitle>{editingSponsor ? 'Editar Patrocinador' : 'Adicionar Novo Patrocinador'}</DialogTitle>
               <DialogDescription>
                 Informe os detalhes da empresa e contato para o novo patrocínio.
               </DialogDescription>
@@ -238,9 +258,9 @@ export default function AdminPatrocinadores() {
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
-                  {isLoading ? 'Adicionando...' : 'Adicionar Patrocinador'}
-                </Button>
+                  <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                    {isLoading ? 'Salvando...' : editingSponsor ? 'Salvar Alterações' : 'Adicionar Patrocinador'}
+                  </Button>
               </div>
             </form>
           </DialogContent>
@@ -374,11 +394,9 @@ export default function AdminPatrocinadores() {
                   Fechar
                 </Button>
               )}
-              <Button size="sm" variant="outline" className="border-dark-300 text-gray-300">
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" className="text-gray-400">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => handleOpenModal(sponsor)}>
+                <ExternalLink className="h-4 w-4 mr-1" />
+                Editar
               </Button>
             </div>
           </div>

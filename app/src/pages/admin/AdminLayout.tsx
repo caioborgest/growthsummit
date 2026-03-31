@@ -35,6 +35,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjects, useNotifications } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import {
   Popover,
   PopoverContent,
@@ -124,7 +125,7 @@ const navigationGroups: SidebarGroup[] = [
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, hasRole } = useAuth();
+  const { user, logout } = useAuth();
   const { selectedProject, setSelectedProject } = useProject();
   
   // Lista de rotas restritas apenas para ROLE: 'admin' (impede 'staff')
@@ -168,7 +169,7 @@ export function AdminLayout() {
   const activeProjects = projects.filter(p => p.status === 'active');
 
   return (
-    <div className="h-screen bg-[#0c0e12] flex overflow-hidden relative">
+    <div className="h-screen bg-background flex overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
@@ -179,7 +180,7 @@ export function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-72 h-screen bg-[#0c0e12] border-r border-white/5 flex flex-col transition-all duration-500 shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-72 h-screen bg-sidebar border-r border-border-theme flex flex-col transition-all duration-500 shadow-premium ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
       >
         {/* Logo Section */}
@@ -203,7 +204,7 @@ export function AdminLayout() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full justify-between bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 px-4 py-6 rounded-2xl group transition-all duration-300"
+                className="w-full justify-between bg-white/5 border border-border-theme text-foreground hover:bg-white/10 hover:border-white/20 px-4 py-6 rounded-2xl group transition-all duration-300 shadow-sm"
               >
                 <div className="flex items-center gap-3 overflow-hidden text-left">
                   <div className="w-8 h-8 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-orange-coral/30 transition-colors">
@@ -224,7 +225,7 @@ export function AdminLayout() {
                   onClick={() => setSelectedProject(project)}
                   className={`flex items-center gap-3 rounded-xl px-3 py-3 mt-1 cursor-pointer transition-all duration-200 ${selectedProject?.id === project.id
                     ? 'bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
                     }`}
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selectedProject?.id === project.id ? 'bg-brand-orange-coral/20' : 'bg-gray-800'}`}>
@@ -301,12 +302,12 @@ export function AdminLayout() {
                         key={item.id}
                         to={item.path}
                         className={`group flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-300 relative ${active
-                          ? 'bg-brand-orange-coral text-brand-white shadow-lg shadow-brand-orange-coral/20'
-                          : 'text-gray-500 hover:text-white hover:bg-white/5'
+                          ? 'bg-brand-orange-coral text-white shadow-premium shadow-brand-orange-coral/20'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                           }`}
                       >
                         <div className="flex items-center relative z-10">
-                          <item.icon className={`h-5 w-5 mr-3 transition-transform duration-300 group-hover:scale-110 ${active ? 'text-white' : 'text-gray-500 group-hover:text-brand-orange-coral'}`} />
+                          <item.icon className={`h-5 w-5 mr-3 transition-transform duration-300 group-hover:scale-110 ${active ? 'text-white' : 'text-muted-foreground group-hover:text-brand-orange-coral'}`} />
                           <span className="tracking-tight">{item.name}</span>
                         </div>
                         {item.badge && (
@@ -330,10 +331,10 @@ export function AdminLayout() {
         </nav>
 
         {/* User Profile Section Premium */}
-        <div className="p-4 lg:p-6 mt-auto border-t border-white/5 bg-white/[0.02]">
+        <div className="p-4 lg:p-6 mt-auto border-t border-border-theme bg-muted/20">
           <div
             onClick={() => setIsProfileOpen(true)}
-            className="bg-white/5 border border-white/10 rounded-2xl lg:rounded-3xl p-3 lg:p-4 transition-all hover:bg-white/10 hover:border-white/20 group cursor-pointer"
+            className="bg-accent/50 border border-border-theme rounded-2xl lg:rounded-3xl p-3 lg:p-4 transition-all hover:bg-accent hover:border-white/20 group cursor-pointer shadow-sm"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">
@@ -374,9 +375,9 @@ export function AdminLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#0c0e12] relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-background relative transition-colors duration-300">
         {/* Glass Header Refined */}
-        <header className="sticky top-0 z-30 bg-[#0c0e12]/80 backdrop-blur-xl border-b border-white/5 px-4 sm:px-8 py-4 sm:py-6">
+        <header className="sticky top-0 z-30 bg-header backdrop-blur-xl border-b border-border-theme px-4 sm:px-8 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <button
@@ -391,7 +392,7 @@ export function AdminLayout() {
                   <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral animate-pulse" />
                   Plataforma de Gestão v3.0
                 </div>
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-3">
+                <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
                   {navigationGroups.flatMap(g => g.items).find(i => isActive(i.path))?.name || 'Dashboard Central'}
                   <span className="text-white/10 text-3xl font-thin hidden lg:inline">/</span>
                   <span className="text-gray-500 text-sm font-medium hidden lg:inline pt-1 leading-none">
@@ -429,10 +430,10 @@ export function AdminLayout() {
               {/* Bell Notification */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="relative bg-white/5 hover:bg-white/10 text-gray-400 h-10 w-10 flex items-center justify-center rounded-2xl transition-all border border-white/10 group">
+                  <button className="relative bg-muted/50 hover:bg-accent text-muted-foreground h-10 w-10 flex items-center justify-center rounded-2xl transition-all border border-border-theme group shadow-sm">
                     <Bell className="h-5 w-5 group-hover:text-brand-orange-coral transition-colors" />
                     {notifications.filter(n => !n.read).length > 0 && (
-                      <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-[#0c0e12] animate-pulse"></span>
+                      <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-background animate-pulse"></span>
                     )}
                   </button>
                 </PopoverTrigger>
@@ -530,8 +531,8 @@ export function AdminLayout() {
           </div>
 
           {/* Footer Copyright inside main content */}
-          <footer className="px-8 py-6 border-t border-white/5 text-center sm:text-left bg-dark-400/20 shrink-0">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+          <footer className="px-8 py-6 border-t border-border-theme text-center sm:text-left bg-muted/10 shrink-0">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
               © 2026 Growth Experience • Advanced Management Ecosystem
             </p>
           </footer>

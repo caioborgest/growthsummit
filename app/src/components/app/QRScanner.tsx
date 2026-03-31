@@ -25,8 +25,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
             await html5QrCode.start(
                 cameraIdOrConfig,
                 {
-                    fps: 10,
-                    qrbox: { width: 320, height: 320 },
+                    fps: 20,
+                    qrbox: { width: 450, height: 450 },
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
@@ -111,22 +111,22 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-[#0c0e12]/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-dark-200 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
-                <div className="p-8 border-b border-white/5 flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-xl bg-card rounded-[2.5rem] overflow-hidden border border-border-theme shadow-premium relative">
+                <div className="p-8 border-b border-border-theme flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center">
                             <Camera className="h-5 w-5 text-brand-orange-coral" />
                         </div>
                         <div>
-                            <h2 className="text-white font-black text-lg tracking-tight leading-none uppercase">{title}</h2>
-                            <p className="text-[10px] text-gray-500 font-bold tracking-widest mt-1 uppercase">Acreditação Digital</p>
+                            <h2 className="text-foreground font-black text-lg tracking-tight leading-none uppercase">{title}</h2>
+                            <p className="text-[10px] text-muted-foreground font-bold tracking-widest mt-1 uppercase">Acreditação Digital</p>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-gray-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl"
+                        className="text-muted-foreground hover:text-foreground bg-accent/20 hover:bg-accent rounded-xl"
                         onClick={onClose}
                     >
                         <XCircle className="h-6 w-6" />
@@ -135,18 +135,18 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
 
                 <div className="p-6">
                     {isLoading ? (
-                        <div className="aspect-square bg-dark-300 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-white/5">
+                        <div className="aspect-square bg-muted/20 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-border-theme">
                             <div className="w-12 h-12 border-4 border-brand-orange-coral/30 border-t-brand-orange-coral rounded-full animate-spin mb-4" />
-                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">Iniciando Módulo...</p>
+                            <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">Iniciando Módulo...</p>
                         </div>
                     ) : error ? (
-                        <div className="aspect-square bg-dark-300 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-red-500/10">
+                        <div className="aspect-square bg-muted/20 rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-red-500/10">
                             <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mb-6">
                                 <XCircle className="h-8 w-8 text-red-500" />
                             </div>
-                            <p className="text-white font-black uppercase tracking-tight mb-2">Bloqueio de Câmera</p>
-                            <p className="text-gray-400 text-xs mb-8">{error}</p>
-                            <Button onClick={() => window.location.reload()} className="bg-white/5 border border-white/10 text-white font-bold px-8 h-12 rounded-xl hover:bg-white/10">
+                            <p className="text-foreground font-black uppercase tracking-tight mb-2">Bloqueio de Câmera</p>
+                            <p className="text-muted-foreground text-xs mb-8">{error}</p>
+                            <Button onClick={() => window.location.reload()} className="bg-primary/10 border border-primary/20 text-primary font-bold px-8 h-12 rounded-xl hover:bg-primary/20">
                                 RECARREGAR PÁGINA
                             </Button>
                         </div>
@@ -154,17 +154,17 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                         <div className="space-y-6">
                             {/* Camera Selector drop-down if multiple cameras */}
                             {cameras.length > 1 && (
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-2 flex items-center gap-3">
+                                <div className="bg-muted/50 border border-border-theme rounded-2xl p-2 flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center shrink-0">
                                         <Camera className="h-4 w-4 text-brand-orange-coral" />
                                     </div>
                                     <select 
-                                        className="bg-transparent text-white text-xs font-bold w-full focus:outline-none cursor-pointer pr-4"
+                                        className="bg-transparent text-foreground text-xs font-bold w-full focus:outline-none cursor-pointer pr-4"
                                         value={selectedCameraId}
                                         onChange={(e) => handleCameraChange(e.target.value)}
                                     >
                                         {cameras.map(camera => (
-                                            <option key={camera.id} value={camera.id} className="bg-dark-300">
+                                            <option key={camera.id} value={camera.id} className="bg-card">
                                                 {camera.label || `Câmera ${camera.id.substring(0, 5)}`}
                                             </option>
                                         ))}
@@ -197,8 +197,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                     )}
                 </div>
 
-                <div className="p-8 bg-white/[0.02] border-t border-white/5 text-center">
-                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
+                <div className="p-8 bg-muted/20 border-t border-border-theme text-center">
+                    <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
                         Posicione o QR Code no centro para validação automática.
                     </p>
                 </div>

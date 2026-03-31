@@ -11,7 +11,8 @@ import {
     Mail,
     Phone,
     Medal,
-    TrendingUp
+    TrendingUp,
+    Edit3
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,17 @@ export default function AdminEmpresasIncentivadoras() {
     const { data: empresas, update, remove, isLoading } = useEmpresasIncentivadoras();
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingEmpresa, setEditingEmpresa] = useState<any>(null);
+
+    const handleOpenModal = (empresa?: any) => {
+        setEditingEmpresa(empresa || null);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setEditingEmpresa(null);
+        setIsModalOpen(false);
+    };
 
     const filteredEmpresas = (empresas || []).filter(emp => {
         // Exclude super admin from company specific lists
@@ -105,7 +117,7 @@ export default function AdminEmpresasIncentivadoras() {
                     </div>
                     <div className="flex-1" />
                     <Button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => handleOpenModal()}
                         className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-12 px-6 rounded-2xl shadow-lg shadow-brand-orange-coral/20"
                     >
                         <Plus className="h-4 w-4 mr-2" />
@@ -169,14 +181,24 @@ export default function AdminEmpresasIncentivadoras() {
                                 <Badge className={statusColors[emp.status] || 'bg-gray-500/20 text-gray-400'}>
                                     {emp.status}
                                 </Badge>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDelete(emp.id)}
-                                    className="h-8 w-8 p-0 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleOpenModal(emp)}
+                                        className="h-8 w-8 p-0 text-teal-500/50 hover:text-teal-400 hover:bg-teal-500/10 rounded-lg"
+                                    >
+                                        <Edit3 className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDelete(emp.id)}
+                                        className="h-8 w-8 p-0 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
@@ -261,8 +283,9 @@ export default function AdminEmpresasIncentivadoras() {
 
             <EmpresaIncentivadoraModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleCloseModal}
                 isAdmin={true}
+                editingData={editingEmpresa}
             />
         </div>
     );

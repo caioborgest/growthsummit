@@ -9,41 +9,78 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'og-image.png', 'fonts/*.woff2'],
       manifest: {
         id: 'com.growthexperience.app',
         name: 'Growth Experience 2026',
         short_name: 'GE 2026',
-        description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA.',
-        version: '1.1.0',
+        description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA do Sertão.',
+        version: '1.2.0',
         start_url: '/',
         theme_color: '#21808D',
         background_color: '#0c0e12',
         display: 'standalone',
         orientation: 'portrait-primary',
+        categories: ['education', 'business', 'event'],
         icons: [
           {
-            src: '/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
           }
+        ],
+        screenshots: [
+           {
+             src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/gx-social-share.png',
+             sizes: '1280x720',
+             type: 'image/png',
+             form_factor: 'wide',
+             label: 'Dashboard Growth Experience'
+           }
         ]
       },
       workbox: {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/xeuqtxxhncvechrxerqw\.supabase\.co\/storage\/v1\/object\/public\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'supabase-assets-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          }
+        ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
       }

@@ -116,6 +116,15 @@ export default function AdminProjetos() {
       };
 
       await update(editingProject.id, updateData);
+
+      // Sincronizar contexto se o projeto editado for o selecionado no momento
+      if (selectedProject?.id === editingProject.id) {
+        setSelectedProject({
+          ...selectedProject,
+          ...updateData
+        });
+      }
+
       toast.success('Projeto atualizado com sucesso!');
       setIsDialogOpen(false);
       setEditingProject(null);
@@ -397,7 +406,11 @@ export default function AdminProjetos() {
                             settings: {
                               ...defaultSettings,
                               ...formData.settings,
-                              ticketPrices: { ...formData.settings?.ticketPrices, standard: parseFloat(e.target.value) || 0 }
+                              ticketPrices: { 
+                                standard: parseFloat(e.target.value) || 0,
+                                pro: (formData.settings?.ticketPrices?.pro ?? defaultSettings.ticketPrices.pro) as number,
+                                vip: (formData.settings?.ticketPrices?.vip ?? defaultSettings.ticketPrices.vip) as number
+                              }
                             }
                           })}
                           className="bg-[#0F172A] border-[#334155]"
@@ -413,7 +426,11 @@ export default function AdminProjetos() {
                             settings: {
                               ...defaultSettings,
                               ...formData.settings,
-                              ticketPrices: { ...formData.settings?.ticketPrices, pro: parseFloat(e.target.value) || 0 }
+                              ticketPrices: { 
+                                standard: (formData.settings?.ticketPrices?.standard ?? defaultSettings.ticketPrices.standard) as number,
+                                pro: parseFloat(e.target.value) || 0,
+                                vip: (formData.settings?.ticketPrices?.vip ?? defaultSettings.ticketPrices.vip) as number
+                              }
                             }
                           })}
                           className="bg-[#0F172A] border-[#334155]"
@@ -429,7 +446,11 @@ export default function AdminProjetos() {
                             settings: {
                               ...defaultSettings,
                               ...formData.settings,
-                              ticketPrices: { ...formData.settings?.ticketPrices, vip: parseFloat(e.target.value) || 0 }
+                              ticketPrices: { 
+                                standard: (formData.settings?.ticketPrices?.standard ?? defaultSettings.ticketPrices.standard) as number,
+                                pro: (formData.settings?.ticketPrices?.pro ?? defaultSettings.ticketPrices.pro) as number,
+                                vip: parseFloat(e.target.value) || 0
+                              }
                             }
                           })}
                           className="bg-[#0F172A] border-[#334155]"
@@ -454,7 +475,31 @@ export default function AdminProjetos() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Limite Físico</Label>
+                        <Label>Meta Financeira (R$)</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.goalRevenue || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: { ...formData.settings!, goalRevenue: parseInt(e.target.value) || 0 }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Meta Patrocínio (R$)</Label>
+                        <Input
+                          type="number"
+                          value={formData.settings?.goalSponsorship || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            settings: { ...formData.settings!, goalSponsorship: parseInt(e.target.value) || 0 }
+                          })}
+                          className="bg-[#0F172A] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Limite Físico (Capacidade)</Label>
                         <Input
                           type="number"
                           value={formData.settings?.maxRegistrations || ''}

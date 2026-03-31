@@ -1,19 +1,41 @@
-import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, BookOpen, ChevronRight, Zap } from 'lucide-react';
+import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
+interface AgendaSession {
+    id: string;
+    title?: string;
+    titulo?: string;
+    startTime?: string;
+    horario_inicio?: string;
+    endTime?: string;
+    horario_fim?: string;
+    room?: string;
+    local?: string;
+    type?: string;
+    tipo?: string;
+    category?: string;
+    color?: string;
+    description?: string;
+}
+
 interface AgendaSectionProps {
-    myRegistration: any;
+    myRegistration: { id: string; nome?: string; palestrasNoturnas?: boolean } | null;
     isActuallyPaid?: boolean;
     onUpgradeClick?: () => void;
-    cursosSelecionados: any[];
-    myMentorships?: any[];
+    cursosSelecionados: AgendaSession[];
+    myMentorships?: Array<{
+        id: string;
+        mentorName: string;
+        scheduledAt: string;
+        status: string;
+        category?: string;
+    }>;
     setIsSelfCheckInOpen: (open: boolean) => void;
     navigate: (path: string) => void;
-    activityCheckIns?: any[];
-    onSessionClick?: (session: any) => void;
-    allSessions?: any[];
+    activityCheckIns?: Array<{ session_id: string; registration_id: string }>;
+    onSessionClick?: (session: AgendaSession) => void;
+    allSessions?: AgendaSession[];
 }
 
 export function AgendaSection({
@@ -59,7 +81,7 @@ export function AgendaSection({
     .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i)
     .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
 
-    const SessionCard = ({ item, color = '#14b8a6', delay = 0 }: { item: any, color?: string, delay?: number }) => {
+    const SessionCard = ({ item, color = '#14b8a6', delay = 0 }: { item: AgendaSession, color?: string, delay?: number }) => {
         const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
         return (
             <motion.div
@@ -77,46 +99,46 @@ export function AgendaSection({
                 <div className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: `radial-gradient(ellipse at top right, ${color}12, transparent 70%)` }} />
 
-                <div className="flex items-start gap-5 relative z-10">
+                <div className="flex items-center sm:items-start gap-4 sm:gap-5 relative z-10">
                     {/* Time */}
-                    <div className="text-center min-w-[56px] shrink-0">
-                        <p className="font-black text-base leading-tight" style={{ color }}>{item.startTime || item.horario_inicio || '--:--'}</p>
-                        <p className="text-foreground/30 text-[9px] font-black uppercase tracking-widest mt-0.5">{item.endTime || item.horario_fim || ''}</p>
+                    <div className="text-center min-w-[56px] sm:min-w-[64px] shrink-0">
+                        <p className="font-black text-sm sm:text-base leading-tight uppercase font-mono" style={{ color }}>{item.startTime || item.horario_inicio || '--:--'}</p>
+                        <p className="text-foreground/30 text-[8px] sm:text-[9px] font-black uppercase tracking-widest mt-0.5">{item.endTime || item.horario_fim || ''}</p>
                     </div>
-
+ 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 space-y-2">
-                        <h4 className="text-foreground font-black leading-tight uppercase italic text-sm truncate group-hover:transition-colors"
-                            style={{ '--hover-color': color } as any}>
+                    <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+                        <h4 className="text-foreground font-black leading-tight uppercase italic text-xs sm:text-sm break-words sm:truncate group-hover:transition-colors"
+                            style={{ '--hover-color': color } as React.CSSProperties}>
                             {item.title || item.titulo}
                         </h4>
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-[9px] text-foreground/40 font-black uppercase tracking-wider flex items-center gap-1">
+                            <span className="text-[8px] sm:text-[9px] text-foreground/40 font-black uppercase tracking-wider flex items-center gap-1">
                                 <MapPin className="h-2.5 w-2.5" />{item.room || item.local || 'Auditório Principal'}
                             </span>
-                            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                                 style={{ background: `${color}15`, color }}>
                                 {item.type || item.tipo || 'PALESTRA'}
                             </span>
                         </div>
-
+ 
                         {!isCheckedIn && (
                             <button
                                 onClick={e => { e.stopPropagation(); setIsSelfCheckInOpen(true); }}
-                                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all border active:scale-95"
+                                className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all border active:scale-95 mt-1"
                                 style={{ background: `${color}10`, color, borderColor: `${color}25` }}
                             >
                                 <QrCode className="h-2.5 w-2.5" />Confirmar Presença
                             </button>
                         )}
                     </div>
-
+ 
                     {/* Status indicator */}
-                    <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                    <div className="shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center"
                         style={{ background: isCheckedIn ? 'rgba(34,197,94,0.15)' : `${color}10` }}>
                         {isCheckedIn
-                            ? <CheckCircle2 className="h-4 w-4 text-green-400" />
-                            : <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" style={{ color }} />
+                            ? <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:h-4 text-green-400" />
+                            : <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:h-4 transition-transform group-hover:translate-x-0.5" style={{ color }} />
                         }
                     </div>
                 </div>

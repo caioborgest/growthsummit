@@ -374,7 +374,7 @@ function CheckInModal({ registration, onClose }: { registration: MyRegistration;
 
           <div className="flex flex-col gap-3 w-full">
             <Badge className="bg-teal-500/20 text-teal-400 border border-teal-500/30 text-xs px-6 py-3 rounded-2xl justify-center font-black">
-              {registration.palestrasNoturnas ? '🌟 PASSE COMPLETO' : '☀️ FREE MORNING'}
+              {registration.palestrasNoturnas || registration.status === 'pago' ? '🌟 PASSE COMPLETO' : '☀️ FREE MORNING'}
             </Badge>
             <p className="text-gray-500 text-[10px] font-medium leading-relaxed">
               Válido para entrada única.<br />Documento de identidade pode ser solicitado.
@@ -1154,7 +1154,7 @@ export function DashboardParticipante() {
                <QuickActions 
                   onStartupClick={() => setIsStartupModalOpen(true)}
                   onB2BClick={() => setIsB2BModalOpen(true)}
-                  onMentoriaClick={() => myRegistration?.palestrasNoturnas ? setActiveTab('mentorias' as any) : setShowUpgradeModal(true)}
+                  onMentoriaClick={() => (myRegistration?.palestrasNoturnas || isActuallyPaid) ? setActiveTab('mentorias' as any) : setShowUpgradeModal(true)}
                   showMentoria={selectedProject?.settings?.enableMentoring ?? true}
                   showStartup={selectedProject?.settings?.enableStartups ?? true}
                   showB2B={selectedProject?.settings?.enableB2B ?? true}
@@ -1315,7 +1315,16 @@ export function DashboardParticipante() {
             )}
 
             {activeTab === 'dados' && (
-              <ProfileForm />
+              <div className="space-y-10 pb-10">
+                <ProfileForm />
+                <div className="flex flex-col items-center justify-center gap-3 pt-10 border-t border-white/5 opacity-30">
+                   <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" alt="GE" className="w-6 h-6 grayscale" />
+                   <div className="text-center">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Growth Experience Platform</p>
+                     <p className="text-[8px] font-bold uppercase tracking-widest mt-1">Versão 3.2.0 • Stable Release</p>
+                   </div>
+                </div>
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
