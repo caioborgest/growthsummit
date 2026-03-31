@@ -9,7 +9,10 @@ import {
   Plus,
   Zap,
   Sparkles,
-  Calendar
+  Calendar,
+  User,
+  TrendingUp,
+  ChevronRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

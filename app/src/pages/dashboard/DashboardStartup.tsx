@@ -13,6 +13,7 @@ import {
   Phone,
   Mail,
   CheckCircle,
+  Handshake,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -84,7 +85,7 @@ export function DashboardStartup() {
     const now = new Date();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     return sorted.find(s => {
-      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && c.registrationId === registration?.id);
       return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0];
   }, [allSessions, activityCheckIns, registration?.id]);
@@ -191,6 +192,7 @@ export function DashboardStartup() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
+          onSupportClick={() => setActiveTab('suporte')}
           onNotificationRead={handleMarkAsRead}
         />
 
@@ -287,7 +289,7 @@ export function DashboardStartup() {
                         subtitle={nextActivity.type || "Atividade Gerada"}
                         time={nextActivity.startTime || "00:00"}
                         duration="45 min"
-                        isConfirmed={activityCheckIns?.some(c => c.session_id === nextActivity.id && c.registration_id === registration?.id)}
+                        isConfirmed={activityCheckIns?.some(c => c.sessionId === nextActivity.id && c.registrationId === registration?.id)}
                         onClick={() => setActiveTab('agenda')}
                     />
                 )}
@@ -696,3 +698,5 @@ export function DashboardStartup() {
     </div>
   );
 }
+
+export default DashboardStartup;

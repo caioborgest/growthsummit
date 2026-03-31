@@ -539,7 +539,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (currentSession && isMountedRef.current) {
+          logger.debug('[Auth] Session found, updating state...');
           await updateAuthState(currentSession);
+        } else {
+          logger.debug('[Auth] No session found, setting isLoading to false');
+          if (isMountedRef.current) setIsLoading(false);
         }
       } catch (error: any) {
         // AbortError can also surface as a thrown exception
@@ -547,9 +551,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           logger.debug('[Auth] Init aborted (React lifecycle) — ignorando AbortError');
         } else {
           logger.error('Fatal auth init error:', error);
+          if (isMountedRef.current) setIsLoading(false);
         }
       } finally {
-        if (isMountedRef.current) setIsLoading(false);
+        if (isMountedRef.current) {
+          // Garante que o loading seja liberado mesmo se der erro ou fechar prematuro
+          setIsLoading(false);
+          isInitializingRef.current = false;
+        }
       }
     };
 

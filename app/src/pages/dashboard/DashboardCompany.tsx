@@ -148,7 +148,7 @@ export function DashboardCompany() {
     const now = new Date();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     return sorted.find(s => {
-      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && c.registrationId === registration?.id);
       return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0];
   }, [sessions, activityCheckIns, registration?.id]);
@@ -861,3 +861,5 @@ export function DashboardCompany() {
     </div>
   );
 }
+
+export default DashboardCompany;

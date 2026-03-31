@@ -19,7 +19,7 @@ import {
   Phone,
   Search,
 } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -66,7 +66,7 @@ export function DashboardSponsor() {
     const now = new Date();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     return sorted.find(s => {
-      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.session_id === s.id && c.registration_id === registration?.id);
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && c.registrationId === registration?.id);
       return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0];
   }, [allSessions, activityCheckIns, registration?.id]);
@@ -86,7 +86,7 @@ export function DashboardSponsor() {
   const deliverables = useMemo(() => deliverablesData || [], [deliverablesData]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
     navigate('/login');
   };
 
@@ -150,9 +150,9 @@ export function DashboardSponsor() {
 
   const stats = {
     totalDeliverables: deliverables.length,
-    completed: deliverables.filter(d => d.status === 'completed').length,
-    inProgress: deliverables.filter(d => d.status === 'in_progress').length,
-    pending: deliverables.filter(d => d.status === 'pending').length,
+    completed: deliverables.filter((d: any) => d.status === 'completed').length,
+    inProgress: deliverables.filter((d: any) => d.status === 'in_progress').length,
+    pending: deliverables.filter((d: any) => d.status === 'pending').length,
   };
 
   const getStatusBadge = (status: string) => {
@@ -181,6 +181,7 @@ export function DashboardSponsor() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
+          onSupportClick={() => setActiveTab('suporte')}
           onNotificationRead={handleMarkAsRead}
         />
 
@@ -876,3 +877,5 @@ export function DashboardSponsor() {
     </div>
   );
 }
+
+export default DashboardSponsor;

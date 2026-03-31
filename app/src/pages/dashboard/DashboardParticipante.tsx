@@ -55,7 +55,7 @@ import { LeadScanner } from './components/shared/LeadScanner';
 import { generateTicketPDF } from '@/lib/reports';
 import { parseQRString } from '@/lib/qrUtils';
 
-export default function DashboardParticipante() {
+export function DashboardParticipante() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { selectedProject } = useProject();
@@ -400,3 +400,5 @@ export default function DashboardParticipante() {
     </div>
   );
 }
+
+export default DashboardParticipante;

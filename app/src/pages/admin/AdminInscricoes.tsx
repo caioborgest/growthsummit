@@ -608,12 +608,12 @@ export default function AdminInscricoes() {
       </div>
 
       {/* Main Content Area */}
-      <div className="glass-card border-white/5 rounded-[2.5rem] overflow-hidden">
-        <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
-          <table className="w-full text-left border-collapse">
+      <div className="admin-table-container overflow-hidden">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse responsive-table">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.01]">
-                <th className="p-6">
+                <th className="p-6 hidden sm:table-cell">
                   <input
                     type="checkbox"
                     className="h-5 w-5 rounded-md bg-white/5 border-white/10 checked:bg-teal-500"
@@ -625,7 +625,7 @@ export default function AdminInscricoes() {
                 <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic">Participante</th>
                 <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic text-center">Acreditação</th>
                 <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic">Financeiro</th>
-                <th className="p-6"></th>
+                <th className="p-6 text-right text-[10px] font-black uppercase text-gray-500 tracking-widest italic pt-6 pr-6">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -644,7 +644,7 @@ export default function AdminInscricoes() {
                     transition={{ delay: idx * 0.02 }}
                     className="group hover:bg-white/[0.02] transition-colors"
                   >
-                    <td className="p-6">
+                    <td className="p-6 hidden sm:table-cell">
                       <input
                         type="checkbox"
                         className="h-5 w-5 rounded-md bg-white/5 border-white/10 checked:bg-teal-500"
@@ -652,13 +652,13 @@ export default function AdminInscricoes() {
                         onChange={() => toggleSelection(reg.id)}
                       />
                     </td>
-                    <td className="p-6">
+                    <td className="p-6" data-label="Ticket / Data">
                       <p className="text-white font-mono text-xs font-black tracking-tight mb-1 group-hover:text-brand-orange-coral transition-colors">{reg.ticketNumber}</p>
                       <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest">{new Date(reg.createdAt).toLocaleDateString('pt-BR')}</p>
                     </td>
-                    <td className="p-6">
+                    <td className="p-6" data-label="Participante">
                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform hidden sm:flex">
                             <User className="h-5 w-5 text-gray-500" />
                           </div>
                           <div>
@@ -667,7 +667,7 @@ export default function AdminInscricoes() {
                           </div>
                        </div>
                     </td>
-                    <td className="p-6">
+                    <td className="p-6" data-label="Acreditação">
                       <div className="flex items-center justify-center gap-2">
                         {(() => {
                            const regCheckIns = checkInsByRegId.get(reg.id) || [];
@@ -685,8 +685,8 @@ export default function AdminInscricoes() {
                         )}
                       </div>
                     </td>
-                    <td className="p-6">
-                       <div className="flex flex-col gap-1.5">
+                    <td className="p-6" data-label="Financeiro">
+                       <div className="flex flex-col gap-1.5 items-end sm:items-start">
                           {(() => {
                             const config = getStatusConfig(reg.status_pagamento || reg.status);
                             return (
@@ -705,9 +705,10 @@ export default function AdminInscricoes() {
                           size="sm"
                           variant="ghost"
                           onClick={() => setDetalhes(reg)}
-                          className="h-10 w-10 p-0 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-teal-500/20 hover:border-teal-500/20 border border-transparent transition-all"
+                          className="h-12 sm:h-10 w-full sm:w-10 rounded-xl bg-brand-orange-coral/10 text-brand-orange-coral sm:bg-white/5 sm:text-gray-400 hover:text-white hover:bg-teal-500/20 hover:border-teal-500/20 border border-brand-orange-coral/20 sm:border-transparent transition-all font-black text-[10px] uppercase sm:normal-case"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 sm:mr-0 mr-2" />
+                          <span className="sm:hidden">VER DETALHES</span>
                         </Button>
                     </td>
                   </motion.tr>

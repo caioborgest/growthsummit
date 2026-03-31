@@ -1,8 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { FileText, Home as HomeIcon, ArrowLeft } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import { useEffect } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
 
@@ -77,11 +76,11 @@ const ResetPassword = lazyWithRetry(() => import('./pages/auth/ResetPassword'), 
 const AuthCallback = lazyWithRetry(() => import('./pages/auth/AuthCallback'), 'AuthCallback');
 
 // ── Dashboards (lazy — each in its own chunk)
-const DashboardParticipante = lazyWithRetry(() => import('./pages/dashboard/DashboardParticipante'), 'DashboardParticipante');
+const DashboardParticipante = lazyWithRetry(() => import('./pages/dashboard/DashboardParticipante'));
 const DashboardMentor = lazyWithRetry(() => import('./pages/dashboard/DashboardMentor'));
-const DashboardCompany = lazyWithRetry(() => import('./pages/dashboard/DashboardCompany'), 'DashboardCompany');
-const DashboardStartup = lazyWithRetry(() => import('./pages/dashboard/DashboardStartup'), 'DashboardStartup');
-const DashboardSponsor = lazyWithRetry(() => import('./pages/dashboard/DashboardSponsor'), 'DashboardSponsor');
+const DashboardCompany = lazyWithRetry(() => import('./pages/dashboard/DashboardCompany'));
+const DashboardStartup = lazyWithRetry(() => import('./pages/dashboard/DashboardStartup'));
+const DashboardSponsor = lazyWithRetry(() => import('./pages/dashboard/DashboardSponsor'));
 const Certificados = lazyWithRetry(() => import('./pages/dashboard/Certificados'), 'Certificados');
 const ComingSoon = lazyWithRetry(() => import('./pages/ComingSoon'), 'ComingSoon');
 
@@ -203,12 +202,23 @@ function NotFound() {
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const [hasTimedOut, setHasTimedOut] = useState(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        console.warn('[ProtectedRoute] Loading state timed out! Redirecting to login for safety.');
+        setHasTimedOut(true);
+      }, 5000); // 5s timeout
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
+
+  if (isLoading && !hasTimedOut) {
     return <PageLoader />;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || hasTimedOut) {
     console.info('[ProtectedRoute] Usuário não autenticado, redirecionando para /login');
     return <Navigate to="/login" replace />;
   }
