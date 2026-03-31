@@ -388,15 +388,15 @@ export function AdminLayout() {
               </button>
 
               <div className="hidden sm:block">
-                <div className="flex items-center gap-2 text-xs font-bold text-brand-orange-coral uppercase tracking-widest mb-1">
+                <div className="flex items-center gap-2 text-[10px] font-black text-brand-orange-coral uppercase tracking-[0.25em] mb-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral animate-pulse" />
-                  Plataforma de Gestão v3.0
+                  Management Platform v3.0
                 </div>
-                <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
+                <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tighter flex items-center gap-3">
                   {navigationGroups.flatMap(g => g.items).find(i => isActive(i.path))?.name || 'Dashboard Central'}
-                  <span className="text-white/10 text-3xl font-thin hidden lg:inline">/</span>
-                  <span className="text-gray-500 text-sm font-medium hidden lg:inline pt-1 leading-none">
-                    {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  <span className="text-white/5 text-4xl font-thin hidden lg:inline">/</span>
+                  <span className="text-gray-500 text-xs font-bold uppercase tracking-widest hidden lg:inline pt-1">
+                    {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </span>
                 </h1>
               </div>
@@ -492,11 +492,11 @@ export function AdminLayout() {
                 </PopoverContent>
               </Popover>
 
-              {/* Status Badge */}
+              {/* Project Status Badge — Enhanced Dual Contrast */}
               {selectedProject && (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
-                  <div className="w-2 h-2 rounded-full bg-teal-500 animate-glow-pulse" />
-                  <span className="text-xs font-bold uppercase tracking-wider">{selectedProject.name}</span>
+                <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-[#14B8A6] shadow-lg shadow-[#14B8A6]/5">
+                  <div className="w-2 h-2 rounded-full bg-[#14B8A6] animate-glow-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em]">{selectedProject.name}</span>
                 </div>
               )}
 
@@ -538,9 +538,9 @@ export function AdminLayout() {
           </footer>
         </div>
 
-        {/* Dynamic Shadow Gradients for Depth */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange-coral/5 rounded-full blur-[120px] -z-10 -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px] -z-10 translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+        {/* Dynamic Shadow Gradients for Depth — Improved Duo Intensity */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#FF7043]/5 rounded-full blur-[140px] -z-10 -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#14B8A6]/5 rounded-full blur-[140px] -z-10 translate-y-1/2 -translate-x-1/2 pointer-events-none" />
       </main>
 
       <ProfileModal

@@ -44,6 +44,17 @@ export default function AdminCupons() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
+    const [formData, setFormData] = useState({
+        codigo: '',
+        indicacaoTipo: 'promocional' as Coupon['indicacaoTipo'],
+        indicacaoNome: '',
+        porcentagemDesconto: 100,
+        usoLimite: '',
+        descricao: '',
+        vencimento: '',
+        ativo: true
+    });
+
     // Redirecionar para projetos se nenhum estiver selecionado
     if (!isProjectSelected) {
         return (
@@ -69,16 +80,6 @@ export default function AdminCupons() {
         );
     }
 
-    const [formData, setFormData] = useState({
-        codigo: '',
-        indicacaoTipo: 'promocional' as Coupon['indicacaoTipo'],
-        indicacaoNome: '',
-        porcentagemDesconto: 100,
-        usoLimite: '',
-        descricao: '',
-        vencimento: '',
-        ativo: true
-    });
 
     const filteredCupons = cupons.filter(c => {
         const codigo = c.codigo || '';
@@ -284,23 +285,23 @@ export default function AdminCupons() {
 
             {/* List */}
             <div className="glass-card overflow-hidden border-white/5 shadow-2xl">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto responsive-table">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-white/[0.02] border-b border-white/5">
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Código</th>
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Parceiro / Tipo</th>
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Desconto</th>
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Vencimento</th>
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Status</th>
-                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Uso / Limite</th>
-                                <th className="px-6 py-5 text-right text-gray-500 font-extrabold text-[10px] uppercase tracking-[0.2em]">Ações</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Código</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Parceiro / Tipo</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Desconto</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Vencimento</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-5 text-left text-gray-400 font-black text-[10px] uppercase tracking-widest">Uso / Limite</th>
+                                <th className="px-6 py-5 text-right text-gray-400 font-black text-[10px] uppercase tracking-widest">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredCupons.map((coupon) => (
-                                <tr key={coupon.id} className="hover:bg-white/[0.03] transition-all group">
-                                    <td className="px-6 py-5">
+                                <tr key={coupon.id} className="hover:bg-white/[0.04] transition-all group">
+                                    <td className="px-6 py-5" data-label="Código">
                                         <div className="flex items-center gap-3">
                                             <div className="bg-gradient-to-br from-teal-500/20 to-teal-600/10 px-4 py-2 rounded-xl border border-teal-500/20 shadow-inner">
                                                 <code className="text-teal-400 font-black tracking-widest text-sm uppercase">
@@ -316,9 +317,9 @@ export default function AdminCupons() {
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5">
+                                    <td className="px-6 py-5" data-label="Parceiro">
                                         <div>
-                                            <p className="text-white font-bold text-sm tracking-tight">{coupon.indicacaoNome}</p>
+                                            <p className="text-white font-black italic tracking-tight">{coupon.indicacaoNome}</p>
                                             <div className="flex items-center gap-2 mt-1.5">
                                                 <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0 border-transparent ${typeConfig[coupon.indicacaoTipo]?.color || 'bg-gray-500/20 text-gray-400'}`}>
                                                     {typeConfig[coupon.indicacaoTipo]?.label || coupon.indicacaoTipo}
@@ -331,14 +332,14 @@ export default function AdminCupons() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5">
+                                    <td className="px-6 py-5" data-label="Desc.">
                                         <div className="relative inline-block">
                                             <Badge className="bg-teal-500 text-dark-100 font-black px-3 py-1 text-xs rounded-lg shadow-lg shadow-teal-500/20">
                                                 {coupon.porcentagemDesconto}% OFF
                                             </Badge>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-gray-400">
+                                    <td className="px-6 py-5" data-label="Venc.">
                                         {coupon.vencimento ? (
                                             <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.vencimento) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
                                                 <Calendar className="h-3.5 w-3.5" />
@@ -351,7 +352,7 @@ export default function AdminCupons() {
                                             <span className="text-gray-600 text-[10px] font-black uppercase tracking-wider bg-white/5 px-2 py-1 rounded-lg">Vitalício</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-5">
+                                    <td className="px-6 py-5" data-label="Status">
                                         <div className="flex items-center">
                                             {!coupon.ativo ? (
                                                 <Badge className="bg-white/5 text-gray-500 border border-white/10 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Inativo</Badge>
@@ -365,9 +366,9 @@ export default function AdminCupons() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5">
-                                        <div className="space-y-2 max-w-[120px]">
-                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-gray-500">
+                                    <td className="px-6 py-5" data-label="Uso">
+                                        <div className="space-y-2 lg:max-w-[120px] w-full">
+                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                                                 <span>{coupon.usoAtual} USOS</span>
                                                 <span>{coupon.usoLimite || '∞'}</span>
                                             </div>
@@ -379,7 +380,7 @@ export default function AdminCupons() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-right">
+                                    <td className="px-6 py-5 text-right" data-label="Ações">
                                         <div className="flex justify-end gap-2">
                                             <Button
                                                 size="sm"

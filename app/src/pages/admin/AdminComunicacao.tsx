@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Mail,
   Send,
@@ -15,13 +15,20 @@ import {
   Info,
   AlertTriangle,
   CheckCircle2,
-  Filter
+  Filter,
+  Zap,
+  TrendingUp,
+  BarChart3,
+  ExternalLink,
+  ChevronRight,
+  Search
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +37,7 @@ import {
   DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
@@ -164,6 +172,7 @@ export default function AdminComunicacao() {
   
   const { selectedProject } = useProject();
   const { data: users } = useUsers();
+  const { data: registrations } = useRegistrations();
   const { data: notificationsList, refetch: refetchNotifications } = useNotifications();
   
   const [templates, setTemplates] = useState(() => {
@@ -176,6 +185,20 @@ export default function AdminComunicacao() {
     return saved ? JSON.parse(saved) : initialEmailCampaigns;
   });
 
+  const stats = useMemo(() => {
+    const totalSent = campaigns.reduce((acc, c) => acc + (c.sent || 0), 0);
+    const totalOpened = campaigns.reduce((acc, c) => acc + (c.opened || 0), 0);
+    const totalClicked = campaigns.reduce((acc, c) => acc + (c.clicked || 0), 0);
+    
+    return {
+      totalSent,
+      templates: templates.length,
+      openRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,
+      clickRate: totalSent > 0 ? (totalClicked / totalSent) * 100 : 0,
+      notifications: notificationsList?.length || 0,
+    };
+  }, [campaigns, templates, notificationsList]);
+
   useEffect(() => {
     localStorage.setItem('gs_email_templates', JSON.stringify(templates));
   }, [templates]);
@@ -183,8 +206,6 @@ export default function AdminComunicacao() {
   useEffect(() => {
     localStorage.setItem('gs_email_campaigns', JSON.stringify(campaigns));
   }, [campaigns]);
-
-  const { data: registrations } = useRegistrations();
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
@@ -215,9 +236,6 @@ export default function AdminComunicacao() {
     message: '',
     actionUrl: ''
   });
-
-
-
 
   const [selectedTemplate, setSelectedTemplate] = useState<typeof initialEmailTemplates[0] | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -466,87 +484,50 @@ export default function AdminComunicacao() {
 
 
   return (
-    <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex space-x-4 border-b border-dark-300">
-        <button
-          onClick={() => setActiveTab('templates')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'templates'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
-        >
-          Templates
-        </button>
-        <button
-          onClick={() => setActiveTab('campaigns')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'campaigns'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
-        >
-          Campanhas
-        </button>
-        <button
-          onClick={() => setActiveTab('compose')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'compose'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
-        >
-          Compor Email
-        </button>
-        <button
-          onClick={() => setActiveTab('notifications')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeTab === 'notifications'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
-        >
-          Notificações In-App
-        </button>
-      </div>
+    <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 italic">
+            <Mail className="h-8 w-8 text-brand-orange-coral fill-brand-orange-coral" />
+            GESTOR DE <span className="text-brand-orange-coral">COMUNICAÇÃO</span>
+          </h1>
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">E-mail Marketing, Push Notifications e Gestão de Templates</p>
+        </div>
 
-      {/* Templates */}
-      {activeTab === 'templates' && (
-        <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-3">
-              <Mail className="h-6 w-6 text-teal-400" />
-              Gestão de E-mail & Push
-            </h2>
+        <div className="flex items-center gap-3">
+          {activeTab === 'templates' && (
             <Dialog open={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Template
+                <Button className="h-12 px-8 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
+                  <Plus className="h-4 w-4 mr-2" /> NOVO TEMPLATE
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
+              <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-2xl shadow-2xl backdrop-blur-xl">
                 <DialogHeader>
-                  <DialogTitle>Criar Novo Template</DialogTitle>
-                  <DialogDescription className="sr-only">
-                    Formulário para definir um novo modelo de email ou push.
+                  <DialogTitle className="text-2xl font-black italic uppercase">Criar <span className="text-teal-500">Novo Template</span></DialogTitle>
+                  <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+                    Defina um novo modelo de email ou push para as comunicações do evento.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleCreateTemplate} className="space-y-4 py-4">
+                <form onSubmit={handleCreateTemplate} className="space-y-6 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Nome do Template *</Label>
-                      <Input
-                        required
-                        value={templateFormData.name}
-                        onChange={e => setTemplateFormData({ ...templateFormData, name: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                        placeholder="Ex: Boas-vindas Mentores"
-                      />
+                       <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome do Template *</Label>
+                       <Input
+                         required
+                         value={templateFormData.name}
+                         onChange={e => setTemplateFormData({ ...templateFormData, name: e.target.value })}
+                         className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
+                         placeholder="Ex: Boas-vindas Mentores"
+                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Categoria</Label>
+                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Categoria</Label>
                       <select
                         value={templateFormData.category}
                         onChange={e => setTemplateFormData({ ...templateFormData, category: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
                       >
                         <option value="Inscrições">Inscrições</option>
                         <option value="Lembretes">Lembretes</option>
@@ -559,497 +540,566 @@ export default function AdminComunicacao() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Assunto do Email *</Label>
+                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do Email *</Label>
                     <Input
                       required
                       value={templateFormData.subject}
                       onChange={e => setTemplateFormData({ ...templateFormData, subject: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
+                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                       placeholder="Assunto que o usuário verá na caixa de entrada"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Corpo do Email (HTML/Texto)</Label>
-                    <p className="text-[10px] text-gray-500">
+                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Corpo do Email (HTML/Texto)</Label>
+                    <p className="text-[10px] text-gray-500 font-bold mb-1 italic">
                       Variáveis: {"{{nome}}"}, {"{{email}}"}, {"{{empresa}}"}.
                     </p>
                     <Textarea
                       value={templateFormData.body}
                       onChange={e => setTemplateFormData({ ...templateFormData, body: e.target.value })}
-                      className="bg-dark-100 border-dark-300 min-h-[200px]"
+                      className="bg-dark-100 border-white/5 focus:border-teal-500/50 min-h-[300px] rounded-xl"
                       placeholder="Olá {{nome}}, seja bem-vindo ao evento..."
                     />
                   </div>
-                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
-                    <Button type="button" variant="outline" onClick={() => setIsTemplateModalOpen(false)} className="border-dark-300 text-gray-400">
-                      Cancelar
-                    </Button>
-                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
-                      Criar Template
-                    </Button>
-                  </div>
+                  <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
+                    CRIAR TEMPLATE PROFISSIONAL
+                  </Button>
                 </form>
               </DialogContent>
             </Dialog>
-          </div>
+          )}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template: any) => (
-              <div key={template.id} className="glass-card p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-teal-400" />
-                  </div>
-                  <Badge className="bg-dark-300 text-gray-300">
-                    {template.category}
-                  </Badge>
-                </div>
-
-                <h3 className="text-lg font-semibold text-white mb-2">{template.name}</h3>
-                <p className="text-gray-400 text-sm mb-4 line-clamp-2">{template.subject}</p>
-
-                <div className="flex items-center text-gray-500 text-sm mb-4">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Último uso: {new Date(template.lastUsed).toLocaleDateString('pt-BR')}
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 border-dark-300 text-gray-300"
-                    onClick={() => handlePreviewTemplate(template)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
+          {activeTab === 'campaigns' && (
+             <Dialog open={isCampaignModalOpen} onOpenChange={setIsCampaignModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-12 px-8 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
+                    <Plus className="h-4 w-4 mr-2" /> NOVA CAMPANHA
                   </Button>
-                  <Button size="sm" variant="outline" className="border-teal-500 text-teal-400">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+                </DialogTrigger>
+                <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl shadow-2xl backdrop-blur-xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black italic uppercase">Lançar <span className="text-teal-500">Nova Campanha</span></DialogTitle>
+                    <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+                      Configure os disparos em massa para um público segmentado.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateCampaign} className="space-y-6 py-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Campanha *</Label>
+                      <Input
+                        required
+                        value={campaignFormData.name}
+                        onChange={e => setCampaignFormData({ ...campaignFormData, name: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
+                        placeholder="Ex: Campanha de Lançamento"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Template Base *</Label>
+                      <select
+                        required
+                        value={campaignFormData.templateId}
+                        onChange={e => setCampaignFormData({ ...campaignFormData, templateId: e.target.value })}
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                      >
+                        <option value="">Selecione um template</option>
+                        {templates.map((t: any) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Público Alvo</Label>
+                      <select
+                        value={campaignFormData.recipients}
+                        onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                      >
+                        <option value="all">Todos os inscritos</option>
+                        <option value="paid">Apenas pagos</option>
+                        <option value="pending">Apenas pendentes</option>
+                        <option value="vip">Apenas VIP</option>
+                        <option value="mentors">Mentores</option>
+                        <option value="startups">Startups</option>
+                        <option value="sponsors">Patrocinadores</option>
+                        <option value="companies">Empresas (Equipes/B2B)</option>
+                      </select>
+                    </div>
+                    <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase">
+                      Agendar Disparo em Massa
+                    </Button>
+                  </form>
+                </DialogContent>
+             </Dialog>
+          )}
+        </div>
+      </div>
+
+      {/* Premium Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {[
+          { label: 'E-mails Enviados', val: stats.totalSent.toLocaleString(), color: 'text-white', icon: Send },
+          { label: 'Taxa de Abertura', val: `${stats.openRate.toFixed(1)}%`, color: 'text-emerald-400', icon: Eye },
+          { label: 'Taxa de Cliques', val: `${stats.clickRate.toFixed(1)}%`, color: 'text-teal-400', icon: MousePointer },
+          { label: 'Templates Ativos', val: stats.templates, color: 'text-brand-orange-coral', icon: FileText },
+          { label: 'Notificações Push', val: stats.notifications, color: 'text-blue-400', icon: Bell },
+        ].map((item, i) => (
+          <Card key={i} className="glass-card p-6 rounded-[2rem] relative overflow-hidden group border-white/5">
+             <div className="absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                <item.icon className="h-16 w-16 text-white" />
+             </div>
+             <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-1">{item.label}</p>
+             <h3 className={`text-3xl font-black ${item.color} tracking-tighter`}>{item.val}</h3>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Tabs Navigation */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center p-1 bg-dark-200/50 rounded-2xl border border-white/5 h-14 backdrop-blur-xl shrink-0 overflow-x-auto no-scrollbar max-w-full">
+            {[
+              { id: 'templates', label: 'Templates', icon: FileText },
+              { id: 'campaigns', label: 'Campanhas', icon: BarChart3 },
+              { id: 'compose', label: 'E-mail', icon: Send },
+              { id: 'notifications', label: 'Push App', icon: Bell },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center px-6 h-full font-black text-[10px] uppercase tracking-widest rounded-xl transition-all whitespace-nowrap min-w-fit ${
+                  activeTab === tab.id 
+                    ? 'bg-brand-orange-coral text-white shadow-glow-orange/20' 
+                    : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                <tab.icon className="h-4 w-4 mr-2" />
+                {tab.label}
+              </button>
             ))}
           </div>
-        </>
+
+          <div className="relative flex-1 sm:w-80 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Pesquisar registros..."
+              className="pl-12 h-14 bg-dark-200/50 border-white/5 rounded-2xl text-xs font-bold"
+            />
+          </div>
+      </div>
+
+      {activeTab === 'templates' && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+          {templates.map((template: any) => (
+            <Card key={template.id} className="glass-card hover-card p-6 border-white/5 rounded-[2rem] group relative overflow-hidden">
+               <div className="flex items-start justify-between relative z-10">
+                 <div className="w-14 h-14 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+                   <FileText className="h-7 w-7 text-teal-400" />
+                 </div>
+                 <Badge className="bg-dark-100 text-gray-500 font-black text-[9px] uppercase tracking-widest border-white/5">
+                   {template.category}
+                 </Badge>
+               </div>
+
+               <div className="mt-6 space-y-2 relative z-10">
+                 <h3 className="text-xl font-black text-white italic uppercase tracking-tight line-clamp-1">{template.name}</h3>
+                 <p className="text-gray-500 text-xs font-bold uppercase leading-tight line-clamp-2">{template.subject}</p>
+               </div>
+
+               <div className="mt-8 flex items-center justify-between relative z-10">
+                 <div className="flex flex-col">
+                    <span className="text-gray-700 text-[9px] font-black uppercase tracking-widest">Último disparo</span>
+                    <span className="text-white font-black text-xs italic tracking-tighter">
+                      {new Date(template.lastUsed).toLocaleDateString('pt-BR')}
+                    </span>
+                 </div>
+                 <div className="flex gap-2">
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={() => handlePreviewTemplate(template)}
+                      className="h-10 w-10 text-teal-400 hover:text-white hover:bg-teal-500/20 rounded-xl border border-white/5"
+                    >
+                       <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="h-10 w-10 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/20 rounded-xl border border-white/5"
+                    >
+                       <Copy className="h-4 w-4" />
+                    </Button>
+                 </div>
+               </div>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Campaigns */}
       {activeTab === 'campaigns' && (
-        <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white">Campanhas</h2>
-            <Dialog open={isCampaignModalOpen} onOpenChange={setIsCampaignModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-teal-500 hover:bg-teal-600 text-white font-bold">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Campanha
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white">
-                <DialogHeader>
-                  <DialogTitle>Criar Nova Campanha</DialogTitle>
-                  <DialogDescription className="sr-only">
-                    Configure os detalhes da nova campanha de comunicação.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateCampaign} className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Nome da Campanha *</Label>
-                    <Input
-                      required
-                      value={campaignFormData.name}
-                      onChange={e => setCampaignFormData({ ...campaignFormData, name: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="Ex: Campanha de Lançamento"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Template base *</Label>
-                    <select
-                      required
-                      value={campaignFormData.templateId}
-                      onChange={e => setCampaignFormData({ ...campaignFormData, templateId: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                    >
-                      <option value="">Selecione um template</option>
-                      {templates.map((t: any) => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Público Alvo</Label>
-                    <select
-                      value={campaignFormData.recipients}
-                      onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                    >
-                      <option value="all">Todos os inscritos</option>
-                      <option value="paid">Apenas pagos</option>
-                      <option value="pending">Apenas pendentes</option>
-                      <option value="vip">Apenas VIP</option>
-                      <option value="mentors">Mentores</option>
-                      <option value="startups">Startups</option>
-                      <option value="sponsors">Patrocinadores</option>
-                      <option value="companies">Empresas (Equipes/B2B)</option>
-                    </select>
-                  </div>
-                  <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
-                    <Button type="button" variant="outline" onClick={() => setIsCampaignModalOpen(false)} className="border-dark-300 text-gray-400">
-                      Cancelar
-                    </Button>
-                    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
-                      Criar Campanha
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="glass-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-dark-300">
-                    <th className="p-4 text-left text-gray-400 font-medium">Nome</th>
-                    <th className="p-4 text-left text-gray-400 font-medium">Destinatários</th>
-                    <th className="p-4 text-left text-gray-400 font-medium">Aberturas</th>
-                    <th className="p-4 text-left text-gray-400 font-medium">Cliques</th>
-                    <th className="p-4 text-left text-gray-400 font-medium">Status</th>
-                    <th className="p-4 text-left text-gray-400 font-medium">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {campaigns.map((campaign: any) => (
-                    <tr key={campaign.id} className="border-b border-dark-300 hover:bg-dark-100/50">
-                      <td className="p-4">
-                        <p className="text-white font-medium">{campaign.name}</p>
-                        {campaign.sentAt && (
-                          <p className="text-gray-500 text-sm">Enviado em {new Date(campaign.sentAt).toLocaleDateString('pt-BR')}</p>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2 text-gray-400" />
-                          <span className="text-white">{campaign.recipients.toLocaleString()}</span>
+        <Card className="glass-card overflow-hidden border-white/5 shadow-2xl animate-in slide-in-from-bottom-4 duration-500 rounded-[2rem]">
+          <div className="overflow-x-auto responsive-table">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-white/[0.02] border-b border-white/5">
+                  <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Campanha</th>
+                  <th className="p-6 text-left text-gray-400 font-extrabold uppercase text-[10px] tracking-widest">Alcance</th>
+                  <th className="p-6 text-left text-gray-400 font-extrabold uppercase text-[10px] tracking-widest">Aberturas</th>
+                  <th className="p-6 text-left text-gray-400 font-extrabold uppercase text-[10px] tracking-widest">Cliques</th>
+                  <th className="p-6 text-left text-gray-400 font-extrabold uppercase text-[10px] tracking-widest">Status</th>
+                  <th className="p-6 text-right text-gray-400 font-extrabold uppercase text-[10px] tracking-widest">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map((campaign: any) => (
+                  <tr key={campaign.id} className="border-b border-white/5 hover:bg-white/[0.04] transition-all group">
+                    <td className="p-6" data-label="Campanha">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center border border-white/5">
+                          <Zap className="h-5 w-5 text-brand-orange-coral" />
                         </div>
-                      </td>
-                      <td className="p-4">
-                        {campaign.sent > 0 ? (
-                          <div className="flex items-center">
-                            <Eye className="h-4 w-4 mr-2 text-blue-400" />
-                            <span className="text-white">{campaign.opened.toLocaleString()}</span>
-                            <span className="text-gray-400 text-sm ml-2">
-                              ({((campaign.opened / campaign.sent) * 100).toFixed(1)}%)
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-500">-</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        {campaign.sent > 0 ? (
-                          <div className="flex items-center">
-                            <MousePointer className="h-4 w-4 mr-2 text-teal-400" />
-                            <span className="text-white">{campaign.clicked.toLocaleString()}</span>
-                            <span className="text-gray-400 text-sm ml-2">
-                              ({((campaign.clicked / campaign.sent) * 100).toFixed(1)}%)
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-500">-</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <Badge className={
-                          campaign.status === 'sent' ? 'bg-green-500/20 text-green-400' :
-                            campaign.status === 'draft' ? 'bg-gray-500/20 text-gray-400' :
-                              'bg-yellow-500/20 text-yellow-400'
-                        }>
-                          {campaign.status === 'sent' ? 'Enviado' : 'Rascunho'}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          {campaign.status === 'draft' && (
+                        <div>
+                           <p className="text-white font-black text-sm uppercase italic leading-none mb-1">{campaign.name}</p>
+                           {campaign.sentAt && (
+                             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-tight">Enviado: {new Date(campaign.sentAt).toLocaleDateString()}</p>
+                           )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-6" data-label="Alcance">
+                      <div className="flex items-center gap-2">
+                         <Users className="h-4 w-4 text-teal-400" />
+                         <span className="text-white font-black text-xs">{campaign.recipients.toLocaleString()}</span>
+                      </div>
+                    </td>
+                    <td className="p-6" data-label="Abr.">
+                      {campaign.sent > 0 ? (
+                        <div className="flex items-center gap-2">
+                           <Eye className="h-4 w-4 text-blue-400" />
+                           <span className="text-white font-black text-xs">{campaign.opened.toLocaleString()}</span>
+                           <Badge className="bg-blue-500/10 text-blue-400 font-black text-[9px] border-none">
+                             {((campaign.opened / campaign.sent) * 100).toFixed(1)}%
+                           </Badge>
+                        </div>
+                      ) : <span className="text-gray-700 font-black">-</span>}
+                    </td>
+                    <td className="p-6" data-label="Cliq.">
+                       {campaign.sent > 0 ? (
+                        <div className="flex items-center gap-2">
+                           <MousePointer className="h-4 w-4 text-teal-400" />
+                           <span className="text-white font-black text-xs">{campaign.clicked.toLocaleString()}</span>
+                           <Badge className="bg-teal-500/10 text-teal-400 font-black text-[9px] border-none">
+                             {((campaign.clicked / campaign.sent) * 100).toFixed(1)}%
+                           </Badge>
+                        </div>
+                      ) : <span className="text-gray-700 font-black">-</span>}
+                    </td>
+                    <td className="p-6" data-label="Status">
+                       <Badge className={`border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 ${
+                         campaign.status === 'sent' ? 'bg-emerald-500/10 text-emerald-400' : 
+                         campaign.status === 'draft' ? 'bg-gray-500/10 text-gray-400' : 'bg-yellow-500/10 text-yellow-400'
+                       }`}>
+                         {campaign.status === 'sent' ? 'Enviado' : 'Rascunho'}
+                       </Badge>
+                    </td>
+                    <td className="p-6 text-right" data-label="Ações">
+                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                         {campaign.status === 'draft' && (
                             <Button 
-                              size="sm" 
-                              className="bg-teal-500 hover:bg-teal-600 text-white"
+                              size="icon" 
+                              variant="ghost"
+                              className="h-10 w-10 text-teal-400 hover:text-white hover:bg-teal-500/10 rounded-xl"
                               onClick={() => handleSendCampaign(campaign.id)}
                             >
-                              <Send className="h-4 w-4 mr-1" />
-                              Enviar
+                               <Send className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            size="sm"
+                         )}
+                         <Button 
+                            size="icon" 
                             variant="ghost"
-                            className="text-gray-400"
+                            className="h-10 w-10 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/10 rounded-xl"
                             onClick={() => setCampaigns(campaigns.filter((c: any) => c.id !== campaign.id))}
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                             <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </>
+        </Card>
       )}
 
       {/* Compose */}
       {activeTab === 'compose' && (
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-white mb-6">Compor Email</h2>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Usar Template (Opcional)</label>
-              <select
-                onChange={(e) => {
-                  const template = templates.find((t: any) => t.id === e.target.value);
-                  if (template) {
-                    setComposeData({
-                      ...composeData,
-                      subject: template.subject,
-                      body: template.body || ''
-                    });
-                  }
-                }}
-                className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-              >
-                <option value="">Selecione um template para carregar...</option>
-                {templates.map((t: any) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Destinatários</label>
-              <select
-                value={composeData.recipients}
-                onChange={(e) => setComposeData({ ...composeData, recipients: e.target.value })}
-                className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-              >
-                <option value="all">Todos os inscritos</option>
-                <option value="paid">Apenas pagos</option>
-                <option value="pending">Apenas pendentes</option>
-                <option value="vip">Apenas VIP</option>
-                <option value="mentors">Mentores</option>
-                <option value="startups">Startups</option>
-                <option value="sponsors">Patrocinadores</option>
-                <option value="companies">Empresas (Equipes/B2B)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Assunto</label>
-              <Input
-                type="text"
-                placeholder="Digite o assunto do email"
-                value={composeData.subject}
-                onChange={(e) => setComposeData({ ...composeData, subject: e.target.value })}
-                className="bg-dark-100 border-dark-300 text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Conteúdo</label>
-              <Textarea
-                placeholder="Digite o conteúdo do email..."
-                value={composeData.body}
-                onChange={(e) => setComposeData({ ...composeData, body: e.target.value })}
-                className="bg-dark-100 border-dark-300 text-white min-h-[300px]"
-              />
-            </div>
-
-            <div className="bg-dark-100 rounded-lg p-4">
-              <p className="text-gray-400 text-sm mb-2">Variáveis disponíveis:</p>
-              <div className="flex flex-wrap gap-2">
-                {['{{nome}}', '{{email}}', '{{ticket}}', '{{evento}}', '{{data}}', '{{empresa}}'].map((variable) => (
-                  <Badge
-                    key={variable}
-                    className="bg-dark-300 text-gray-300 cursor-pointer hover:bg-teal-500/20 hover:text-teal-400"
-                    onClick={() => handleInsertVariable(variable)}
-                  >
-                    {variable}
-                  </Badge>
-                ))}
+        <Card className="glass-card p-8 border-white/5 rounded-[2rem] shadow-2xl animate-in slide-in-from-bottom-4 duration-500">
+           <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center">
+                 <Send className="h-6 w-6 text-teal-400" />
               </div>
-            </div>
+              <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Compor <span className="text-teal-500">Novo E-mail</span></h2>
+           </div>
 
-            <div className="flex space-x-4">
-              <Button
-                className="bg-teal-500 hover:bg-teal-600 text-white"
-                onClick={handleSend}
-                disabled={!composeData.subject || !composeData.body}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Enviar Agora
-              </Button>
-              <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Filtros em desenvolvimento')}>
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Rascunho
-              </Button>
-            </div>
-          </div>
-        </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-2">
+                 <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Usar Template (Opcional)</Label>
+                 <select
+                    onChange={(e) => {
+                      const template = templates.find((t: any) => t.id === e.target.value);
+                      if (template) {
+                        setComposeData({
+                          ...composeData,
+                          subject: template.subject,
+                          body: template.body || ''
+                        });
+                      }
+                    }}
+                    className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 px-4"
+                  >
+                    <option value="">Selecione para carregar...</option>
+                    {templates.map((t: any) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+              </div>
+
+              <div className="space-y-2">
+                 <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Destinatários</Label>
+                 <select
+                    value={composeData.recipients}
+                    onChange={(e) => setComposeData({ ...composeData, recipients: e.target.value })}
+                    className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 px-4"
+                  >
+                    <option value="all">Todos os inscritos</option>
+                    <option value="paid">Apenas pagos</option>
+                    <option value="pending">Apenas pendentes</option>
+                    <option value="vip">Apenas VIP</option>
+                    <option value="mentors">Mentores</option>
+                    <option value="startups">Startups</option>
+                    <option value="sponsors">Patrocinadores</option>
+                    <option value="companies">Empresas (Equipes/B2B)</option>
+                  </select>
+              </div>
+           </div>
+
+           <div className="space-y-8">
+              <div className="space-y-2">
+                 <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do E-mail</Label>
+                 <Input
+                    type="text"
+                    placeholder="Digite o assunto que o destinatário verá"
+                    value={composeData.subject}
+                    onChange={(e) => setComposeData({ ...composeData, subject: e.target.value })}
+                    className="h-14 bg-dark-100 border-white/5 rounded-2xl text-white font-bold"
+                  />
+              </div>
+
+              <div className="space-y-2">
+                 <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Conteúdo da Mensagem (Rich Content)</Label>
+                 <Textarea
+                    placeholder="Desenvolva sua mensagem aqui..."
+                    value={composeData.body}
+                    onChange={(e) => setComposeData({ ...composeData, body: e.target.value })}
+                    className="bg-dark-100 border-white/5 rounded-2xl text-white font-bold min-h-[400px] p-6"
+                  />
+              </div>
+
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+                 <p className="text-[10px] font-black uppercase text-gray-600 tracking-[0.2em] mb-4">Smart Variables:</p>
+                 <div className="flex flex-wrap gap-2">
+                    {['{{nome}}', '{{email}}', '{{ticket}}', '{{evento}}', '{{data}}', '{{empresa}}'].map((variable) => (
+                      <Badge
+                        key={variable}
+                        className="bg-dark-100 hover:bg-teal-500/10 hover:text-teal-400 text-gray-500 font-black text-xs border border-white/5 cursor-pointer py-1.5 px-3 rounded-lg transition-all"
+                        onClick={() => handleInsertVariable(variable)}
+                      >
+                        {variable}
+                      </Badge>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                 <Button
+                    className="flex-1 h-16 bg-teal-500 hover:bg-teal-600 text-white font-black text-lg rounded-2xl shadow-glow-teal transition-all uppercase italic tracking-tight"
+                    onClick={handleSend}
+                    disabled={!composeData.subject || !composeData.body}
+                  >
+                    <Send className="h-6 w-6 mr-3" /> Enviar Disparo Agora
+                 </Button>
+                 <Button 
+                    variant="outline" 
+                    className="h-16 px-8 border-white/10 text-gray-500 hover:text-white hover:bg-white/5 font-black rounded-2xl uppercase tracking-widest text-[10px]"
+                    onClick={() => toast.info('Rascunho salvo localmente')}
+                  >
+                    <Save className="h-5 w-5 mr-2" /> Salvar Rascunho
+                 </Button>
+              </div>
+           </div>
+        </Card>
       )}
 
       {/* Notifications Tab */}
       {activeTab === 'notifications' && (
-        <div className="space-y-6 animate-in fade-in duration-500">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1 bg-dark-200 border border-dark-300 rounded-2xl p-6 space-y-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Bell className="h-5 w-5 text-orange-400" />
-                Nova Notificação
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Destinatários</Label>
-                  <select
-                    value={notificationFormData.recipients}
-                    onChange={(e) => setNotificationFormData({ ...notificationFormData, recipients: e.target.value })}
-                    className="w-full mt-1.5 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="all">Todos os Usuários</option>
-                    <option value="participant">Participantes</option>
-                    <option value="mentor">Mentores</option>
-                    <option value="startup">Startups</option>
-                    <option value="company">Empresas</option>
-                  </select>
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Tipo</Label>
-                  <select
-                    value={notificationFormData.type}
-                    onChange={(e) => setNotificationFormData({ ...notificationFormData, type: e.target.value as any })}
-                    className="w-full mt-1.5 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="info">💡 Informação</option>
-                    <option value="success">✅ Sucesso</option>
-                    <option value="warning">⚠️ Aviso</option>
-                    <option value="error">🚨 Erro / Alerta</option>
-                  </select>
-                </div>
-                <div>
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-bold">Título</Label>
-                  <Input
-                    placeholder="Ex: Nova mentoria disponível"
-                    value={notificationFormData.title}
-                    onChange={(e) => setNotificationFormData({ ...notificationFormData, title: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white mt-1.5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Mensagem</label>
-                  <textarea
-                    className="w-full bg-dark-300 border border-dark-400 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none min-h-[100px]"
-                    placeholder="Conteúdo da notificação..."
-                    value={notificationFormData.message}
-                    onChange={(e) => setNotificationFormData({ ...notificationFormData, message: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Link de Ação (Opcional)</label>
-                  <input
-                    type="text"
-                    className="w-full bg-dark-300 border border-dark-400 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                    placeholder="Ex: https://youtube.com/live/xyz ou /certificados"
-                    value={notificationFormData.actionUrl}
-                    onChange={(e) => setNotificationFormData({ ...notificationFormData, actionUrl: e.target.value })}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    O usuário será redirecionado para este link ao clicar na notificação.
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleSendNotification}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-orange-500/20"
-                >
-                  <Send className="h-4 w-4 mr-2" /> Disparar Notificação
-                </Button>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+          <Card className="lg:col-span-1 glass-card p-8 border-white/5 rounded-[2rem] shadow-2xl h-fit">
+            <div className="flex items-center gap-4 mb-8">
+               <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center">
+                  <Bell className="h-6 w-6 text-brand-orange-coral" />
+               </div>
+               <h3 className="text-xl font-black text-white italic uppercase tracking-tight">Nova <span className="text-brand-orange-coral">Notificação</span></h3>
             </div>
 
-            <div className="md:col-span-2 bg-dark-200 border border-dark-300 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-6 flex justify-between items-center">
-                Histórico Recente
-                <Badge className="bg-white/5 text-gray-400 border-none px-3">{notificationsList?.length || 0} enviadas</Badge>
-              </h3>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {notificationsList && notificationsList.length > 0 ? (
-                  notificationsList.slice(0, 20).map((n: any) => (
-                    <div key={n.id} className="p-4 bg-white/5 border border-white/5 rounded-xl flex gap-4">
-                      <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${
-                        n.type === 'success' ? 'bg-green-500/10 text-green-400' :
-                        n.type === 'warning' ? 'bg-amber-500/10 text-amber-400' :
-                        n.type === 'error' ? 'bg-red-500/10 text-red-400' :
-                        'bg-blue-500/10 text-blue-400'
-                      }`}>
-                        {n.type === 'success' ? <CheckCircle2 className="h-5 w-5" /> : 
-                         n.type === 'warning' ? <AlertTriangle className="h-5 w-5" /> :
-                         n.type === 'error' ? <AlertTriangle className="h-5 w-5" /> :
-                         <Info className="h-5 w-5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="text-white font-bold text-sm truncate">{n.title}</h4>
-                          <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">{new Date(n.created_at).toLocaleString()}</span>
-                        </div>
-                        <p className="text-gray-400 text-xs line-clamp-2">{n.message}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-20 text-gray-600 uppercase font-black tracking-widest text-xs opacity-50">
-                    Nenhuma notificação enviada
-                  </div>
-                )}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Destinatários</Label>
+                <select
+                  value={notificationFormData.recipients}
+                  onChange={(e) => setNotificationFormData({ ...notificationFormData, recipients: e.target.value })}
+                  className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 px-4 appearance-none"
+                >
+                  <option value="all">Todos os Usuários</option>
+                  <option value="participant">Participantes</option>
+                  <option value="mentor">Mentores</option>
+                  <option value="startup">Startups</option>
+                  <option value="company">Empresas</option>
+                </select>
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo de Alerta</Label>
+                <select
+                  value={notificationFormData.type}
+                  onChange={(e) => setNotificationFormData({ ...notificationFormData, type: e.target.value as any })}
+                  className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 px-4 appearance-none"
+                >
+                  <option value="info">💡 Informação</option>
+                  <option value="success">✅ Sucesso</option>
+                  <option value="warning">⚠️ Aviso</option>
+                  <option value="error">🚨 Erro / Alerta</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Título da Mensagem</Label>
+                <Input
+                  placeholder="Ex: Credenciamento liberado!"
+                  value={notificationFormData.title}
+                  onChange={(e) => setNotificationFormData({ ...notificationFormData, title: e.target.value })}
+                  className="h-12 bg-dark-100 border-white/5 rounded-xl text-white font-bold placeholder:text-gray-700"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Conteúdo (Push)</Label>
+                <Textarea
+                  placeholder="Digite o texto curto para o celular..."
+                  value={notificationFormData.message}
+                  onChange={(e) => setNotificationFormData({ ...notificationFormData, message: e.target.value })}
+                  className="bg-dark-100 border-white/5 rounded-xl text-white font-bold min-h-[120px] p-4"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link de Ação (Deep Link)</Label>
+                <Input
+                  placeholder="Ex: /certificados ou https://..."
+                  value={notificationFormData.actionUrl}
+                  onChange={(e) => setNotificationFormData({ ...notificationFormData, actionUrl: e.target.value })}
+                  className="h-12 bg-dark-100 border-white/5 rounded-xl text-white font-bold"
+                />
+              </div>
+
+              <Button 
+                onClick={handleSendNotification}
+                className="w-full h-14 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase italic tracking-tighter"
+              >
+                <Send className="h-5 w-5 mr-2" /> Disparar Agora
+              </Button>
+            </div>
+          </Card>
+
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between mb-4">
+               <h3 className="text-xl font-black text-white italic uppercase tracking-tight flex items-center gap-3">
+                 <TrendingUp className="h-6 w-6 text-teal-400" />
+                 Histórico de <span className="text-teal-400">Envios</span>
+               </h3>
+               <Badge className="bg-white/5 text-gray-500 font-black text-[10px] border-none px-4 py-1 rounded-full uppercase tracking-widest">
+                 {notificationsList?.length || 0} Enviadas
+               </Badge>
+            </div>
+
+            <div className="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
+              {notificationsList && notificationsList.length > 0 ? (
+                notificationsList.slice(0, 30).map((n: any) => (
+                  <Card key={n.id} className="p-5 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex gap-5 group hover:bg-white/[0.05] transition-all">
+                    <div className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center border border-white/5 ${
+                      n.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
+                      n.type === 'warning' ? 'bg-amber-500/10 text-amber-400' :
+                      n.type === 'error' ? 'bg-red-500/10 text-red-400' :
+                      'bg-teal-500/10 text-teal-400'
+                    }`}>
+                      {n.type === 'success' ? <CheckCircle2 className="h-6 w-6" /> : 
+                       n.type === 'warning' ? <AlertTriangle className="h-6 w-6" /> :
+                       n.type === 'error' ? <AlertTriangle className="h-6 w-6" /> :
+                       <Info className="h-6 w-6" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-white font-black text-sm uppercase italic leading-none">{n.title}</h4>
+                        <span className="text-[9px] text-gray-600 font-black uppercase tracking-widest whitespace-nowrap">
+                          {new Date(n.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-xs font-bold leading-relaxed line-clamp-2">{n.message}</p>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-32 text-gray-800 uppercase font-black tracking-[0.3em] text-sm opacity-20">
+                  Sem Atividade Recente
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-
-
       {/* Preview Modal */}
       <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
-        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl">
+        <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-2xl shadow-2xl backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle>Visualizar Template: {selectedTemplate?.name}</DialogTitle>
-            <DialogDescription className="sr-only">
-              Pré-visualização do conteúdo do template selecionado.
+            <DialogTitle className="text-2xl font-black italic uppercase italic">Preview: <span className="text-teal-500">{selectedTemplate?.name}</span></DialogTitle>
+            <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
+              Visualize como o destinatário receberá esta comunicação.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-gray-400">Assunto</Label>
-              <div className="p-3 bg-dark-100 border border-dark-300 rounded-lg text-white mt-1">
+          
+          <div className="space-y-6 py-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do E-mail</Label>
+              <div className="p-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold italic">
                 {selectedTemplate?.subject}
               </div>
             </div>
-            <div>
-              <Label className="text-gray-400">Conteúdo</Label>
-              <div className="p-4 bg-dark-100 border border-dark-300 rounded-lg text-white mt-1 min-h-[200px] whitespace-pre-wrap">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Visualização do Conteúdo</Label>
+              <div className="p-6 bg-dark-100 border border-white/5 rounded-xl text-white font-bold min-h-[300px] whitespace-pre-wrap leading-relaxed">
                 {(selectedTemplate as typeof initialEmailTemplates[0] & { body?: string })?.body || 'Conteúdo do template...'}
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
-            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)} className="border-dark-300 text-white">
-              Fechar
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-white/5">
+            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)} className="h-12 border-white/10 text-gray-500 hover:text-white rounded-xl uppercase font-black tracking-widest text-[9px]">
+              Fechar Visualização
             </Button>
             <Button
-              className="bg-teal-500 hover:bg-teal-600 text-white"
+              className="flex-1 h-12 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl shadow-glow-teal transition-all uppercase italic tracking-tighter"
               onClick={() => {
                 setComposeData({
                   ...composeData,
@@ -1060,7 +1110,7 @@ export default function AdminComunicacao() {
                 setIsPreviewModalOpen(false);
               }}
             >
-              Usar para Compor
+              Usar para Composição <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
         </DialogContent>

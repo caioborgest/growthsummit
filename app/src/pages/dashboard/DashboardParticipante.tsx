@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { 
-  useMyRegistration, 
   useNotifications, 
   useSessions, 
   useCheckInsAtividades,
@@ -23,6 +22,7 @@ import {
   useStandCheckIns,
   useRaffles
 } from '@/hooks/useData';
+import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
 
 // UI Components
@@ -94,7 +94,7 @@ export default function DashboardParticipante() {
   };
 
   // Financial Status Logic
-  const isActuallyPaid = registration?.status === 'paid' || (registration?.status as any) === 'ativo' || registration?.amount === 0;
+  const isActuallyPaid = registration?.isPaid || registration?.amount === 0;
   
   const statusFinanceiro = useMemo(() => {
     if (!registration) return { label: 'PENDENTE', color: 'bg-gray-500/20 text-gray-400' };
@@ -119,7 +119,7 @@ export default function DashboardParticipante() {
   // Gamification Progress
   const standsVisited = useMemo(() => {
     if (!standCheckIns || !registration) return 0;
-    return standCheckIns.filter(c => c.registrationId === registration.id).length;
+    return standCheckIns.filter(c => (c as any).registrationId === registration.id).length;
   }, [standCheckIns, registration]);
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
@@ -252,11 +252,28 @@ export default function DashboardParticipante() {
           />
         );
       case 'agenda':
-        return <AgendaSection />;
+        return (
+          <AgendaSection 
+            myRegistration={registration}
+            cursosSelecionados={registration?.cursosSelecionados || []}
+            setIsSelfCheckInOpen={setIsCheckInModalOpen}
+            navigate={navigate}
+          />
+        );
       case 'circuito':
-        return <GamificationSection setIsScanOpen={setIsScanOpen} />;
+        return (
+          <GamificationSection 
+            registrationId={registration?.id || ''}
+            setIsScanOpen={setIsScanOpen} 
+          />
+        );
       case 'sorteios':
-        return <RaffleSection />;
+        return (
+          <RaffleSection 
+            registrationId={registration?.id || ''}
+            setIsScanOpen={setIsScanOpen}
+          />
+        );
       case 'mentorias':
         return (
           <MentorshipSection 
@@ -272,13 +289,13 @@ export default function DashboardParticipante() {
       case 'dados':
         return <ProfileForm />;
       case 'suporte':
-        return <SupportSection />;
+        return <SupportSection navigate={navigate} />;
       case 'documentos':
-        return <DocsSection />;
+        return <DocsSection documentos={[]} loadingDocs={false} />;
       case 'certificados':
-        return <CertificatesSection />;
+        return <CertificatesSection certificados={[]} loadingCerts={false} fetchCertificados={() => {}} onDownload={() => {}} />;
       case 'equipe':
-        return <DashboardEquipe />;
+        return <DashboardEquipe batches={[]} />;
       default:
         return <div className="text-white text-center py-20">Em breve</div>;
     }
@@ -290,14 +307,15 @@ export default function DashboardParticipante() {
       
       <div className="relative z-10 pb-32">
         <PremiumHeader 
-          userName={user?.name}
+          userName={user?.name || ''}
           projectName={selectedProject?.name || 'GX 2026'}
           roleLabel="PARTICIPANTE"
-          isPro={registration?.ticketType === 'pro' || registration?.ticketType === 'vip'}
+          isPro={Boolean(registration?.ticketType === 'pro' || registration?.ticketType === 'vip' || registration?.palestrasNoturnas)}
           notifications={notifications}
           onLogout={handleLogout}
-          onNotificationRead={handleMarkAsRead}
+          onNotificationRead={async (id) => { await handleMarkAsRead(id); }}
           onGuideClick={() => navigate('/guia')}
+          onSupportClick={() => setActiveTab('suporte')}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
@@ -327,28 +345,32 @@ export default function DashboardParticipante() {
         <SelfCheckInModal 
           onClose={() => setIsCheckInModalOpen(false)}
           onScanSuccess={handleScanSuccess}
-          registration={registration}
+          registration={registration as any}
         />
       )}
 
-      <MentorRatingModal 
-        isOpen={ratingModal.isOpen}
-        onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
-        mentorName={ratingModal.mentorName}
-        sessionId={ratingModal.mentorshipId}
-        onSubmit={async (sid, val, ind) => {
-            await updateMentorship(sid, {
-                feedback: {
-                    rating: val,
-                    avaliacaoMentoria: val,
-                    indicacaoMentor: ind,
-                    comment: 'Avaliado via Dashboard',
-                    avaliadoEm: new Date().toISOString()
-                }
-            });
-            toast.success('Avaliação enviada!');
-        }}
-      />
+      <AnimatePresence>
+        {ratingModal.isOpen && (
+            <MentorRatingModal 
+                isOpen={ratingModal.isOpen}
+                onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
+                mentorName={ratingModal.mentorName}
+                sessionId={ratingModal.mentorshipId}
+                onSubmit={async (sid, val, ind) => {
+                    await updateMentorship(sid, {
+                        feedback: {
+                            rating: val,
+                            avaliacaoMentoria: val,
+                            indicacaoMentor: ind,
+                            comment: 'Avaliado via Dashboard',
+                            avaliadoEm: new Date().toISOString()
+                        }
+                    });
+                    toast.success('Avaliação enviada!');
+                }}
+            />
+        )}
+      </AnimatePresence>
 
       <MentoriaMultiStepModal 
         isOpen={isMentoriaModalOpen}

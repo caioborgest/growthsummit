@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Users,
   DollarSign,
@@ -6,7 +6,6 @@ import {
   Handshake,
   Rocket,
   Gem,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   CheckCircle2,
@@ -15,12 +14,9 @@ import {
   QrCode,
   Mail,
   Download,
-  Users2,
   FolderOpen,
   Headset,
   Gift,
-  MessageCircle,
-  MoreVertical,
   Zap,
   XCircle
 } from 'lucide-react';
@@ -51,9 +47,6 @@ import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
 
-const GE_TRIUNFO_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-const GE_PETROLINA_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
-
 interface StatCardProps {
   title: string;
   value: string;
@@ -65,98 +58,90 @@ interface StatCardProps {
   color: string;
 }
 
-function StatCard({ title, value, target, progress, icon: Icon, trend, trendValue, color }: StatCardProps) {
-  const colorClasses = {
+const StatCard = ({ title, value, target, progress, icon: Icon, trend, trendValue, color }: StatCardProps) => {
+  const colorClasses: Record<string, any> = {
     teal: { 
       text: 'text-teal-400', 
       bar: 'bg-teal-500', 
       bgOpacity: 'bg-teal-500/10',
-      shadow: 'shadow-teal-500/20',
-      border: 'border-teal-500/20',
-      gradient: 'from-teal-500/5 to-transparent'
+      shadow: 'shadow-glow-teal/20',
+      border: 'border-white/5',
+      accent: 'teal-500'
+    },
+    orange: { 
+      text: 'text-brand-orange-coral', 
+      bar: 'bg-brand-orange-coral', 
+      bgOpacity: 'bg-brand-orange-coral/10',
+      shadow: 'shadow-glow-orange/20',
+      border: 'border-white/5',
+      accent: 'brand-orange-coral'
     },
     green: { 
-      text: 'text-green-400', 
-      bar: 'bg-green-500', 
-      bgOpacity: 'bg-green-500/10',
-      shadow: 'shadow-green-500/20',
-      border: 'border-green-500/20',
-      gradient: 'from-green-500/5 to-transparent'
+      text: 'text-emerald-400', 
+      bar: 'bg-emerald-500', 
+      bgOpacity: 'bg-emerald-500/10',
+      shadow: 'shadow-emerald-500/20',
+      border: 'border-white/5',
+      accent: 'emerald-500'
     },
     blue: { 
       text: 'text-blue-400', 
       bar: 'bg-blue-500', 
       bgOpacity: 'bg-blue-500/10',
       shadow: 'shadow-blue-500/20',
-      border: 'border-blue-500/20',
-      gradient: 'from-blue-500/5 to-transparent'
+      border: 'border-white/5',
+      accent: 'blue-500'
     },
     purple: { 
       text: 'text-purple-400', 
       bar: 'bg-purple-500', 
       bgOpacity: 'bg-purple-500/10',
       shadow: 'shadow-purple-500/20',
-      border: 'border-purple-500/20',
-      gradient: 'from-purple-500/5 to-transparent'
-    },
-    orange: { 
-      text: 'text-orange-400', 
-      bar: 'bg-orange-500', 
-      bgOpacity: 'bg-orange-500/10',
-      shadow: 'shadow-orange-500/20',
-      border: 'border-orange-500/20',
-      gradient: 'from-orange-500/5 to-transparent'
-    },
-  }[color] || { 
-    text: 'text-teal-400', 
-    bar: 'bg-teal-500', 
-    bgOpacity: 'bg-teal-500/10',
-    shadow: 'shadow-teal-500/20',
-    border: 'border-teal-500/20',
-    gradient: 'from-teal-500/5 to-transparent'
+      border: 'border-white/5',
+      accent: 'purple-500'
+    }
   };
+
+  const current = colorClasses[color] || colorClasses.teal;
 
   return (
     <motion.div 
-      whileHover={{ y: -5, scale: 1.02 }}
-      className={`glass-card p-6 relative overflow-hidden group border ${colorClasses.border} hover:${colorClasses.shadow} transition-all duration-300`}
+      whileHover={{ y: -5 }}
+      className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group"
     >
-      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colorClasses.gradient} blur-3xl rounded-full -mr-16 -mt-16`} />
+      <div className={`absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700`}>
+         <Icon className="h-16 w-16 text-white" />
+      </div>
       
       <div className="flex items-start justify-between mb-4 relative z-10">
-        <div className={`w-12 h-12 rounded-2xl ${colorClasses.bgOpacity} border ${colorClasses.border} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className={`h-6 w-6 ${colorClasses.text}`} />
+        <div className={`w-14 h-14 rounded-2xl ${current.bgOpacity} border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
+          <Icon className={`h-7 w-7 ${current.text}`} />
         </div>
-        <div className="flex flex-col items-end">
-          {trend && (
-            <div className={`flex items-center px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider mb-1 ${
-              trend === 'up' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-            }`}>
-              {trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-              {trendValue}
-            </div>
-          )}
-          <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
-            <MoreVertical className="h-4 w-4" />
-          </button>
-        </div>
+        {trend && (
+          <div className={`flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+            trend === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+          }`}>
+            {trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
+            {trendValue}
+          </div>
+        )}
       </div>
 
       <div className="relative z-10">
-        <p className="text-4xl font-black text-foreground mb-1 tracking-tighter">{value}</p>
-        <p className="text-muted-foreground text-xs font-bold uppercase tracking-[0.15em] mb-4">{title}</p>
+        <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{title}</h3>
+        <p className="text-4xl font-black text-white mb-6 tracking-tighter tabular-nums italic">{value}</p>
         
-        <div className="flex items-center justify-between text-[10px] font-black uppercase text-muted-foreground mb-2 tracking-widest">
-          <span>Meta: {target}</span>
-          <span className={colorClasses.text}>{progress}%</span>
+        <div className="flex items-center justify-between text-[9px] font-black uppercase mb-2 tracking-widest">
+          <span className="text-gray-700">Meta: {target}</span>
+          <span className={current.text}>{progress}%</span>
         </div>
         
-        <div className="w-full bg-accent/30 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-1.5 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(progress, 100)}%` }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className={`${colorClasses.bar} h-full rounded-full shadow-[0_0_10px_rgba(33,128,141,0.5)]`}
+            className={`${current.bar} h-full rounded-full shadow-glow-${current.accent === 'teal-500' ? 'teal' : 'orange'}`}
           />
         </div>
       </div>
@@ -168,26 +153,18 @@ export function AdminDashboard() {
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
   const { data: registrations = [] } = useRegistrations();
-  const { filter: filterMentors = () => [] } = useMentors();
+  const { filter: filterMentors } = useMentors();
   const { data: sessions = [] } = useMentoringSessions();
   const { data: b2bMeetings = [] } = useB2BMeetings();
-  const { data: startups = [], filter: filterStartups = () => [] } = useStartups();
+  const { data: startups = [], filter: filterStartups } = useStartups();
   const { data: _sponsors = [] } = useSponsors();
   const { data: transactions = [] } = useTransactions();
   const { data: checkIns = [] } = useCheckIns();
   const { data: tickets = [] } = useSupportTickets();
   const { data: raffles = [] } = useRaffles();
-  const { data: standCheckIns = [] } = useStandCheckIns();
   const { data: allSessions = [] } = useSessions();
   const { data: allCoupons = [] } = useCoupons();
   const { data: batches = [] } = useRegistrationBatches();
-  const { data: companies = [] } = useSponsors(); // useSponsors gets from 'sponsors' table
-  // Growth experience uses 'inscricoes_empresas_incentivadoras' table which is usually mapped via useEmpresasIncentivadoras
-  // But AdminDashboard.tsx uses many generic useData hooks.
-  // Wait, I see useSponsors hook at line 40.
-  // Let me check if useSponsors covers GE sponsors.
-  // Actually, I'll use useEmpresasIncentivadoras if it's available.
-  const { data: incentiveCompanies = [] } = (useSponsors as any)(); // Reusing sponsors for now or should I import useEmpresasIncentivadoras?
   // I will check imports.
 
 
@@ -198,45 +175,6 @@ export function AdminDashboard() {
     );
   }, [selectedProject, registrations.length, allSessions.length]);
 
-  const quickActions = [
-    { name: 'Sorteios', icon: Gift, color: 'orange', path: '/admin/sorteio' },
-    { name: 'Suporte', icon: Headset, color: 'teal', path: '/admin/suporte' },
-    {
-      name: 'Entregar Leads',
-      icon: Download,
-      color: 'blue',
-      action: () => {
-        if (registrations.length === 0) {
-          toast.error('Nenhum inscrito para exportar');
-          return;
-        }
-        const headers = ['ID', 'Nome', 'Email', 'Empresa', 'Tipo', 'Status'];
-        const csvContent = [
-          headers.join(','),
-          ...registrations.map(r => [
-            r.id,
-            `"${r.nome}"`,
-            r.email,
-            `"${r.empresa || ''}"`,
-            r.tipoInscricao || 'padrão',
-            r.status
-          ].join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `leads_${selectedProject?.slug || 'evento'}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success('Exportação de leads iniciada');
-      }
-    },
-    { name: 'E-mail Marketing', icon: Mail, color: 'purple', path: '/admin/comunicacao' },
-  ];
 
 
   const stats = useMemo(() => {
@@ -289,26 +227,42 @@ export function AdminDashboard() {
         progress: targets.b2b > 0 ? Math.round((b2bMeetings.length / targets.b2b) * 100) : 0
       },
     };
-  }, [registrations, transactions, sessions, b2bMeetings, selectedProject]);
+  }, [registrations, transactions, sessions, b2bMeetings, selectedProject, batches]);
 
   const pendingMentors = filterMentors((m: Mentor) => m.status === 'pending');
   const pendingStartups = filterStartups((s: Startup) => s.status === 'pending');
 
-  // Gerar Atividade Recente dinamicamente
-  const recentActivity = [
-    ...registrations.slice(0, 3).map(r => ({
-      action: 'Nova inscrição',
-      detail: `${r.nome || 'Usuário'} - ${r.ticketType === 'vip' ? 'VIP' : r.ticketType === 'pro' ? 'Pro' : 'Standard'}`,
-      time: new Date(r.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      type: 'success' as const
-    })),
-    ...sessions.slice(0, 2).map(s => ({
-      action: 'Mentoria agendada',
-      detail: `${s.menteeName} + ${s.mentorName}`,
-      time: new Date(s.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      type: 'info' as const
-    }))
-  ].sort((a, b) => b.time.localeCompare(a.time)).slice(0, 5);
+  // Gerar Atividade Recente dinamicamente (Live Feed)
+  const recentActivity = useMemo(() => {
+    const list = [
+      ...registrations.slice(0, 10).map(r => ({
+        timestamp: new Date(r.createdAt).getTime(),
+        action: 'Nova Inscrição',
+        detail: `${r.name || 'Participante'} - ${r.ticketNumber || 'N/A'}`,
+        type: 'success' as const
+      })),
+      ...checkIns.slice(0, 5).map(c => ({
+        timestamp: new Date(c.timestamp).getTime(),
+        action: 'Check-in Realizado',
+        detail: `Participante credenciado na portaria: ${c.location || 'Central'}`,
+        type: 'info' as const
+      })),
+      ...transactions.filter(t => t.type === 'income').slice(0, 5).map(t => ({
+        timestamp: new Date(t.date).getTime(),
+        action: 'Receita Confirmada',
+        detail: `${t.description} - R$ ${t.amount.toLocaleString('pt-BR')}`,
+        type: 'premium' as const
+      }))
+    ];
+
+    return list
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 8)
+      .map(item => ({
+        ...item,
+        time: new Date(item.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      }));
+  }, [registrations, checkIns, transactions]);
 
   // Show project selection prompt if no project is selected
   if (!isProjectSelected) {
@@ -341,8 +295,32 @@ export function AdminDashboard() {
     );
   }
 
+  const exportLeads = () => {
+    const headers = ['ID', 'Nome', 'Email', 'Empresa', 'Tipo', 'Status'];
+    const csvContent = [
+      headers.join(','),
+      ...registrations.map(r => [
+        r.id,
+        `"${r.name || r.nome || ''}"`,
+        r.email,
+        `"${r.empresa || ''}"`,
+        r.tipoInscricao || 'padrão',
+        r.status
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `leads_${selectedProject?.slug || 'evento'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Leads exportados com sucesso');
+  };
+
   return (
-    <div className="space-y-10 py-4 animate-in fade-in duration-700">
+    <div className="space-y-10 py-6 animate-in fade-in duration-700">
       {/* Onboarding / Setup Flow */}
       {isInitialSetup && (
         <div className="mb-4">
@@ -358,142 +336,67 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Welcome & Project Info */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-2">
+      {/* Premium Welcome Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
         <div>
-          <h1 className="text-3xl font-black text-foreground tracking-tighter mb-2">
-            Olá, Admin <span className="text-brand-orange-coral">👋</span>
+          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
+            PAINEL DE <span className="text-brand-orange-coral">CONTROLE</span>
           </h1>
-          <p className="text-muted-foreground text-sm font-medium">
-            Aqui está o panorama geral do ecossistema <span className="text-foreground font-bold">{selectedProject?.name}</span>
+          <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
+            Gerenciando o ecossistema <span className="text-white">{selectedProject?.name}</span>
           </p>
         </div>
         
-        <div className="flex items-center gap-3 bg-card/50 border border-border-theme p-2 rounded-2xl group transition-all hover:bg-card hover:shadow-premium">
-          <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 shrink-0">
-            <Zap className="h-6 w-6 text-teal-400" />
+        <div className="flex items-center gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] backdrop-blur-xl h-14 pr-6">
+          <div className="w-12 h-12 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0 ml-1">
+            <Zap className="h-6 w-6 text-emerald-400 fill-emerald-400/20" />
           </div>
-          <div className="pr-4">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Status do Evento</p>
+          <div>
+            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Status Global</p>
             <div className="flex items-center gap-2">
-              <span className="text-foreground font-bold text-sm tracking-tight">Em Execução</span>
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+              <span className="text-white font-black text-xs italic uppercase">Evento Ativo</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-glow-emerald" />
             </div>
           </div>
+          <div className="h-8 w-px bg-white/5 mx-2" />
           <Link to={selectedProject?.id ? `/admin/projetos?edit=${selectedProject.id}` : "/admin/projetos"}>
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-xl h-10 px-4 group-hover:text-teal-400 transition-all font-bold text-xs"
+              className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
             >
-              Configurações
+              PROJECT SETUP
             </Button>
           </Link>
         </div>
       </div>
 
-
-      {/* Strategic Actions */}
-      <div>
-        <h2 className="text-sm font-black text-muted-foreground uppercase tracking-[0.2em] mb-6 flex items-center">
-          Ações Estratégicas
-          <div className="h-px bg-border-theme flex-1 ml-6" />
-        </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <motion.button 
-            whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/admin/sorteio')}
-            className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
+      {/* Strategic Actions Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Sorteios', val: `${raffles.filter(r => r.status === 'open').length} ATIVOS`, icon: Gift, color: 'text-brand-orange-coral', bg: 'bg-brand-orange-coral/10', path: '/admin/sorteio' },
+          { label: 'Suporte', val: `${tickets.filter(t => t.status === 'open').length} TICKETS`, icon: Headset, color: 'text-teal-400', bg: 'bg-teal-500/10', path: '/admin/suporte' },
+          { label: 'E-mail MKT', val: 'CAMPANHAS', icon: Mail, color: 'text-purple-400', bg: 'bg-purple-500/10', path: '/admin/comunicacao' },
+          { label: 'Exportar', val: `${registrations.length} CONTATOS`, icon: Download, color: 'text-blue-400', bg: 'bg-blue-500/10', action: 'export' },
+        ].map((item, i) => (
+          <motion.div 
+            key={i}
+            whileHover={{ y: -4 }}
+            onClick={() => item.action === 'export' ? exportLeads() : navigate(item.path!)}
+            className="glass-card hover-card p-5 border-white/5 flex items-center justify-between group cursor-pointer rounded-[1.5rem]"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:rotate-6 transition-all">
-                <Gift className="h-6 w-6 text-orange-400" />
+              <div className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
+                <item.icon className={`h-6 w-6 ${item.color}`} />
               </div>
               <div className="text-left">
-                <p className="text-foreground font-bold text-sm tracking-tight leading-none mb-1">Sorteios</p>
-                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{raffles.filter(r => r.status === 'open').length} ATIVOS</p>
+                <p className="text-white font-black text-sm italic uppercase leading-none mb-1">{item.label}</p>
+                <p className="text-[9px] text-gray-500 uppercase font-black tracking-widest">{item.val}</p>
               </div>
             </div>
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-orange-400 transition-colors" />
-          </motion.button>
-
-          <motion.button 
-            whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/admin/suporte')}
-            className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:rotate-6 transition-all">
-                <Headset className="h-6 w-6 text-teal-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-foreground font-bold text-sm tracking-tight leading-none mb-1">Suporte</p>
-                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{tickets.filter(t => t.status === 'open').length} TICKETS</p>
-              </div>
-            </div>
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-teal-400 transition-colors" />
-          </motion.button>
-
-          <motion.button 
-             whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-             whileTap={{ scale: 0.98 }}
-             onClick={() => navigate('/admin/comunicacao')}
-             className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 group-hover:bg-purple-500/20 transition-all">
-                <Mail className="h-6 w-6 text-purple-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-white font-bold text-sm tracking-tight leading-none mb-1">E-mail MKT</p>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">CAMPANHAS</p>
-              </div>
-            </div>
-            <ArrowUpRight className="h-4 w-4 text-gray-700 group-hover:text-purple-400 transition-colors" />
-          </motion.button>
-
-          <motion.button 
-             whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-             whileTap={{ scale: 0.98 }}
-             onClick={() => {
-                const headers = ['ID', 'Nome', 'Email', 'Empresa', 'Tipo', 'Status'];
-                const csvContent = [
-                  headers.join(','),
-                  ...registrations.map(r => [
-                    r.id,
-                    `"${r.nome}"`,
-                    r.email,
-                    `"${r.empresa || ''}"`,
-                    r.tipoInscricao || 'padrão',
-                    r.status
-                  ].join(','))
-                ].join('\n');
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', `leads_${selectedProject?.slug || 'evento'}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                toast.success('Leads exportados com sucesso');
-             }}
-             className="glass-card p-5 border-white/5 flex items-center justify-between group transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500/20 transition-all">
-                <Download className="h-6 w-6 text-blue-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-white font-bold text-sm tracking-tight leading-none mb-1">Exportar</p>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{registrations.length} CONTATOS</p>
-              </div>
-            </div>
-            <Download className="h-4 w-4 text-gray-700 group-hover:text-blue-400 transition-colors" />
-          </motion.button>
-        </div>
+            <ArrowUpRight className={`h-4 w-4 text-gray-700 group-hover:${item.color} transition-colors`} />
+          </motion.div>
+        ))}
       </div>
 
       {/* Stats Grid */}
@@ -538,129 +441,99 @@ export function AdminDashboard() {
 
       {/* Operational Metrics */}
       <div>
-        <h2 className="text-sm font-black text-gray-600 uppercase tracking-[0.2em] mb-6 flex items-center">
-          Operação do Evento
+        <h2 className="text-sm font-black text-gray-700 uppercase tracking-[0.25em] mb-6 flex items-center italic">
+          OPERAÇÃO DO EVENTO
           <div className="h-px bg-white/5 flex-1 ml-6" />
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-5 group hover:border-orange-500/20 transition-all cursor-pointer relative overflow-hidden" onClick={() => navigate('/admin/sorteio')}>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-all">
-                <Rocket className="h-5 w-5 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-white tracking-tighter">{startups.length}</p>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Startups</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="glass-card p-5 group hover:border-yellow-500/20 transition-all cursor-pointer relative overflow-hidden" onClick={() => navigate('/admin/patrocinadores')}>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-all">
-                <Gem className="h-5 w-5 text-yellow-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-white tracking-tighter">{_sponsors.length}</p>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Sponsors</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-5 group hover:border-teal-500/20 transition-all cursor-pointer relative overflow-hidden" onClick={() => navigate('/admin/check-in')}>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center group-hover:bg-teal-500/20 transition-all">
-                <QrCode className="h-5 w-5 text-teal-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-white tracking-tighter">{checkIns.length}</p>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Check-ins Hoje</p>
+          {[
+            { label: 'Startups', val: startups.length, icon: Rocket, color: 'text-brand-orange-coral', bg: 'orange-500/10', path: '/admin/sorteio' },
+            { label: 'Sponsors', val: _sponsors.length, icon: Gem, color: 'text-yellow-400', bg: 'yellow-500/10', path: '/admin/patrocinadores' },
+            { label: 'Check-ins Hoje', val: checkIns.length, icon: QrCode, color: 'text-teal-400', bg: 'teal-500/10', path: '/admin/check-in' },
+            { label: 'Pendências', val: (tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length), icon: AlertCircle, color: 'text-red-400', bg: 'red-500/10' },
+          ].map((op, i) => (
+            <div 
+              key={i} 
+              className="glass-card hover-card p-6 group transition-all cursor-pointer border-white/5 rounded-[2rem]" 
+              onClick={() => op.path && navigate(op.path)}
+            >
+              <div className="flex items-center gap-4 relative z-10">
+                <div className={`w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all`}>
+                  <op.icon className={`h-6 w-6 ${op.color}`} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black text-white tracking-tighter italic">{op.val}</p>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">{op.label}</p>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="glass-card p-5 group hover:border-red-500/20 transition-all cursor-pointer relative overflow-hidden">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground tracking-tighter">{tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length}</p>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Pendências</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-
-
-      {/* Two Column Layout */}
+      {/* Activity & Approvals */}
       <div className="grid lg:grid-cols-2 gap-10">
-        {/* Recent Activity */}
-        <div className="glass-card p-8 border-white/5 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-8 relative z-10">
+        <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
+          <div className="flex items-center justify-between mb-10 relative z-10">
             <div>
-              <h2 className="text-xl font-black text-white tracking-tight">Atividade Recente</h2>
-              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">LIVE FEED</p>
+              <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Atividade Recente</h2>
+              <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">LIVE FEED • GROWTH EXPERIENCE</p>
             </div>
-            <Button variant="ghost" size="sm" className="text-brand-orange-coral hover:bg-brand-orange-coral/10 rounded-xl font-bold text-xs" onClick={() => toast.info('Log completo em desenvolvimento')}>
-              Ver todas
+            <Button variant="ghost" size="sm" className="text-brand-orange-coral hover:bg-brand-orange-coral/10 rounded-xl font-black text-[10px] uppercase tracking-widest px-4">
+              Ver Logs
             </Button>
           </div>
-          <div className="space-y-6 relative z-10">
+          <div className="space-y-8 relative z-10">
             {recentActivity.map((activity, i) => (
               <div key={i} className="flex items-start group">
-                <div className="relative mr-4">
-                  <div className={`w-3 h-3 rounded-full mt-1.5 shadow-[0_0_10px_rgba(0,0,0,0.5)] z-10 relative ${
-                    activity.type === 'success' ? 'bg-green-500 shadow-green-500/20' : 'bg-blue-500 shadow-blue-500/20'
-                  }`} />
+                <div className="relative mr-5">
+                  <div className={`w-3.5 h-3.5 rounded-full mt-1 ${
+                    activity.type === 'success' ? 'bg-emerald-500 shadow-glow-emerald' : 'bg-blue-500 shadow-glow-blue'
+                  } z-10 relative border-2 border-dark-200`} />
                   {i !== recentActivity.length - 1 && (
-                    <div className="absolute top-4 left-1.5 w-px h-10 bg-white/5 -translate-x-1/2" />
+                    <div className="absolute top-5 left-1/2 w-px h-[calc(100%+32px)] bg-white/5 -translate-x-1/2" />
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-white text-sm font-bold group-hover:text-brand-orange-coral transition-colors">{activity.action}</p>
-                    <span className="text-gray-600 font-bold text-[10px] uppercase tracking-widest">{activity.time}</span>
+                    <p className="text-white text-sm font-black italic uppercase tracking-tight group-hover:text-brand-orange-coral transition-colors">{activity.action}</p>
+                    <span className="text-gray-700 font-black text-[10px] uppercase tracking-widest">{activity.time}</span>
                   </div>
-                  <p className="text-gray-500 text-xs font-medium leading-relaxed">{activity.detail}</p>
+                  <p className="text-gray-500 text-xs font-bold leading-relaxed truncate">{activity.detail}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
         </div>
 
-        {/* Pending Approvals */}
-        <div className="glass-card p-8 border-white/5 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-8 relative z-10">
+        <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
+          <div className="flex items-center justify-between mb-10 relative z-10">
             <div>
-              <h2 className="text-xl font-black text-white tracking-tight">Aprovação Necessária</h2>
-              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">PONTOS DE ATENÇÃO</p>
+              <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Aprovação pendente</h2>
+              <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">PONTOS DE ATENÇÃO OPERACIONAL</p>
             </div>
-            <Badge className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-3 py-1 rounded-full font-black text-[10px] tracking-widest">
+            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest">
               {pendingMentors.length + pendingStartups.length} PENDENTES
             </Badge>
           </div>
 
           <div className="space-y-4 relative z-10">
-            {pendingMentors.slice(0, 2).map((mentor) => (
-              <div key={mentor.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between hover:bg-white/[0.05] transition-all group">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 mr-4 group-hover:rotate-6 transition-transform">
-                    <Users className="h-6 w-6 text-teal-400" />
+            {pendingMentors.slice(0, 3).map((mentor) => (
+              <div key={mentor.id} className="p-5 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex items-center justify-between hover:bg-white/[0.04] transition-all group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+                    <Users className="h-5 w-5 text-teal-400" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-black leading-tight mb-1">{mentor.name}</p>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1">Mentor • {mentor.specialties.join(', ')}</p>
+                    <p className="text-white text-sm font-black italic uppercase italic leading-none mb-1">{mentor.name}</p>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1 truncate max-w-[150px]">Mentor • {mentor.specialties.join(', ')}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-400 hover:bg-green-500/10 rounded-lg">
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 rounded-xl border border-white/5">
                     <CheckCircle2 className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:bg-red-500/10 rounded-lg">
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/20 rounded-xl border border-white/5">
                     <XCircle className="h-4 w-4" />
                   </Button>
                 </div>
@@ -668,21 +541,21 @@ export function AdminDashboard() {
             ))}
 
             {pendingStartups.slice(0, 2).map((startup) => (
-              <div key={startup.id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between hover:bg-white/[0.05] transition-all group">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 mr-4 group-hover:rotate-6 transition-transform">
-                    <Rocket className="h-6 w-6 text-orange-400" />
+              <div key={startup.id} className="p-5 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex items-center justify-between hover:bg-white/[0.04] transition-all group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+                    <Rocket className="h-5 w-5 text-brand-orange-coral" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-black leading-tight mb-1">{startup.name}</p>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1">Startup • {startup.sector}</p>
+                    <p className="text-white text-sm font-black italic uppercase italic leading-none mb-1">{startup.name}</p>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1 truncate max-w-[150px]">Startup • {startup.sector}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-400 hover:bg-green-500/10 rounded-lg">
+                   <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 rounded-xl border border-white/5">
                     <CheckCircle2 className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:bg-red-500/10 rounded-lg">
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/20 rounded-xl border border-white/5">
                     <XCircle className="h-4 w-4" />
                   </Button>
                 </div>
@@ -690,9 +563,9 @@ export function AdminDashboard() {
             ))}
             
             {(pendingMentors.length === 0 && pendingStartups.length === 0) && (
-              <div className="py-12 text-center opacity-40">
-                <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
-                <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Tudo em dia!</p>
+              <div className="py-20 text-center opacity-30">
+                <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+                <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Procedimentos operacionais em dia</p>
               </div>
             )}
           </div>

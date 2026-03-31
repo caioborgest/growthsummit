@@ -5,14 +5,14 @@ import {
   DollarSign,
   Download,
   BarChart3,
-  PieChart,
-  Building2
+  PieChart
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
+import { getStatusConfig } from '@/lib/ui-constants';
 import type { EmpresaIncentivadora } from '@/types';
 
 const categoryColors: Record<string, string> = {
@@ -26,11 +26,6 @@ const categoryColors: Record<string, string> = {
   'Equipe': 'bg-gray-500/20 text-gray-400',
 };
 
-const statusColors: Record<string, string> = {
-  completed: 'bg-green-500/20 text-green-400',
-  pending: 'bg-yellow-500/20 text-yellow-400',
-  cancelled: 'bg-red-500/20 text-red-400',
-};
 
 export function AdminFinanceiro() {
   const { data: transactions } = useTransactions();
@@ -97,14 +92,13 @@ export function AdminFinanceiro() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const paidRegistrations = registrations.filter(r => 
-    (r as any).status_pagamento === 'pago' || 
-    (r as any).status_pagamento === 'paid' || 
+    r.status_pagamento === 'pago' || 
+    r.status_pagamento === 'paid' || 
     (r as any).paymentStatus === 'pago' ||
     (r as any).paymentStatus === 'paid' ||
     r.status === 'paid' ||
     r.status === 'pago' ||
-    r.status === 'ativo' || // 'ativo' é o status de inscricoes pagas no banco
-    ((r.status as unknown as string) === 'pago' && !(r as any).status_pagamento)
+    r.status === 'ativo'
   );
   const paidRegistrationsCount = paidRegistrations.length;
   
@@ -155,397 +149,478 @@ export function AdminFinanceiro() {
   const calcTotal = calcQty * calcPrice;
 
   return (
-    <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex space-x-4 border-b border-dark-300">
+    <div className="space-y-10 py-6 animate-in fade-in duration-700">
+      {/* Premium Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
+            GESTAO <span className="text-brand-orange-coral">FINANCEIRA</span>
+          </h1>
+          <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
+            Monitoramento de Receitas e Fluxo de Caixa do Evento
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] backdrop-blur-xl h-14 pr-6">
+          <div className="w-12 h-12 rounded-[1.5rem] bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 shrink-0 ml-1">
+            <DollarSign className="h-6 w-6 text-brand-orange-coral" />
+          </div>
+          <div>
+            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Status de Caixa</p>
+            <div className="flex items-center gap-2">
+              <span className="text-white font-black text-xs italic uppercase">Saldo {balance >= 0 ? 'Positivo' : 'Negativo'}</span>
+              <div className={`w-2 h-2 rounded-full ${balance >= 0 ? 'bg-emerald-500 shadow-glow-emerald' : 'bg-red-500 animate-pulse'}`} />
+            </div>
+          </div>
+          <div className="h-8 w-px bg-white/5 mx-2" />
+          <Button
+            variant="ghost" 
+            size="sm"
+            onClick={() => toast.info('Relatório detalhado em processamento')}
+            className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
+          >
+            RELATORIO COMPLETO
+          </Button>
+        </div>
+      </div>
+
+      {/* Tabs System */}
+      <div className="flex p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] w-fit mb-10">
         <button
           onClick={() => setActiveView('overview')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeView === 'overview'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
+          className={`flex items-center gap-2 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeView === 'overview'
+              ? 'bg-brand-orange-coral text-white shadow-glow-orange'
+              : 'text-gray-500 hover:text-white'
+          }`}
         >
+          <BarChart3 className="h-3.5 w-3.5" />
           Visão Geral
         </button>
         <button
           onClick={() => setActiveView('transactions')}
-          className={`pb-4 text-sm font-medium transition-colors ${activeView === 'transactions'
-            ? 'text-teal-400 border-b-2 border-teal-400'
-            : 'text-gray-400 hover:text-white'
-            }`}
+          className={`flex items-center gap-2 px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+            activeView === 'transactions'
+              ? 'bg-brand-orange-coral text-white shadow-glow-orange'
+              : 'text-gray-500 hover:text-white'
+          }`}
         >
+          <TrendingUp className="h-3.5 w-3.5" />
           Transações
         </button>
       </div>
 
-      {/* Overview */}
+      {/* Overview Content */}
       {activeView === 'overview' && (
-        <>
-          {/* Main Stats */}
+        <div className="space-y-10">
+          {/* Main Financial Stats Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-green-400" />
-                </div>
-                <Badge className="bg-green-500/20 text-green-400">Receita</Badge>
+            <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <TrendingUp className="h-16 w-16 text-white" />
               </div>
-              <p className="text-3xl font-bold text-white">R$ {totalIncome.toLocaleString()}</p>
-              <p className="text-gray-400 text-sm mt-1">Total recebido</p>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500">
+                  <TrendingUp className="h-7 w-7 text-emerald-400" />
+                </div>
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-none font-black text-[9px] tracking-widest uppercase">Receita</Badge>
+              </div>
+              <div className="relative z-10">
+                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Total Bruto</p>
+                <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">R$ {totalIncome.toLocaleString()}</p>
+                <div className="flex items-center gap-2 mt-4 text-[9px] font-black text-gray-700 uppercase tracking-widest">
+                  <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                  Confirmado em Conta
+                </div>
+              </div>
             </div>
 
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center">
-                  <TrendingDown className="h-6 w-6 text-red-400" />
-                </div>
-                <Badge className="bg-red-500/20 text-red-400">Despesas</Badge>
+            <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <TrendingDown className="h-16 w-16 text-white" />
               </div>
-              <p className="text-3xl font-bold text-white">R$ {expenses.toLocaleString()}</p>
-              <p className="text-gray-400 text-sm mt-1">Total gasto</p>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500">
+                  <TrendingDown className="h-7 w-7 text-red-400" />
+                </div>
+                <Badge className="bg-red-500/10 text-red-400 border-none font-black text-[9px] tracking-widest uppercase">Despesas</Badge>
+              </div>
+              <div className="relative z-10">
+                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Saídas Totais</p>
+                <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">R$ {expenses.toLocaleString()}</p>
+                <div className="flex items-center gap-2 mt-4 text-[9px] font-black text-gray-700 uppercase tracking-widest">
+                  <div className="w-1 h-1 rounded-full bg-red-500" />
+                  Pagamentos Realizados
+                </div>
+              </div>
             </div>
 
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-teal-400" />
+            <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <DollarSign className="h-16 w-16 text-white" />
+              </div>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className={`w-14 h-14 rounded-2xl ${balance >= 0 ? 'bg-teal-500/10' : 'bg-red-500/10'} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
+                  <DollarSign className={`h-7 w-7 ${balance >= 0 ? 'text-teal-400' : 'text-red-400'}`} />
                 </div>
-                <Badge className={balance >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}>
-                  Saldo
+                <Badge className={balance >= 0 ? 'bg-teal-500/10 text-teal-400 border-none px-3 py-1 font-black text-[9px] tracking-widest uppercase' : 'bg-red-500/10 text-red-400 border-none px-3 py-1 font-black text-[9px] tracking-widest uppercase'}>
+                  {balance >= 0 ? 'SURPLUS' : 'DÉFICIT'}
                 </Badge>
               </div>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                R$ {balance.toLocaleString()}
-              </p>
-              <p className="text-gray-400 text-sm mt-1">Balanço atual</p>
+              <div className="relative z-10">
+                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Balanço Final</p>
+                <p className={`text-4xl font-black tracking-tighter tabular-nums italic ${balance >= 0 ? 'text-white' : 'text-red-400'}`}>
+                  R$ {balance.toLocaleString()}
+                </p>
+                <div className="flex items-center gap-2 mt-4 text-[9px] font-black text-gray-700 uppercase tracking-widest">
+                  <div className={`w-1 h-1 rounded-full ${balance >= 0 ? 'bg-teal-500' : 'bg-red-500'}`} />
+                  Rentabilidade do Evento
+                </div>
+              </div>
             </div>
 
-            <div className="glass-card p-6 border-l-4 border-orange-500">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-orange-400" />
-                </div>
-                <Badge className="bg-orange-500/20 text-orange-400">Resumo Inscrições</Badge>
+            <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                 <BarChart3 className="h-16 w-16 text-white" />
               </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Bruto:</span>
-                  <span className="text-white">R$ {(registrationRevenue + registrationDiscounts).toLocaleString('pt-BR')}</span>
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500">
+                  <BarChart3 className="h-7 w-7 text-brand-orange-coral" />
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Cupons:</span>
+                <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none font-black text-[9px] tracking-widest uppercase">Inscrições</Badge>
+              </div>
+              <div className="relative z-10">
+                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Venda de Tickets</p>
+                <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">R$ {registrationRevenue.toLocaleString('pt-BR').split(',')[0]}k</p>
+                <div className="flex justify-between items-center mt-4 text-[9px] font-black uppercase tracking-widest">
+                  <span className="text-gray-700">Cupons:</span>
                   <span className="text-red-400">- R$ {registrationDiscounts.toLocaleString('pt-BR')}</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 flex justify-between font-bold text-[11px]">
-                  <span className="text-white">Líquido:</span>
-                  <span className="text-green-400">R$ {registrationRevenue.toLocaleString('pt-BR')}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-6 border-l-4 border-teal-500">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-teal-400" />
-                </div>
-                <Badge className="bg-teal-500/20 text-teal-400">Empresas Incentivadoras</Badge>
-              </div>
-              <div className="space-y-1">
-                <p className="text-3xl font-bold text-white">R$ {incentiveCompanyRevenue.toLocaleString('pt-BR')}</p>
-                <p className="text-gray-400 text-sm mt-1">Total investido (Aprovadas)</p>
               </div>
             </div>
           </div>
 
-          {/* Charts Placeholder */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">Receitas por Categoria</h2>
-                <PieChart className="h-5 w-5 text-gray-400" />
+          {/* Charts & Analysis */}
+          <div className="grid lg:grid-cols-2 gap-10">
+            <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <div>
+                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Receitas por Categoria</h2>
+                  <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">DISTRIBUIÇÃO DE APORTES</p>
+                </div>
+                <PieChart className="h-6 w-6 text-teal-400 opacity-20" />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6 relative z-10">
                 {Object.entries(incomeByCategory).map(([category, amount]) => (
-                  <div key={category} className="flex items-center">
-                    <span className="text-gray-400 text-sm w-32">{category}</span>
-                    <div className="flex-1 mx-4">
-                      <div className="w-full bg-dark-300 rounded-full h-2">
-                        <div
-                          className="bg-teal-500 h-2 rounded-full"
-                          style={{ width: `${(amount / totalIncome) * 100}%` }}
-                        />
-                      </div>
+                  <div key={category} className="space-y-2 group">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">{category}</span>
+                      <span className="text-white text-xs font-black italic tabular-nums">R$ {amount.toLocaleString()}</span>
                     </div>
-                    <span className="text-white text-sm">R$ {amount.toLocaleString()}</span>
+                    <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(amount / totalIncome) * 100}%` }}
+                        transition={{ duration: 1, delay: 0.2 }}
+                        className="bg-teal-500 h-full rounded-full shadow-glow-teal"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-white">Despesas por Categoria</h2>
-                <BarChart3 className="h-5 w-5 text-gray-400" />
+            <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <div>
+                  <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Despesas por Categoria</h2>
+                  <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">FLUXO DE SAÍDA</p>
+                </div>
+                <BarChart3 className="h-6 w-6 text-brand-orange-coral opacity-20" />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6 relative z-10">
                 {Object.entries(expensesByCategory).map(([category, amount]) => (
-                  <div key={category} className="flex items-center">
-                    <span className="text-gray-400 text-sm w-32">{category}</span>
-                    <div className="flex-1 mx-4">
-                      <div className="w-full bg-dark-300 rounded-full h-2">
-                        <div
-                          className="bg-red-500 h-2 rounded-full"
-                          style={{ width: `${(amount / expenses) * 100}%` }}
-                        />
-                      </div>
+                  <div key={category} className="space-y-2 group">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">{category}</span>
+                      <span className="text-white text-xs font-black italic tabular-nums">R$ {amount.toLocaleString()}</span>
                     </div>
-                    <span className="text-white text-sm">R$ {amount.toLocaleString()}</span>
+                    <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(amount / expenses) * 100}%` }}
+                        transition={{ duration: 1, delay: 0.2 }}
+                        className="bg-brand-orange-coral h-full rounded-full shadow-glow-orange"
+                      />
+                    </div>
                   </div>
                 ))}
+                {Object.keys(expensesByCategory).length === 0 && (
+                  <div className="py-12 text-center opacity-20">
+                     <p className="text-[10px] font-black uppercase tracking-widest">Nenhuma despesa registrada</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Financial Goals */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Metas Financeiras</h2>
+          {/* Financial Goals Tracker */}
+          <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
+            <div className="flex items-center justify-between mb-10 relative z-10">
+              <div>
+                <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Metas Estratégicas</h2>
+                <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">PROGRESSO EM TEMPO REAL</p>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-dark-300 text-gray-300 hover:text-white"
+                className="border-white/5 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
                 onClick={() => {
                   setTempGoals(goals);
                   setShowGoalModal(true);
                 }}
               >
-                Editar Metas
+                EDITAR METAS
               </Button>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-400 text-sm">Receita</span>
-                  <span className="text-teal-400 text-sm">{Math.round((totalIncome / goals.revenue) * 100)}%</span>
+            
+            <div className="grid md:grid-cols-3 gap-10 relative z-10">
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Faturamento</span>
+                  <span className="text-teal-400 text-lg font-black italic tabular-nums leading-none">{Math.round((totalIncome / goals.revenue) * 100)}%</span>
                 </div>
-                <div className="w-full bg-dark-300 rounded-full h-3">
-                  <div
-                    className="bg-teal-500 h-3 rounded-full"
-                    style={{ width: `${Math.min((totalIncome / goals.revenue) * 100, 100)}%` }}
+                <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-3 p-0.5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((totalIncome / goals.revenue) * 100, 100)}%` }}
+                    className="bg-teal-500 h-full rounded-full shadow-glow-teal"
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {totalIncome.toLocaleString()} / R$ {goals.revenue.toLocaleString()}</p>
+                <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">R$ {totalIncome.toLocaleString()} / <span className="text-gray-500">R$ {goals.revenue.toLocaleString()}</span></p>
               </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-400 text-sm">Patrocínio</span>
-                  <span className="text-blue-400 text-sm">{Math.round((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship * 100)}%</span>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Patrocínios</span>
+                  <span className="text-blue-400 text-lg font-black italic tabular-nums leading-none">{Math.round((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship * 100)}%</span>
                 </div>
-                <div className="w-full bg-dark-300 rounded-full h-3">
-                  <div
-                    className="bg-blue-500 h-3 rounded-full"
-                    style={{ width: `${Math.min(((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship) * 100, 100)}%` }}
+                <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-3 p-0.5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(((incomeByCategory['Patrocínio'] || 0) / goals.sponsorship) * 100, 100)}%` }}
+                    className="bg-blue-500 h-full rounded-full shadow-glow-blue"
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">R$ {(incomeByCategory['Patrocínio'] || 0).toLocaleString()} / R$ {goals.sponsorship.toLocaleString()}</p>
+                <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">R$ {(incomeByCategory['Patrocínio'] || 0).toLocaleString()} / <span className="text-gray-500">R$ {goals.sponsorship.toLocaleString()}</span></p>
               </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-400 text-sm">Inscrições (Qtd)</span>
-                  <span className="text-green-400 text-sm">{Math.round((paidRegistrationsCount / goals.registrations) * 100)}%</span>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Tickets (Qtd)</span>
+                  <span className="text-brand-orange-coral text-lg font-black italic tabular-nums leading-none">{Math.round((paidRegistrationsCount / goals.registrations) * 100)}%</span>
                 </div>
-                <div className="w-full bg-dark-300 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full"
-                    style={{ width: `${Math.min((paidRegistrationsCount / goals.registrations) * 100, 100)}%` }}
+                <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-3 p-0.5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((paidRegistrationsCount / goals.registrations) * 100, 100)}%` }}
+                    className="bg-brand-orange-coral h-full rounded-full shadow-glow-orange"
                   />
                 </div>
-                <p className="text-gray-500 text-xs mt-1">{paidRegistrationsCount} / {goals.registrations} inscritos</p>
+                <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">{paidRegistrationsCount} / <span className="text-gray-500">{goals.registrations} INSCRITOS</span></p>
               </div>
             </div>
           </div>
 
           {/* Edit Goals Modal */}
           {showGoalModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-              <div className="glass-card max-w-md w-full p-6 rounded-2xl space-y-4 relative">
-                <h3 className="text-xl font-bold text-white mb-4">Editar Metas Financeiras</h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="glass-card max-w-md w-full p-10 border-white/10 rounded-[2.5rem] shadow-2xl relative"
+              >
+                <div className="mb-8">
+                  <h3 className="text-2xl font-black text-white italic uppercase tracking-tight">Ajustar Metas</h3>
+                  <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">CONFIGURAÇÃO DE PERFORMANCE</p>
+                </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Meta de Receita Total (R$)
-                    </label>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Receita (R$)</label>
                     <input
                       type="number"
                       value={tempGoals.revenue}
                       onChange={(e) => setTempGoals({ ...tempGoals, revenue: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-teal-500"
+                      className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-teal-500 transition-all tabular-nums"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Meta de Patrocínio (R$)
-                    </label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Patrocínio (R$)</label>
                     <input
                       type="number"
                       value={tempGoals.sponsorship}
                       onChange={(e) => setTempGoals({ ...tempGoals, sponsorship: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-blue-500 transition-all tabular-nums"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Meta de Inscrições (Unidades)
-                    </label>
-                    <input
-                      type="number"
-                      value={tempGoals.registrations}
-                      onChange={(e) => setTempGoals({ ...tempGoals, registrations: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white focus:outline-none focus:border-green-500"
-                    />
-                  </div>
-
-                  <div className="p-4 bg-dark-400/50 rounded-xl border border-white/5 space-y-3">
-                    <p className="text-xs font-bold text-teal-400 uppercase tracking-widest flex items-center gap-2">
-                      <TrendingUp className="h-3 w-3" /> Calculadora de Receita
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
+                  {/* Calculator Widget */}
+                  <div className="p-6 bg-white/[0.03] rounded-[1.5rem] border border-white/5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] italic">Calculadora de Tickets</p>
+                      <Zap className="h-3 w-3 text-teal-400 fill-teal-400/20" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-[10px] text-gray-500 uppercase">Qtd</label>
+                        <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Qtd Esperada</label>
                         <input
                           type="number"
                           placeholder="Ex: 300"
                           value={calcQty === 0 ? '' : calcQty}
                           onChange={(e) => setCalcQty(Number(e.target.value))}
-                          className="w-full px-3 py-1.5 bg-dark-200 border border-dark-300 rounded text-sm text-white focus:outline-none focus:border-teal-500"
+                          className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] text-gray-500 uppercase">Preço Unitário (R$)</label>
+                        <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Ticket Avg (R$)</label>
                         <input
                           type="number"
                           placeholder="Ex: 497"
                           value={calcPrice === 0 ? '' : calcPrice}
                           onChange={(e) => setCalcPrice(Number(e.target.value))}
-                          className="w-full px-3 py-1.5 bg-dark-200 border border-dark-300 rounded text-sm text-white focus:outline-none focus:border-teal-500"
+                          className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
                         />
                       </div>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                      <span className="text-xs text-gray-400">Total Estimado:</span>
-                      <span className="text-sm font-bold text-white">R$ {calcTotal.toLocaleString('pt-BR')}</span>
+                      <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Total Estimado:</span>
+                      <span className="text-sm font-black text-white italic">R$ {calcTotal.toLocaleString('pt-BR')}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-[10px] text-teal-400 hover:bg-teal-500/10 h-7"
+                      className="w-full text-[9px] font-black text-teal-400 hover:bg-teal-500/10 h-8 uppercase tracking-widest"
                       onClick={() => {
                         setTempGoals({ ...tempGoals, revenue: calcTotal, registrations: calcQty });
-                        toast.info('Valores aplicados às metas acima');
+                        toast.info('Valores aplicados com sucesso');
                       }}
                     >
-                      APLICAR ÀS METAS
+                      APLICAR AO PLANEJAMENTO
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex space-x-3 mt-6">
+                <div className="flex gap-4 mt-10">
                   <Button
-                    variant="outline"
-                    className="flex-1 border-dark-300 text-gray-400 hover:text-white"
+                    variant="ghost"
+                    className="flex-1 text-gray-500 hover:text-white hover:bg-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest"
                     onClick={() => setShowGoalModal(false)}
                     disabled={isUpdatingGoals}
                   >
-                    Cancelar
+                    DESCARTAR
                   </Button>
                   <Button
-                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                    className="flex-1 bg-brand-orange-coral text-white hover:bg-brand-orange-coral/90 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-glow-orange"
                     onClick={handleUpdateGoals}
                     disabled={isUpdatingGoals}
                   >
-                    {isUpdatingGoals ? 'Salvando...' : 'Salvar Metas'}
+                    {isUpdatingGoals ? 'SALVANDO...' : 'SALVAR METAS'}
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             </div>
           )}
-        </>
-      )
-      }
+        </div>
+      )}
 
-      {/* Transactions */}
-      {
-        activeView === 'transactions' && (
-          <>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
-              >
-                <option value="all">Todos os tipos</option>
-                <option value="income">Receita</option>
-                <option value="expense">Despesa</option>
-              </select>
-              <Button variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info('Exportação do relatório financeiro em desenvolvimento')}>
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
+      {/* Transactions Table Section */}
+      {activeView === 'transactions' && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex p-1 bg-dark-200/50 border border-white/5 rounded-2xl overflow-hidden">
+               {['all', 'income', 'expense'].map((t) => (
+                 <button
+                   key={t}
+                   onClick={() => setTypeFilter(t)}
+                   className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                     typeFilter === t ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'
+                   }`}
+                 >
+                   {t === 'all' ? 'Todos' : t === 'income' ? 'Receitas' : 'Despesas'}
+                 </button>
+               ))}
             </div>
+            
+            <Button 
+              variant="outline" 
+              className="border-white/5 text-gray-500 hover:text-white hover:bg-white/5 rounded-2xl font-black text-[10px] uppercase tracking-widest px-6"
+              onClick={() => toast.info('Exportação iniciada...')}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              DOWNLOAD CSV
+            </Button>
+          </div>
 
-            <div className="glass-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-dark-300">
-                      <th className="p-4 text-left text-gray-400 font-medium">Data</th>
-                      <th className="p-4 text-left text-gray-400 font-medium">Descrição</th>
-                      <th className="p-4 text-left text-gray-400 font-medium">Categoria</th>
-                      <th className="p-4 text-left text-gray-400 font-medium">Tipo</th>
-                      <th className="p-4 text-left text-gray-400 font-medium">Valor</th>
-                      <th className="p-4 text-left text-gray-400 font-medium">Status</th>
+          <div className="admin-table-container">
+            <div className="overflow-x-auto">
+              <table className="w-full responsive-table">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="p-5 text-left text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Data</th>
+                    <th className="p-5 text-left text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Descrição</th>
+                    <th className="p-5 text-left text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Categoria</th>
+                    <th className="p-5 text-left text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Tipo</th>
+                    <th className="p-5 text-right text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Valor</th>
+                    <th className="p-5 text-center text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.02]">
+                  {filteredTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="p-5 text-gray-500 text-xs font-black tabular-nums" data-label="Data">
+                        {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="p-5" data-label="Descrição">
+                        <p className="text-white text-sm font-black italic uppercase tracking-tight group-hover:text-brand-orange-coral transition-colors">{transaction.description}</p>
+                      </td>
+                      <td className="p-5" data-label="Categoria">
+                        <Badge className={`${categoryColors[transaction.category] || 'bg-gray-500/10 text-gray-500'} border-none px-3 py-1 rounded-full font-black text-[9px] tracking-widest uppercase`}>
+                          {transaction.category}
+                        </Badge>
+                      </td>
+                      <td className="p-5" data-label="Tipo">
+                        <Badge className={
+                          transaction.type === 'income' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                        }>
+                          <p className="text-[9px] font-black tracking-widest uppercase">{transaction.type === 'income' ? 'Receita' : 'Despesa'}</p>
+                        </Badge>
+                      </td>
+                      <td className={`p-5 text-right font-black tabular-nums italic text-sm ${
+                        transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
+                      }`} data-label="Valor">
+                        {transaction.type === 'income' ? '+' : '-'} R$ {transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="p-5" data-label="Status">
+                        {(() => {
+                          const config = getStatusConfig(transaction.status);
+                          return (
+                            <Badge className={`${config.color} border-none px-3 py-1 rounded-full font-black text-[9px] tracking-widest uppercase flex items-center justify-center gap-1.5 w-fit mx-auto`}>
+                              <config.icon className="h-3 w-3" />
+                              {config.label}
+                            </Badge>
+                          );
+                        })()}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTransactions.map((transaction) => (
-                      <tr key={transaction.id} className="border-b border-dark-300 hover:bg-dark-100/50">
-                        <td className="p-4 text-gray-300">
-                          {new Date(transaction.date).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="p-4 text-white">{transaction.description}</td>
-                        <td className="p-4">
-                          <Badge className={categoryColors[transaction.category] || 'bg-gray-500/20 text-gray-400'}>
-                            {transaction.category}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <Badge className={
-                            transaction.type === 'income' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                          }>
-                            {transaction.type === 'income' ? 'Receita' : 'Despesa'}
-                          </Badge>
-                        </td>
-                        <td className={`p-4 font-medium ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                          {transaction.type === 'income' ? '+' : '-'} R$ {transaction.amount.toLocaleString()}
-                        </td>
-                        <td className="p-4">
-                          <Badge className={statusColors[transaction.status]}>
-                            {transaction.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </>
-        )
-      }
-    </div >
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

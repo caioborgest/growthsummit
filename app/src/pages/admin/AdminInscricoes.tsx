@@ -1,55 +1,42 @@
 import { useState, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Download,
-    XCircle,
-    Clock,
-    QrCode,
-    Mail,
-    ChevronLeft,
-    ChevronRight,
-    Eye,
-    Moon,
-    User,
-    Loader2,
-    X,
-    Plus,
-    Trash2,
-    Star,
-    CheckCircle2,
-    Package,
-    Contact,
+  XCircle,
+  Clock,
+  QrCode,
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Moon,
+  User,
+  Loader2,
+  X,
+  Plus,
+  Trash2,
+  Star,
+  CheckCircle2,
+  Package,
+  Contact,
+  AlertCircle,
+  CreditCard,
+  Calendar,
+  Ticket,
+  Filter,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRegistrations, useTransactions, useData } from '@/hooks/useData';
+import { getStatusConfig } from '@/lib/ui-constants';
+import { useRegistrations, useTransactions, useData, useCheckIns, useSessions } from '@/hooks/useData';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
-import { useCheckIns } from '@/hooks/useData';
 
 const PAGE_SIZE = 20;
-
-const statusColors: Record<string, string> = {
-  pago: 'bg-green-500/20 text-green-400',
-  paid: 'bg-green-500/20 text-green-400',
-  ativo: 'bg-green-500/20 text-green-400',
-  pendente: 'bg-yellow-500/20 text-yellow-400',
-  pending: 'bg-yellow-500/20 text-yellow-400',
-  cancelled: 'bg-red-500/20 text-red-400',
-  cancelado: 'bg-red-500/20 text-red-400',
-  refunded: 'bg-gray-500/20 text-gray-400',
-};
-
-const statusLabels: Record<string, string> = {
-  pago: 'Pago', paid: 'Pago', ativo: 'Pago',
-  pendente: 'Aguardando', pending: 'Aguardando',
-  cancelled: 'Cancelado', cancelado: 'Cancelado',
-  refunded: 'Reembolsado',
-};
 
 // ── Modal de Detalhes ─────────────────────────────────────────
 function DetalhesModal({
@@ -61,198 +48,188 @@ function DetalhesModal({
 }: {
   reg: Registration;
   onClose: () => void;
-  onUpdateStatus: (id: string, status: string) => Promise<void>;
+  onUpdateStatus: (id: string, status: string | any) => Promise<void>;
   onToggleCheckIn: (id: string, current: boolean) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 rounded-2xl space-y-4 relative scrollbar-hide">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-          aria-label="Fechar"
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          className="glass-card max-w-2xl w-full max-h-[90vh] overflow-hidden rounded-[2.5rem] border-white/5 relative flex flex-col"
         >
-          <X className="h-5 w-5" />
-        </button>
+          {/* Header Decorator */}
+          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-brand-orange-coral/20 to-transparent pointer-events-none" />
+          
+          <div className="p-8 pb-4 relative z-10 flex items-center justify-between">
+             <div className="flex items-center gap-5">
+                <div className="w-20 h-20 rounded-3xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                  <User className="h-10 w-10 text-brand-orange-coral" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">{reg.name || 'Participante'}</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-white/5 text-gray-400 border-none font-black text-[9px] uppercase tracking-widest">{reg.ticketNumber}</Badge>
+                    <div className="w-1 h-1 rounded-full bg-gray-700" />
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{reg.email}</p>
+                  </div>
+                </div>
+             </div>
+             <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-12 w-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+          </div>
 
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-full bg-brand-orange-coral/20 flex items-center justify-center">
-            <User className="h-6 w-6 text-brand-orange-coral" />
-          </div>
-          <div>
-            <h3 className="text-white font-bold text-lg">{reg.name || 'Participante'}</h3>
-            <p className="text-gray-400 text-sm">{reg.email}</p>
-          </div>
-          {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
-            <div className="col-span-2 space-y-2 pt-2 border-t border-white/5">
-              <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Programação Escolhida</p>
-              <div className="flex flex-wrap gap-2">
-                {reg.cursosSelecionados.map((c, i) => (
-                  <Badge key={i} variant="outline" className="text-xs border-teal-500/30 text-teal-400 bg-teal-500/5">
-                    {c}
+          <div className="flex-1 overflow-y-auto p-8 pt-4 custom-scrollbar space-y-8 relative z-10">
+            {/* Quick Status Bar */}
+            <div className="flex items-center gap-3">
+              {(() => {
+                const config = getStatusConfig(reg.status_pagamento || reg.status);
+                const Icon = config.icon || CheckCircle2;
+                return (
+                  <Badge className={`${config.color} border-none px-4 py-2 font-black text-[10px] uppercase tracking-widest italic rounded-xl shadow-glow-sm`}>
+                    <Icon className="h-3.5 w-3.5 mr-2" />
+                    {config.label}
                   </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-          {[
-            { label: 'Nº Inscrição', value: reg.ticketNumber },
-            { label: 'CPF', value: reg.cpf || '—' },
-            {
-              label: 'Status Financeiro',
-              value: (reg.status_pagamento === 'pago' || reg.status === 'pago' || reg.status === 'ativo' || (reg as any).paymentStatus === 'pago') ? 'Confirmado' : 'Pendente'
-            },
-            { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,99' : 'R$ 0,00' },
-            {
-              label: 'Desconto',
-              value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—',
-              highlight: reg.discountAmount && reg.discountAmount > 0
-            },
-            {
-              label: 'Valor Líquido',
-              value: `R$ ${(reg.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-              highlight: (reg.amount || 0) === 0 && reg.palestrasNoturnas && reg.discountAmount && reg.discountAmount > 0
-            },
-            {
-              label: 'Cupom Utilizado',
-              value: reg.couponCode ? `🎟️ ${reg.couponCode}` : '—',
-              highlight: !!reg.couponCode
-            },
-            { label: 'Passaporte Night', value: reg.palestrasNoturnas ? '✅ Sim' : '—' },
-            { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR') },
-          ].map(({ label, value, highlight }) => (
-            <div key={label} className={`p-3 rounded-xl border transition-all ${highlight ? 'bg-orange-500/10 border-orange-500/20' : 'bg-white/5 border-transparent'}`}>
-              <p className="text-gray-500 text-[10px] uppercase font-black mb-1 tracking-wider">{label}</p>
-              <p className={`font-bold ${highlight ? 'text-orange-400' : 'text-white'}`}>{value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-gray-500 text-[10px] uppercase font-black tracking-widest">Atividades Selecionadas</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-[10px] text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral/20 font-black px-2 uppercase"
-              onClick={() => {
-                const novo = prompt('Insira os nomes das atividades separados por vírgula:', reg.cursosSelecionados?.join(', ') || '');
-                if (novo !== null) {
-                  onUpdateStatus(reg.id, { cursosSelecionados: novo.split(',').map(s => s.trim()).filter(Boolean) } as any);
-                }
-              }}
-            >
-              Editar
-            </Button>
-          </div>
-          {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {reg.cursosSelecionados.map((c, i) => (
-                <Badge key={i} variant="outline" className="bg-dark-300 text-white border-white/10 text-[10px] py-0.5">
-                  {c}
+                );
+              })()}
+              {reg.palestrasNoturnas && (
+                <Badge className="bg-[#FF7043]/10 text-[#FF7043] border-none px-4 py-2 font-black text-[10px] uppercase tracking-widest italic rounded-xl">
+                  <Moon className="h-3.5 w-3.5 mr-2" />
+                  NIGHT EXPERIENCE
                 </Badge>
+              )}
+              {reg.checkedIn && (
+                <Badge className="bg-teal-500/10 text-teal-400 border-none px-4 py-2 font-black text-[10px] uppercase tracking-widest italic rounded-xl">
+                  <QrCode className="h-3.5 w-3.5 mr-2" />
+                  ACREDITADO
+                </Badge>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00', icon: Ticket },
+                { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR')}` : '—', icon: Star, highlight: !!reg.discountAmount },
+                { label: 'Valor Líquido', value: `R$ ${(reg.amount || 0).toLocaleString('pt-BR')}`, icon: CreditCard, primary: true },
+                { label: 'Documento', value: (reg as any).cpf || 'Não informado', icon: Contact },
+                { label: 'Cupom', value: reg.couponCode || 'Nenhum', icon: Ticket },
+                { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR'), icon: Calendar },
+              ].map(({ label, value, icon: Icon, highlight, primary }) => (
+                <div key={label} className={`p-5 rounded-[1.5rem] border border-white/5 transition-all ${primary ? 'bg-teal-500/5 border-teal-500/20' : highlight ? 'bg-brand-orange-coral/5 border-brand-orange-coral/20' : 'bg-white/[0.02]'}`}>
+                  <div className="flex items-center gap-2 mb-2 opacity-40">
+                    <Icon className={`h-3 w-3 ${primary ? 'text-teal-400' : 'text-gray-400'}`} />
+                    <p className="text-[9px] uppercase font-black tracking-widest">{label}</p>
+                  </div>
+                  <p className={`text-sm font-black italic uppercase ${primary ? 'text-teal-400' : 'text-white'}`}>{value}</p>
+                </div>
               ))}
             </div>
-          ) : (
-            <p className="text-gray-600 text-[10px] italic">Nenhuma atividade selecionada</p>
-          )}
-        </div>
 
-        <div className="pt-6 border-t border-white/10">
-          <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Ações de Credenciamento</p>
-          <Button
-            onClick={() => {
-              onClose(); // Close details modal first
-              // We'll need a way to trigger the checklist modal from parent
-              (window as any).dispatchAccreditation(reg);
-            }}
-            className="w-full font-black py-6 h-auto rounded-xl transition-all flex items-center justify-center gap-2 mb-6 bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/20"
-          >
-            REALIZAR CREDENCIAMENTO COMPLETO
-          </Button>
+            {/* Activities Section */}
+            <div className="glass-card p-6 border-white/5 rounded-[2rem] bg-white/[0.01]">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h4 className="text-sm font-black text-white italic uppercase tracking-tight">Atividades e Sessões</h4>
+                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">PROGRAMAÇÃO PERSONALIZADA</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-[9px] text-teal-400 hover:text-white hover:bg-teal-500/10 font-bold px-4 uppercase rounded-xl"
+                  onClick={() => {
+                    const novo = prompt('Insira os nomes das sessões (separados por vírgula):', reg.cursosSelecionados?.join(', ') || '');
+                    if (novo !== null) {
+                      onUpdateStatus(reg.id, { cursosSelecionados: novo.split(',').map(s => s.trim()).filter(Boolean) });
+                    }
+                  }}
+                >
+                  EDITAR GRADE
+                </Button>
+              </div>
+              
+              {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {reg.cursosSelecionados.map((c, i) => (
+                    <Badge key={i} className="bg-teal-500/10 text-teal-400 border-none px-3 py-1.5 font-black text-[10px] rounded-lg">
+                      {c.toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-4 border-2 border-dashed border-white/5 rounded-2xl flex items-center justify-center">
+                  <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest italic">Nenhuma atividade selecionada</p>
+                </div>
+              )}
+            </div>
 
-          <p className="text-xs text-gray-500 uppercase font-black mb-4 tracking-widest text-center">Gerenciar Status de Pagamento</p>
-          <div className="flex flex-col gap-2">
-            {((!['pago', 'paid'].includes(reg.status)) || (reg.amount === 0 && reg.palestrasNoturnas)) && (
-              <Button
-                onClick={() => onUpdateStatus(reg.id, 'paid')}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Confirmar Pagamento
-              </Button>
-            )}
+            {/* Actions Grid */}
+            <div className="space-y-4">
+               <h4 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.2em] px-2">Ações Estratégicas</h4>
+               <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => {
+                      onClose();
+                      (window as any).dispatchAccreditation(reg);
+                    }}
+                    className="col-span-2 bg-teal-500 hover:bg-teal-600 text-white font-black py-8 h-auto rounded-[1.5rem] flex flex-col items-center justify-center gap-2 shadow-glow-teal border-none transition-all hover:scale-[1.01]"
+                  >
+                    <QrCode className="h-6 w-6" />
+                    <span className="text-[10px] uppercase tracking-widest">REALIZAR CREDENCIAMENTO PREMIUM</span>
+                  </Button>
 
-            {(reg.status !== 'pago' && reg.amount > 0) && (
-              <Button
-                onClick={() => onUpdateStatus(reg.id, 'free')}
-                variant="outline"
-                className="w-full border-blue-500/50 text-blue-400 hover:bg-blue-500/10 font-bold"
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Converter para Grátis
-              </Button>
-            )}
-            {(!['pendente', 'pending'].includes(reg.status)) && (
-              <Button
-                onClick={() => onUpdateStatus(reg.id, 'pending')}
-                variant="outline"
-                className="w-full border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 font-bold"
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                Marcar como Pendente
-              </Button>
-            )}
-            {reg.status !== 'cancelled' && (
-              <Button
-                onClick={() => onUpdateStatus(reg.id, 'cancelled')}
-                variant="ghost"
-                className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 font-bold"
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Cancelar Inscrição
-              </Button>
-            )}
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="w-full mt-2 border-dark-300 text-gray-400 font-bold"
-            >
-              Fechar Visualização
-            </Button>
+                  <Button
+                    onClick={() => onUpdateStatus(reg.id, 'paid')}
+                    disabled={reg.status === 'pago' || reg.status === 'paid'}
+                    className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
+                  >
+                    CONFIRMAR PAGO
+                  </Button>
 
-            <div className="pt-4 mt-4 border-t border-red-500/10">
+                  <Button
+                    onClick={() => onUpdateStatus(reg.id, 'cancelled')}
+                    variant="ghost"
+                    className="bg-red-500/5 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/10 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
+                  >
+                    CANCELAR ACESSO
+                  </Button>
+               </div>
+            </div>
+
+            <div className="pt-4 flex justify-center">
               <Button
                 onClick={() => onDelete(reg.id)}
                 variant="ghost"
-                className="w-full text-red-500/50 hover:text-red-500 hover:bg-red-500/10 font-bold text-xs"
+                className="text-red-500/30 hover:text-red-500 hover:bg-red-500/10 font-black text-[9px] uppercase tracking-widest px-8"
               >
                 <Trash2 className="h-3 w-3 mr-2" />
-                EXCLUIR PERMANENTEMENTE
+                DANGER: EXCLUIR PERMANENTEMENTE
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }
 
 // ── Componente Principal ──────────────────────────────────────
 export default function AdminInscricoes() {
-  // Use windows to expose the check-in hook for cross-component logging
   const checkInHookReference = useCheckIns();
   (window as any).checkInsHook = checkInHookReference;
 
   const { data: registrations, update, remove } = useRegistrations();
   const { data: checkIns } = useCheckIns();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
-  const { data: allSessions } = useData<any>([], 'programacao_evento');
-  const { update: updateSession } = useData([], 'sessions');
+  const { data: allSessions } = useSessions();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [nightFilter, setNightFilter] = useState<string>('all');
@@ -263,11 +240,9 @@ export default function AdminInscricoes() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
 
-  // Robust Accreditation States
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
 
-  // Otimização: Map para busca de check-ins
   const checkInsByRegId = useMemo(() => {
     const map = new Map<string, any[]>();
     checkIns.forEach(c => {
@@ -279,7 +254,6 @@ export default function AdminInscricoes() {
     return map;
   }, [checkIns]);
 
-  // Global trigger for DetalhesModal to open checklist
   useState(() => {
     (window as any).dispatchAccreditation = (reg: Registration) => {
       setSelectedReg(reg);
@@ -297,14 +271,12 @@ export default function AdminInscricoes() {
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
 
-      // Se mudar para Pago ou Grátis, sincronizar status_pagamento
       if (status === 'paid' || status === 'pago' || status === 'free') {
         updates.status_pagamento = 'pago';
-        updates.paymentStatus = 'pago'; // Sincroniza propriedade mapeada para UI local
+        updates.paymentStatus = 'pago';
         updates.status = 'ativo';
       }
 
-      // Se mudar para Grátis, zerar o valor e desativar palestras noturnas
       if (status === 'free') {
         updates.amount = 0;
         updates.valor_pago = 0;
@@ -313,9 +285,7 @@ export default function AdminInscricoes() {
 
       await update(id, updates);
 
-      // 1. Sincronização de Cancelamento
       if (status === 'cancelled' && oldStatus !== 'cancelled') {
-        // ... (lógica existente de liberar vagas)
         if (registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
           const { supabase } = await import('@/lib/supabase');
           for (const sessionId of registration.cursosSelecionados) {
@@ -327,7 +297,6 @@ export default function AdminInscricoes() {
           }
         }
 
-        // Cancelar transação financeira
         const relatedTransaction = transactions.find(t => t.relatedId === id);
         if (relatedTransaction && relatedTransaction.status !== 'cancelled') {
           await updateTransaction(relatedTransaction.id, { status: 'cancelled' });
@@ -335,14 +304,11 @@ export default function AdminInscricoes() {
         }
       }
 
-      // 2. Sincronização de Pagamento (Criar Lançamento ou Atualizar Existente)
       if ((status === 'paid' || status === 'free' || status === 'pago')) {
         try {
-          // Se for uma confirmação de pagamento manual e o valor for 0 mas tiver Night, assume o valor padrão
           let finalAmount = registration.amount || 0;
           if ((status === 'paid' || status === 'pago') && finalAmount === 0 && registration.palestrasNoturnas) {
             finalAmount = 179.90;
-            // Atualiza a inscrição também
             await update(id, { amount: finalAmount } as any);
             updates.amount = finalAmount;
           }
@@ -361,7 +327,6 @@ export default function AdminInscricoes() {
             } as any);
             toast.success('Lançamento financeiro atualizado');
           } else if (!['pago', 'paid'].includes(oldStatus)) {
-            // Só cria se for novo pagamento (não transição de pago -> pago)
             await createTransaction({
               projectId: registration.projectId || '',
               type: 'income',
@@ -402,7 +367,6 @@ export default function AdminInscricoes() {
 
     setIsUpdating(true);
     try {
-      // 1. Liberar vagas na programação se ainda não estiver cancelado
       if (registration.status !== 'cancelled' && registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
         const { supabase } = await import('@/lib/supabase');
         for (const sessionId of registration.cursosSelecionados) {
@@ -410,16 +374,12 @@ export default function AdminInscricoes() {
         }
       }
 
-      // 2. Excluir transações financeiras relacionadas
       const relatedTransactions = transactions.filter(t => t.relatedId === id);
+      const { supabase } = await import('@/lib/supabase');
       for (const t of relatedTransactions) {
-        // Usando a API de transações se disponível, ou fallback para manual se necessário
-        // Aqui usamos hooks de dados genéricos
-        const { supabase } = await import('@/lib/supabase');
         await supabase.from('transactions').delete().eq('id', t.id);
       }
 
-      // 3. Excluir a inscrição
       await remove(id);
 
       toast.success('Participante e dados vinculados removidos com sucesso.');
@@ -432,57 +392,6 @@ export default function AdminInscricoes() {
     }
   };
 
-  const handleToggleCheckIn = async (id: string, currentStatus: boolean) => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    try {
-      const registration = registrations.find(r => r.id === id);
-      if (!registration) return;
-
-      const newStatus = !currentStatus;
-      await update(id, {
-        checkedIn: newStatus,
-        checkInTime: newStatus ? new Date().toISOString() : null
-      } as any);
-
-      // Log the event for historical records if it's a check-in (not removal)
-      if (newStatus) {
-        try {
-          const { create: createLog } = (window as any).checkInsHook;
-          if (createLog) {
-            await createLog({
-              projectId: registration.projectId,
-              registrationId: registration.id,
-              userId: registration.userId,
-              ticketNumber: registration.ticketNumber,
-              timestamp: new Date().toISOString(),
-              location: 'Manual (Inscrições)',
-              method: 'manual'
-            });
-          }
-        } catch (logErr) {
-          console.error('[AdminInscricoes] Erro ao registrar log de check-in:', logErr);
-        }
-      }
-
-      toast.success(newStatus ? 'Credenciamento realizado com sucesso!' : 'Credenciamento removido.');
-
-      if (detalhes && detalhes.id === id) {
-        setDetalhes(prev => prev ? {
-          ...prev,
-          checkedIn: newStatus,
-          checkInTime: newStatus ? new Date().toISOString() : null
-        } : null);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar check-in:', error);
-      toast.error('Erro ao processar credenciamento.');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // ── Filtros ───────────────────────────────────────────────
   const filteredRegistrations = registrations.filter(reg => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
@@ -497,17 +406,12 @@ export default function AdminInscricoes() {
     return matchesSearch && matchesStatus && matchesNight;
   });
 
-  // Reset para página 1 ao filtrar
-  const handleFilter = (fn: () => void) => { fn(); setCurrentPage(1); };
-
-  // ── Paginação ─────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(filteredRegistrations.length / PAGE_SIZE));
   const paginatedRegistrations = filteredRegistrations.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
 
-  // ── Seleção ───────────────────────────────────────────────
   const toggleSelection = useCallback((id: string) => {
     setSelectedItems(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
@@ -522,7 +426,6 @@ export default function AdminInscricoes() {
     }
   }, [selectedItems.length, paginatedRegistrations]);
 
-  // ── Exportação CSV ────────────────────────────────────────
   const handleExport = useCallback(async () => {
     setExportingCSV(true);
     try {
@@ -535,7 +438,7 @@ export default function AdminInscricoes() {
         r.ticketNumber,
         r.name || '',
         r.email || '',
-        statusLabels[r.status] || r.status,
+        getStatusConfig(r.status).label,
         `R$ ${r.amount?.toFixed(2) || '0.00'}`,
         r.palestrasNoturnas ? 'Sim' : 'Não',
         r.checkedIn ? 'Sim' : 'Não',
@@ -561,7 +464,6 @@ export default function AdminInscricoes() {
     }
   }, [filteredRegistrations, selectedItems]);
 
-  // ── Ação em massa: Copiar emails ──────────────────────────
   const handleCopyEmails = useCallback(() => {
     const list = selectedItems.length > 0
       ? filteredRegistrations.filter(r => selectedItems.includes(r.id))
@@ -572,318 +474,292 @@ export default function AdminInscricoes() {
   }, [filteredRegistrations, selectedItems]);
 
   return (
-    <>
+    <div className="space-y-10 py-6 animate-in fade-in duration-700">
       {detalhes && (
         <DetalhesModal
           reg={detalhes}
           onClose={() => setDetalhes(null)}
           onUpdateStatus={handleUpdateStatus}
-          onToggleCheckIn={handleToggleCheckIn}
+          onToggleCheckIn={() => {}}
           onDelete={handleDeleteParticipant}
         />
       )}
 
-      <div className="space-y-6">
-        {/* Header Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-              <Input
-                type="text"
-                placeholder="Buscar por nome, e-mail ou nº..."
-                value={searchQuery}
-                onChange={e => handleFilter(() => setSearchQuery(e.target.value))}
-                className="pl-12 w-full sm:w-80 bg-dark-100 border-dark-300 text-white"
-              />
+      {/* Premium Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
+            BASE DE <span className="text-brand-orange-coral">INSCRITOS</span>
+          </h1>
+          <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
+            Gerenciamento Estratégico de Participantes ({registrations.length})
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-14 px-8 rounded-2xl text-[10px] uppercase tracking-widest shadow-glow-orange flex items-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            NOVA INSCRIÇÃO
+          </Button>
+
+          <Button
+            variant="ghost"
+            onClick={handleExport}
+            disabled={exportingCSV}
+            className="h-14 w-14 rounded-2xl bg-white/5 text-gray-400 hover:text-white border border-white/5 flex items-center justify-center p-0"
+          >
+             {exportingCSV ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Grid Premium */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Geral', value: registrations.length, icon: User, color: 'text-white' },
+          { label: 'Confirmados', value: registrations.filter(r => ['pago', 'paid'].includes(r.status)).length, icon: CheckCircle2, color: 'text-emerald-400' },
+          { label: 'Night Exp.', value: registrations.filter(r => r.palestrasNoturnas).length, icon: Moon, color: 'text-[#FF7043]' },
+          { label: 'Acreditados', value: registrations.filter(r => r.checkedIn).length, icon: QrCode, color: 'text-teal-400' },
+        ].map((stat, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group"
+          >
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              </div>
             </div>
-            <select
-              value={statusFilter}
-              onChange={e => handleFilter(() => setStatusFilter(e.target.value))}
-              className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
-            >
-              <option value="all">Todos os status</option>
-              <option value="pago">Pago</option>
-              <option value="paid">Pago (legado)</option>
-              <option value="pendente">Pendente</option>
-              <option value="pending">Pendente (legado)</option>
-              <option value="cancelled">Cancelado</option>
-            </select>
-            <select
-              value={nightFilter}
-              onChange={e => handleFilter(() => setNightFilter(e.target.value))}
-              className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm"
-            >
-              <option value="all">Todos os tipos</option>
-              <option value="sim">Passaporte Night ✓</option>
-              <option value="nao">Sem Night</option>
-            </select>
+            <div className="relative z-10">
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{stat.label}</p>
+              <p className={`text-4xl font-black ${stat.color} tracking-tighter tabular-nums italic`}>{stat.value}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Smart Filters Panel */}
+      <div className="glass-card p-4 border-white/5 rounded-[2rem] bg-white/[0.02] flex flex-wrap items-center gap-4">
+        <div className="relative flex-1 min-w-[300px]">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
+          <Input
+            type="text"
+            placeholder="BUSCAR PELO NOME, E-MAIL OU Nº DO TICKET..."
+            value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className="w-full h-14 pl-16 bg-black/20 border-white/5 rounded-xl text-white font-black italic focus:border-teal-500 transition-all placeholder:text-gray-700 placeholder:text-[10px]"
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 h-14 px-6 bg-black/20 border border-white/5 rounded-xl">
+             <Filter className="h-4 w-4 text-teal-400" />
+             <select
+               value={statusFilter}
+               onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+               className="bg-transparent text-[10px] font-black text-teal-400 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer"
+             >
+               <option value="all">TODOS STATUS</option>
+               <option value="pago">CONFIRMADO</option>
+               <option value="pendente">PENDENTE</option>
+               <option value="cancelled">CANCELADO</option>
+             </select>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Inscrição
-            </Button>
-            {selectedItems.length > 0 && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-dark-300 text-gray-300 hover:text-white"
-                  onClick={handleCopyEmails}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Copiar e-mails ({selectedItems.length})
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-red-500/30 text-red-400 hover:text-red-300"
-                  onClick={() => setSelectedItems([])}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Limpar seleção
-                </Button>
-              </>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-dark-300 text-gray-300 hover:text-white"
-              onClick={handleExport}
-              disabled={exportingCSV}
-            >
-              {exportingCSV
-                ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                : <Download className="h-4 w-4 mr-2" />}
-              {exportingCSV ? 'Exportando...' : 'Exportar CSV'}
-            </Button>
+
+          <div className="flex items-center gap-2 h-14 px-6 bg-black/20 border border-white/5 rounded-xl">
+             <Moon className="h-4 w-4 text-[#FF7043]" />
+             <select
+               value={nightFilter}
+               onChange={e => { setNightFilter(e.target.value); setCurrentPage(1); }}
+               className="bg-transparent text-[10px] font-black text-[#FF7043] uppercase tracking-widest focus:outline-none appearance-none cursor-pointer"
+             >
+               <option value="all">TODOS ACESSOS</option>
+               <option value="sim">NIGHT EXP. ✓</option>
+               <option value="nao">SEM NIGHT</option>
+             </select>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Total</p>
-            <p className="text-2xl font-bold text-white">{registrations.length}</p>
+        {selectedItems.length > 0 && (
+          <div className="flex items-center gap-2 ml-auto">
+             <Button
+                variant="outline"
+                onClick={handleCopyEmails}
+                className="h-14 border-teal-500/20 text-teal-400 hover:bg-teal-500/10 font-black text-[9px] uppercase tracking-widest px-6"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                EMAILS ({selectedItems.length})
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedItems([])}
+                className="h-14 text-red-500/50 hover:text-red-400 font-black text-[9px] uppercase"
+              >
+                LIMPAR
+              </Button>
           </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Pagos</p>
-            <p className="text-2xl font-bold text-green-400">
-              {registrations.filter(r => ['pago', 'paid'].includes(r.status)).length}
-            </p>
-          </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Passaporte Night</p>
-            <p className="text-2xl font-bold text-brand-orange-coral">
-              {registrations.filter(r => r.palestrasNoturnas).length}
-            </p>
-          </div>
-          <div className="glass-card p-4">
-            <p className="text-gray-400 text-sm">Check-ins</p>
-            <p className="text-2xl font-bold text-teal-400">
-              {registrations.filter(r => r.checkedIn).length}
-            </p>
-          </div>
-        </div>
+        )}
+      </div>
 
-        {/* Table */}
-        <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-300">
-                  <th className="p-4 text-left">
-                    <input
-                      type="checkbox"
-                      className="rounded bg-dark-100 border-dark-300"
-                      checked={selectedItems.length === paginatedRegistrations.length && paginatedRegistrations.length > 0}
-                      onChange={selectAll}
-                      title="Selecionar todos"
-                    />
-                  </th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Inscrição</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Participante</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Status</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Valor</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Night</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Acreditação</th>
-                  <th className="p-4 text-left text-gray-400 font-medium text-sm">Ações</th>
+      {/* Main Content Area */}
+      <div className="glass-card border-white/5 rounded-[2.5rem] overflow-hidden">
+        <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-white/5 bg-white/[0.01]">
+                <th className="p-6">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded-md bg-white/5 border-white/10 checked:bg-teal-500"
+                    checked={selectedItems.length === paginatedRegistrations.length && paginatedRegistrations.length > 0}
+                    onChange={selectAll}
+                  />
+                </th>
+                <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic">Ticket / Data</th>
+                <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic">Participante</th>
+                <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic text-center">Acreditação</th>
+                <th className="p-6 text-[10px] font-black uppercase text-gray-500 tracking-widest italic">Financeiro</th>
+                <th className="p-6"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {paginatedRegistrations.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-20 text-center">
+                    <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest italic opacity-20">Nenhum registro encontrado para estes filtros</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {paginatedRegistrations.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-8 text-center text-gray-500">
-                      Nenhum resultado encontrado.
+              ) : (
+                paginatedRegistrations.map((reg, idx) => (
+                  <motion.tr 
+                    key={reg.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: idx * 0.02 }}
+                    className="group hover:bg-white/[0.02] transition-colors"
+                  >
+                    <td className="p-6">
+                      <input
+                        type="checkbox"
+                        className="h-5 w-5 rounded-md bg-white/5 border-white/10 checked:bg-teal-500"
+                        checked={selectedItems.includes(reg.id)}
+                        onChange={() => toggleSelection(reg.id)}
+                      />
                     </td>
-                  </tr>
-                ) : (
-                  paginatedRegistrations.map((reg) => (
-                    <tr key={reg.id} className="border-b border-dark-300/50 hover:bg-dark-100/40 transition-colors">
-                      <td className="p-4">
-                        <input
-                          type="checkbox"
-                          className="rounded bg-dark-100 border-dark-300"
-                          checked={selectedItems.includes(reg.id)}
-                          onChange={() => toggleSelection(reg.id)}
-                        />
-                      </td>
-                      <td className="p-4">
-                        <p className="text-white font-mono text-sm">{reg.ticketNumber}</p>
-                        <p className="text-gray-500 text-xs">{new Date(reg.createdAt).toLocaleDateString('pt-BR')}</p>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-white font-medium text-sm">{reg.name || 'Desconhecido'}</p>
-                        <p className="text-gray-500 text-xs truncate max-w-[200px]">{reg.email || '-'}</p>
-                        {reg.loteId && (
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-[10px] py-0 px-1.5">
-                              EQUIPE
-                            </Badge>
-                            {reg.voucherEmpresa && (
-                              <span className="text-[10px] text-gray-500 font-mono">{reg.voucherEmpresa}</span>
-                            )}
+                    <td className="p-6">
+                      <p className="text-white font-mono text-xs font-black tracking-tight mb-1 group-hover:text-brand-orange-coral transition-colors">{reg.ticketNumber}</p>
+                      <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest">{new Date(reg.createdAt).toLocaleDateString('pt-BR')}</p>
+                    </td>
+                    <td className="p-6">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+                            <User className="h-5 w-5 text-gray-500" />
                           </div>
-                        )}
-                        {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {reg.cursosSelecionados.map((id, i) => {
-                              const session = allSessions?.find(s => s.id === id);
-                              return (
-                                <Badge key={i} variant="outline" className="text-[9px] py-0 px-1 border-teal-500/20 text-teal-400 bg-teal-500/5">
-                                  {session?.title || session?.titulo || id}
-                                </Badge>
-                              );
-                            })}
+                          <div>
+                            <p className="text-white text-sm font-black italic uppercase leading-none mb-1">{reg.name || '---'}</p>
+                            <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest leading-none truncate max-w-[150px]">{reg.email}</p>
                           </div>
+                       </div>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex items-center justify-center gap-2">
+                        {(() => {
+                           const regCheckIns = checkInsByRegId.get(reg.id) || [];
+                           const eventCheckIn = regCheckIns.some(c => c.method === 'manual' || c.method === 'scanner');
+                           return (
+                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${eventCheckIn ? 'bg-teal-500/10 border-teal-500/30 text-teal-400 shadow-glow-sm' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                               <CheckCircle2 className="h-4 w-4" />
+                             </div>
+                           )
+                        })()}
+                        {reg.palestrasNoturnas && (
+                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center border bg-[#FF7043]/10 border-[#FF7043]/30 text-[#FF7043]`}>
+                             <Moon className="h-4 w-4" />
+                           </div>
                         )}
-                      </td>
-                      <td className="p-4">
-                        <Badge className={statusColors[reg.status_pagamento || reg.status] || 'bg-gray-500/20 text-gray-400'}>
-                          {['pago', 'paid'].includes(reg.status_pagamento || reg.status)
-                            ? <CheckCircle2 className="h-3 w-3 mr-1" />
-                            : ['pendente', 'pending'].includes(reg.status_pagamento || reg.status)
-                              ? <Clock className="h-3 w-3 mr-1" />
-                              : <XCircle className="h-3 w-3 mr-1" />}
-                          {((reg.amount === 0 || reg.valor_pago === 0) && ['pago', 'paid'].includes(reg.status_pagamento || reg.status)) 
-                            ? 'Liberado' 
-                            : (statusLabels[reg.status_pagamento] || statusLabels[reg.status] || reg.status_pagamento || reg.status)}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-white text-sm font-bold">
-                        R$ {(reg.valor_pago !== undefined ? reg.valor_pago : (reg.amount || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="p-4">
-                        {reg.palestrasNoturnas
-                          ? <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral"><Moon className="h-3 w-3 mr-1" />Night</Badge>
-                          : <span className="text-gray-600 text-xs">—</span>
-                        }
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-1.5">
+                      </div>
+                    </td>
+                    <td className="p-6">
+                       <div className="flex flex-col gap-1.5">
                           {(() => {
-                            const regCheckIns = checkInsByRegId.get(reg.id) || [];
-                            const eventCheckIns = regCheckIns.filter(c => c.location && c.location.includes('Credenciamento'));
-                            const entrance = regCheckIns.length > 0;
-                            const kit = eventCheckIns.some(c => c.location && c.location.includes('Kit: Sim'));
-                            const badge = eventCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
+                            const config = getStatusConfig(reg.status_pagamento || reg.status);
                             return (
-                              <>
-                                <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                  <CheckCircle2 className="h-3 w-3" />
-                                </div>
-                                <div title="Crachá" className={`w-6 h-6 rounded-md flex items-center justify-center border ${badge ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                  <Contact className="h-3 w-3" />
-                                </div>
-                                <div title="Kit" className={`w-6 h-6 rounded-md flex items-center justify-center border ${kit ? 'bg-teal-500/10 border-teal-500/30 text-teal-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                  <Package className="h-3 w-3" />
-                                </div>
-                              </>
+                              <Badge className={`${config.color} border-none text-[8px] font-black uppercase tracking-widest italic h-5 flex items-center`}>
+                                {config.label}
+                              </Badge>
                             );
                           })()}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className={`h-8 w-8 p-0 ${reg.checkedIn ? 'text-orange-400 hover:bg-orange-400/10' : 'text-teal-400 hover:bg-teal-400/10'}`}
-                            title={reg.checkedIn ? 'Remover check-in' : 'Realizar check-in'}
-                            onClick={() => handleToggleCheckIn(reg.id, !!reg.checkedIn)}
-                          >
-                            {reg.checkedIn ? <XCircle className="h-4 w-4" /> : <QrCode className="h-4 w-4" />}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-gray-400 hover:text-white h-8 w-8 p-0"
-                            title="Ver detalhes"
-                            onClick={() => setDetalhes(reg)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-gray-400 hover:text-teal-400 h-8 w-8 p-0"
-                            title="Copiar QR Code ID"
-                            onClick={() => { navigator.clipboard.writeText(reg.id); toast.success('ID copiado!'); }}
-                          >
-                            <QrCode className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-gray-400 hover:text-red-500 h-8 w-8 p-0"
-                            title="Excluir participante"
-                            onClick={() => handleDeleteParticipant(reg.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          <p className="text-white text-xs font-black italic tabular-nums">
+                            R$ {(reg.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                       </div>
+                    </td>
+                    <td className="p-6 text-right">
+                       <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setDetalhes(reg)}
+                          className="h-10 w-10 p-0 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-teal-500/20 hover:border-teal-500/20 border border-transparent transition-all"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                    </td>
+                  </motion.tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination */}
-          <div className="p-4 border-t border-dark-300 flex items-center justify-between gap-4">
-            <p className="text-gray-400 text-sm">
-              Mostrando {Math.min((currentPage - 1) * PAGE_SIZE + 1, filteredRegistrations.length)}–{Math.min(currentPage * PAGE_SIZE, filteredRegistrations.length)} de{' '}
-              <span className="text-white font-semibold">{filteredRegistrations.length}</span> registros
-            </p>
-            <div className="flex items-center gap-2">
+        {/* Pagination Premium */}
+        <div className="p-8 border-t border-white/5 flex items-center justify-between gap-6 bg-white/[0.01]">
+           <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
+                <Ticket className="h-5 w-5 text-gray-500" />
+              </div>
+              <div>
+                <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest italic">Página {currentPage} de {totalPages}</p>
+                <p className="text-white text-xs font-black italic uppercase tracking-tight">Mostrando base de registros ({paginatedRegistrations.length})</p>
+              </div>
+           </div>
+
+           <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="border-dark-300 text-gray-400 hover:text-white disabled:opacity-30"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                className="h-12 w-12 bg-white/5 rounded-xl border border-white/5 text-gray-500 hover:text-white disabled:opacity-20"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-6 w-6" />
               </Button>
-              <span className="text-gray-400 text-sm px-2">
-                {currentPage} / {totalPages}
-              </span>
+              <div className="flex gap-1">
+                 {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => (
+                   <button
+                     key={i}
+                     onClick={() => setCurrentPage(i + 1)}
+                     className={`w-12 h-12 rounded-xl text-[10px] font-black italic transition-all ${currentPage === i + 1 ? 'bg-teal-500 text-white shadow-glow-teal' : 'bg-white/5 text-gray-500 hover:text-white'}`}
+                   >
+                     {i + 1}
+                   </button>
+                 ))}
+              </div>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="border-dark-300 text-gray-400 hover:text-white disabled:opacity-30"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                className="h-12 w-12 bg-white/5 rounded-xl border border-white/5 text-gray-500 hover:text-white disabled:opacity-20"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-6 w-6" />
               </Button>
-            </div>
-          </div>
+           </div>
         </div>
       </div>
 
@@ -912,6 +788,6 @@ export default function AdminInscricoes() {
           }}
         />
       )}
-    </>
+    </div>
   );
 }

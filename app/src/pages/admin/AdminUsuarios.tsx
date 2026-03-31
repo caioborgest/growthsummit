@@ -19,10 +19,7 @@ import {
     Ticket,
     ShoppingCart,
     Filter,
-    Users,
-    ChevronRight,
-    Lock,
-    Eye
+    Users
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -108,8 +105,6 @@ export default function AdminUsuarios() {
     const [deptFilter, setDeptFilter] = useState('all');
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [isExporting, setIsExporting] = useState(false);
 
     // Otimização: Criar um Map para busca rápida de check-ins
     const checkInsByUserId = useMemo(() => {
@@ -238,7 +233,6 @@ export default function AdminUsuarios() {
     };
 
     const staffCount = users.filter(u => u.role === 'staff').length;
-    const adminCount = users.filter(u => u.role === 'admin').length;
     const mentorCount = users.filter(u => u.role === 'mentor').length;
     const totalUsers = users.length;
 
@@ -425,17 +419,17 @@ export default function AdminUsuarios() {
             </div>
 
             {/* Users Table */}
-            <div className="glass-card overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="glass-card overflow-hidden border-white/5 shadow-2xl">
+                <div className="overflow-x-auto responsive-table">
                     <table className="w-full">
                         <thead>
-                            <tr className="border-b border-dark-300 text-left">
-                                <th className="p-4 text-gray-400 font-medium text-sm">Usuário</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm">Cargo / Nível</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm">Departamento</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm">Acreditação</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm">Entrou em</th>
-                                <th className="p-4 text-gray-400 font-medium text-sm text-right">Ações</th>
+                            <tr className="bg-white/[0.02] border-b border-white/5">
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Usuário</th>
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Cargo / Nível</th>
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Departamento</th>
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Acreditação</th>
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Entrou em</th>
+                                <th className="p-4 text-gray-500 font-extrabold text-[10px] uppercase tracking-widest text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-dark-300">
@@ -443,37 +437,37 @@ export default function AdminUsuarios() {
                                 const DeptIcon = user.department ? departmentIcons[user.department] || Shield : null;
 
                                 return (
-                                    <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                                        <td className="p-4">
+                                    <tr key={user.id} className="hover:bg-white/[0.04] transition-all group">
+                                        <td className="p-4" data-label="Usuário">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=21808D&color=fff`}
+                                                    src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=14B8A6&color=fff`}
                                                     alt={user.name}
-                                                    className="h-10 w-10 rounded-full border border-white/10"
+                                                    className="h-10 w-10 rounded-full border border-white/10 shadow-lg"
                                                 />
                                                 <div>
-                                                    <p className="text-white font-medium">{user.name}</p>
-                                                    <p className="text-gray-500 text-xs">{user.email}</p>
+                                                    <p className="text-white font-bold italic tracking-tight">{user.name}</p>
+                                                    <p className="text-gray-500 text-[10px] font-medium">{user.email}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4">
-                                            <Badge className={roleColors[user.role] || roleColors.participant}>
-                                                {user.role.toUpperCase()}
+                                        <td className="p-4" data-label="Cargo">
+                                            <Badge className={`${roleColors[user.role] || roleColors.participant} font-black text-[10px] uppercase tracking-widest px-2 py-0.5`}>
+                                                {user.role}
                                             </Badge>
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-4" data-label="Dep.">
                                             {user.department ? (
-                                                <div className="flex items-center gap-2 text-gray-300">
-                                                    {DeptIcon && <DeptIcon className="h-4 w-4 text-teal-400" />}
-                                                    <span className="text-sm">{departmentLabels[user.department] || user.department}</span>
+                                                <div className="flex items-center gap-2 text-gray-400">
+                                                    {DeptIcon && <DeptIcon className="h-4 w-4 text-teal-400/70" />}
+                                                    <span className="text-xs font-bold uppercase tracking-wider">{departmentLabels[user.department] || user.department}</span>
                                                 </div>
                                             ) : (
-                                                <span className="text-gray-600 text-sm">-</span>
+                                                <span className="text-gray-700 text-xs">-</span>
                                             )}
                                         </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-1.5">
+                                        <td className="p-4" data-label="Acredt.">
+                                            <div className="flex items-center gap-1.5 lg:justify-start justify-end">
                                                 {(() => {
                                                     const userCheckIns = (checkInsByUserId.get(user.id) || []).filter(c => c.location && c.location.includes('Credenciamento'));
                                                     const entrance = userCheckIns.length > 0;
@@ -481,27 +475,27 @@ export default function AdminUsuarios() {
                                                     const badge = userCheckIns.some(c => c.location && c.location.includes('Crachá: Sim'));
                                                     return (
                                                         <>
-                                                            <div title="Entrada" className={`w-6 h-6 rounded-md flex items-center justify-center border ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                                                <CheckCircle2 className="h-3 w-3" />
+                                                            <div title="Entrada" className={`w-7 h-7 rounded-lg flex items-center justify-center border transition-all ${entrance ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-lg shadow-green-500/10' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <CheckCircle2 className="h-3.5 w-3.5" />
                                                             </div>
-                                                            <div title="Crachá" className={`w-6 h-6 rounded-md flex items-center justify-center border ${badge ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                                                <Contact className="h-3 w-3" />
+                                                            <div title="Crachá" className={`w-7 h-7 rounded-lg flex items-center justify-center border transition-all ${badge ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral shadow-lg shadow-brand-orange-coral/10' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <Contact className="h-3.5 w-3.5" />
                                                             </div>
-                                                            <div title="Kit" className={`w-6 h-6 rounded-md flex items-center justify-center border ${kit ? 'bg-teal-500/10 border-teal-500/30 text-teal-400' : 'bg-white/5 border-white/10 text-gray-700'}`}>
-                                                                <Package className="h-3 w-3" />
+                                                            <div title="Kit" className={`w-7 h-7 rounded-lg flex items-center justify-center border transition-all ${kit ? 'bg-teal-500/10 border-teal-500/30 text-teal-400 shadow-lg shadow-teal-500/10' : 'bg-white/5 border-white/10 text-gray-700'}`}>
+                                                                <Package className="h-3.5 w-3.5" />
                                                             </div>
                                                         </>
                                                     );
                                                 })()}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-gray-400 text-sm font-mono">
+                                        <td className="p-4 text-gray-500 text-xs font-black uppercase tracking-widest" data-label="Entrou">
                                             {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                                         </td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-4 text-right" data-label="Ações">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={() => navigate('/em-breve/detalhes-usuario')}>
+                                                    <Button variant="ghost" size="sm" className="h-9 w-9 p-0 text-gray-500 hover:text-white rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10">
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>

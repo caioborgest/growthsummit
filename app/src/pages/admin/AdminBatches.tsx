@@ -226,60 +226,60 @@ export default function AdminBatches() {
 
             {/* Table */}
             <div className="glass-card overflow-hidden border-white/5 shadow-2xl">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto responsive-table">
                     <table className="w-full">
                         <thead>
                             <tr className="bg-white/[0.02] border-b border-white/5">
-                                <th className="px-6 py-4 text-left text-gray-500 font-extrabold text-[10px] uppercase">Empresa</th>
-                                <th className="px-6 py-4 text-left text-gray-500 font-extrabold text-[10px] uppercase">Voucher</th>
-                                <th className="px-6 py-4 text-left text-gray-500 font-extrabold text-[10px] uppercase">Vagas</th>
-                                <th className="px-6 py-4 text-left text-gray-500 font-extrabold text-[10px] uppercase">Valor</th>
-                                <th className="px-6 py-4 text-left text-gray-500 font-extrabold text-[10px] uppercase">Status</th>
-                                <th className="px-6 py-4 text-right text-gray-500 font-extrabold text-[10px] uppercase">Ações</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Empresa</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Voucher</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Vagas</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Valor</th>
+                                <th className="px-6 py-5 text-left text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-5 text-right text-gray-500 font-extrabold text-[10px] uppercase tracking-widest">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredBatches.map(batch => (
-                                <tr key={batch.id} className="hover:bg-white/[0.03] transition-all">
-                                    <td className="px-6 py-4">
+                                <tr key={batch.id} className="hover:bg-white/[0.04] transition-all group">
+                                    <td className="px-6 py-5" data-label="Empresa">
                                         <div>
-                                            <p className="text-white font-bold">{batch.nomeEmpresa}</p>
-                                            <p className="text-gray-500 text-xs">{batch.emailContato}</p>
+                                            <p className="text-white font-black italic tracking-tight">{batch.nomeEmpresa}</p>
+                                            <p className="text-gray-500 text-[10px] font-medium">{batch.emailContato}</p>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-5" data-label="Voucher">
                                         <div className="flex items-center gap-2">
-                                            <code className="bg-brand-orange-coral/10 text-brand-orange-coral px-2 py-1 rounded border border-brand-orange-coral/20 font-bold text-xs uppercase">
+                                            <code className="bg-brand-orange-coral/10 text-brand-orange-coral px-3 py-1.5 rounded-xl border border-brand-orange-coral/20 font-black text-xs uppercase tracking-tighter shadow-inner">
                                                 {batch.voucherCode}
                                             </code>
-                                            <button onClick={() => copyToClipboard(batch.voucherCode)} className="text-gray-500 hover:text-white">
+                                            <button onClick={() => copyToClipboard(batch.voucherCode)} className="text-gray-600 hover:text-white transition-colors bg-white/5 p-1.5 rounded-lg border border-white/10 opacity-0 group-hover:opacity-100">
                                                 <Copy className="h-3 w-3" />
                                             </button>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-[10px] text-gray-500 font-bold">
+                                    <td className="px-6 py-5" data-label="Vagas">
+                                        <div className="space-y-1.5 w-full lg:w-32">
+                                            <div className="flex justify-between text-[10px] text-gray-500 font-black uppercase tracking-widest">
                                                 <span>{batch.vagasUtilizadas} / {batch.quantidadeVagas}</span>
-                                                <span>{Math.round((batch.vagasUtilizadas / batch.quantidadeVagas) * 100)}%</span>
+                                                <span className="text-brand-orange-coral">{Math.round((batch.vagasUtilizadas / batch.quantidadeVagas) * 100)}%</span>
                                             </div>
-                                            <div className="w-24 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
-                                                    className="h-full bg-brand-orange-coral"
+                                                    className="h-full bg-brand-orange-coral shadow-[0_0_8px_rgba(255,112,67,0.4)]"
                                                     style={{ width: `${(batch.vagasUtilizadas / batch.quantidadeVagas) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-white font-bold text-sm">
+                                    <td className="px-6 py-5 text-white font-black text-sm italic tracking-tight" data-label="Valor">
                                         R$ {Number(batch.valorTotal).toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <Badge className={
+                                    <td className="px-6 py-5" data-label="Status">
+                                        <Badge className={`font-black text-[10px] uppercase tracking-widest px-3 py-1 ${
                                             batch.statusPagamento === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                 batch.statusPagamento === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                                                     'bg-red-500/10 text-red-500 border-red-500/20'
-                                        }>
+                                        }`}>
                                             {(batch.statusPagamento === 'paid' ? 'PAGO' : 
                                               batch.statusPagamento === 'pending' ? 'PENDENTE' : 
                                               'CANCELADO')}

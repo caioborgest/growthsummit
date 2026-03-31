@@ -69,6 +69,9 @@
     --text-muted: rgba(255,255,255,0.4);
     --text-secondary: rgba(255,255,255,0.6);
 
+    /* Brand Teal */
+    --brand-teal: 172 66% 50%;          /* #14B8A6 */
+
     /* Shadow effects */
     --shadow-premium: 0 20px 60px -15px rgba(0,0,0,0.7);
   }
@@ -196,9 +199,75 @@
   .glass-card-hover:hover {
     background: var(--surface-2);
     border-color: var(--border-medium);
-    transform: translateY(-2px);
-    box-shadow: 0 16px 48px 0 rgba(0,0,0,0.3), 0 0 0 1px var(--border-medium);
+    transform: translateY(-4px);
+    box-shadow: 0 24px 60px 0 rgba(0,0,0,0.4), 0 0 0 1px var(--border-medium);
   }
+
+  /* ── RESPONSIVE TABLE TO CARDS (PREMIUM) ──────────────────────────────── */
+  .admin-table-container {
+    @apply w-full overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02];
+  }
+
+  @media (max-width: 1024px) {
+    .responsive-table, 
+    .responsive-table thead, 
+    .responsive-table tbody, 
+    .responsive-table tr, 
+    .responsive-table th, 
+    .responsive-table td {
+      display: block;
+    }
+    .responsive-table thead {
+      display: none;
+    }
+    .responsive-table tr {
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1.5rem;
+      background: rgba(255,255,255,0.02);
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+    }
+    .responsive-table tr:active {
+      transform: scale(0.98);
+      background: rgba(255,255,255,0.05);
+    }
+    .responsive-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.875rem;
+    }
+    .responsive-table td:last-child {
+      border-bottom: none;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .responsive-table td::before {
+      content: attr(data-label);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.4);
+    }
+    .responsive-table td:last-child::before {
+      display: none;
+    }
+  }
+
+  /* Teal & Coral Duo Utilities */
+  .bg-dual-accent {
+    background: linear-gradient(135deg, hsl(var(--brand-orange-coral)) 0%, #14B8A6 100%);
+  }
+  .border-teal { border-color: #14B8A6 !important; }
+  .text-teal { color: #14B8A6 !important; }
+  .bg-teal-subtle { background: rgba(20, 184, 166, 0.1) !important; color: #14B8A6 !important; border: 1px solid rgba(20, 184, 166, 0.2) !important; }
 
   /* ── PREMIUM CARD ────────────────────────────────────────────────────── */
   .card-premium {

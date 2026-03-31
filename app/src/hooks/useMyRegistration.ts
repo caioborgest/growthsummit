@@ -27,6 +27,7 @@ export interface MyRegistration {
     amount?: number;
     projectId?: string;
     createdAt?: string;
+    isPaid?: boolean;
 }
 
 const GE_TABLES: Record<string, string> = {
@@ -73,6 +74,7 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         amount: (row['valor_pago'] as number) || 0,
         projectId: (row['project_id'] as string) || undefined,
         createdAt: (row['created_at'] as string) || undefined,
+        isPaid: isActuallyPaid,
     };
 }
 

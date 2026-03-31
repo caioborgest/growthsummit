@@ -492,58 +492,60 @@ export function AdminProgramacao() {
           const categoryName = categories.find(c => c.id === session.category)?.name || session.category;
 
           return (
-            <div key={session.id} className="glass-card p-5 hover:bg-white/[0.02] transition-colors border-white/5 group">
+            <div key={session.id} className="glass-card p-6 hover:bg-white/[0.04] transition-all border-white/5 group rounded-[1.5rem] shadow-xl hover:shadow-brand-orange-coral/5 hover:-translate-y-1">
               <div className="flex flex-col lg:flex-row lg:items-center gap-6">
                 {/* Time & Cat */}
                 <div className="flex flex-col lg:w-48 shrink-0">
-                  <div className="flex items-center gap-2 text-brand-orange-coral font-black text-xl mb-1">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-brand-orange-coral font-black text-2xl mb-1 italic tracking-tighter">
+                    <Clock className="h-5 w-5" />
                     <span>{session.startTime} - {session.endTime}</span>
                   </div>
-                  <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{categoryName}</span>
+                  <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">{categoryName}</span>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={typeColors[session.type]}>
-                      <Icon className="h-3 w-3 mr-1" />
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <Badge className={`${typeColors[session.type]} px-3 py-1 font-black text-[10px] uppercase tracking-widest`}>
+                      <Icon className="h-3 w-3 mr-1.5" />
                       {typeLabels[session.type]}
                     </Badge>
                     {session.partner && (
-                      <Badge className="bg-dark-300 text-gray-300 border-white/10">
+                      <Badge className="bg-white/5 text-gray-400 border-white/10 px-3 py-1 font-black text-[10px] uppercase tracking-widest">
                         {session.partner}
                       </Badge>
                     )}
-                    <Badge variant="outline" className="text-gray-500 border-white/10">
+                    <Badge variant="outline" className="text-teal-400/70 border-teal-500/20 px-3 py-1 font-black text-[10px] uppercase tracking-widest">
+                      <LayoutGrid className="h-3 w-3 mr-1.5" />
                       {session.room}
                     </Badge>
                   </div>
-                  <h3 className="text-white font-bold text-lg mb-1">{session.title}</h3>
+                  <h3 className="text-white font-black text-xl mb-2 italic tracking-tight">{session.title}</h3>
                   {session.description && (
-                    <p className="text-gray-400 text-sm line-clamp-2 mb-2">{session.description}</p>
+                    <p className="text-gray-400 text-sm line-clamp-2 mb-4 leading-relaxed">{session.description}</p>
                   )}
 
                   {session.topics && session.topics.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div className="flex flex-wrap gap-2">
                       {session.topics.slice(0, 3).map((t: string, i: number) => (
-                        <div key={i} className="flex items-center gap-1 text-[10px] text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">
-                          <LayoutGrid className="h-2 w-2" />
+                        <div key={i} className="flex items-center gap-1.5 text-[9px] text-gray-500 bg-white/5 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                          <Zap className="h-2.5 w-2.5 text-brand-orange-coral" />
                           {t}
                         </div>
                       ))}
-                      {session.topics.length > 3 && <span className="text-[10px] text-gray-600">+{session.topics.length - 3} mais</span>}
+                      {session.topics.length > 3 && <span className="text-[9px] text-gray-600 font-black self-center uppercase tracking-widest">+{session.topics.length - 3} mais</span>}
                     </div>
                   )}
                 </div>
 
                 {/* Info & Actions */}
-                <div className="flex flex-col lg:items-end gap-3 shrink-0">
+                <div className="flex flex-col lg:items-end gap-4 shrink-0">
                   {session.maxCapacity !== undefined && session.maxCapacity > 0 && (
-                    <div className="text-xs bg-dark-300 px-3 py-1.5 rounded-lg border border-white/5">
-                      <span className="text-brand-orange-coral font-bold">{session.registeredCount}</span>
-                      <span className="text-gray-400 mx-1">/</span>
-                      <span className="text-gray-400">{session.maxCapacity} inscritos</span>
+                    <div className="text-[10px] bg-dark-300 px-4 py-2 rounded-2xl border border-white/5 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral animate-pulse" />
+                      <span className="text-brand-orange-coral font-black">{session.registeredCount}</span>
+                      <span className="text-gray-500 font-bold">/</span>
+                      <span className="text-gray-400 font-black uppercase tracking-widest">{session.maxCapacity} inscritos</span>
                     </div>
                   )}
 
@@ -551,25 +553,25 @@ export function AdminProgramacao() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-brand-orange-coral/30 text-brand-orange-coral/70 hover:text-white hover:bg-brand-orange-coral"
+                      className="w-10 h-10 p-0 rounded-xl border-brand-orange-coral/30 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral shadow-lg transition-all active:scale-90"
                       onClick={() => setQrSession(session)}
                       title="Gerar QR Code para Check-in"
                     >
-                      <QrCode className="h-4 w-4" />
+                      <QrCode className="h-5 w-5" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                      className="h-10 px-4 rounded-xl border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg transition-all active:scale-90"
                       onClick={() => handleEdit(session)}
                     >
-                      <Edit2 className="h-4 w-4 mr-2" />
+                      <Edit2 className="h-4 w-4" />
                       Editar
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-red-500/30 text-red-500/70 hover:text-red-500 hover:bg-red-500/10"
+                      className="w-10 h-10 p-0 rounded-xl border-red-500/30 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 shadow-lg transition-all active:scale-90"
                       onClick={() => handleDelete(session.id)}
                     >
                       <Trash2 className="h-4 w-4" />

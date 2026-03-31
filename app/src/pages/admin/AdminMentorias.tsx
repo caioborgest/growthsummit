@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   Search,
-  CheckCircle,
-  XCircle,
   User,
   MessageSquare,
   Star,
@@ -11,7 +9,6 @@ import {
   Activity,
   Users,
   TrendingUp,
-  AlertCircle,
   ChevronRight,
   Filter,
   BarChart3,
@@ -49,16 +46,15 @@ const statusColors: Record<string, string> = {
 const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
 
 export function AdminMentorias() {
-  const { data: sessions, create, update, isLoading } = useMentoringSessions();
+  const { data: sessions, create, update } = useMentoringSessions();
   const { data: mentors } = useMentors();
   const { data: registrations } = useRegistrations();
   const { data: waitlist, update: updateWaitlist } = useMentoringWaitlistHook();
   const { create: createNotification } = useNotifications();
   const { selectedProject } = useProject();
 
-  const [activeTab, setActiveTab] = useState('monitor');
+  const [, setActiveTab] = useState('monitor');
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     mentorId: '',
@@ -97,8 +93,7 @@ export function AdminMentorias() {
       (session.mentorName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (session.menteeName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (session.topic?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   }).sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
 
   const liveSessions = useMemo(() => {
@@ -170,8 +165,8 @@ export function AdminMentorias() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 italic">
-            <Zap className="h-8 w-8 text-orange-500 fill-orange-500" />
-            GESTÃO DE <span className="text-orange-500">MENTORIAS</span>
+            <Zap className="h-8 w-8 text-brand-orange-coral fill-brand-orange-coral" />
+            GESTÃO DE <span className="text-brand-orange-coral">MENTORIAS</span>
           </h1>
           <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Monitoramento em tempo real e controle de demanda</p>
         </div>
@@ -179,13 +174,13 @@ export function AdminMentorias() {
         <div className="flex items-center gap-3">
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
-              <Button className="h-12 px-8 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-glow-orange transition-all">
+              <Button className="h-12 px-8 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black rounded-2xl shadow-glow-orange transition-all">
                 <Calendar className="h-4 w-4 mr-2" /> AGENDAR SESSÃO
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl">
+            <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl shadow-2xl backdrop-blur-xl">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black italic">Nova <span className="text-orange-500">Mentoria</span></DialogTitle>
+                <DialogTitle className="text-2xl font-black italic">Nova <span className="text-brand-orange-coral">Mentoria</span></DialogTitle>
                 <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Preencha os dados do agendamento manual</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreate} className="space-y-6 py-4">
@@ -196,7 +191,7 @@ export function AdminMentorias() {
                       required
                       value={formData.mentorId}
                       onChange={e => setFormData({ ...formData, mentorId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-orange-500/50"
+                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
                     >
                       <option value="">Selecione...</option>
                       {mentors.filter(m => m.status === 'approved').map(mentor => (
@@ -210,7 +205,7 @@ export function AdminMentorias() {
                       required
                       value={formData.menteeId}
                       onChange={e => setFormData({ ...formData, menteeId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-orange-500/50"
+                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
                     >
                       <option value="">Selecione...</option>
                       {registrations.map(reg => (
@@ -228,7 +223,7 @@ export function AdminMentorias() {
                       type="datetime-local"
                       value={formData.scheduledAt}
                       onChange={e => setFormData({ ...formData, scheduledAt: e.target.value })}
-                      className="h-12 bg-dark-100 border-white/5"
+                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -237,7 +232,7 @@ export function AdminMentorias() {
                       type="number"
                       value={formData.duration}
                       onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
-                      className="h-12 bg-dark-100 border-white/5"
+                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                     />
                   </div>
                 </div>
@@ -248,11 +243,11 @@ export function AdminMentorias() {
                     value={formData.topic}
                     onChange={e => setFormData({ ...formData, topic: e.target.value })}
                     placeholder="Ex: Estratégia de Go-to-Market"
-                    className="h-12 bg-dark-100 border-white/5"
+                    className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                   />
                 </div>
 
-                <Button type="submit" className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl">
+                <Button type="submit" className="w-full h-14 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black rounded-2xl shadow-glow-orange transition-all">
                   CONFIRMAR AGENDAMENTO
                 </Button>
               </form>
@@ -274,14 +269,14 @@ export function AdminMentorias() {
           </div>
         </Card>
 
-        <Card className="bg-dark-200/50 border-white/5 p-6 rounded-[2rem] overflow-hidden relative group">
+        <Card className="bg-dark-200/50 border-white/5 p-6 rounded-[2rem] overflow-hidden relative group backdrop-blur-xl">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-            <Users className="h-12 w-12 text-orange-500" />
+            <Users className="h-12 w-12 text-brand-orange-coral" />
           </div>
           <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Fila de Espera</p>
           <div className="flex items-end gap-3 mt-1">
             <h3 className="text-3xl font-black text-white tracking-tighter">{stats.waitlist}</h3>
-            <p className="text-orange-500 text-[10px] font-bold mb-1 uppercase">Pessoas</p>
+            <p className="text-brand-orange-coral text-[10px] font-bold mb-1 uppercase">Pessoas</p>
           </div>
         </Card>
 
@@ -315,14 +310,14 @@ export function AdminMentorias() {
       {/* Main Tabs System */}
       <Tabs defaultValue="monitor" className="w-full" onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-          <TabsList className="bg-dark-200/50 p-1 rounded-2xl border border-white/5 h-14 w-full sm:w-auto">
-            <TabsTrigger value="monitor" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">
+          <TabsList className="bg-dark-200/50 p-1 rounded-2xl border border-white/5 h-14 w-full sm:w-auto backdrop-blur-xl">
+            <TabsTrigger value="monitor" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all shadow-glow-orange/20">
               <Activity className="h-4 w-4 mr-2" /> Monitor Vivo
             </TabsTrigger>
-            <TabsTrigger value="waitlist" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">
+            <TabsTrigger value="waitlist" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all shadow-glow-orange/20">
               <Users className="h-4 w-4 mr-2" /> Fila (Demanda)
             </TabsTrigger>
-            <TabsTrigger value="list" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">
+            <TabsTrigger value="list" className="rounded-xl px-6 h-full font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all shadow-glow-orange/20">
               <BarChart3 className="h-4 w-4 mr-2" /> Todas Sessões
             </TabsTrigger>
           </TabsList>
@@ -379,8 +374,8 @@ export function AdminMentorias() {
                         <div className="space-y-4 pt-4 border-t border-white/5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                                <Activity className="h-4 w-4 text-orange-500" />
+                              <div className="w-8 h-8 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center">
+                                <Activity className="h-4 w-4 text-brand-orange-coral" />
                               </div>
                               <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Mentor:</p>
                               <p className="text-white font-black text-xs uppercase italic">{session.mentorName}</p>
@@ -517,26 +512,26 @@ export function AdminMentorias() {
 
         {/* LIST TAB */}
         <TabsContent value="list" className="mt-0 outline-none">
-          <Card className="bg-dark-200/50 border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
-            <div className="overflow-x-auto">
+          <Card className="glass-card overflow-hidden border-white/5 shadow-2xl">
+            <div className="overflow-x-auto responsive-table">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-white/5">
-                    <th className="p-6 text-left text-gray-500 font-black uppercase text-[10px] tracking-widest">Participante</th>
-                    <th className="p-6 text-left text-gray-500 font-black uppercase text-[10px] tracking-widest">Mentor</th>
-                    <th className="p-6 text-left text-gray-500 font-black uppercase text-[10px] tracking-widest">Horário</th>
-                    <th className="p-6 text-left text-gray-500 font-black uppercase text-[10px] tracking-widest">Status</th>
-                    <th className="p-6 text-left text-gray-500 font-black uppercase text-[10px] tracking-widest text-center">Avaliação</th>
-                    <th className="p-6 text-right text-gray-500 font-black uppercase text-[10px] tracking-widest">Ações</th>
+                  <tr className="bg-white/[0.02] border-b border-white/5">
+                    <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Participante</th>
+                    <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Mentor</th>
+                    <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Horário</th>
+                    <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Status</th>
+                    <th className="p-6 text-left text-gray-500 font-extrabold uppercase text-[10px] tracking-widest text-center">Avaliação</th>
+                    <th className="p-6 text-right text-gray-500 font-extrabold uppercase text-[10px] tracking-widest">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredSessions.map((session) => (
-                    <tr key={session.id} className="border-b border-white/5 hover:bg-white/5 transition-all group">
-                      <td className="p-6">
+                    <tr key={session.id} className="border-b border-white/5 hover:bg-white/[0.04] transition-all group">
+                      <td className="p-6" data-label="Participante">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-white/5">
-                            <User className="h-5 w-5 text-orange-500" />
+                          <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center border border-white/5">
+                            <User className="h-5 w-5 text-brand-orange-coral" />
                           </div>
                           <div>
                             <p className="text-white font-black text-sm uppercase italic">{session.menteeName || 'Livre'}</p>
@@ -544,7 +539,7 @@ export function AdminMentorias() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-6">
+                      <td className="p-6" data-label="Mentor">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-white/5">
                             <User className="h-5 w-5 text-teal-400" />
@@ -552,7 +547,7 @@ export function AdminMentorias() {
                           <p className="text-gray-300 font-bold text-sm uppercase">{session.mentorName}</p>
                         </div>
                       </td>
-                      <td className="p-6">
+                      <td className="p-6" data-label="Hora">
                         <div className="flex items-center gap-3">
                           <div className="bg-dark-300 px-3 py-1.5 rounded-lg border border-white/5">
                             <p className="text-white font-black text-xs">{new Date(session.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
@@ -560,13 +555,13 @@ export function AdminMentorias() {
                           <p className="text-[10px] text-gray-500 font-bold">{new Date(session.scheduledAt).toLocaleDateString()}</p>
                         </div>
                       </td>
-                      <td className="p-6">
+                      <td className="p-6" data-label="Status">
                         <Badge className={`border-none font-black text-[9px] uppercase tracking-widest px-3 py-1 ${statusColors[session.status || 'scheduled']}`}>
                           {session.status === 'completed' ? 'Concluída' : session.status === 'cancelled' ? 'Cancelada' : 'Agendada'}
                         </Badge>
                       </td>
-                      <td className="p-6">
-                        <div className="flex justify-center">
+                      <td className="p-6" data-label="Avalia.">
+                        <div className="flex lg:justify-center">
                            {(session.mentoringRating || session.feedback?.avaliacaoMentoria) ? (
                              <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded-lg border border-yellow-500/20">
                                <span className="font-black text-xs">{session.mentoringRating || session.feedback?.avaliacaoMentoria}</span>
@@ -575,7 +570,7 @@ export function AdminMentorias() {
                            ) : <span className="text-gray-700">-</span>}
                         </div>
                       </td>
-                      <td className="p-6 text-right">
+                      <td className="p-6 text-right" data-label="Ações">
                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl">
                             <MessageSquare className="h-4 w-4" />
