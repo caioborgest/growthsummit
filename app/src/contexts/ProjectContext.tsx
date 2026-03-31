@@ -59,9 +59,22 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetProject = useCallback((project: Project | null) => {
     setSelectedProject(current => {
-      // Evitar atualizações se for o mesmo projeto (mesmo ID ou mesmo objeto)
-      if (current?.id === project?.id) return current;
-      return project;
+      // Se estamos limpando o projeto, sempre permite
+      if (!project) return null;
+      // Se não tinha projeto antes, sempre permite
+      if (!current) return project;
+      
+      // Permitir atualização se o ID for diferente OU se algum campo de settings mudou
+      // (Comparações rasas de ID e stringificação de settings para detecção de mudança)
+      const hasIdChanged = current.id !== project.id;
+      const hasSettingsChanged = JSON.stringify(current.settings) !== JSON.stringify(project.settings);
+      const hasStatusChanged = current.status !== project.status;
+
+      if (hasIdChanged || hasSettingsChanged || hasStatusChanged) {
+        return project;
+      }
+
+      return current;
     });
   }, []);
 

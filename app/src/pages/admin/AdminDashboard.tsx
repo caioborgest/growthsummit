@@ -243,8 +243,8 @@ export function AdminDashboard() {
     // Para Growth Experience, priorizamos a receita líquida das inscrições
     const isGE = selectedProject?.type === 'growth_experience';
 
-    const registrationRevenue = isGE
-      ? registrations
+    const totalRevenue = isGE
+      ? (registrations
         .filter(r => 
           r.status === 'ativo' || 
           r.status === 'pago' || 
@@ -255,14 +255,7 @@ export function AdminDashboard() {
         .reduce((sum, r) => sum + (r.amount || 0), 0) +
         (batches || [])
           .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
-          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0)
-      : 0;
-
-    const totalRevenue = isGE
-        .reduce((sum, r) => sum + (r.amount || 0), 0) +
-        (batches || [])
-          .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
-          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0)
+          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0))
       : transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .reduce((sum, t) => sum + t.amount, 0);

@@ -124,8 +124,22 @@ const navigationGroups: SidebarGroup[] = [
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole } = useAuth();
   const { selectedProject, setSelectedProject } = useProject();
+  
+  // Lista de rotas restritas apenas para ROLE: 'admin' (impede 'staff')
+  const ADMIN_ONLY_PATHS = ['/admin/financeiro', '/admin/usuarios', '/admin/seguranca', '/admin/integracoes', '/admin/projetos'];
+  const isStaff = user?.role === 'staff';
+
+  // Proteção de Rota (Redirect se acesso direto via URL)
+  useEffect(() => {
+    if (isStaff && ADMIN_ONLY_PATHS.some(path => location.pathname.startsWith(path))) {
+      console.warn(`[AdminAccessControl] Acesso negado para STAFF a: ${location.pathname}`);
+      toast.error('Você não tem permissão para acessar esta área financeira ou configuração crítica.');
+      navigate('/admin');
+    }
+  }, [location.pathname, isStaff, navigate]);
+
   const { data: projects } = useProjects();
   const { data: notifications } = useNotifications();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -259,11 +273,14 @@ export function AdminLayout() {
               if (item.id === 'startups' && settings.enableStartups === false) return false;
               if (item.id === 'check-in' && settings.enableCheckIn === false) return false;
               
-              // Se o projeto for Triunfo, esconder módulos que não se aplicam (ex: Stands, Mentorias)
-              // se o usuário não os configurou explicitamente
-              if (selectedProject.slug === 'ge-triunfo-2026') {
-                 // Adicione aqui regras específicas para o Triunfo se necessário
+              // Se o usuário for STAFF, esconder módulos sensíveis
+              if (user?.role === 'staff') {
+                const staffBlacklist = ['financeiro', 'usuarios', 'seguranca', 'integracoes', 'projetos'];
+                if (staffBlacklist.includes(item.id)) return false;
               }
+              
+              // Se o projeto for Triunfo, esconder módulos que não se aplicam (ex: Stands, Mentorias)
+
 
               return true;
             });
