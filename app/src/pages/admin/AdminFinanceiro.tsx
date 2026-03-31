@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras } from '@/hooks/useData';
+import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import type { EmpresaIncentivadora } from '@/types';
@@ -35,6 +35,7 @@ const statusColors: Record<string, string> = {
 export function AdminFinanceiro() {
   const { data: transactions } = useTransactions();
   const { data: registrations } = useRegistrations();
+  const { data: batches } = useRegistrationBatches();
   const { update: updateProject } = useProjects();
   const { data: companies } = useEmpresasIncentivadoras();
   const { selectedProject, setSelectedProject } = useProject();
@@ -106,7 +107,14 @@ export function AdminFinanceiro() {
     ((r.status as unknown as string) === 'pago' && !(r as any).status_pagamento)
   );
   const paidRegistrationsCount = paidRegistrations.length;
-  const registrationRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
+  
+  // Somar receita de inscrições individuais + Lotes Corporativos (Equipes)
+  const individualRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
+  const batchRevenue = (batches || [])
+    .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
+    .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0);
+    
+  const registrationRevenue = individualRevenue + batchRevenue;
 
   const registrationDiscounts = registrations
     .reduce((sum, r) => sum + (r.discountAmount || 0), 0);

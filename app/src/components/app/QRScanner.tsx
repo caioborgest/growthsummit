@@ -26,7 +26,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                 cameraIdOrConfig,
                 {
                     fps: 10,
-                    qrbox: { width: 250, height: 250 },
+                    qrbox: { width: 320, height: 320 },
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
@@ -179,12 +179,12 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                                     <div className="absolute inset-0 pointer-events-none">
                                         {/* Scanner Frame */}
                                         <div className="absolute inset-x-8 inset-y-8 flex items-center justify-center">
-                                            <div className="w-full h-full border-2 border-brand-orange-coral/30 rounded-[2rem] relative">
+                                            <div className="w-full h-full border-4 border-brand-orange-coral/40 rounded-[2.5rem] relative">
                                                 {/* Corner markers */}
-                                                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
-                                                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
-                                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
-                                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                                                <div className="absolute top-0 left-0 w-12 h-12 border-t-8 border-l-8 border-white rounded-tl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute top-0 right-0 w-12 h-12 border-t-8 border-r-8 border-white rounded-tr-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-8 border-l-8 border-white rounded-bl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-8 border-r-8 border-white rounded-br-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
                                                 
                                                 {/* Animation Beam */}
                                                 <div className="absolute inset-x-0 h-0.5 bg-brand-orange-coral/50 shadow-[0_0_15px_rgba(255,112,67,0.8)] animate-scan-beam" />

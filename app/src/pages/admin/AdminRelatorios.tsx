@@ -32,7 +32,8 @@ import {
   useSupportTickets,
   useStandCheckIns,
   useStands,
-  useSupportQualityStats
+  useSupportQualityStats,
+  useRegistrationBatches
 } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
@@ -133,6 +134,7 @@ export function AdminRelatorios() {
   const { data: tickets } = useSupportTickets();
   const { data: standCheckIns } = useStandCheckIns();
   const { data: stands } = useStands();
+  const { data: batches } = useRegistrationBatches();
   const qualityStats = useSupportQualityStats();
 
   const [statusFilter, setStatusFilter] = useState('all');
@@ -236,7 +238,16 @@ export function AdminRelatorios() {
     totalMentorias: filteredSessions.length,
     totalStartups: startups.length,
     totalPatrocinadores: sponsors.length,
-    totalReceita: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+    totalReceita: (() => {
+      const transIncome = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const regIncome = filteredRegistrations
+        .filter(r => r.status === 'ativo' || r.status === 'pago' || r.status === 'paid' || (r as any).status_pagamento === 'pago' || (r as any).paymentStatus === 'pago')
+        .reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
+      const batchIncome = (batches || [])
+        .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
+        .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0);
+      return transIncome + regIncome + batchIncome;
+    })(),
     totalTickets: (tickets || []).length,
     totalSorteios: (raffles || []).length,
   };

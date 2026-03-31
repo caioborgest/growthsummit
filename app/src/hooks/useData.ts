@@ -28,19 +28,22 @@ const isGEProject = (projectId: string | undefined): boolean => {
   // Slug-based detection (works when slug is stored as projectId)
   if (projectId.startsWith('ge-') || projectId.startsWith('growth-')) return true;
 
-  // If projectId is a UUID, we check the global selectedProject from localStorage
+  // Persistence-based detection (works for UUIDs)
   try {
     const selectedProjectStr = localStorage.getItem('selectedProject');
     if (selectedProjectStr) {
       const p = JSON.parse(selectedProjectStr);
-      // If the ID matches the current projectId and the slug starts with ge- or growth-, it's GE
+      const slug = (p.slug || '').toLowerCase();
       if ((p.id === projectId || p.slug === projectId) &&
-        (p.slug?.startsWith('ge-') || p.slug?.startsWith('growth-'))) return true;
+        (slug.startsWith('ge-') || slug.startsWith('growth-') || slug.includes('triunfo') || slug.includes('petrolina'))) return true;
     }
   } catch {
     // ignore
   }
-  return false;
+  
+  // Specific keyword detection
+  const lowId = projectId.toLowerCase();
+  return lowId.startsWith('ge-') || lowId.startsWith('growth-') || lowId.includes('triunfo') || lowId.includes('petrolina');
 };
 
 const getTableName = (projectId: string | undefined, entity: string) => {
@@ -72,6 +75,8 @@ const getTableName = (projectId: string | undefined, entity: string) => {
       case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
       case 'stands': return 'stands';
       case 'stand_checkins': return 'stand_checkins';
+      case 'raffles': return 'raffles';
+      case 'raffle_participants': return 'raffle_participants';
       case 'support_tickets': return 'support_tickets';
       case 'support_ticket_messages': return 'support_ticket_messages';
       default: return entity;

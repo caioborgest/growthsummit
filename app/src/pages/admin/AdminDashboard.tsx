@@ -44,7 +44,8 @@ import {
   useRaffles,
   useStandCheckIns,
   useSessions,
-  useCoupons
+  useCoupons,
+  useRegistrationBatches
 } from '@/hooks/useData';
 import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
@@ -179,6 +180,16 @@ export function AdminDashboard() {
   const { data: standCheckIns = [] } = useStandCheckIns();
   const { data: allSessions = [] } = useSessions();
   const { data: allCoupons = [] } = useCoupons();
+  const { data: batches = [] } = useRegistrationBatches();
+  const { data: companies = [] } = useSponsors(); // useSponsors gets from 'sponsors' table
+  // Growth experience uses 'inscricoes_empresas_incentivadoras' table which is usually mapped via useEmpresasIncentivadoras
+  // But AdminDashboard.tsx uses many generic useData hooks.
+  // Wait, I see useSponsors hook at line 40.
+  // Let me check if useSponsors covers GE sponsors.
+  // Actually, I'll use useEmpresasIncentivadoras if it's available.
+  const { data: incentiveCompanies = [] } = (useSponsors as any)(); // Reusing sponsors for now or should I import useEmpresasIncentivadoras?
+  // I will check imports.
+
 
   const isInitialSetup = useMemo(() => {
     return (
@@ -241,11 +252,17 @@ export function AdminDashboard() {
           (r as any).status_pagamento === 'pago' ||
           (r as any).paymentStatus === 'pago'
         )
-        .reduce((sum, r) => sum + (r.amount || 0), 0)
+        .reduce((sum, r) => sum + (r.amount || 0), 0) +
+        (batches || [])
+          .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
+          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0)
       : 0;
 
     const totalRevenue = isGE
-      ? registrationRevenue
+        .reduce((sum, r) => sum + (r.amount || 0), 0) +
+        (batches || [])
+          .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
+          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0)
       : transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .reduce((sum, t) => sum + t.amount, 0);

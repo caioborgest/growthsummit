@@ -8,10 +8,11 @@ interface SelfCheckInModalProps {
     onClose: () => void;
     onScanSuccess: (decodedText: string) => Promise<void>;
     registration: any;
+    initialStep?: number;
 }
 
-export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfCheckInModalProps) {
-    const [step, setStep] = useState(1); // 1: Info, 2: Scanner, 3: Success, 4: Manual
+export function SelfCheckInModal({ onClose, onScanSuccess, registration, initialStep = 1 }: SelfCheckInModalProps) {
+    const [step, setStep] = useState(initialStep); // 1: Info, 2: Scanner, 3: Success, 4: Manual
     const [loading, setLoading] = useState(false);
     const [manualCode, setManualCode] = useState('');
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -41,7 +42,7 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration }: SelfC
                     { facingMode: "environment" },
                     {
                         fps: 10,
-                        qrbox: { width: 250, height: 250 }
+                        qrbox: { width: 320, height: 320 }
                     },
                     async (decodedText) => {
                         if (!isChildMounted) return;

@@ -428,7 +428,7 @@ export function DashboardParticipante() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
-  const [isSelfCheckInOpen, setIsSelfCheckInOpen] = useState(false);
+  const [selfCheckIn, setSelfCheckIn] = useState({ isOpen: false, initialStep: 1 });
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
@@ -705,7 +705,10 @@ export function DashboardParticipante() {
   }, [myRegistration]);
 
   const statusFinanceiro = useMemo(() => {
-    if (!myRegistration?.palestrasNoturnas) {
+    // Se o evento for Triunfo ou Petrolina (Growth Experience), não existe "Grátis" por padrão se não for o lote free
+    const isPaidEvent = selectedProject?.slug?.includes('triunfo') || selectedProject?.slug?.includes('petrolina');
+    
+    if (!myRegistration?.palestrasNoturnas && !isPaidEvent) {
       return { label: 'Grátis', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição diurna gratuita' };
     }
 
@@ -713,7 +716,7 @@ export function DashboardParticipante() {
       return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
     }
     return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };
-  }, [myRegistration, isActuallyPaid]);
+  }, [myRegistration, isActuallyPaid, selectedProject?.slug]);
 
   // Cursos selecionados (busca nas sessions pelos IDs)
   const cursosSelecionados = useMemo(() => {
@@ -981,10 +984,11 @@ export function DashboardParticipante() {
       {showCheckInModal && myRegistration && (
         <CheckInModal registration={myRegistration} onClose={() => setShowCheckInModal(false)} />
       )}
-      {isSelfCheckInOpen && myRegistration && (
+      {selfCheckIn.isOpen && myRegistration && (
         <SelfCheckInModal
           registration={myRegistration}
-          onClose={() => setIsSelfCheckInOpen(false)}
+          onClose={() => setSelfCheckIn({ ...selfCheckIn, isOpen: false })}
+          initialStep={selfCheckIn.initialStep}
           onScanSuccess={handleScanSuccess}
         />
       )}
@@ -1045,10 +1049,10 @@ export function DashboardParticipante() {
                       <span className="text-green-400 font-black uppercase tracking-widest text-xs">PRESENÇA CONFIRMADA</span>
                     </div>
                   ) : (
-                    <Button
+                      <Button
                       onClick={() => {
                         setSelectedSession(null);
-                        setIsSelfCheckInOpen(true);
+                        setSelfCheckIn({ isOpen: true, initialStep: 2 });
                       }}
                       className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-brand-orange-coral/30 group"
                     >
@@ -1229,7 +1233,7 @@ export function DashboardParticipante() {
                 onUpgradeClick={() => setShowUpgradeModal(true)}
                 cursosSelecionados={cursosSelecionados}
                 myMentorships={myMentorships}
-                setIsSelfCheckInOpen={setIsSelfCheckInOpen}
+                setIsSelfCheckInOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
                 navigate={navigate}
                 activityCheckIns={activityCheckIns}
                 onSessionClick={(session) => setSelectedSession(session)}
@@ -1256,7 +1260,7 @@ export function DashboardParticipante() {
             {activeTab === 'circuito' && myRegistration?.id && (
               <GamificationSection 
                 registrationId={myRegistration.id} 
-                setIsScanOpen={setIsSelfCheckInOpen}
+                setIsScanOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
               />
             )}
 
@@ -1306,7 +1310,7 @@ export function DashboardParticipante() {
             {activeTab === 'sorteios' && myRegistration?.id && (
               <RaffleSection 
                 registrationId={myRegistration.id} 
-                setIsScanOpen={setIsSelfCheckInOpen}
+                setIsScanOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
               />
             )}
 

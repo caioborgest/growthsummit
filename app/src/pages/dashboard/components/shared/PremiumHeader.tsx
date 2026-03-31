@@ -226,7 +226,7 @@ export function PremiumHeader({
                                         : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
                                 }`}>
                                     {isPro ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
-                                    {isPro ? 'Exp. Pro' : 'Free Morning'}
+                                    {isPro ? 'Exp. Pro' : (projectName?.toLowerCase().includes('triunfo') ? 'Exp. Night' : 'Free Morning')}
                                 </Badge>
 
                                 {isPro && isActuallyPaid !== undefined && (

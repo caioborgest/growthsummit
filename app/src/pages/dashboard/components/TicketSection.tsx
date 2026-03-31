@@ -62,7 +62,7 @@ export function TicketSection({
                             <div>
                                 <p className="text-[9px] font-black uppercase tracking-[0.25em] text-foreground/40">Ingresso Digital</p>
                                 <h3 className="text-foreground font-black text-lg uppercase italic leading-tight">
-                                    {isPro ? 'Experience Pro' : 'Free Morning'}
+                                    {isPro ? 'Experience Pro' : (selectedProject?.slug?.includes('triunfo') ? 'Experience Individual' : 'Free Morning')}
                                 </h3>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ export function TicketSection({
                             {[
                                 { label: 'Participante', value: myRegistration?.nome || user?.name || '—' },
                                 { label: 'Evento', value: selectedProject?.name || 'Growth Experience 2026' },
-                                { label: 'Tipo', value: isPro ? 'Passaporte Night + Morning' : 'Free Morning (Manhã)' },
+                                { label: 'Tipo', value: isPro ? 'Passaporte Night + Morning' : (selectedProject?.slug?.includes('triunfo') ? 'Passaporte Individual' : 'Free Morning (Manhã)') },
                             ].map(({ label, value }) => (
                                 <div key={label} className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                                     <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{label}</span>
@@ -151,8 +151,8 @@ export function TicketSection({
                 </div>
             </motion.div>
 
-            {/* ── UPGRADE CARD (if free) ─────────────────────────────── */}
-            {!isPro && (
+            {/* ── UPGRADE CARD (if free and not paid/confirmed event) ─────────────────────────────── */}
+            {!isPro && !isActuallyPaid && !selectedProject?.slug?.includes('triunfo') && (
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
