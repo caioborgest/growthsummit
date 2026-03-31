@@ -23,15 +23,7 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Silenciar erros de inicialização (como AbortError de locks) que podem surgir como
-// unhandled rejections no console, especialmente durante HMR ou navegação rápida.
-supabase.auth.getSession().catch(err => {
-  if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
-    // logger.debug('[Supabase] Initial session fetch aborted');
-  } else {
-    logger.error('[Supabase] Initial session fetch failed:', err);
-  }
-});
+
 
 // Helper para upload de arquivos
 export async function uploadFile(

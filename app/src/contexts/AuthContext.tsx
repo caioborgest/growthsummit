@@ -175,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const isSyncingRef = useRef(false);
   const isMountedRef = useRef(true);
+  const isInitializingRef = useRef(false);
   const lastSyncedSessionIdRef = useRef<string | null>(null);
   const lastSyncTimeRef = useRef<number>(0);
 
@@ -507,6 +508,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
 
     const initializeAuth = async () => {
+      // Evitar execução dupla em StrictMode ou múltiplas chamadas rápidas
+      if (isInitializingRef.current) return;
+      isInitializingRef.current = true;
+
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
@@ -517,7 +522,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (isMountedRef.current) setIsLoading(false);
             return;
           }
-          logger.error('Erro inicial getSession:', error.message);
+
+          // Se for erro de refresh token, é apenas uma sessão expirada/inválida. 
+          // Não é um erro "fatal", apenas significa que o usuário deve logar novamente.
+          const isRefreshTokenError = error.message?.toLowerCase().includes('refresh_token') || 
+                                    error.message?.toLowerCase().includes('refresh token');
+          
+          if (isRefreshTokenError) {
+            logger.info('Sessão anterior expirada. Usuário desconectado.');
+          } else {
+            logger.error('Erro inicial getSession:', error.message);
+          }
+
           if (isMountedRef.current) setIsLoading(false);
           return;
         }

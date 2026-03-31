@@ -1,1422 +1,380 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import {
-  QrCode,
-  User,
-  Calendar,
-  Users,
-  MessageCircle,
-  FileText,
-  Sparkles,
-  Award,
-  Loader2,
-  CheckCircle2,
-  ChevronRight,
-  Building2,
-  Trophy,
-  Handshake,
-  Headset,
-  Clock,
-  XCircle,
-  Tag,
-  Copy,
-  AlertCircle,
-  MapPin,
-  Gift
+import { useState, useMemo } from 'react';
+import { 
+  QrCode, 
+  Calendar, 
+  Trophy, 
+  Sparkles, 
+  User, 
+  LayoutGrid
 } from 'lucide-react';
-import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
-import QRCode from 'react-qr-code';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+
 import { useAuth } from '@/contexts/AuthContext';
-import { useSessions, useMentors, useMentoringSessions, useCheckInsAtividades, useRegistrationBatches, useStands, useLeads, useStandCheckIns, useNotifications, useMentoringWaitlistHook } from '@/hooks/useData';
-import { useMyRegistration, type MyRegistration } from '@/hooks/useMyRegistration';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MentorshipSection } from './components/MentorshipSection';
-import { AgendaSection } from './components/AgendaSection';
+import { useProject } from '@/contexts/ProjectContext';
+import { 
+  useMyRegistration, 
+  useNotifications, 
+  useSessions, 
+  useCheckInsAtividades,
+  useMentoringSessions,
+  useStands,
+  useStandCheckIns,
+  useRaffles
+} from '@/hooks/useData';
+import { supabase } from '@/lib/supabase';
+
+// UI Components
+import { PremiumHeader } from './components/shared/PremiumHeader';
+import { PremiumBackground } from './components/shared/PremiumBackground';
+import { BottomNavigation } from './components/shared/BottomNavigation';
+import { PwaDashboardHero } from './components/shared/DashboardHero';
+import { QuickActions } from './components/shared/QuickActions';
+import { NextActivityCard } from './components/shared/NextActivityCard';
+
+// Dashboard Sections
 import { TicketSection } from './components/TicketSection';
+import { AgendaSection } from './components/AgendaSection';
+import { GamificationSection } from './components/GamificationSection';
+import { RaffleSection } from './components/RaffleSection';
+import { MentorshipSection } from './components/MentorshipSection';
+import { ProfileForm } from './components/ProfileForm';
+import { SupportSection } from './components/SupportSection';
 import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
-import { ProfileForm } from './components/ProfileForm';
 import { DashboardEquipe } from './components/DashboardEquipe';
-import { SupportSection } from './components/SupportSection';
-import { RaffleSection } from './components/RaffleSection';
-import { BottomNavigation } from './components/shared/BottomNavigation';
-import { useProject } from '@/contexts/ProjectContext';
-import { EVENT_CONFIG } from '@/config/eventConfig';
-import { generateTicketPDF } from '@/lib/reports';
-import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
-import { notificationService } from '@/services/notificationService';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
+
+// Modals & Utils
+import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
 import { MentoriaMultiStepModal } from '@/components/forms/MentoriaMultiStepModal';
 import { B2BFormModal } from '@/components/forms/B2BFormModal';
 import { StartupFormModal } from '@/components/forms/StartupFormModal';
-import { raffleService } from '@/services/raffleService';
-import { PremiumHeader } from './components/shared/PremiumHeader';
-import { PremiumBackground } from './components/shared/PremiumBackground';
-import { QuickActions } from './components/shared/QuickActions';
-import { PwaDashboardHero } from './components/shared/DashboardHero';
-import { NextActivityCard } from './components/shared/NextActivityCard';
-import { GamificationSection } from './components/GamificationSection';
-import { generateCertificateCode, generateCertificatePDF, imageUrlToBase64 } from '@/lib/certificateGenerator';
-import { emailService } from '@/services/emailService';
-import { logger } from '@/lib/logger';
+import { LeadScanner } from './components/shared/LeadScanner';
+import { generateTicketPDF } from '@/lib/reports';
+import { parseQRString } from '@/lib/qrUtils';
 
-// ── Modal: Upgrade Pro ────────────────────────────────────────────────────────
-function UpgradeProModal({ registrationId, onClose, onSuccess }: {
-  registrationId: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [cupom, setCupom] = useState('');
-  const [cupomValido, setCupomValido] = useState<null | { desconto: number; nome: string }>(null);
-  const [loadingCupom, setLoadingCupom] = useState(false);
-  const [loadingPagamento, setLoadingPagamento] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const { user } = useAuth();
-  const { selectedProject } = useProject();
-  const { registration } = useMyRegistration();
-  const { data: allSessions } = useSessions();
-  const PRECO_BASE = 179.90;
-  const precoFinal = cupomValido
-    ? PRECO_BASE * (1 - cupomValido.desconto / 100)
-    : PRECO_BASE;
-
-  const nightSpeakers = useMemo(() => {
-    const night = allSessions?.filter(s => s.category === 'noturna') || [];
-    if (night.length === 0) return 'Leandro Batista + Vanylton Matias';
-    const names = night.map(s => {
-      const spks = (s as any).speakers;
-      if (typeof spks === 'string') return spks.split(',').shift();
-      if (Array.isArray(spks)) return spks[0];
-      return null;
-    }).filter(Boolean);
-    return names.join(' + ');
-  }, [allSessions]);
-
-  const validarCupom = async () => {
-    if (!cupom.trim()) return;
-    setLoadingCupom(true);
-    try {
-      const { data, error } = await (supabase.from('cupons_parceria_social' as never) as any)
-        .select('id,project_id,codigo,porcentagem_desconto,indicacao_nome,indicacao_tipo,uso_limite,uso_atual,ativo,vencimento')
-        .eq('project_id', selectedProject?.id)
-        .eq('codigo', cupom.trim().toUpperCase())
-        .eq('ativo', true)
-        .maybeSingle();
-
-      if (error || !data) {
-        toast.error('Cupom não encontrado ou inativo.');
-        setCupomValido(null);
-        return;
-      }
-      if (data.uso_limite && data.uso_atual >= data.uso_limite) {
-        toast.error('Cupom esgotado.');
-        setCupomValido(null);
-        return;
-      }
-      if (data.vencimento && new Date(data.vencimento) < new Date()) {
-        toast.error('Cupom expirado.');
-        setCupomValido(null);
-        return;
-      }
-
-      setCupomValido({ desconto: data.porcentagem_desconto, nome: data.indicacao_nome || cupom });
-      toast.success(`Cupom aplicado! ${data.porcentagem_desconto}% de desconto.`);
-    } catch {
-      toast.error('Erro ao validar cupom.');
-    } finally {
-      setLoadingCupom(false);
-    }
-  };
-
-  const handlePagamento = async () => {
-    setLoadingPagamento(true);
-    try {
-      // 1. WhatsApp Message for human confirmation
-      // 2. Conditional WhatsApp Message or Immediate Confirmation
-      if (precoFinal > 0) {
-        const phoneInfo = registration?.telefone ? `\n• *Telefone:* ${registration.telefone}` : '';
-        const cupomInfo = cupomValido ? `\n• *Cupom:* ${cupom.trim().toUpperCase()}` : '';
-
-        const mensagem = encodeURIComponent(
-          `🚀 *COMPROVANTE DE PAGAMENTO - GROWTH EXPERIENCE*\n\n` +
-          `Olá! Acabo de realizar o pagamento do meu upgrade para o *Acesso Pro*.\n\n` +
-          `*DADOS DO PARTICIPANTE:*\n` +
-          `• *Nome:* ${user?.name || user?.email}${phoneInfo}${cupomInfo}\n` +
-          `• *Evento:* ${selectedProject?.name || 'Growth Experience'}\n` +
-          `• *Valor Pago:* R$ ${precoFinal.toFixed(2).replace('.', ',')}\n\n` +
-          `_Estou enviando o comprovante em anexo abaixo._`
-        );
-        window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${mensagem}`, '_blank');
-      }
-
-      // 3. Mark in DB
-      const isPaid = precoFinal === 0;
-      await (supabase.from('inscricoes_growth_experience' as never) as any)
-        .update({
-          palestras_noturnas: true,
-          status_pagamento: isPaid ? 'pago' : 'pendente',
-          status: isPaid ? 'ativo' : 'pendente',
-          valor_pago: precoFinal,
-          paid_at: isPaid ? new Date().toISOString() : null,
-          cupom_palestra: cupomValido ? cupom.trim().toUpperCase() : null,
-          valor_desconto_palestra: cupomValido ? PRECO_BASE - precoFinal : 0,
-        })
-        .eq('id', registrationId);
-
-      // Incrementar uso do cupom se aplicado
-      if (cupomValido && cupom) {
-        await (supabase.rpc as any)('increment_uso_cupom', { p_codigo: cupom.trim().toUpperCase() })
-          .catch(() => { }); // silently fail
-      }
-
-      if (precoFinal === 0) {
-        toast.success('🎉 Upgrade concluído com sucesso!');
-      } else {
-        toast.success('🎉 Comprovante enviado! Aguarde a confirmação do admin para liberar as mentorias.');
-      }
-
-      onSuccess();
-      onClose();
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao processar pagamento. Tente novamente.');
-    } finally {
-      setLoadingPagamento(false);
-    }
-  };
-
-  const handleCopyPix = () => {
-    if (!EVENT_CONFIG.pix.cnpj) return;
-    navigator.clipboard.writeText(EVENT_CONFIG.pix.cnpj);
-    setCopied(true);
-    toast.success("Chave PIX (CNPJ) copiada!");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="w-full max-w-md bg-dark-200 rounded-3xl border border-white/10 shadow-2xl my-auto relative overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-orange-500/20 to-transparent">
-            <div>
-              <h2 className="text-white font-black text-xl">Upgrade para Pro</h2>
-              <p className="text-gray-400 text-sm mt-1">
-                Palestras Noturnas {selectedProject?.settings?.enableMentoring !== false && '+ Mentorias Exclusivas'}
-              </p>
-            </div>
-            <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
-              <XCircle className="h-6 w-6" />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-5 max-h-[65dvh] overflow-y-auto custom-scrollbar">
-            {/* Benefícios */}
-            <div className="space-y-2">
-              {[
-                `Acesso às ${allSessions?.filter(s => s.category === 'noturna').length || 2} Palestras Noturnas`,
-                nightSpeakers,
-                'Networking exclusivo pós-evento',
-                ...(selectedProject?.settings?.enableMentoring !== false ? ['Agendamento de Mentorias VIP'] : []),
-                'Certificado de participação completo'
-              ].map((b, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
-                  <CheckCircle2 className="h-4 w-4 text-orange-400 flex-shrink-0" />
-                  <span>{b}</span>
-                </div>
-              ))}
-            </div>
-
-          {/* Cupom */}
-          <div className="space-y-2">
-            <label className="text-gray-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-              <Tag className="h-3 w-3" /> Cupom de Desconto (opcional)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Ex: GROWTH10"
-                value={cupom}
-                onChange={e => { setCupom(e.target.value.toUpperCase()); setCupomValido(null); }}
-                className="flex-1 bg-dark-300 border border-dark-400 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 uppercase font-mono"
-              />
-              <Button
-                variant="outline"
-                className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 px-4 rounded-xl"
-                onClick={validarCupom}
-                disabled={loadingCupom || !cupom.trim()}
-              >
-                {loadingCupom ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Aplicar'}
-              </Button>
-            </div>
-            {cupomValido && (
-              <p className="text-green-400 text-xs font-bold flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> {cupomValido.desconto}% de desconto aplicado!
-              </p>
-            )}
-          </div>
-
-          {/* Preço */}
-          <div className="bg-dark-300 rounded-2xl p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Valor original</span>
-              <span className="text-gray-400">R$ {PRECO_BASE.toFixed(2).replace('.', ',')}</span>
-            </div>
-            {cupomValido && (
-              <div className="flex justify-between text-sm">
-                <span className="text-green-400">Desconto ({cupomValido.desconto}%)</span>
-                <span className="text-green-400">- R$ {(PRECO_BASE - precoFinal).toFixed(2).replace('.', ',')}</span>
-              </div>
-            )}
-            <div className="flex justify-between font-black text-lg border-t border-dark-400 pt-2">
-              <span className="text-white">Total</span>
-              <span className="text-orange-400">R$ {precoFinal.toFixed(2).replace('.', ',')}</span>
-            </div>
-          </div>
-
-          {/* Dados PIX (Ocultar se for 100% de desconto) */}
-          {precoFinal > 0 && (
-            <div className="bg-dark-300 rounded-2xl p-4 space-y-3 border border-orange-500/10">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                  <QrCode className="h-3.5 w-3.5 text-orange-400" /> Pagamento via PIX (CNPJ)
-                </h4>
-                <Badge className="bg-orange-500/10 text-orange-400 border-none text-[10px] px-2">LIBERAÇÃO IMEDIATA</Badge>
-              </div>
-
-              <div className="flex items-center gap-3 bg-dark-200 p-3 rounded-xl border border-white/5 relative group transition-all hover:border-orange-500/30">
-                <div className="flex-1">
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">CUIDADO COM FRAUDES! FAVORECIDO:</p>
-                  <p className="text-xs text-white font-bold leading-none">{EVENT_CONFIG.pix.beneficiario}</p>
-                  <p className="text-sm font-mono text-white mt-1.5 font-bold">{EVENT_CONFIG.pix.cnpj}</p>
-                </div>
-                <button
-                  onClick={handleCopyPix}
-                  className="bg-orange-500 hover:bg-orange-600 p-2.5 rounded-lg text-white shadow-lg transition-all active:scale-95"
-                >
-                  {copied ? <CheckCircle2 className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                </button>
-              </div>
-
-              <div className="flex items-start gap-2 bg-orange-500/5 p-3 rounded-xl">
-                <AlertCircle className="h-3.5 w-3.5 text-orange-400 flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-gray-400 leading-tight">
-                  Após o pagamento, clique no botão botão abaixo para <strong className="text-white">enviar o comprovante pelo WhatsApp</strong>.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Pagamento */}
-          <Button
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-6 h-auto rounded-2xl text-base shadow-lg shadow-orange-500/30 flex items-center gap-3"
-            onClick={handlePagamento}
-            disabled={loadingPagamento}
-          >
-            {loadingPagamento ? (
-              <><Loader2 className="h-5 w-5 animate-spin" /> Processando...</>
-            ) : precoFinal === 0 ? (
-              <><Sparkles className="h-5 w-5" /> Esperamos você em breve!</>
-            ) : (
-              <><MessageCircle className="h-5 w-5" /> CONFIRMAR E ENVIAR COMPROVANTE</>
-            )}
-          </Button>
-          <div className="flex items-center gap-2 bg-dark-400/50 p-3 rounded-xl border border-white/5">
-            <MapPin className="h-3.5 w-3.5 text-orange-400" />
-            <p className="text-[10px] text-gray-500 font-medium">Local: Arena Triunfo · Balcão de Credenciamento</p>
-          </div>
-          <p className="text-center text-gray-600 text-[10px] uppercase font-bold tracking-[0.2em]">Pagamento via PIX • Liberação Imediata</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Modal: QR Check-in (mostra QR para o staff escanear) ─────────────────────
-function CheckInModal({ registration, onClose }: { registration: MyRegistration; onClose: () => void }) {
-  const [_token] = useState(() => Date.now());
-  const qrValue = `GE-CHECKIN|${registration.id}|${registration.email || ''}`;
-
-  return (
-    <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
-      <div className="w-full max-w-sm bg-dark-200 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl relative">
-        {/* Abstract background blobs */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full -ml-16 -mb-16"></div>
-
-        <div className="p-8 border-b border-white/5 flex items-center justify-between relative">
-          <h2 className="text-white font-black text-2xl tracking-tight">Check-in</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2 rounded-full">
-            <XCircle className="h-6 w-6" />
-          </button>
-        </div>
-
-        <div className="p-10 flex flex-col items-center text-center gap-8 relative">
-          <div className="space-y-2">
-            <p className="text-teal-400 font-black uppercase tracking-[0.2em] text-[10px]">Portal de Acesso</p>
-            <p className="text-gray-400 text-sm px-4">Apresente este código no balcão de credenciamento.</p>
-          </div>
-
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-teal-500/30 transform hover:scale-105 transition-transform duration-500">
-            <QRCode value={qrValue} size={180} />
-          </div>
-
-          <div className="space-y-1">
-            <p className="text-gray-600 text-[10px] uppercase tracking-widest font-black">Identificação Única</p>
-            <p className="text-white font-black text-3xl tracking-tighter italic">#{registration.id?.slice(0, 8).toUpperCase()}</p>
-          </div>
-
-          <div className="flex flex-col gap-3 w-full">
-            <Badge className="bg-teal-500/20 text-teal-400 border border-teal-500/30 text-xs px-6 py-3 rounded-2xl justify-center font-black">
-              {registration.palestrasNoturnas || registration.status === 'pago' ? '🌟 PASSE COMPLETO' : '☀️ FREE MORNING'}
-            </Badge>
-            <p className="text-gray-500 text-[10px] font-medium leading-relaxed">
-              Válido para entrada única.<br />Documento de identidade pode ser solicitado.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Componente principal ──────────────────────────────────────────────────────
-export function DashboardParticipante() {
+export default function DashboardParticipante() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { selectedProject } = useProject();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { registration: myRegistration, refetch: refetchRegistration, checkInEntrada } = useMyRegistration();
+  const { registration, refetch: refetchReg } = useMyRegistration();
+  const { data: notificationsData } = useNotifications();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
-  const { create: registerStandCheckIn } = useStandCheckIns();
-  const { data: batches = [] } = useRegistrationBatches();
-  const { data: stands = [] } = useStands();
-  const { data: leads = [], create: createLead } = useLeads();
+  const { data: myMentorships, update: updateMentorship } = useMentoringSessions();
+  const { data: stands } = useStands();
+  const { data: standCheckIns } = useStandCheckIns();
+  const { data: raffles } = useRaffles();
+  
+  // State
+  const [activeTab, setActiveTab] = useState('inicio');
+  const [isScanOpen, setIsScanOpen] = useState(false);
+  const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
+  const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
+  const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
+  const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
+  const [ratingModal, setRatingModal] = useState({ isOpen: false, mentorshipId: '', mentorName: '' });
 
+  // Notifications filtering
+  const notifications = useMemo(() => 
+    (notificationsData || []).filter(n => n.userId === user?.id),
+    [notificationsData, user?.id]
+  );
+
+  const handleMarkAsRead = async (id: string) => {
+    if (!id) return;
+    await supabase.from('notifications').update({ read: true, read_at: new Date().toISOString() }).eq('id', id);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  // Financial Status Logic
+  const isActuallyPaid = registration?.status === 'paid' || (registration?.status as any) === 'ativo' || registration?.amount === 0;
+  
+  const statusFinanceiro = useMemo(() => {
+    if (!registration) return { label: 'PENDENTE', color: 'bg-gray-500/20 text-gray-400' };
+    if (isActuallyPaid) return { label: 'PAGO', color: 'bg-green-500/20 text-green-400' };
+    if (registration.status === 'cancelled') return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
+    return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
+  }, [registration, isActuallyPaid]);
+
+  // Next Activity Logic
   const nextActivity = useMemo(() => {
     if (!allSessions || !activityCheckIns) return null;
-    
-    // Sort all sessions by time
-    const sorted = [...allSessions].sort((a, b) => {
-      const timeA = a.startTime || '00:00';
-      const timeB = b.startTime || '00:00';
-      return timeA.localeCompare(timeB);
-    });
-
-    // Find the first session that doesn't have a check-in or is closest to now
+    const sorted = [...allSessions].sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
     const now = new Date();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     
     return sorted.find(s => {
-        const isAlreadyCheckedIn = activityCheckIns?.some(c => (c.sessionId || c.session_id) === s.id && (c.registrationId || c.registration_id) === myRegistration?.id);
-        return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
-    }) || sorted[0]; // Fallback to first session if none found
-  }, [allSessions, activityCheckIns, myRegistration?.id]);
-  
-  const myBatches = useMemo(() => {
-    return batches.filter(b => b.emailResponsavel === user?.email);
-  }, [batches, user]);
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && (c as any).registrationId === registration?.id);
+      return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
+    }) || sorted[0];
+  }, [allSessions, activityCheckIns, registration?.id]);
 
-  const initialTab = searchParams.get('tab') || 'ingresso';
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showCheckInModal, setShowCheckInModal] = useState(false);
-  const [selfCheckIn, setSelfCheckIn] = useState({ isOpen: false, initialStep: 1 });
-  const [selectedSession, setSelectedSession] = useState<any>(null);
-  const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
-  const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
-  const { data: dbNotifications, refetch: refetchNotifications } = useNotifications();
-  const { create: joinWaitlist } = useMentoringWaitlistHook();
+  // Gamification Progress
+  const standsVisited = useMemo(() => {
+    if (!standCheckIns || !registration) return 0;
+    return standCheckIns.filter(c => c.registrationId === registration.id).length;
+  }, [standCheckIns, registration]);
 
+  const totalStands = useMemo(() => stands?.length || 0, [stands]);
 
+  // Bottom Navigation Tabs definition
+  const navTabs = useMemo(() => {
+    const tabs = [
+      { id: 'inicio', icon: LayoutGrid, label: 'Início' },
+      { id: 'ingresso', icon: QrCode, label: 'Ticket' },
+      { id: 'agenda', icon: Calendar, label: 'Agenda' },
+    ];
 
-
-
-  // Auto-refetch registration to keep status in sync with backoffice
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetchRegistration();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [refetchRegistration]);
-  const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
-  const { data: mentors } = useMentors();
-  const { data: mentoringSessions, update: updateMentoring } = useMentoringSessions();
-  const [ratingModal, setRatingModal] = useState<{
-    isOpen: boolean;
-    sessionId: string;
-    mentorName: string;
-    alreadyRated: boolean;
-    avaliacao?: number;
-    indicacao?: number;
-  }>({
-    isOpen: false,
-    sessionId: '',
-    mentorName: '',
-    alreadyRated: false
-  });
-
-  const handleDownloadTicket = () => {
-    if (!myRegistration) {
-      toast.error('Inscrição não encontrada.');
-      return;
-    }
-    generateTicketPDF(myRegistration, selectedProject?.name || 'Growth Experience');
-  };
-
-  const handleBookMentoring = async (slotId: string, topic: string) => {
-    if (!myRegistration) return;
-
-    const slot = mentoringSessions.find(s => s.id === slotId);
-    if (!slot) return;
-
-    const mentor = mentors.find(m => m.id === slot.mentorId);
-
-    try {
-      await updateMentoring(slotId, {
-        menteeId: myRegistration.id,
-        menteeName: myRegistration.nome || '',
-        topic: topic || 'Mentoria Geral',
-        status: 'scheduled'
-      });
-
-      // Notifica o mentor por e-mail (usando emailService que já integra com Resend)
-      if (mentor?.email) {
-        await emailService.send({
-          to: [mentor.email],
-          subject: `🚀 Nova Mentoria Agendada - ${myRegistration.nome}`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #ff7043;">Nova Mentoria!</h1>
-              <p>Olá, <strong>${mentor.name}</strong>!</p>
-              <p>Você tem um novo agendamento de mentoria na plataforma.</p>
-              <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
-                <p style="margin: 0 0 10px 0;"><strong>Mentorado:</strong> ${myRegistration.nome}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${new Date(slot.scheduledAt).toLocaleDateString('pt-BR')}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${new Date(slot.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
-                <p style="margin: 0;"><strong>Assunto/Tópico:</strong> ${topic || 'Mentoria Geral'}</p>
-              </div>
-              <p>Acesse seu painel para ver mais detalhes e preparar sua mentoria.</p>
-              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-              <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
-            </div>
-          `
-        });
-      }
-
-      toast.success('Mentoria agendada! O mentor foi notificado por e-mail.');
-    } catch {
-      toast.error('Erro ao agendar mentoria.');
-    }
-  };
-
-  const handleRatingSubmit = async (sessionId: string, avaliacao: number, indicacao: number) => {
-    try {
-      await updateMentoring(sessionId, {
-        status: 'completed',
-        feedback: {
-          rating: avaliacao, // Manter o rating legado para compatibilidade visual básica
-          comment: '',
-          avaliacaoMentoria: avaliacao,
-          indicacaoMentor: indicacao,
-          avaliadoEm: new Date().toISOString()
-        }
-      });
-      toast.success('Avaliação enviada com sucesso!');
-    } catch (err: unknown) {
-      console.error('Erro ao enviar avaliação:', err);
-      toast.error('Erro ao salvar avaliação. Tente novamente.');
-      throw err;
-    }
-  };
-
-  const handleCancelMentoring = async (sessionId: string) => {
-    if (!window.confirm('Tem certeza que deseja cancelar esta mentoria? O horário ficará disponível para outros participantes.')) return;
-
-    const session = mentoringSessions.find(s => s.id === sessionId);
-    const mentor = session ? mentors.find(m => m.id === session.mentorId) : null;
-
-    try {
-      // Libera o slot: zera mentorado e marca como disponível novamente
-      await updateMentoring(sessionId, {
-        menteeId: '' as any,
-        menteeName: '' as any,
-        menteeEmail: '' as any,
-        menteePhone: '' as any,
-        topic: 'Disponível para Mentoria' as any,
-        notes: 'Slot liberado pelo participante.' as any,
-        startupName: '' as any,
-        sector: '' as any,
-        status: 'scheduled'
-      });
-
-      // Notifica o mentor por e-mail sobre o cancelamento
-      if (mentor?.email && session) {
-        await emailService.send({
-          to: [mentor.email],
-          subject: `❌ Cancelamento de Mentoria - ${myRegistration?.nome || 'Participante'}`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h1 style="color: #ef4444;">Cancelamento de Mentoria</h1>
-              <p>Olá, <strong>${mentor.name}</strong>!</p>
-              <p>O participante <strong>${myRegistration?.nome || 'Participante'}</strong> cancelou a mentoria agendada.</p>
-              <div style="background: #fef2f2; padding: 25px; border-radius: 12px; border: 1px solid #fecaca; margin: 25px 0;">
-                <p style="margin: 0 0 10px 0;"><strong>Data/Hora:</strong> ${new Date(session.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}</p>
-                <p style="margin: 0;"><strong>Tópico cancelado:</strong> ${session.topic || 'Mentoria Geral'}</p>
-              </div>
-              <p>O horário voltou a ficar <strong style="color: #16a34a;">disponível</strong> e pode ser agendado por outro participante — inclusive presencialmente.</p>
-              <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-              <p style="font-size: 12px; color: #94a3b8; text-align: center;">© 2026 Growth Experience - Petrolina/PE & Triunfo/PE</p>
-            </div>
-          `
-        });
-      }
-
-      toast.success('Mentoria cancelada. O horário está disponível novamente.');
-    } catch {
-      toast.error('Erro ao cancelar mentoria. Tente novamente.');
-    }
-  };
-
-  const handleJoinWaitlist = async (challenge: string) => {
-    if (!myRegistration || !selectedProject) return;
-
-    try {
-      await joinWaitlist({
-        projectId: selectedProject.id,
-        registrationId: myRegistration.id,
-        challenge,
-        status: 'pending'
-      } as any);
-      
-      toast.success('Você entrou na fila de espera! Avisaremos assim que um mentor estiver disponível.', {
-        duration: 5000,
-        icon: '🚀'
-      });
-    } catch (err) {
-      logger.error('Erro ao entrar na fila:', err);
-      toast.error('Erro ao entrar na fila de espera.');
-    }
-  };
-
-  // ── Mapeamento e Enriquecimento de Mentorias ──────────────────────────────
-  const enrichedMentorships = useMemo(() => {
-    if (!mentoringSessions || !mentors) return [];
-    return mentoringSessions.map(session => {
-      const mentor = mentors.find(m => m.id === session.mentorId);
-      return {
-        ...session,
-        mentorName: mentor ? mentor.name : session.mentorName,
-        mentorAvatar: mentor ? mentor.photo : null,
-        mentorSpecialties: mentor ? mentor.specialties : []
-      };
-    });
-  }, [mentoringSessions, mentors]);
-
-  const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
-  const myMentorships = enrichedMentorships.filter(s => s.menteeId === user?.id);
-  const availableSlots = enrichedMentorships.filter(s => 
-    (!s.menteeId || s.menteeId === PLACEHOLDER_ID) && 
-    (s.status === 'scheduled')
-  );
-
-  // ── Notificações dinâmicas ─────────────────────────────────────────────────
-  const notifications = useMemo(() => {
-    const items: any[] = [];
-    
-    // Notificações do Banco de Dados
-    if (dbNotifications && dbNotifications.length > 0) {
-      dbNotifications
-        .filter(n => !n.read) // Mostrar apenas as não lidas no sino
-        .forEach(n => {
-          items.push({
-            id: n.id,
-            title: n.title,
-            message: n.message,
-            time: new Date(n.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            read: n.read,
-            type: n.type as any
-          });
-        });
+    // Show Circuito if enabled in project settings
+    if (selectedProject?.settings?.enableCheckIn !== false) {
+      tabs.push({ id: 'circuito', icon: Trophy, label: 'Circuito' });
     }
 
-    const now = new Date();
-
-    // Alerta 24h antes do evento
-    if (selectedProject?.startDate) {
-      const eventStart = new Date(selectedProject.startDate);
-      const diffMs = eventStart.getTime() - now.getTime();
-      const diffHours = diffMs / (1000 * 60 * 60);
-      if (diffHours > 0 && diffHours <= 24) {
-        const hoursLeft = Math.round(diffHours);
-        items.unshift({
-          id: 10,
-          title: '🎉 O evento começa amanhã!',
-          message: `Faltam aproximadamente ${hoursLeft}h para o ${selectedProject.name || 'Growth Experience'}. Prepare-se!`,
-          time: `${hoursLeft}h restantes`,
-          read: false,
-          type: 'alert'
-        });
-      }
+    // Add Raffle if there are active raffles
+    if (raffles && raffles.length > 0) {
+      tabs.push({ id: 'sorteios', icon: Sparkles, label: 'Sorteios' });
     }
 
-    // Alertas 60 min antes de cada mentoria agendada
-    myMentorships.forEach((session, idx) => {
-      if (!session.scheduledAt) return;
-      const sessionTime = new Date(session.scheduledAt);
-      const diffMs = sessionTime.getTime() - now.getTime();
-      const diffMinutes = diffMs / (1000 * 60);
-      if (diffMinutes > 0 && diffMinutes <= 60) {
-        const minutesLeft = Math.round(diffMinutes);
-        items.unshift({
-          id: 100 + idx,
-          title: '⏰ Mentoria em breve!',
-          message: `Sua mentoria com ${session.mentorName} começa em ${minutesLeft} minuto${minutesLeft !== 1 ? 's' : ''}. Prepare-se para a sessão!`,
-          time: `${minutesLeft} min`,
-          read: false,
-          type: 'warning'
-        });
-      }
-    });
+    tabs.push({ id: 'dados', icon: User, label: 'Perfil' });
 
-    return items;
-  }, [selectedProject, myMentorships]);
+    return tabs;
+  }, [selectedProject, raffles]);
 
-  // ── STATUS FINANCEIRO ──────────────────────────────────────────────────────
-  // FREE MORNING (grátis): status = "Em aberto" (não há cobrança)
-  // Experience Pro pago: status = "Confirmado"
-  // Experience Pro não pago: status = "Pendente"
-  const isActuallyPaid = useMemo(() => {
-    if (!myRegistration) return false;
-    const pgto = (myRegistration as any).status_pagamento || myRegistration.statusPagamento;
-    const st = myRegistration.status;
-
-    const hasPaidPgto = pgto === 'pago' || pgto === 'paid';
-    const hasPaidStatus = st === 'pago' || st === 'paid' || st === 'Confirmado';
-
-    return hasPaidPgto || hasPaidStatus;
-  }, [myRegistration]);
-
-  const statusFinanceiro = useMemo(() => {
-    // Se o evento for Triunfo ou Petrolina (Growth Experience), não existe "Grátis" por padrão se não for o lote free
-    const isPaidEvent = selectedProject?.slug?.includes('triunfo') || selectedProject?.slug?.includes('petrolina');
-    
-    if (!myRegistration?.palestrasNoturnas && !isPaidEvent) {
-      return { label: 'Grátis', color: 'bg-gray-500/20 text-gray-400 border-none', info: 'Inscrição diurna gratuita' };
-    }
-
-    if (isActuallyPaid) {
-      return { label: 'Confirmado', color: 'bg-green-500/20 text-green-400 border-none', info: 'Pagamento recebido' };
-    }
-    return { label: 'Pendente', color: 'bg-orange-500/20 text-orange-400 border-none', info: 'Aguardando pagamento' };
-  }, [myRegistration, isActuallyPaid, selectedProject?.slug]);
-
-  // Cursos selecionados (busca nas sessions pelos IDs)
-  const cursosSelecionados = useMemo(() => {
-    const ids: string[] = myRegistration?.cursosSelecionados || [];
-    if (!ids.length) return [];
-    return allSessions.filter(s => ids.includes(s.id));
-  }, [allSessions, myRegistration]);
-
-
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  // ── LOGICA DE SCAN ─────────────────────────────────────────────────────────
+  // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
-    try {
-      if (!myRegistration) throw new Error('Inscrição não carregada');
-
-      // Caso 1: Check-in de Entrada (GE-CHECKIN-ADMIN|CODE)
-      if (decodedText.startsWith('GE-EVENT-ENTRY')) {
-        await checkInEntrada();
-        toast.success('Check-in de entrada realizado com sucesso!');
-        return;
-      }
-
-      // Caso 2: Check-in em Atividade (Sessão/Sala)
-      // Formato esperado: GE-ACTIVITY|SESSION_ID|TITLE
-      if (decodedText.startsWith('GE-ACTIVITY')) {
-        const parts = decodedText.split('|');
-        const sessionId = parts[1];
-        const sessionTitle = parts[2] || 'Atividade';
-
-        // Registrar check-in da atividade
-        const { error } = await (supabase.from('check_ins_atividades' as any) as any).insert({
-          project_id: selectedProject?.id,
-          registration_id: myRegistration.id,
-          session_id: sessionId,
-          check_in_at: new Date().toISOString()
-        });
-
-        if (error) throw error;
-
-        // Gerar placeholder de certificado
-        const certCode = generateCertificateCode(myRegistration.id, sessionId);
-        await (supabase.from('certificates' as any) as any).insert({
-          project_id: selectedProject?.id,
-          registration_id: myRegistration.id,
-          user_id: user?.id,
-          activity_name: sessionTitle,
-          status: 'disponivel',
-          type: 'lecture',
-          code: certCode,
-          issue_date: new Date().toISOString()
-        }).catch(() => { });
-        toast.success(`Check-in em "${sessionTitle}" confirmado! Certificado gerado.`);
-        return;
-      }
-
-      // Caso 3: Check-in em Mentorias (GE-MENTORIA|ID|MENTOR)
-      if (decodedText.startsWith('GE-MENTORING')) {
-        const parts = decodedText.split('|');
-        const mentoringId = parts[1];
-        const mentorName = parts[2] || 'Mentor';
-
-        const { error } = await (supabase.from('mentorias_agendadas' as any).update({
-          status: 'completed',
-          updated_at: new Date().toISOString()
-        } as any) as any).eq('id' as any, mentoringId);
-
-        if (error) throw error;
-        toast.success(`Mentoria com ${mentorName} confirmada!`);
-        return;
-      }
-
-      // Caso 4: Check-in em Stands (GE-STAND|ID|NAME)
-      if (decodedText.startsWith('GE-STAND')) {
-        const parts = decodedText.split('|');
-        const standId = parts[1];
-        const standName = parts[2] || 'Stand';
-
-        // Geração de Lead em Tempo Real
-        const stand = stands.find(s => s.id === standId);
-        if (stand && stand.ownerId) {
-          try {
-            // Verifica se já existe lead para este stand e este participante
-            const existingLead = leads.find(l => 
-              l.registrationId === myRegistration.id && 
-              (l.startupId === stand.ownerId || l.companyId === stand.ownerId)
-            );
-
-            if (!existingLead) {
-              await createLead({
-                projectId: selectedProject?.id,
-                startupId: stand.ownerType === 'startup' ? stand.ownerId : undefined,
-                companyId: stand.ownerType === 'company' ? stand.ownerId : undefined,
-                registrationId: myRegistration.id,
-                interestLevel: 'high',
-                notes: `Check-in realizado no stand: ${standName}`,
-                visitorName: myRegistration.nome || user?.name || 'Visitante',
-                visitorEmail: myRegistration.email || user?.email,
-                visitorPhone: myRegistration.telefone,
-                visitorCpf: (myRegistration as any).cpf,
-              });
-              logger.info(`Lead gerado para o stand ${standName}`);
-            }
-          } catch (err) {
-            logger.error('Erro ao gerar lead no check-in:', err);
-          }
-        }
-
-        await registerStandCheckIn({
-          projectId: selectedProject?.id || '',
-          registrationId: myRegistration.id,
-          standId: standId,
-        });
-
-        toast.success(`Check-in realizado no stand: ${standName}! 🚀`);
-        return;
-      }
-
-      // Caso 5: Sorteio em Tempo Real (RAFFLE:ID)
-      if (decodedText.startsWith('RAFFLE:')) {
-        const raffleId = decodedText.replace('RAFFLE:', '');
-        await raffleService.enterRaffle(raffleId, myRegistration.id);
-        toast.success('Você entrou no sorteio! Boa sorte! 🍀');
-        return;
-      }
-
-      throw new Error('QR Code inválido ou não reconhecido por este App');
-    } catch (error: any) {
-      console.error(error);
-      throw error;
+    const qrData = parseQRString(decodedText);
+    if (!qrData || (qrData.type !== 'session' && qrData.type !== 'registration')) {
+        throw new Error('QR Code inválido para este tipo de check-in');
     }
+
+    if (!registration) throw new Error('Inscrição não encontrada');
+
+    // Call RPC or direct insert
+    const { error } = await supabase.from('activity_attendances').insert({
+        project_id: selectedProject?.id,
+        session_id: qrData.id,
+        registration_id: registration.id,
+        user_id: user?.id,
+        check_in_at: new Date().toISOString(),
+        check_in_type: 'qr'
+    });
+
+    if (error) throw error;
+    toast.success('Check-in realizado com sucesso!');
   };
 
-  // ── Certificados ──────────────────────────────────────────────────────────
-  const [certificados, setCertificados] = useState<any[]>([]);
-  const [loadingCerts, setLoadingCerts] = useState(false);
-
-  const fetchCertificados = useCallback(async () => {
-    if (!myRegistration?.id) return;
-    setLoadingCerts(true);
-    try {
-      const { data, error } = await supabase
-        .from('certificates' as any)
-        .select('*')
-        .eq('registration_id' as any, myRegistration.id)
-        .order('issue_date', { ascending: false });
-
-      if (error) throw error;
-      setCertificados(data || []);
-    } catch (err) {
-      console.error('Erro ao buscar certificados:', err);
-    } finally {
-      setLoadingCerts(false);
-    }
-  }, [myRegistration?.id]);
-
-  useEffect(() => {
-    if (activeTab === 'certificados') {
-      fetchCertificados();
-    }
-  }, [activeTab, fetchCertificados]);
-
-  const handleDownloadCertificate = async (cert: any) => {
-    const toastId = toast.loading('Gerando certificado...');
-    try {
-      const template = (selectedProject as any)?.metadata?.certificate_template || {};
-      
-      const certData: any = {
-        userName: myRegistration?.nome || user?.name || 'Participante',
-        eventName: selectedProject?.name || 'Growth Experience',
-        date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
-        certificateCode: cert.code,
-        type: cert.type || 'lecture',
-        sessionTitle: cert.activity_name,
-        templateOverrides: {
-          title: template.title,
-          description: template.description,
-          ceoName: template.ceo_name,
-          ceoRole: template.ceo_role,
-          primaryColor: template.primary_color,
-          secondaryColor: template.secondary_color,
-          showBackgroundPattern: template.show_pattern
-        }
-      };
-
-      if (template.logo_url) certData.logoBase64 = await imageUrlToBase64(template.logo_url).catch(() => undefined);
-      if (template.signature_url) certData.signatureBase64 = await imageUrlToBase64(template.signature_url).catch(() => undefined);
-      if (template.background_url) certData.templateOverrides.customBackgroundBase64 = await imageUrlToBase64(template.background_url).catch(() => undefined);
-      if (template.partner_logos?.length > 0) {
-        certData.partnerLogosBase64 = await Promise.all(
-          template.partner_logos.map((url: string) => imageUrlToBase64(url).catch(() => null))
-        ).then((res: (any)[]) => res.filter(Boolean));
-      }
-
-      await generateCertificatePDF(certData);
-      toast.success('Download iniciado!', { id: toastId });
-    } catch (err) {
-      console.error(err);
-      toast.error('Erro ao gerar certificado.', { id: toastId });
-    }
-  };
-
-  // ── Documentos do Storage ──────────────────────────────────────────────────
-  const [documentos, setDocumentos] = useState<Array<{
-    name: string; fullPath: string; size: string; updatedAt: string; url: string;
-  }>>([]);
-  const [loadingDocs, setLoadingDocs] = useState(false);
-
-
-
-
-  const fetchDocumentos = useCallback(async () => {
-    if (!selectedProject?.slug) return;
-    setLoadingDocs(true);
-    try {
-      const bucket = 'event-files';
-      const folder = selectedProject.slug;
-      const { data, error } = await supabase.storage.from(bucket).list(folder, {
-        limit: 20,
-        sortBy: { column: 'name', order: 'asc' },
-      });
-
-      if (error || !data) { setDocumentos([]); return; }
-
-      const files = data.filter(f => f.id && f.name !== '.emptyFolderPlaceholder');
-      const withUrls = files.map(f => {
-        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(`${folder}/${f.name}`);
-        const sizeMB = f.metadata?.size ? `${(f.metadata.size / 1024 / 1024).toFixed(1)} MB` : '—';
-        return {
-          name: f.name,
-          fullPath: `${folder}/${f.name}`,
-          size: sizeMB,
-          updatedAt: f.updated_at ? new Date(f.updated_at).toLocaleDateString('pt-BR') : '—',
-          url: urlData.publicUrl,
-        };
-      });
-      setDocumentos(withUrls);
-    } catch {
-      setDocumentos([]);
-    } finally {
-      setLoadingDocs(false);
-    }
-  }, [selectedProject?.slug]);
-
-  useEffect(() => { fetchDocumentos(); }, [fetchDocumentos]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen bg-dark-400 pb-20 mesh-gradient overflow-x-hidden"
-    >
-      {/* Modals */}
-      {showUpgradeModal && myRegistration && (
-        <UpgradeProModal
-          registrationId={myRegistration.id}
-          onClose={() => setShowUpgradeModal(false)}
-          onSuccess={refetchRegistration}
-        />
-      )}
-      {showCheckInModal && myRegistration && (
-        <CheckInModal registration={myRegistration} onClose={() => setShowCheckInModal(false)} />
-      )}
-      {selfCheckIn.isOpen && myRegistration && (
-        <SelfCheckInModal
-          registration={myRegistration}
-          onClose={() => setSelfCheckIn({ ...selfCheckIn, isOpen: false })}
-          initialStep={selfCheckIn.initialStep}
-          onScanSuccess={handleScanSuccess}
-        />
-      )}
-
-      {/* Session Details Modal */}
-      <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
-        <DialogContent className="max-w-md bg-dark-200 border-white/5 rounded-[2rem] p-0 overflow-hidden">
-          {selectedSession && (
-            <div className="relative">
-              <div className={`h-32 bg-gradient-to-br ${selectedSession.color || 'from-teal-500/20 to-teal-500/5'} flex items-end p-6`}>
-                <Badge className="bg-white/10 backdrop-blur-md text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1.5">
-                  {selectedSession.type || selectedSession.tipo || 'ATIVIDADE'}
-                </Badge>
-              </div>
-              <div className="p-8 space-y-6">
-                <div className="space-y-2">
-                  <h3 className="text-3xl font-black text-white italic tracking-tight leading-tight">
-                    {selectedSession.title || selectedSession.titulo}
-                  </h3>
-                  <div className="flex flex-wrap gap-4 text-gray-400">
-                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                      <Clock className="h-3.5 w-3.5 text-teal-400" />
-                      {selectedSession.startTime} - {selectedSession.endTime}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
-                      <MapPin className="h-3.5 w-3.5 text-teal-400" />
-                      {selectedSession.room || 'Auditório Principal'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {selectedSession.description || 'Nenhuma descrição detalhada disponível para esta atividade.'}
-                  </p>
-
-                  {selectedSession.speakers && selectedSession.speakers.length > 0 && (
-                    <div className="pt-4 border-t border-white/5">
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">PALESTRANTE(S)</p>
-                      <div className="flex flex-wrap gap-2">
-                        {Array.isArray(selectedSession.speakers)
-                          ? selectedSession.speakers.map((s: string, i: number) => (
-                            <Badge key={i} variant="outline" className="border-teal-500/20 text-teal-400 bg-teal-500/5 font-bold">
-                              {s}
-                            </Badge>
-                          ))
-                          : <Badge variant="outline" className="border-teal-500/20 text-teal-400 bg-teal-500/5 font-bold">{selectedSession.speakers}</Badge>
-                        }
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-6">
-                  {activityCheckIns?.some((c: any) => c.session_id === selectedSession.id && c.registration_id === myRegistration?.id) ? (
-                    <div className="w-full bg-green-500/10 border border-green-500/20 rounded-2xl py-4 flex items-center justify-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-400" />
-                      <span className="text-green-400 font-black uppercase tracking-widest text-xs">PRESENÇA CONFIRMADA</span>
-                    </div>
-                  ) : (
-                      <Button
-                      onClick={() => {
-                        setSelectedSession(null);
-                        setSelfCheckIn({ isOpen: true, initialStep: 2 });
-                      }}
-                      className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-7 h-auto rounded-3xl text-lg shadow-xl shadow-brand-orange-coral/30 group"
-                    >
-                      <QrCode className="h-5 w-5 mr-3 group-hover:rotate-12 transition-all" />
-                      CONFIRMAR PRESENÇA
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {isB2BModalOpen && (
-        <B2BFormModal isOpen={isB2BModalOpen} onClose={() => setIsB2BModalOpen(false)} />
-      )}
-
-      {isStartupModalOpen && (
-        <StartupFormModal isOpen={isStartupModalOpen} onClose={() => setIsStartupModalOpen(false)} />
-      )}
-
-      {/* Header Premium Refined */}
-      <div className="bg-dark-300 border-b border-white/5 shadow-xl relative overflow-hidden">
-        <PremiumBackground />
-        <PremiumHeader
-          userName={myRegistration?.nome || user?.name}
-          userAvatar={user?.avatar}
-          projectName={selectedProject?.name}
-          roleLabel="PARTICIPANTE"
-          isPro={myRegistration?.palestrasNoturnas}
-          isActuallyPaid={isActuallyPaid}
-          notifications={notifications}
-          onLogout={handleLogout}
-          onGuideClick={() => window.open('https://www.growthsummit.site/guia', '_blank')}
-          onSupportClick={() => setActiveTab('suporte')}
-          onNotificationRead={async (id) => {
-            await notificationService.markAsRead(id);
-            refetchNotifications();
-          }}
-        />
-
-        {activeTab === 'inicio' && (
-          <div className="max-w-7xl mx-auto space-y-5 pb-32">
+  // Render Section based on activeTab
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'inicio':
+        return (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
             <PwaDashboardHero 
-              eventName={selectedProject?.name || "Growth Experience"}
-              location={selectedProject?.location || "Triunfo-PE"}
-              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase() : "16 ABR 2026"}
+              eventName={selectedProject?.name || 'Growth Experience'}
+              location={selectedProject?.location || 'Evento'}
+              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026'}
               eventDate={selectedProject?.startDate}
               stats={{
-                people: "500+",
-                content: "12h",
-                activities: String(allSessions?.length || 20) + "+"
+                people: '500+',
+                content: '12h+',
+                activities: '20+'
               }}
             />
 
             {nextActivity && (
               <NextActivityCard 
-                title={nextActivity.title || (nextActivity as any).titulo}
-                subtitle={`${nextActivity.speakers || 'Leandro Batista'} • ${nextActivity.room || 'Auditório'}`}
-                time={nextActivity.startTime || '19:00'}
-                duration="50 min"
-                isConfirmed={activityCheckIns?.some((c: any) => (c.session_id || c.sessionId) === nextActivity.id && c.registration_id === myRegistration?.id)}
-                onClick={() => setSelectedSession(nextActivity)}
+                title={nextActivity.title}
+                subtitle={nextActivity.type || 'Programação'}
+                time={nextActivity.startTime || '--:--'}
+                duration="--"
+                isConfirmed={false}
+                onClick={() => setActiveTab('agenda')}
               />
             )}
 
-            {/* Nav Cards Premium Grid */}
-            <div className="px-4 sm:px-6 grid grid-cols-2 gap-3">
-              {[
-                { tab: 'agenda', Icon: Calendar, label: 'Minha\nAgenda', color: '#ff7043', bg: 'rgba(255,112,67,0.1)', border: 'rgba(255,112,67,0.2)' },
-                (selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false)
-                  ? { tab: 'networking', Icon: Users, label: 'Networking', color: '#14b8a6', bg: 'rgba(20,184,166,0.1)', border: 'rgba(20,184,166,0.2)' }
-                  : null,
-                selectedProject?.settings?.enableCheckIn !== false
-                  ? { tab: 'circuito', Icon: Trophy, label: 'Circuito\nGE-STAND', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
-                  : null,
-                { tab: 'sorteios', Icon: Gift, label: 'Sorteios\nGanhadores', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.2)' },
-              ].filter(Boolean).map((item: any, i: number) => (
-                <motion.button
-                  key={item.tab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => setActiveTab(item.tab)}
-                  className="relative overflow-hidden rounded-[1.75rem] p-5 flex flex-col gap-3 text-left group transition-all duration-300 hover:-translate-y-1 active:scale-95"
-                  style={{ background: item.bg, border: `1px solid ${item.border}` }}
-                >
-                  {/* Glow hover */}
-                  <div className="absolute inset-0 rounded-[1.75rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(ellipse at top left, ${item.color}20, transparent 70%)` }} />
-                  <item.Icon className="h-6 w-6 relative z-10 transition-transform duration-300 group-hover:scale-110" style={{ color: item.color }} />
-                  <span className="text-foreground font-black text-sm text-left leading-tight relative z-10 whitespace-pre-line">{item.label}</span>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="px-4 sm:px-6">
-               <QuickActions 
-                  onStartupClick={() => setIsStartupModalOpen(true)}
-                  onB2BClick={() => setIsB2BModalOpen(true)}
-                  onMentoriaClick={() => (myRegistration?.palestrasNoturnas || isActuallyPaid) ? setActiveTab('mentorias' as any) : setShowUpgradeModal(true)}
-                  showMentoria={selectedProject?.settings?.enableMentoring ?? true}
-                  showStartup={selectedProject?.settings?.enableStartups ?? true}
-                  showB2B={selectedProject?.settings?.enableB2B ?? true}
-               />
-            </div>
-
-            {/* Float Action Button (Ingresso) */}
-            <div className="fixed bottom-28 right-5 z-50">
-              <motion.button
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.92 }}
-                onClick={() => handleDownloadTicket()}
-                className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)', boxShadow: '0 8px 24px rgba(255,112,67,0.5)' }}
-                title="Baixar Ingresso"
-              >
-                <motion.div
-                  className="absolute inset-0 rounded-2xl"
-                  style={{ background: 'linear-gradient(135deg, #ff7043, #ff4035)' }}
-                  animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut' }}
-                />
-                <FileText className="h-6 w-6 text-white relative z-10" />
-              </motion.button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Main Content Area - Only shown for other tabs */}
-      {activeTab !== 'inicio' && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 flex flex-col gap-8 z-10 relative">
-          {/* Action Buttons for Agenda (Optional) */}
-          {activeTab === 'agenda' && (
-             <div className="flex flex-col gap-3 px-6 -mb-4">
-                <Button
-                  onClick={() => setIsSelfCheckInOpen(true)}
-                  className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black py-5 rounded-2xl text-base shadow-xl shadow-brand-orange-coral/20 group transition-all hover:scale-[1.01] active:scale-95 flex flex-col items-center justify-center gap-0.5 border-none h-auto"
-                >
-                  <div className="flex items-center gap-2 uppercase text-[13px] tracking-widest">
-                    <QrCode className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                    Confirmar Presença
-                  </div>
-                  <span className="text-[9px] opacity-70 font-bold uppercase tracking-widest leading-none">Aponte para o QR Code na sala</span>
-                </Button>
-             </div>
-          )}
-
-          {/* Render actual tab content */}
-          <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeTab === 'ingresso' && (
-              <TicketSection
-                myRegistration={myRegistration}
-                user={user}
-                selectedProject={selectedProject}
-                statusFinanceiro={statusFinanceiro}
-                isActuallyPaid={isActuallyPaid}
-                generateTicketPDF={generateTicketPDF}
-                setShowCheckInModal={setShowCheckInModal}
-                setShowUpgradeModal={setShowUpgradeModal}
-                onRefresh={refetchRegistration}
-              />
-            )}
-
-            {activeTab === 'agenda' && (
-              <AgendaSection
-                myRegistration={myRegistration}
-                isActuallyPaid={isActuallyPaid}
-                onUpgradeClick={() => setShowUpgradeModal(true)}
-                cursosSelecionados={cursosSelecionados}
-                myMentorships={myMentorships}
-                setIsSelfCheckInOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
-                navigate={navigate}
-                activityCheckIns={activityCheckIns}
-                onSessionClick={(session) => setSelectedSession(session)}
-                allSessions={allSessions || []}
-              />
-            )}
-
-            {activeTab === 'mentorias' && (
-              <MentorshipSection
-                myMentorships={myMentorships}
-                availableSlots={availableSlots}
-                handleBookMentoring={handleBookMentoring}
-                handleCancelMentoring={handleCancelMentoring}
-                handleJoinWaitlist={handleJoinWaitlist}
-                setRatingModal={setRatingModal}
-                setIsMentoriaModalOpen={setIsMentoriaModalOpen}
-              />
-            )}
-
-            {activeTab === 'documentos' && (
-              <DocsSection documentos={documentos} loadingDocs={loadingDocs} />
-            )}
-
-            {activeTab === 'circuito' && myRegistration?.id && (
-              <GamificationSection 
-                registrationId={myRegistration.id} 
-                setIsScanOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
-              />
-            )}
-
-            {activeTab === 'networking' && (
-              <div className="space-y-8">
-                <div className="p-8 text-center bg-dark-200/50 rounded-[2rem] border-2 border-dashed border-white/10">
-                  <Handshake className="h-12 w-12 text-teal-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-black text-white uppercase italic">Networking & Negócios</h3>
-                  <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-                    Aumente sua rede de contatos, participe de rodadas de negócios e conecte-se com startups inovadoras.
-                  </p>
-                  <div className="grid sm:grid-cols-2 gap-4 max-w-md mx-auto">
-                    <Button 
-                      onClick={() => setIsB2BModalOpen(true)}
-                      className="bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl h-14"
-                    >
-                      RODADA B2B
-                    </Button>
-                    <Button 
-                      onClick={() => setIsStartupModalOpen(true)}
-                      className="bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl h-14"
-                    >
-                      ARENA STARTUP
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'certificados' && (
-              <CertificatesSection
-                certificados={certificados}
-                loadingCerts={loadingCerts}
-                fetchCertificados={fetchCertificados}
-                onDownload={handleDownloadCertificate}
-              />
-            )}
-
-            {activeTab === 'equipe' && (
-              <DashboardEquipe batches={myBatches} />
-            )}
-
-            {activeTab === 'suporte' && (
-              <SupportSection navigate={navigate} />
-            )}
-
-            {activeTab === 'sorteios' && myRegistration?.id && (
-              <RaffleSection 
-                registrationId={myRegistration.id} 
-                setIsScanOpen={(open) => setSelfCheckIn({ isOpen: open, initialStep: 2 })}
-              />
-            )}
-
-            {activeTab === 'dados' && (
-              <div className="space-y-10 pb-10">
-                <ProfileForm />
-                <div className="flex flex-col items-center justify-center gap-3 pt-10 border-t border-white/5 opacity-30">
-                   <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" alt="GE" className="w-6 h-6 grayscale" />
-                   <div className="text-center">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Growth Experience Platform</p>
-                     <p className="text-[8px] font-bold uppercase tracking-widest mt-1">Versão 3.2.0 • Stable Release</p>
-                   </div>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* INSCRIPTION OPTIONS & PREVIEWS (BOTTOM) */}
-        <div className="flex flex-col gap-8 pt-10 border-t border-white/5">
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Ações e Atalhos</h4>
-            <QuickActions
+            <QuickActions 
               onB2BClick={() => setIsB2BModalOpen(true)}
               onStartupClick={() => setIsStartupModalOpen(true)}
-              onMentoriaClick={() => activeTab !== 'mentorias' ? setActiveTab('mentorias') : setIsMentoriaModalOpen(true)}
-              showMentoria={selectedProject?.settings?.enableMentoring ?? true}
-              showStartup={selectedProject?.settings?.enableStartups ?? true}
-              showB2B={selectedProject?.settings?.enableB2B ?? true}
+              onMentoriaClick={() => setActiveTab('mentorias')}
+              showMentoria={selectedProject?.settings?.enableMentoring}
+              showB2B={selectedProject?.settings?.enableB2B}
+              showStartup={selectedProject?.settings?.enableStartups}
             />
-          </div>
 
-          {cursosSelecionados.length > 0 && (
-            <div className="space-y-4">
-              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Sua Programação do Dia</h4>
-              <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                {cursosSelecionados.map((s) => (
-                    <div
-                      key={s.id}
-                      onClick={() => setSelectedSession(s)}
-                      className="min-w-[280px] bg-dark-200/50 border border-white/5 rounded-2xl p-4 cursor-pointer hover:bg-dark-100/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                          <Clock className="h-5 w-5 text-teal-400" />
-                        </div>
-                        <div>
-                          <p className="text-white font-black text-sm uppercase italic truncate w-40 leading-none mb-1">{s.title || (s as any).titulo}</p>
-                          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{s.startTime} - {s.endTime}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="h-3 w-3 text-gray-600" />
-                          <span className="text-[9px] text-gray-500 font-bold uppercase">{s.room || 'Auditório'}</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-teal-500 transition-colors">
-                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-white" />
-                        </div>
-                      </div>
-                    </div>
-                ))}
-              </div>
+            {/* Quick Stats Banners */}
+            <div className="grid grid-cols-2 gap-3 px-1">
+               <div 
+                 onClick={() => setActiveTab('circuito')}
+                 className="glass-card p-5 bg-gradient-to-br from-brand-orange-coral/10 to-transparent border-brand-orange-coral/20 cursor-pointer active:scale-95 transition-all"
+               >
+                  <p className="text-foreground/40 text-[9px] font-black uppercase tracking-widest mb-1">Circuito</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-black text-white italic">{standsVisited}/{totalStands}</p>
+                    <Trophy className="h-4 w-4 text-brand-orange-coral/50" />
+                  </div>
+               </div>
+               <div 
+                 onClick={() => setActiveTab('ingresso')}
+                 className="glass-card p-5 bg-gradient-to-br from-teal-500/10 to-transparent border-teal-500/20 cursor-pointer active:scale-95 transition-all"
+               >
+                  <p className="text-foreground/40 text-[9px] font-black uppercase tracking-widest mb-1">Seu Ticket</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-black text-white italic">Ativo</p>
+                    <QrCode className="h-4 w-4 text-teal-500/50" />
+                  </div>
+               </div>
             </div>
-          )}
+          </motion.div>
+        );
+      case 'ingresso':
+        return (
+          <TicketSection 
+            myRegistration={registration} 
+            user={user} 
+            selectedProject={selectedProject} 
+            statusFinanceiro={statusFinanceiro}
+            isActuallyPaid={isActuallyPaid}
+            generateTicketPDF={generateTicketPDF}
+            setShowCheckInModal={setIsCheckInModalOpen}
+            setShowUpgradeModal={() => toast.info('Funcionalidade disponível em breve diretamente com a equipe.')}
+            onRefresh={refetchReg}
+          />
+        );
+      case 'agenda':
+        return <AgendaSection />;
+      case 'circuito':
+        return <GamificationSection setIsScanOpen={setIsScanOpen} />;
+      case 'sorteios':
+        return <RaffleSection />;
+      case 'mentorias':
+        return (
+          <MentorshipSection 
+            myMentorships={myMentorships}
+            availableSlots={[]} 
+            handleCancelMentoring={() => {}}
+            handleBookMentoring={() => {}}
+            handleJoinWaitlist={() => {}}
+            setRatingModal={setRatingModal}
+            setIsMentoriaModalOpen={setIsMentoriaModalOpen}
+          />
+        );
+      case 'dados':
+        return <ProfileForm />;
+      case 'suporte':
+        return <SupportSection />;
+      case 'documentos':
+        return <DocsSection />;
+      case 'certificados':
+        return <CertificatesSection />;
+      case 'equipe':
+        return <DashboardEquipe />;
+      default:
+        return <div className="text-white text-center py-20">Em breve</div>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0c0e12] relative overflow-hidden">
+      <PremiumBackground />
+      
+      <div className="relative z-10 pb-32">
+        <PremiumHeader 
+          userName={user?.name}
+          projectName={selectedProject?.name || 'GX 2026'}
+          roleLabel="PARTICIPANTE"
+          isPro={registration?.ticketType === 'pro' || registration?.ticketType === 'vip'}
+          notifications={notifications}
+          onLogout={handleLogout}
+          onNotificationRead={handleMarkAsRead}
+          onGuideClick={() => navigate('/guia')}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
-    )}
 
-      {/* Modern High-End Bottom Navigation */}
-      <BottomNavigation
-        variant="teal"
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        tabs={[
-          { id: 'ingresso', icon: QrCode, label: 'Ticket' },
-          { id: 'agenda', icon: Calendar, label: 'Agenda' },
-          ...(selectedProject?.settings?.enableCheckIn !== false ? [{ id: 'circuito', icon: Trophy, label: 'Circuito' }] : []),
-          { id: 'sorteios', icon: Gift, label: 'Sorteios' },
-          ...(selectedProject?.settings?.enableB2B !== false || selectedProject?.settings?.enableStartups !== false ? [{ id: 'networking', icon: Handshake, label: 'Match' }] : []),
-          ...(selectedProject?.settings?.enableMentoring !== false ? [{ id: 'mentorias', icon: Users, label: 'Mentor' }] : []),
-          { id: 'documentos', icon: FileText, label: 'Docs' },
-          { id: 'certificados', icon: Award, label: 'Certs' },
-          { id: 'suporte', icon: Headset, label: 'Suporte' },
-          ...(myBatches && myBatches.length > 0 ? [{ id: 'equipe', icon: Building2, label: 'Equipe' }] : []),
-          { id: 'dados', icon: User, label: 'Perfil' },
-        ]}
+      <BottomNavigation 
+        tabs={navTabs} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        variant="orange"
       />
 
-      {/* Modal de Avaliação */}
-      <MentorRatingModal
+      {/* Global Modals */}
+      {registration && isCheckInModalOpen && (
+        <SelfCheckInModal 
+          onClose={() => setIsCheckInModalOpen(false)}
+          onScanSuccess={handleScanSuccess}
+          registration={registration}
+        />
+      )}
+
+      <MentorRatingModal 
         isOpen={ratingModal.isOpen}
-        onClose={() => setRatingModal(p => ({ ...p, isOpen: false }))}
+        onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
         mentorName={ratingModal.mentorName}
-        sessionId={ratingModal.sessionId}
-        alreadyRated={ratingModal.alreadyRated}
-        existingAvaliacaoMentoria={ratingModal.avaliacao}
-        existingIndicacaoMentor={ratingModal.indicacao}
-        onSubmit={handleRatingSubmit}
+        sessionId={ratingModal.mentorshipId}
+        onSubmit={async (sid, val, ind) => {
+            await updateMentorship(sid, {
+                feedback: {
+                    rating: val,
+                    avaliacaoMentoria: val,
+                    indicacaoMentor: ind,
+                    comment: 'Avaliado via Dashboard',
+                    avaliadoEm: new Date().toISOString()
+                }
+            });
+            toast.success('Avaliação enviada!');
+        }}
       />
 
-      <MentoriaMultiStepModal
+      <MentoriaMultiStepModal 
         isOpen={isMentoriaModalOpen}
         onClose={() => setIsMentoriaModalOpen(false)}
       />
 
-    </motion.div>
+      <B2BFormModal 
+        isOpen={isB2BModalOpen}
+        onClose={() => setIsB2BModalOpen(false)}
+      />
+
+      <StartupFormModal 
+        isOpen={isStartupModalOpen}
+        onClose={() => setIsStartupModalOpen(false)}
+      />
+
+      {isScanOpen && (
+        <LeadScanner 
+          onClose={() => setIsScanOpen(false)}
+          onScanSuccess={(code) => {
+            console.log('Scanned Stand Code:', code);
+            toast.success('Stand validado!');
+            setIsScanOpen(false);
+          }}
+        />
+      )}
+    </div>
   );
 }
