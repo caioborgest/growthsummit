@@ -600,10 +600,10 @@ export function AdminB2B() {
                       </Badge>
                     </td>
                     <td className="p-6" data-label="Int.">
-                      {meeting.interestLevel ? (
+                      {(meeting as any).interestLevel ? (
                         <div className="flex items-center gap-1.5">
                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                           <p className="text-white font-black text-xs uppercase italic">{meeting.interestLevel}</p>
+                           <p className="text-white font-black text-xs uppercase italic">{(meeting as any).interestLevel}</p>
                         </div>
                       ) : (
                         <span className="text-gray-700">-</span>

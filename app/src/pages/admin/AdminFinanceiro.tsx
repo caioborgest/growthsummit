@@ -7,6 +7,7 @@ import {
   BarChart3,
   PieChart
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';

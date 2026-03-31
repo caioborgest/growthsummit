@@ -111,9 +111,13 @@ export function GamificationSection({ registrationId, setIsScanOpen }: Gamificat
         </div>
       </motion.div>
 
-      <div className="flex p-1.5 rounded-2xl w-fit" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
-        <div
-          className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all"
+      <div id="stands-list" className="flex p-1.5 rounded-2xl w-fit" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+        <button
+          onClick={() => {
+            const list = document.getElementById('stands-grid');
+            if (list) list.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
           style={{
             background: 'linear-gradient(135deg,#ff7043,#ff4035)',
             color: 'white',
@@ -121,11 +125,11 @@ export function GamificationSection({ registrationId, setIsScanOpen }: Gamificat
           }}
         >
           <LayoutGrid className="h-3.5 w-3.5" />Roteiro de Visitação
-        </div>
+        </button>
       </div>
 
       {/* Content */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div id="stands-grid" className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 scroll-mt-24">
         {(stands || []).map((stand: any, idx: number) => {
           const isVisited = visitedStandIds.has(stand.id);
           return (

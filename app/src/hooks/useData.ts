@@ -23,30 +23,34 @@ import { STATUS_MAPPING } from '@/lib/constants';
  * Returns true if the projectId belongs to a Growth Experience edition.
  * Checks both slug patterns (ge-*) AND matches the selectedProject slug.
  */
-const isGEProject = (projectId: string | undefined): boolean => {
-  if (!projectId) return false;
-  // Slug-based detection (works when slug is stored as projectId)
-  if (projectId.startsWith('ge-') || projectId.startsWith('growth-')) return true;
+const isGEProject = (projectId: string | undefined, slug?: string): boolean => {
+  if (!projectId && !slug) return false;
+  
+  // 1. Slug-based detection (direct slug or projectId acting as slug)
+  const identifier = (slug || projectId || '').toLowerCase();
+  if (identifier.startsWith('ge-') || 
+      identifier.startsWith('growth-') || 
+      identifier.includes('triunfo') || 
+      identifier.includes('petrolina')) return true;
 
-  // Persistence-based detection (works for UUIDs)
+  // 2. Persistence-based detection (works for UUIDs)
   try {
     const selectedProjectStr = localStorage.getItem('selectedProject');
     if (selectedProjectStr) {
       const p = JSON.parse(selectedProjectStr);
-      const slug = (p.slug || '').toLowerCase();
+      const storageSlug = (p.slug || '').toLowerCase();
       if ((p.id === projectId || p.slug === projectId) &&
-        (slug.startsWith('ge-') || slug.startsWith('growth-') || slug.includes('triunfo') || slug.includes('petrolina'))) return true;
+        (storageSlug.startsWith('ge-') || storageSlug.startsWith('growth-') || storageSlug.includes('triunfo') || storageSlug.includes('petrolina'))) return true;
     }
   } catch {
     // ignore
   }
   
-  // Specific keyword detection
-  const lowId = projectId.toLowerCase();
-  return lowId.startsWith('ge-') || lowId.startsWith('growth-') || lowId.includes('triunfo') || lowId.includes('petrolina');
+  return false;
 };
 
-const getTableName = (projectId: string | undefined, entity: string) => {
+const getTableName = (projectId: string | undefined, entity: string, slug?: string) => {
+  const isGE = isGEProject(projectId, slug);
   // Global table mappings (not project-scoped)
   if (entity === 'cupons') return 'cupons_parceria_social';
   if (entity === 'projects') return 'projects';
@@ -60,7 +64,7 @@ const getTableName = (projectId: string | undefined, entity: string) => {
   if (entity === 'registration_batches') return 'lotes_inscricao_empresa';
 
   // Specific mappings for Growth Experience projects (ge-*)
-  if (isGEProject(projectId)) {
+  if (isGE) {
     switch (entity) {
       case 'registrations': return 'inscricoes_growth_experience';
       case 'startups': return 'startups_arena_pitch';
@@ -493,7 +497,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { projectId } = useProject();
+  const { projectId, selectedProject } = useProject();
 
   const isFetchingRef = useRef(false);
   const consecutiveFetchCountRef = useRef(0);
@@ -562,7 +566,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     isFetchingRef.current = true;
 
     try {
-      const tableName = getTableName(projectId || undefined, entityName);
+      const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
       const fields = getSelectFields(entityName, projectId || undefined);
 
       let query = supabase.from(tableName as never).select(fields) as any;

@@ -33,7 +33,8 @@ interface AgendaSectionProps {
     }>;
     setIsSelfCheckInOpen: (open: boolean) => void;
     navigate: (path: string) => void;
-    activityCheckIns?: Array<{ session_id: string; registration_id: string }>;
+    selectedProject?: any;
+    activityCheckIns?: Array<{ sessionId: string; registrationId: string; checkInAt?: string }>;
     onSessionClick?: (session: AgendaSession) => void;
     allSessions?: AgendaSession[];
 }
@@ -48,8 +49,10 @@ export function AgendaSection({
     navigate,
     activityCheckIns = [],
     onSessionClick,
-    allSessions = []
+    allSessions = [],
+    selectedProject
 }: AgendaSectionProps) {
+    const isTriunfo = selectedProject?.slug?.includes('triunfo');
     const mappedMentorships = myMentorships
         .filter(m => m.status === 'scheduled' || m.status === 'completed')
         .map(m => {
@@ -82,7 +85,7 @@ export function AgendaSection({
     .sort((a, b) => (a.startTime || a.horario_inicio || '').localeCompare(b.startTime || b.horario_inicio || ''));
 
     const SessionCard = ({ item, color = '#14b8a6', delay = 0 }: { item: AgendaSession, color?: string, delay?: number }) => {
-        const isCheckedIn = activityCheckIns.some(c => c.session_id === item.id && c.registration_id === myRegistration?.id);
+        const isCheckedIn = (isTriunfo && myRegistration?.checkedIn) || activityCheckIns.some(c => c.sessionId === item.id && c.registrationId === myRegistration?.id);
         return (
             <motion.div
                 initial={{ opacity: 0, y: 12 }}

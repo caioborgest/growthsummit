@@ -5,7 +5,9 @@ import {
   Trophy, 
   Sparkles, 
   User, 
-  LayoutGrid
+  LayoutGrid,
+  FileText,
+  Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -130,6 +132,7 @@ export function DashboardParticipante() {
       { id: 'inicio', icon: LayoutGrid, label: 'Início' },
       { id: 'ingresso', icon: QrCode, label: 'Ticket' },
       { id: 'agenda', icon: Calendar, label: 'Agenda' },
+      { id: 'sorteios', icon: Sparkles, label: 'Sorteios' }
     ];
 
     // Show Circuito if enabled in project settings
@@ -137,15 +140,12 @@ export function DashboardParticipante() {
       tabs.push({ id: 'circuito', icon: Trophy, label: 'Circuito' });
     }
 
-    // Add Raffle if there are active raffles
-    if (raffles && raffles.length > 0) {
-      tabs.push({ id: 'sorteios', icon: Sparkles, label: 'Sorteios' });
-    }
-
     tabs.push({ id: 'dados', icon: User, label: 'Perfil' });
+    tabs.push({ id: 'documentos', icon: FileText, label: 'Docs' });
+    tabs.push({ id: 'certificados', icon: Award, label: 'Certs' });
 
     return tabs;
-  }, [selectedProject, raffles]);
+  }, [selectedProject]);
 
   // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
@@ -156,7 +156,19 @@ export function DashboardParticipante() {
 
     if (!registration) throw new Error('Inscrição não encontrada');
 
-    // Call RPC or direct insert
+    // Special logic for Triunfo project: entry validates all
+    if (selectedProject?.slug?.includes('triunfo') && (qrData.type === 'registration' || qrData.type === 'entry')) {
+        const { error: entryErr } = await supabase.from('inscricoes_growth_experience').update({
+            checked_in: true,
+            check_in_at: new Date().toISOString()
+        }).eq('id', registration.id);
+
+        if (entryErr) throw entryErr;
+        toast.success('Check-in Triunfo realizado! Acesso liberado para toda programação.');
+        return;
+    }
+
+    // Call RPC or direct insert for activities
     const { error } = await supabase.from('activity_attendances').insert({
         project_id: selectedProject?.id,
         session_id: qrData.id,
@@ -258,6 +270,9 @@ export function DashboardParticipante() {
             cursosSelecionados={registration?.cursosSelecionados || []}
             setIsSelfCheckInOpen={setIsCheckInModalOpen}
             navigate={navigate}
+            selectedProject={selectedProject}
+            allSessions={allSessions}
+            activityCheckIns={activityCheckIns}
           />
         );
       case 'circuito':
@@ -308,6 +323,7 @@ export function DashboardParticipante() {
       <div className="relative z-10 pb-32">
         <PremiumHeader 
           userName={user?.name || ''}
+          userAvatar={registration?.photo || user?.avatar}
           projectName={selectedProject?.name || 'GX 2026'}
           roleLabel="PARTICIPANTE"
           isPro={Boolean(registration?.ticketType === 'pro' || registration?.ticketType === 'vip' || registration?.palestrasNoturnas)}

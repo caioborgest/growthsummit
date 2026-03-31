@@ -28,6 +28,9 @@ export interface MyRegistration {
     projectId?: string;
     createdAt?: string;
     isPaid?: boolean;
+    photo?: string;
+    checkedIn?: boolean;
+    checkInTime?: string;
 }
 
 const GE_TABLES: Record<string, string> = {
@@ -75,6 +78,9 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         projectId: (row['project_id'] as string) || undefined,
         createdAt: (row['created_at'] as string) || undefined,
         isPaid: isActuallyPaid,
+        photo: (row['foto_url'] as string) || (row['photo_url'] as string) || undefined,
+        checkedIn: Boolean(row['checked_in']),
+        checkInTime: (row['check_in_at'] as string) || undefined,
     };
 }
 
