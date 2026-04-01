@@ -119,18 +119,19 @@ export async function generateCertificatePDF(data: CertificateTemplateData, outp
     // Background Image ou Pattern
     if (data.templateOverrides?.customBackgroundBase64) {
         try {
-            doc.addImage(data.templateOverrides.customBackgroundBase64, 'JPEG', 0, 0, W, H);
+            // Background is usually opaque, but we follow the PNG rule for consistency if it's high quality
+            doc.addImage(data.templateOverrides.customBackgroundBase64, 'PNG', 0, 0, W, H, undefined, 'FAST');
         } catch (e) { console.error('BG Image error', e); }
     } else if (data.templateOverrides?.showBackgroundPattern !== false) {
         // Pattern Geométrico Moderno (Grid de linhas finas + pontos)
-        doc.setDrawColor(25, 25, 35);
-        doc.setLineWidth(0.1);
-        for(let i=0; i<W; i+=20) doc.line(i, 0, i, H);
-        for(let i=0; i<H; i+=20) doc.line(0, i, W, i);
+        doc.setDrawColor(20, 20, 30);
+        doc.setLineWidth(0.05);
+        for(let i=0; i<W; i+=15) doc.line(i, 0, i, H);
+        for(let i=0; i<H; i+=15) doc.line(0, i, W, i);
         
-        doc.setFillColor(40, 40, 60);
-        for(let i=10; i<W; i+=20) {
-            for(let j=10; j<H; j+=20) doc.circle(i, j, 0.2, 'F');
+        doc.setFillColor(30, 30, 45);
+        for(let i=7.5; i<W; i+=15) {
+            for(let j=7.5; j<H; j+=15) doc.circle(i, j, 0.15, 'F');
         }
     }
 
@@ -176,11 +177,14 @@ export async function generateCertificatePDF(data: CertificateTemplateData, outp
 
     // Marcas Parceiras (Ex: SEBRAE) no canto superior direito
     if (data.partnerLogosBase64 && data.partnerLogosBase64.length > 0) {
-        let currentX = W - bandWidth - 15;
-        data.partnerLogosBase64.reverse().forEach((logo) => {
-            currentX -= 30; // largura aproximada p/ cada logo parceiro
+        let currentX = W - bandWidth - 10;
+        const spacing = 28;
+        // Reverse to match the UI order (right to left)
+        [...data.partnerLogosBase64].reverse().forEach((logo) => {
+            currentX -= spacing;
             try {
-                doc.addImage(logo, 'PNG', currentX, logoY - 2, 25, 12);
+                // Partner logos MUST be PNG to preserve transparency
+                doc.addImage(logo, 'PNG', currentX, logoY - 2, 22, 12, undefined, 'FAST');
             } catch(e) { console.error('Partner logo error', e); }
         });
     }
@@ -200,15 +204,15 @@ export async function generateCertificatePDF(data: CertificateTemplateData, outp
     doc.text('Certificamos para os devidos fins que', cx, 60, { align: 'center' });
 
     // NOME DO PARTICIPANTE (ESTILO PREMIUM)
-    const nameY = 85;
+    const nameY = 82;
     doc.setTextColor(...C.white);
-    const nameSize = data.userName.length > 30 ? 24 : 32;
+    const nameSize = data.userName.length > 30 ? 22 : 30;
     doc.setFontSize(nameSize);
     doc.setFont('helvetica', 'bold');
     doc.text(data.userName.toUpperCase(), cx, nameY, { align: 'center' });
 
     // Linha de detalhe sob o nome (gradiente)
-    gradientLine(doc, cx - 80, nameY + 5, 160, primaryRGB, secondaryRGB);
+    gradientLine(doc, cx - 80, nameY + 6, 160, primaryRGB, secondaryRGB);
 
     // DESCRIÇÃO DA ATIVIDADE
     const descY = nameY + 22;
@@ -252,7 +256,8 @@ export async function generateCertificatePDF(data: CertificateTemplateData, outp
     doc.line(sigX, footerTopY + 25, sigX + sigW, footerTopY + 25);
 
     if (data.signatureBase64) {
-        doc.addImage(data.signatureBase64, 'PNG', sigX + 10, footerTopY, 55, 22);
+        // Signature MUST be PNG for transparency
+        doc.addImage(data.signatureBase64, 'PNG', sigX + 10, footerTopY - 2, 55, 24, undefined, 'FAST');
     } else {
         doc.setTextColor(...C.dim);
         doc.setFontSize(8);
@@ -325,17 +330,21 @@ function _renderTextLogo(doc: any, x: number, y: number) {
 
 export async function imageUrlToBase64(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
+        if (!url) return reject(new Error('Invalid URL'));
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = img.width; canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return reject(new Error('Canvas Error'));
+            canvas.width = img.width; 
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d', { alpha: true });
+            if (!ctx) return reject(new Error('Canvas Context Error'));
+            // Ensure canvas is clear/transparent
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
             resolve(canvas.toDataURL('image/png'));
         };
-        img.onerror = () => reject(new Error('Image Load Error'));
+        img.onerror = (e) => reject(new Error('Image Load Error: ' + e));
         img.src = url;
     });
 }

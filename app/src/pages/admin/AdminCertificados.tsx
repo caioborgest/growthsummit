@@ -15,7 +15,7 @@ import {
     Loader2,
     QrCode,
     Trash2,
-    Trash
+    Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,6 +95,7 @@ export function AdminCertificados() {
     const logoInputRef = useRef<HTMLInputElement>(null);
     const signatureInputRef = useRef<HTMLInputElement>(null);
     const partnerLogoInputRef = useRef<HTMLInputElement>(null);
+    const backgroundInputRef = useRef<HTMLInputElement>(null);
 
     // ── Carregar Dados ──────────────────────────────────────────────────────
     const fetchData = useCallback(async () => {
@@ -138,7 +139,8 @@ export function AdminCertificados() {
                     ...prev, 
                     ...savedTemplate,
                     partner_logos: savedTemplate.partner_logos || [],
-                    total_hours: savedTemplate.total_hours || 12
+                    total_hours: savedTemplate.total_hours || 12,
+                    background_url: savedTemplate.background_url || ''
                 };
             });
         }
@@ -257,7 +259,7 @@ export function AdminCertificados() {
         }
     };
 
-    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: 'logo_url' | 'signature_url' | 'partner_logos') => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: 'logo_url' | 'signature_url' | 'partner_logos' | 'background_url') => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -299,7 +301,7 @@ export function AdminCertificados() {
         try {
             toast.loading('Gerando preview...', { id: 'preview' });
 
-            await generateCertificatePDF({
+            const url = await generateCertificatePDF({
                 userName: 'Participante de Exemplo',
                 eventName: template.subtitle || selectedProject?.name || 'Growth Experience',
                 eventCity: selectedProject?.city || 'Brasil',
@@ -307,7 +309,7 @@ export function AdminCertificados() {
                 date: new Date().toLocaleDateString('pt-BR'),
                 certificateCode: 'PREVIEW-GX',
                 type: 'workshop',
-                totalHours: 8,
+                totalHours: template.total_hours || 8,
                 logoBase64: template.logo_url,
                 signatureBase64: template.signature_url,
                 partnerLogosBase64: template.partner_logos,
@@ -319,9 +321,12 @@ export function AdminCertificados() {
                     primaryColor: template.primary_color,
                     secondaryColor: template.secondary_color,
                     accentColor: template.accent_color,
-                    showBackgroundPattern: template.show_pattern
+                    showBackgroundPattern: template.show_pattern,
+                    customBackgroundBase64: template.background_url
                 }
-            });
+            }, 'bloburl');
+
+            if (url) window.open(url, '_blank');
 
             toast.success('Preview gerado!', { id: 'preview' });
         } catch (err) {
@@ -585,6 +590,15 @@ export function AdminCertificados() {
                                         <input type="file" ref={logoInputRef} onChange={(e) => handleImageUpload(e, 'logo_url')} accept="image/png, image/jpeg" className="hidden" />
                                         <input type="file" ref={signatureInputRef} onChange={(e) => handleImageUpload(e, 'signature_url')} accept="image/png, image/jpeg" className="hidden" />
                                         <input type="file" ref={partnerLogoInputRef} onChange={(e) => handleImageUpload(e, 'partner_logos')} accept="image/png, image/jpeg" className="hidden" />
+                                        <input type="file" ref={backgroundInputRef} onChange={(e) => handleImageUpload(e, 'background_url')} accept="image/png, image/jpeg, image/webp" className="hidden" />
+
+                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer" onClick={() => backgroundInputRef.current?.click()}>
+                                            <div className="flex items-center gap-3">
+                                                <ImageIcon className="h-5 w-5 text-gray-500" />
+                                                <span className="text-sm font-bold text-gray-400">Imagem de Fundo (A4 Landscape)</span>
+                                            </div>
+                                            {template.background_url && <Badge className="bg-teal-500/20 text-teal-400 border-none">Personalizado</Badge>}
+                                        </div>
 
                                         <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer" onClick={() => logoInputRef.current?.click()}>
                                             <div className="flex items-center gap-3">
@@ -708,16 +722,6 @@ export function AdminCertificados() {
                 />
             )}
         </div>
-    );
-}
-
-function AlertCircle({ className }: { className?: string }) {
-    return (
-        <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" x2="12" y1="8" y2="12" />
-            <line x1="12" x2="12.01" y1="16" y2="16" />
-        </svg>
     );
 }
 
