@@ -184,10 +184,10 @@ function DetalhesModal({
 
                   <Button
                     onClick={() => onUpdateStatus(reg.id, 'paid')}
-                    disabled={reg.status === 'pago' || reg.status === 'paid'}
+                    disabled={['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.status_pagamento || reg.status || '').toLowerCase())}
                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
                   >
-                    CONFIRMAR PAGO
+                    {['pago', 'paid', 'ativo', 'active'].includes((reg.status_pagamento || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
                   </Button>
 
                   <Button
@@ -396,7 +396,10 @@ export default function AdminInscricoes() {
       (reg.ticketNumber?.toLowerCase() || '').includes(q) ||
       (reg.name?.toLowerCase() || '').includes(q) ||
       (reg.email?.toLowerCase() || '').includes(q);
-    const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'pago' && ['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.status_pagamento || reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pendente' && ['pendente', 'pending', 'waiting'].includes((reg.status_pagamento || reg.status || '').toLowerCase())) ||
+                         reg.status === statusFilter;
     const matchesNight =
       nightFilter === 'all' ||
       (nightFilter === 'sim' && reg.palestrasNoturnas) ||

@@ -103,16 +103,18 @@ const AdminSecurity = lazyWithRetry(() => import('./pages/admin/AdminSecurity'),
 const AdminCupons = lazyWithRetry(() => import('./pages/admin/AdminCupons'));
 const AdminUsuarios = lazyWithRetry(() => import('./pages/admin/AdminUsuarios'));
 const AdminGrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/admin/AdminGrowthExperienceTriunfo'), 'AdminGrowthExperienceTriunfo');
-const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'));
+const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertificados'), 'AdminCertificados');
 const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
 const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
 const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
+const AdminPopups = lazyWithRetry(() => import('./pages/admin/AdminPopups'), 'AdminPopups');
 const GuiaInterno = lazyWithRetry(() => import('./components/app/GuiaInterno'), 'GuiaInterno');
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
+const PopupManager = lazyWithRetry(() => import('./components/marketing/PopupManager'), 'PopupManager');
 
 // ── Legal Pages (Shared Component Stub)
 function LegalPage({ title }: { title: string }) {
@@ -392,6 +394,7 @@ function AppRoutes() {
           <Route path="sorteio" element={<AdminSorteio />} />
           <Route path="suporte" element={<AdminSupport />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
+          <Route path="popups" element={<AdminPopups />} />
           <Route path="guia" element={<GuiaInterno />} />
         </Route>
 
@@ -442,6 +445,7 @@ function App() {
         <AppRoutes />
         <Suspense fallback={null}>
           <PWAInstallPrompt />
+          <PopupManager />
         </Suspense>
       </BrowserRouter>
     </ErrorBoundary>

@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, ArrowRight, Settings, Calendar, Users, Ticket, PlayCircle, Layout } from 'lucide-react';
+import { CheckCircle2, Circle, ArrowRight, Settings as SettingsIcon, Calendar, Users, Ticket, PlayCircle, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
@@ -32,8 +32,8 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
       id: 'basic-info',
       title: 'Informações Básicas',
       description: 'Nome, local, datas e cores do evento.',
-      icon: Settings,
-      path: '/admin/projetos',
+      icon: SettingsIcon,
+      path: `/admin/projetos?edit=${project.id}`,
       isCompleted: (p) => !!(p.name && p.location && p.startDate),
     },
     {
@@ -89,7 +89,7 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-xl font-black text-white flex items-center gap-2">
-              <Settings className="w-5 h-5 text-[#21808D]" />
+              <SettingsIcon className="w-5 h-5 text-[#21808D]" />
               Fluxo de Configuração do Evento
             </CardTitle>
             <p className="text-[#94A3B8] text-xs font-medium mt-1">

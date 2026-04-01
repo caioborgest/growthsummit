@@ -109,7 +109,8 @@ const navigationGroups: SidebarGroup[] = [
     items: [
       { id: 'comunicacao', name: 'E-mail & Push', icon: Mail, path: '/admin/comunicacao' },
       { id: 'newsletter', name: 'Leads Newsletter', icon: Users, path: '/admin/newsletter' },
-      { id: 'suporte', name: 'Atendimento Suporte', icon: Headset, path: '/admin/suporte', badge: 'NEW' },
+      { id: 'popups', name: 'Gestão de Pop-ups', icon: MessageCircle, path: '/admin/popups', badge: 'NEW' },
+      { id: 'suporte', name: 'Atendimento Suporte', icon: Headset, path: '/admin/suporte' },
     ]
   },
   {

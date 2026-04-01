@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   Search,
   Loader2,
-  Settings,
+  Settings as SettingsIcon,
   ChevronDown,
   ChevronUp,
   Clock
@@ -252,7 +252,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="flex items-center gap-2 text-brand-orange-coral text-xs font-black uppercase tracking-widest hover:text-brand-orange-gradient transition-colors"
               >
-                <Settings className={`h-4 w-4 ${showAdvanced ? 'rotate-90' : ''} transition-transform`} />
+                <SettingsIcon className="h-4 w-4 mr-2" />
                 Opções de Conteúdo Editável
                 {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
