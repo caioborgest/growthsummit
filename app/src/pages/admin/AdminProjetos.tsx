@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Settings, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
@@ -899,7 +899,7 @@ export default function AdminProjetos() {
                           <span>{project.city}, {project.state}</span>
                         </div>
                         <div className="flex items-center gap-2 text-[#94A3B8]">
-                          <Settings className="w-4 h-4" />
+                          <SettingsIcon className="w-4 h-4" />
                           <span>
                             {[
                               project.settings?.enableMentoring && 'Mentorias',

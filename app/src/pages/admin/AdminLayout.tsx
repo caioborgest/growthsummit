@@ -25,7 +25,7 @@ import {
   Headset,
   Share2,
   BarChart3,
-  Settings,
+  Settings as SettingsIcon,
   Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -368,7 +368,7 @@ export function AdminLayout() {
                 onClick={() => setIsProfileOpen(true)}
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 rounded-xl flex items-center justify-center p-0"
               >
-                <Settings className="h-4 w-4" />
+                <SettingsIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>

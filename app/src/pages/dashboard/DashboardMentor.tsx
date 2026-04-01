@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Calendar, CheckCircle, Clock, XCircle, MessageSquare,
   Phone, Mail, Plus,
-  ShieldCheck, Building2, BarChart, Settings,
+  ShieldCheck, Building2, BarChart,
   User, Sun, Moon, Target, Home
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
