@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface QRScannerProps {
-    onSuccess: (data: ReturnType<typeof parseQRString>) => void;
+    onSuccess: (data: ReturnType<typeof parseQRString>, rawText?: string) => void;
     onClose: () => void;
     title?: string;
     isInline?: boolean;
@@ -35,12 +35,12 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
-                    if (parsed) {
+                    if (parsed || decodedText) {
                         try {
                             await html5QrCode.stop();
                         } catch (e) { /* silent */ }
                         setIsScanning(false);
-                        onSuccess(parsed);
+                        onSuccess(parsed, decodedText);
                     } else {
                         toast.error("QR Code inválido para este evento.");
                     }
@@ -179,7 +179,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                 </div>
                             )}
 
-                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'flex-1 min-h-[500px]' : 'aspect-square'}`}>
+                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'w-full aspect-square max-h-[60vh] mx-auto' : 'aspect-square'}`}>
                                 <div id={readerId.current} className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full"></div>
 
                                 {isScanning && (

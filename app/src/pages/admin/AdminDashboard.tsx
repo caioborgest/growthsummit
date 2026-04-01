@@ -447,10 +447,10 @@ export function AdminDashboard() {
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Startups', val: startups.length, icon: Rocket, color: 'text-brand-orange-coral', bg: 'orange-500/10', path: '/admin/sorteio' },
+            { label: 'Startups', val: startups.length, icon: Rocket, color: 'text-brand-orange-coral', bg: 'orange-500/10', path: '/admin/startups' },
             { label: 'Sponsors', val: _sponsors.length, icon: Gem, color: 'text-yellow-400', bg: 'yellow-500/10', path: '/admin/patrocinadores' },
             { label: 'Check-ins Hoje', val: checkIns.length, icon: QrCode, color: 'text-teal-400', bg: 'teal-500/10', path: '/admin/check-in' },
-            { label: 'Pendências', val: (tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length), icon: AlertCircle, color: 'text-red-400', bg: 'red-500/10' },
+            { label: 'Pendências', val: (tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length), icon: AlertCircle, color: 'text-red-400', bg: 'red-500/10', path: '/admin/suporte' },
           ].map((op, i) => (
             <div 
               key={i} 

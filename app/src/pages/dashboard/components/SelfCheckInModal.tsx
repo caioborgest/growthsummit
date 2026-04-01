@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { useState } from 'react';
+import { QRScanner } from '@/components/app/QRScanner';
 import { XCircle, Camera, CheckCircle2, Loader2, Sparkles, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -15,121 +15,15 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration, initial
     const [step, setStep] = useState(initialStep); // 1: Info, 2: Scanner, 3: Success, 4: Manual
     const [loading, setLoading] = useState(false);
     const [manualCode, setManualCode] = useState('');
-    const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-    const readerId = useRef(`reader-${Math.random().toString(36).substring(2, 11)}`);
+    const [manualCode, setManualCode] = useState('');
 
-    useEffect(() => {
-        let isChildMounted = true;
-        let html5QrCode: Html5Qrcode | null = null;
-
-        const startScanner = async () => {
-            if (step !== 2 || !isChildMounted) return;
-
-            // Wait a bit to ensure the DOM element is rendered
-            const element = document.getElementById(readerId.current);
-            if (!element) {
-                console.warn("Scanner element not found yet, retrying...");
-                setTimeout(startScanner, 100);
-                return;
-            }
-
-            try {
-                html5QrCode = new Html5Qrcode(readerId.current);
-                html5QrCodeRef.current = html5QrCode;
-
-                // Try to start with environment camera (rear)
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: { width: 320, height: 320 }
-                    },
-                    async (decodedText) => {
-                        if (!isChildMounted) return;
-                        setLoading(true);
-                        try {
-                            if (html5QrCode?.isScanning) {
-                                await html5QrCode.stop();
-                            }
-                            await onScanSuccess(decodedText);
-                            if (isChildMounted) setStep(3);
-                        } catch (error: unknown) {
-                            const errorMessage = error instanceof Error ? error.message : 'Erro ao validar QR Code';
-                            toast.error(errorMessage);
-                            if (isChildMounted) setStep(1);
-                        } finally {
-                            if (isChildMounted) setLoading(false);
-                        }
-                    },
-                    () => { } // silent scan failures
-                );
-            } catch (err: unknown) {
-                console.warn("Falha ao iniciar câmera traseira, tentando qualquer câmera disponível:", err);
-
-                // Fallback: Try any available camera if environment fails
-                try {
-                    if (!isChildMounted || !html5QrCode) return;
-                    await html5QrCode.start(
-                        { facingMode: "user" }, // Try front/any if back fails
-                        {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 }
-                        },
-                        async (decodedText) => {
-                            if (!isChildMounted) return;
-                            setLoading(true);
-                            try {
-                                if (html5QrCode?.isScanning) {
-                                    await html5QrCode.stop();
-                                }
-                                await onScanSuccess(decodedText);
-                                if (isChildMounted) setStep(3);
-                            } catch (error: unknown) {
-                                const errorMessage = error instanceof Error ? error.message : 'Erro ao validar QR Code';
-                                toast.error(errorMessage);
-                                if (isChildMounted) setStep(1);
-                            } finally {
-                                if (isChildMounted) setLoading(false);
-                            }
-                        },
-                        () => { }
-                    );
-                } catch (fallbackErr) {
-                    if (isChildMounted) {
-                        console.error("Erro fatal ao iniciar câmera:", fallbackErr);
-                        toast.error("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
-                        setStep(1);
-                    }
-                }
-            }
-        };
-
-        if (step === 2) {
-            startScanner();
-        }
-
-        return () => {
-            isChildMounted = false;
-            if (html5QrCode?.isScanning) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode?.clear();
-                }).catch(() => { /* Ignore stop failures on unmount */ });
-            } else {
-                try {
-                    html5QrCode?.clear();
-                } catch {
-                    // Ignore clear if not initialized
-                }
-            }
-        };
-    }, [step, onScanSuccess]);
 
     return (
         <div className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
             <div className="w-full max-w-md bg-dark-200 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl relative">
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 z-10 text-gray-400 hover:text-white transition-colors bg-black/20 p-2 rounded-full backdrop-blur-sm"
+                    className="absolute top-6 right-6 z-[310] text-gray-400 hover:text-white transition-colors bg-black/20 p-2 rounded-full backdrop-blur-sm"
                 >
                     <XCircle className="h-7 w-7" />
                 </button>
@@ -183,46 +77,25 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration, initial
                 )}
 
                 {step === 2 && (
-                    <div className="p-8 space-y-6">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Confirmar Presença</h2>
-                            <p className="text-gray-400 text-sm">Aponte para o QR Code na sala, stand ou entrada</p>
-                        </div>
-
-                        <div className="relative rounded-[2rem] overflow-hidden border-2 border-teal-500/50 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
-                            <div id={readerId.current} className="w-full h-80 bg-black"></div>
-
-                            {/* Scanning Line Animation */}
-                            {!loading && (
-                                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                                    <div className="w-full h-[2px] bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,1)] absolute top-0 animate-scan-move"></div>
-                                </div>
-                            )}
-
-                            {loading && (
-                                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-                                    <Loader2 className="h-12 w-12 text-teal-400 animate-spin" />
-                                    <p className="text-white font-black tracking-[0.2em] uppercase text-xs">Validando...</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <Button
-                                variant="ghost"
-                                onClick={() => setStep(1)}
-                                className="text-gray-500 hover:text-white font-bold h-14 rounded-2xl"
-                            >
-                                Voltar
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                onClick={() => setStep(4)}
-                                className="text-teal-400 hover:text-teal-300 font-bold h-14 rounded-2xl bg-white/5"
-                            >
-                                Digitar código
-                            </Button>
-                        </div>
+                    <div className="p-0 flex flex-col h-[500px]">
+                        <QRScanner 
+                            isInline={true}
+                            onClose={() => setStep(1)}
+                            onSuccess={async (_parsed, raw) => {
+                                if (!raw) return;
+                                setLoading(true);
+                                try {
+                                    await onScanSuccess(raw);
+                                    setStep(3);
+                                } catch (error: any) {
+                                    toast.error(error.message || 'Erro ao validar QR Code');
+                                    setStep(1);
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            title="Validar Presença"
+                        />
                     </div>
                 )}
 
