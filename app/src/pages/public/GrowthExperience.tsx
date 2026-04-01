@@ -672,8 +672,6 @@ export function GrowthExperience() {
         </div>
       </section>
 
-      <NewsletterSection />
-
       <WhatsAppButton />
 
       {/* Event Selection Modal */}

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase';
 import { logger } from './logger';
 
 export interface NewsletterLead {
   id?: string;
-  name: string;
+  nome: string;
   email: string;
-  interests?: string[];
+  interesses?: string[];
   engagement_score?: number;
   source?: string;
   project_id?: string;
@@ -19,26 +20,26 @@ class NewsletterService {
   /**
    * Inscreve um novo lead na newsletter com suporte a tags/interesses
    */
-  async subscribe(lead: { name: string; email: string; interests?: string[]; source?: string; project_id?: string }) {
+  async subscribe(lead: { nome: string; email: string; interesses?: string[]; source?: string; project_id?: string }) {
     try {
       // 1. Verificar se já existe
-      const { data: existing } = await supabase
+      const { data: existing } = await (supabase as any)
         .from(this.TABLE)
         .select('id, unsubscribed_at')
         .eq('email', lead.email.toLowerCase())
-        .maybeSingle();
+        .maybeSingle() as any;
 
       if (existing) {
         if (existing.unsubscribed_at) {
           // Re-inscrever se tinha cancelado
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from(this.TABLE)
             .update({
-              name: lead.name,
-              interests: lead.interests,
-              unsubscribed_at: null,
-              source: lead.source || 're-subscription'
-            })
+            nome: lead.nome,
+            interesses: lead.interesses,
+            unsubscribed_at: null,
+            source: lead.source || 're-subscription'
+          })
             .eq('id', existing.id);
           
           if (error) throw error;
@@ -48,12 +49,12 @@ class NewsletterService {
       }
 
       // 2. Criar novo registro
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(this.TABLE)
         .insert({
-          name: lead.name,
+          nome: lead.nome,
           email: lead.email.toLowerCase(),
-          interests: lead.interests || [],
+          interesses: lead.interesses || [],
           source: lead.source || 'website',
           project_id: lead.project_id,
           engagement_score: 0
@@ -73,7 +74,7 @@ class NewsletterService {
    */
   async unsubscribe(email: string) {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(this.TABLE)
         .update({ unsubscribed_at: new Date().toISOString() })
         .eq('email', email.toLowerCase());
@@ -97,20 +98,20 @@ class NewsletterService {
         .order('created_at', { ascending: false });
 
       if (filters?.project_id) {
-        query = query.eq('project_id', filters.project_id);
+        query = (query as any).eq('project_id', filters.project_id);
       }
 
       if (filters?.tag) {
-        query = query.contains('interests', [filters.tag]);
+        query = query.contains('interesses', [filters.tag]);
       }
 
       if (filters?.minScore !== undefined) {
         query = query.gte('engagement_score', filters.minScore);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query as any;
       if (error) throw error;
-      return data as NewsletterLead[];
+      return (data || []) as NewsletterLead[];
     } catch (error) {
       logger.error('Newsletter getLeads error:', error);
       throw error;
@@ -122,15 +123,15 @@ class NewsletterService {
    */
   async trackEngagement(email: string, points: number = 1) {
     try {
-      const { data: lead } = await supabase
+      const { data: lead } = await (supabase as any)
         .from(this.TABLE)
         .select('engagement_score')
         .eq('email', email.toLowerCase())
-        .maybeSingle();
+        .maybeSingle() as any;
 
       if (lead) {
         const newScore = (lead.engagement_score || 0) + points;
-        await supabase
+        await (supabase as any)
           .from(this.TABLE)
           .update({ engagement_score: newScore })
           .eq('email', email.toLowerCase());
@@ -149,9 +150,9 @@ class NewsletterService {
 
     const headers = ['Nome', 'Email', 'Interesses', 'Score', 'Data Inscrição', 'Fonte'];
     const rows = leads.map(l => [
-      l.name,
+      l.nome,
       l.email,
-      (l.interests || []).join(', '),
+      (l.interesses || []).join(', '),
       l.engagement_score,
       new Date(l.created_at!).toLocaleDateString(),
       l.source

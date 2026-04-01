@@ -8,6 +8,7 @@ import { MobileQuickActions } from './MobileQuickActions';
 import { colors } from '@/styles/designSystem';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { NewsletterSection } from '../app/NewsletterSection';
 import { useState, useEffect } from 'react';
 
 export function Layout() {
@@ -15,6 +16,7 @@ export function Layout() {
   const online = useNetworkStatus();
   const [showOfflineBanner, setShowOfflineBanner] = useState(true);
   const [waitingSW, setWaitingSW] = useState<ServiceWorker | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   const searchParams = new URLSearchParams(location.search);
@@ -25,6 +27,15 @@ export function Layout() {
                         location.pathname.includes('petrolina') ||
                         location.pathname.includes('sobre') ||
                         isEmbed;
+
+  // Pages where we want the NewsletterSection (Global Public Pages)
+  const showNewsletter = !isEmbed && 
+                        !location.pathname.startsWith('/admin') &&
+                        !location.pathname.startsWith('/minha-area') &&
+                        !location.pathname.startsWith('/inscricoes') &&
+                        !location.pathname.startsWith('/login') &&
+                        // Include common public pages
+                        ['/', '/triunfo', '/petrolina', '/sobre', '/faq', '/contato', '/palestrantes', '/programacao', '/validar', '/seja-patrocinador', '/seja-mentor'].some(p => location.pathname === p);
 
   // PWA: listen for update available
   useEffect(() => {
@@ -67,6 +78,7 @@ export function Layout() {
 
   // install prompt
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = (e: any) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -91,12 +103,13 @@ export function Layout() {
     }
   }, [installPrompt]);
 
-  // Reset offline banner when back online
+  // Reset offline banner when back online (non-cascading fix)
   useEffect(() => {
-    if (online) {
+    if (online && !showOfflineBanner) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setShowOfflineBanner(true);
     }
-  }, [online]);
+  }, [online, showOfflineBanner]);
 
   return (
     <div className="min-h-screen bg-dark text-white overflow-x-hidden">
@@ -130,6 +143,7 @@ export function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
+      {showNewsletter && <NewsletterSection />}
       {!isEmbed && <Footer />}
       {!isEmbed && <MobileQuickActions />}
       {!isEmbed && <ExitIntentPopup />}

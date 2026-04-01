@@ -166,8 +166,10 @@ export function GrowthExperienceTriunfo() {
   // initialized MUST be declared before initProject to avoid use-before-declaration
   const initialized = useRef(false);
 
-  const handleScanSuccess = async (qrData: any) => {
+  const handleScanSuccess = async (qrData: import('@/lib/qrUtils').QRData | null) => {
     setScannerAberto(false);
+
+    if (!qrData) return;
 
     if (!user) {
       toast.error("Você precisa estar logado para confirmar presença.");
@@ -175,13 +177,12 @@ export function GrowthExperienceTriunfo() {
     }
 
     // Find user registration for this project
-    let userReg = (userRegistrations || []).find(r => r.projectId === currentProject?.id);
+    const userReg = (userRegistrations || []).find(r => r.projectId === currentProject?.id);
     
     // Fallback: If not found in useRegistrations cache, or is empty, it could be a legacy user
     // We try to verify via the user email if we're in the right project context
     if (!userReg && user.email) {
-      // Small delay might be needed for cache, but let's try to assume currentProject is correct
-      console.log("[GrowthExperience] Checking registration for", user.email);
+      console.debug("[GrowthExperience] Checking registration for", user.email);
     }
     
     // If we still don't have userReg, but the user IS definitely this user, 
@@ -195,8 +196,10 @@ export function GrowthExperienceTriunfo() {
       if (qrData.type === 'session') {
         const session = (allSessions || []).find(s => s.id === qrData.id);
 
+        if (!currentProject) return;
+
         await registerSessionCheckIn({
-          projectId: currentProject?.id,
+          projectId: currentProject.id,
           registrationId: userReg.id,
           userId: user.id,
           sessionId: qrData.id,
@@ -206,19 +209,21 @@ export function GrowthExperienceTriunfo() {
 
         // --- Automatic Certification Trigger ---
         if (session && currentProject) {
-          await CertificateService.checkAndIssueSessionCertificate(
-            user as any,
-            currentProject,
-            session,
-            userReg.id
-          );
+          if (user?.id && user?.name) {
+            await CertificateService.checkAndIssueSessionCertificate(
+              { id: user.id, name: user.name },
+              currentProject,
+              session,
+              userReg.id
+            );
+          }
         }
 
         toast.success("Presença confirmada! Seu certificado já está disponível na sua galeria.");
       } else {
         toast.error("Este QR Code não é válido para confirmação de presença em atividades.");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro ao registrar check-in:", err);
       toast.error("Erro ao confirmar presença. Tente novamente.");
     }
@@ -300,7 +305,7 @@ export function GrowthExperienceTriunfo() {
     if (formParam === 'inscricao') {
       setModalInscricaoAberto(true);
     } else if (['palestra', 'empresa'].includes(formParam)) {
-      setModalAberto(formParam as any);
+      setModalAberto(formParam as 'palestra' | 'empresa');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.get('form')]); // Dependência específica para o valor do parâmetro
@@ -318,7 +323,7 @@ export function GrowthExperienceTriunfo() {
     if (formName === 'inscricao') {
       setModalInscricaoAberto(true);
     } else {
-      setModalAberto(formName as any);
+      setModalAberto(formName as 'palestra' | 'empresa');
     }
     const newParams = new URLSearchParams(searchParams);
     newParams.set('form', formName);

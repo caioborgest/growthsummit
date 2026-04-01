@@ -20,44 +20,62 @@ export interface RoleGuide {
 export const usabilityGuide: RoleGuide[] = [
     {
         role: 'admin',
-        title: 'Guia do Administrador (Super Admin)',
-        description: 'Manual mestre para controle total da plataforma, gestão de projetos e auditoria financeira.',
+        title: 'Manual do Administrador (Mestre)',
+        description: 'Manual de controle total da plataforma, gestão de projetos e auditoria financeira avançada.',
         modules: [
             {
-                id: 'projetos',
-                name: 'Gestão de Projetos',
+                id: 'gestao-projetos',
+                name: 'Gestão Multi-Evento',
                 steps: [
                     {
-                        title: 'Modo Multi-Evento',
-                        description: 'A plataforma suporta múltiplos eventos simultâneos. Use o seletor no topo da sidebar para alternar entre Summit e Growth Experience.',
-                        tip: 'As métricas do dashboard são filtradas automaticamente pelo projeto selecionado.'
+                        title: 'Alternando Projetos',
+                        description: 'Utilize o seletor no topo da sidebar para gerenciar Summit vs Growth Experience. Cada projeto tem seu próprio banco de dados e finanças.',
+                        tip: 'Certifique-se de que o projeto correto está selecionado antes de emitir relatórios ou certificados.'
+                    }
+                ]
+            },
+            {
+                id: 'controle-financeiro',
+                name: 'Auditoria de Vendas',
+                steps: [
+                    {
+                        title: 'Gestão de Receita Real',
+                        description: 'Acompanhe faturamento bruto, líquido e taxas de gateway diretamente no módulo Financeiro.',
+                        tip: 'Os dados são consolidados em tempo real via webhooks com Stripe/Pagarme.'
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        role: 'staff',
+        title: 'Guia Operacional (Staff)',
+        description: 'Instruções críticas para o dia do evento: credenciamento, suporte e operação de fluxo.',
+        modules: [
+            {
+                id: 'credenciamento-qr',
+                name: 'Check-in e Credenciamento',
+                steps: [
+                    {
+                        title: 'Operando o Scanner',
+                        description: 'Acesse Operação > Check-in Digital. Aponte a câmera para o QR Code do participante ou pesquise pelo nome/CPF.',
+                        tip: 'Mantenha o brilho do seu celular alto e peça para o participante fazer o mesmo.'
                     },
                     {
-                        title: 'Configurações de Ingressos',
-                        description: 'Em Projetos > Editar, você define os lotes e preços individuais para Standard, Pro e VIP.',
-                        tip: 'Certifique-se de definir um limite de inscrições para evitar overbooking.'
+                        title: 'Status de Inscrição',
+                        description: 'Verifique se a inscrição aparece como "Paga". Se estiver "Pendente", o participante deve ser direcionado ao balcão de suporte financeiro.',
+                        tip: 'O sistema registra qual operador fez o check-in para fins de auditoria.'
                     }
                 ]
             },
             {
-                id: 'financeiro-admin',
-                name: 'Gestão Financeira',
+                id: 'resolucao-problemas',
+                name: 'Protocolos de Suporte',
                 steps: [
                     {
-                        title: 'Acompanhamento de Receita',
-                        description: 'Acesse o módulo Financeiro para visualizar faturamento bruto, descontos aplicados e ticket médio por categoria.',
-                        tip: 'Os dados são sincronizados em tempo real com os gateways de pagamento (Stripe/Pagarme).'
-                    }
-                ]
-            },
-            {
-                id: 'comunicacao',
-                name: 'Automações e WhatsApp',
-                steps: [
-                    {
-                        title: 'Grupos Automáticos',
-                        description: 'Configure links de grupos para cada tipo de ingresso. O sistema convida o participante via WhatsApp assim que o pagamento é confirmado.',
-                        tip: 'Mantenha o recurso de "Auto-convite" ativado para aumentar a taxa de engajamento.'
+                        title: 'Certificados e Acesso',
+                        description: 'Se um participante não conseguir acessar, verifique o e-mail cadastrado em "Base de Participantes". Erros de digitação no e-mail são a causa número 1 de problemas.',
+                        tip: 'Você pode editar o e-mail do participante e reenviar o link de acesso na hora.'
                     }
                 ]
             }

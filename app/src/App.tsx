@@ -6,7 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
 
 // ── Helper para Carregamento Dinâmico com Retry ───────────────────────────
-const lazyWithRetry = (componentImport: () => Promise<any>, exportName?: string) => {
+const lazyWithRetry = (componentImport: () => Promise<{ default: any } | any>, exportName?: string) => {
   return lazy(async () => {
     try {
       const module = await componentImport();
@@ -67,7 +67,6 @@ const FAQ = lazyWithRetry(() => import('./pages/public/FAQ'), 'FAQ');
 const Contato = lazyWithRetry(() => import('./pages/public/Contato'), 'Contato');
 const SejaMentor = lazyWithRetry(() => import('./pages/public/SejaMentor'), 'SejaMentor');
 const LocalViagem = lazyWithRetry(() => import('./pages/public/LocalViagem'), 'LocalViagem');
-const HelpCenter = lazyWithRetry(() => import('./pages/help/HelpCenter'), 'HelpCenter');
 const ValidarCertificado = lazyWithRetry(() => import('./pages/public/ValidarCertificado'), 'ValidarCertificado');
 
 // ── Auth (lazy)
@@ -111,6 +110,7 @@ const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
 const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
+const GuiaInterno = lazyWithRetry(() => import('./components/app/GuiaInterno'), 'GuiaInterno');
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
 
@@ -302,12 +302,6 @@ function AppRoutes() {
           <Route path="em-breve/:feature" element={<ComingSoon />} />
         </Route>
 
-        {/* Help Center (App only, no public layout) */}
-        <Route path="guia" element={
-          <ProtectedRoute>
-            <HelpCenter />
-          </ProtectedRoute>
-        } />
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
@@ -398,6 +392,7 @@ function AppRoutes() {
           <Route path="sorteio" element={<AdminSorteio />} />
           <Route path="suporte" element={<AdminSupport />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
+          <Route path="guia" element={<GuiaInterno />} />
         </Route>
 
         {/* 404 */}
@@ -431,10 +426,10 @@ function App() {
         console.group('🔍 GROWTH PLATFORM - DETECTOR DE ERRO DE VALIDAÇÃO');
         console.warn('Campo(s) com erro:', errorMsg);
         console.info('DICA: Procure por campos marcados como .min(1) que estão recebendo strings vazias.');
-        console.trace('Rastro do Erro (Stack Trace):');
+        console.debug('Rastro do Erro (Stack Trace):');
         console.groupEnd();
       }
-      originalError.apply(console, args);
+      originalError.apply(console, args as any);
     };
   }, []);
 

@@ -3,30 +3,28 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
-  UserCircle,
+  DollarSign,
   Calendar,
+  Menu,
+  LogOut,
+  UserCircle,
   Handshake,
   Rocket,
   Gem,
-  DollarSign,
   QrCode,
   Mail,
-  BarChart3,
-  LogOut,
-  Menu,
   Ticket,
   FolderOpen,
   MessageCircle,
   AlertCircle,
   BookOpen,
   ChevronDown,
-  Settings,
   Award,
   Store,
   Gift,
-  Bell,
   Headset,
-  Share2
+  Share2,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,10 +116,12 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'usuarios', name: 'Usuários Admin', icon: Users, path: '/admin/usuarios' },
       { id: 'integracoes', name: 'Integrações Externas', icon: Share2, path: '/admin/integracoes', badge: 'NEW' },
       { id: 'seguranca', name: 'Segurança & Logs', icon: AlertCircle, path: '/admin/seguranca' },
-      { id: 'guia', name: 'Manual do Sistema', icon: BookOpen, path: '/guia' },
+      { id: 'guia', name: 'Manual do Sistema', icon: BookOpen, path: '/admin/guia' },
     ]
   },
 ];
+// Lista de rotas restritas apenas para ROLE: 'admin' (impede 'staff')
+const ADMIN_ONLY_PATHS = ['/admin/financeiro', '/admin/usuarios', '/admin/seguranca', '/admin/integracoes', '/admin/projetos'];
 
 export function AdminLayout() {
   const location = useLocation();
@@ -129,8 +129,6 @@ export function AdminLayout() {
   const { user, logout } = useAuth();
   const { selectedProject, setSelectedProject } = useProject();
   
-  // Lista de rotas restritas apenas para ROLE: 'admin' (impede 'staff')
-  const ADMIN_ONLY_PATHS = ['/admin/financeiro', '/admin/usuarios', '/admin/seguranca', '/admin/integracoes', '/admin/projetos'];
   const isStaff = user?.role === 'staff';
 
   // Proteção de Rota (Redirect se acesso direto via URL)

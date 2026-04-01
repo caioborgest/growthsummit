@@ -9,7 +9,8 @@ import {
   FileText,
   Award,
   Handshake,
-  Rocket
+  Rocket,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -50,6 +51,7 @@ import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
 import { DashboardEquipe } from './components/DashboardEquipe';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
+import { GuiaInterno } from '@/components/app/GuiaInterno';
 
 // Modals & Utils
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
@@ -90,10 +92,11 @@ export function DashboardParticipante() {
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
-    await supabase.from('notifications').update({ 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('notifications').update({ 
       read: true, 
       read_at: new Date().toISOString() 
-    } as any).eq('id', id);
+    }).eq('id', id);
   };
 
   const handleLogout = async () => {
@@ -104,7 +107,12 @@ export function DashboardParticipante() {
   // Financial Status Logic
   const isActuallyPaid = useMemo(() => {
     if (!registration) return false;
-    const reg = registration as any;
+    const reg = registration as { 
+      status?: string; 
+      paymentStatus?: string; 
+      payment_status?: string; 
+      amount?: number 
+    };
     const status = (reg.status || reg.paymentStatus || reg.payment_status || '').toLowerCase();
     const isPaidStatus = ['pago', 'paid', 'confirmado', 'ativo', 'active'].includes(status);
     return isPaidStatus || reg.amount === 0;
@@ -112,10 +120,11 @@ export function DashboardParticipante() {
   
   const statusFinanceiro = useMemo(() => {
     if (!registration) return { label: 'NÃO LOCALIZADO', color: 'bg-red-500/20 text-red-500' };
+    const reg = registration as { status?: string; statusPagamento?: string };
     if (isActuallyPaid) return { label: 'PAGO', color: 'bg-green-500/20 text-green-400' };
-    if ((registration as any).status === 'cancelled' || (registration as any).status === 'cancelado') 
+    if (reg.status === 'cancelled' || reg.status === 'cancelado') 
         return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
-    if ((registration as any).statusPagamento === 'pendente' || (registration as any).status === 'pendente') 
+    if (reg.statusPagamento === 'pendente' || reg.status === 'pendente') 
         return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
     return { label: 'PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
   }, [registration, isActuallyPaid]);
@@ -141,7 +150,6 @@ export function DashboardParticipante() {
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
 
-  // Bottom Navigation Tabs definition
   const navTabs = useMemo(() => {
     const tabs = [
       { id: 'inicio', icon: LayoutGrid, label: 'Início' },
@@ -154,19 +162,25 @@ export function DashboardParticipante() {
     ];
 
     // Show Circuito if enabled in project settings
-    if (selectedProject?.settings?.enableCheckIn !== false) {
+    const settings = selectedProject?.settings as { enableCheckIn?: boolean } | undefined;
+    if (settings && settings.enableCheckIn !== false) {
       tabs.push({ id: 'circuito', icon: Trophy, label: 'Circuito' });
     }
 
     tabs.push({ id: 'dados', icon: User, label: 'Perfil' });
     tabs.push({ id: 'documentos', icon: FileText, label: 'Docs' });
     tabs.push({ id: 'certificados', icon: Award, label: 'Certs' });
+    tabs.push({ id: 'guia', icon: BookOpen, label: 'Guia' });
 
     return tabs;
   }, [selectedProject]);
 
   // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
+    if (!selectedProject) {
+        toast.error('Projeto não identificado.');
+        return;
+    }
     const qrData = parseQRString(decodedText);
     if (!qrData || !['session', 'registration', 'entry', 'ticket'].includes(qrData.type)) {
         throw new Error('QR Code inválido para este tipo de check-in');
@@ -182,7 +196,8 @@ export function DashboardParticipante() {
                  selectedProject?.slug?.includes('petrolina');
 
     if (isGE && (qrData.type === 'registration' || qrData.type === 'entry')) {
-        const { error: entryErr } = await supabase.from('inscricoes_growth_experience').update({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: entryErr } = await (supabase as any).from('inscricoes_growth_experience').update({
             checked_in: true,
             check_in_at: new Date().toISOString()
         }).eq('id', registration.id);
@@ -201,10 +216,11 @@ export function DashboardParticipante() {
         return;
     }
 
-    const { error } = await supabase.from('inscricoes_growth_experience').update({ 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from('inscricoes_growth_experience').update({ 
         checked_in: true, 
         check_in_at: new Date().toISOString() 
-    } as any).eq('id', registration.id);
+    }).eq('id', registration.id);
 
     if (error) throw error;
 
@@ -216,6 +232,7 @@ export function DashboardParticipante() {
         user_id: user?.id,
         check_in_at: new Date().toISOString(),
         check_in_type: 'qr'
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     if (activityError) throw activityError;
@@ -319,11 +336,15 @@ export function DashboardParticipante() {
             onRefresh={refetchReg}
           />
         );
-      case 'agenda':
+      case 'agenda': {
+        const myCursos = (allSessions || []).filter(s => 
+          ((registration as { cursosSelecionados?: string[] })?.cursosSelecionados || []).includes(s.id)
+        );
+
         return (
           <AgendaSection 
-            myRegistration={registration as any}
-            cursosSelecionados={registration?.cursosSelecionados as any || []}
+            myRegistration={registration}
+            cursosSelecionados={myCursos}
             setIsSelfCheckInOpen={(val) => {
                 if (!registration) {
                     toast.error('Inscrição não localizada para realizar check-in.');
@@ -333,10 +354,15 @@ export function DashboardParticipante() {
             }}
             navigate={navigate}
             selectedProject={selectedProject}
-            allSessions={allSessions as any}
-            activityCheckIns={activityCheckIns as any}
+            allSessions={allSessions || []}
+            activityCheckIns={(activityCheckIns || []).map(c => ({
+                sessionId: c.sessionId,
+                registrationId: c.registrationId || '',
+                checkInAt: c.checkInAt
+            }))}
           />
         );
+      }
       case 'circuito':
         return (
           <GamificationSection 
@@ -449,6 +475,8 @@ export function DashboardParticipante() {
         return <DocsSection documentos={[]} loadingDocs={false} />;
       case 'equipe':
         return <DashboardEquipe batches={[]} />;
+      case 'guia':
+        return <GuiaInterno />;
       default:
         return <div className="text-white text-center py-20">Em breve</div>;
     }
@@ -468,7 +496,7 @@ export function DashboardParticipante() {
           notifications={notifications}
           onLogout={handleLogout}
           onNotificationRead={async (id) => { await handleMarkAsRead(id); }}
-          onGuideClick={() => navigate('/guia')}
+          onGuideClick={() => setActiveTab('guia')}
           onSupportClick={() => setActiveTab('suporte')}
         />
 
@@ -491,7 +519,6 @@ export function DashboardParticipante() {
         tabs={navTabs} 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        variant="orange"
       />
 
       {/* Global Modals */}
@@ -545,7 +572,7 @@ export function DashboardParticipante() {
         <LeadScanner 
           onClose={() => setIsScanOpen(false)}
           onScanSuccess={(code) => {
-            console.log('Scanned Stand Code:', code);
+            console.debug('Scanned Stand Code:', code);
             toast.success('Stand validado!');
             setIsScanOpen(false);
           }}

@@ -6,8 +6,6 @@ import {
   Instagram,
   Linkedin
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const footerLinks = {
@@ -43,32 +41,6 @@ export function Footer() {
 
   return (
     <footer className="bg-dark-200 border-t border-dark-300">
-      {/* Newsletter Section */}
-      <div className="border-b border-dark-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Fique por dentro das novidades
-              </h3>
-              <p className="text-gray-400">
-                Receba atualizações sobre palestrantes, programação e promoções exclusivas.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md w-full lg:w-auto">
-              <Input
-                type="email"
-                placeholder="Seu melhor email"
-                className="bg-dark-100 border-dark-300 text-white placeholder:text-gray-500 flex-1"
-              />
-              <Button className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold whitespace-nowrap">
-                Inscrever
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">

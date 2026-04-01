@@ -11,10 +11,9 @@ interface BottomNavigationProps {
   tabs: NavItem[];
   activeTab: string;
   setActiveTab: (id: string) => void;
-  variant?: 'teal' | 'orange';
 }
 
-export function BottomNavigation({ tabs, activeTab, setActiveTab, variant = 'orange' }: BottomNavigationProps) {
+export function BottomNavigation({ tabs, activeTab, setActiveTab }: BottomNavigationProps) {
   return (
     <div className="fixed md:hidden bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom)]">
       <div className="px-4 pb-4 flex justify-center pointer-events-auto">

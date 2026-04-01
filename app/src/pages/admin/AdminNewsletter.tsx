@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Users, 
   Mail, 
@@ -10,15 +10,14 @@ import {
   Trash2, 
   Zap, 
   Tag, 
-  BarChart3, 
-  FileText,
   MailWarning
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { newsletterService, NewsletterLead } from '@/lib/newsletterService';
+import { newsletterService } from '@/lib/newsletterService';
+import type { NewsletterLead } from '@/lib/newsletterService';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 
@@ -29,27 +28,29 @@ export default function AdminNewsletter() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('all');
 
-  useEffect(() => {
-    fetchLeads();
-  }, [selectedProject]);
-
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
+    if (!selectedProject?.id) return;
     setLoading(true);
     try {
       const data = await newsletterService.getLeads({ project_id: selectedProject?.id });
       setLeads(data || []);
     } catch (error) {
+      console.error('Error fetching leads:', error);
       toast.error('Erro ao carregar leads');
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProject?.id]);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [selectedProject, fetchLeads]);
 
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
-      const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchesSearch = l.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           l.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTag = selectedTag === 'all' || l.interests?.includes(selectedTag);
+      const matchesTag = selectedTag === 'all' || l.interesses?.includes(selectedTag);
       return matchesSearch && matchesTag;
     });
   }, [leads, searchTerm, selectedTag]);
@@ -85,19 +86,20 @@ export default function AdminNewsletter() {
       document.body.removeChild(link);
       toast.success('Exportação concluída!');
     } catch (error) {
+      console.error('Error exporting leads:', error);
       toast.error('Erro ao exportar CSV');
     }
   };
 
   const handleDelete = async (email: string) => {
     if (!window.confirm('Tem certeza que deseja excluir permanentemente este lead?')) return;
-    // Note: Implementation of hard delete if needed, or just unsubscribe
     try {
        await newsletterService.unsubscribe(email);
        toast.success('Lead removido da lista ativa');
        fetchLeads();
     } catch (error) {
-       toast.error('Erro ao remover lead');
+      console.error('Error deleting lead:', error);
+      toast.error('Erro ao remover lead');
     }
   };
 
@@ -121,8 +123,9 @@ export default function AdminNewsletter() {
         if (email && email.includes('@')) {
           try {
             await newsletterService.subscribe({
-              name: name || 'Lead Importado',
+              nome: name || 'Lead Importado',
               email,
+              interesses: [],
               source: 'CSV Import',
               project_id: selectedProject?.id
             });
@@ -265,25 +268,25 @@ export default function AdminNewsletter() {
                       <tr key={lead.email} className="hover:bg-white/[0.02] transition-colors group">
                          <td className="p-6">
                             <div className="flex items-center gap-4">
-                               <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center font-black text-brand-orange-coral text-sm border border-brand-orange-coral/20">
-                                  {lead.name[0]}
-                               </div>
-                               <div>
-                                  <p className="text-white font-black text-sm uppercase italic tracking-tight">{lead.name}</p>
-                                  <p className="text-gray-500 text-[11px] font-medium leading-none">{lead.email}</p>
-                               </div>
+                                <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center font-black text-brand-orange-coral text-sm border border-brand-orange-coral/20">
+                                   {lead.nome ? lead.nome[0] : '?'}
+                                </div>
+                                <div>
+                                   <p className="text-white font-black text-sm uppercase italic tracking-tight">{lead.nome}</p>
+                                   <p className="text-gray-500 text-[11px] font-medium leading-none">{lead.email}</p>
+                                </div>
                             </div>
                          </td>
                          <td className="p-6">
-                            <div className="flex flex-wrap gap-1">
-                               {lead.interests && lead.interests.length > 0 ? (
-                                 lead.interests.map(tag => (
-                                   <Badge key={tag} className="bg-white/5 text-[9px] font-black uppercase tracking-widest border-white/5 text-gray-400">
-                                      {tag}
-                                   </Badge>
-                                 ))
-                               ) : <span className="text-gray-700 text-[10px] uppercase font-black">Sem tags</span>}
-                            </div>
+                             <div className="flex flex-wrap gap-1">
+                                {lead.interesses && lead.interesses.length > 0 ? (
+                                  lead.interesses.map(tag => (
+                                    <Badge key={tag} className="bg-white/5 text-[9px] font-black uppercase tracking-widest border-white/5 text-gray-400">
+                                       {tag}
+                                    </Badge>
+                                  ))
+                                ) : <span className="text-gray-700 text-[10px] uppercase font-black">Sem tags</span>}
+                             </div>
                          </td>
                          <td className="p-6 text-center">
                             <div className={`inline-flex items-center gap-1.5 font-black text-xs ${ (lead.engagement_score || 0) > 10 ? 'text-brand-orange-coral' : 'text-gray-500' }`}>

@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Download,
-  XCircle,
-  Clock,
   QrCode,
   Mail,
   ChevronLeft,
@@ -18,9 +16,7 @@ import {
   Trash2,
   Star,
   CheckCircle2,
-  Package,
   Contact,
-  AlertCircle,
   CreditCard,
   Calendar,
   Ticket,
@@ -30,7 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getStatusConfig } from '@/lib/ui-constants';
-import { useRegistrations, useTransactions, useData, useCheckIns, useSessions } from '@/hooks/useData';
+import { useRegistrations, useTransactions, useCheckIns, useSessions } from '@/hooks/useData';
 import { toast } from 'sonner';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
@@ -230,6 +226,8 @@ export default function AdminInscricoes() {
   const { data: checkIns } = useCheckIns();
   const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
   const { data: allSessions } = useSessions();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unused = allSessions;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [nightFilter, setNightFilter] = useState<string>('all');
@@ -480,7 +478,7 @@ export default function AdminInscricoes() {
           reg={detalhes}
           onClose={() => setDetalhes(null)}
           onUpdateStatus={handleUpdateStatus}
-          onToggleCheckIn={() => {}}
+          onToggleCheckIn={async () => {}}
           onDelete={handleDeleteParticipant}
         />
       )}

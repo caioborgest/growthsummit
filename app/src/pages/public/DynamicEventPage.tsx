@@ -10,6 +10,7 @@ import {
   Rocket,
   ArrowRight,
   QrCode,
+  TrendingUp,
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
 import { toast } from 'sonner';
@@ -72,8 +73,12 @@ export function DynamicEventPage() {
       if (qrData.type === 'session') {
         const session = { id: qrData.id, title: 'Atividade Escolhida' }; // Minimal session object for certificate
 
+        if (!currentProject) return;
+
+        console.debug("[GrowthExperience] Checking registration for", user.email);
+
         await registerSessionCheckIn({
-          projectId: currentProject?.id,
+          projectId: currentProject.id,
           registrationId: userReg.id,
           userId: user.id,
           sessionId: qrData.id,
@@ -108,10 +113,10 @@ export function DynamicEventPage() {
     
     const project = projects.find(p => p.slug === slug);
     if (project && currentProject?.id !== project.id) {
-      setCurrentProject(project);
-      if (selectedProject?.id !== project.id) {
-        setSelectedProject(project);
-      }
+        setCurrentProject(project);
+        if (selectedProject?.id !== project.id) {
+          setSelectedProject(project);
+        }
     }
   }, [projects, slug, setSelectedProject, selectedProject?.id, currentProject?.id]);
 

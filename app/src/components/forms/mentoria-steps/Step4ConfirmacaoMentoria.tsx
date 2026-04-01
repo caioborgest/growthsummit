@@ -21,7 +21,9 @@ interface Mentor {
     id: string;
     nome: string;
     foto_url?: string;
-    email?: string; // We'll need this to notify them
+    email?: string;
+    empresa?: string;
+    cargo?: string;
 }
 
 export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4ConfirmacaoMentoriaProps) {
@@ -42,7 +44,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     .single();
 
                 if (error) throw error;
-                setMentor(data);
+                setMentor(data as Mentor);
             } catch (err) {
                 logger.error('Erro ao buscar mentor:', err);
             } finally {
@@ -89,7 +91,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     await supabase.auth.signInWithPassword({
                         email: dados.email,
                         password: dados.senha
-                    }).catch((e: any) => logger.warn('Auto-login skip mentoria (confirmation required?):', e.message));
+                    }).catch((e: Error) => logger.warn('Auto-login skip mentoria (confirmation required?):', e.message));
                 }
             }
 

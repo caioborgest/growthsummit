@@ -57,6 +57,8 @@ const initialEmailTemplates = [
     subject: 'Pagamento Confirmado! Seu lugar no Growth Experience está garantido 🎟️',
     category: 'Inscrições',
     lastUsed: '2024-03-30',
+    projectId: '', // Will be filled
+    variables: ['nome', 'id', 'ticket'],
     body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; background-color: #ffffff; padding: 40px; border-radius: 16px; border: 1px solid #f1f5f9;">
     <h1 style="color: #ff7043; font-size: 24px; text-align: center;">Tudo certo, {{nome}}!</h1>
     <p style="font-size: 16px; line-height: 1.6; text-align: center;">Recebemos a confirmação do seu pagamento para o <strong>Growth Experience 2026</strong>. Seu ingresso já está disponível no seu painel.</p>
@@ -151,22 +153,26 @@ const initialEmailTemplates = [
 const initialEmailCampaigns = [
   {
     id: '1',
+    projectId: '',
     name: 'Lançamento Early Bird',
-    recipients: 1247,
-    sent: 1247,
-    opened: 892,
-    clicked: 456,
+    recipients: [] as string[],
     status: 'sent',
     sentAt: '2024-01-10',
+    stats: {
+      sent: 1247,
+      opened: 892,
+      clicked: 456,
+      bounced: 12
+    },
+    templateId: 'pay-conf'
   },
   {
     id: '2',
+    projectId: '',
     name: 'Novos Palestrantes',
-    recipients: 1247,
-    sent: 0,
-    opened: 0,
-    clicked: 0,
+    recipients: [] as string[],
     status: 'draft',
+    templateId: 'welcome-inst'
   },
 ];
 
@@ -250,10 +256,11 @@ export default function AdminComunicacao() {
       return;
     }
 
-    const newTemplate = {
+    const newTemplate: EmailTemplate = {
       id: Math.random().toString(36).substr(2, 9),
+      projectId: selectedProject?.id || '',
+      variables: ['nome'],
       ...templateFormData,
-      lastUsed: new Date().toISOString()
     };
 
     setTemplates([newTemplate, ...templates]);
@@ -278,16 +285,19 @@ export default function AdminComunicacao() {
     else if (filter === 'vip') count = registrations.filter(r => r.ticketType === 'vip' || r.tipo_inscricao === 'vip').length;
     else count = registrations.length; // Fallback
 
-    const newCampaign = {
+    const newCampaign: EmailCampaign = {
       id: Math.random().toString(36).substr(2, 9),
+      projectId: selectedProject?.id || '',
       name: campaignFormData.name,
       templateId: campaignFormData.templateId,
-      recipients: count,
-      recipients_filter: filter,
-      sent: 0,
-      opened: 0,
-      clicked: 0,
-      status: 'draft'
+      recipients: [] as string[], // We'll store number as count in stats for simplicity or cast
+      status: 'draft',
+      stats: {
+        sent: count,
+        opened: 0,
+        clicked: 0,
+        bounced: 0
+      }
     };
 
     setCampaigns([newCampaign, ...campaigns]);
