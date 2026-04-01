@@ -24,7 +24,9 @@ import {
   Gift,
   Headset,
   Share2,
-  BarChart3
+  BarChart3,
+  Settings,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
