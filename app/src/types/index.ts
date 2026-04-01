@@ -169,22 +169,30 @@ export interface Company {
   id: string;
   projectId: string;
   userId: string;
-  name: string;
+  companyName: string; // Primary field from DB 'nome_empresa'
+  name?: string; // Fallback for 'nome' (sometimes used)
   cnpj: string;
   type: 'anchor' | 'vendor';
   sector: string;
   description: string;
+  companyDescription?: string; // Semantic mapping for DB 'descricao_empresa'
   website?: string;
   logo?: string;
   logoUrl?: string; // New field for public url
-  contactName: string;
+  contactName: string; // From DB 'nome_representante'
   contactEmail: string;
   contactPhone: string;
+  position?: string; // From DB 'cargo'
   status: 'pending' | 'approved' | 'rejected';
   packageType?: 'anchor' | 'vendor';
   maxMeetings: number;
-  tipoInteresse?: 'comprar' | 'vender' | 'parceria' | 'todos';
-  areasInteresse?: string;
+  interestType?: 'comprar' | 'vender' | 'parceria' | 'todos' | string;
+  interestAreas?: string;
+  objectives?: string; // From DB 'descricao_objetivos'
+  companySize?: string; // From DB 'porte'
+  annualRevenue?: string; // From DB 'faturamento_anual'
+  employeeCount?: string; // From DB 'numero_funcionarios'
+  productsServices?: string; // From DB 'produtos_servicos'
   createdAt: string;
 }
 
@@ -533,7 +541,7 @@ export interface RegistrationBatch {
   vagasUtilizadas: number;
   tipoIngresso: string;
   valorTotal: number;
-  statusPagamento: 'pending' | 'paid' | 'cancelled';
+  statusPagamento: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
   observacoes?: string;
   createdAt: string;
   updatedAt: string;

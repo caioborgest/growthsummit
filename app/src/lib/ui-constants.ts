@@ -25,27 +25,29 @@ export type StatusType = 'paid' | 'pending' | 'cancelled' | 'refunded' | 'active
 /**
  * Mapeia qualquer variação de status para uma cor e label consistente.
  */
+import { CheckCircle2, Clock, XCircle, RefreshCcw, Heart } from 'lucide-react';
+
 export const getStatusConfig = (status: string | undefined) => {
   const s = (status || '').toLowerCase().trim();
 
   // Status de Pagamento / Inscrição
   if (['pago', 'paid', 'ativo', 'active', 'confirmado', 'confirmed'].includes(s)) {
-    return { label: 'PAGO', color: UI_COLORS.status.success };
+    return { label: 'PAGO', color: UI_COLORS.status.success, icon: CheckCircle2 };
   }
   if (['pendente', 'pending', 'aguardando', 'waiting'].includes(s)) {
-    return { label: 'PENDENTE', color: UI_COLORS.status.warning };
+    return { label: 'PENDENTE', color: UI_COLORS.status.warning, icon: Clock };
   }
   if (['cancelado', 'cancelled', 'suspenso'].includes(s)) {
-    return { label: 'CANCELADO', color: UI_COLORS.status.error };
+    return { label: 'CANCELADO', color: UI_COLORS.status.error, icon: XCircle };
   }
   if (['estornado', 'refunded', 'devolvido'].includes(s)) {
-    return { label: 'ESTORNADO', color: UI_COLORS.status.neutral };
+    return { label: 'ESTORNADO', color: UI_COLORS.status.neutral, icon: RefreshCcw };
   }
   if (['free', 'gratis', 'cortesia'].includes(s)) {
-    return { label: 'CORTESIA', color: UI_COLORS.status.info };
+    return { label: 'CORTESIA', color: UI_COLORS.status.info, icon: Heart };
   }
 
-  return { label: (status || 'N/A').toUpperCase(), color: UI_COLORS.status.neutral };
+  return { label: (status || 'N/A').toUpperCase(), color: UI_COLORS.status.neutral, icon: Clock };
 };
 
 /**

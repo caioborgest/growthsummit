@@ -84,8 +84,9 @@ export default function DashboardMentor() {
   const handleMarkAsRead = async (id: string) => {
     // Only proceed if id is valid
     if (!id) return;
-    const { error } = await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
-    if (error) logger.error('Erro mark notific:', error);
+    // Unify to 'read' schema to match Notification interface
+    const { error } = await (supabase.from('notifications') as any).update({ read: true, read_at: new Date().toISOString() }).eq('id', id);
+    if (error) console.error('Erro ao marcar notificação como lida:', error);
   };
 
   const toggleSlotAvailability = async (slotId: string) => {

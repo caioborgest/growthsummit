@@ -60,7 +60,9 @@ export function DashboardCompany() {
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
-    await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
+    await (supabase.from('notifications') as any)
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('id', id);
   };
   const { data: swipes, create: createSwipe } = useB2BSwipes();
   const { data: appointments } = useB2BAppointmentsTriunfo();

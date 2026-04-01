@@ -73,7 +73,9 @@ export function DashboardSponsor() {
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
-    await (supabase.from('notifications') as any).update({ is_read: true }).eq('id', id);
+    await (supabase.from('notifications') as any)
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('id', id);
   };
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);

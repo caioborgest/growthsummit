@@ -196,13 +196,17 @@ export function DashboardParticipante() {
     if (error) throw error;
 
     // Emitir certificado via Service
-    if (selectedProject) {
-        CertificateService.checkAndIssueSessionCertificate(
-            qrData.id,
-            { id: user?.id || '', name: user?.name || '' },
-            selectedProject,
-            registration.id
-        );
+    if (selectedProject && registration) {
+        // Find the activity/session object to pass to the service
+        const sessionObj = (allSessions || []).find(s => s.id === qrData.id);
+        if (sessionObj) {
+            CertificateService.checkAndIssueSessionCertificate(
+                { id: user?.id || '', name: user?.name || '' },
+                selectedProject,
+                sessionObj,
+                registration.id
+            );
+        }
     }
 
     toast.success('Check-in realizado com sucesso!');

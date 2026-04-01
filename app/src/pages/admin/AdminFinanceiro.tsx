@@ -5,9 +5,10 @@ import {
   DollarSign,
   Download,
   BarChart3,
-  PieChart
+  PieChart,
+  Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';
@@ -608,7 +609,7 @@ export function AdminFinanceiro() {
                           const config = getStatusConfig(transaction.status);
                           return (
                             <Badge className={`${config.color} border-none px-3 py-1 rounded-full font-black text-[9px] tracking-widest uppercase flex items-center justify-center gap-1.5 w-fit mx-auto`}>
-                              <config.icon className="h-3 w-3" />
+                              {(config as any).icon && <config.icon className="h-3 w-3" />}
                               {config.label}
                             </Badge>
                           );

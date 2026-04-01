@@ -9,6 +9,7 @@ import { emailService } from '@/services/emailService';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/lib/supabase';
 
 interface Step4ConfirmacaoMentoriaProps {
     dados: DadosMentoria;
@@ -88,7 +89,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     await supabase.auth.signInWithPassword({
                         email: dados.email,
                         password: dados.senha
-                    }).catch(e => logger.warn('Auto-login skip mentoria (confirmation required?):', e.message));
+                    }).catch((e: any) => logger.warn('Auto-login skip mentoria (confirmation required?):', e.message));
                 }
             }
 
