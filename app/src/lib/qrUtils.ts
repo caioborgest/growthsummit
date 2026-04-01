@@ -2,7 +2,7 @@
  * Utility to generate QR Code data for various event entities
  */
 
-export type QRType = 'registration' | 'session' | 'checkin' | 'feedback' | 'mentor' | 'company' | 'startup' | 'sponsor';
+export type QRType = 'registration' | 'session' | 'checkin' | 'feedback' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'entry' | 'ticket';
 
 export interface QRData {
     type: QRType;

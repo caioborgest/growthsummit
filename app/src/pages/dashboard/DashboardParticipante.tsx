@@ -24,7 +24,7 @@ import {
   useMentoringSessions,
   useStands,
   useStandCheckIns,
-  useRaffles
+  useCertificates
 } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
@@ -71,7 +71,7 @@ export function DashboardParticipante() {
   const { data: myMentorships, update: updateMentorship } = useMentoringSessions();
   const { data: stands } = useStands();
   const { data: standCheckIns } = useStandCheckIns();
-  // const { data: raffles } = useRaffles();
+  const { data: certificates, isLoading: loadingCerts, refetch: refetchCerts } = useCertificates();
   
   // State
   const [activeTab, setActiveTab] = useState('inicio');
@@ -90,7 +90,10 @@ export function DashboardParticipante() {
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
-    await supabase.from('notifications').update({ read: true, read_at: new Date().toISOString() }).eq('id', id);
+    await supabase.from('notifications').update({ 
+      read: true, 
+      read_at: new Date().toISOString() 
+    } as any).eq('id', id);
   };
 
   const handleLogout = async () => {
@@ -99,13 +102,20 @@ export function DashboardParticipante() {
   };
 
   // Financial Status Logic
-  const isActuallyPaid = registration?.isPaid || registration?.amount === 0;
+  const isActuallyPaid = useMemo(() => {
+    if (!registration) return false;
+    const reg = registration as any;
+    const status = (reg.status || reg.paymentStatus || reg.payment_status || '').toLowerCase();
+    const isPaidStatus = ['pago', 'paid', 'confirmado', 'ativo', 'active'].includes(status);
+    return isPaidStatus || reg.amount === 0;
+  }, [registration]);
   
   const statusFinanceiro = useMemo(() => {
     if (!registration) return { label: 'NÃO LOCALIZADO', color: 'bg-red-500/20 text-red-500' };
     if (isActuallyPaid) return { label: 'PAGO', color: 'bg-green-500/20 text-green-400' };
-    if (registration.status === 'cancelled') return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
-    if (registration.statusPagamento === 'pendente' || registration.status === 'pendente') 
+    if ((registration as any).status === 'cancelled' || (registration as any).status === 'cancelado') 
+        return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
+    if ((registration as any).statusPagamento === 'pendente' || (registration as any).status === 'pendente') 
         return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
     return { label: 'PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
   }, [registration, isActuallyPaid]);
@@ -118,7 +128,7 @@ export function DashboardParticipante() {
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     
     return sorted.find(s => {
-      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && (c as any).registrationId === registration?.id);
+      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && c.registrationId === registration?.id);
       return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0];
   }, [allSessions, activityCheckIns, registration?.id]);
@@ -126,7 +136,7 @@ export function DashboardParticipante() {
   // Gamification Progress
   const standsVisited = useMemo(() => {
     if (!standCheckIns || !registration) return 0;
-    return standCheckIns.filter(c => (c as any).registrationId === registration.id).length;
+    return standCheckIns.filter(c => c.registrationId === registration.id).length;
   }, [standCheckIns, registration]);
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
@@ -164,8 +174,14 @@ export function DashboardParticipante() {
 
     if (!registration) throw new Error('Inscrição não encontrada');
 
-    // Special logic for Triunfo project: entry validates all
-    if (selectedProject?.slug?.includes('triunfo') && (qrData.type === 'registration' || qrData.type === 'entry')) {
+    // Special logic for Growth Experience projects: entry validates all
+    const isGE = selectedProject?.type === 'growth_experience' || 
+                 selectedProject?.slug?.startsWith('ge-') || 
+                 selectedProject?.slug?.startsWith('growth-') ||
+                 selectedProject?.slug?.includes('triunfo') ||
+                 selectedProject?.slug?.includes('petrolina');
+
+    if (isGE && (qrData.type === 'registration' || qrData.type === 'entry')) {
         const { error: entryErr } = await supabase.from('inscricoes_growth_experience').update({
             checked_in: true,
             check_in_at: new Date().toISOString()
@@ -180,22 +196,29 @@ export function DashboardParticipante() {
             registration.id
         );
 
-        toast.success('Check-in Triunfo realizado! Acesso liberado para toda programação.');
+        toast.success(`Check-in ${selectedProject.name} realizado! Acesso liberado.`);
         setIsCheckInModalOpen(false);
         return;
     }
 
+    const { error } = await supabase.from('inscricoes_growth_experience').update({ 
+        checked_in: true, 
+        check_in_at: new Date().toISOString() 
+    } as any).eq('id', registration.id);
+
+    if (error) throw error;
+
     // Call RPC or direct insert for activities
-    const { error } = await supabase.from('check_ins_atividades').insert({
+    const { error: activityError } = await supabase.from('check_ins_atividades').insert({
         project_id: selectedProject?.id,
         session_id: qrData.id,
         registration_id: registration.id,
         user_id: user?.id,
         check_in_at: new Date().toISOString(),
         check_in_type: 'qr'
-    });
+    } as any);
 
-    if (error) throw error;
+    if (activityError) throw activityError;
 
     // Emitir certificado via Service
     if (selectedProject && registration) {
@@ -299,8 +322,8 @@ export function DashboardParticipante() {
       case 'agenda':
         return (
           <AgendaSection 
-            myRegistration={registration}
-            cursosSelecionados={registration?.cursosSelecionados || []}
+            myRegistration={registration as any}
+            cursosSelecionados={registration?.cursosSelecionados as any || []}
             setIsSelfCheckInOpen={(val) => {
                 if (!registration) {
                     toast.error('Inscrição não localizada para realizar check-in.');
@@ -310,8 +333,8 @@ export function DashboardParticipante() {
             }}
             navigate={navigate}
             selectedProject={selectedProject}
-            allSessions={allSessions}
-            activityCheckIns={activityCheckIns}
+            allSessions={allSessions as any}
+            activityCheckIns={activityCheckIns as any}
           />
         );
       case 'circuito':
@@ -404,7 +427,20 @@ export function DashboardParticipante() {
           </div>
         );
       case 'certificados':
-        return <CertificatesSection certificados={[]} loadingCerts={false} fetchCertificados={() => {}} onDownload={() => {}} />;
+        return (
+          <CertificatesSection 
+            certificados={certificates} 
+            loadingCerts={loadingCerts} 
+            fetchCertificados={refetchCerts} 
+            onDownload={(cert) => {
+              toast.info(`Iniciando download do certificado: ${cert.activityName || cert.activity_name}`);
+              // Potential integration with PDF generation or direct URL
+              if (cert.code) {
+                  window.open(`/api/certificates/download/${cert.code}`, '_blank');
+              }
+            }} 
+          />
+        );
       case 'dados':
         return <ProfileForm />;
       case 'suporte':
@@ -463,7 +499,7 @@ export function DashboardParticipante() {
         <SelfCheckInModal 
           onClose={() => setIsCheckInModalOpen(false)}
           onScanSuccess={handleScanSuccess}
-          registration={registration as any}
+          registration={registration}
         />
       )}
 

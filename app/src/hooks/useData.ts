@@ -1139,3 +1139,15 @@ export function useSupportQualityStats() {
   return stats;
 }
 
+export function useCertificates() {
+  const { user } = useAuth();
+  const hook = useData<Certificate>([], 'certificates');
+  
+  const userCerts = useMemo(() => {
+    if (!user) return [];
+    return hook.data.filter(c => c.userId === user.id);
+  }, [hook.data, user]);
+
+  return { ...hook, data: userCerts };
+}
+

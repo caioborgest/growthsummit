@@ -2,6 +2,7 @@ import { QrCode, Sparkles, Download, Moon, Sun, CreditCard, CheckCircle2, AlertC
 import { Badge } from '@/components/ui/badge';
 import QRCode from 'react-qr-code';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { generateQRString } from '@/lib/qrUtils';
 
 
@@ -152,14 +153,17 @@ export function TicketSection({
             </motion.div>
 
             {/* ── UPGRADE CARD (if free and not paid/confirmed event) ─────────────────────────────── */}
-            {!isPro && !isActuallyPaid && !selectedProject?.slug?.toLowerCase().includes('triunfo') && (
+            {!isPro && !isActuallyPaid && !selectedProject?.slug?.toLowerCase().includes('triunfo') && selectedProject?.settings?.enableUpgrade && (
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                     className="relative overflow-hidden rounded-[2rem] p-6 cursor-pointer group"
                     style={{ background: 'linear-gradient(135deg, rgba(255,112,67,0.1) 0%, rgba(255,64,53,0.05) 100%)', border: '1px solid rgba(255,112,67,0.2)' }}
-                    onClick={() => setShowUpgradeModal(true)}
+                    onClick={() => {
+                        if (setShowUpgradeModal) setShowUpgradeModal(true);
+                        else toast.info('Upgrade disponível diretamente no balcão de credenciamento.');
+                    }}
                 >
                     <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-brand-orange-coral/15 to-transparent rounded-full blur-3xl pointer-events-none" />
                     <div className="flex items-center gap-5">

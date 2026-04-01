@@ -172,17 +172,16 @@ export function AgendaSection({
                     >
                         <QrCode className="h-4 w-4" />Scan QR
                     </button>
-                    {!isTriunfo && (
+                    {!isTriunfo && !isActuallyPaid && selectedProject?.settings?.enableUpgrade && (
                         <button
                             className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs text-white uppercase tracking-wider transition-all active:scale-95"
-                            style={{ background: isActuallyPaid ? 'var(--surface-2)' : 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: isActuallyPaid ? 'none' : '0 4px 16px rgba(255,112,67,0.3)' }}
+                            style={{ background: 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: '0 4px 16px rgba(255,112,67,0.3)' }}
                             onClick={() => {
-                                if (isActuallyPaid) navigate('/pro');
-                                else if (onUpgradeClick) onUpgradeClick();
-                                else navigate('/upgrade');
+                                if (onUpgradeClick) onUpgradeClick();
+                                else toast.info('Funcionalidade de upgrade disponível diretamente no balcão de credenciamento.');
                             }}
                         >
-                            <Zap className="h-4 w-4" />{isActuallyPaid ? 'Add Atividades' : 'Upgrade Pro'}
+                            <Zap className="h-4 w-4" />Upgrade Pro
                         </button>
                     )}
                 </div>

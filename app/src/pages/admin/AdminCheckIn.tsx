@@ -183,14 +183,22 @@ export function AdminCheckIn() {
       return;
     }
 
-    let registration = registrations.find(r => r.id === res.id);
+    const registration = registrations.find(r => r.id === res.id);
     
     if (!registration && res.type === 'registration') {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       import('@/lib/supabase').then(async ({ supabase }) => {
-        const { data, error } = await supabase.from('inscricoes_growth_experience').select('*').eq('id', res.id).maybeSingle();
+        const tableName = selectedProject?.id ? 'inscricoes_growth_experience' : 'registrations';
+        let query = (supabase as any).from(tableName as any).select('*').eq('id', res.id);
+        
+        if (selectedProject?.id) {
+          query = query.eq('project_id', selectedProject.id);
+        }
+
+        const { data, error } = await query.maybeSingle();
+
         if (data && !error) {
-           const mapped = Object.entries(data).reduce((acc, [key, val]) => {
+           const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
                 const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
                 acc[camelKey] = val;
                 return acc;
@@ -216,7 +224,7 @@ export function AdminCheckIn() {
       toast.error('Ingresso não encontrado no sistema.');
     }
     setIsScanning(false);
-  }, [registrations, mentors, companies, startups, handleManualCheckIn]);
+  }, [registrations, mentors, companies, startups, handleManualCheckIn, selectedProject?.id]);
 
   const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup') => {
     setSelectedEntity(entity);
