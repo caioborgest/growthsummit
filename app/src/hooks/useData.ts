@@ -869,7 +869,8 @@ export function useCertificates() {
   const { user } = useAuth();
   const hook = useData<Certificate>([], 'certificates');
   const filteredData = useMemo(() => {
-    if (!user || user.role === 'admin' || user.role === 'staff') return hook.data;
+    if (!user) return [];
+    if (user.role === 'admin' || user.role === 'staff') return hook.data;
     return hook.data.filter(c => c.userId === user.id);
   }, [hook.data, user]);
   return { ...hook, data: filteredData };
@@ -1139,15 +1140,4 @@ export function useSupportQualityStats() {
   return stats;
 }
 
-export function useCertificates() {
-  const { user } = useAuth();
-  const hook = useData<Certificate>([], 'certificates');
-  
-  const userCerts = useMemo(() => {
-    if (!user) return [];
-    return hook.data.filter(c => c.userId === user.id);
-  }, [hook.data, user]);
-
-  return { ...hook, data: userCerts };
-}
 
