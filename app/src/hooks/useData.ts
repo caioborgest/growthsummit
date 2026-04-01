@@ -494,7 +494,7 @@ function getSelectFields(entity: string, projectId?: string): string {
 }
 
 // Generic hook for CRUD operations with project filtering
-export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations') {
+export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations', options?: { realtime?: boolean }) {
   const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -845,7 +845,7 @@ export function useCheckIns() {
 }
 
 export function useSessions() {
-  return useData<Session>([], 'sessions');
+  return useData<Session>([], 'sessions', { realtime: true });
 }
 
 export function useSpeakers() {
@@ -973,6 +973,34 @@ export function useProfile(userId?: string) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Habilitar Realtime se solicitado
+  useEffect(() => {
+    if (!options?.realtime || !projectId) return;
+
+    const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
+    
+    const channel = supabase
+      .channel(`realtime:${entityName}:${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: tableName,
+          filter: `project_id=eq.${projectId}`
+        },
+        () => {
+          // logger.debug(`[useData:${entityName}] Mudança detectada no banco. Atualizando...`);
+          fetchData(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [options?.realtime, entityName, projectId, selectedProject?.slug, fetchData]);
 
   return useMemo(() => ({
     data,
