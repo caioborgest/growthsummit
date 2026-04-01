@@ -555,7 +555,7 @@ export function AdminCheckIn() {
             <Camera className="h-6 w-6 text-brand-orange-coral opacity-20" />
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center bg-black/40 rounded-[2rem] border-2 border-dashed border-white/5 relative group overflow-hidden min-h-[600px] z-10">
+          <div className="flex-1 flex flex-col items-center justify-center bg-black/40 rounded-[2rem] border-2 border-dashed border-white/5 relative group overflow-hidden min-h-[750px] z-10">
             {!isScanning ? (
               <div className="text-center p-10">
                 <div className="relative mb-8">

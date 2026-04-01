@@ -142,9 +142,10 @@ export function AdminB2B() {
         duration: 20,
         tableNumber: ''
       });
-    } catch (err: any) {
-      logger.error('Erro ao agendar reunião:', err);
-      toast.error(`Erro ao agendar reunião: ${err.message || 'Erro desconhecido'}`);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      logger.error('Erro ao agendar reunião:', error);
+      toast.error(`Erro ao agendar reunião: ${error.message}`);
     }
   };
 
@@ -166,7 +167,7 @@ export function AdminB2B() {
         companyName: companyFormData.nome_empresa,
         contactName: companyFormData.nome_representante,
         contactEmail: companyFormData.email,
-        phone: companyFormData.telefone,
+        contactPhone: companyFormData.telefone,
         sector: companyFormData.setor,
         type: companyFormData.type,
         maxMeetings: companyFormData.maxMeetings,
@@ -188,9 +189,10 @@ export function AdminB2B() {
       toast.success('Empresa cadastrada com sucesso!');
       setIsCompanyModalOpen(false);
       resetCompanyForm();
-    } catch (err: any) {
-      logger.error('Erro ao cadastrar empresa:', err);
-      toast.error(`Erro ao cadastrar empresa: ${err.message || 'Erro desconhecido'}`);
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      logger.error('Erro ao cadastrar empresa:', error);
+      toast.error(`Erro ao cadastrar empresa: ${error.message}`);
     }
   };
 
@@ -279,8 +281,8 @@ export function AdminB2B() {
     totalMeetings: allMeetings.length,
     scheduled: allMeetings.filter(m => m.status === 'scheduled').length,
     completed: allMeetings.filter(m => m.status === 'completed').length,
-    highInterest: allMeetings.filter(m => (m as any).interestLevel === 'high').length,
-    followUps: allMeetings.filter(m => (m as any).followUp).length,
+    highInterest: allMeetings.filter(m => (m as B2BMeeting).interestLevel === 'high').length,
+    followUps: allMeetings.filter(m => (m as B2BMeeting).followUp).length,
   };
 
   return (
@@ -473,7 +475,7 @@ export function AdminB2B() {
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo B2B Participativo</Label>
                         <select
                           value={companyFormData.type}
-                          onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as any })}
+                          onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as 'anchor' | 'vendor' })}
                           className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 px-4"
                         >
                           <option value="vendor">Fornecedor (Vendedor)</option>
@@ -601,10 +603,10 @@ export function AdminB2B() {
                       </Badge>
                     </td>
                     <td className="p-6" data-label="Int.">
-                      {(meeting as any).interestLevel ? (
+                      {(meeting as B2BMeeting).interestLevel ? (
                         <div className="flex items-center gap-1.5">
                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                           <p className="text-white font-black text-xs uppercase italic">{(meeting as any).interestLevel}</p>
+                           <p className="text-white font-black text-xs uppercase italic">{(meeting as B2BMeeting).interestLevel}</p>
                         </div>
                       ) : (
                         <span className="text-gray-700">-</span>

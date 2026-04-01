@@ -27,7 +27,11 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 cameraIdOrConfig,
                 {
                     fps: 20,
-                    qrbox: { width: 450, height: 450 },
+                    qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+                        const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                        const qrboxSize = Math.floor(minEdgeSize * 0.7);
+                        return { width: qrboxSize, height: qrboxSize };
+                    },
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
@@ -175,8 +179,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                 </div>
                             )}
 
-                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'flex-1 min-h-[400px]' : 'aspect-square'}`}>
-                                <div id={readerId.current} className="w-full h-full object-cover"></div>
+                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'flex-1 min-h-[500px]' : 'aspect-square'}`}>
+                                <div id={readerId.current} className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full"></div>
 
                                 {isScanning && (
                                     <div className="absolute inset-0 pointer-events-none">

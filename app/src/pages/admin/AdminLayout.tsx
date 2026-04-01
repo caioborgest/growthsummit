@@ -528,17 +528,18 @@ export function AdminLayout() {
         </header>
 
         {/* Page Content with improved spacing and fade effect */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar flex flex-col bg-background/50">
-          <div className="p-4 sm:p-8 animate-fade-in-up flex-1 pb-32 md:pb-20">
-            <Outlet />
-          </div>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-background/50">
+          <div className="min-h-full flex flex-col">
+            <div className="p-4 sm:p-8 animate-fade-in-up flex-1 pb-32 md:pb-20">
+              <Outlet />
+            </div>
 
-          {/* Footer Copyright at the very end of scroll content */}
-          <footer className="px-8 py-8 border-t border-border-theme text-center sm:text-left bg-black/40 backdrop-blur-sm mt-auto">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.3em] font-sans">
-              © 2026 Growth Experience • Advanced Management Ecosystem
-            </p>
-          </footer>
+            <footer className="px-8 py-8 border-t border-border-theme text-center sm:text-left bg-black/40 backdrop-blur-sm">
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.3em] font-sans">
+                © 2026 Growth Experience • Advanced Management Ecosystem
+              </p>
+            </footer>
+          </div>
         </div>
 
         {/* Dynamic Shadow Gradients for Depth — Improved Duo Intensity */}

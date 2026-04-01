@@ -119,28 +119,30 @@ export const registrationService = {
      * Busca inscrições por projeto e filtro opcional
      */
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
-        let query = supabase
-            .from('inscricoes_growth_experience')
-            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas')
-            .eq('project_id', projectId);
+        let query: any = supabase.from('inscricoes_growth_experience' as any);
+        
+        query = query.select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas');
+        query = query.eq('project_id', projectId);
 
         if (filters.email) query = query.eq('email', filters.email);
         if (filters.status) query = query.eq('status', filters.status);
 
         const { data, error } = await query;
         if (error) throw error;
-        return data;
+        return data as any[];
     },
 
     /**
      * Busca uma inscrição pelo ID
      */
     async getById(id: string) {
-        const { data, error } = await supabase
-            .from('inscricoes_growth_experience')
+        let query: any = supabase.from('inscricoes_growth_experience' as any);
+        
+        const { data, error } = await query
             .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas,tipo_inscricao,qr_code,qr_code_data')
             .eq('id', id)
             .single();
+            
         if (error) throw error;
         return data;
     }

@@ -11,15 +11,9 @@ import {
   Trash2,
   Copy,
   Bell,
-  MessageSquare,
-  Info,
-  AlertTriangle,
-  CheckCircle2,
-  Filter,
   Zap,
   TrendingUp,
   BarChart3,
-  ExternalLink,
   ChevronRight,
   Search
 } from 'lucide-react';
@@ -37,7 +31,7 @@ import {
   DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
@@ -186,9 +180,9 @@ export default function AdminComunicacao() {
   });
 
   const stats = useMemo(() => {
-    const totalSent = campaigns.reduce((acc, c) => acc + (c.sent || 0), 0);
-    const totalOpened = campaigns.reduce((acc, c) => acc + (c.opened || 0), 0);
-    const totalClicked = campaigns.reduce((acc, c) => acc + (c.clicked || 0), 0);
+    const totalSent = campaigns.reduce((acc: number, c: any) => acc + (c.sent || 0), 0);
+    const totalOpened = campaigns.reduce((acc: number, c: any) => acc + (c.opened || 0), 0);
+    const totalClicked = campaigns.reduce((acc: number, c: any) => acc + (c.clicked || 0), 0);
     
     return {
       totalSent,
@@ -399,12 +393,12 @@ export default function AdminComunicacao() {
   };
 
   const handleSendCampaign = async (campaignId: string) => {
-    const campaign = campaigns.find(c => c.id === campaignId);
+    const campaign = campaigns.find((c: any) => c.id === campaignId);
     if (!campaign) return;
 
     if (!window.confirm(`Deseja disparar a campanha "${campaign.name}" agora?`)) return;
 
-    const template = templates.find(t => t.id === campaign.templateId) || templates[0];
+    const template = templates.find((t: any) => t.id === campaign.templateId) || templates[0];
     
     // Set compose data to trigger handleSend
     setComposeData({

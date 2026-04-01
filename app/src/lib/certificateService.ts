@@ -77,7 +77,7 @@ export class CertificateService {
                 title: '🎉 Certificado Disponível!',
                 message: `Seu certificado da palestra "${session.title}" já está pronto para download em seu painel.`,
                 type: 'success',
-                actionUrl: '/dashboard/certificados'
+                actionUrl: '/minha-area/certificados'
             });
 
             console.info(`Certificate issued and user notified: ${user.name} - ${session.title}`);
@@ -137,7 +137,7 @@ export class CertificateService {
                 title: '🏆 Conquista Desbloqueada!',
                 message: `Parabéns! Sua participação no ${project.name} foi validada e seu certificado oficial já está disponível.`,
                 type: 'success',
-                actionUrl: '/dashboard/certificados'
+                actionUrl: '/minha-area/certificados'
             });
 
             console.info(`Event certificate issued and user notified: ${user.name}`);
