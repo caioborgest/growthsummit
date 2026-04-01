@@ -21,6 +21,7 @@ interface PremiumHeaderProps {
     onLogout: () => void;
     onGuideClick: () => void;
     onSupportClick: () => void;
+    onNotificationsClick?: () => void;
     onNotificationRead: (id: string) => void;
 }
 
@@ -35,6 +36,7 @@ export function PremiumHeader({
     onLogout,
     onGuideClick,
     onSupportClick,
+    onNotificationsClick,
     onNotificationRead
 }: PremiumHeaderProps) {
     const unreadCount = (notifications || []).filter(n => n && !n.read && !n.isRead).length;
@@ -42,6 +44,30 @@ export function PremiumHeader({
     const { theme, toggleTheme } = useTheme();
 
     const initials = userName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+    // URL Regex for link parsing
+    const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+
+    const parseMessage = (text: string) => {
+        if (!text) return '';
+        return text.split(URL_REGEX).map((part, i) => {
+            if (part.match(URL_REGEX)) {
+                return (
+                    <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-orange-coral underline font-bold break-all"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+            return part;
+        });
+    };
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-safe-top relative">
@@ -146,7 +172,7 @@ export function PremiumHeader({
                                             <p className="text-foreground text-[11px] font-bold leading-tight">{n.title}</p>
                                             <span className="text-[8px] text-foreground/40 font-bold shrink-0">{n.time}</span>
                                         </div>
-                                        <p className="text-foreground/50 text-[10px] leading-tight">{n.message}</p>
+                                        <p className="text-foreground/50 text-[10px] leading-tight mt-1">{parseMessage(n.message)}</p>
                                     </div>
                                 )) : (
                                     <p className="text-center py-6 text-foreground/30 text-[10px] font-black uppercase tracking-widest">
@@ -154,6 +180,22 @@ export function PremiumHeader({
                                     </p>
                                 )}
                             </div>
+                            {notifications.length > 0 && (
+                                <div className="mt-4 pt-3 border-t border-white/5 text-center">
+                                    <button
+                                        onClick={() => {
+                                            // Close popover and navigate (or set tab)
+                                            // The parent should handle the tab change if we are in Dashboard
+                                            // Or we just use a generic 'onNavigate' if available, but for now we expect the user to click
+                                            (document.activeElement as HTMLElement)?.blur(); // Close popover hack
+                                            onNotificationsClick && onNotificationsClick();
+                                        }}
+                                        className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest hover:underline"
+                                    >
+                                        Ver todas as notificações
+                                    </button>
+                                </div>
+                            )}
                         </PopoverContent>
                     </Popover>
 

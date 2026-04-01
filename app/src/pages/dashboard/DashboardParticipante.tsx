@@ -13,7 +13,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -51,6 +51,7 @@ import { DocsSection } from './components/DocsSection';
 import { CertificatesSection } from './components/CertificatesSection';
 import { DashboardEquipe } from './components/DashboardEquipe';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
+import { NotificationsSection } from './components/NotificationsSection';
 import { GuiaInterno } from '@/components/app/GuiaInterno';
 
 // Modals & Utils
@@ -74,6 +75,7 @@ export function DashboardParticipante() {
   const { data: stands } = useStands();
   const { data: standCheckIns } = useStandCheckIns();
   const { data: certificates, isLoading: loadingCerts, refetch: refetchCerts } = useCertificates();
+  const { refetch: refetchNotifications } = useNotifications();
   
   // State
   const [activeTab, setActiveTab] = useState('inicio');
@@ -83,6 +85,7 @@ export function DashboardParticipante() {
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [ratingModal, setRatingModal] = useState({ isOpen: false, mentorshipId: '', mentorName: '' });
+  const [searchParams] = useSearchParams();
 
   // Notifications filtering
   const notifications = useMemo(() => 
@@ -171,9 +174,19 @@ export function DashboardParticipante() {
     tabs.push({ id: 'documentos', icon: FileText, label: 'Docs' });
     tabs.push({ id: 'certificados', icon: Award, label: 'Certs' });
     tabs.push({ id: 'guia', icon: BookOpen, label: 'Guia' });
+    tabs.push({ id: 'notificacoes', icon: Bell, label: 'Notificações' });
 
     return tabs;
   }, [selectedProject]);
+
+  // Sync tab with query param
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+        const validTab = navTabs.find(t => t.id === tab);
+        if (validTab) setActiveTab(tab);
+    }
+  }, [searchParams, navTabs]);
 
   // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
@@ -477,6 +490,8 @@ export function DashboardParticipante() {
         return <DashboardEquipe batches={[]} />;
       case 'guia':
         return <GuiaInterno />;
+      case 'notificacoes':
+        return <NotificationsSection notifications={notifications} onRefresh={refetchNotifications} />;
       default:
         return <div className="text-white text-center py-20">Em breve</div>;
     }
@@ -498,6 +513,7 @@ export function DashboardParticipante() {
           onNotificationRead={async (id) => { await handleMarkAsRead(id); }}
           onGuideClick={() => setActiveTab('guia')}
           onSupportClick={() => setActiveTab('suporte')}
+          onNotificationsClick={() => setActiveTab('notificacoes')}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">

@@ -40,6 +40,30 @@ export function Header() {
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
+  // URL Regex for link parsing
+  const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+
+  const parseMessage = (text: string) => {
+    if (!text) return '';
+    return text.split(URL_REGEX).map((part, i) => {
+      if (part.match(URL_REGEX)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-orange-coral underline font-bold break-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -270,8 +294,8 @@ export function Header() {
                               </p>
                               {!notif.read && <div className="w-2 h-2 bg-brand-orange-coral rounded-full mt-1 flex-shrink-0" />}
                             </div>
-                            <p className="text-gray-400 text-[11px] mt-1 leading-tight line-clamp-2">
-                              {notif.message}
+                            <p className="text-gray-400 text-[11px] mt-1 leading-tight">
+                              {parseMessage(notif.message)}
                             </p>
                             <span className="text-[9px] text-gray-500 mt-2 block italic">
                               {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: ptBR })}
@@ -285,13 +309,11 @@ export function Header() {
                         </div>
                       )}
                     </div>
-                    {notifications && notifications.length > 5 && (
                       <div className="mt-4 pt-3 border-t border-white/5 text-center">
-                        <Link to="/perfil/notificacoes" className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest hover:underline">
+                        <Link to="/minha-area?tab=notificacoes" className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest hover:underline">
                           Ver todas as notificações
                         </Link>
                       </div>
-                    )}
                   </DropdownMenuContent>
               </DropdownMenu>
             )}
