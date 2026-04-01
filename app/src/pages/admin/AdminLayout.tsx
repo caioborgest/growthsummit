@@ -333,10 +333,10 @@ export function AdminLayout() {
         </nav>
 
         {/* User Profile Section Premium */}
-        <div className="p-4 lg:p-6 mt-auto border-t border-border-theme bg-muted/20">
+        <div className="p-4 lg:p-6 mt-auto border-t border-border-theme">
           <div
             onClick={() => setIsProfileOpen(true)}
-            className="bg-accent/50 border border-border-theme rounded-2xl lg:rounded-3xl p-3 lg:p-4 transition-all hover:bg-accent hover:border-white/20 group cursor-pointer shadow-sm"
+            className="bg-white/[0.03] border border-white/10 rounded-2xl lg:rounded-3xl p-3 lg:p-4 transition-all hover:bg-white/[0.08] hover:border-white/20 group cursor-pointer shadow-sm"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">

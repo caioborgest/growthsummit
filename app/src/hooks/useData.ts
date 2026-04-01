@@ -416,23 +416,11 @@ function invalidateCache(projectId: string | undefined, entityName: string) {
 function getSelectFields(entity: string, projectId?: string): string {
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId)) {
-    if (entity === 'registrations') {
+    if (entity === 'registrations' || entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';
-    }
-    if (entity === 'sessions') {
-      return 'id,project_id,title,description,type,category,speakers,partner,room,start_time,end_time,max_capacity,registered_count,topics,color';
     }
     if (entity === 'mentors') {
       return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
-    }
-    if (entity === 'check_ins') {
-      return '*';
-    }
-    if (entity === 'companies') {
-      return 'id,project_id,user_id,nome_representante,cargo,email,telefone,nome_empresa,cnpj,setor,porte,faturamento_anual,numero_funcionarios,descricao_empresa,produtos_servicos,site_url,linkedin_url,logo_url,tipo_interesse,areas_interesse,descricao_objetivos,status,created_at';
-    }
-    if (entity === 'startups') {
-      return '*';
     }
     if (entity === 'empresas_incentivadoras') {
       return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
@@ -696,12 +684,16 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         query = query.eq('project_id', projectId);
       }
 
-      const { error } = await query;
+      const { data: updatedData, error } = await query.select();
 
       if (error) throw error;
-      // Update local state immediately
-      setData(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+      
+      // Update local state immediately with returned data if available, or fall back to updates object
+      const finalUpdate = updatedData && updatedData[0] ? mapFromSupabase(updatedData[0]) : { ...updates };
+      setData(prev => prev.map(item => item.id === id ? { ...item, ...finalUpdate } as T : item));
       invalidateCache(projectId!, entityName);
+      
+      // Still fetch to ensure consistency, but local state is already optimistic
       await fetchData(true);
     } catch (err) {
       logger.error(`Erro ao atualizar ${entityName}:`, err);

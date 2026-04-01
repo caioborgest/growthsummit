@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:prod": "vite build --mode production",
-    "build:types": "tsc -b && vite build",
+    "build": "npm run clean && vite build",
+    "build:prod": "npm run clean && vite build --mode production",
+    "build:types": "npm run clean && tsc -b && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",

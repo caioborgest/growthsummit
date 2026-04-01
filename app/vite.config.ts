@@ -61,7 +61,8 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxSizeBytes: 20 * 1024 * 1024 // 20MB para fontes
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -75,13 +76,14 @@ export default defineConfig({
               cacheName: 'supabase-assets-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxSizeBytes: 512 * 1024 * 1024 // 512MB para assets do Supabase
               }
             }
           }
         ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Limite de 5MB por arquivo no precache
       }
     })
   ],

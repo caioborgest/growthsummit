@@ -262,14 +262,20 @@ export default function AdminInscricoes() {
   const handleUpdateStatus = async (id: string, status: any) => {
     if (isUpdating) return;
     setIsUpdating(true);
+    logger.info(`Atualizando status de inscrição ${id} para ${status}`);
+
     try {
       const registration = registrations.find(r => r.id === id);
-      if (!registration) return;
+      if (!registration) {
+        logger.error(`Inscrição ${id} não encontrada para atualização.`);
+        return;
+      }
 
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
 
-      if (status === 'paid' || status === 'pago' || status === 'free') {
+      // Normalização de status para o padrão Growth Experience
+      if (status === 'paid' || status === 'pago' || status === 'free' || status === 'ativo') {
         updates.status_pagamento = 'pago';
         updates.paymentStatus = 'pago';
         updates.status = 'ativo';
@@ -283,14 +289,16 @@ export default function AdminInscricoes() {
 
       await update(id, updates);
 
+      // Sincronização financeira e de sessões em caso de cancelamento
       if (status === 'cancelled' && oldStatus !== 'cancelled') {
         if (registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
           const { supabase } = await import('@/lib/supabase');
           for (const sessionId of registration.cursosSelecionados) {
             try {
-              await supabase.rpc('decrement_session_count', { session_id: sessionId });
+              // Decrementar contador de sessões via RPC
+              await (supabase.rpc as any)('decrement_session_count', { session_id: sessionId });
             } catch (err) {
-              console.error(`Erro ao decrementar sessão ${sessionId}:`, err);
+              logger.error(`Erro ao decrementar sessão ${sessionId}:`, err);
             }
           }
         }
@@ -302,35 +310,38 @@ export default function AdminInscricoes() {
         }
       }
 
-      if ((status === 'paid' || status === 'free' || status === 'pago')) {
+      // Registro financeiro para confirmações de pagamento
+      if (['paid', 'free', 'pago', 'ativo'].includes(status)) {
         try {
           let finalAmount = registration.amount || 0;
-          if ((status === 'paid' || status === 'pago') && finalAmount === 0 && registration.palestrasNoturnas) {
+          
+          // Caso especial: Night Experience sem valor definido
+          if (['paid', 'pago', 'ativo'].includes(status) && finalAmount === 0 && registration.palestrasNoturnas) {
             finalAmount = 179.90;
             await update(id, { amount: finalAmount } as any);
             updates.amount = finalAmount;
           }
 
-          const amount = status === 'free' ? 0 : finalAmount;
+          const amountValue = status === 'free' ? 0 : finalAmount;
           const description = `Inscrição (${status === 'free' ? 'Cortesia' : 'Manual'}): ${registration.name}${registration.palestrasNoturnas ? ' + Night Experience' : ''}`;
 
           const existingTransaction = transactions.find(t => t.relatedId === id);
 
           if (existingTransaction) {
             await updateTransaction(existingTransaction.id, {
-              amount: amount,
+              amount: amountValue,
               status: 'completed',
               description: description,
               date: new Date().toISOString()
             } as any);
             toast.success('Lançamento financeiro atualizado');
-          } else if (!['pago', 'paid'].includes(oldStatus)) {
+          } else if (!['pago', 'paid', 'ativo'].includes(String(oldStatus).toLowerCase())) {
             await createTransaction({
               projectId: registration.projectId || '',
               type: 'income',
               category: 'Inscrições',
               description: description,
-              amount: amount,
+              amount: amountValue,
               date: new Date().toISOString(),
               status: 'completed',
               relatedId: id,
@@ -339,17 +350,19 @@ export default function AdminInscricoes() {
             toast.success('Lançamento registrado no financeiro');
           }
         } catch (finErr) {
-          console.error('Erro ao processar financeiro:', finErr);
+          logger.error('Erro ao processar financeiro:', finErr);
         }
       }
 
-      toast.success(`Status atualizado com sucesso!`);
+      toast.success(`Status ${status.toUpperCase()} confirmado com sucesso!`);
+      
+      // Atualizar modal de detalhes localmente se estiver aberto
       if (detalhes && detalhes.id === id) {
         setDetalhes(prev => prev ? { ...prev, ...updates } : null);
       }
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      toast.error('Erro ao atualizar status de pagamento.');
+      logger.error('Erro fatal ao atualizar status:', error);
+      toast.error('Ocorreu um erro ao processar a atualização. Verifique os logs.');
     } finally {
       setIsUpdating(false);
     }
