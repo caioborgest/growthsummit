@@ -15,7 +15,6 @@ export function SelfCheckInModal({ onClose, onScanSuccess, registration, initial
     const [step, setStep] = useState(initialStep); // 1: Info, 2: Scanner, 3: Success, 4: Manual
     const [loading, setLoading] = useState(false);
     const [manualCode, setManualCode] = useState('');
-    const [manualCode, setManualCode] = useState('');
 
 
     return (
