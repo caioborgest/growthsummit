@@ -134,6 +134,7 @@ export interface Registration {
   createdAt: string;
   checkedIn: boolean;
   checkInTime?: string;
+  check_in_at?: string; // Snake case mapping
   // Growth Experience specific fields
   cursosSelecionados?: string[];
   palestrasNoturnas?: boolean;
@@ -143,6 +144,9 @@ export interface Registration {
   externalPaymentUrl?: string;
   loteId?: string;
   voucherEmpresa?: string;
+  tipo_inscricao?: string; // Snake case mapping
+  nome?: string; // Snake case mapping
+  telefone?: string; // Snake case mapping
 }
 
 export interface Mentor {

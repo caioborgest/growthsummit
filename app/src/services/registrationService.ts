@@ -136,7 +136,7 @@ export const registrationService = {
      * Busca uma inscrição pelo ID
      */
     async getById(id: string) {
-        let query: any = supabase.from('inscricoes_growth_experience' as any);
+        const query: any = supabase.from('inscricoes_growth_experience' as any);
         
         const { data, error } = await query
             .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas,tipo_inscricao,qr_code,qr_code_data')

@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import { useProject } from '@/contexts/ProjectContext';
 import { useCompanies, useB2BMeetings, useB2BMatches, useB2BAppointmentsTriunfo } from '@/hooks/useData';
+import type { B2BMeeting } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -175,7 +176,6 @@ export function AdminB2B() {
         companyDescription: companyFormData.descricao_empresa,
         productsServices: companyFormData.produtos_servicos,
         website: companyFormData.site_url,
-        linkedin: companyFormData.linkedin_url,
         interestType: companyFormData.tipo_interesse,
         interestAreas: companyFormData.areas_interesse,
         objectives: companyFormData.descricao_objetivos,
@@ -183,7 +183,9 @@ export function AdminB2B() {
         cnpj: companyFormData.cnpj,
         companySize: companyFormData.porte,
         annualRevenue: companyFormData.faturamento_anual,
-        employeeCount: companyFormData.numero_funcionarios
+        employeeCount: companyFormData.numero_funcionarios,
+        userId: '', // Admin-created companies might not have a direct user yet
+        description: companyFormData.descricao_empresa || companyFormData.nome_empresa
       });
 
       toast.success('Empresa cadastrada com sucesso!');

@@ -15,7 +15,10 @@ import {
   TrendingUp,
   BarChart3,
   ChevronRight,
-  Search
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,10 +39,16 @@ import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
 import { emailService } from '@/services/emailService';
+import { EmailCampaign, EmailTemplate, Notification as AppNotification } from '@/types';
 
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+
+interface Recipient {
+  email: string;
+  name: string;
+}
 
 const initialEmailTemplates = [
   {
@@ -169,20 +178,20 @@ export default function AdminComunicacao() {
   const { data: registrations } = useRegistrations();
   const { data: notificationsList, refetch: refetchNotifications } = useNotifications();
   
-  const [templates, setTemplates] = useState(() => {
+  const [templates, setTemplates] = useState<EmailTemplate[]>(() => {
     const saved = localStorage.getItem('gs_email_templates');
     return saved ? JSON.parse(saved) : initialEmailTemplates;
   });
 
-  const [campaigns, setCampaigns] = useState(() => {
+  const [campaigns, setCampaigns] = useState<EmailCampaign[]>(() => {
     const saved = localStorage.getItem('gs_email_campaigns');
     return saved ? JSON.parse(saved) : initialEmailCampaigns;
   });
 
   const stats = useMemo(() => {
-    const totalSent = campaigns.reduce((acc: number, c: any) => acc + (c.sent || 0), 0);
-    const totalOpened = campaigns.reduce((acc: number, c: any) => acc + (c.opened || 0), 0);
-    const totalClicked = campaigns.reduce((acc: number, c: any) => acc + (c.clicked || 0), 0);
+    const totalSent = campaigns.reduce((acc: number, c) => acc + (c.stats?.sent || 0), 0);
+    const totalOpened = campaigns.reduce((acc: number, c) => acc + (c.stats?.opened || 0), 0);
+    const totalClicked = campaigns.reduce((acc: number, c) => acc + (c.stats?.clicked || 0), 0);
     
     return {
       totalSent,
@@ -264,11 +273,9 @@ export default function AdminComunicacao() {
     const filter = campaignFormData.recipients;
     
     if (filter === 'all') count = registrations.length;
-    else if (filter === 'paid') count = registrations.filter(r => (r as any).status === 'paid' || (r as any).status_pagamento === 'pago').length;
-    else if (filter === 'pending') count = registrations.filter(r => (r as any).status === 'pending' || (r as any).status_pagamento === 'pendente').length;
-    else if (filter === 'vip') count = registrations.filter(r => (r as any).ticketType === 'vip' || (r as any).tipo_inscricao === 'vip').length;
-    // ... potentially more precise counts for mentors/startups if we had them in context, 
-    // but for now we'll estimate or use the context we have.
+    else if (filter === 'paid') count = registrations.filter(r => r.status === 'paid' || r.status_pagamento === 'pago').length;
+    else if (filter === 'pending') count = registrations.filter(r => r.status === 'pending' || r.status_pagamento === 'pendente').length;
+    else if (filter === 'vip') count = registrations.filter(r => r.ticketType === 'vip' || r.tipo_inscricao === 'vip').length;
     else count = registrations.length; // Fallback
 
     const newCampaign = {
@@ -296,9 +303,9 @@ export default function AdminComunicacao() {
     }
 
     try {
-      const loadingToast = toast.loading('Preparando envio personalizado...');
+      toast.loading('Preparando envio personalizado...');
 
-      let recipientsData: any[] = [];
+      let recipientsData: Recipient[] = [];
 
       // 1. Buscar destinatários baseados no filtro (com isolamento por projeto)
       if (!selectedProject?.id) {
@@ -333,8 +340,8 @@ export default function AdminComunicacao() {
           (supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel') as any).eq('project_id', selectedProject.id)
         ]);
         recipientsData = [
-          ...(b2bRes.data || []).map((item: any) => ({ email: item.email, name: item.nome_empresa || item.nome_representante })),
-          ...(incentiveRes.data || []).map((item: any) => ({ email: item.email, name: item.nome_empresa || item.nome_responsavel }))
+          ...(b2bRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_representante) as string })),
+          ...(incentiveRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_responsavel) as string }))
         ];
       }
 
@@ -393,12 +400,12 @@ export default function AdminComunicacao() {
   };
 
   const handleSendCampaign = async (campaignId: string) => {
-    const campaign = campaigns.find((c: any) => c.id === campaignId);
+    const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return;
 
     if (!window.confirm(`Deseja disparar a campanha "${campaign.name}" agora?`)) return;
 
-    const template = templates.find((t: any) => t.id === campaign.templateId) || templates[0];
+    const template = templates.find((t) => t.id === campaign.templateId) || templates[0];
     
     // Set compose data to trigger handleSend
     setComposeData({
@@ -1029,7 +1036,7 @@ export default function AdminComunicacao() {
 
             <div className="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
               {notificationsList && notificationsList.length > 0 ? (
-                notificationsList.slice(0, 30).map((n: any) => (
+                notificationsList.slice(0, 30).map((n: AppNotification) => (
                   <Card key={n.id} className="p-5 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex gap-5 group hover:bg-white/[0.05] transition-all">
                     <div className={`h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center border border-white/5 ${
                       n.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' :
