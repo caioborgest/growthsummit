@@ -39,7 +39,7 @@ import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
 import { emailService } from '@/services/emailService';
-import { EmailCampaign, EmailTemplate, Notification as AppNotification } from '@/types';
+import type { EmailCampaign, EmailTemplate, Notification as AppNotification } from '@/types/index';
 
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';

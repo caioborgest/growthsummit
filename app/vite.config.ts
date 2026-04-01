@@ -61,8 +61,7 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-                maxSizeBytes: 20 * 1024 * 1024 // 20MB para fontes
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -76,8 +75,7 @@ export default defineConfig({
               cacheName: 'supabase-assets-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-                maxSizeBytes: 512 * 1024 * 1024 // 512MB para assets do Supabase
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }
           }
