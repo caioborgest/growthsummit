@@ -214,9 +214,9 @@ export function AgendaSection({
                         ) : (
                             <div className="p-8 text-center rounded-[2rem] border border-dashed" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
                                 <Zap className="h-8 w-8 mx-auto mb-3 text-brand-orange-coral/30" />
-                                <p className="text-foreground/40 text-sm mb-4">Aguardando definição da grade oficial.</p>
+                                <p className="text-foreground/40 text-sm mb-4">A programação oficial do Growth Experience Triunfo está sendo finalizada.</p>
                                 <p className="text-[10px] text-foreground/20 font-bold uppercase tracking-widest leading-relaxed">
-                                    O evento Triunfo acontece no dia 16/04.<br/>Fique atento às notificações do App.
+                                    O evento acontece dia 16/04 às 17h no Espaço Parque.<br/>Fique atento às notificações do App.
                                 </p>
                             </div>
                         )}
@@ -231,10 +231,10 @@ export function AgendaSection({
                         </h3>
                         <ul className="space-y-3">
                             {[
-                                'O credenciamento Triunfo abre às 17h.',
-                                'Local: Arena Principal (Espaço Parque).',
-                                'Check-in 100% digital via App.',
-                                'Networking ativo durante todo o evento.',
+                                'O credenciamento Triunfo abre às 17:00h no dia 16/04.',
+                                'Local: Espaço Parque (Triunfo-PE).',
+                                'Programação Pocket Edition: 4 palestras explosivas.',
+                                'Networking ativo com mais de 500 empresários.',
                             ].map((note, i) => (
                                 <li key={i} className="flex items-start gap-3 text-xs text-foreground/50 leading-relaxed font-medium">
                                     <div className="h-1.5 w-1.5 rounded-full bg-teal-500 mt-1.5 shrink-0" />

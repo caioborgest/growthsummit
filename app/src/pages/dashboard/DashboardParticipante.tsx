@@ -7,7 +7,9 @@ import {
   User, 
   LayoutGrid,
   FileText,
-  Award
+  Award,
+  Handshake,
+  Rocket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -68,7 +70,7 @@ export function DashboardParticipante() {
   const { data: myMentorships, update: updateMentorship } = useMentoringSessions();
   const { data: stands } = useStands();
   const { data: standCheckIns } = useStandCheckIns();
-  const { data: raffles } = useRaffles();
+  // const { data: raffles } = useRaffles();
   
   // State
   const [activeTab, setActiveTab] = useState('inicio');
@@ -132,7 +134,10 @@ export function DashboardParticipante() {
       { id: 'inicio', icon: LayoutGrid, label: 'Início' },
       { id: 'ingresso', icon: QrCode, label: 'Ticket' },
       { id: 'agenda', icon: Calendar, label: 'Agenda' },
-      { id: 'sorteios', icon: Sparkles, label: 'Sorteios' }
+      { id: 'mentorias', icon: Sparkles, label: 'Mentoria' },
+      { id: 'b2b', icon: Handshake, label: 'B2B/Match' },
+      { id: 'startups', icon: Rocket, label: 'Startups' },
+      { id: 'sorteios', icon: Sparkles, label: 'Sorteios' },
     ];
 
     // Show Circuito if enabled in project settings
@@ -150,7 +155,7 @@ export function DashboardParticipante() {
   // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
     const qrData = parseQRString(decodedText);
-    if (!qrData || (qrData.type !== 'session' && qrData.type !== 'registration')) {
+    if (!qrData || !['session', 'registration', 'entry', 'ticket'].includes(qrData.type)) {
         throw new Error('QR Code inválido para este tipo de check-in');
     }
 
@@ -165,11 +170,12 @@ export function DashboardParticipante() {
 
         if (entryErr) throw entryErr;
         toast.success('Check-in Triunfo realizado! Acesso liberado para toda programação.');
+        setIsCheckInModalOpen(false);
         return;
     }
 
     // Call RPC or direct insert for activities
-    const { error } = await supabase.from('activity_attendances').insert({
+    const { error } = await supabase.from('check_ins_atividades').insert({
         project_id: selectedProject?.id,
         session_id: qrData.id,
         registration_id: registration.id,
@@ -180,6 +186,7 @@ export function DashboardParticipante() {
 
     if (error) throw error;
     toast.success('Check-in realizado com sucesso!');
+    setIsCheckInModalOpen(false);
   };
 
   // Render Section based on activeTab
@@ -195,8 +202,8 @@ export function DashboardParticipante() {
             <PwaDashboardHero 
               eventName={selectedProject?.name || 'Growth Experience'}
               location={selectedProject?.location || 'Evento'}
-              date={selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026'}
-              eventDate={selectedProject?.startDate}
+              date={selectedProject?.slug?.includes('triunfo') ? '16 ABR 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026')}
+              eventDate={selectedProject?.slug?.includes('triunfo') ? '2026-04-16T17:00:00' : selectedProject?.startDate}
               stats={{
                 people: '500+',
                 content: '12h+',
@@ -290,6 +297,15 @@ export function DashboardParticipante() {
           />
         );
       case 'mentorias':
+        if (!selectedProject?.settings?.enableMentoring) {
+          return (
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+              <Sparkles className="h-12 w-12 text-gray-600 mb-4" />
+              <h2 className="text-xl font-black text-white italic uppercase">Mentoria Indisponível</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Mentoria não está ativada para esse evento.</p>
+            </div>
+          );
+        }
         return (
           <MentorshipSection 
             myMentorships={myMentorships}
@@ -301,14 +317,68 @@ export function DashboardParticipante() {
             setIsMentoriaModalOpen={setIsMentoriaModalOpen}
           />
         );
+      case 'b2b':
+        if (!selectedProject?.settings?.enableB2B) {
+          return (
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+              <Handshake className="h-12 w-12 text-gray-600 mb-4" />
+              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">B2B Indisponível</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Rodada de Negócios não está ativada para esse evento.</p>
+            </div>
+          );
+        }
+        return (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-6">
+            <div className="w-20 h-20 bg-teal-500/20 rounded-3xl flex items-center justify-center shadow-lg shadow-teal-500/10">
+              <Handshake className="h-10 w-10 text-teal-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-white italic">Rodada de Negócios</h2>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Conecte-se com outros empresários e gere novas parcerias estratégicas.</p>
+            </div>
+            <button 
+              onClick={() => setIsB2BModalOpen(true)}
+              className="px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95"
+            >
+              INSCREVER AGORA
+            </button>
+          </div>
+        );
+      case 'startups':
+        if (!selectedProject?.settings?.enableStartups) {
+          return (
+            <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+              <Rocket className="h-12 w-12 text-gray-600 mb-4" />
+              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">Startups Indisponível</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Expo StartUp não está ativada para esse evento.</p>
+            </div>
+          );
+        }
+        return (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-6">
+            <div className="w-20 h-20 bg-brand-orange-coral/20 rounded-3xl flex items-center justify-center shadow-lg shadow-brand-orange-coral/10">
+              <Rocket className="h-10 w-10 text-brand-orange-coral" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-white italic italic italic italic">Expo StartUp</h2>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Apresente seu projeto na arena de inovação do Growth Experience.</p>
+            </div>
+            <button 
+              onClick={() => setIsStartupModalOpen(true)}
+              className="px-8 py-4 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-xl shadow-brand-orange-coral/20 transition-all active:scale-95"
+            >
+              RESERVAR STAND
+            </button>
+          </div>
+        );
+      case 'certificados':
+        return <CertificatesSection certificados={[]} loadingCerts={false} fetchCertificados={() => {}} onDownload={() => {}} />;
       case 'dados':
         return <ProfileForm />;
       case 'suporte':
         return <SupportSection navigate={navigate} />;
       case 'documentos':
         return <DocsSection documentos={[]} loadingDocs={false} />;
-      case 'certificados':
-        return <CertificatesSection certificados={[]} loadingCerts={false} fetchCertificados={() => {}} onDownload={() => {}} />;
       case 'equipe':
         return <DashboardEquipe batches={[]} />;
       default:
