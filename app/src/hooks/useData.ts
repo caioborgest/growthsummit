@@ -83,6 +83,7 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
       case 'raffle_participants': return 'raffle_participants';
       case 'support_tickets': return 'support_tickets';
       case 'support_ticket_messages': return 'support_ticket_messages';
+      case 'transactions': return 'transacoes_growth_experience';
       default: return entity;
     }
   }
