@@ -71,7 +71,7 @@ export function AdminCertificados() {
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
     // Template State
-    const [template, setTemplate] = useState<CertificateTemplate>({
+    const [template, setTemplate] = useState<CertificateTemplate & { total_hours: number }>({
         title: 'CERTIFICADO DE PARTICIPAÇÃO',
         description: 'Certificamos com orgulho que o participante concluiu com sucesso todas as etapas da atividade proposta no evento.',
         subtitle: 'Growth Experience 2026',
@@ -85,7 +85,8 @@ export function AdminCertificados() {
         background_url: '',
         logo_url: '',
         signature_url: '',
-        partner_logos: []
+        partner_logos: [],
+        total_hours: 12
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -128,14 +129,16 @@ export function AdminCertificados() {
                 const hasChanged = 
                     prev.title !== savedTemplate.title || 
                     prev.subtitle !== savedTemplate.subtitle ||
-                    prev.logo_url !== savedTemplate.logo_url;
+                    prev.logo_url !== savedTemplate.logo_url ||
+                    prev.total_hours !== (savedTemplate.total_hours || 12);
                 
                 if (!hasChanged) return prev;
 
                 return { 
                     ...prev, 
                     ...savedTemplate,
-                    partner_logos: savedTemplate.partner_logos || []
+                    partner_logos: savedTemplate.partner_logos || [],
+                    total_hours: savedTemplate.total_hours || 12
                 };
             });
         }
@@ -524,7 +527,7 @@ export function AdminCertificados() {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Nome do Assinante</label>
                                             <Input
@@ -539,6 +542,15 @@ export function AdminCertificados() {
                                                 value={template.ceo_role}
                                                 onChange={e => setTemplate({ ...template, ceo_role: e.target.value })}
                                                 className="bg-dark-100 border-none h-12 text-white"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Carga Horária (Padrão)</label>
+                                            <Input
+                                                type="number"
+                                                value={template.total_hours}
+                                                onChange={e => setTemplate({ ...template, total_hours: parseInt(e.target.value) || 0 })}
+                                                className="bg-dark-100 border-none h-12 text-white font-black"
                                             />
                                         </div>
                                     </div>

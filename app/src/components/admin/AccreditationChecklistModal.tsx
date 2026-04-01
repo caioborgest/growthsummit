@@ -24,6 +24,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useCheckIns } from '@/hooks/useData';
 import type { Registration, Mentor, Company, Startup } from '@/types';
+import { CertificateService } from '@/lib/certificateService';
+import { useProject } from '@/contexts/ProjectContext';
 
 type Entity = Registration | Mentor | Company | Startup;
 
@@ -37,6 +39,7 @@ interface AccreditationChecklistModalProps {
 
 export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onSuccess }: AccreditationChecklistModalProps) {
     const { user } = useAuth();
+    const { selectedProject } = useProject();
     const { data: checkIns, create: createCheckIn } = useCheckIns();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -89,6 +92,15 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                 notes: `Accreditation for ${role}: ${entity.name || (entity as any).nome}`,
                 operatorId: user?.id
             } as any);
+
+            // Emitir certificado se for participante e for entrada geral
+            if (role === 'participant' && selectedProject) {
+                CertificateService.issueEventCertificate(
+                    { id: entity.userId, name: (entity as Registration).nome || (entity as Registration).name },
+                    selectedProject,
+                    entity.id
+                );
+            }
 
             toast.success('Credenciamento atualizado com sucesso!');
             onSuccess();

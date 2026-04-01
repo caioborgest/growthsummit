@@ -26,9 +26,12 @@ import type { Registration } from '@/types';
 import type { QRData } from '@/lib/qrUtils';
 import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
+import { CertificateService } from '@/lib/certificateService';
+import { useProject } from '@/contexts/ProjectContext';
 
 export function AdminCheckIn() {
   const { user } = useAuth();
+  const { selectedProject } = useProject();
   const { data: mentors } = useMentors();
   const { data: companies } = useCompanies();
   const { data: startups } = useStartups();
@@ -92,6 +95,15 @@ export function AdminCheckIn() {
           operatorId: user?.id
         });
 
+        // Emitir certificado de participação no evento e notificar
+        if (selectedProject) {
+            CertificateService.issueEventCertificate(
+                { id: registration.userId, name: registration.nome || registration.name },
+                selectedProject,
+                registration.id
+            );
+        }
+
         toast.success(`Check-in GERAL realizado: ${registration.ticketNumber}`);
       } else {
         const alreadyAttending = sessionAttendance.some(
@@ -116,6 +128,16 @@ export function AdminCheckIn() {
           operatorId: user?.id
         });
 
+        // Tentar emitir certificado da atividade e notificar
+        if (selectedProject && selectedSession) {
+            CertificateService.checkAndIssueSessionCertificate(
+                { id: registration.userId, name: registration.nome || registration.name },
+                selectedProject,
+                selectedSession,
+                registration.id
+            );
+        }
+
         toast.success(`Presença registrada em: ${selectedSession?.title}`);
       }
 
@@ -127,7 +149,7 @@ export function AdminCheckIn() {
       triggerVibrate('error');
       toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
-  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id]);
+  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id, selectedProject]);
 
   const handleScannerSuccess = useCallback((res: QRData | null) => {
     if (!res) return;
@@ -478,7 +500,7 @@ export function AdminCheckIn() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <p className="text-white text-sm font-black italic uppercase tracking-tight">{item._name || 'Sem nome'}</p>
+                           <p className="text-white text-sm font-black italic uppercase tracking-tight">{item._name || 'Sem nome'}</p>
                           <Badge className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border-none ${
                             item._role === 'participant' ? 'bg-teal-500/10 text-teal-400' :
                             item._role === 'mentor' ? 'bg-blue-500/10 text-blue-400' :
@@ -533,7 +555,7 @@ export function AdminCheckIn() {
             <Camera className="h-6 w-6 text-brand-orange-coral opacity-20" />
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center bg-black/40 rounded-[2rem] border-2 border-dashed border-white/5 relative group overflow-hidden min-h-[450px] z-10">
+          <div className="flex-1 flex flex-col items-center justify-center bg-black/40 rounded-[2rem] border-2 border-dashed border-white/5 relative group overflow-hidden min-h-[600px] z-10">
             {!isScanning ? (
               <div className="text-center p-10">
                 <div className="relative mb-8">
@@ -557,6 +579,7 @@ export function AdminCheckIn() {
               <QRScanner
                 onSuccess={handleScannerSuccess}
                 onClose={() => setIsScanning(false)}
+                isInline={true}
               />
             )}
           </div>

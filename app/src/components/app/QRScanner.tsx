@@ -8,9 +8,10 @@ interface QRScannerProps {
     onSuccess: (data: ReturnType<typeof parseQRString>) => void;
     onClose: () => void;
     title?: string;
+    isInline?: boolean;
 }
 
-export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QRScannerProps) {
+export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isInline = false }: QRScannerProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const html5QrCodeRef = useRef<any>(null);
     const [error, setError] = useState<string | null>(null);
@@ -111,9 +112,10 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-xl bg-card rounded-[2.5rem] overflow-hidden border border-border-theme shadow-premium relative">
-                <div className="p-8 border-b border-border-theme flex items-center justify-between">
+        <div className={isInline ? "w-full h-full min-h-[400px] flex flex-col" : "fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col items-center justify-center p-4"}>
+            <div className={isInline ? "w-full h-full flex flex-col" : "w-full max-w-xl bg-card rounded-[2.5rem] overflow-hidden border border-border-theme shadow-premium relative"}>
+                {!isInline && (
+                    <div className="p-8 border-b border-border-theme flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center">
                             <Camera className="h-5 w-5 text-brand-orange-coral" />
@@ -132,6 +134,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                         <XCircle className="h-6 w-6" />
                     </Button>
                 </div>
+                )}
 
                 <div className="p-6">
                     {isLoading ? (
@@ -172,7 +175,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                                 </div>
                             )}
 
-                            <div className="relative overflow-hidden rounded-3xl bg-black aspect-square border-2 border-brand-orange-coral/20">
+                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'flex-1 min-h-[400px]' : 'aspect-square'}`}>
                                 <div id={readerId.current} className="w-full h-full object-cover"></div>
 
                                 {isScanning && (
@@ -197,19 +200,23 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code" }: QR
                     )}
                 </div>
 
-                <div className="p-8 bg-muted/20 border-t border-border-theme text-center">
-                    <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
-                        Posicione o QR Code no centro para validação automática.
-                    </p>
-                </div>
+                {!isInline && (
+                    <div className="p-8 bg-muted/20 border-t border-border-theme text-center">
+                        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed max-w-[200px] mx-auto">
+                            Posicione o QR Code no centro para validação automática.
+                        </p>
+                    </div>
+                )}
             </div>
 
+            {!isInline && (
             <div className="mt-12 flex items-center gap-4 text-white/20 select-none">
                 <QrCode className="h-5 w-5" />
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">Growth Eco System</span>
                 <div className="h-1 w-1 rounded-full bg-white/20" />
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">2k26</span>
             </div>
+            )}
         </div>
     );
 }

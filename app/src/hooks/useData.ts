@@ -866,7 +866,13 @@ export function useFAQs() {
 }
 
 export function useCertificates() {
-  return useData<Certificate>([], 'certificates');
+  const { user } = useAuth();
+  const hook = useData<Certificate>([], 'certificates');
+  const filteredData = useMemo(() => {
+    if (!user || user.role === 'admin' || user.role === 'staff') return hook.data;
+    return hook.data.filter(c => c.userId === user.id);
+  }, [hook.data, user]);
+  return { ...hook, data: filteredData };
 }
 
 export function useLeads() {

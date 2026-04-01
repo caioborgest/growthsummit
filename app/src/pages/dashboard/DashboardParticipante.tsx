@@ -28,6 +28,7 @@ import {
 } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
+import { CertificateService } from '@/lib/certificateService';
 
 // UI Components
 import { PremiumHeader } from './components/shared/PremiumHeader';
@@ -169,6 +170,14 @@ export function DashboardParticipante() {
         }).eq('id', registration.id);
 
         if (entryErr) throw entryErr;
+
+        // Emitir certificado de evento
+        CertificateService.issueEventCertificate(
+            { id: user?.id || '', name: user?.name || '' },
+            selectedProject,
+            registration.id
+        );
+
         toast.success('Check-in Triunfo realizado! Acesso liberado para toda programação.');
         setIsCheckInModalOpen(false);
         return;
@@ -185,6 +194,17 @@ export function DashboardParticipante() {
     });
 
     if (error) throw error;
+
+    // Emitir certificado via Service
+    if (selectedProject) {
+        CertificateService.checkAndIssueSessionCertificate(
+            qrData.id,
+            { id: user?.id || '', name: user?.name || '' },
+            selectedProject,
+            registration.id
+        );
+    }
+
     toast.success('Check-in realizado com sucesso!');
     setIsCheckInModalOpen(false);
   };
