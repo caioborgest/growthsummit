@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Award,
     Download,
@@ -7,7 +7,10 @@ import {
     CheckCircle2,
     Lock,
     ArrowRight,
-    Loader2
+    Loader2,
+    Linkedin,
+    Twitter,
+    MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useCertificates } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateCertificatePDF } from '@/lib/certificateGenerator';
+import { CertificateService } from '@/lib/certificateService';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 
@@ -25,20 +29,50 @@ export function Certificados() {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredCerts = (certificates || []).filter(cert => {
-        const sessionTitle = (cert.activity_name || '').toLowerCase();
+        const sessionTitle = ((cert as any).activity_name || '').toLowerCase();
         const type = (cert.type || '').toLowerCase();
         return sessionTitle.includes(searchTerm.toLowerCase()) ||
             type.includes(searchTerm.toLowerCase());
     });
 
+    const handleAddToLinkedIn = (cert: any) => {
+        const baseUrl = 'https://www.linkedin.com/profile/add';
+        const params = new URLSearchParams({
+            startTask: 'CERTIFICATION_NAME',
+            name: `${cert.activity_name || 'Conclusão'} - ${selectedProject?.name || 'Growth Experience'}`,
+            organizationName: 'Growth Experience',
+            issueYear: new Date(cert.issue_date).getFullYear().toString(),
+            issueMonth: (new Date(cert.issue_date).getMonth() + 1).toString(),
+            certId: cert.code,
+            certUrl: `${window.location.origin}/validar/${cert.code}`
+        });
+
+        window.open(`${baseUrl}?${params.toString()}`, '_blank');
+        CertificateService.trackShare(cert.id);
+        toast.info('Redirecionando para o LinkedIn...');
+    };
+
+    const handleShareTwitter = (cert: any) => {
+        const text = `Acabei de receber minha certificação oficial em "${cert.activity_name}" no #GrowthExperience2026! 🚀 Confira a validação:`;
+        const url = `${window.location.origin}/validar/${cert.code}`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        CertificateService.trackShare(cert.id);
+    };
+
+    const handleShareWhatsApp = (cert: any) => {
+        const text = `Confira minha nova certificação do Growth Experience 2026: ${cert.activity_name}. Validação: ${window.location.origin}/validar/${cert.code}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        CertificateService.trackShare(cert.id);
+    };
+
     const handleDownload = async (cert: any) => {
         try {
             toast.loading('Gerando seu certificado premium...', { id: 'cert-gen' });
 
-            const template = selectedProject?.metadata?.certificate_template;
+            const template = (selectedProject as any)?.metadata?.certificate_template;
             
             // Extract overrides from certificate metadata if they exist (for manual edits)
-            const manualOverrides = cert.metadata?.overrides || {};
+            const manualOverrides = (cert as any).metadata?.overrides || {};
 
             await generateCertificatePDF({
                 userName: user?.name || 'Participante',
@@ -88,7 +122,7 @@ export function Certificados() {
                         placeholder="Buscar por atividade..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-12 bg-dark-200 border-white/5 text-white focus:ring-brand-orange-coral h-12 rounded-2xl"
+                        className="pl-12 bg-white/[0.03] border-white/5 text-white focus:ring-brand-orange-coral h-12 rounded-2xl"
                     />
                 </div>
             </header>
@@ -147,27 +181,61 @@ export function Certificados() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <Badge className="bg-white/5 text-gray-400 border-none text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5">
-                                                ID: {cert.code}
+                                                ID: {(cert as any).code}
                                             </Badge>
                                             <span className="text-[10px] text-gray-500 font-bold uppercase italic">VALIDADO ✓</span>
                                         </div>
                                         <h3 className="text-white font-black text-xl italic tracking-tight group-hover:text-brand-orange-coral transition-colors uppercase">
-                                            {cert.activity_name || 'Participação Geral'}
+                                            {(cert as any).activity_name || 'Participação Geral'}
                                         </h3>
                                         <p className="text-gray-500 text-xs font-medium flex items-center gap-2 mt-1">
                                             <Calendar className="h-3 w-3" />
-                                            {new Date(cert.issue_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                            {new Date((cert as any).issueDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                         </p>
                                     </div>
                                 </div>
 
-                                <Button
-                                    onClick={() => handleDownload(cert)}
-                                    className="bg-white text-black hover:bg-brand-orange-coral hover:text-white font-black px-10 h-14 rounded-2xl transition-all shadow-2xl flex items-center gap-3 active:scale-95"
-                                >
-                                    <Download className="h-5 w-5" />
-                                    BAIXAR PDF
-                                </Button>
+                                 <div className="flex flex-col sm:flex-row items-center gap-3">
+                                    <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-2xl border border-white/5">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleAddToLinkedIn(cert)}
+                                            className="text-gray-400 hover:text-white hover:bg-[#0077b5] h-12 w-12 rounded-xl transition-all"
+                                            title="Adicionar ao LinkedIn"
+                                        >
+                                            <Linkedin className="h-5 w-5" />
+                                        </Button>
+                                        
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleShareTwitter(cert)}
+                                            className="text-gray-400 hover:text-white hover:bg-black h-12 w-12 rounded-xl transition-all border border-transparent hover:border-white/10"
+                                            title="Compartilhar no X"
+                                        >
+                                            <Twitter className="h-5 w-5" />
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleShareWhatsApp(cert)}
+                                            className="text-gray-400 hover:text-white hover:bg-[#25D366] h-12 w-12 rounded-xl transition-all"
+                                            title="Enviar via WhatsApp"
+                                        >
+                                            <MessageCircle className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+
+                                    <Button
+                                        onClick={() => handleDownload(cert)}
+                                        className="w-full sm:w-auto bg-white text-black hover:bg-brand-orange-coral hover:text-white font-black px-8 h-14 rounded-2xl transition-all shadow-2xl flex items-center justify-center gap-3 active:scale-95"
+                                    >
+                                        <Download className="h-5 w-5" />
+                                        BAIXAR PDF
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -14,9 +14,17 @@ import {
     CloudUpload,
     Loader2,
     QrCode,
-    Trash2,
-    Image as ImageIcon
+    ImageIcon,
+    Mail,
+    MessageCircle,
+    Zap,
+    Check,
+    X,
+    Trash2
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { emailService } from '@/services/emailService';
+import { notificationService } from '@/services/notificationService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -69,6 +77,7 @@ export function AdminCertificados() {
     const [isLoading, setIsLoading] = useState(false);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
     // Template State
     const [template, setTemplate] = useState<CertificateTemplate & { total_hours: number }>({
@@ -180,12 +189,13 @@ export function AdminCertificados() {
             // Preparar dados do template
             const certData: any = {
                 userName: cert.registration?.nome || 'Participante',
-                eventName: selectedProject?.name || 'Growth Experience',
+                eventName: template.subtitle || selectedProject?.name || 'Growth Experience',
+                eventCity: selectedProject?.city || 'Brasil',
                 date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
                 certificateCode: cert.code,
                 type: cert.type || 'lecture',
                 sessionTitle: cert.activity_name,
-                totalHours: cert.metadata?.total_hours || 8,
+                totalHours: cert.metadata?.total_hours || template.total_hours || 8,
                 templateOverrides: {
                     title: manualOverrides.title || template.title,
                     description: manualOverrides.description || template.description,
@@ -241,21 +251,140 @@ export function AdminCertificados() {
         handleDownload(cert, 'bloburl');
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Tem certeza que deseja excluir este certificado? Esta ação não pode ser desfeita.')) return;
+    const handleDelete = async (id: string | string[]) => {
+        const isBulk = Array.isArray(id);
+        if (!window.confirm(`Tem certeza que deseja excluir ${isBulk ? id.length : 'este'} certificado${isBulk ? 's' : ''}? Esta ação não pode ser desfeita.`)) return;
         
         try {
+            const ids = isBulk ? id : [id];
             const { error } = await supabase
                 .from('certificates' as any)
                 .delete()
-                .eq('id', id);
+                .in('id', ids);
 
             if (error) throw error;
-            toast.success('Certificado excluído.');
+            toast.success(`${isBulk ? ids.length : 'Certificado'} excluído${isBulk ? 's' : ''}.`);
+            if (isBulk) setSelectedItems([]);
             fetchData();
         } catch (err) {
             logger.error('[AdminCertificados] Erro ao excluir:', err);
             toast.error('Erro ao excluir certificado.');
+        }
+    };
+
+    const toggleSelection = (id: string) => {
+        setSelectedItems(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const selectAll = () => {
+        if (selectedItems.length === filteredCertificates.length) {
+            setSelectedItems([]);
+        } else {
+            setSelectedItems(filteredCertificates.map(c => c.id));
+        }
+    };
+
+    const handleSendEmail = async (cert: Certificate) => {
+        if (!cert.registration?.email) {
+            toast.error('Participante sem e-mail cadastrado.');
+            return;
+        }
+
+        const toastId = toast.loading(`Enviando e-mail para ${cert.registration.nome}...`);
+        try {
+            const validateUrl = `${window.location.origin}/validar/${cert.code}`;
+            const res = await emailService.sendCertificate(
+                cert.registration.email,
+                cert.registration.nome,
+                cert.activity_name,
+                cert.code,
+                validateUrl
+            );
+
+            if (res.success) {
+                toast.success('E-mail enviado com sucesso!', { id: toastId });
+            } else {
+                throw res.error;
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Erro ao disparar e-mail.', { id: toastId });
+        }
+    };
+
+    const handleBulkEmail = async () => {
+        if (selectedItems.length === 0) return;
+        const toastId = toast.loading(`Disparando ${selectedItems.length} e-mails...`);
+        
+        try {
+            const selectedCerts = certificates.filter(c => selectedItems.includes(c.id));
+            const promises = selectedCerts.map(cert => {
+                const email = cert.registration?.email;
+                if (!email) return Promise.resolve({ success: false });
+                const validateUrl = `${window.location.origin}/validar/${cert.code}`;
+                return emailService.sendCertificate(
+                    email,
+                    cert.registration!.nome,
+                    cert.activity_name,
+                    cert.code,
+                    validateUrl
+                );
+            });
+
+            await Promise.all(promises);
+            toast.success(`${selectedItems.length} e-mails enviados com sucesso!`, { id: toastId });
+            setSelectedItems([]);
+        } catch (err) {
+            console.error(err);
+            toast.error('Erro ao enviar e-mails em lote.', { id: toastId });
+        }
+    };
+
+    const handleSendWhatsApp = (cert: Certificate) => {
+        // Tentamos pegar o telefone do registro se existir no metadata ou se houver campo
+        const registrationMetadata = (cert.registration as any)?.metadata || {};
+        const phone = (cert.registration as any).phone || (cert.registration as any).whatsapp || registrationMetadata.phone;
+        
+        if (!phone) {
+            toast.error('Telefone não encontrado para este participante.');
+            return;
+        }
+
+        const cleanPhone = phone.replace(/\D/g, '');
+        const message = encodeURIComponent(
+            `Olá ${cert.registration?.nome}! Parabéns pela participação no ${selectedProject?.name || 'Growth Experience'}. \n\n` +
+            `Seu certificado de "${cert.activity_name}" já está disponível! \n\n` +
+            `Acesse para baixar: ${window.location.origin}/validar/${cert.code}`
+        );
+
+        window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+    };
+
+    const handleBulkNotify = async () => {
+        if (selectedItems.length === 0) return;
+        const toastId = toast.loading(`Enviando ${selectedItems.length} notificações...`);
+        
+        try {
+            const selectedCerts = certificates.filter(c => selectedItems.includes(c.id));
+            const promises = selectedCerts.map(cert => {
+                return notificationService.send({
+                    userId: (cert as any).user_id || cert.registration_id,
+                    projectId: cert.project_id,
+                    title: '🎓 Certificado Disponível',
+                    message: `Seu certificado de "${cert.activity_name}" foi emitido. Veja em seu painel!`,
+                    type: 'success',
+                    actionUrl: '/minha-area/certificados'
+                });
+            });
+
+            await Promise.all(promises);
+            toast.success(`${selectedItems.length} notificações enviadas!`, { id: toastId });
+            setSelectedItems([]);
+        } catch (err) {
+            console.error(err);
+            toast.error('Erro ao enviar notificações em massa.', { id: toastId });
         }
     };
 
@@ -399,6 +528,14 @@ export function AdminCertificados() {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-white/5 text-gray-400 text-[10px] sm:text-xs uppercase font-black tracking-widest">
+                                    <th className="px-6 py-5 w-10">
+                                        <input 
+                                            type="checkbox" 
+                                            className="h-4 w-4 rounded border-white/10 bg-white/5 checked:bg-brand-orange-coral"
+                                            checked={certificates.length > 0 && selectedItems.length === filteredCertificates.length}
+                                            onChange={selectAll}
+                                        />
+                                    </th>
                                     <th className="px-6 py-5">Participante</th>
                                     <th className="px-6 py-5">Atividade</th>
                                     <th className="px-6 py-5">Chave / Código</th>
@@ -409,7 +546,7 @@ export function AdminCertificados() {
                             <tbody className="divide-y divide-white/5">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={5} className="py-20 text-center">
+                                        <td colSpan={6} className="py-20 text-center">
                                             <Loader2 className="h-10 w-10 text-brand-orange-coral animate-spin mx-auto mb-4" />
                                             <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Sincronizando dados...</p>
                                         </td>
@@ -417,6 +554,14 @@ export function AdminCertificados() {
                                 ) : filteredCertificates.length > 0 ? (
                                     filteredCertificates.map((cert) => (
                                         <tr key={cert.id} className="hover:bg-white/[0.02] transition-colors group border-b border-white/5 last:border-0">
+                                            <td className="px-6 py-5">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="h-4 w-4 rounded border-white/10 bg-white/5 checked:bg-brand-orange-coral"
+                                                    checked={selectedItems.includes(cert.id)}
+                                                    onChange={() => toggleSelection(cert.id)}
+                                                />
+                                            </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
@@ -444,20 +589,37 @@ export function AdminCertificados() {
                                                 {new Date(cert.issue_date).toLocaleDateString('pt-BR')}
                                             </td>
                                             <td className="px-6 py-5 text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-1">
                                                     <Button 
                                                         variant="ghost" 
                                                         size="icon" 
-                                                        className="text-gray-400 hover:text-white hover:bg-white/5" 
-                                                        title="Visualizar"
-                                                        onClick={() => handleView(cert)}
+                                                        className="text-blue-400 hover:bg-blue-500/10 h-8 w-8" 
+                                                        title="Enviar E-mail"
+                                                        onClick={() => handleSendEmail(cert)}
                                                     >
-                                                        <Eye className="h-4 w-4" />
+                                                        <Mail className="h-4 w-4" />
                                                     </Button>
                                                     <Button 
                                                         variant="ghost" 
                                                         size="icon" 
-                                                        className="text-teal-400 hover:bg-teal-500/10" 
+                                                        className="text-emerald-400 hover:bg-emerald-500/10 h-8 w-8" 
+                                                        title="Enviar WhatsApp"
+                                                        onClick={() => handleSendWhatsApp(cert)}
+                                                    >
+                                                        <MessageCircle className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-amber-400 hover:bg-amber-500/10 h-8 w-8" 
+                                                        title="Visualizar PDF"
+                                                        onClick={() => handleView(cert)}
+                                                    >
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="text-teal-400 hover:bg-teal-500/10 h-8 w-8" 
                                                         title="Download"
                                                         onClick={() => handleDownload(cert)}
                                                     >
@@ -466,7 +628,7 @@ export function AdminCertificados() {
                                                     <Button 
                                                         variant="ghost" 
                                                         size="icon" 
-                                                        className="text-red-400 hover:bg-red-500/10" 
+                                                        className="text-red-400 hover:bg-red-500/10 h-8 w-8" 
                                                         title="Excluir"
                                                         onClick={() => handleDelete(cert.id)}
                                                     >
@@ -478,7 +640,7 @@ export function AdminCertificados() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="py-20 text-center">
+                                        <td colSpan={6} className="py-20 text-center">
                                             <div className="w-16 h-16 rounded-full bg-dark-300 flex items-center justify-center mx-auto mb-4 border border-white/5">
                                                 <Award className="h-8 w-8 text-gray-700" />
                                             </div>
@@ -712,6 +874,64 @@ export function AdminCertificados() {
                     </div>
                 </TabsContent>
             </Tabs>
+
+            {/* Barra de Ações em Massa flutuante */}
+            <AnimatePresence>
+                {selectedItems.length > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4"
+                    >
+                        <div className="bg-[#1a1c23] border border-brand-orange-coral/30 rounded-[2rem] p-4 shadow-2xl shadow-brand-orange-coral/20 backdrop-blur-xl flex items-center justify-between gap-6 px-8">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-brand-orange-coral/10 rounded-2xl flex items-center justify-center border border-brand-orange-coral/20">
+                                    <Check className="h-6 w-6 text-brand-orange-coral" />
+                                </div>
+                                <div>
+                                    <p className="text-white font-black text-lg italic tracking-tight">{selectedItems.length}</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Selecionados</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={handleBulkEmail}
+                                    className="bg-white/5 hover:bg-teal-500/10 text-white hover:text-teal-400 font-bold h-12 px-6 rounded-xl border border-white/5 transition-all text-xs"
+                                >
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    ENVIAR E-MAILS
+                                </Button>
+
+                                <Button
+                                    onClick={handleBulkNotify}
+                                    className="bg-white/5 hover:bg-white/10 text-white font-bold h-12 px-6 rounded-xl border border-white/5 transition-all text-xs"
+                                >
+                                    <Zap className="h-4 w-4 mr-2 text-yellow-400" />
+                                    NOTIFICAR APP
+                                </Button>
+                                
+                                <Button
+                                    onClick={() => handleDelete(selectedItems)}
+                                    className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold h-12 px-6 rounded-xl border border-red-500/20 transition-all text-xs"
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    EXCLUIR
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setSelectedItems([])}
+                                    className="h-12 w-12 rounded-xl text-gray-500 hover:text-white"
+                                >
+                                    <X className="h-6 w-6" />
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {selectedProject?.id && (
                 <ManualCertificateModal

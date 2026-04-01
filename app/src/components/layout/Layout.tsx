@@ -1,5 +1,6 @@
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { ExitIntentPopup } from '../app/ExitIntentPopup';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
@@ -131,6 +132,7 @@ export function Layout() {
       </main>
       {!isEmbed && <Footer />}
       {!isEmbed && <MobileQuickActions />}
+      {!isEmbed && <ExitIntentPopup />}
     </div>
   );
 }

@@ -110,6 +110,7 @@ const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
+const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
 
@@ -396,6 +397,7 @@ function AppRoutes() {
           <Route path="stands" element={<AdminStands />} />
           <Route path="sorteio" element={<AdminSorteio />} />
           <Route path="suporte" element={<AdminSupport />} />
+          <Route path="newsletter" element={<AdminNewsletter />} />
         </Route>
 
         {/* 404 */}

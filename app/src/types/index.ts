@@ -25,6 +25,7 @@ export interface Project {
   country?: string;
   address?: string;
   settings: ProjectSettings;
+  metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }

@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteriorVideo';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
+import { NewsletterSection } from '@/components/app/NewsletterSection';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const benefits = [
@@ -670,6 +671,9 @@ export function GrowthExperience() {
           </p>
         </div>
       </section>
+
+      <NewsletterSection />
+
       <WhatsAppButton />
 
       {/* Event Selection Modal */}

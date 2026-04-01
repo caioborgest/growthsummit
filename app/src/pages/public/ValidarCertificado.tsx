@@ -11,10 +11,14 @@ import {
   ArrowLeft,
   Loader2,
   ShieldCheck,
-  Download
+  Download,
+  Share2,
+  Linkedin,
+  Twitter,
+  MessageCircle
 } from 'lucide-react';
+import { generateCertificatePDF } from '@/lib/certificateGenerator';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -47,7 +51,7 @@ export function ValidarCertificado() {
         .select(`
           *,
           registration:inscricoes_growth_experience (nome, email),
-          project:projects (name)
+          project:projects (name, metadata, city)
         `)
         .eq('code', searchCode.toUpperCase())
         .maybeSingle();
@@ -67,6 +71,73 @@ export function ValidarCertificado() {
     } finally {
       setIsValidating(false);
     }
+  };
+  const handleDownload = async () => {
+    if (!certificate) return;
+    try {
+      toast.loading('Gerando cópia oficial...', { id: 'download-val' });
+      
+      const template = certificate.project?.metadata?.certificate_template;
+      const manualOverrides = certificate.metadata?.overrides || {};
+
+      await generateCertificatePDF({
+        userName: certificate.registration?.nome || 'Participante',
+        eventName: template?.subtitle || certificate.project?.name || 'Growth Experience',
+        eventCity: certificate.project?.city || 'Brasil',
+        sessionTitle: certificate.activity_name || 'Participação Geral',
+        date: new Date(certificate.issue_date).toLocaleDateString('pt-BR'),
+        certificateCode: certificate.code,
+        type: certificate.type as any,
+        totalHours: certificate.metadata?.total_hours || 8,
+        logoBase64: template?.logo_url,
+        signatureBase64: template?.signature_url,
+        partnerLogosBase64: template?.partner_logos || [],
+        templateOverrides: {
+          title: manualOverrides.title || template?.title,
+          description: manualOverrides.description || template?.description,
+          ceoName: template?.ceo_name,
+          ceoRole: template?.ceo_role,
+          primaryColor: template?.primary_color,
+          secondaryColor: template?.secondary_color,
+          accentColor: template?.accent_color,
+          showBackgroundPattern: template?.show_pattern !== undefined ? template.show_pattern : true,
+          customBackgroundBase64: template?.background_url
+        }
+      });
+
+      toast.success('Download iniciado!', { id: 'download-val' });
+    } catch (err) {
+      console.error('Erro no download:', err);
+      toast.error('Erro ao gerar PDF.', { id: 'download-val' });
+    }
+  };
+
+  const handleAddToLinkedIn = () => {
+    if (!certificate) return;
+    
+    const issueDate = new Date(certificate.issue_date);
+    const params = new URLSearchParams({
+      startTask: 'CERTIFICATION_NAME',
+      name: certificate.activity_name || 'Growth Experience Participation',
+      organizationName: 'Growth Experience', // Placeholder for org name
+      issueYear: issueDate.getFullYear().toString(),
+      issueMonth: (issueDate.getMonth() + 1).toString(),
+      certUrl: window.location.href,
+      certId: certificate.code
+    });
+
+    window.open(`https://www.linkedin.com/profile/add?${params.toString()}`, '_blank');
+  };
+
+  const handleShareTwitter = () => {
+    const text = `Tenho o prazer de anunciar que recebi minha certificação em "${certificate.activity_name}" no #GrowthExperience2026! 🚀 Confira a validação oficial:`;
+    const url = window.location.href;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `Confira minha certificação oficial do Growth Experience 2026: ${certificate.activity_name}. Validação: ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
@@ -200,13 +271,61 @@ export function ValidarCertificado() {
                 </div>
               </div>
 
-              <div className="p-6 bg-dark-300/50 rounded-2xl border border-white/5">
-                <p className="text-sm text-gray-500 leading-relaxed italic">
-                  "Este certificado confirma a participação e conclusão das atividades especificadas acima durante o evento 
-                  <strong className="text-white font-black"> {certificate.project?.name || 'Growth Experience'}</strong>. 
-                  A integridade deste documento é garantida pela nossa plataforma de tecnologia."
-                </p>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 pt-8 border-t border-white/5">
+                <div className="p-4 bg-dark-300/50 rounded-2xl border border-white/5 flex-1">
+                  <p className="text-sm text-gray-500 leading-relaxed italic">
+                    "Este certificado confirma a participação e conclusão das atividades especificadas acima durante o evento 
+                    <strong className="text-white font-black"> {certificate.project?.name || 'Growth Experience'}</strong>. 
+                    A integridade deste documento é garantida pela nossa plataforma de tecnologia."
+                  </p>
+                </div>
+                
+                <Button 
+                  onClick={handleDownload}
+                  className="w-full sm:w-auto h-16 px-10 bg-white text-black hover:bg-brand-orange-coral hover:text-white font-black rounded-2xl transition-all shadow-xl flex items-center gap-3 active:scale-95 shrink-0"
+                >
+                  <Download className="h-5 w-5" />
+                  BAIXAR CÓPIA PDF
+                </Button>
               </div>
+            </div>
+
+            {/* Social Sharing Section */}
+            <div className="glass-card p-10 border-white/5 rounded-[3rem] animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div>
+                        <h3 className="text-xl font-black text-white flex items-center gap-3 mb-2">
+                             <Share2 className="h-5 w-5 text-brand-orange-coral" />
+                             COMPARTILHE SUA CONQUISTA
+                        </h3>
+                        <p className="text-gray-500 text-sm">Mostre sua nova certificação para sua rede profissional.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        <Button 
+                            onClick={handleAddToLinkedIn}
+                            className="bg-[#0077b5] hover:bg-[#005c8d] text-white font-bold h-14 px-6 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center gap-3"
+                        >
+                            <Linkedin className="h-5 w-5" />
+                            LINKEDIN
+                        </Button>
+                        
+                        <Button 
+                            onClick={handleShareTwitter}
+                            className="bg-black hover:bg-white/10 text-white font-bold h-14 px-6 rounded-2xl border border-white/10 shadow-lg flex items-center gap-3"
+                        >
+                            <Twitter className="h-5 w-5" />
+                            X / TWITTER
+                        </Button>
+
+                        <Button 
+                            onClick={handleShareWhatsApp}
+                            className="bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-14 w-14 rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center"
+                        >
+                            <MessageCircle className="h-6 w-6" />
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <div className="text-center">

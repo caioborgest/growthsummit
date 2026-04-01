@@ -20,6 +20,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { emailService } from '@/services/emailService';
+import { notificationService } from '@/services/notificationService';
 
 interface ManualCertificateModalProps {
   isOpen: boolean;
@@ -83,8 +85,31 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
         .insert(payload as any);
 
       if (error) throw error;
+      
+      // Auto-Notificar via App e E-mail
+      if (selectedUser?.userId) {
+          await notificationService.send({
+              userId: selectedUser.userId,
+              projectId: projectId,
+              title: '🎓 Novo Certificado!',
+              message: `Um certificado de "${activityName}" foi emitido para você.`,
+              type: 'success',
+              actionUrl: '/minha-area/certificados'
+          });
+      }
 
-      toast.success('Certificado emitido com sucesso!');
+      if (selectedUser?.email) {
+          const validateUrl = `${window.location.origin}/validar/${code}`;
+          await emailService.sendCertificate(
+              selectedUser.email,
+              selectedUser.name,
+              activityName,
+              code,
+              validateUrl
+          );
+      }
+
+      toast.success('Certificado emitido e participante notificado!');
       onSuccess();
       onClose();
     } catch (error) {

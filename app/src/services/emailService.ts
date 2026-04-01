@@ -111,5 +111,49 @@ export const emailService = {
         );
         const success = results.every(r => r.success);
         return { success, results };
+    },
+
+    /**
+     * Envia o certificado oficial com design premium.
+     */
+    async sendCertificate(to: string, name: string, activityName: string, certCode: string, validateUrl: string) {
+        return this.send({
+            to,
+            subject: `Seu Certificado: ${activityName} - Growth Experience 🏆`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; background-color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #f1f5f9; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                         <img src="https://www.gxexperience.site/logo-gx.png" alt="Growth Experience" style="height: 60px;" />
+                    </div>
+                    
+                    <h1 style="color: #fe4c38; font-size: 24px; text-align: center; margin-bottom: 20px;">Parabéns, ${name}! 🎓</h1>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #475569; text-align: center;">
+                        Sua participação na atividade <strong>"${activityName}"</strong> foi validada com sucesso. 
+                        Este certificado é o reconhecimento do seu compromisso com a excelência e o aprendizado contínuo.
+                    </p>
+                    
+                    <div style="background: #f8fafc; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; margin: 30px 0; text-align: center;">
+                        <p style="margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: bold;">Certificado Disponível</p>
+                        <a href="${validateUrl}" 
+                           style="display: inline-block; background-color: #fe4c38; color: white; padding: 18px 36px; border-radius: 12px; text-decoration: none; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 15px -3px rgba(254, 76, 56, 0.3);">
+                           Acessar Certificado Digital
+                        </a>
+                        <p style="margin-top: 20px; font-family: monospace; font-size: 12px; color: #94a3b8;">Código: ${certCode}</p>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #64748b; text-align: center;">
+                        Você também pode compartilhar esta conquista diretamente no seu <strong>LinkedIn</strong> através do seu painel de participante.
+                    </p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 40px 0;" />
+                    
+                    <div style="text-align: center; color: #94a3b8; font-size: 12px;">
+                        <p><strong>Growth Experience 2026</strong></p>
+                        <p>Ecossistema de Inovação e Gestão</p>
+                    </div>
+                </div>
+            `
+        });
     }
 };

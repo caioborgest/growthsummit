@@ -1,7 +1,8 @@
 import { supabase } from './supabase';
 import { issueCertificate } from './certificateGenerator';
 import { notificationService } from '@/services/notificationService';
-import type { User, Project, Session, Registration } from '@/types';
+import { emailService } from '@/services/emailService';
+import type { Project, Session } from '@/types';
 
 /**
  * Service to handle automatic certificate issuance
@@ -18,8 +19,8 @@ export class CertificateService {
     ) {
         try {
             // 1. Check if certificate already exists
-            const { data: existing } = await (supabase
-                .from('certificates' as any) as any)
+            const { data: existing } = await supabase
+                .from('certificates')
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('session_id', session.id)
@@ -31,8 +32,8 @@ export class CertificateService {
             }
 
             // 2. Issuance Logic: Check if they checked into this activity
-            const { data: attendance, error: attendanceError } = await (supabase
-                .from('check_ins_atividades' as any) as any)
+            const { data: attendance, error: attendanceError } = await supabase
+                .from('check_ins_atividades')
                 .select('id')
                 .eq('session_id', session.id)
                 .eq('registration_id', registrationId)
@@ -47,11 +48,11 @@ export class CertificateService {
             const certData = await issueCertificate(user, project, 'lecture', session);
 
             // 4. Save certificate to DB
-            const { data: certificate, error } = await (supabase
-                .from('certificates' as any) as any)
+            const { data: certificate, error } = await supabase
+                .from('certificates')
                 .insert({
                     project_id: project.id,
-                    user_id: user.id || (user as any).userId,
+                    user_id: user.id,
                     registration_id: registrationId,
                     session_id: session.id,
                     activity_name: session.title,
@@ -70,9 +71,9 @@ export class CertificateService {
 
             if (error) throw error;
 
-            // 5. Notify the user
+            // 5. Notify the user (Push)
             await notificationService.send({
-                userId: user.id || (user as any).userId,
+                userId: user.id,
                 projectId: project.id,
                 title: '🎉 Certificado Disponível!',
                 message: `Seu certificado da palestra "${session.title}" já está pronto para download em seu painel.`,
@@ -80,7 +81,27 @@ export class CertificateService {
                 actionUrl: '/minha-area/certificados'
             });
 
-            console.info(`Certificate issued and user notified: ${user.name} - ${session.title}`);
+            // 6. Send Automated Email
+            if (registrationId) {
+                const { data: reg } = await supabase
+                    .from('inscricoes_growth_experience')
+                    .select('nome, email')
+                    .eq('id', registrationId)
+                    .maybeSingle();
+
+                if (reg?.email) {
+                    const validateUrl = `${window.location.origin}/validar/${certData.certificateCode}`;
+                    await emailService.sendCertificate(
+                        reg.email,
+                        reg.nome || 'Participante',
+                        session.title,
+                        certData.certificateCode,
+                        validateUrl
+                    );
+                }
+            }
+
+            console.info(`Certificate issued, user notified and email sent: ${user.name} - ${session.title}`);
             return certificate;
         } catch (err) {
             console.error('Failed to issue certificate:', err);
@@ -97,10 +118,10 @@ export class CertificateService {
     ) {
         try {
             // Check if already exists
-            const { data: existing } = await (supabase
-                .from('certificates' as any) as any)
+            const { data: existing } = await supabase
+                .from('certificates')
                 .select('id')
-                .eq('user_id', user.id || (user as any).userId)
+                .eq('user_id', user.id)
                 .eq('registration_id', registrationId)
                 .eq('type', 'event')
                 .maybeSingle();
@@ -108,12 +129,11 @@ export class CertificateService {
             if (existing) return;
 
             const certData = await issueCertificate(user, project, 'event');
-
-            const { data: certificate, error } = await (supabase
-                .from('certificates' as any) as any)
+            const { data: certificate, error } = await supabase
+                .from('certificates')
                 .insert({
                     project_id: project.id,
-                    user_id: user.id || (user as any).userId,
+                    user_id: user.id,
                     registration_id: registrationId,
                     activity_name: project.name,
                     type: 'event',
@@ -122,7 +142,7 @@ export class CertificateService {
                     status: 'validado',
                     metadata: {
                         event_name: project.name,
-                        total_hours: project.metadata?.certificate_template?.total_hours || 12
+                        total_hours: (project.metadata as any)?.certificate_template?.total_hours || 12
                     }
                 })
                 .select()
@@ -130,9 +150,9 @@ export class CertificateService {
 
             if (error) throw error;
 
-            // Notify the user
+            // 5. Notify the user (Push)
             await notificationService.send({
-                userId: user.id || (user as any).userId,
+                userId: user.id,
                 projectId: project.id,
                 title: '🏆 Conquista Desbloqueada!',
                 message: `Parabéns! Sua participação no ${project.name} foi validada e seu certificado oficial já está disponível.`,
@@ -140,10 +160,56 @@ export class CertificateService {
                 actionUrl: '/minha-area/certificados'
             });
 
-            console.info(`Event certificate issued and user notified: ${user.name}`);
+            // 6. Send Automated Email
+            if (registrationId) {
+                const { data: reg } = await supabase
+                    .from('inscricoes_growth_experience')
+                    .select('nome, email')
+                    .eq('id', registrationId)
+                    .maybeSingle();
+
+                if (reg?.email) {
+                    const validateUrl = `${window.location.origin}/validar/${certData.certificateCode}`;
+                    await emailService.sendCertificate(
+                        reg.email,
+                        reg.nome || 'Participante',
+                        project.name,
+                        certData.certificateCode,
+                        validateUrl
+                    );
+                }
+            }
+
+            console.info(`Event certificate issued, user notified and email sent: ${user.name}`);
             return certificate;
         } catch (err) {
             console.error('Failed to issue event certificate:', err);
+        }
+    }
+
+    /**
+     * Tracks when a certificate is shared on social media
+     */
+    static async trackShare(certificateId: string) {
+        try {
+            const { data: cert } = await supabase
+                .from('certificates')
+                .select('social_share_count')
+                .eq('id', certificateId)
+                .maybeSingle();
+
+            if (cert) {
+                const currentCount = Number(cert.social_share_count) || 0;
+                await supabase
+                    .from('certificates')
+                    .update({ 
+                        social_share_count: currentCount + 1,
+                        last_shared_at: new Date().toISOString()
+                    } as never)
+                    .eq('id', certificateId);
+            }
+        } catch (err) {
+            console.error('Failed to track share:', err);
         }
     }
 }
