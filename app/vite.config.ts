@@ -37,17 +37,17 @@ export default defineConfig({
             src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'any'
           }
         ],
         screenshots: [
-           {
-             src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/gx-social-share.png',
-             sizes: '1280x720',
-             type: 'image/png',
-             form_factor: 'wide',
-             label: 'Dashboard Growth Experience'
-           }
+          {
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/gx-social-share.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Dashboard Growth Experience'
+          }
         ]
       },
       workbox: {
