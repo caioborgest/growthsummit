@@ -1,5 +1,6 @@
 import { Award, Download, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface CertificatesSectionProps {
     certificados: any[];
@@ -21,7 +22,10 @@ export function CertificatesSection({ certificados, loadingCerts, fetchCertifica
                     <p className="text-foreground/40 text-sm mt-1.5">Certificados de participação e conclusão de trilhas.</p>
                 </div>
                 <button
-                    onClick={fetchCertificados}
+                    onClick={() => {
+                        toast.info('Verificando novos certificados...');
+                        fetchCertificados();
+                    }}
                     disabled={loadingCerts}
                     className="flex items-center gap-2 px-5 h-11 rounded-2xl font-black text-xs uppercase tracking-widest border transition-all active:scale-95 disabled:opacity-50"
                     style={{ background: 'rgba(20,184,166,0.08)', color: '#14b8a6', borderColor: 'rgba(20,184,166,0.25)' }}

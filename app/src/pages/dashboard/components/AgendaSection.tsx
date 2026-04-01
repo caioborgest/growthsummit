@@ -1,6 +1,7 @@
 import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface AgendaSession {
     id: string;
@@ -159,23 +160,31 @@ export function AgendaSection({
                 </div>
                 <div className="flex gap-2.5">
                     <button
-                        onClick={() => setIsSelfCheckInOpen(true)}
+                        onClick={() => {
+                            if (!myRegistration) {
+                                toast.error('Inscrição não localizada. Por favor, aguarde o carregamento ou procure o suporte.');
+                                return;
+                            }
+                            setIsSelfCheckInOpen(true);
+                        }}
                         className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs uppercase tracking-wider transition-all border active:scale-95"
                         style={{ background: 'rgba(20,184,166,0.1)', color: '#14b8a6', borderColor: 'rgba(20,184,166,0.25)' }}
                     >
                         <QrCode className="h-4 w-4" />Scan QR
                     </button>
-                    <button
-                        className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs text-white uppercase tracking-wider transition-all active:scale-95"
-                        style={{ background: isActuallyPaid ? 'var(--surface-2)' : 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: isActuallyPaid ? 'none' : '0 4px 16px rgba(255,112,67,0.3)' }}
-                        onClick={() => {
-                            if (isActuallyPaid) navigate('/triunfo');
-                            else if (onUpgradeClick) onUpgradeClick();
-                            else navigate('/upgrade');
-                        }}
-                    >
-                        <Zap className="h-4 w-4" />{isActuallyPaid ? 'Add Atividades' : 'Upgrade Pro'}
-                    </button>
+                    {!isTriunfo && (
+                        <button
+                            className="flex items-center gap-2 px-4 h-11 rounded-2xl font-black text-xs text-white uppercase tracking-wider transition-all active:scale-95"
+                            style={{ background: isActuallyPaid ? 'var(--surface-2)' : 'linear-gradient(135deg,#ff7043,#ff4035)', boxShadow: isActuallyPaid ? 'none' : '0 4px 16px rgba(255,112,67,0.3)' }}
+                            onClick={() => {
+                                if (isActuallyPaid) navigate('/pro');
+                                else if (onUpgradeClick) onUpgradeClick();
+                                else navigate('/upgrade');
+                            }}
+                        >
+                            <Zap className="h-4 w-4" />{isActuallyPaid ? 'Add Atividades' : 'Upgrade Pro'}
+                        </button>
+                    )}
                 </div>
             </div>
 

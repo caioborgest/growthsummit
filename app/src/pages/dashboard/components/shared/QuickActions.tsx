@@ -92,8 +92,8 @@ export function QuickActions({
     onB2BClick,
     onMentoriaClick,
     showMentoria = false,
-    showStartup = true,
-    showB2B = true
+    showStartup = false,
+    showB2B = false
 }: QuickActionsProps) {
     const handleShare = async () => {
         const shareData = {

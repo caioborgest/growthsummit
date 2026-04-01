@@ -102,10 +102,12 @@ export function DashboardParticipante() {
   const isActuallyPaid = registration?.isPaid || registration?.amount === 0;
   
   const statusFinanceiro = useMemo(() => {
-    if (!registration) return { label: 'PENDENTE', color: 'bg-gray-500/20 text-gray-400' };
+    if (!registration) return { label: 'NÃO LOCALIZADO', color: 'bg-red-500/20 text-red-500' };
     if (isActuallyPaid) return { label: 'PAGO', color: 'bg-green-500/20 text-green-400' };
     if (registration.status === 'cancelled') return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
-    return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
+    if (registration.statusPagamento === 'pendente' || registration.status === 'pendente') 
+        return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
+    return { label: 'PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
   }, [registration, isActuallyPaid]);
 
   // Next Activity Logic
@@ -229,9 +231,9 @@ export function DashboardParticipante() {
               date={selectedProject?.slug?.includes('triunfo') ? '16 ABR 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026')}
               eventDate={selectedProject?.slug?.includes('triunfo') ? '2026-04-16T17:00:00' : selectedProject?.startDate}
               stats={{
-                people: '500+',
-                content: '12h+',
-                activities: '20+'
+                people: '300+',
+                content: '5h+',
+                activities: '10+'
               }}
             />
 
@@ -250,9 +252,9 @@ export function DashboardParticipante() {
               onB2BClick={() => setIsB2BModalOpen(true)}
               onStartupClick={() => setIsStartupModalOpen(true)}
               onMentoriaClick={() => setActiveTab('mentorias')}
-              showMentoria={selectedProject?.settings?.enableMentoring}
-              showB2B={selectedProject?.settings?.enableB2B}
-              showStartup={selectedProject?.settings?.enableStartups}
+              showMentoria={Boolean(selectedProject?.settings?.enableMentoring)}
+              showB2B={Boolean(selectedProject?.settings?.enableB2B)}
+              showStartup={Boolean(selectedProject?.settings?.enableStartups)}
             />
 
             {/* Quick Stats Banners */}
@@ -299,7 +301,13 @@ export function DashboardParticipante() {
           <AgendaSection 
             myRegistration={registration}
             cursosSelecionados={registration?.cursosSelecionados || []}
-            setIsSelfCheckInOpen={setIsCheckInModalOpen}
+            setIsSelfCheckInOpen={(val) => {
+                if (!registration) {
+                    toast.error('Inscrição não localizada para realizar check-in.');
+                    return;
+                }
+                setIsCheckInModalOpen(val);
+            }}
             navigate={navigate}
             selectedProject={selectedProject}
             allSessions={allSessions}

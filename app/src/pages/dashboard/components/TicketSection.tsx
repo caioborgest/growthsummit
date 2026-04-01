@@ -152,7 +152,7 @@ export function TicketSection({
             </motion.div>
 
             {/* ── UPGRADE CARD (if free and not paid/confirmed event) ─────────────────────────────── */}
-            {!isPro && !isActuallyPaid && !selectedProject?.slug?.includes('triunfo') && (
+            {!isPro && !isActuallyPaid && !selectedProject?.slug?.toLowerCase().includes('triunfo') && (
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -51,14 +51,15 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
     
     // Determine if actually paid
     const isActuallyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
-                          st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado';
+                          st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado' ||
+                          (row['is_paid'] === true);
 
     return {
         id: row['id'] as string,
         userId: (row['user_id'] as string) || undefined,
         email: (row['email'] as string) || undefined,
-        nome: (row['nome'] as string) || undefined,
-        name: (row['nome'] as string) || undefined,
+        nome: (row['nome'] as string) || (row['name'] as string) || undefined,
+        name: (row['nome'] as string) || (row['name'] as string) || undefined,
         telefone: (row['telefone'] as string) || undefined,
         tipoInscricao: (row['tipo_inscricao'] as string) || undefined,
         ticketType: (row['tipo_inscricao'] as string) || undefined,

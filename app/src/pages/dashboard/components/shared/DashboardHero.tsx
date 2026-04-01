@@ -108,7 +108,7 @@ export function PwaDashboardHero({
     location = 'Triunfo-PE',
     date = '16 ABR 2026',
     eventDate,
-    stats = { people: '500+', content: '12h', activities: '20+' }
+    stats = { people: '300+', content: '5h+', activities: '10+' }
 }: DashboardHeroProps) {
     const countdown = useCountdown(eventDate);
 
