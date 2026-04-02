@@ -20,8 +20,9 @@ END $$;
 -- Habilitar RLS se não estiver habilitado
 ALTER TABLE IF EXISTS public.project_popups ENABLE ROW LEVEL SECURITY;
 
--- Remover políticas antigas para evitar conflitos
+-- Remover políticas antigas para evitar conflitos (tentar ambos os nomes possíveis)
 DROP POLICY IF EXISTS "Anyone can view active popups" ON public.project_popups;
+DROP POLICY IF EXISTS "Public can view active popups" ON public.project_popups;
 DROP POLICY IF EXISTS "Admins can manage popups" ON public.project_popups;
 
 -- Criar novas políticas robustas
@@ -49,9 +50,28 @@ BEGIN
     END IF;
 END $$;
 
--- 4. COMENTARIOS PARA DOCUMENTACAO
+-- 5. CORRIGIR PERMISSÕES DE TRANSAÇÕES (Fix 403 Forbidden)
+ALTER TABLE IF EXISTS public.transacoes_growth_experience ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins can manage transactions" ON public.transacoes_growth_experience;
+CREATE POLICY "Admins can manage transactions" 
+ON public.transacoes_growth_experience 
+FOR ALL 
+TO authenticated 
+USING (public.is_admin());
+
+-- Garantir acesso de leitura para equipe de staff se necessário (opcional)
+DROP POLICY IF EXISTS "Staff can view transactions" ON public.transacoes_growth_experience;
+CREATE POLICY "Staff can view transactions" 
+ON public.transacoes_growth_experience 
+FOR SELECT 
+TO authenticated 
+USING (public.is_admin());
+
+-- 6. COMENTARIOS PARA DOCUMENTACAO
 COMMENT ON COLUMN public.transacoes_growth_experience.reference_person IS 'Pessoa ou empresa de referência para o lançamento financeiro';
 COMMENT ON TABLE public.project_popups IS 'Banners de marketing e captura de leads do sistema';
+COMMENT ON TABLE public.transacoes_growth_experience IS 'Registro de fluxo de caixa (Receitas e Despesas) do evento';
 
 -- ============================================================
 -- FIM DA MIGRACAO
