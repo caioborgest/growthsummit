@@ -270,6 +270,9 @@ export default function AdminProjetos() {
           <DialogContent className="bg-[#0F172A] border-white/5 text-white sm:max-w-[1440px] h-fit max-h-[98vh] rounded-[3rem] p-10 overflow-x-hidden scrollbar-hide">
             <DialogHeader>
               <DialogTitle>{editingProject ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Formulário para configuração técnica e visual do projeto/evento.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <Tabs defaultValue="geral" className="w-full">

@@ -254,6 +254,10 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
         {/* QR Code Viewer Modal */}
         <Dialog open={!!selectedMemberForQR} onOpenChange={() => setSelectedMemberForQR(null)}>
           <DialogContent className="bg-white text-black max-w-sm p-8 rounded-[2rem] overflow-hidden border-none text-center">
+            <DialogHeader className="sr-only">
+              <DialogTitle>QR Code Credencial</DialogTitle>
+              <DialogDescription>Visualização do QR Code de acesso para {selectedMemberForQR?.name}</DialogDescription>
+            </DialogHeader>
             <div className="flex flex-col items-center gap-6">
               <div className="w-full flex justify-between items-center px-2">
                 <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" className="h-6" alt="Logo" />
