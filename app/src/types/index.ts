@@ -16,7 +16,9 @@ export interface Project {
   city: string;
   state: string;
   startDate: string;
+  startTime?: string;
   endDate: string;
+  endTime?: string;
   status: ProjectStatus;
   banner?: string;
   logo?: string;

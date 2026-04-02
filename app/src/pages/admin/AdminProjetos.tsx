@@ -226,7 +226,10 @@ export default function AdminProjetos() {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    if (!date) return '---';
+    // Se a data for apenas YYYY-MM-DD, adicionamos o meio do dia para evitar reversão de data por fuso horário
+    const d = date.includes('T') ? new Date(date) : new Date(date + 'T12:00:00');
+    return d.toLocaleDateString('pt-BR');
   };
 
   const activeProjects = projects.filter(p => p.status === 'active');
@@ -376,7 +379,7 @@ export default function AdminProjetos() {
                         </div>
                         <h4 className="text-[10px] font-black text-white uppercase tracking-widest italic">Cronograma</h4>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="space-y-2">
                           <Label className="text-[8px] font-black uppercase text-emerald-500/50 ml-1">Data Início</Label>
                           <input
@@ -387,11 +390,29 @@ export default function AdminProjetos() {
                           />
                         </div>
                         <div className="space-y-2">
+                          <Label className="text-[8px] font-black uppercase text-emerald-500/50 ml-1">Hora Início</Label>
+                          <input
+                            type="time"
+                            value={formData.startTime || ''}
+                            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                            className="w-full bg-black/40 border-none text-white font-black h-10 px-4 rounded-xl outline-none [color-scheme:dark] text-xs"
+                          />
+                        </div>
+                        <div className="space-y-2">
                           <Label className="text-[8px] font-black uppercase text-red-500/50 ml-1">Data Término</Label>
                           <input
                             type="date"
                             value={formData.endDate || ''}
                             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                            className="w-full bg-black/40 border-none text-white font-black h-10 px-4 rounded-xl outline-none [color-scheme:dark] text-xs"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[8px] font-black uppercase text-red-500/50 ml-1">Hora Término</Label>
+                          <input
+                            type="time"
+                            value={formData.endTime || ''}
+                            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                             className="w-full bg-black/40 border-none text-white font-black h-10 px-4 rounded-xl outline-none [color-scheme:dark] text-xs"
                           />
                         </div>
@@ -1239,7 +1260,11 @@ export default function AdminProjetos() {
                               <Calendar className="w-4 h-4 text-gray-600" />
                               <div className="flex flex-col">
                                 <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Período</span>
-                                <span className="text-[10px] text-white font-bold">{formatDate(project.startDate)}</span>
+                                <span className="text-[10px] text-white font-bold">
+                                  {formatDate(project.startDate)} 
+                                  {project.endDate && project.endDate !== project.startDate ? ` - ${formatDate(project.endDate)}` : ''}
+                                  {project.startTime ? ` às ${project.startTime}` : ''}
+                                </span>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
