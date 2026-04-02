@@ -23,17 +23,17 @@ export default defineConfig({
         categories: ['education', 'business', 'event'],
         icons: [
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
@@ -81,7 +81,8 @@ export default defineConfig({
           }
         ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        maximumFileSizeToCacheInBytes: 7 * 1024 * 1024, // Limite de 7MB para outros assets
+        globIgnores: ['**/node_modules/**/*', '**/images/*.png', '**/images/*.jpg'],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB limit
       }
     })
   ],
