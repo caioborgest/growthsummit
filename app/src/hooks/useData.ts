@@ -11,6 +11,7 @@ import type {
   Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist,
   ActivityAttendance, Partner, PartnerTeamMember
 } from '@/types';
+import { X, Trash2, Plus, Ticket, Layers, Settings, Save, AlertCircle } from 'lucide-react';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
 
@@ -442,9 +443,9 @@ function invalidateCache(projectId: string | undefined, entityName: string) {
 }
 
 // ── Minimal column selection per entity (avoids SELECT *) ───────────────────
-function getSelectFields(entity: string, projectId?: string): string {
+function getSelectFields(entity: string, projectId?: string, slug?: string): string {
   // If it's a Growth Experience project, use the specific table schema
-  if (isGEProject(projectId)) {
+  if (isGEProject(projectId, slug)) {
     if (entity === 'registrations' || entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';
     }
@@ -587,7 +588,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     try {
       const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
-      const fields = getSelectFields(entityName, projectId || undefined);
+      const fields = getSelectFields(entityName, projectId || undefined, selectedProject?.slug);
 
       let query = supabase.from(tableName as never).select(fields) as any;
 
