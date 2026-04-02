@@ -9,7 +9,7 @@ import {
 import { useB2BChat } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
@@ -72,7 +72,9 @@ export function B2BChatModal({ isOpen, onClose, matchId, otherCompany }: B2BChat
             <DialogTitle className="text-white text-base font-black uppercase tracking-tight">
               {otherCompany.name}
             </DialogTitle>
-            <p className="text-teal-400 text-[10px] font-black uppercase tracking-widest">Chat B2B Online</p>
+            <DialogDescription className="text-teal-400 text-[10px] font-black uppercase tracking-widest leading-none">
+              Chat B2B Online
+            </DialogDescription>
           </div>
         </DialogHeader>
 

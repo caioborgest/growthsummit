@@ -11,7 +11,7 @@ import type {
   Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist,
   ActivityAttendance, Partner, PartnerTeamMember
 } from '@/types';
-import { X, Trash2, Plus, Ticket, Layers, Settings, Save, AlertCircle } from 'lucide-react';
+// Unused imports removed
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
 
@@ -60,6 +60,7 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
   if (entity === 'certificates') return 'certificates';
   if (entity === 'notifications') return 'notifications';
   if (entity === 'audit_logs') return 'audit_logs';
+  if (entity === 'login_attempts') return 'login_attempts';
 
   // Specific mapping for registration batches (always points to this table)
   if (entity === 'registration_batches') return 'lotes_inscricao_empresa';
@@ -96,7 +97,7 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates'].includes(entity);
+  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates', 'audit_logs', 'login_attempts'].includes(entity);
 };
 
 function toCamelCase(str: string): string {
@@ -466,7 +467,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
       return 'id,project_id,company_a_id,company_b_id,status,score,created_at';
     }
     if (entity === 'stands') {
-      return 'id,project_id,nome,logo_url,localizacao,descricao,owner_id,owner_type,created_at';
+      return 'id,project_id,name,logo_url,location,description,owner_id,owner_type,created_at';
     }
     if (entity === 'stand_checkins') {
       return 'id,registration_id,stand_id';
@@ -663,6 +664,13 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       
       // Log mais limpo: se for erro objeto do Supabase, tenta logar a mensagem
       const errorMsg = (err as any)?.message || errorObj.message;
+      
+      // Silence 403 errors for background data fetching (prevents console spam for non-admins)
+      if (errStr.includes('403') || errStr.includes('permission denied')) {
+        logger.debug(`Acesso negado para ${entityName} (403) - Isso pode ser normal para seu nível de acesso.`);
+        return;
+      }
+
       logger.error(`Erro ao buscar ${entityName}: ${errorMsg}`, err);
     } finally {
       setIsLoading(false);

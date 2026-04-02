@@ -101,7 +101,7 @@ export default function AdminBatches() {
     const generateVoucher = () => {
         const random = Math.random().toString(36).substring(2, 8).toUpperCase();
         const prefix = formData.nomeEmpresa.substring(0, 3).toUpperCase().replace(/\s/g, 'X');
-        setFormData({ ...formData, voucherCode: `GS-${prefix}-${random}` });
+        setFormData({ ...formData, voucherCode: `GX-${prefix}-${random}` });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

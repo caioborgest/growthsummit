@@ -6,9 +6,12 @@ import {
   Download,
   BarChart3,
   PieChart,
-  Zap
+  Zap,
+  Plus,
+  X,
+  Users
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';
@@ -18,19 +21,53 @@ import { getStatusConfig } from '@/lib/ui-constants';
 import type { EmpresaIncentivadora } from '@/types';
 
 const categoryColors: Record<string, string> = {
+  // Receitas
   'Inscrições': 'bg-teal-500/20 text-teal-400',
   'Patrocínio': 'bg-blue-500/20 text-blue-400',
-  'Startups': 'bg-orange-500/20 text-orange-400',
+  'Venda de Stands': 'bg-emerald-500/20 text-emerald-400',
   'Rodada B2B': 'bg-purple-500/20 text-purple-400',
-  'Venue': 'bg-red-500/20 text-red-400',
-  'Catering': 'bg-yellow-500/20 text-yellow-400',
-  'Marketing': 'bg-pink-500/20 text-pink-400',
-  'Equipe': 'bg-gray-500/20 text-gray-400',
+  'Aporte Sócios': 'bg-indigo-500/20 text-indigo-400',
+  
+  // Despesas
+  'Venue & Locação': 'bg-red-500/20 text-red-400',
+  'Catering & Buffet': 'bg-yellow-500/20 text-yellow-400',
+  'Montagem & Estrutura': 'bg-orange-500/20 text-orange-400',
+  'Marketing & Tráfego': 'bg-pink-500/20 text-pink-400',
+  'Equipe & Staff': 'bg-gray-500/20 text-gray-400',
+  'Audio, Vídeo & LED': 'bg-cyan-500/20 text-cyan-400',
+  'Palestrantes': 'bg-amber-500/20 text-amber-400',
+  'Logística & Viagens': 'bg-slate-500/20 text-slate-400',
+  'Jurídico & Contábil': 'bg-zinc-500/20 text-zinc-400',
+  'Impostos & Taxas': 'bg-rose-500/20 text-rose-400',
+};
+
+const financialCategories = {
+  income: [
+    'Inscrições',
+    'Patrocínio',
+    'Venda de Stands',
+    'Rodada B2B',
+    'Aporte Sócios',
+    'Outras Receitas'
+  ],
+  expense: [
+    'Venue & Locação',
+    'Catering & Buffet',
+    'Montagem & Estrutura',
+    'Marketing & Tráfego',
+    'Equipe & Staff',
+    'Audio, Vídeo & LED',
+    'Palestrantes',
+    'Logística & Viagens',
+    'Jurídico & Contábil',
+    'Impostos & Taxas',
+    'Serviços de Terceiros'
+  ]
 };
 
 
 export function AdminFinanceiro() {
-  const { data: transactions } = useTransactions();
+  const { data: transactions, create: createTransaction, isLoading: isTransactionLoading } = useTransactions();
   const { data: registrations } = useRegistrations();
   const { data: batches } = useRegistrationBatches();
   const { update: updateProject } = useProjects();
@@ -40,6 +77,16 @@ export function AdminFinanceiro() {
   const [activeView, setActiveView] = useState<'overview' | 'transactions'>('overview');
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [isUpdatingGoals, setIsUpdatingGoals] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [newTransaction, setNewTransaction] = useState({
+    type: 'expense' as 'income' | 'expense',
+    description: '',
+    amount: 0,
+    category: 'Venue & Locação',
+    date: new Date().toISOString().split('T')[0],
+    reference_person: '',
+    status: 'completed'
+  });
 
   // Get goals from project settings or fallback to defaults
   const goals = {
@@ -49,6 +96,33 @@ export function AdminFinanceiro() {
   };
 
   const [tempGoals, setTempGoals] = useState(goals);
+
+  const handleCreateTransaction = async () => {
+    if (!newTransaction.description || !newTransaction.amount) {
+      toast.error('Preencha os campos obrigatórios');
+      return;
+    }
+
+    try {
+      await createTransaction({
+        ...newTransaction,
+        projectId: selectedProject?.id
+      });
+      toast.success('Transação registrada com sucesso!');
+      setShowTransactionModal(false);
+      setNewTransaction({
+        type: 'expense',
+        description: '',
+        amount: 0,
+        category: 'Venue & Locação',
+        date: new Date().toISOString().split('T')[0],
+        reference_person: '',
+        status: 'completed'
+      });
+    } catch (err) {
+      toast.error('Erro ao registrar transação');
+    }
+  };
 
   const handleUpdateGoals = async () => {
     if (!selectedProject?.id) return;
@@ -149,7 +223,6 @@ export function AdminFinanceiro() {
   const [calcQty, setCalcQty] = useState(0);
   const [calcPrice, setCalcPrice] = useState(0);
   const calcTotal = calcQty * calcPrice;
-
   return (
     <div className="space-y-10 py-6 animate-in fade-in duration-700">
       {/* Premium Header */}
@@ -176,15 +249,24 @@ export function AdminFinanceiro() {
           </div>
           <div className="h-8 w-px bg-white/5 mx-2" />
           <Button
+            onClick={() => setShowTransactionModal(true)}
+            className="bg-brand-orange-coral text-white hover:bg-brand-orange-coral/90 rounded-2xl font-black text-[10px] uppercase tracking-widest px-6 shadow-glow-orange h-10"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            NOVO LANÇAMENTO
+          </Button>
+          <div className="h-8 w-px bg-white/5 mx-2" />
+          <Button
             variant="ghost" 
             size="sm"
-            onClick={() => toast.info('Relatório detalhado em processamento')}
+            onClick={() => toast.info('Relatório em processamento')}
             className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
           >
-            RELATORIO COMPLETO
+            RELATORIO
           </Button>
         </div>
       </div>
+
 
       {/* Tabs System */}
       <div className="flex p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] w-fit mb-10">
@@ -586,6 +668,7 @@ export function AdminFinanceiro() {
                       </td>
                       <td className="p-5" data-label="Descrição">
                         <p className="text-white text-sm font-black italic uppercase tracking-tight group-hover:text-brand-orange-coral transition-colors">{transaction.description}</p>
+                        {transaction.reference_person && <p className="text-[8px] text-gray-700 font-bold uppercase tracking-widest mt-0.5 italic">Ref: {transaction.reference_person}</p>}
                       </td>
                       <td className="p-5" data-label="Categoria">
                         <Badge className={`${categoryColors[transaction.category] || 'bg-gray-500/10 text-gray-500'} border-none px-3 py-1 rounded-full font-black text-[9px] tracking-widest uppercase`}>
@@ -623,6 +706,205 @@ export function AdminFinanceiro() {
           </div>
         </div>
       )}
+      </div>
+      )}
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showGoalModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card max-w-md w-full p-10 border-white/10 rounded-[2.5rem] shadow-2xl relative"
+            >
+              <div className="mb-8">
+                <h3 className="text-2xl font-black text-white italic uppercase tracking-tight">Metas Financeiras</h3>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Sincronizado com o Planejamento</p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Receita (R$)</label>
+                  <input
+                    type="number"
+                    value={tempGoals.revenue}
+                    onChange={(e) => setTempGoals({ ...tempGoals, revenue: Number(e.target.value) })}
+                    className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-teal-500 transition-all tabular-nums"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Patrocínio (R$)</label>
+                  <input
+                    type="number"
+                    value={tempGoals.sponsorship}
+                    onChange={(e) => setTempGoals({ ...tempGoals, sponsorship: Number(e.target.value) })}
+                    className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-blue-500 transition-all tabular-nums"
+                  />
+                </div>
+
+                <div className="p-6 bg-white/[0.03] rounded-[1.5rem] border border-white/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] italic">Calculadora de Tickets</p>
+                    <Zap className="h-3 w-3 text-teal-400 fill-teal-400/20" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Qtd Esperada</label>
+                      <input
+                        type="number"
+                        placeholder="Ex: 300"
+                        value={calcQty === 0 ? '' : calcQty}
+                        onChange={(e) => setCalcQty(Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Ticket Avg (R$)</label>
+                      <input
+                        type="number"
+                        placeholder="Ex: 497"
+                        value={calcPrice === 0 ? '' : calcPrice}
+                        onChange={(e) => setCalcPrice(Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                    <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Total Estimado:</span>
+                    <span className="text-sm font-black text-white italic">R$ {calcTotal.toLocaleString('pt-BR')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 mt-10">
+                <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowGoalModal(false)}>CANCELAR</Button>
+                <Button className="flex-1 bg-brand-orange-coral text-white shadow-glow-orange" onClick={handleUpdateGoals}>SALVAR</Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {showTransactionModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="glass-card max-w-2xl w-full p-10 border-white/10 rounded-[3rem] shadow-2xl relative"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Novo <span className="text-brand-orange-coral">Lançamento</span></h3>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Registrar entrada ou saída de caixa</p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setShowTransactionModal(false)} className="text-gray-500 hover:text-white rounded-full">
+                  <X className="h-6 w-6" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Tipo de Movimentação</label>
+                    <div className="flex p-1 bg-black/40 rounded-2xl border border-white/5">
+                      <button 
+                        onClick={() => setNewTransaction({ ...newTransaction, type: 'income', category: 'Inscrições' })}
+                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newTransaction.type === 'income' ? 'bg-emerald-500 text-white shadow-glow-emerald' : 'text-gray-500 hover:text-white'}`}
+                      >
+                        Receita
+                      </button>
+                      <button 
+                        onClick={() => setNewTransaction({ ...newTransaction, type: 'expense', category: 'Venue & Locação' })}
+                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newTransaction.type === 'expense' ? 'bg-red-500 text-white shadow-glow-red' : 'text-gray-500 hover:text-white'}`}
+                      >
+                        Despesa
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Descrição</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Aluguel do Centro de Convenções"
+                      value={newTransaction.description}
+                      onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                      className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-2xl text-white font-bold focus:outline-none focus:border-brand-orange-coral transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Categoria Estratégica</label>
+                    <select
+                      value={newTransaction.category}
+                      onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
+                      className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-2xl text-white font-bold focus:outline-none focus:border-brand-orange-coral transition-all appearance-none"
+                    >
+                      {financialCategories[newTransaction.type].map(cat => (
+                        <option key={cat} value={cat} className="bg-dark-300">{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Valor (R$)</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-brand-orange-coral" />
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        value={newTransaction.amount || ''}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, amount: parseFloat(e.target.value) || 0 })}
+                        className="w-full pl-12 pr-5 py-4 bg-black/40 border border-white/5 rounded-2xl text-white text-3xl font-black italic tabular-nums focus:outline-none focus:border-brand-orange-coral transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Data Competência</label>
+                    <input
+                      type="date"
+                      value={newTransaction.date}
+                      onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+                      className="w-full px-5 py-4 bg-black/40 border border-white/5 rounded-2xl text-white font-bold focus:outline-none focus:border-brand-orange-coral transition-all [color-scheme:dark]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Pessoa / Empresa Responsável</label>
+                    <div className="relative">
+                      <Users className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-700" />
+                      <input
+                        type="text"
+                        placeholder="Ex: Fornecedor de LED"
+                        value={newTransaction.reference_person}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, reference_person: e.target.value })}
+                        className="w-full pl-12 pr-5 py-4 bg-black/40 border border-white/5 rounded-2xl text-white font-bold focus:outline-none focus:border-brand-orange-coral transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 mt-12 pt-8 border-t border-white/5">
+                <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowTransactionModal(false)}>CANCELAR</Button>
+                <Button
+                  disabled={isTransactionLoading}
+                  className="flex-[2] bg-brand-orange-coral text-white shadow-glow-orange h-14"
+                  onClick={handleCreateTransaction}
+                >
+                  {isTransactionLoading ? 'PROCESSANDO...' : 'CONFIRMAR LANCAMENTO'}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

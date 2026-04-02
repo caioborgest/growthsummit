@@ -70,7 +70,7 @@ export default function AdminSorteio() {
       await raffleService.updateRaffle(raffleId, { status } as any);
       toast.success(`Sorteio ${status === 'open' ? 'aberto' : 'fechado'}!`);
       refetchRaffles();
-    } catch (_error) {
+    } catch {
       toast.error('Erro ao atualizar status');
     }
   };
@@ -80,7 +80,7 @@ export default function AdminSorteio() {
       try {
         await removeRaffle(id);
         toast.success('Sorteio excluído');
-      } catch (_error) {
+      } catch {
         toast.error('Erro ao excluir');
       }
     }
@@ -95,7 +95,7 @@ export default function AdminSorteio() {
         color: { dark: '#000000', light: '#FFFFFF' }
       });
       setQrCodeDataUrl(url);
-    } catch (_error) {
+    } catch {
       toast.error('Erro ao gerar QR Code');
     }
   };
@@ -144,7 +144,7 @@ export default function AdminSorteio() {
       } else {
           toast.error('Nenhum participante elegível encontrado no banco.');
       }
-    } catch (_error) {
+    } catch {
       toast.error('Erro ao processar sorteio no servidor');
     } finally {
       setIsDrawing(false);
@@ -264,14 +264,20 @@ export default function AdminSorteio() {
       <Dialog open={!!winner} onOpenChange={() => setWinner(null)}>
         <DialogContent className="bg-dark-200 border-white/10 text-white max-w-lg rounded-[3rem] overflow-hidden text-center p-12">
             <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-brand-orange-coral/20 to-transparent -z-10" />
-            <div className="w-24 h-24 bg-brand-orange-coral rounded-full flex items-center justify-center mx-auto mb-8 shadow-glow-orange">
-                <Trophy className="h-12 w-12 text-white" />
-            </div>
-            <Badge className="bg-orange-500/20 text-orange-400 font-black px-4 py-1 mb-6 border-none text-[10px] tracking-widest uppercase italic">
-                🏅 Parabéns! Temos um ganhador!
-            </Badge>
-            <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-2">{winner?.winner_name}</h2>
-            <p className="text-gray-500 font-bold text-sm mb-10">{winner?.winner_email}</p>
+            <DialogHeader className="items-center text-center">
+                <div className="w-24 h-24 bg-brand-orange-coral rounded-full flex items-center justify-center mx-auto mb-8 shadow-glow-orange">
+                    <Trophy className="h-12 w-12 text-white" />
+                </div>
+                <Badge className="bg-orange-500/20 text-orange-400 font-black px-4 py-1 mb-6 border-none text-[10px] tracking-widest uppercase italic">
+                    🏅 Parabéns! Temos um ganhador!
+                </Badge>
+                <DialogTitle className="text-4xl font-black text-white uppercase italic tracking-tighter mb-2">
+                    {winner?.winner_name}
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 font-bold text-sm mb-10">
+                    {winner?.winner_email}
+                </DialogDescription>
+            </DialogHeader>
             
             <Button 
                 onClick={() => setWinner(null)}
@@ -285,11 +291,17 @@ export default function AdminSorteio() {
       {/* QR Code Modal */}
       <Dialog open={!!qrCodeDataUrl} onOpenChange={() => setQrCodeDataUrl('')}>
         <DialogContent className="bg-white text-dark-500 max-w-sm rounded-[2.5rem] overflow-hidden p-8 text-center space-y-6">
-            <h2 className="text-2xl font-black uppercase tracking-tight italic">Scan para <span className="text-brand-orange-coral">Participar!</span></h2>
+            <DialogHeader className="items-center text-center">
+                <DialogTitle className="text-2xl font-black uppercase tracking-tight italic">
+                    Scan para <span className="text-brand-orange-coral">Participar!</span>
+                </DialogTitle>
+                <DialogDescription className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                    Aponte a câmera do seu celular no PWA para entrar no sorteio.
+                </DialogDescription>
+            </DialogHeader>
             <div className="p-4 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
                 <img src={qrCodeDataUrl} alt="QR Code" className="w-full h-auto" />
             </div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Aponte a câmera do seu celular no PWA para entrar no sorteio.</p>
             <Button onClick={() => setQrCodeDataUrl('')} className="w-full bg-dark-500 text-white font-black h-12 rounded-2xl">FECHAR</Button>
         </DialogContent>
       </Dialog>

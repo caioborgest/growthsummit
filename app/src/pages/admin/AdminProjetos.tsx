@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers } from 'lucide-react';
+import { X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers, Users, CircleDollarSign, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
@@ -40,13 +40,6 @@ const defaultSettings = {
   publicContent: {
     heroTitle: 'Growth Experience 2026',
     heroSubtitle: 'O MAIOR EVENTO DE CRECHIMENTO DO NORDESTE',
-    popup: {
-      active: false,
-      title: 'OFERTA ESPECIAL',
-      subtitle: 'LOTE PROMOCIONAL',
-      description: 'Garanta sua vaga agora!',
-      buttonText: 'QUERO DESCONTO'
-    }
   }
 };
 
@@ -259,518 +252,629 @@ export default function AdminProjetos() {
                   <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
                   <TabsTrigger value="modulos">Módulos</TabsTrigger>
                   <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
-                  <TabsTrigger value="popup">Pop-up</TabsTrigger>
                   <TabsTrigger value="integracao">Integração</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="geral" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nome do Evento *</Label>
-                      <Input
-                        value={formData.name || ''}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Ex: Growth Experience - Edição..."
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tipo *</Label>
-                      <Select
-                        value={formData.type}
-                        onValueChange={(value: ProjectType) => setFormData({ ...formData, type: value })}
-                      >
-                        <SelectTrigger className="bg-[#0F172A] border-[#334155]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1E293B] border-[#334155]">
-                          <SelectItem value="growth_experience">Growth Experience</SelectItem>
-                          <SelectItem value="growth_conference">Growth Conference</SelectItem>
-                          <SelectItem value="growth_festival">Growth Festival</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Descrição</Label>
-                    <Input
-                      value={formData.description || ''}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Descrição completa do evento"
-                      className="bg-[#0F172A] border-[#334155]"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Local *</Label>
-                      <Input
-                        value={formData.location || ''}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        placeholder="Nome do local"
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Cidade *</Label>
-                      <Input
-                        value={formData.city || ''}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Cidade"
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Estado *</Label>
-                      <Input
-                        value={formData.state || ''}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        placeholder="UF"
-                        maxLength={2}
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Data Início *</Label>
-                      <Input
-                        type="date"
-                        value={formData.startDate || ''}
-                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Data Fim *</Label>
-                      <Input
-                        type="date"
-                        value={formData.endDate || ''}
-                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="bg-[#0F172A] border-[#334155]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Cor Primária</Label>
-                      <div className="flex gap-2">
+                <TabsContent value="geral" className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">
+                          <Info className="w-3 h-3 text-brand-orange-coral" />
+                          Nome Identificador do Evento
+                        </Label>
                         <Input
-                          type="color"
-                          value={formData.primaryColor || '#21808D'}
-                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                          className="w-12 p-1 bg-[#0F172A] border-[#334155]"
+                          value={formData.name || ''}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Ex: Growth Experience 2026"
+                          className="bg-black/40 border-white/10 rounded-2xl h-12 text-white font-bold focus:border-brand-orange-coral/50"
                         />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">
+                          <Layers className="w-3 h-3 text-brand-orange-coral" />
+                          Segmento do Projeto
+                        </Label>
+                        <Select
+                          value={formData.type}
+                          onValueChange={(value: ProjectType) => setFormData({ ...formData, type: value })}
+                        >
+                          <SelectTrigger className="bg-black/40 border-white/10 rounded-2xl h-12 text-white font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#0F172A] border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                            <SelectItem value="growth_experience" className="text-white font-bold uppercase text-[10px] tracking-widest hover:bg-brand-orange-coral/10">Growth Experience</SelectItem>
+                            <SelectItem value="growth_conference" className="text-white font-bold uppercase text-[10px] tracking-widest hover:bg-brand-orange-coral/10">Growth Conference</SelectItem>
+                            <SelectItem value="growth_festival" className="text-white font-bold uppercase text-[10px] tracking-widest hover:bg-brand-orange-coral/10">Growth Festival</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">
+                        <Edit className="w-3 h-3 text-brand-orange-coral" />
+                        Descrição Técnica (Meta-data)
+                      </Label>
+                      <textarea
+                        value={formData.description || ''}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Breve descrição interna do projeto..."
+                        className="w-full bg-black/40 border-white/10 rounded-2xl p-4 text-white font-medium h-[116px] focus:border-brand-orange-coral/50 outline-none transition-all resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                        <MapPin className="h-4 w-4 text-teal-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Localização Estratégica</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                      <div className="space-y-2 md:col-span-1">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Nome do Local</Label>
                         <Input
-                          value={formData.primaryColor || '#21808D'}
-                          onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                          placeholder="#000000"
-                          className="flex-1 bg-[#0F172A] border-[#334155]"
+                          value={formData.location || ''}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          placeholder="Ex: Polo Automotivo"
+                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Cidade</Label>
+                        <Input
+                          value={formData.city || ''}
+                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                          placeholder="Cidade"
+                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">UF</Label>
+                        <Input
+                          value={formData.state || ''}
+                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                          placeholder="PE"
+                          maxLength={2}
+                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold uppercase text-center"
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Select
-                        value={formData.status}
-                        onValueChange={(value: ProjectStatus) => setFormData({ ...formData, status: value })}
-                      >
-                        <SelectTrigger className="bg-[#0F172A] border-[#334155]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1E293B] border-[#334155]">
-                          <SelectItem value="draft">Rascunho</SelectItem>
-                          <SelectItem value="active">Ativo</SelectItem>
-                          <SelectItem value="paused">Pausado</SelectItem>
-                          <SelectItem value="completed">Concluído</SelectItem>
-                          <SelectItem value="cancelled">Cancelado</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                        <Calendar className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Cronograma do Evento</h4>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="p-4 bg-black/40 border border-white/10 rounded-2xl space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Data de Início</Label>
+                        <input
+                          type="date"
+                          value={formData.startDate || ''}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          className="w-full bg-transparent border-none text-white font-black text-sm outline-none [color-scheme:dark]"
+                        />
+                      </div>
+                      <div className="p-4 bg-black/40 border border-white/10 rounded-2xl space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Data de Encerramento</Label>
+                        <input
+                          type="date"
+                          value={formData.endDate || ''}
+                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          className="w-full bg-transparent border-none text-white font-black text-sm outline-none [color-scheme:dark]"
+                        />
+                      </div>
+                      <div className="p-3 bg-black/40 border border-white/10 rounded-2xl space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Identidade Master (HEX)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={formData.primaryColor || '#21808D'}
+                            onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                            className="w-10 h-10 p-1 bg-black/60 border-white/10 rounded-lg cursor-pointer"
+                          />
+                          <Input
+                            value={formData.primaryColor || '#21808D'}
+                            onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                            placeholder="#HEX"
+                            className="flex-1 bg-transparent border-none text-white font-black text-sm uppercase"
+                          />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-black/40 border border-white/10 rounded-2xl space-y-2">
+                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Visibilidade do Projeto</Label>
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value: ProjectStatus) => setFormData({ ...formData, status: value })}
+                        >
+                          <SelectTrigger className="bg-transparent border-none text-white font-black p-0 h-10 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#0F172A] border-white/10 rounded-2xl">
+                            <SelectItem value="draft" className="text-white font-bold uppercase text-[9px] tracking-widest">Rascunho</SelectItem>
+                            <SelectItem value="active" className="text-white font-bold uppercase text-[9px] tracking-widest">Ativo (Publicado)</SelectItem>
+                            <SelectItem value="paused" className="text-white font-bold uppercase text-[9px] tracking-widest">Pausado</SelectItem>
+                            <SelectItem value="completed" className="text-white font-bold uppercase text-[9px] tracking-widest">Concluído</SelectItem>
+                            <SelectItem value="cancelled" className="text-white font-bold uppercase text-[9px] tracking-widest">Cancelado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
-
-                <TabsContent value="financeiro" className="space-y-6">
-                    <div className="space-y-6 pt-6 border-t border-[#334155]">
-                       <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                           <Layers className="h-5 w-5 text-brand-orange-coral" />
-                           <h4 className="text-sm font-bold text-white uppercase tracking-wider">Gestão de Lotes & Categorias</h4>
-                         </div>
-                         <Button
-                           variant="outline"
-                           size="sm"
-                           onClick={() => {
-                             const currentTiers = formData.settings?.ticketTiers || [];
-                             const newTier = {
-                               id: `tier_${Date.now()}`,
-                               name: 'Nova Categoria',
-                               active: true,
-                               batches: [{ id: `batch_${Date.now()}`, name: 'Lote 1', price: 0, active: true }]
-                             };
-                             setFormData({
-                               ...formData,
-                               settings: { ...formData.settings!, ticketTiers: [...currentTiers, newTier] }
-                             });
-                           }}
-                           className="bg-white/5 border-white/10 text-xs font-black uppercase"
-                         >
-                           <Plus className="h-3 w-3 mr-2" />
-                           Adicionar Categoria
-                         </Button>
-                       </div>
-
-                       <div className="space-y-4">
-                         {(formData.settings?.ticketTiers || []).map((tier, tIdx) => (
-                           <div key={tier.id} className="p-4 rounded-2xl bg-[#0F172A] border border-white/5 space-y-4 transition-all">
-                             <div className="flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                 <div className="p-2 rounded-lg bg-brand-orange-coral/10">
-                                   <Ticket className="h-4 w-4 text-brand-orange-coral" />
-                                 </div>
-                                 <Input
-                                   value={tier.name}
-                                   onChange={(e) => {
-                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                     newTiers[tIdx].name = e.target.value;
-                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                   }}
-                                   className="bg-transparent border-none text-white font-black italic uppercase h-8 w-48 text-sm focus:ring-0"
-                                   placeholder="Nome da Categoria"
-                                 />
-                               </div>
-                               <div className="flex items-center gap-2">
-                                 <Switch
-                                   checked={tier.active}
-                                   onCheckedChange={(val) => {
-                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                     newTiers[tIdx].active = val;
-                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                   }}
-                                 />
-                                 <Button
-                                   variant="ghost"
-                                   size="icon"
-                                   onClick={() => {
-                                     const newTiers = (formData.settings?.ticketTiers || []).filter((_, i) => i !== tIdx);
-                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                   }}
-                                   className="text-red-500 hover:text-red-400 h-8 w-8"
-                                 >
-                                   <Trash2 className="h-4 w-4" />
-                                 </Button>
-                               </div>
-                             </div>
-
-                             <div className="pl-10 space-y-3">
-                               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Lotes da Categoria</p>
-                               <div className="grid grid-cols-1 gap-2">
-                                 {tier.batches.map((batch, bIdx) => (
-                                   <div key={batch.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
-                                     <Input
-                                       value={batch.name}
-                                       onChange={(e) => {
-                                         const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                         newTiers[tIdx].batches[bIdx].name = e.target.value;
-                                         setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                       }}
-                                       className="bg-transparent border-none text-white font-bold h-8 w-24 text-sm focus:ring-0"
-                                       placeholder="Lote"
-                                     />
-                                     <div className="flex flex-col gap-1 flex-1">
-                                       <div className="flex items-center gap-2">
-                                         <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded border border-white/5">
-                                            <span className="text-[8px] font-black text-gray-500 uppercase">Qtd</span>
-                                            <Input
-                                              type="number"
-                                              value={batch.maxCapacity || ''}
-                                              onChange={(e) => {
-                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                                newTiers[tIdx].batches[bIdx].maxCapacity = parseInt(e.target.value) || undefined;
-                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                              }}
-                                              className="bg-transparent border-none text-white font-bold h-5 w-10 text-[10px] p-0 focus:ring-0 outline-none hover:bg-white/5 transition-colors"
-                                            />
-                                         </div>
-                                         <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded border border-white/5 overflow-hidden">
-                                            <span className="text-[8px] font-black text-gray-500 uppercase">De</span>
-                                            <input
-                                              type="date"
-                                              value={batch.startDate || ''}
-                                              onChange={(e) => {
-                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                                newTiers[tIdx].batches[bIdx].startDate = e.target.value;
-                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                              }}
-                                              className="bg-transparent border-none text-white font-bold h-5 text-[10px] p-0 focus:ring-0 outline-none w-20 [color-scheme:dark]"
-                                            />
-                                            <span className="text-[8px] font-black text-gray-500 uppercase ml-1">Até</span>
-                                            <input
-                                              type="date"
-                                              value={batch.endDate || ''}
-                                              onChange={(e) => {
-                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                                newTiers[tIdx].batches[bIdx].endDate = e.target.value;
-                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                              }}
-                                              className="bg-transparent border-none text-white font-bold h-5 text-[10px] p-0 focus:ring-0 outline-none w-20 [color-scheme:dark]"
-                                            />
-                                         </div>
-                                       </div>
-                                     </div>
-                                     <div className="flex items-center gap-2 bg-black/40 px-3 rounded-lg border border-white/5">
-                                       <span className="text-[10px] font-black text-brand-orange-coral">R$</span>
-                                       <Input
-                                         type="number"
-                                         value={batch.price}
-                                         onChange={(e) => {
-                                           const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                           newTiers[tIdx].batches[bIdx].price = parseFloat(e.target.value) || 0;
-                                           setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                         }}
-                                         className="bg-transparent border-none text-white font-black h-8 w-24 text-sm focus:ring-0 text-right"
-                                       />
-                                     </div>
-                                     <div className="flex items-center gap-3 ml-2">
-                                       <div className="flex items-center gap-2">
-                                          <span className={`text-[9px] font-black uppercase tracking-tighter ${batch.active ? 'text-green-500' : 'text-gray-600'}`}>
-                                            {batch.active ? 'Ativo' : 'Inativo'}
-                                          </span>
-                                          <Switch
-                                            checked={batch.active}
-                                            onCheckedChange={(val) => {
-                                              const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                              // Se ativar um, desativa os outros lotes da mesma categoria
-                                              if (val) {
-                                                newTiers[tIdx].batches.forEach((b, i) => b.active = i === bIdx);
-                                              } else {
-                                                newTiers[tIdx].batches[bIdx].active = false;
-                                              }
-                                              setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                            }}
-                                          />
-                                       </div>
-                                       <Button
-                                         variant="ghost"
-                                         size="icon"
-                                         onClick={() => {
-                                           const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                           newTiers[tIdx].batches = newTiers[tIdx].batches.filter((_, i) => i !== bIdx);
-                                           setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                         }}
-                                         className="text-gray-600 hover:text-red-500 h-8 w-8 transition-colors"
-                                       >
-                                         <X className="h-4 w-4" />
-                                       </Button>
-                                     </div>
-                                   </div>
-                                 ))}
-                                 <Button
-                                   variant="ghost"
-                                   onClick={() => {
-                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
-                                     newTiers[tIdx].batches.push({
-                                       id: `batch_${Date.now()}`,
-                                       name: `Lote ${newTiers[tIdx].batches.length + 1}`,
-                                       price: 0,
-                                       active: false
-                                     });
-                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
-                                   }}
-                                   className="border border-dashed border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:border-brand-orange-coral/50 h-10 rounded-xl"
-                                 >
-                                   <Plus className="h-3 w-3 mr-2" />
-                                   Novo Lote para {tier.name}
-                                 </Button>
-                               </div>
-                             </div>
-                           </div>
-                         ))}
-                         
-                         {(!formData.settings?.ticketTiers || formData.settings?.ticketTiers.length === 0) && (
-                           <div className="p-10 border-2 border-dashed border-white/5 rounded-3xl text-center">
-                              <Ticket className="h-10 w-10 text-gray-700 mx-auto mb-4 opacity-20" />
-                              <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">Nenhuma precificação avançada configurada</p>
-                              <Button
-                                variant="link"
+                              <TabsContent value="financeiro" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="space-y-8 pt-6 border-t border-white/5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 p-6 rounded-[2rem] border border-white/10">
+                            <div>
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className="p-2 rounded-xl bg-brand-orange-coral/10">
+                                        <Layers className="h-6 w-6 text-brand-orange-coral animate-pulse" />
+                                    </div>
+                                    <h4 className="text-xl font-black text-white italic uppercase tracking-tighter">Gestão de Lotes & Categorias</h4>
+                                </div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-11">Configuração de Precificação Dinâmica</p>
+                            </div>
+                            <Button
                                 onClick={() => {
-                                  setFormData({
-                                    ...formData,
-                                    settings: {
-                                      ...formData.settings!,
-                                      ticketTiers: [
-                                        { id: 'standard', name: 'Standard', active: true, batches: [{ id: 'std_l1', name: 'Lote 1', price: 197, active: true }] },
-                                        { id: 'pro', name: 'Pro', active: true, batches: [{ id: 'pro_l1', name: 'Lote 1', price: 347, active: true }] },
-                                        { id: 'vip', name: 'VIP', active: true, batches: [{ id: 'vip_l1', name: 'Lote 1', price: 1500, active: true }] }
-                                      ]
-                                    }
-                                  });
+                                    const currentTiers = formData.settings?.ticketTiers || [];
+                                    const newTier = {
+                                        id: `tier_${Date.now()}`,
+                                        name: 'Nova Categoria',
+                                        active: true,
+                                        batches: [{ id: `batch_${Date.now()}`, name: 'Lote 1', price: 0, active: true }]
+                                    };
+                                    setFormData({
+                                        ...formData,
+                                        settings: { ...formData.settings!, ticketTiers: [...currentTiers, newTier] }
+                                    });
                                 }}
-                                className="text-brand-orange-coral text-[10px] font-black uppercase tracking-widest mt-2"
-                              >
-                                Inicializar Categorias Padrão
-                              </Button>
-                           </div>
-                         )}
+                                className="btn-premium flex items-center justify-center gap-2 group"
+                            >
+                                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                                <span className="uppercase text-[10px] tracking-widest font-black">Adicionar Categoria</span>
+                            </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-8">
+                            {(formData.settings?.ticketTiers || []).map((tier, tIdx) => (
+                                <div key={tier.id} className="glass-card overflow-hidden border-white/10 group/tier relative">
+                                    {/* Tier Header */}
+                                    <div className="p-6 bg-white/[0.03] border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-6 transition-all group-hover/tier:bg-white/[0.05]">
+                                        <div className="flex items-center gap-4 flex-1">
+                                            <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 shadow-glow-orange/10 group-hover/tier:scale-110 transition-all">
+                                                <Ticket className="h-6 w-6 text-brand-orange-coral" />
+                                            </div>
+                                            <div className="flex-1 space-y-1">
+                                                <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Identificação da Categoria</Label>
+                                                <Input
+                                                    value={tier.name}
+                                                    onChange={(e) => {
+                                                        const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                        newTiers[tIdx].name = e.target.value;
+                                                        setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                    }}
+                                                    className="bg-transparent border-none text-white font-black italic uppercase h-10 w-full lg:w-64 text-lg focus:ring-0 p-0 focus:border-b focus:border-brand-orange-coral/50 rounded-none transition-all"
+                                                    placeholder="NOME DA CATEGORIA (EX: VIP)"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6 bg-black/20 p-2 pl-4 rounded-2xl border border-white/5">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${tier.active ? 'text-emerald-400' : 'text-gray-600'}`}>
+                                                    {tier.active ? 'CATEGORIA ATIVA' : 'CATEGORIA INATIVA'}
+                                                </span>
+                                                <Switch
+                                                    checked={tier.active}
+                                                    onCheckedChange={(val) => {
+                                                        const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                        newTiers[tIdx].active = val;
+                                                        setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                    }}
+                                                    className="data-[state=checked]:bg-emerald-500"
+                                                />
+                                            </div>
+                                            <div className="w-[1px] h-8 bg-white/10" />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    const newTiers = (formData.settings?.ticketTiers || []).filter((_, i) => i !== tIdx);
+                                                    setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                }}
+                                                className="text-gray-600 hover:text-red-500 hover:bg-red-500/10 h-10 w-10 transition-all rounded-xl"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Batches Container */}
+                                    <div className="p-8 space-y-6">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-1 h-4 bg-brand-orange-coral rounded-full" />
+                                            <p className="text-[11px] font-black text-white uppercase tracking-[0.25em] italic">Vigência de Lotes</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {tier.batches.map((batch, bIdx) => (
+                                                <div key={batch.id} className="relative group/batch">
+                                                    <div className={`flex flex-col lg:flex-row lg:items-center gap-6 p-6 rounded-[1.5rem] transition-all duration-300 border ${batch.active ? 'bg-white/[0.04] border-brand-orange-coral/20 shadow-lg shadow-brand-orange-coral/5' : 'bg-white/[0.02] border-white/5 opacity-80'}`}>
+                                                        {/* Batch Info */}
+                                                        <div className="flex-1 flex items-center gap-4">
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black italic text-xs ${batch.active ? 'bg-brand-orange-coral text-white shadow-glow-orange/20' : 'bg-white/10 text-gray-500'}`}>
+                                                                #{bIdx + 1}
+                                                            </div>
+                                                            <div className="flex-1 space-y-1">
+                                                                <Label className="text-[9px] font-black text-gray-600 uppercase tracking-widest pl-1">Identificador</Label>
+                                                                <Input
+                                                                    value={batch.name}
+                                                                    onChange={(e) => {
+                                                                        const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                        newTiers[tIdx].batches[bIdx].name = e.target.value;
+                                                                        setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                    }}
+                                                                    className="bg-transparent border-none text-white font-bold h-8 w-full text-base focus:ring-0 p-0"
+                                                                    placeholder="Ex: 1º Lote"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Batch Settings Grid */}
+                                                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+                                                            {/* Quantity */}
+                                                            <div className="bg-black/40 p-3 rounded-2xl border border-white/5 space-y-1 flex-1 md:flex-none md:min-w-[100px]">
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <Users className="h-3 w-3 text-gray-500" />
+                                                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Qtd Máxima</span>
+                                                                </div>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={batch.maxCapacity || ''}
+                                                                    onChange={(e) => {
+                                                                        const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                        newTiers[tIdx].batches[bIdx].maxCapacity = parseInt(e.target.value) || undefined;
+                                                                        setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                    }}
+                                                                    className="bg-transparent border-none text-white font-black h-6 w-full text-sm p-0 focus:ring-0"
+                                                                    placeholder="∞"
+                                                                />
+                                                            </div>
+
+                                                            {/* Dates */}
+                                                            <div className="bg-black/40 p-3 rounded-2xl border border-white/5 space-y-1 flex-1 md:flex-none">
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <Calendar className="h-3 w-3 text-gray-500" />
+                                                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Período de Venda</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[7px] font-black text-emerald-500/50 uppercase leading-none mb-1">Início</span>
+                                                                        <input
+                                                                            type="date"
+                                                                            value={batch.startDate || ''}
+                                                                            onChange={(e) => {
+                                                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                                newTiers[tIdx].batches[bIdx].startDate = e.target.value;
+                                                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                            }}
+                                                                            className="bg-transparent border-none text-white font-bold h-6 text-xs p-0 focus:ring-0 outline-none w-24 [color-scheme:dark]"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="w-[1px] h-6 bg-white/10" />
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[7px] font-black text-red-500/50 uppercase leading-none mb-1">Término</span>
+                                                                        <input
+                                                                            type="date"
+                                                                            value={batch.endDate || ''}
+                                                                            onChange={(e) => {
+                                                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                                newTiers[tIdx].batches[bIdx].endDate = e.target.value;
+                                                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                            }}
+                                                                            className="bg-transparent border-none text-white font-bold h-6 text-xs p-0 focus:ring-0 outline-none w-24 [color-scheme:dark]"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Price */}
+                                                            <div className={`p-3 rounded-2xl border transition-all flex flex-col justify-center min-w-[140px] ${batch.active ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30' : 'bg-black/60 border-white/5'}`}>
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <CircleDollarSign className={`h-4 w-4 ${batch.active ? 'text-brand-orange-coral' : 'text-gray-600'}`} />
+                                                                    <span className={`text-[8px] font-black tracking-widest uppercase ${batch.active ? 'text-brand-orange-coral' : 'text-gray-600'}`}>Investimento</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-sm font-black text-white/40">R$</span>
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={batch.price}
+                                                                        onChange={(e) => {
+                                                                            const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                            newTiers[tIdx].batches[bIdx].price = parseFloat(e.target.value) || 0;
+                                                                            setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                        }}
+                                                                        className="bg-transparent border-none text-white font-black h-8 w-full text-xl focus:ring-0 p-0 text-left tabular-nums"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Actions (Vertical in mobile, side-by-side in desktop) */}
+                                                            <div className="flex items-center justify-between md:justify-end gap-6 ml-0 md:ml-4 bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-2xl">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <Switch
+                                                                        checked={batch.active}
+                                                                        onCheckedChange={(val) => {
+                                                                            const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                            if (val) {
+                                                                                newTiers[tIdx].batches.forEach((b, i) => b.active = i === bIdx);
+                                                                            } else {
+                                                                                newTiers[tIdx].batches[bIdx].active = false;
+                                                                            }
+                                                                            setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                        }}
+                                                                        className="data-[state=checked]:bg-brand-orange-coral"
+                                                                    />
+                                                                    <span className="text-[7px] font-black uppercase text-gray-500 tracking-widest">{batch.active ? 'PÚBLICO' : 'OFFLINE'}</span>
+                                                                </div>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => {
+                                                                        const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                                        newTiers[tIdx].batches = newTiers[tIdx].batches.filter((_, i) => i !== bIdx);
+                                                                        setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                                    }}
+                                                                    className="text-gray-700 hover:text-red-500 hover:bg-red-500/10 h-10 w-10 transition-all rounded-xl"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                    newTiers[tIdx].batches.push({
+                                                        id: `batch_${Date.now()}`,
+                                                        name: `Lote ${newTiers[tIdx].batches.length + 1}`,
+                                                        price: 0,
+                                                        active: false
+                                                    });
+                                                    setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                                }}
+                                                className="w-full border-2 border-dashed border-white/5 hover:border-brand-orange-coral/50 bg-white/[0.02] hover:bg-brand-orange-coral/5 text-gray-500 hover:text-white transition-all h-16 rounded-[1.5rem] flex items-center justify-center gap-3 group/add"
+                                            >
+                                                <div className="p-2 rounded-xl bg-white/5 group-hover/add:bg-brand-orange-coral group-hover/add:text-white transition-all">
+                                                    <Plus className="h-5 w-5" />
+                                                </div>
+                                                <span className="text-[11px] font-black uppercase tracking-[0.25em] italic">Nova Vigência para {tier.name}</span>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {(!formData.settings?.ticketTiers || formData.settings?.ticketTiers.length === 0) && (
+                                <div className="p-20 border-2 border-dashed border-white/5 rounded-[3rem] text-center bg-white/[0.01]">
+                                    <div className="w-20 h-20 rounded-[2.5rem] bg-white/5 flex items-center justify-center mx-auto mb-6 border border-white/5">
+                                        <Ticket className="h-10 w-10 text-gray-700 opacity-20" />
+                                    </div>
+                                    <h5 className="text-lg font-black text-white italic uppercase tracking-tighter mb-2">Sem precificação estratégica</h5>
+                                    <p className="text-[#94A3B8] text-xs max-w-xs mx-auto mb-8 font-medium">Nenhuma categoria ou lote foi definido para este projeto ainda.</p>
+                                    <Button
+                                        onClick={() => {
+                                            setFormData({
+                                                ...formData,
+                                                settings: {
+                                                    ...formData.settings!,
+                                                    ticketTiers: [
+                                                        { id: 'standard', name: 'Standard', active: true, batches: [{ id: 'std_l1', name: 'Lote 1', price: 197, active: true }] },
+                                                        { id: 'pro', name: 'Pro', active: true, batches: [{ id: 'pro_l1', name: 'Lote 1', price: 347, active: true }] },
+                                                        { id: 'vip', name: 'VIP', active: true, batches: [{ id: 'vip_l1', name: 'Lote 1', price: 1500, active: true }] }
+                                                    ]
+                                                }
+                                            });
+                                        }}
+                                        className="btn-premium px-10"
+                                    >
+                                        INICIALIZAR ESTRUTURA PADRÃO
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Metas e Limites Header */}
+                        <div className="flex items-center gap-3 pt-4">
+                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                                <Diamond className="h-5 w-5 text-teal-400" />
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-black text-white italic uppercase tracking-tighter leading-none">Metas & Planejamento</h4>
+                                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-1">Estimativas Técnicas do Projeto</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                            {[
+                                { 
+                                    label: 'Meta de Público', 
+                                    value: formData.settings?.goalRegistrations, 
+                                    key: 'goalRegistrations', 
+                                    icon: Users, 
+                                    suffix: 'pax' 
+                                },
+                                { 
+                                    label: 'Meta Financeira', 
+                                    value: formData.settings?.goalRevenue, 
+                                    key: 'goalRevenue', 
+                                    icon: CircleDollarSign, 
+                                    prefix: 'R$' 
+                                },
+                                { 
+                                    label: 'Meta Patrocínio', 
+                                    value: formData.settings?.goalSponsorship, 
+                                    key: 'goalSponsorship', 
+                                    icon: Award, 
+                                    prefix: 'R$' 
+                                },
+                                { 
+                                    label: 'Capacidade Local', 
+                                    value: formData.settings?.maxRegistrations, 
+                                    key: 'maxRegistrations', 
+                                    icon: ShieldCheck, 
+                                    suffix: 'lugares' 
+                                },
+                            ].map((field) => (
+                                <div key={field.key} className="space-y-2 p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-teal-500/30 transition-all duration-300">
+                                    <div className="flex items-center gap-2 opacity-50">
+                                        <field.icon className="h-3 w-3 text-teal-400" />
+                                        <Label className="text-[9px] font-black uppercase tracking-widest">{field.label}</Label>
+                                    </div>
+                                    <div className="relative flex items-center">
+                                        {field.prefix && <span className="absolute left-0 text-xs font-black text-teal-500/50">{field.prefix}</span>}
+                                        <Input
+                                            type="number"
+                                            value={field.value || ''}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                settings: { ...formData.settings!, [field.key]: parseInt(e.target.value) || 0 }
+                                            })}
+                                            className={`bg-transparent border-none text-white font-black h-8 w-full text-lg focus:ring-0 p-0 ${field.prefix ? 'pl-7' : ''}`}
+                                            placeholder="0"
+                                        />
+                                        {field.suffix && <span className="text-[8px] font-black text-gray-700 uppercase ml-1 shrink-0">{field.suffix}</span>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="modulos" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      {
+                        id: 'mentoring',
+                        label: 'Mentorias VIP',
+                        description: 'Habilitar agendamento de mentorias',
+                        icon: Users,
+                        checked: formData.settings?.enableMentoring ?? true,
+                        key: 'enableMentoring'
+                      },
+                      {
+                        id: 'b2b',
+                        label: 'Rodada de Negócios (B2B)',
+                        description: 'Matchmaking inteligente entre empresas',
+                        icon: Layers,
+                        checked: formData.settings?.enableB2B ?? true,
+                        key: 'enableB2B'
+                      },
+                      {
+                        id: 'startups',
+                        label: 'Arena StartUp',
+                        description: 'Plataforma de inscrições para startups',
+                        icon: Diamond,
+                        checked: formData.settings?.enableStartups ?? true,
+                        key: 'enableStartups'
+                      },
+                      {
+                        id: 'checkin',
+                        label: 'Check-in Digital',
+                        description: 'Controle de acesso premium via App',
+                        icon: CheckCircle2,
+                        checked: formData.settings?.enableCheckIn ?? true,
+                        key: 'enableCheckIn'
+                      }
+                    ].map((mod) => (
+                      <div key={mod.id} className={`flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-300 group ${mod.checked ? 'bg-white/[0.05] border-brand-orange-coral/30' : 'bg-black/40 border-white/5 opacity-60'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${mod.checked ? 'bg-brand-orange-coral/20 text-brand-orange-coral shadow-glow-orange/10 scale-110' : 'bg-white/5 text-gray-500'}`}>
+                            <mod.icon className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-black uppercase tracking-tight text-white mb-0.5">{mod.label}</Label>
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{mod.description}</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={mod.checked}
+                          onCheckedChange={(checked) => setFormData({
+                            ...formData,
+                            settings: { ...defaultSettings, ...formData.settings, [mod.key]: checked }
+                          })}
+                          className="data-[state=checked]:bg-brand-orange-coral"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="conteudo" className="space-y-8 pt-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                  {/* Hero Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-lg bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                        <Diamond className="h-4 w-4 text-brand-orange-coral" />
+                      </div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Landing Page Hero</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+                       <div className="space-y-2">
+                         <Label className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Título Principal</Label>
+                         <Input
+                           value={formData.settings?.publicContent?.heroTitle || ''}
+                           onChange={(e) => setFormData({
+                             ...formData,
+                             settings: {
+                               ...defaultSettings,
+                               ...formData.settings,
+                               publicContent: { ...formData.settings?.publicContent, heroTitle: e.target.value }
+                             }
+                           })}
+                           placeholder="Ex: O Maior Evento de Inovação"
+                           className="bg-black/40 border-white/10 rounded-2xl h-12 text-white font-bold"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Subtítulo de Apoio</Label>
+                         <Input
+                           value={formData.settings?.publicContent?.heroSubtitle || ''}
+                           onChange={(e) => setFormData({
+                             ...formData,
+                             settings: {
+                               ...defaultSettings,
+                               ...formData.settings,
+                               publicContent: { ...formData.settings?.publicContent, heroSubtitle: e.target.value }
+                             }
+                           })}
+                           placeholder="Ex: 16 de Abril em Triunfo"
+                           className="bg-black/40 border-white/10 rounded-2xl h-12 text-white font-bold"
+                         />
                        </div>
                     </div>
-
-                  <div className="border-t border-[#334155] pt-4 space-y-4">
-                    <h4 className="text-sm font-medium text-[#94A3B8]">Metas e Limites</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Meta de Público *</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.goalRegistrations || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: { ...formData.settings!, goalRegistrations: parseInt(e.target.value) || 0 }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Meta Financeira (R$)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.goalRevenue || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: { ...formData.settings!, goalRevenue: parseInt(e.target.value) || 0 }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Meta Patrocínio (R$)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.goalSponsorship || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: { ...formData.settings!, goalSponsorship: parseInt(e.target.value) || 0 }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Limite Físico (Capacidade)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.maxRegistrations || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: { ...formData.settings!, maxRegistrations: parseInt(e.target.value) || undefined }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="modulos" className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm font-bold">Mentorias VIP</Label>
-                        <p className="text-[10px] text-[#94A3B8]">Habilitar agendamento de mentorias</p>
-                      </div>
-                      <Switch
-                        checked={formData.settings?.enableMentoring ?? true}
-                        onCheckedChange={(checked) => setFormData({
-                          ...formData,
-                          settings: { ...defaultSettings, ...formData.settings, enableMentoring: checked }
-                        })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm font-bold">Rodada de Negócios (B2B)</Label>
-                        <p className="text-[10px] text-[#94A3B8]">Matchmaking entre empresas</p>
-                      </div>
-                      <Switch
-                        checked={formData.settings?.enableB2B ?? true}
-                        onCheckedChange={(checked) => setFormData({
-                          ...formData,
-                          settings: { ...defaultSettings, ...formData.settings, enableB2B: checked }
-                        })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm font-bold">Arena StartUp</Label>
-                        <p className="text-[10px] text-[#94A3B8]">Inscrições de startups</p>
-                      </div>
-                      <Switch
-                        checked={formData.settings?.enableStartups ?? true}
-                        onCheckedChange={(checked) => setFormData({
-                          ...formData,
-                          settings: { ...defaultSettings, ...formData.settings, enableStartups: checked }
-                        })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                      <div className="space-y-0.5">
-                        <Label className="text-sm font-bold">Check-in Digital</Label>
-                        <p className="text-[10px] text-[#94A3B8]">Controle via App</p>
-                      </div>
-                      <Switch
-                        checked={formData.settings?.enableCheckIn ?? true}
-                        onCheckedChange={(checked) => setFormData({
-                          ...formData,
-                          settings: { ...defaultSettings, ...formData.settings, enableCheckIn: checked }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="conteudo" className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                       <Label>Título Hero</Label>
-                       <Input
-                         value={formData.settings?.publicContent?.heroTitle || ''}
-                         onChange={(e) => setFormData({
-                           ...formData,
-                           settings: {
-                             ...defaultSettings,
-                             ...formData.settings,
-                             publicContent: { ...formData.settings?.publicContent, heroTitle: e.target.value }
-                           }
-                         })}
-                         placeholder="Ex: O Maior Evento de Inovação"
-                         className="bg-[#0F172A] border-[#334155]"
-                       />
-                     </div>
-                     <div className="space-y-2">
-                       <Label>Subtítulo Hero</Label>
-                       <Input
-                         value={formData.settings?.publicContent?.heroSubtitle || ''}
-                         onChange={(e) => setFormData({
-                           ...formData,
-                           settings: {
-                             ...defaultSettings,
-                             ...formData.settings,
-                             publicContent: { ...formData.settings?.publicContent, heroSubtitle: e.target.value }
-                           }
-                         })}
-                         placeholder="Ex: 16 de Abril em Triunfo"
-                         className="bg-[#0F172A] border-[#334155]"
-                       />
-                     </div>
                   </div>
 
+                  {/* About Section */}
                   <div className="space-y-2">
-                    <Label>Sobre o Evento (Texto)</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8] ml-2">Manifesto do Evento (Sobre)</Label>
                     <textarea
                       value={formData.settings?.publicContent?.aboutText || ''}
                       onChange={(e) => setFormData({
@@ -781,188 +885,174 @@ export default function AdminProjetos() {
                           publicContent: { ...formData.settings?.publicContent, aboutText: e.target.value }
                         }
                       })}
-                      className="w-full min-h-[100px] bg-[#0F172A] border-[#334155] rounded-md p-3 text-sm text-white"
-                      placeholder="Descreva o evento para o público..."
+                      className="w-full min-h-[120px] bg-black/40 border-white/10 rounded-[2rem] p-6 text-sm text-white font-medium focus:border-brand-orange-coral/50 outline-none transition-all resize-none"
+                      placeholder="Descreva o propósito e a experiência do evento..."
                     />
                   </div>
 
-                  <div className="space-y-4 border-t border-[#334155] pt-4">
+                  {/* Palestrantes */}
+                  <div className="space-y-6 pt-4 border-t border-white/5">
                     <div className="flex items-center justify-between">
-                      <Label className="text-lg font-bold">Palestrantes</Label>
-                      <Button size="sm" onClick={addPalestrante} variant="outline" className="border-[#21808D] text-[#21808D]">
-                        <Plus className="w-4 h-4 mr-1" /> Add Palestrante
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                          <Users className="h-4 w-4 text-teal-400" />
+                        </div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Line-up de Palestrantes</h4>
+                      </div>
+                      <Button size="sm" onClick={addPalestrante} className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 rounded-xl px-4 py-0 h-8 uppercase text-[9px] font-black tracking-widest">
+                        <Plus className="w-3 h-3 mr-2" /> Add Palestrante
                       </Button>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {formData.settings?.publicContent?.palestrantes?.map((p, i) => (
-                        <div key={i} className="p-4 bg-[#0F172A] rounded-lg border border-[#334155] space-y-2">
-                          <Input placeholder="Nome" value={p.nome} onChange={(e) => {
-                             const list = [...(formData.settings?.publicContent?.palestrantes || [])];
-                             list[i].nome = e.target.value;
-                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
-                          }} className="bg-[#1E293B]" />
-                          <Input placeholder="Cargo" value={p.cargo} onChange={(e) => {
-                             const list = [...(formData.settings?.publicContent?.palestrantes || [])];
-                             list[i].cargo = e.target.value;
-                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
-                          }} className="bg-[#1E293B]" />
+                        <div key={i} className="group relative p-5 bg-white/[0.02] hover:bg-white/[0.05] rounded-[2rem] border border-white/5 transition-all">
+                          <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-black/40 flex items-center justify-center shrink-0 border border-white/10">
+                              <User className="h-6 w-6 text-gray-600" />
+                            </div>
+                            <div className="flex-1 space-y-3">
+                              <Input 
+                                placeholder="Nome Completo" 
+                                value={p.nome} 
+                                onChange={(e) => {
+                                   const list = [...(formData.settings?.publicContent?.palestrantes || [])];
+                                   list[i].nome = e.target.value;
+                                   setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
+                                }} 
+                                className="bg-transparent border-none text-white font-black p-0 h-6 text-sm placeholder:text-gray-700 focus:ring-0"
+                              />
+                              <Input 
+                                placeholder="Bio/Cargo" 
+                                value={p.cargo} 
+                                onChange={(e) => {
+                                   const list = [...(formData.settings?.publicContent?.palestrantes || [])];
+                                   list[i].cargo = e.target.value;
+                                   setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
+                                }} 
+                                className="bg-transparent border-none text-gray-500 font-bold p-0 h-4 text-[10px] uppercase tracking-widest placeholder:text-gray-800 focus:ring-0 uppercase"
+                              />
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 h-6 w-6 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-lg"
+                            onClick={() => {
+                              const list = [...(formData.settings?.publicContent?.palestrantes || [])];
+                              list.splice(i, 1);
+                              setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-4 border-t border-[#334155] pt-4">
+                  {/* Cotas */}
+                  <div className="space-y-6 pt-4 border-t border-white/5">
                     <div className="flex items-center justify-between">
-                      <Label className="text-lg font-bold">Cotas de Patrocínio</Label>
-                      <Button size="sm" onClick={addVaga} variant="outline" className="border-[#21808D] text-[#21808D]">
-                        <Plus className="w-4 h-4 mr-1" /> Add Cota
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                          <Award className="h-4 w-4 text-emerald-400" />
+                        </div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Cotas de Patrocínio</h4>
+                      </div>
+                      <Button size="sm" onClick={addVaga} className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl px-4 py-0 h-8 uppercase text-[9px] font-black tracking-widest">
+                        <Plus className="w-3 h-3 mr-2" /> Add Cota
                       </Button>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {formData.settings?.publicContent?.vagas?.map((v, i) => (
-                        <div key={i} className="p-4 bg-[#0F172A] rounded-lg border border-[#334155] space-y-2">
-                          <Input placeholder="Tipo de Cota (Ex: Ouro)" value={v.nome} onChange={(e) => {
-                             const list = [...(formData.settings?.publicContent?.vagas || [])];
-                             list[i].nome = e.target.value;
-                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
-                          }} className="bg-[#1E293B]" />
-                          <Input placeholder="Espaço (Ex: STAND 10m2)" value={v.espaco} onChange={(e) => {
-                             const list = [...(formData.settings?.publicContent?.vagas || [])];
-                             list[i].espaco = e.target.value;
-                             setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
-                          }} className="bg-[#1E293B]" />
+                        <div key={i} className="group relative p-5 bg-white/[0.02] hover:bg-white/[0.05] rounded-[2rem] border border-white/5 transition-all">
+                          <div className="space-y-3">
+                            <Input 
+                              placeholder="Título da Cota (ex: Platinum)" 
+                              value={v.nome} 
+                              onChange={(e) => {
+                                 const list = [...(formData.settings?.publicContent?.vagas || [])];
+                                 list[i].nome = e.target.value;
+                                 setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
+                              }} 
+                              className="bg-transparent border-none text-white font-black p-0 h-6 text-sm placeholder:text-gray-700"
+                            />
+                            <Input 
+                              placeholder="Especificações (ex: Stand 12m²)" 
+                              value={v.espaco} 
+                              onChange={(e) => {
+                                 const list = [...(formData.settings?.publicContent?.vagas || [])];
+                                 list[i].espaco = e.target.value;
+                                 setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
+                              }} 
+                              className="bg-transparent border-none text-gray-500 font-bold p-0 h-4 text-[10px] uppercase tracking-widest placeholder:text-gray-800 uppercase"
+                            />
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 h-6 w-6 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-lg"
+                            onClick={() => {
+                              const list = [...(formData.settings?.publicContent?.vagas || [])];
+                              list.splice(i, 1);
+                              setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, vagas: list}}});
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       ))}
                     </div>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="popup" className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#334155]">
-                    <div className="space-y-0.5">
-                      <Label className="text-sm font-bold text-brand-orange-coral">Ativar Pop-up Promocional</Label>
-                      <p className="text-[10px] text-[#94A3B8]">Exibir oferta na tela inicial após 20 segundos</p>
-                    </div>
-                    <Switch
-                      checked={formData.settings?.publicContent?.popup?.active ?? false}
-                      onCheckedChange={(checked) => setFormData({
-                        ...formData,
-                        settings: {
-                          ...defaultSettings,
-                          ...formData.settings,
-                          publicContent: { 
-                            ...formData.settings?.publicContent, 
-                            popup: { ...formData.settings?.publicContent?.popup, active: checked } as any
-                          }
-                        }
-                      })}
-                      className="data-[state=checked]:bg-brand-orange-coral"
-                    />
-                  </div>
 
-                  {formData.settings?.publicContent?.popup?.active && (
-                    <div className="space-y-4 p-4 border border-[#334155] rounded-xl bg-[#0F172A]/50">
-                      <div className="space-y-2">
-                        <Label>Selo Superior (Subtítulo)</Label>
-                        <Input
-                          value={formData.settings?.publicContent?.popup?.subtitle || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              publicContent: { 
-                                ...formData.settings?.publicContent, 
-                                popup: { ...formData.settings?.publicContent?.popup, subtitle: e.target.value } as any
-                              }
-                            }
-                          })}
-                          placeholder="Ex: Lote Promocional"
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
+                <TabsContent value="integracao" className="space-y-8 pt-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="p-8 bg-black/40 border border-white/5 rounded-[2rem] space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                        <ShieldCheck className="h-6 w-6 text-teal-400" />
                       </div>
-                      <div className="space-y-2">
-                        <Label>Título Principal</Label>
-                        <Input
-                          value={formData.settings?.publicContent?.popup?.title || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              publicContent: { 
-                                ...formData.settings?.publicContent, 
-                                popup: { ...formData.settings?.publicContent?.popup, title: e.target.value } as any
-                              }
-                            }
-                          })}
-                          placeholder="Ex: Compre 2 GanhE 3!"
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Descrição</Label>
-                        <Input
-                          value={formData.settings?.publicContent?.popup?.description || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              publicContent: { 
-                                ...formData.settings?.publicContent, 
-                                popup: { ...formData.settings?.publicContent?.popup, description: e.target.value } as any
-                              }
-                            }
-                          })}
-                          placeholder="Ex: Reúna sua equipe e economize."
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Texto do Botão (CTA via WhatsApp)</Label>
-                        <Input
-                          value={formData.settings?.publicContent?.popup?.buttonText || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              publicContent: { 
-                                ...formData.settings?.publicContent, 
-                                popup: { ...formData.settings?.publicContent?.popup, buttonText: e.target.value } as any
-                              }
-                            }
-                          })}
-                          placeholder="Ex: GARANTIR 3x2"
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
+                      <div>
+                        <h4 className="text-lg font-black text-white italic uppercase tracking-tighter">Widget de Inscrição Oficial</h4>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Incorpore em WordPress, Webflow ou Landing Pages</p>
                       </div>
                     </div>
-                  )}
-                </TabsContent>
 
-                <TabsContent value="integracao" className="space-y-4">
-                  <div className="p-4 bg-brand-orange-coral/10 border border-brand-orange-coral/30 rounded-lg">
-                    <h4 className="font-bold text-brand-orange-coral mb-2 flex items-center gap-2">
-                       <Plus className="w-4 h-4 rotate-45" /> Widget de Inscrição
-                    </h4>
-                    <p className="text-xs text-gray-400 mb-4">Incorpore o formulário oficial em sites como WordPress, Webflow ou Landing Pages próprias.</p>
-                    <div className="relative">
-                      <pre className="bg-black/50 p-4 rounded-xl text-[10px] overflow-x-auto text-teal-400 border border-white/10">
-                        {`<iframe \n  src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" \n  width="100%" \n  height="800px" \n  frameborder="0"\n></iframe>`}
-                      </pre>
-                      <Button 
-                        size="sm" 
-                        className="absolute top-2 right-2 bg-brand-orange-coral" 
-                        onClick={() => {
-                          const code = `<iframe src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" width="100%" height="800px" frameborder="0"></iframe>`;
-                          navigator.clipboard.writeText(code);
-                          toast.success('Código copiado!');
-                        }}
-                      >
-                        Copiar
-                      </Button>
+                    <div className="relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+                      <div className="relative bg-black/60 rounded-2xl border border-white/10 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
+                          <div className="flex gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+                          </div>
+                          <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">iframe-snippet.html</span>
+                        </div>
+                        <pre className="p-6 text-[10px] sm:text-xs font-mono text-teal-400/80 overflow-x-auto leading-relaxed">
+                          {`<iframe\n  src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true"\n  width="100%"\n  height="800px"\n  frameborder="0"\n></iframe>`}
+                        </pre>
+                        <Button 
+                          size="sm" 
+                          className="absolute bottom-4 right-4 bg-teal-500/20 hover:bg-teal-500 hover:text-white text-teal-400 border border-teal-500/30 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest"
+                          onClick={() => {
+                            const code = `<iframe src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" width="100%" height="800px" frameborder="0"></iframe>`;
+                            navigator.clipboard.writeText(code);
+                            toast.success('Snippet copiado com sucesso!');
+                          }}
+                        >
+                          <Plus className="w-3 h-3 mr-2 rotate-45" /> Copiar Código
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5 flex gap-3 items-start">
+                      <Info className="h-4 w-4 text-gray-500 mt-0.5" />
+                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide leading-relaxed">
+                        IMPORTANTE: Garanta que o domínio onde o iframe será inserido esteja configurado corretamente para evitar bloqueios de CORS (Cross-Origin Resource Sharing).
+                      </p>
                     </div>
                   </div>
                 </TabsContent>

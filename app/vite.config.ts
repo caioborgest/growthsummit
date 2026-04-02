@@ -41,8 +41,8 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/gx-social-share.png',
-            sizes: '1280x720',
+            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
+            sizes: '512x512',
             type: 'image/png',
             form_factor: 'wide',
             label: 'Dashboard Growth Experience'

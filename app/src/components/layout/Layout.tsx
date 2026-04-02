@@ -10,14 +10,14 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { NewsletterSection } from '../app/NewsletterSection';
 import { useState, useEffect } from 'react';
+import { usePWAContext } from '@/contexts/PWAContext';
 
 export function Layout() {
   const location = useLocation();
   const online = useNetworkStatus();
   const [showOfflineBanner, setShowOfflineBanner] = useState(true);
   const [waitingSW, setWaitingSW] = useState<ServiceWorker | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const { isInstallable, promptInstall, isInstalled } = usePWAContext();
 
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
@@ -76,38 +76,38 @@ export function Layout() {
     }
   }, [waitingSW]);
 
-  // install prompt
+  // consolidated install prompt handled by PWAContext
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler = (e: any) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-  useEffect(() => {
-    if (installPrompt) {
-      toast.custom(t => (
-        <div className="p-3 bg-dark text-white rounded flex items-center justify-between gap-4">
-          <span>Instale o app para acesso rápido</span>
-          <Button variant="secondary" size="sm" onClick={() => {
-            installPrompt.prompt();
-            installPrompt.userChoice.then(() => setInstallPrompt(null));
-            toast.dismiss(t.id);
-          }}>
-            Instalar
-          </Button>
-        </div>
-      ), { duration: 10000 });
+    // Se for instalável e não estiver instalado, mostramos o prompt após 10 segundos
+    if (isInstallable && !isInstalled) {
+      const timer = setTimeout(() => {
+        toast.custom(t => (
+          <div className="p-3 bg-dark text-white rounded-[1.5rem] border border-white/10 flex items-center justify-between gap-4 shadow-2xl backdrop-blur-xl">
+            <span className="text-sm font-medium">Instale o app para acesso rápido</span>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-orange-500 hover:bg-orange-600 text-white border-none rounded-xl font-bold"
+              onClick={() => {
+                promptInstall();
+                toast.dismiss(t.id);
+              }}
+            >
+              Instalar
+            </Button>
+          </div>
+        ), { duration: 15000 });
+      }, 10000);
+      return () => clearTimeout(timer);
     }
-  }, [installPrompt]);
+  }, [isInstallable, isInstalled, promptInstall]);
 
   // Reset offline banner when back online (non-cascading fix)
   useEffect(() => {
     if (online && !showOfflineBanner) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setShowOfflineBanner(true);
+      // Use setImmediate-like timeout to avoid React warning about synchronous state updates in effects
+      const timer = setTimeout(() => setShowOfflineBanner(true), 0);
+      return () => clearTimeout(timer);
     }
   }, [online, showOfflineBanner]);
 
