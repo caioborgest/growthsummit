@@ -283,6 +283,9 @@ export default function AdminComunicacao() {
     else if (filter === 'paid') count = registrations.filter(r => r.status === 'paid' || r.status_pagamento === 'pago').length;
     else if (filter === 'pending') count = registrations.filter(r => r.status === 'pending' || r.status_pagamento === 'pendente').length;
     else if (filter === 'vip') count = registrations.filter(r => r.ticketType === 'vip' || r.tipo_inscricao === 'vip').length;
+    else if (filter === 'mentors') count = (users?.filter(u => u.role === 'mentor').length || 0);
+    else if (filter === 'speakers') count = (users?.filter(u => u.role === 'speaker').length || 0);
+    else if (filter === 'sponsors') count = (users?.filter(u => u.role === 'sponsor').length || 0);
     else count = registrations.length; // Fallback
 
     const newCampaign: EmailCampaign = {
@@ -312,14 +315,14 @@ export default function AdminComunicacao() {
       return;
     }
 
-    try {
-      toast.loading('Preparando envio personalizado...');
+    const toastId = toast.loading('Preparando envio personalizado...');
 
+    try {
       let recipientsData: Recipient[] = [];
 
       // 1. Buscar destinatários baseados no filtro (com isolamento por projeto)
       if (!selectedProject?.id) {
-        toast.dismiss(loadingToast);
+        toast.dismiss(toastId);
         toast.error('Nenhum projeto selecionado');
         return;
       }
@@ -353,10 +356,39 @@ export default function AdminComunicacao() {
           ...(b2bRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_representante) as string })),
           ...(incentiveRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_responsavel) as string }))
         ];
+      } else if (composeData.recipients === 'partners') {
+        const { data } = await (supabase.from('parceiros').select('contact_email, name, contact_name') as any).eq('project_id', selectedProject.id);
+        recipientsData = (data || []).map((item: any) => ({ email: item.contact_email, name: item.name || item.contact_name }));
+      } else if (composeData.recipients === 'partner_team') {
+        const { data } = await (supabase.from('parceiros_equipe').select('email, name') as any).eq('project_id', selectedProject.id);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.name }));
+      } else if (composeData.recipients === 'exhibitors') {
+        // Expositores are owners of stands
+        const { data: stands } = await (supabase.from('stands').select('owner_id, owner_type') as any).eq('project_id', selectedProject.id);
+        
+        if (stands && stands.length > 0) {
+          const startupIds = stands.filter((s: any) => s.owner_type === 'startup' && s.owner_id).map((s: any) => s.owner_id);
+          const companyIds = stands.filter((s: any) => s.owner_type === 'company' && s.owner_id).map((s: any) => s.owner_id);
+          const sponsorIds = stands.filter((s: any) => s.owner_type === 'sponsor' && s.owner_id).map((s: any) => s.owner_id);
+
+          const queries = [];
+          if (startupIds.length > 0) queries.push((supabase.from('startups_arena_pitch').select('email, nome_startup') as any).in('id', startupIds));
+          if (companyIds.length > 0) queries.push((supabase.from('rodada_negocios_b2b').select('email, nome_empresa') as any).in('id', companyIds));
+          if (sponsorIds.length > 0) queries.push((supabase.from('sponsors').select('contact_email, company_name') as any).in('id', sponsorIds));
+
+          const results = await Promise.all(queries);
+          recipientsData = results.flatMap((res: any) => (res.data || []).map((item: any) => ({ 
+            email: item.email || item.contact_email, 
+            name: item.nome_startup || item.nome_empresa || item.company_name 
+          })));
+        }
+      } else if (composeData.recipients === 'speakers') {
+        const { data } = await (supabase.from('users').select('email, name') as any).eq('role', 'speaker');
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.name }));
       }
 
       if (recipientsData.length === 0) {
-        toast.dismiss(loadingToast);
+        toast.dismiss(toastId);
         toast.error('Nenhum destinatário encontrado para este filtro');
         return;
       }
@@ -391,7 +423,7 @@ export default function AdminComunicacao() {
       // Para não estourar rate limit, poderíamos fazer em chunks, mas aqui usaremos Promise.all por simplicidade
       await Promise.all(sendPromises);
 
-      toast.dismiss(loadingToast);
+      toast.dismiss(toastId);
       toast.success(`Emails disparados para ${uniqueRecipients.length} destinatários!`);
 
       // Limpar formulário
@@ -403,7 +435,7 @@ export default function AdminComunicacao() {
 
     } catch (err: unknown) {
       logger.error('Send error:', { error: err });
-      toast.dismiss();
+      toast.dismiss(toastId);
       const message = err instanceof Error ? err.message : 'Erro desconhecido';
       toast.error('Erro ao enviar emails: ' + message);
     }
@@ -459,10 +491,15 @@ export default function AdminComunicacao() {
         // Pega todos que têm inscrição no projeto atual
         targetUserIds = registrations?.map(r => r.userId).filter(Boolean) as string[] || [];
       } else {
-        // Filtra por papel (role) e que tenha inscrição no projeto
+        // Novo mapeamento de roles para notificação
+        let role = notificationFormData.recipients;
+        
+        // Mapear filtros amigáveis para roles reais se necessário
+        if (role === 'partner_team') role = 'staff'; 
+        
         const projectUserIds = new Set(registrations?.map(r => r.userId));
         targetUserIds = users?.filter(u => 
-          u.role === notificationFormData.recipients && projectUserIds.has(u.id)
+          u.role === role && (projectUserIds.has(u.id) || role === 'admin' || role === 'staff' || role === 'speaker')
         ).map(u => u.id) || [];
       }
 
@@ -626,14 +663,24 @@ export default function AdminComunicacao() {
                         onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
                         className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
                       >
-                        <option value="all">Todos os inscritos</option>
-                        <option value="paid">Apenas pagos</option>
-                        <option value="pending">Apenas pendentes</option>
-                        <option value="vip">Apenas VIP</option>
-                        <option value="mentors">Mentores</option>
-                        <option value="startups">Startups</option>
-                        <option value="sponsors">Patrocinadores</option>
-                        <option value="companies">Empresas (Equipes/B2B)</option>
+                        <optgroup label="Participantes" className="bg-dark-300 font-black">
+                          <option value="all">Todos os inscritos</option>
+                          <option value="paid">Apenas pagos</option>
+                          <option value="pending">Apenas pendentes</option>
+                          <option value="vip">Apenas VIP</option>
+                        </optgroup>
+                        <optgroup label="Ecossistema & Negócios" className="bg-dark-300 font-black">
+                          <option value="startups">Startups (Arena Pitch)</option>
+                          <option value="companies">Empresas (Rodada/Incentivo)</option>
+                          <option value="sponsors">Patrocinadores</option>
+                          <option value="exhibitors">Expositores (Stands)</option>
+                        </optgroup>
+                        <optgroup label="Equipe & Convidados" className="bg-dark-300 font-black">
+                          <option value="mentors">Mentores</option>
+                          <option value="speakers">Palestrantes</option>
+                          <option value="partners">Parceiros Institucionais</option>
+                          <option value="partner_team">Equipe de Parceiros</option>
+                        </optgroup>
                       </select>
                     </div>
                     <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase">
@@ -884,14 +931,24 @@ export default function AdminComunicacao() {
                     onChange={(e) => setComposeData({ ...composeData, recipients: e.target.value })}
                     className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 px-4"
                   >
-                    <option value="all">Todos os inscritos</option>
-                    <option value="paid">Apenas pagos</option>
-                    <option value="pending">Apenas pendentes</option>
-                    <option value="vip">Apenas VIP</option>
-                    <option value="mentors">Mentores</option>
-                    <option value="startups">Startups</option>
-                    <option value="sponsors">Patrocinadores</option>
-                    <option value="companies">Empresas (Equipes/B2B)</option>
+                    <optgroup label="Participantes" className="bg-dark-300 font-black">
+                      <option value="all">Todos os inscritos</option>
+                      <option value="paid">Apenas pagos</option>
+                      <option value="pending">Apenas pendentes</option>
+                      <option value="vip">Apenas VIP</option>
+                    </optgroup>
+                    <optgroup label="Ecossistema & Negócios" className="bg-dark-300 font-black">
+                      <option value="startups">Startups (Arena Pitch)</option>
+                      <option value="companies">Empresas (Rodada/Incentivo)</option>
+                      <option value="sponsors">Patrocinadores</option>
+                      <option value="exhibitors">Expositores (Stands)</option>
+                    </optgroup>
+                    <optgroup label="Equipe & Convidados" className="bg-dark-300 font-black">
+                      <option value="mentors">Mentores</option>
+                      <option value="speakers">Palestrantes</option>
+                      <option value="partners">Parceiros Institucionais</option>
+                      <option value="partner_team">Equipe de Parceiros</option>
+                    </optgroup>
                   </select>
               </div>
            </div>
@@ -972,11 +1029,19 @@ export default function AdminComunicacao() {
                   onChange={(e) => setNotificationFormData({ ...notificationFormData, recipients: e.target.value })}
                   className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 px-4 appearance-none"
                 >
-                  <option value="all">Todos os Usuários</option>
-                  <option value="participant">Participantes</option>
-                  <option value="mentor">Mentores</option>
-                  <option value="startup">Startups</option>
-                  <option value="company">Empresas</option>
+                  <optgroup label="Participantes" className="bg-dark-300 font-black">
+                    <option value="all">Todos os Participantes</option>
+                    <option value="participant">Apenas Participantes (Role)</option>
+                    <option value="vip">Participantes VIP</option>
+                  </optgroup>
+                  <optgroup label="Equipe & Parceiros" className="bg-dark-300 font-black">
+                    <option value="admin">Administradores</option>
+                    <option value="staff">Equipe Interna (Staff)</option>
+                    <option value="mentor">Mentores</option>
+                    <option value="speaker">Palestrantes</option>
+                    <option value="sponsor">Patrocinadores</option>
+                    <option value="partner_team">Equipe de Parceiros</option>
+                  </optgroup>
                 </select>
               </div>
 
