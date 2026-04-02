@@ -55,7 +55,7 @@ export function MentorCard({ mentor, availableSlots = [], onBookClick }: MentorC
             <div className="group relative glass-card p-6 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
                 <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-dark-200">
                     <img
-                        src={mentor.photo || 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg'}
+                        src={mentor.photo || 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png'}
                         alt={mentor.name}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
                     />

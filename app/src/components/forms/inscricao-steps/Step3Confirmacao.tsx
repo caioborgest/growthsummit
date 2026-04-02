@@ -451,12 +451,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                     type="button"
                     onClick={handleConfirmar}
                     disabled={loading || isSoldOut}
-                    className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed border-gray-600' : ''}`}
+                    className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-40 grayscale-[0.8] cursor-not-allowed border-red-500/30' : ''}`}
                 >
                     {loading ? (
                         <><Loader2 className="h-5 w-5 animate-spin" />Confirmando...</>
                     ) : isSoldOut ? (
-                        <><AlertCircle className="h-5 w-5 text-red-500" />Esgotado</>
+                        <div className="flex items-center justify-center gap-2">
+                             <AlertCircle className="h-5 w-5 text-red-500 animate-pulse" />
+                             <span className="font-black text-red-500 uppercase tracking-widest text-[10px] sm:text-xs">Lote Esgotado</span>
+                        </div>
                     ) : (
                         <><CheckCircle className="h-5 w-5" />Avançar</>
                     )}

@@ -53,8 +53,9 @@ export function Login() {
     try {
       const isValid = await verify2FA(twoFactorCode);
       if (!isValid) toast.error('Código inválido ou expirado');
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao verificar código');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao verificar código';
+      toast.error(errorMsg);
     } finally {
       setIsVerifying2FA(false);
     }
@@ -80,9 +81,10 @@ export function Login() {
         setOtpSent(true);
         toast.success(`Link enviado para ${email}!`);
       }
-    } catch (err: any) {
-      const msg = err?.message || '';
-      logger.error('Login error:', err);
+    } catch (err: unknown) {
+      const error = err as any;
+      const msg = error?.message || '';
+      logger.error('Login error:', error);
       if (msg.includes('Email logins are disabled')) {
         setError('Login por senha desativado. Use "Sem Senha".');
         setLoginMethod('otp');

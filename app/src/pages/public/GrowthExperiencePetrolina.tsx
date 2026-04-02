@@ -25,7 +25,7 @@ const conselheiros = [
         cargo: "CEO da CBX Growth & IA",
         bio: "Especialista em growth e inteligência artificial para performance de negócios.",
         empresa: "CBX Growth & IA",
-        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/fff7192a-3479-4d82-b896-4b05fe081c6f-1774627071551.png"
+        foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/caio-borges.png"
     },
     {
         nome: "Leandro Batista",

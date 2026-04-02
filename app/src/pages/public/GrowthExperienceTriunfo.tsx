@@ -59,7 +59,8 @@ const palestrantes = [
     cargo: "CEO, Cedan Rações",
     descricao: "CEO de uma das maiores indústrias de rações do Nordeste",
     tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
-    horario: "19:00 - 19:50"
+    horario: "19:00 - 19:50",
+    foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png"
   },
   {
     nome: "Carolinne Castro",
@@ -73,80 +74,11 @@ const palestrantes = [
     cargo: "CEO, Grupo Núcleo",
     descricao: "Especialista em métodos de gestão para escalar negócios",
     tema: "Escalando Negócios com Equilíbrio e Humanidade",
-    horario: "21:10 - 22:30"
+    horario: "21:10 - 22:30",
+    foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
   }
 ];
 
-const cotas = [
-  {
-    nome: "DIAMANTE",
-    espaco: "10m x 10m - Camarote Lateral Palco",
-    ingressos: 15,
-    beneficios: [
-      "Posição de destaque ao lado do palco",
-      "Logo em 4 posições premium (rádios, jornal, cartazes, ads)",
-      "Menção abertura + encerramento (MC)",
-      "Apresentação 5 min no palco (slot garantido)",
-      "Banner roll-up stand (design grátis)",
-      "QR Code único stand (analytics real-time)",
-      "Relatório ROI completo pós-evento"
-    ],
-    destaque: true,
-    vagas: 2
-  },
-  {
-    nome: "OURO",
-    espaco: "5m x 12m - Camarote Lateral Palco",
-    ingressos: 10,
-    beneficios: [
-      "Posição de entrada (primeira visualização)",
-      "Logo em 3 posições (banner, entrada, programa)",
-      "Menção abertura + encerramento (MC)",
-      "Demo/talk 5 min no palco (opcional, agendado)",
-      "QR Code único stand",
-      "Relatório leads + impressões"
-    ],
-    vagas: 3
-  },
-  {
-    nome: "PRATA PLUS",
-    espaco: "5m x 6m - Fundo Superior",
-    ingressos: 6,
-    beneficios: [
-      "Posição lateral (circulação natural)",
-      "Logo em 2 posições (banner principal, programa)",
-      "Menção encerramento (MC)",
-      "Redes sociais 5+ posts (com tag)",
-      "Relatório básico (leads, impressões)"
-    ],
-    vagas: 5
-  },
-  {
-    nome: "PRATA",
-    espaco: "5m x 3m - Térreo Lateral",
-    ingressos: 6,
-    beneficios: [
-      "Posição lateral térreo",
-      "Logo em 2 posições (banner principal, programa)",
-      "Menção encerramento (MC)",
-      "Redes sociais 5+ posts (com tag)",
-      "Relatório básico (leads, impressões)"
-    ],
-    vagas: 13
-  },
-  {
-    nome: "BRONZE",
-    espaco: "3m x 1,5m - Superior",
-    ingressos: 3,
-    beneficios: [
-      "Logo em programa impresso",
-      "3+ menções redes sociais (com tag)",
-      "A3 com logo (impresso)",
-      "Acesso relatório final em PDF"
-    ],
-    vagas: 4
-  }
-];
 
 
 
@@ -581,44 +513,6 @@ export function GrowthExperienceTriunfo() {
 
       {/* Seção de Inscrição Social */}
       <SocialRegistrationSection onInscrever={() => handleOpenModal('inscricao')} />
-
-
-
-      {/* Patrocínios */}
-      <section id="patrocinios" className="py-16 sm:py-24 bg-dark-200">
-        <div id="expositores" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-16 animate-fade-in-up">
-            <div className="text-left">
-              <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-                OPORTUNIDADES DE EXPOSIÇÃO
-              </Badge>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white">
-                Sua Marca em <span className="text-gradient">Destaque</span>
-              </h2>
-            </div>
-            <SectionShare sectionId="expositores" title="Seja um Expositor - Growth Experience" />
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {cotas.map((cota, idx) => (
-              <PatrocinioCard
-                key={idx}
-                nome={cota.nome}
-                espaco={cota.espaco}
-                ingressos={cota.ingressos}
-                beneficios={cota.beneficios}
-                vagas={cota.vagas}
-                destaque={cota.destaque}
-                imagemUrl={getStandImage(cota.nome)}
-                onContato={() => {
-                  const message = encodeURIComponent(`Olá! Tenho interesse na Cota ${cota.nome} para exposição no Growth Experience Triunfo-PE 2026. Poderia me enviar a proposta comercial?`);
-                  window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${message}`, '_blank');
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Realização */}
       <section className="py-12 bg-dark-200">

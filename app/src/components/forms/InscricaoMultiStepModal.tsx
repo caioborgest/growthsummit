@@ -140,7 +140,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
 
         const updates: Partial<DadosInscricao> = {
-            loteId: activeBatch?.id,
+            loteId: activeBatch?.id || 'default',
             tipoInscricao: activeTier?.id || 'standard'
         };
 
@@ -149,6 +149,12 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             updates.cursosSelecionados = TriumphSessions;
         }
         
+        // Se não houver tiers configurados, garante um estado válido
+        if (tiers.length === 0) {
+            updates.tipoInscricao = 'standard';
+            updates.loteId = 'default';
+        }
+
         updateDados(updates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedProject?.id, allSessions?.length]);
