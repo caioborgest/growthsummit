@@ -81,7 +81,7 @@ export default defineConfig({
           }
         ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Limite de 5MB por arquivo no precache
+        maximumFileSizeToCacheInBytes: 7 * 1024 * 1024, // Limite de 7MB para outros assets
       }
     })
   ],

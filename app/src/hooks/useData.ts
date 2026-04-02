@@ -253,6 +253,23 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
     result.statusPagamento = result.paymentStatus;
   }
 
+  // 3. Asset Redirect: Force high-res local logos to Supabase Storage URLs
+  // This avoids build errors for large assets while maintaining DB compatibility
+  const REDIRECT_MAP: Record<string, string> = {
+    'logomarca-GX-fundoescuro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundoescuro.png',
+    'logomarca-GX-fundobranco.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-GX-fundobranco.png',
+    'favicon.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png'
+  };
+
+  if (typeof result.logo === 'string' && !result.logo.startsWith('http')) {
+    const filename = result.logo.split('/').pop() || '';
+    if (REDIRECT_MAP[filename]) result.logo = REDIRECT_MAP[filename];
+  }
+  if (typeof result.banner === 'string' && !result.banner.startsWith('http')) {
+    const filename = result.banner.split('/').pop() || '';
+    if (REDIRECT_MAP[filename]) result.banner = REDIRECT_MAP[filename];
+  }
+
   return result;
 };
 
