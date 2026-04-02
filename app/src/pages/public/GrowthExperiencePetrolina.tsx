@@ -165,7 +165,7 @@ export function GrowthExperiencePetrolina() {
                                             src={mentor.foto}
                                             alt={mentor.nome}
                                             onError={(e) => {
-                                                e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg';
+                                                e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png';
                                             }}
                                         />
                                     </div>
@@ -281,6 +281,23 @@ export function GrowthExperiencePetrolina() {
                 </div>
             </section>
 
+
+            {/* Realização */}
+            <section className="py-12 bg-dark-200 border-t border-white/5">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col items-center">
+                        <h3 className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-black mb-6">Realização</h3>
+                        <div className="group transition-all duration-500 hover:scale-105">
+                            <img
+                                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png"
+                                alt="CBX Growth I.A."
+                                className="h-16 sm:h-20 w-auto opacity-70 group-hover:opacity-100 transition-all filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <AppDownloadSection />
 

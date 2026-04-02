@@ -262,12 +262,12 @@ const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown>
   // 3. Asset Redirect: Force high-res local logos to Supabase Storage URLs
   // This avoids build errors for large assets while maintaining DB compatibility
   const REDIRECT_MAP: Record<string, string> = {
-    'logomarca-GX-fundoescuro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg',
-    'logomarca-GX-fundobranco.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg',
-    'growthsummit-fundoclaro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg',
-    'growthsummit-fundoescuro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg',
+    'logomarca-GX-fundoescuro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png',
+    'logomarca-GX-fundobranco.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png',
+    'growthsummit-fundoclaro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png',
+    'growthsummit-fundoescuro.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png',
     'favicon.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png',
-    'LOGO-growth_experience.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg'
+    'LOGO-growth_experience.png': 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png'
   };
 
   if (typeof result.logo === 'string' && !result.logo.startsWith('http')) {

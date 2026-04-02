@@ -48,12 +48,22 @@ export function Footer() {
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4 group">
               <img
-                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg"
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png"
                 alt="Growth Experience"
                 className="h-12 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
               />
             </Link>
-            <p className="text-gray-400 text-sm mb-6 max-w-xs">
+            
+            <div className="flex flex-col gap-2 mt-6">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Realização</p>
+              <img
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png"
+                alt="CBX Growth"
+                className="h-10 w-auto opacity-80 hover:opacity-100 transition-opacity object-contain self-start"
+              />
+            </div>
+
+            <p className="text-gray-400 text-sm mt-6 mb-6 max-w-xs">
               A maior imersão de Growth e Inteligência Artificial do interior do Nordeste.
               Edições em Triunfo e Petrolina.
             </p>
