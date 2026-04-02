@@ -9,7 +9,7 @@ import type {
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
   Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist,
-  ActivityAttendance
+  ActivityAttendance, Partner, PartnerTeamMember
 } from '@/types';
 import { withTimeout } from '@/lib/promiseUtils';
 import { STATUS_MAPPING } from '@/lib/constants';
@@ -84,6 +84,8 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
       case 'support_tickets': return 'support_tickets';
       case 'support_ticket_messages': return 'support_ticket_messages';
       case 'transactions': return 'transacoes_growth_experience';
+      case 'partners': return 'parceiros';
+      case 'partner_team': return 'parceiros_equipe';
       default: return entity;
     }
   }
@@ -206,6 +208,7 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   winner_registration_id: 'winnerRegistrationId',
   drawn_at: 'drawnAt',
   project_id: 'projectId',
+  partner_id: 'partnerId',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -498,7 +501,9 @@ function getSelectFields(entity: string, projectId?: string): string {
     support_tickets: 'id,project_id,user_id,name,email,subject,message,category,status,priority,created_at,updated_at',
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
-    raffle_participants: 'id,raffle_id,registration_id,created_at'
+    raffle_participants: 'id,raffle_id,registration_id,created_at',
+    partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,sponsor_id,stand_id,created_at,updated_at',
+    partner_team: 'id,partner_id,project_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at'
   };
   return fields[entity] ?? '*';
 }
@@ -958,6 +963,14 @@ export function useStands() {
 
 export function useStandCheckIns() {
   return useData<StandCheckIn>([], 'stand_checkins');
+}
+
+export function usePartners() {
+  return useData<Partner>([], 'partners');
+}
+
+export function usePartnerTeam() {
+  return useData<PartnerTeamMember>([], 'partner_team');
 }
 
 export function useProfile(userId?: string) {

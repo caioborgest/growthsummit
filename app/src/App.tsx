@@ -111,6 +111,7 @@ const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
 const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
 const AdminPopups = lazyWithRetry(() => import('./pages/admin/AdminPopups'), 'AdminPopups');
+const AdminParceiros = lazyWithRetry(() => import('./pages/admin/AdminParceiros'));
 const GuiaInterno = lazyWithRetry(() => import('./components/app/GuiaInterno'), 'GuiaInterno');
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
@@ -397,6 +398,7 @@ function AppRoutes() {
           <Route path="suporte" element={<AdminSupport />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="popups" element={<AdminPopups />} />
+          <Route path="parceiros" element={<AdminParceiros />} />
           <Route path="guia" element={<GuiaInterno />} />
         </Route>
 

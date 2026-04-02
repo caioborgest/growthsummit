@@ -648,3 +648,36 @@ export interface ActivityAttendance {
   operatorId?: string;
   createdAt: string;
 }
+
+export interface Partner {
+  id: string;
+  projectId: string;
+  name: string;
+  cnpj?: string;
+  type: 'sponsor' | 'exhibitor' | 'media' | 'institutional' | 'other';
+  category: 'permuta' | 'investimento' | 'misto';
+  status: 'active' | 'inactive';
+  logoUrl?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  sponsorId?: string;
+  standId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PartnerTeamMember {
+  id: string;
+  partnerId: string;
+  projectId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  cpf?: string;
+  role: string;
+  qrCode: string;
+  checkedIn: boolean;
+  checkInTime?: string;
+  createdAt: string;
+}
