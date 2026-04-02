@@ -21,6 +21,8 @@ import {
   Calendar,
   Ticket,
   Filter,
+  Users,
+  Handshake,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
