@@ -41,7 +41,8 @@ import {
   useStandCheckIns,
   useSessions,
   useCoupons,
-  useRegistrationBatches
+  useRegistrationBatches,
+  usePartnerTeam
 } from '@/hooks/useData';
 import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
@@ -165,6 +166,7 @@ export function AdminDashboard() {
   const { data: allSessions = [] } = useSessions();
   const { data: allCoupons = [] } = useCoupons();
   const { data: batches = [] } = useRegistrationBatches();
+  const { data: partnerTeam = [] } = usePartnerTeam();
   // I will check imports.
 
 
@@ -205,11 +207,21 @@ export function AdminDashboard() {
       b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,
     };
 
+    const publicRegistrations = registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro');
+    const workTeamCount = (registrations.length - publicRegistrations.length) + (partnerTeam.length - (registrations.length - publicRegistrations.length));
+    // Simplificando: Pega todos de parceiros_equipe que estão cadastrados
+    const totalStaff = partnerTeam.length;
+
     return {
       registrations: {
-        value: registrations.length,
+        value: publicRegistrations.length,
         target: targets.registrations,
-        progress: targets.registrations > 0 ? Math.round((registrations.length / targets.registrations) * 100) : 0
+        progress: targets.registrations > 0 ? Math.round((publicRegistrations.length / targets.registrations) * 100) : 0
+      },
+      workTeam: {
+        value: totalStaff,
+        target: 200, // Meta arbitrária para equipe
+        progress: totalStaff > 0 ? Math.round((totalStaff / 200) * 100) : 0
       },
       revenue: {
         value: totalRevenue,
@@ -227,7 +239,7 @@ export function AdminDashboard() {
         progress: targets.b2b > 0 ? Math.round((b2bMeetings.length / targets.b2b) * 100) : 0
       },
     };
-  }, [registrations, transactions, sessions, b2bMeetings, selectedProject, batches]);
+  }, [registrations, transactions, sessions, b2bMeetings, selectedProject, batches, partnerTeam]);
 
   const pendingMentors = filterMentors((m: Mentor) => m.status === 'pending');
   const pendingStartups = filterStartups((s: Startup) => s.status === 'pending');
@@ -402,7 +414,7 @@ export function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
-          title="Participantes Totais"
+          title="Inscrições Público"
           value={stats.registrations.value.toLocaleString()}
           target={stats.registrations.target.toLocaleString()}
           progress={stats.registrations.progress}
@@ -412,17 +424,23 @@ export function AdminDashboard() {
           color="teal"
         />
         <StatCard
+          title="Equipe de Trabalho"
+          value={stats.workTeam.value.toString()}
+          target={stats.workTeam.target.toString()}
+          progress={stats.workTeam.progress}
+          icon={Handshake}
+          color="orange"
+        />
+        <StatCard
           title="Receita Realizada"
           value={`R$ ${(stats.revenue.value / 1000).toFixed(0)}k`}
           target={`R$ ${(stats.revenue.target / 1000).toFixed(0)}k`}
           progress={stats.revenue.progress}
           icon={DollarSign}
-          trend="up"
-          trendValue="+8.4%"
           color="green"
         />
         <StatCard
-          title="Mentorias Realizadas"
+          title="Agenda Mentorias"
           value={stats.mentorias.value.toString()}
           target={stats.mentorias.target.toString()}
           progress={stats.mentorias.progress}

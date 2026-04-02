@@ -44,6 +44,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [validating, setValidating] = useState(false);
     const [desconto, setDesconto] = useState(dados.descontoSocial || 0);
     const [codigoValidado, setCodigoValidado] = useState(!!dados.codigo);
+    const [partnerId, setPartnerId] = useState(dados.partnerId || '');
     const { projectId } = useProject();
 
     const formatTelefone = (value: string) => {
@@ -117,37 +118,66 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     toast.success('PAGAMENTO CONFIRMADO PELA EMPRESA! 🎉');
                 }
             } else {
-                const { data, error } = await supabase
-                    .from('cupons_parceria_social')
-                    .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
+                // Primeiro tenta como Código de Parceiro/Expositor
+                const { data: partner, error: partnerError } = await supabase
+                    .from('parceiros')
+                    .select('id, name, access_code, max_team_members')
                     .eq('project_id', projectId)
-                    .eq('codigo', cleanCodigo)
-                    .eq('ativo', true)
+                    .eq('access_code', cleanCodigo)
                     .single();
-                
-                if (error || !data) {
-                    logger.warn(`[Step2] Cupom não encontrado: ${cleanCodigo} no projeto ${projectId}`, error);
-                    setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
-                } else {
-                    const couponData = data;
-                    const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
-                    
-                    // Verificação de expiração robusta
-                    const now = new Date();
-                    const expiry = couponData.vencimento ? new Date(couponData.vencimento) : null;
-                    const isExpired = expiry ? expiry < now : false;
 
-                    if (!isCompatible) {
-                        setErrors(prev => ({ ...prev, codigo: `Este código pertence à outra categoria. Selecione a correta acima.` }));
-                    } else if (isExpired) {
-                        logger.warn(`[Step2] Cupom expirado: ${cleanCodigo} (Vencimento: ${couponData.vencimento})`);
-                        setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
-                    } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
-                        setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
+                if (partner && !partnerError) {
+                    // Verificar limite de membros
+                    const { count } = await supabase
+                        .from('parceiros_equipe')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('partner_id', partner.id);
+
+                    if (count !== null && count >= (partner.max_team_members || 10)) {
+                        setErrors(prev => ({ ...prev, codigo: 'Limite de membros da equipe atingido' }));
                     } else {
-                        setDesconto(couponData.porcentagem_desconto);
+                        setDesconto(100);
                         setCodigoValidado(true);
-                        toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
+                        setPartnerId(partner.id);
+                        setIndicacaoTipo('parceiro');
+                        setIndicacaoNome(partner.name);
+                        toast.success(`BEM-VINDO À EQUIPE DA ${partner.name.toUpperCase()}! 🚀`);
+                    }
+                } else {
+                    // Se não for parceiro, tenta como Cupom Tradicional
+                    const { data, error } = await supabase
+                        .from('cupons_parceria_social')
+                        .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
+                        .eq('project_id', projectId)
+                        .eq('codigo', cleanCodigo)
+                        .eq('ativo', true)
+                        .single();
+                    
+                    if (error || !data) {
+                        logger.warn(`[Step2] Código não encontrado: ${cleanCodigo} no projeto ${projectId}`, error);
+                        setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
+                    } else {
+                        const couponData = data;
+                        const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
+                        
+                        // Verificação de expiração robusta
+                        const now = new Date();
+                        const expiry = couponData.vencimento ? new Date(couponData.vencimento) : null;
+                        const isExpired = expiry ? expiry < now : false;
+
+                        if (!isCompatible) {
+                            setErrors(prev => ({ ...prev, codigo: `Este código pertence à outra categoria. Selecione a correta acima.` }));
+                        } else if (isExpired) {
+                            logger.warn(`[Step2] Cupom expirado: ${cleanCodigo} (Vencimento: ${couponData.vencimento})`);
+                            setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
+                        } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
+                            setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
+                        } else {
+                            setDesconto(couponData.porcentagem_desconto);
+                            setCodigoValidado(true);
+                            setPartnerId(''); // Limpa se for cupom
+                            toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
+                        }
                     }
                 }
             }
@@ -181,6 +211,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 nome, cpf, email, telefone, senha,
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
+                partnerId: partnerId || '',
                 codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
                 descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0,
                 loteId: indicacaoTipo === 'empresa' ? loteId : '',
@@ -319,6 +350,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             { id: 'influenciador', label: '📱 Influencer' },
                             { id: 'associacao', label: '🤝 Associação' },
                             { id: 'instituicao', label: '🎓 Instituição' },
+                            { id: 'parceiro', label: '🎖️ Parceiro/Vex' },
                             { id: 'promocional', label: '🎁 Promoção' },
                             { id: 'nenhum', label: '✕ Nenhum' },
                         ].map(tipo => (

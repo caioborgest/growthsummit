@@ -14,8 +14,9 @@ export interface DadosInscricao {
     email: string;
     telefone: string;
     senha: string;
-    indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro' | 'nenhum';
+    indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'parceiro' | 'outro' | 'nenhum';
     indicacaoNome?: string;
+    partnerId?: string;
     codigo?: string;
     descontoSocial?: number;
 

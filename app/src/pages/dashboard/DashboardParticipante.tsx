@@ -10,7 +10,8 @@ import {
   Award,
   Handshake,
   Rocket,
-  BookOpen
+  BookOpen,
+  Shield
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -25,7 +26,8 @@ import {
   useMentoringSessions,
   useStands,
   useStandCheckIns,
-  useCertificates
+  useCertificates,
+  usePartnerTeam
 } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
@@ -75,6 +77,7 @@ export function DashboardParticipante() {
   const { data: stands } = useStands();
   const { data: standCheckIns } = useStandCheckIns();
   const { data: certificates, isLoading: loadingCerts, refetch: refetchCerts } = useCertificates();
+  const { data: partnerTeamData } = usePartnerTeam();
   const { refetch: refetchNotifications } = useNotifications();
   
   // State
@@ -152,6 +155,12 @@ export function DashboardParticipante() {
   }, [standCheckIns, registration]);
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
+
+  // Partner Team Membership
+  const myPartnerMembership = useMemo(() => {
+    if (!partnerTeamData || !user) return null;
+    return partnerTeamData.find(m => m.userId === user.id);
+  }, [partnerTeamData, user]);
 
   const navTabs = useMemo(() => {
     const tabs = [
@@ -289,6 +298,97 @@ export function DashboardParticipante() {
                 activities: '10+'
               }}
             />
+
+            {/* Credencial de Parceiro - Aparece se usuário vinculado à equipe */}
+            {myPartnerMembership && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-card overflow-hidden border-brand-orange-coral/30"
+              >
+                <div className="bg-brand-orange-coral/10 p-4 border-b border-brand-orange-coral/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-brand-orange-coral rounded-lg">
+                      <Award className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-tight leading-none">Credencial de Trabalho</h4>
+                      <p className="text-[9px] font-bold text-brand-orange-coral uppercase tracking-widest leading-none mt-1">Expositor / Parceiro</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-brand-orange-coral text-white font-black text-[9px] h-5">ATIVO</Badge>
+                </div>
+                <div className="p-5 flex items-center gap-5">
+                  <div className="bg-white p-2.5 rounded-2xl shadow-xl shadow-white/5">
+                    <QrCode className="h-14 w-14 text-black" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Função</p>
+                    <p className="text-lg font-black text-white leading-tight uppercase tracking-tighter">
+                      {myPartnerMembership.role || 'Integrante'}
+                    </p>
+                    <button 
+                      onClick={() => setActiveTab('ingresso')}
+                      className="text-brand-orange-coral font-black text-[10px] uppercase tracking-widest mt-2 flex items-center gap-1 hover:gap-2 transition-all"
+                    >
+                      Ver Credencial Completa <span className="text-lg leading-none">→</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Regras do Expositor - Aparece se usuário vinculado à equipe */}
+            {myPartnerMembership && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="glass-card p-6 border-white/5 bg-gradient-to-br from-brand-orange-coral/5 to-transparent relative overflow-hidden group"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
+                  <Shield className="h-24 w-24 text-white" />
+                </div>
+
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                  <div className="w-10 h-10 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                    <Shield className="h-5 w-5 text-brand-orange-coral" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white italic uppercase tracking-tight">10 Regras do Expositor</h4>
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mt-1">GX Growth Experience</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 relative z-10">
+                  {[
+                    { t: "Credenciamento obrigatório", d: "Faça seu check-in pelo App do GX antes de montar o stand." },
+                    { t: "Respeite os horários", d: "Montagem e desmontagem somente nos horários definidos pela organização." },
+                    { t: "Fique no seu espaço", d: "Materiais e displays devem estar dentro da área contratada." },
+                    { t: "Postura profissional", d: "Equipe receptiva, cordial e sem abordagens agressivas ao público." },
+                    { t: "Venda presencial com autorização", d: "Comercialização direta no stand só com liberação prévia da organização." },
+                    { t: "Material visual aprovado", d: "Use apenas materiais alinhados à sua marca e adequados ao público." },
+                    { t: "Equipe identificada", d: "Todos os membros do stand devem usar crachá ou uniforme da empresa." },
+                    { t: "Use o app GX", d: "Credenciamento, registro de leads e comunicação são feitos pelo app." },
+                    { t: "Stand ativo o tempo todo", d: "Mantenha equipe presente durante toda a programação da exposição." },
+                    { t: "Siga as normas do local", d: "Respeite as regras do Espaço Parque e as orientações da equipe GX." }
+                  ].map((rule, i) => (
+                    <div key={i} className="flex gap-4 group/item">
+                      <div className="flex flex-col items-center">
+                        <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-brand-orange-coral italic group-hover/item:bg-brand-orange-coral group-hover/item:text-white transition-colors shrink-0">
+                          {i + 1}
+                        </div>
+                        {i < 9 && <div className="w-px h-full bg-white/5 my-1" />}
+                      </div>
+                      <div className="pb-2">
+                        <p className="text-[11px] font-black text-white uppercase tracking-tight leading-tight group-hover/item:text-brand-orange-coral transition-colors">{rule.t}</p>
+                        <p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-0.5">{rule.d}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {nextActivity && (
               <NextActivityCard 

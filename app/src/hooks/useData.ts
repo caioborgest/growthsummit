@@ -209,6 +209,9 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   drawn_at: 'drawnAt',
   project_id: 'projectId',
   partner_id: 'partnerId',
+  user_id: 'userId',
+  access_code: 'accessCode',
+  max_team_members: 'maxTeamMembers',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -502,8 +505,8 @@ function getSelectFields(entity: string, projectId?: string): string {
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
-    partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,sponsor_id,stand_id,created_at,updated_at',
-    partner_team: 'id,partner_id,project_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at'
+    partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id,created_at,updated_at',
+    partner_team: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at'
   };
   return fields[entity] ?? '*';
 }

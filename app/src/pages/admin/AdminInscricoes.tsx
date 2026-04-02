@@ -25,9 +25,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { getStatusConfig } from '@/lib/ui-constants';
 import { useRegistrations, useTransactions, useCheckIns, useSessions } from '@/hooks/useData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
@@ -240,6 +247,7 @@ export default function AdminInscricoes() {
 
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
+  const [activeListTab, setActiveListTab] = useState('participantes');
 
   const checkInsByRegId = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -402,7 +410,6 @@ export default function AdminInscricoes() {
       setIsUpdating(false);
     }
   };
-
   const filteredRegistrations = registrations.filter(reg => {
     const q = searchQuery.toLowerCase();
     const matchesSearch =
@@ -417,7 +424,13 @@ export default function AdminInscricoes() {
       nightFilter === 'all' ||
       (nightFilter === 'sim' && reg.palestrasNoturnas) ||
       (nightFilter === 'nao' && !reg.palestrasNoturnas);
-    return matchesSearch && matchesStatus && matchesNight;
+    
+    const isPartnerTeam = (reg as any).indicacaoTipo === 'parceiro' || (reg as any).indicacao_tipo === 'parceiro';
+    const matchesTab = activeListTab === 'all' || 
+                       (activeListTab === 'participantes' && !isPartnerTeam) ||
+                       (activeListTab === 'trabalho' && isPartnerTeam);
+
+    return matchesSearch && matchesStatus && matchesNight && matchesTab;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredRegistrations.length / PAGE_SIZE));
@@ -529,6 +542,22 @@ export default function AdminInscricoes() {
           </Button>
         </div>
       </div>
+
+      <Tabs value={activeListTab} onValueChange={setActiveListTab} className="w-full">
+        <TabsList className="bg-white/5 border border-white/10 p-1 mb-6 rounded-2xl h-14">
+          <TabsTrigger value="participantes" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all">
+            <Users className="w-4 h-4 mr-2" />
+            Participantes ({registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro').length})
+          </TabsTrigger>
+          <TabsTrigger value="trabalho" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all">
+            <Handshake className="w-4 h-4 mr-2" />
+            Equipe / Trabalho ({registrations.filter(r => (r as any).indicacaoTipo === 'parceiro' || (r as any).indicacao_tipo === 'parceiro').length})
+          </TabsTrigger>
+          <TabsTrigger value="all" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all">
+            Todos ({registrations.length})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Stats Grid Premium */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -675,8 +704,13 @@ export default function AdminInscricoes() {
                           <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform hidden sm:flex">
                             <User className="h-5 w-5 text-gray-500" />
                           </div>
-                          <div>
-                            <p className="text-white text-sm font-black italic uppercase leading-none mb-1">{reg.name || '---'}</p>
+                           <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-white text-sm font-black italic uppercase leading-none">{reg.name || '---'}</p>
+                              {((reg as any).indicacaoTipo === 'parceiro' || (reg as any).indicacao_tipo === 'parceiro') && (
+                                <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[8px] font-black uppercase px-2 py-0 h-4">EQUIPE</Badge>
+                              )}
+                            </div>
                             <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest leading-none truncate max-w-[150px]">{reg.email}</p>
                           </div>
                        </div>

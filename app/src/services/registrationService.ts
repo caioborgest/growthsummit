@@ -25,6 +25,7 @@ export interface RegistrationParams {
     nivelAtividade?: string | null;
     indicacaoTipo?: string;
     indicacaoNome?: string | null;
+    partnerId?: string | null;
     codigoSocial?: string | null;
     codigoPalestra?: string | null;
     extraData?: Record<string, unknown>;
@@ -106,6 +107,27 @@ export const registrationService = {
             // Enviar e-mail de Boas-vindas (Automação Resend)
             if (params.email && params.nome) {
                 emailService.sendWelcome(params.email, params.nome).catch(e => logger.warn('[registrationService] Erro ao enviar boas-vindas:', e));
+            }
+
+            // Se for inscrição de parceiro, vincular na tabela de equipe
+            if (params.partnerId && data) {
+                const partnerQR = `GE-PARTNER|${data.id || params.userId}|${Date.now()}`;
+                try {
+                    await (supabase.from('parceiros_equipe' as any).insert({
+                        partner_id: params.partnerId,
+                        project_id: params.projectId,
+                        user_id: params.userId,
+                        name: params.nome,
+                        email: params.email,
+                        phone: params.telefone,
+                        cpf: params.cpf,
+                        role: 'Integrante',
+                        qr_code: partnerQR
+                    } as any));
+                    logger.info(`[registrationService] Vínculo com parceiro ${params.partnerId} criado com sucesso.`);
+                } catch (peErr) {
+                    logger.error('[registrationService] Erro ao criar vínculo com equipe de parceiro:', peErr);
+                }
             }
 
             return data;

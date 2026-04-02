@@ -661,6 +661,8 @@ export interface Partner {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  accessCode?: string;
+  maxTeamMembers?: number;
   sponsorId?: string;
   standId?: string;
   createdAt: string;
@@ -671,6 +673,7 @@ export interface PartnerTeamMember {
   id: string;
   partnerId: string;
   projectId: string;
+  userId?: string;
   name: string;
   email: string;
   phone?: string;

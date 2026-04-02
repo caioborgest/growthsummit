@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { usePartners, useSponsors, useStands } from '@/hooks/useData';
+import { usePartners, useSponsors, useStands, usePartnerTeam } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -57,6 +57,7 @@ const categoryColors: Record<string, string> = {
 export default function AdminParceiros() {
   const { projectId } = useProject();
   const { data: partners, create, update, remove, isLoading } = usePartners();
+  const { data: teamMembers } = usePartnerTeam();
   const { data: sponsors } = useSponsors();
   const { data: stands } = useStands();
 
@@ -76,6 +77,8 @@ export default function AdminParceiros() {
     contactName: '',
     contactEmail: '',
     contactPhone: '',
+    accessCode: '',
+    maxTeamMembers: 10,
     status: 'active' as any,
     sponsorId: '',
     standId: '',
@@ -102,6 +105,8 @@ export default function AdminParceiros() {
         contactName: partner.contactName || '',
         contactEmail: partner.contactEmail || '',
         contactPhone: partner.contactPhone || '',
+        accessCode: partner.accessCode || '',
+        maxTeamMembers: partner.maxTeamMembers || 10,
         status: partner.status || 'active',
         sponsorId: partner.sponsorId || '',
         standId: partner.standId || '',
@@ -116,6 +121,8 @@ export default function AdminParceiros() {
         contactName: '',
         contactEmail: '',
         contactPhone: '',
+        accessCode: '',
+        maxTeamMembers: 10,
         status: 'active',
         sponsorId: '',
         standId: '',
@@ -164,7 +171,7 @@ export default function AdminParceiros() {
   }), [partners]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-white">
       {/* Header & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-2">
@@ -256,12 +263,15 @@ export default function AdminParceiros() {
               </div>
 
               <div className="space-y-2 py-4 border-y border-white/5">
+                <div className="flex items-center gap-3 text-xs font-bold text-brand-orange-coral bg-brand-orange-coral/5 p-2 rounded-lg border border-brand-orange-coral/10">
+                  <QrCode className="h-4 w-4" />
+                  <span>Código: {partner.accessCode || 'N/A'}</span>
+                </div>
                 <div className="flex items-center gap-3 text-xs">
                   <Users className="h-4 w-4 text-gray-500" />
                   <span className="text-gray-300 font-medium">Equipe:</span>
                   <Badge variant="outline" className="bg-white/5 border-white/10 text-white ml-auto">
-                    {/* Aqui virá a contagem real da equipe */}
-                    0 Membros
+                    {teamMembers.filter(m => m.partnerId === partner.id).length} / {partner.maxTeamMembers || 10}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-3 text-xs">
@@ -365,6 +375,40 @@ export default function AdminParceiros() {
                     <option key={val} value={val}>{label}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase text-brand-orange-coral">Código de Auto-Inscrição</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.accessCode}
+                    onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
+                    className="bg-white/5 border-brand-orange-coral/20 text-brand-orange-coral font-bold"
+                    placeholder="EX: BMW-2026"
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                      setFormData({ ...formData, accessCode: code });
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    Gerar
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase text-gray-500">Limite de Membros</Label>
+                <Input
+                  type="number"
+                  value={formData.maxTeamMembers}
+                  onChange={(e) => setFormData({ ...formData, maxTeamMembers: parseInt(e.target.value) })}
+                  className="bg-white/5 border-white/10"
+                />
               </div>
             </div>
 
