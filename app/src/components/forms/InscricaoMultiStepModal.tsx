@@ -141,7 +141,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
         const updates: Partial<DadosInscricao> = {
             loteId: activeBatch?.id || 'default',
-            tipoInscricao: activeTier?.id || 'standard'
+            tipoInscricao: (activeTier?.id || 'standard') as 'pro' | 'standard' | 'vip' | 'social'
         };
 
         if (selectedProject.slug === 'ge-triunfo-2026') {

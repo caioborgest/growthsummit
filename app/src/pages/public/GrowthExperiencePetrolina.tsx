@@ -110,8 +110,12 @@ export function GrowthExperiencePetrolina() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div className="animate-fade-in-up">
-                            <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30 px-4 py-1">O EVENTO PETROLINA</Badge>
-                            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">O Vale do São Francisco entra na <span className="text-gradient">Nova Era</span></h2>
+                            <Badge className="mb-4 bg-teal-500/10 text-teal-400 border-teal-500/30 px-6 py-2 rounded-full uppercase tracking-widest font-black text-[10px]">
+                                O EVENTO PETROLINA
+                            </Badge>
+                            <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tighter">
+                                O Vale do São Francisco entra na <span className="text-gradient">Nova Era</span>
+                            </h2>
                             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
                                 Petrolina recebe a edição especial do Growth Experience. Um dia focado em transformar o potencial agrícola e comercial da região através da Inteligência Artificial e estratégias avançadas de Gestão e Growth.
                             </p>
@@ -151,28 +155,35 @@ export function GrowthExperiencePetrolina() {
             <section id="mentores" className="py-20 bg-dark-200 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
-                        <Badge className="mb-4 bg-teal-500/20 text-teal-400 border-teal-500/30 px-4 py-1 uppercase tracking-widest font-black">Palestrantes Âncoras</Badge>
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4">Mestres da <span className="text-teal-400">Estratégia</span></h2>
-                        <p className="text-lg text-gray-400 max-w-2xl mx-auto">Os especialistas que guiarão a imersão de Growth e Alta Performance no Vale.</p>
+                        <Badge className="mb-6 bg-teal-500/20 text-teal-400 border-teal-500/30 px-8 py-2 rounded-full uppercase tracking-[0.3em] font-black text-[10px] italic">
+                            Palestrantes Âncoras
+                        </Badge>
+                        <h2 className="text-4xl sm:text-6xl font-extrabold text-white mb-4 tracking-tighter uppercase italic">
+                            Mestres da <span className="text-teal-400">Estratégia</span>
+                        </h2>
+                        <p className="text-lg text-gray-500 max-w-2xl mx-auto font-bold uppercase tracking-widest text-[10px]">
+                            Os especialistas que guiarão a imersão de Growth e Alta Performance no Vale.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         {conselheiros.map((mentor, idx) => (
                             <div key={idx} className="group relative glass-card p-8 border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 hover:-translate-y-2">
                                 <div className="flex items-center gap-6">
-                                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-teal-500/30 transition-all">
+                                    <div className="w-24 h-24 rounded-3xl overflow-hidden bg-dark-200 flex-shrink-0 border-2 border-white/5 group-hover:border-teal-500/50 transition-all shadow-2xl">
                                         <img
                                             src={mentor.foto}
                                             alt={mentor.nome}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             onError={(e) => {
                                                 e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png';
                                             }}
                                         />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-extrabold text-white group-hover:text-teal-400 transition-colors">{mentor.nome}</h3>
-                                        <p className="text-teal-400 font-bold text-sm uppercase tracking-widest mb-2">{mentor.cargo}</p>
-                                        <p className="text-gray-400 text-sm leading-relaxed">{mentor.bio}</p>
+                                        <h3 className="text-2xl font-black text-white group-hover:text-teal-400 transition-colors tracking-tight uppercase italic">{mentor.nome}</h3>
+                                        <p className="text-teal-400 font-black text-[10px] uppercase tracking-[0.2em] mb-2">{mentor.cargo}</p>
+                                        <p className="text-gray-500 text-xs leading-relaxed font-medium">{mentor.bio}</p>
                                     </div>
                                 </div>
                             </div>

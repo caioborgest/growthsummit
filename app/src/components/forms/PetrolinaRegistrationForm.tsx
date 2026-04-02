@@ -144,119 +144,119 @@ export function PetrolinaRegistrationForm() {
         <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome Completo</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Nome Completo</label>
                     <input
                         required
                         type="text"
                         name="nome"
                         value={formData.nome}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="Como quer ser chamado?"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">CPF</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">CPF</label>
                     <input
                         required
                         type="text"
                         name="cpf"
                         value={formData.cpf}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="000.000.000-00"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">WhatsApp</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">WhatsApp</label>
                     <input
                         required
                         type="tel"
                         name="whatsapp"
                         value={formData.whatsapp}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="(87) 99999-9999"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">E-mail Corporativo</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">E-mail Corporativo</label>
                     <input
                         required
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="seu@email.com"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Nome da Empresa</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Nome da Empresa</label>
                     <input
                         required
                         type="text"
                         name="empresa"
                         value={formData.empresa}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="Sua empresa ou projeto"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Senha para o App</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Senha para o App</label>
                     <input
                         required
                         type="password"
                         name="senha"
                         value={formData.senha}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="Mínimo 6 caracteres"
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Quantidade de Colaboradores</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Quantidade de Colaboradores</label>
                     <select
                         required
                         name="colaboradores"
                         value={formData.colaboradores}
                         onChange={handleChange}
-                        className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none"
+                        className="w-full bg-dark-200 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none appearance-none font-medium cursor-pointer"
                     >
-                        <option value="">Selecione...</option>
-                        <option value="1-5">1 a 5</option>
-                        <option value="6-20">6 a 20</option>
-                        <option value="21-50">21 a 50</option>
-                        <option value="51-200">51 a 200</option>
-                        <option value="201+">Mais de 200</option>
+                        <option value="" className="bg-dark-200">Selecione...</option>
+                        <option value="1-5" className="bg-dark-200">1 a 5</option>
+                        <option value="6-20" className="bg-dark-200">6 a 20</option>
+                        <option value="21-50" className="bg-dark-200">21 a 50</option>
+                        <option value="51-200" className="bg-dark-200">51 a 200</option>
+                        <option value="201+" className="bg-dark-200">Mais de 200</option>
                     </select>
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Faturamento Médio Anual</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Faturamento Médio Anual</label>
                     <select
                         required
                         name="faturamento"
                         value={formData.faturamento}
                         onChange={handleChange}
-                        className="w-full bg-dark-200 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none appearance-none"
+                        className="w-full bg-dark-200 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none appearance-none font-medium cursor-pointer"
                     >
-                        <option value="">Selecione...</option>
-                        <option value="ate-100k">Até R$ 100k</option>
-                        <option value="100k-500k">R$ 100k a R$ 500k</option>
-                        <option value="500k-2m">R$ 500k a R$ 2M</option>
-                        <option value="2m-10m">R$ 2M a R$ 10M</option>
-                        <option value="10m+">Acima de R$ 10M</option>
+                        <option value="" className="bg-dark-200">Selecione...</option>
+                        <option value="ate-100k" className="bg-dark-200">Até R$ 100k</option>
+                        <option value="100k-500k" className="bg-dark-200">R$ 100k a R$ 500k</option>
+                        <option value="500k-2m" className="bg-dark-200">R$ 500k a R$ 2M</option>
+                        <option value="2m-10m" className="bg-dark-200">R$ 2M a R$ 10M</option>
+                        <option value="10m+" className="bg-dark-200">Acima de R$ 10M</option>
                     </select>
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Cupom (Opcional)</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Cupom (Opcional)</label>
                     <input
                         type="text"
                         name="cupom"
                         value={formData.cupom}
                         onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-brand-orange-coral transition-all outline-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none placeholder:text-gray-600 font-medium"
                         placeholder="Possui um cupom?"
                     />
                 </div>
@@ -265,7 +265,7 @@ export function PetrolinaRegistrationForm() {
             <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-teal-600 to-teal-400 hover:scale-[1.02] text-white font-black py-7 text-xl rounded-2xl shadow-glow-teal mt-8 transition-all group border-none"
+                className="w-full bg-gradient-to-r from-teal-600 to-teal-400 hover:from-teal-500 hover:to-teal-300 hover:scale-[1.02] active:scale-95 text-white font-black py-8 text-xl rounded-[2rem] shadow-glow-teal mt-8 transition-all group border-none italic tracking-tighter"
             >
                 {isSubmitting ? (
                     <>

@@ -523,7 +523,7 @@ export function AdminMentores() {
   });
 
 
-  // console.log('[AdminMentores] Render', { mentorsCount: mentors.length, projectId });
+
 
   const filteredMentors = useMemo(() => {
     return mentors.filter(mentor => {

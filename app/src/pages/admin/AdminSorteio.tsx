@@ -26,8 +26,6 @@ export default function AdminSorteio() {
   const { data: inscricoes } = useInscricoes();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedRaffle, setSelectedRaffle] = useState<any>(null);
-  console.log('Selected Raffle:', selectedRaffle); // Use it to avoid unused var warning if logic depends on it later
   const [isDrawing, setIsDrawing] = useState(false);
   const [winner, setWinner] = useState<any>(null);
   const [scrollingName, setScrollingName] = useState('');
@@ -72,7 +70,7 @@ export default function AdminSorteio() {
       await raffleService.updateRaffle(raffleId, { status } as any);
       toast.success(`Sorteio ${status === 'open' ? 'aberto' : 'fechado'}!`);
       refetchRaffles();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro ao atualizar status');
     }
   };
@@ -82,7 +80,7 @@ export default function AdminSorteio() {
       try {
         await removeRaffle(id);
         toast.success('Sorteio excluído');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Erro ao excluir');
       }
     }
@@ -97,7 +95,7 @@ export default function AdminSorteio() {
         color: { dark: '#000000', light: '#FFFFFF' }
       });
       setQrCodeDataUrl(url);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro ao gerar QR Code');
     }
   };
@@ -105,7 +103,6 @@ export default function AdminSorteio() {
   const performDraw = async (raffle: any) => {
     setIsDrawing(true);
     setWinner(null);
-    setSelectedRaffle(raffle);
 
     // Slot machine animation effect
     let participants: any[] = [];
@@ -147,7 +144,7 @@ export default function AdminSorteio() {
       } else {
           toast.error('Nenhum participante elegível encontrado no banco.');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro ao processar sorteio no servidor');
     } finally {
       setIsDrawing(false);
@@ -218,7 +215,7 @@ export default function AdminSorteio() {
                     </Button>
                     {raffle.type === 'realtime_qr' && (
                       <Button 
-                        onClick={() => { setSelectedRaffle(raffle); generateRaffleQR(raffle.id); }}
+                        onClick={() => { generateRaffleQR(raffle.id); }}
                         className="w-9 h-9 p-0 bg-white/5 text-gray-400 rounded-xl"
                         title="Ver QR Code"
                       >
