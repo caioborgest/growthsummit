@@ -706,8 +706,6 @@ export function AdminFinanceiro() {
           </div>
         </div>
       )}
-      </div>
-      )}
 
       {/* Modals */}
       <AnimatePresence>
