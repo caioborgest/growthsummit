@@ -164,9 +164,8 @@ export function GrowthExperiencePetrolina() {
                                         <img
                                             src={mentor.foto}
                                             alt={mentor.nome}
-                                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                                             onError={(e) => {
-                                                e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth-summit_branco.v2.png';
+                                                e.currentTarget.src = 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg';
                                             }}
                                         />
                                     </div>

@@ -99,7 +99,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                     .eq('project_id', projectId)
                     .eq('voucher_code', cleanCodigo)
-                    .single() as any;
+                    .single();
                 
                 if (error || !data) {
                     logger.warn(`[Step2] Voucher corporativo não encontrado: ${cleanCodigo}`, error);
@@ -117,8 +117,8 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     toast.success('PAGAMENTO CONFIRMADO PELA EMPRESA! 🎉');
                 }
             } else {
-                const { data, error } = await (supabase
-                    .from('cupons_parceria_social') as any)
+                const { data, error } = await supabase
+                    .from('cupons_parceria_social')
                     .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
                     .eq('project_id', projectId)
                     .eq('codigo', cleanCodigo)
@@ -362,7 +362,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                     <input
                                         id="indicacaoNome" type="text" value={indicacaoNome}
                                         onChange={e => { setIndicacaoNome(e.target.value); if (errors.indicacaoNome) setErrors({ ...errors, indicacaoNome: '' }); }}
-                                        placeholder="Ex: Deputado Fulano de Tal"
+                                        placeholder="CBX ou Empresa que trabalho"
                                         className={`form-input${errors.indicacaoNome ? ' error' : ''}`}
                                     />
                                 )}
@@ -399,7 +399,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                                 <p className="form-hint">
                                     {indicacaoTipo === 'empresa'
                                         ? 'Este código foi enviado ao responsável pela compra do lote da empresa.'
-                                        : 'Este código é fornecido pela sua Prefeitura ou Liderança Política parceira.'}
+                                        : 'Esse código é fornecido pela sua empresa ou pela organizadora do GX.'}
                                 </p>
                             </div>
                         </div>
