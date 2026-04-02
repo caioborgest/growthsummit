@@ -144,7 +144,13 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             email: '',
             telefone: '',
             senha: '',
-            comprarPalestras: false
+            comprarPalestras: false,
+            loteId: '',
+            voucherEmpresa: '',
+            indicacaoTipo: 'nenhum',
+            indicacaoNome: '',
+            codigo: '',
+            descontoSocial: 0
         });
         setCurrentStep(1);
     };

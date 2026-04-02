@@ -35,6 +35,8 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
     const [indicacaoTipo, setIndicacaoTipo] = useState<DadosInscricao['indicacaoTipo']>(dados.indicacaoTipo || 'nenhum');
     const [indicacaoNome, setIndicacaoNome] = useState(dados.indicacaoNome || '');
     const [codigo, setCodigo] = useState(dados.codigo || '');
+    const [loteId, setLoteId] = useState(dados.loteId || '');
+    const [voucherEmpresa, setVoucherEmpresa] = useState(dados.voucherEmpresa || '');
     const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
     const [showSenha, setShowSenha] = useState(false);
     const [showConfirmSenha, setShowConfirmSenha] = useState(false);
@@ -93,7 +95,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                     .eq('project_id', projectId)
                     .eq('voucher_code', codigo.trim().toUpperCase())
-                    .single();
+                    .single() as any;
                 if (error || !data) {
                     setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
                 } else if (data.status_pagamento !== 'pago') {
@@ -103,6 +105,8 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 } else {
                     setDesconto(100);
                     setCodigoValidado(true);
+                    setLoteId(data.id);
+                    setVoucherEmpresa(data.voucher_code);
                     setIndicacaoNome(data.nome_empresa);
                     toast.success('PAGAMENTO CONFIRMADO PELA EMPRESA! 🎉');
                 }
@@ -163,7 +167,9 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
                 codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
-                descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0
+                descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0,
+                loteId: indicacaoTipo === 'empresa' ? loteId : '',
+                voucherEmpresa: indicacaoTipo === 'empresa' ? voucherEmpresa : ''
             });
         }
     };

@@ -239,13 +239,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                                         {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
                                     </p>
                                     <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
-                                    {dados.descontoSocial && dados.descontoSocial > 0 && (
+                                    {(dados.descontoSocial && dados.descontoSocial > 0) || dados.voucherEmpresa ? (
                                         <div className="mt-1 flex items-center gap-2">
                                             <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
-                                                {descontoEfetivo}% de desconto aplicado {dados.codigo && `(Code: ${dados.codigo})`}
+                                                {dados.voucherEmpresa 
+                                                    ? `Pago pela Empresa (Voucher: ${dados.voucherEmpresa})` 
+                                                    : `${descontoEfetivo}% de desconto aplicado ${dados.codigo && `(Code: ${dados.codigo})`}`}
                                             </Badge>
                                         </div>
-                                    )}
+                                    ) : null}
                                 </div>
                             </div>
                         )}
