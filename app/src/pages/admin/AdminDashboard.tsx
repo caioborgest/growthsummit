@@ -200,9 +200,11 @@ export function AdminDashboard() {
         .filter(t => t.type === 'income' && t.status === 'completed')
         .reduce((sum, t) => sum + t.amount, 0);
 
+
     const targets = {
       registrations: selectedProject?.settings?.goalRegistrations || selectedProject?.settings?.maxRegistrations || 1500,
-      revenue: (selectedProject?.settings?.ticketPrices?.vip || 0) * 10 || 616000,
+      revenue: selectedProject?.settings?.goalRevenue || (selectedProject?.settings?.ticketPrices?.vip || 0) * 10 || 616000,
+      sponsorship: selectedProject?.settings?.goalSponsorship || 250000,
       mentorias: selectedProject?.settings?.maxMentors ? selectedProject.settings.maxMentors * 5 : 100,
       b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,
     };
