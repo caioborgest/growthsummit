@@ -25,12 +25,65 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     const { projectId, selectedProject } = useProject();
     const { data: sessions } = useSessions();
 
-    // Cálculo do valor (Source of Truth: dados.valorFinal ou recalcular como fallback)
-    const valorOriginal = EVENT_CONFIG.proPrice;
+    // Cálculo do valor dinâmico baseado em Lotes e Categorias
+    const getActivePrice = () => {
+        // Fallback para o preço antigo se não houver tiers configurados
+        const fallbackPrice = selectedProject?.settings?.ticketPrices?.pro || EVENT_CONFIG.proPrice;
+        
+        if (!selectedProject?.settings?.ticketTiers || selectedProject.settings.ticketTiers.length === 0) {
+            return fallbackPrice;
+        }
+
+        // Se o usuário selecionou um lote específico (ex: via Step 1 ou URL)
+        if (dados.loteId) {
+            for (const tier of selectedProject.settings.ticketTiers) {
+                const batch = tier.batches.find(b => b.id === dados.loteId);
+                if (batch) return batch.price;
+            }
+        }
+
+        // Fallback: Pega o primeiro Tier ativo e seu lote ativo
+        const defaultTier = selectedProject.settings.ticketTiers.find(t => t.active) || selectedProject.settings.ticketTiers[0];
+        const activeBatch = defaultTier?.batches.find(b => b.active) || defaultTier?.batches[0];
+        
+        return activeBatch?.price ?? fallbackPrice;
+    };
+
+    const valorOriginal = getActivePrice();
     const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
     const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
     const valorFormatado = valorFinal.toFixed(2);
     const valorPagoTotal = dados.comprarPalestras ? valorFinal : 0;
+
+    // Obter nome do lote/categoria atual para o resumo
+    const getTicketLabel = () => {
+        if (!selectedProject?.settings?.ticketTiers) return 'Passaporte Night Experience';
+        
+        const tier = selectedProject.settings.ticketTiers.find(t => 
+            t.batches.some(b => b.id === dados.loteId || b.active)
+        );
+        const batch = tier?.batches.find(b => b.id === dados.loteId || b.active);
+        
+        if (tier && batch) return `${tier.name} - ${batch.name}`;
+        return 'Passaporte Growth Experience';
+    };
+
+    // Verificar se o lote está esgotado (Capacidade)
+    const isBatchSoldOut = () => {
+        if (!selectedProject?.settings?.ticketTiers) return false;
+        
+        const tier = selectedProject.settings.ticketTiers.find(t => 
+            t.batches.some(b => b.id === dados.loteId || b.active)
+        );
+        const batch = tier?.batches.find(b => b.id === dados.loteId || b.active);
+        
+        if (batch?.maxCapacity && (batch.soldCount || 0) >= batch.maxCapacity) {
+            return true;
+        }
+        return false;
+    };
+
+    const isSoldOut = isBatchSoldOut();
 
     const cursosSelecionados = dados.cursosSelecionados
         .map(id => {
@@ -65,7 +118,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     const nivelAtividade = primeiraAtividade?.nivel || '';
 
     const handleConfirmar = async () => {
-        if (isProcessing) return;
+        if (isProcessing || isSoldOut) return;
         setIsProcessing(true);
         setLoading(true);
         setError('');
@@ -323,7 +376,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
                 <div className="space-y-4">
                     <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-400">Passaporte Night Experience</span>
+                        <span className="text-gray-400">{getTicketLabel()}</span>
                         <span className="text-white font-mono">R$ {valorOriginal.toFixed(2).replace('.', ',')}</span>
                     </div>
 
@@ -397,11 +450,13 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 <button
                     type="button"
                     onClick={handleConfirmar}
-                    disabled={loading}
-                    className="btn-form-primary flex-1"
+                    disabled={loading || isSoldOut}
+                    className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-50 grayscale cursor-not-allowed border-gray-600' : ''}`}
                 >
                     {loading ? (
                         <><Loader2 className="h-5 w-5 animate-spin" />Confirmando...</>
+                    ) : isSoldOut ? (
+                        <><AlertCircle className="h-5 w-5 text-red-500" />Esgotado</>
                     ) : (
                         <><CheckCircle className="h-5 w-5" />Avançar</>
                     )}

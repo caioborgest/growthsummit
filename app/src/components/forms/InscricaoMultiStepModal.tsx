@@ -103,21 +103,55 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     // Skip seguro do Step 1 removido para permitir visualizar programação em Triunfo
 
-    // Para Triunfo: todas as inscrições têm pagamento obrigatório — define comprarPalestras=true automaticamente
-    // E pré-seleciona todas as sessões do cronograma
+    // Para Triunfo e outros: define o Lote/Categoria Ativo automaticamente
     useEffect(() => {
-        if (selectedProject?.slug === 'ge-triunfo-2026' && allSessions && allSessions.length > 0) {
-            const TriumphSessions = allSessions
-                .filter(s => s.projectId === selectedProject.id)
-                .map(s => s.id);
+        if (!selectedProject) return;
+
+        const TriumphSessions = allSessions
+            ?.filter(s => s.projectId === selectedProject.id)
+            .map(s => s.id) || [];
+        
+        // Busca a precificação avançada (Tiers)
+        const tiers = selectedProject.settings?.ticketTiers || [];
+        
+        // Helper para verificar se um lote é válido por tempo
+        const isBatchTimeValid = (batch: any) => {
+            const now = new Date();
+            const start = batch.startDate ? new Date(batch.startDate) : null;
+            const end = batch.endDate ? new Date(batch.endDate) : null;
             
-            updateDados({ 
-                comprarPalestras: true,
-                cursosSelecionados: TriumphSessions
-            });
+            // Ajustar datas para considerar início do dia (start) e fim do dia (end)
+            if (start) start.setHours(0, 0, 0, 0);
+            if (end) end.setHours(23, 59, 59, 999);
+            
+            if (start && now < start) return false;
+            if (end && now > end) return false;
+            return true;
+        };
+
+        // Encontra o primeiro Tier ativo
+        const activeTier = tiers.find((t: any) => t.active) || tiers[0];
+        
+        // Encontra o primeiro lote VÁLIDO por tempo dentro do tier ativo
+        // Se nenhum estiver no período de validade, pega o marcado como 'active' como fallback
+        let activeBatch = activeTier?.batches.find((b: any) => isBatchTimeValid(b));
+        if (!activeBatch) {
+            activeBatch = activeTier?.batches.find((b: any) => b.active) || activeTier?.batches?.[0];
         }
+
+        const updates: Partial<DadosInscricao> = {
+            loteId: activeBatch?.id,
+            tipoInscricao: activeTier?.id || 'standard'
+        };
+
+        if (selectedProject.slug === 'ge-triunfo-2026') {
+            updates.comprarPalestras = true;
+            updates.cursosSelecionados = TriumphSessions;
+        }
+        
+        updateDados(updates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedProject?.slug, allSessions?.length]);
+    }, [selectedProject?.id, allSessions?.length]);
 
     // Skip Step 4 para Triunfo (oferta de palestras não é necessária — todas já incluem pagamento)
     useEffect(() => {

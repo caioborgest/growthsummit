@@ -115,7 +115,7 @@ export function Inscricoes() {
   return (
     <div className="bg-dark min-h-screen">
       {/* Hero */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <section className="relative py-12 sm:py-20 lg:py-28 overflow-hidden pt-[calc(var(--sat)+3rem)]">
         <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-100 to-dark" />
         <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-brand-orange-coral/10 rounded-full blur-3xl" />
 
@@ -124,7 +124,7 @@ export function Inscricoes() {
             <Badge className="mb-6 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-6 py-2">
               INSCRIÇÕES ABERTAS
             </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 uppercase tracking-tight">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white mb-6 uppercase tracking-tight">
               Garanta sua <span className="text-gradient">Vaga</span>
             </h1>
             <p className="text-xl text-gray-400">
@@ -149,7 +149,7 @@ export function Inscricoes() {
       </section>
 
       {/* Edition Cards */}
-      <section className="py-20 lg:py-28">
+      <section className="py-12 sm:py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             {editions.map((edition) => (
@@ -183,8 +183,8 @@ export function Inscricoes() {
                 </div>
 
                 {/* Content */}
-                <div className="p-8 sm:p-10 bg-dark-100/40 backdrop-blur-xl">
-                  <h3 className="text-3xl font-black text-white mb-4 group-hover:text-brand-orange-coral transition-colors uppercase tracking-tight">
+                <div className="p-6 sm:p-10 bg-dark-100/40 backdrop-blur-xl">
+                  <h3 className="text-2xl sm:text-3xl font-black text-white mb-4 group-hover:text-brand-orange-coral transition-colors uppercase tracking-tight">
                     {edition.name}
                   </h3>
                   <p className="text-gray-400 mb-8 leading-relaxed">
@@ -212,7 +212,7 @@ export function Inscricoes() {
                   </ul>
 
                   <Button
-                    className="w-full h-16 rounded-2xl bg-white hover:bg-brand-orange-coral text-dark hover:text-white font-black text-lg transition-all duration-300 group/btn"
+                    className="w-full h-14 sm:h-16 rounded-2xl bg-white hover:bg-brand-orange-coral text-dark hover:text-white font-black text-base sm:text-lg transition-all duration-300 group/btn"
                     onClick={() => handleEditionSelect(edition)}
                     disabled={isLoadingProject === edition.id}
                   >

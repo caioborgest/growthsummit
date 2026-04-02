@@ -30,6 +30,26 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface TicketBatch {
+  id: string;
+  name: string; // Ex: Lote 1, Lote 2
+  price: number;
+  description?: string;
+  active: boolean;
+  maxCapacity?: number;
+  soldCount?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface TicketTier {
+  id: string; // standard, pro, premium, diamanted
+  name: string; // Ex: Standard, Pro, Premium, Diamante
+  description?: string;
+  active: boolean;
+  batches: TicketBatch[];
+}
+
 export interface ProjectSettings {
   maxRegistrations?: number;
   maxMentors?: number;
@@ -43,7 +63,10 @@ export interface ProjectSettings {
     standard: number;
     pro: number;
     vip: number;
+    premium?: number;
+    diamante?: number;
   };
+  ticketTiers?: TicketTier[];
   goalRevenue?: number;
   goalSponsorship?: number;
   goalRegistrations?: number;

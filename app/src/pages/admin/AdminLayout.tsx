@@ -183,7 +183,7 @@ export function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-72 h-screen bg-sidebar border-r border-border-theme flex flex-col transition-all duration-500 shadow-premium ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 w-72 h-screen bg-sidebar border-r border-border-theme flex flex-col transition-all duration-500 shadow-premium pt-[var(--sat)] pb-[var(--sab)] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
       >
         {/* Logo Section */}
@@ -378,9 +378,9 @@ export function AdminLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-background relative transition-colors duration-300">
+      <main className="flex-1 flex flex-col min-w-0 bg-background relative transition-colors duration-300 overflow-hidden">
         {/* Glass Header Refined */}
-        <header className="sticky top-0 z-30 bg-header backdrop-blur-xl border-b border-border-theme px-4 sm:px-8 py-4 sm:py-6">
+        <header className="sticky top-0 z-30 bg-header backdrop-blur-xl border-b border-border-theme px-4 sm:px-8 py-3 sm:py-6 pt-[calc(var(--sat)+0.75rem)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <button

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
@@ -36,6 +36,7 @@ const defaultSettings = {
   enableStartups: true,
   enableCheckIn: true,
   ticketPrices: { standard: 197, pro: 347, vip: 1500 },
+  ticketTiers: [],
   publicContent: {
     heroTitle: 'Growth Experience 2026',
     heroSubtitle: 'O MAIOR EVENTO DE CRECHIMENTO DO NORDESTE',
@@ -393,71 +394,229 @@ export default function AdminProjetos() {
                 </TabsContent>
 
                 <TabsContent value="financeiro" className="space-y-6">
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-[#94A3B8]">Preços dos Ingressos</h4>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>Standard (R$)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.ticketPrices?.standard || 0}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              ticketPrices: { 
-                                standard: parseFloat(e.target.value) || 0,
-                                pro: (formData.settings?.ticketPrices?.pro ?? defaultSettings.ticketPrices.pro) as number,
-                                vip: (formData.settings?.ticketPrices?.vip ?? defaultSettings.ticketPrices.vip) as number
-                              }
-                            }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Pro (R$)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.ticketPrices?.pro || 0}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              ticketPrices: { 
-                                standard: (formData.settings?.ticketPrices?.standard ?? defaultSettings.ticketPrices.standard) as number,
-                                pro: parseFloat(e.target.value) || 0,
-                                vip: (formData.settings?.ticketPrices?.vip ?? defaultSettings.ticketPrices.vip) as number
-                              }
-                            }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>VIP (R$)</Label>
-                        <Input
-                          type="number"
-                          value={formData.settings?.ticketPrices?.vip || 0}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            settings: {
-                              ...defaultSettings,
-                              ...formData.settings,
-                              ticketPrices: { 
-                                standard: (formData.settings?.ticketPrices?.standard ?? defaultSettings.ticketPrices.standard) as number,
-                                pro: (formData.settings?.ticketPrices?.pro ?? defaultSettings.ticketPrices.pro) as number,
-                                vip: parseFloat(e.target.value) || 0
-                              }
-                            }
-                          })}
-                          className="bg-[#0F172A] border-[#334155]"
-                        />
-                      </div>
+                    <div className="space-y-6 pt-6 border-t border-[#334155]">
+                       <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                           <Layers className="h-5 w-5 text-brand-orange-coral" />
+                           <h4 className="text-sm font-bold text-white uppercase tracking-wider">Gestão de Lotes & Categorias</h4>
+                         </div>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+                             const currentTiers = formData.settings?.ticketTiers || [];
+                             const newTier = {
+                               id: `tier_${Date.now()}`,
+                               name: 'Nova Categoria',
+                               active: true,
+                               batches: [{ id: `batch_${Date.now()}`, name: 'Lote 1', price: 0, active: true }]
+                             };
+                             setFormData({
+                               ...formData,
+                               settings: { ...formData.settings!, ticketTiers: [...currentTiers, newTier] }
+                             });
+                           }}
+                           className="bg-white/5 border-white/10 text-xs font-black uppercase"
+                         >
+                           <Plus className="h-3 w-3 mr-2" />
+                           Adicionar Categoria
+                         </Button>
+                       </div>
+
+                       <div className="space-y-4">
+                         {(formData.settings?.ticketTiers || []).map((tier, tIdx) => (
+                           <div key={tier.id} className="p-4 rounded-2xl bg-[#0F172A] border border-white/5 space-y-4 transition-all">
+                             <div className="flex items-center justify-between">
+                               <div className="flex items-center gap-3">
+                                 <div className="p-2 rounded-lg bg-brand-orange-coral/10">
+                                   <Ticket className="h-4 w-4 text-brand-orange-coral" />
+                                 </div>
+                                 <Input
+                                   value={tier.name}
+                                   onChange={(e) => {
+                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                     newTiers[tIdx].name = e.target.value;
+                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                   }}
+                                   className="bg-transparent border-none text-white font-black italic uppercase h-8 w-48 text-sm focus:ring-0"
+                                   placeholder="Nome da Categoria"
+                                 />
+                               </div>
+                               <div className="flex items-center gap-2">
+                                 <Switch
+                                   checked={tier.active}
+                                   onCheckedChange={(val) => {
+                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                     newTiers[tIdx].active = val;
+                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                   }}
+                                 />
+                                 <Button
+                                   variant="ghost"
+                                   size="icon"
+                                   onClick={() => {
+                                     const newTiers = (formData.settings?.ticketTiers || []).filter((_, i) => i !== tIdx);
+                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                   }}
+                                   className="text-red-500 hover:text-red-400 h-8 w-8"
+                                 >
+                                   <Trash2 className="h-4 w-4" />
+                                 </Button>
+                               </div>
+                             </div>
+
+                             <div className="pl-10 space-y-3">
+                               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Lotes da Categoria</p>
+                               <div className="grid grid-cols-1 gap-2">
+                                 {tier.batches.map((batch, bIdx) => (
+                                   <div key={batch.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 group hover:border-brand-orange-coral/30 transition-all">
+                                     <Input
+                                       value={batch.name}
+                                       onChange={(e) => {
+                                         const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                         newTiers[tIdx].batches[bIdx].name = e.target.value;
+                                         setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                       }}
+                                       className="bg-transparent border-none text-white font-bold h-8 w-24 text-sm focus:ring-0"
+                                       placeholder="Lote"
+                                     />
+                                     <div className="flex flex-col gap-1 flex-1">
+                                       <div className="flex items-center gap-2">
+                                         <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded border border-white/5">
+                                            <span className="text-[8px] font-black text-gray-500 uppercase">Qtd</span>
+                                            <Input
+                                              type="number"
+                                              value={batch.maxCapacity || ''}
+                                              onChange={(e) => {
+                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                newTiers[tIdx].batches[bIdx].maxCapacity = parseInt(e.target.value) || undefined;
+                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                              }}
+                                              className="bg-transparent border-none text-white font-bold h-5 w-10 text-[10px] p-0 focus:ring-0 outline-none hover:bg-white/5 transition-colors"
+                                            />
+                                         </div>
+                                         <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded border border-white/5 overflow-hidden">
+                                            <span className="text-[8px] font-black text-gray-500 uppercase">De</span>
+                                            <input
+                                              type="date"
+                                              value={batch.startDate || ''}
+                                              onChange={(e) => {
+                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                newTiers[tIdx].batches[bIdx].startDate = e.target.value;
+                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                              }}
+                                              className="bg-transparent border-none text-white font-bold h-5 text-[10px] p-0 focus:ring-0 outline-none w-20 [color-scheme:dark]"
+                                            />
+                                            <span className="text-[8px] font-black text-gray-500 uppercase ml-1">Até</span>
+                                            <input
+                                              type="date"
+                                              value={batch.endDate || ''}
+                                              onChange={(e) => {
+                                                const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                                newTiers[tIdx].batches[bIdx].endDate = e.target.value;
+                                                setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                              }}
+                                              className="bg-transparent border-none text-white font-bold h-5 text-[10px] p-0 focus:ring-0 outline-none w-20 [color-scheme:dark]"
+                                            />
+                                         </div>
+                                       </div>
+                                     </div>
+                                     <div className="flex items-center gap-2 bg-black/40 px-3 rounded-lg border border-white/5">
+                                       <span className="text-[10px] font-black text-brand-orange-coral">R$</span>
+                                       <Input
+                                         type="number"
+                                         value={batch.price}
+                                         onChange={(e) => {
+                                           const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                           newTiers[tIdx].batches[bIdx].price = parseFloat(e.target.value) || 0;
+                                           setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                         }}
+                                         className="bg-transparent border-none text-white font-black h-8 w-24 text-sm focus:ring-0 text-right"
+                                       />
+                                     </div>
+                                     <div className="flex items-center gap-3 ml-2">
+                                       <div className="flex items-center gap-2">
+                                          <span className={`text-[9px] font-black uppercase tracking-tighter ${batch.active ? 'text-green-500' : 'text-gray-600'}`}>
+                                            {batch.active ? 'Ativo' : 'Inativo'}
+                                          </span>
+                                          <Switch
+                                            checked={batch.active}
+                                            onCheckedChange={(val) => {
+                                              const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                              // Se ativar um, desativa os outros lotes da mesma categoria
+                                              if (val) {
+                                                newTiers[tIdx].batches.forEach((b, i) => b.active = i === bIdx);
+                                              } else {
+                                                newTiers[tIdx].batches[bIdx].active = false;
+                                              }
+                                              setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                            }}
+                                          />
+                                       </div>
+                                       <Button
+                                         variant="ghost"
+                                         size="icon"
+                                         onClick={() => {
+                                           const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                           newTiers[tIdx].batches = newTiers[tIdx].batches.filter((_, i) => i !== bIdx);
+                                           setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                         }}
+                                         className="text-gray-600 hover:text-red-500 h-8 w-8 transition-colors"
+                                       >
+                                         <X className="h-4 w-4" />
+                                       </Button>
+                                     </div>
+                                   </div>
+                                 ))}
+                                 <Button
+                                   variant="ghost"
+                                   onClick={() => {
+                                     const newTiers = [...(formData.settings?.ticketTiers || [])];
+                                     newTiers[tIdx].batches.push({
+                                       id: `batch_${Date.now()}`,
+                                       name: `Lote ${newTiers[tIdx].batches.length + 1}`,
+                                       price: 0,
+                                       active: false
+                                     });
+                                     setFormData({ ...formData, settings: { ...formData.settings!, ticketTiers: newTiers } });
+                                   }}
+                                   className="border border-dashed border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:border-brand-orange-coral/50 h-10 rounded-xl"
+                                 >
+                                   <Plus className="h-3 w-3 mr-2" />
+                                   Novo Lote para {tier.name}
+                                 </Button>
+                               </div>
+                             </div>
+                           </div>
+                         ))}
+                         
+                         {(!formData.settings?.ticketTiers || formData.settings?.ticketTiers.length === 0) && (
+                           <div className="p-10 border-2 border-dashed border-white/5 rounded-3xl text-center">
+                              <Ticket className="h-10 w-10 text-gray-700 mx-auto mb-4 opacity-20" />
+                              <p className="text-sm font-bold text-gray-600 uppercase tracking-widest">Nenhuma precificação avançada configurada</p>
+                              <Button
+                                variant="link"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    settings: {
+                                      ...formData.settings!,
+                                      ticketTiers: [
+                                        { id: 'standard', name: 'Standard', active: true, batches: [{ id: 'std_l1', name: 'Lote 1', price: 197, active: true }] },
+                                        { id: 'pro', name: 'Pro', active: true, batches: [{ id: 'pro_l1', name: 'Lote 1', price: 347, active: true }] },
+                                        { id: 'vip', name: 'VIP', active: true, batches: [{ id: 'vip_l1', name: 'Lote 1', price: 1500, active: true }] }
+                                      ]
+                                    }
+                                  });
+                                }}
+                                className="text-brand-orange-coral text-[10px] font-black uppercase tracking-widest mt-2"
+                              >
+                                Inicializar Categorias Padrão
+                              </Button>
+                           </div>
+                         )}
+                       </div>
                     </div>
-                  </div>
 
                   <div className="border-t border-[#334155] pt-4 space-y-4">
                     <h4 className="text-sm font-medium text-[#94A3B8]">Metas e Limites</h4>

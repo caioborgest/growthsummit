@@ -108,36 +108,36 @@ const StatCard = ({ title, value, target, progress, icon: Icon, trend, trendValu
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group"
+      className="glass-card hover-card p-4 sm:p-6 border-white/5 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden group"
     >
-      <div className={`absolute -right-4 -top-4 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700`}>
-         <Icon className="h-16 w-16 text-white" />
+      <div className={`absolute -right-4 -top-4 p-6 sm:p-8 opacity-5 group-hover:scale-110 transition-transform duration-700`}>
+         <Icon className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
       </div>
       
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <div className={`w-14 h-14 rounded-2xl ${current.bgOpacity} border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
-          <Icon className={`h-7 w-7 ${current.text}`} />
+      <div className="flex items-start justify-between mb-3 sm:mb-4 relative z-10">
+        <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${current.bgOpacity} border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
+          <Icon className={`h-5 w-5 sm:h-7 sm:w-7 ${current.text}`} />
         </div>
         {trend && (
-          <div className={`flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+          <div className={`flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${
             trend === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
           }`}>
-            {trend === 'up' ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
+            {trend === 'up' ? <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" /> : <ArrowDownRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />}
             {trendValue}
           </div>
         )}
       </div>
 
       <div className="relative z-10">
-        <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{title}</h3>
-        <p className="text-4xl font-black text-white mb-6 tracking-tighter tabular-nums italic">{value}</p>
+        <h3 className="text-gray-500 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{title}</h3>
+        <p className="text-2xl sm:text-4xl font-black text-white mb-4 sm:mb-6 tracking-tighter tabular-nums italic">{value}</p>
         
-        <div className="flex items-center justify-between text-[9px] font-black uppercase mb-2 tracking-widest">
-          <span className="text-gray-700">Meta: {target}</span>
+        <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-black uppercase mb-1.5 sm:mb-2 tracking-widest">
+          <span className="text-gray-700 truncate mr-2">Meta: {target}</span>
           <span className={current.text}>{progress}%</span>
         </div>
         
-        <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-white/[0.03] border border-white/5 rounded-full h-1 sm:h-1.5 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(progress, 100)}%` }}
@@ -384,7 +384,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Strategic Actions Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Sorteios', val: `${raffles.filter(r => r.status === 'open').length} ATIVOS`, icon: Gift, color: 'text-brand-orange-coral', bg: 'bg-brand-orange-coral/10', path: '/admin/sorteio' },
           { label: 'Suporte', val: `${tickets.filter(t => t.status === 'open').length} TICKETS`, icon: Headset, color: 'text-teal-400', bg: 'bg-teal-500/10', path: '/admin/suporte' },
@@ -395,11 +395,11 @@ export function AdminDashboard() {
             key={i}
             whileHover={{ y: -4 }}
             onClick={() => item.action === 'export' ? exportLeads() : navigate(item.path!)}
-            className="glass-card hover-card p-5 border-white/5 flex items-center justify-between group cursor-pointer rounded-[1.5rem]"
+            className="glass-card hover-card p-4 sm:p-5 border-white/5 flex items-center justify-between group cursor-pointer rounded-[1.5rem]"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
-                <item.icon className={`h-6 w-6 ${item.color}`} />
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${item.bg} flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform`}>
+                <item.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${item.color}`} />
               </div>
               <div className="text-left">
                 <p className="text-white font-black text-sm italic uppercase leading-none mb-1">{item.label}</p>
@@ -412,7 +412,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title="Inscrições Público"
           value={stats.registrations.value.toLocaleString()}

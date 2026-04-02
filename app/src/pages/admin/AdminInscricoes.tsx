@@ -544,17 +544,17 @@ export default function AdminInscricoes() {
       </div>
 
       <Tabs value={activeListTab} onValueChange={setActiveListTab} className="w-full">
-        <TabsList className="bg-white/5 border border-white/10 p-1 mb-6 rounded-2xl h-14">
-          <TabsTrigger value="participantes" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all">
-            <Users className="w-4 h-4 mr-2" />
-            Participantes ({registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro').length})
+        <TabsList className="bg-white/5 border border-white/10 p-1 mb-6 rounded-2xl h-auto min-h-[3.5rem] flex-wrap justify-start sm:justify-center overflow-x-auto custom-scrollbar">
+          <TabsTrigger value="participantes" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all whitespace-nowrap">
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            PARTICIPANTES ({registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro').length})
           </TabsTrigger>
-          <TabsTrigger value="trabalho" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all">
-            <Handshake className="w-4 h-4 mr-2" />
-            Equipe / Trabalho ({registrations.filter(r => (r as any).indicacaoTipo === 'parceiro' || (r as any).indicacao_tipo === 'parceiro').length})
+          <TabsTrigger value="trabalho" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all whitespace-nowrap">
+            <Handshake className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+            TRABALHO ({registrations.filter(r => (r as any).indicacaoTipo === 'parceiro' || (r as any).indicacao_tipo === 'parceiro').length})
           </TabsTrigger>
-          <TabsTrigger value="all" className="h-full px-8 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all">
-            Todos ({registrations.length})
+          <TabsTrigger value="all" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all whitespace-nowrap">
+            TODOS ({registrations.length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -589,7 +589,7 @@ export default function AdminInscricoes() {
 
       {/* Smart Filters Panel */}
       <div className="glass-card p-4 border-white/5 rounded-[2rem] bg-white/[0.02] flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
+        <div className="relative flex-1 min-w-full sm:min-w-[300px]">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
           <Input
             type="text"

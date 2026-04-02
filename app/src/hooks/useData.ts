@@ -377,6 +377,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     if (s.goalSponsorship !== undefined) result.goal_sponsorship = s.goalSponsorship;
     if (s.goalRegistrations !== undefined) result.goal_registrations = s.goalRegistrations;
     if (s.publicContent !== undefined) result.public_content = s.publicContent;
+    if (s.ticketTiers !== undefined) result.ticket_tiers = s.ticketTiers;
     // Remove the raw settings object — it was expanded above into flat columns
     delete result.settings;
   }
@@ -632,6 +633,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
             goalRevenue: item['goal_revenue'],
             goalSponsorship: item['goal_sponsorship'],
             goalRegistrations: item['goal_registrations'],
+            ticketTiers: item['ticket_tiers'] || [],
             publicContent: item['public_content'] || {},
           };
         }

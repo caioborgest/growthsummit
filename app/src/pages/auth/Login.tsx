@@ -244,7 +244,7 @@ export function Login() {
                       <Input
                         type="email" placeholder="exemplo@email.com" value={email}
                         onChange={e => setEmail(e.target.value)} required
-                        className="pl-11 bg-transparent border-none text-white placeholder:text-gray-600 h-12 focus-visible:ring-0"
+                        className="pl-11 bg-transparent border-none text-white placeholder:text-gray-600 h-12 text-base focus-visible:ring-0"
                       />
                     </div>
                   </div>
@@ -272,7 +272,7 @@ export function Login() {
                         <Input
                           type={showPassword ? 'text' : 'password'} placeholder="••••••"
                           value={password} onChange={e => setPassword(e.target.value)}
-                          className="bg-transparent border-none text-white placeholder:text-gray-600 h-12 focus-visible:ring-0 flex-1"
+                          className="bg-transparent border-none text-white placeholder:text-gray-600 h-12 text-base focus-visible:ring-0 flex-1"
                           required={loginMethod === 'password'}
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="mr-4 text-gray-600 hover:text-white transition-colors">
