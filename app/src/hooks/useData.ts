@@ -778,6 +778,35 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     };
   }, [fetchData]);
 
+  // Habilitar Realtime se solicitado via options (ex: useSessions)
+  useEffect(() => {
+    if (!options?.realtime || !projectId) return;
+
+    const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
+    
+    // logger.debug(`[useData:${entityName}] Ativando Realtime para ${tableName}`);
+    const channel = supabase
+      .channel(`realtime:${entityName}:${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: tableName,
+          filter: `project_id=eq.${projectId}`
+        },
+        () => {
+          // logger.debug(`[useData:${entityName}] Mudança detectada no banco. Atualizando...`);
+          fetchData(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [options?.realtime, entityName, projectId, selectedProject?.slug, fetchData]);
+
   return useMemo(() => ({
     data,
     allData: data,
@@ -986,40 +1015,7 @@ export function useProfile(userId?: string) {
     fetchData();
   }, [fetchData]);
 
-  // Habilitar Realtime se solicitado
-  useEffect(() => {
-    if (!options?.realtime || !projectId) return;
-
-    const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
-    
-    const channel = supabase
-      .channel(`realtime:${entityName}:${projectId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: tableName,
-          filter: `project_id=eq.${projectId}`
-        },
-        () => {
-          // logger.debug(`[useData:${entityName}] Mudança detectada no banco. Atualizando...`);
-          fetchData(true);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [options?.realtime, entityName, projectId, selectedProject?.slug, fetchData]);
-
-  return useMemo(() => ({
-    data,
-    isLoading,
-    update,
-    refetch: fetchData
-  }), [data, isLoading, update, fetchData]);
+  return { data, isLoading, update, refetch: fetchData };
 }
 
 export function useEmpresasIncentivadoras() {
