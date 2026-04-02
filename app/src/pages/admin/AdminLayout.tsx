@@ -414,7 +414,15 @@ export function AdminLayout() {
                   asChild
                   className="rounded-xl px-4 text-xs font-bold text-gray-400 hover:text-white transition-all h-9"
                 >
-                  <Link to="/">
+                  <Link 
+                    to={
+                      selectedProject?.slug?.toLowerCase().includes('petrolina') ? '/petrolina' :
+                      selectedProject?.slug?.toLowerCase().includes('triunfo') ? '/triunfo' :
+                      selectedProject?.slug ? `/evento/${selectedProject.slug}` : '/'
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Rocket className="h-3.5 w-3.5 mr-2" />
                     Site Público
                   </Link>
@@ -423,10 +431,13 @@ export function AdminLayout() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  asChild
                   className="rounded-xl px-4 text-xs font-bold text-gray-400 hover:text-white transition-all h-9"
                 >
-                  <MessageCircle className="h-3.5 w-3.5 mr-2" />
-                  Suporte
+                  <Link to="/admin/suporte">
+                    <MessageCircle className="h-3.5 w-3.5 mr-2" />
+                    Suporte
+                  </Link>
                 </Button>
               </div>
 
