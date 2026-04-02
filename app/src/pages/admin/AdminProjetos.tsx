@@ -247,12 +247,13 @@ export default function AdminProjetos() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="bg-[#0F172A] border-[#334155] mb-4 flex flex-wrap h-auto p-1">
-                  <TabsTrigger value="geral">Geral</TabsTrigger>
-                  <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
-                  <TabsTrigger value="modulos">Módulos</TabsTrigger>
-                  <TabsTrigger value="conteudo">Conteúdo</TabsTrigger>
-                  <TabsTrigger value="integracao">Integração</TabsTrigger>
+
+                <TabsList className="bg-[#0F172A] border border-white/5 mb-8 flex flex-wrap h-auto p-1.5 rounded-[1.5rem] gap-1">
+                  <TabsTrigger value="geral" className="flex-1 rounded-[1.2rem] py-3 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white data-[state=active]:shadow-glow-orange transition-all duration-500">Geral</TabsTrigger>
+                  <TabsTrigger value="financeiro" className="flex-1 rounded-[1.2rem] py-3 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white data-[state=active]:shadow-glow-orange transition-all duration-500">Financeiro</TabsTrigger>
+                  <TabsTrigger value="modulos" className="flex-1 rounded-[1.2rem] py-3 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white data-[state=active]:shadow-glow-orange transition-all duration-500">Módulos</TabsTrigger>
+                  <TabsTrigger value="conteudo" className="flex-1 rounded-[1.2rem] py-3 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white data-[state=active]:shadow-glow-orange transition-all duration-500">Conteúdo</TabsTrigger>
+                  <TabsTrigger value="integracao" className="flex-1 rounded-[1.2rem] py-3 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white data-[state=active]:shadow-glow-orange transition-all duration-500">Integração</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -306,43 +307,42 @@ export default function AdminProjetos() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                        <MapPin className="h-4 w-4 text-teal-400" />
+
+                  <div className="space-y-6 pt-8 border-t border-white/5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                        <MapPin className="h-6 w-6 text-brand-orange-coral" />
                       </div>
-                      <div>
-                        <h4 className="text-sm font-black text-white uppercase tracking-widest italic">Localização Estratégica</h4>
-                      </div>
+                      <h4 className="text-xl font-black text-white italic uppercase tracking-tighter">Localização <span className="text-brand-orange-coral">Estratégica</span></h4>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
-                      <div className="space-y-2 md:col-span-1">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Nome do Local</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-10 bg-black/40 border border-white/5 rounded-[3rem]">
+                      <div className="space-y-3 md:col-span-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-1">Nome do Local</Label>
                         <Input
                           value={formData.location || ''}
                           onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                          placeholder="Ex: Polo Automotivo"
-                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold"
+                          placeholder="EX: ESPAÇO PARQ"
+                          className="bg-black/60 border-white/5 rounded-[1.5rem] h-16 text-white font-black italic text-lg px-6 focus:border-brand-orange-coral/50 transition-all uppercase placeholder:opacity-10"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Cidade</Label>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-1">Cidade</Label>
                         <Input
                           value={formData.city || ''}
                           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          placeholder="Cidade"
-                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold"
+                          placeholder="CIDADE"
+                          className="bg-black/60 border-white/5 rounded-[1.5rem] h-16 text-white font-black italic text-lg px-6 focus:border-brand-orange-coral/50 transition-all uppercase placeholder:opacity-10"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-500">UF</Label>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#475569] ml-1">UF</Label>
                         <Input
                           value={formData.state || ''}
                           onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                           placeholder="PE"
                           maxLength={2}
-                          className="bg-black/40 border-white/10 rounded-2xl h-10 text-white font-bold uppercase text-center"
+                          className="bg-black/60 border-white/5 rounded-[1.5rem] h-16 text-white font-black italic text-lg px-6 focus:border-brand-orange-coral/50 transition-all uppercase text-center placeholder:opacity-10"
                         />
                       </div>
                     </div>
@@ -417,15 +417,16 @@ export default function AdminProjetos() {
                 </TabsContent>
                               <TabsContent value="financeiro" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <div className="space-y-8 pt-6 border-t border-white/5">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 p-6 rounded-[2rem] border border-white/10">
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 p-10 rounded-[2.5rem] border border-white/10">
                             <div>
-                                <div className="flex items-center gap-3 mb-1">
-                                    <div className="p-2 rounded-xl bg-brand-orange-coral/10">
-                                        <Layers className="h-6 w-6 text-brand-orange-coral animate-pulse" />
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 rounded-2xl bg-brand-orange-coral/10 border border-brand-orange-coral/20">
+                                        <Layers className="h-8 w-8 text-brand-orange-coral animate-pulse" />
                                     </div>
-                                    <h4 className="text-xl font-black text-white italic uppercase tracking-tighter">Gestão de Lotes & Categorias</h4>
+                                    <h4 className="text-3xl font-black text-white italic uppercase tracking-tighter">Gestão de <span className="text-brand-orange-coral">Lotes & Categorias</span></h4>
                                 </div>
-                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-11">Configuração de Precificação Dinâmica</p>
+                                <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.25em] ml-16">Configuração de Precificação Dinâmica</p>
                             </div>
                             <Button
                                 onClick={() => {
@@ -441,10 +442,10 @@ export default function AdminProjetos() {
                                         settings: { ...formData.settings!, ticketTiers: [...currentTiers, newTier] }
                                     });
                                 }}
-                                className="btn-premium flex items-center justify-center gap-2 group"
+                                className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white shadow-glow-orange h-14 px-8 rounded-2xl flex items-center justify-center gap-2 group transition-all"
                             >
-                                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-                                <span className="uppercase text-[10px] tracking-widest font-black">Adicionar Categoria</span>
+                                <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />
+                                <span className="uppercase text-[11px] tracking-widest font-black">Adicionar Categoria</span>
                             </Button>
                         </div>
 
@@ -700,25 +701,26 @@ export default function AdminProjetos() {
                             )}
                         </div>
 
+
                         {/* Metas e Limites Header */}
-                        <div className="flex items-center gap-3 pt-4">
-                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                                <Diamond className="h-5 w-5 text-teal-400" />
+                        <div className="flex items-center gap-4 pt-8">
+                            <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                                <Diamond className="h-6 w-6 text-brand-orange-coral" />
                             </div>
                             <div>
-                                <h4 className="text-lg font-black text-white italic uppercase tracking-tighter leading-none">Metas & Planejamento</h4>
-                                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-1">Estimativas Técnicas do Projeto</p>
+                                <h4 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none">Metas & <span className="text-brand-orange-coral">Planejamento</span></h4>
+                                <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest mt-1">Estimativas Técnicas do Projeto</p>
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem]">
+ 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-8 bg-black/40 border border-white/5 rounded-[3rem]">
                             {[
                                 { 
                                     label: 'Meta de Público', 
                                     value: formData.settings?.goalRegistrations, 
                                     key: 'goalRegistrations', 
                                     icon: Users, 
-                                    suffix: 'pax' 
+                                    suffix: 'PAX' 
                                 },
                                 { 
                                     label: 'Meta Financeira', 
@@ -739,16 +741,15 @@ export default function AdminProjetos() {
                                     value: formData.settings?.maxRegistrations, 
                                     key: 'maxRegistrations', 
                                     icon: ShieldCheck, 
-                                    suffix: 'lugares' 
+                                    suffix: 'LUGARES' 
                                 },
                             ].map((field) => (
-                                <div key={field.key} className="space-y-2 p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-teal-500/30 transition-all duration-300">
-                                    <div className="flex items-center gap-2 opacity-50">
-                                        <field.icon className="h-3 w-3 text-teal-400" />
-                                        <Label className="text-[9px] font-black uppercase tracking-widest">{field.label}</Label>
+                                <div key={field.key} className="space-y-6 p-8 rounded-[2rem] bg-black/60 border border-white/5 hover:border-brand-orange-coral/30 transition-all duration-500 group">
+                                    <div className="flex flex-col gap-1">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#475569]">{field.label}</Label>
                                     </div>
-                                    <div className="relative flex items-center">
-                                        {field.prefix && <span className="absolute left-0 text-xs font-black text-teal-500/50">{field.prefix}</span>}
+                                    <div className="relative flex items-end gap-2">
+                                        {field.prefix && <span className="text-lg font-black text-brand-orange-coral italic leading-none mb-1">{field.prefix}</span>}
                                         <Input
                                             type="number"
                                             value={field.value || ''}
@@ -756,10 +757,10 @@ export default function AdminProjetos() {
                                                 ...formData,
                                                 settings: { ...formData.settings!, [field.key]: parseInt(e.target.value) || 0 }
                                             })}
-                                            className={`bg-transparent border-none text-white font-black h-8 w-full text-lg focus:ring-0 p-0 ${field.prefix ? 'pl-7' : ''}`}
+                                            className="bg-transparent border-none text-white font-black h-auto w-full text-4xl p-0 focus:ring-0 italic tabular-nums"
                                             placeholder="0"
                                         />
-                                        {field.suffix && <span className="text-[8px] font-black text-gray-700 uppercase ml-1 shrink-0">{field.suffix}</span>}
+                                        {field.suffix && <span className="text-[10px] font-black text-gray-800 uppercase mb-2 ml-1">{field.suffix}</span>}
                                     </div>
                                 </div>
                             ))}
@@ -1008,49 +1009,53 @@ export default function AdminProjetos() {
                 </TabsContent>
 
 
+
                 <TabsContent value="integracao" className="space-y-8 pt-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                  <div className="p-8 bg-black/40 border border-white/5 rounded-[2rem] space-y-6">
+                  <div className="p-10 bg-black/40 border border-white/5 rounded-[3rem] space-y-8">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                        <ShieldCheck className="h-6 w-6 text-teal-400" />
+                      <div className="w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                        <ShieldCheck className="h-8 w-8 text-brand-orange-coral" />
                       </div>
                       <div>
-                        <h4 className="text-lg font-black text-white italic uppercase tracking-tighter">Widget de Inscrição Oficial</h4>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Incorpore em WordPress, Webflow ou Landing Pages</p>
+                        <h4 className="text-2xl font-black text-white italic uppercase tracking-tighter">Widget de <span className="text-brand-orange-coral">Inscrição Oficial</span></h4>
+                        <p className="text-[10px] text-gray-700 font-bold uppercase tracking-widest mt-1">Incorpore em WordPress, Webflow ou Landing Pages</p>
                       </div>
                     </div>
-
+ 
                     <div className="relative group">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
-                      <div className="relative bg-black/60 rounded-2xl border border-white/10 overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5">
-                          <div className="flex gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-orange-600 rounded-[2rem] blur opacity-5 group-hover:opacity-10 transition duration-1000"></div>
+                      <div className="relative bg-black/60 rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
+                        <div className="flex items-center justify-between px-6 py-4 bg-white/5 border-b border-white/5">
+                          <div className="flex gap-2">
+                            <div className="w-3 h-3 rounded-full bg-[#FF5F56] shadow-lg shadow-red-500/20"></div>
+                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shadow-lg shadow-yellow-500/20"></div>
+                            <div className="w-3 h-3 rounded-full bg-[#27C93F] shadow-lg shadow-green-500/20"></div>
                           </div>
-                          <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">iframe-snippet.html</span>
+                          <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest italic opacity-50">IFRAME-SNIPPET.HTML</span>
                         </div>
-                        <pre className="p-6 text-[10px] sm:text-xs font-mono text-teal-400/80 overflow-x-auto leading-relaxed">
-                          {`<iframe\n  src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true"\n  width="100%"\n  height="800px"\n  frameborder="0"\n></iframe>`}
-                        </pre>
+                        <div className="p-8">
+                            <pre className="text-[11px] sm:text-xs font-mono text-brand-orange-coral/70 overflow-x-auto leading-relaxed">
+                                {`<iframe\n  src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true"\n  width="100%"\n  height="800px"\n  frameborder="0"\n></iframe>`}
+                            </pre>
+                        </div>
                         <Button 
-                          size="sm" 
-                          className="absolute bottom-4 right-4 bg-teal-500/20 hover:bg-teal-500 hover:text-white text-teal-400 border border-teal-500/30 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest"
+                          className="absolute bottom-6 right-6 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white shadow-glow-orange h-14 px-8 rounded-2xl transition-all font-black uppercase text-[11px] tracking-widest border-none"
                           onClick={() => {
                             const code = `<iframe src="${window.location.origin}/evento/${formData.slug || 'SEU-EVENTO'}?embed=true" width="100%" height="800px" frameborder="0"></iframe>`;
                             navigator.clipboard.writeText(code);
                             toast.success('Snippet copiado com sucesso!');
                           }}
                         >
-                          <Plus className="w-3 h-3 mr-2 rotate-45" /> Copiar Código
+                          <Plus className="w-4 h-4 mr-2 rotate-45" /> COPIAR CÓDIGO
                         </Button>
                       </div>
                     </div>
-
-                    <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5 flex gap-3 items-start">
-                      <Info className="h-4 w-4 text-gray-500 mt-0.5" />
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide leading-relaxed">
+ 
+                    <div className="bg-[#1E293B]/40 p-6 rounded-[1.5rem] border border-white/5 flex gap-4 items-start">
+                      <div className="p-2 rounded-lg bg-gray-500/10">
+                        <Info className="h-4 w-4 text-gray-500" />
+                      </div>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wide leading-relaxed">
                         IMPORTANTE: Garanta que o domínio onde o iframe será inserido esteja configurado corretamente para evitar bloqueios de CORS (Cross-Origin Resource Sharing).
                       </p>
                     </div>
@@ -1058,16 +1063,21 @@ export default function AdminProjetos() {
                 </TabsContent>
               </Tabs>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-[#334155] text-[#94A3B8]">
+
+              <div className="flex justify-end gap-3 pt-8 mt-6 border-t border-white/5">
+                <Button 
+                    variant="ghost" 
+                    onClick={() => setIsDialogOpen(false)} 
+                    className="h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#475569] hover:text-white hover:bg-white/5 transition-all"
+                >
                   Cancelar
                 </Button>
                 <Button
                   onClick={editingProject ? handleUpdate : handleCreate}
                   disabled={isLoading}
-                  className="bg-gradient-to-r from-[#21808D] to-[#2A9D8F] hover:from-[#1a6a73] hover:to-[#21808D]"
+                  className="h-14 px-10 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white shadow-glow-teal transition-all font-black uppercase text-[11px] tracking-widest border-none"
                 >
-                  {isLoading ? 'Salvando...' : editingProject ? 'Atualizar' : 'Criar Projeto'}
+                  {isLoading ? 'SALVANDO...' : editingProject ? 'Atualizar' : 'Criar Projeto'}
                 </Button>
               </div>
             </div>

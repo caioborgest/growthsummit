@@ -354,6 +354,7 @@ export interface Transaction {
   amount: number;
   date: string;
   status: 'pending' | 'completed' | 'cancelled';
+  reference_person?: string;
   relatedId?: string;
   relatedType?: string;
   createdAt: string;
