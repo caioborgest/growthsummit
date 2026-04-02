@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { useProject } from '@/contexts/ProjectContext';
@@ -102,6 +103,7 @@ export function Inscricoes() {
       });
 
       if (project) {
+        logger.debug(`[Inscricoes] Iniciando modal para: ${project.name} (DB ID: ${project.id})`);
         setSelectedProject(project);
         setModalInscricaoAberto(true);
       }

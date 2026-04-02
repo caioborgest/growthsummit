@@ -95,27 +95,27 @@ export default function AdminCupons() {
         try {
             if (editingCoupon) {
                 await update(editingCoupon.id, {
-                    codigo: (formData.codigo || '').toUpperCase(),
+                    codigo: (formData.codigo || '').toUpperCase().trim(),
                     indicacaoTipo: formData.indicacaoTipo,
                     indicacaoNome: formData.indicacaoNome,
                     porcentagemDesconto: Number(formData.porcentagemDesconto),
                     usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
                     descricao: formData.descricao,
-                    vencimento: formData.vencimento || undefined,
+                    vencimento: formData.vencimento ? `${formData.vencimento}T23:59:59Z` : undefined,
                     ativo: formData.ativo,
                 });
                 toast.success('Cupom atualizado com sucesso!');
             } else {
                 await create({
                     projectId: projectId || '',
-                    codigo: (formData.codigo || '').toUpperCase(),
+                    codigo: (formData.codigo || '').toUpperCase().trim(),
                     indicacaoTipo: formData.indicacaoTipo,
                     indicacaoNome: formData.indicacaoNome,
                     porcentagemDesconto: Number(formData.porcentagemDesconto),
                     usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
                     usoAtual: 0,
                     descricao: formData.descricao,
-                    vencimento: formData.vencimento || undefined,
+                    vencimento: formData.vencimento ? `${formData.vencimento}T23:59:59Z` : undefined,
                     ativo: formData.ativo,
                 });
                 toast.success('Novo cupom gerado com sucesso!');
@@ -345,7 +345,7 @@ export default function AdminCupons() {
                                                 <Calendar className="h-3.5 w-3.5" />
                                                 {(() => {
                                                     const d = new Date(coupon.vencimento);
-                                                    return isNaN(d.getTime()) ? 'Data inválida' : d.toLocaleDateString('pt-BR');
+                                                    return isNaN(d.getTime()) ? 'Data inválida' : d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                                                 })()}
                                             </div>
                                         ) : (

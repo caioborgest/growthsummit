@@ -86,17 +86,23 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
 
     const validarCodigo = async () => {
         if (!codigo.trim()) return;
+        const cleanCodigo = codigo.trim().toUpperCase();
         setValidating(true);
         setErrors(prev => ({ ...prev, codigo: '' }));
+        
+        logger.debug(`[Step2] Validando código: ${cleanCodigo} para projeto: ${projectId} (Tipo: ${indicacaoTipo})`);
+        
         try {
             if (indicacaoTipo === 'empresa') {
                 const { data, error } = await supabase
                     .from('lotes_inscricao_empresa')
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                     .eq('project_id', projectId)
-                    .eq('voucher_code', codigo.trim().toUpperCase())
+                    .eq('voucher_code', cleanCodigo)
                     .single() as any;
+                
                 if (error || !data) {
+                    logger.warn(`[Step2] Voucher corporativo não encontrado: ${cleanCodigo}`, error);
                     setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
                 } else if (data.status_pagamento !== 'pago') {
                     setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento' }));
@@ -115,17 +121,26 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .from('cupons_parceria_social') as any)
                     .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
                     .eq('project_id', projectId)
-                    .eq('codigo', codigo.trim().toUpperCase())
+                    .eq('codigo', cleanCodigo)
                     .eq('ativo', true)
                     .single();
+                
                 if (error || !data) {
+                    logger.warn(`[Step2] Cupom não encontrado: ${cleanCodigo} no projeto ${projectId}`, error);
                     setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
                 } else {
                     const couponData = data;
                     const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
+                    
+                    // Verificação de expiração robusta
+                    const now = new Date();
+                    const expiry = couponData.vencimento ? new Date(couponData.vencimento) : null;
+                    const isExpired = expiry ? expiry < now : false;
+
                     if (!isCompatible) {
                         setErrors(prev => ({ ...prev, codigo: `Este código pertence à outra categoria. Selecione a correta acima.` }));
-                    } else if (couponData.vencimento && new Date(couponData.vencimento) < new Date()) {
+                    } else if (isExpired) {
+                        logger.warn(`[Step2] Cupom expirado: ${cleanCodigo} (Vencimento: ${couponData.vencimento})`);
                         setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
                     } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
                         setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));

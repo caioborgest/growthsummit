@@ -71,13 +71,13 @@ export const registrationService = {
             const { data, error } = await (supabase.rpc as any)(
                 'register_participant_with_slots',
                 {
-                    p_project_id: params.projectId,
-                    p_user_id: params.userId,
+                    p_project_id: params.projectId && params.projectId.length === 36 ? params.projectId : null,
+                    p_user_id: params.userId && params.userId.length === 36 ? params.userId : null,
                     p_nome: params.nome,
                     p_email: params.email,
                     p_telefone: params.telefone,
                     p_cpf: params.cpf,
-                    p_session_ids: params.sessionIds,
+                    p_session_ids: params.sessionIds || [],
                     p_tipo_inscricao: params.tipoInscricao || 'standard',
                     p_valor_pago: params.valorPago || 0,
                     p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
@@ -93,7 +93,7 @@ export const registrationService = {
                     p_codigo_social: params.codigoSocial,
                     p_codigo_palestra: params.codigoPalestra,
                     p_extra_data: params.extraData || {},
-                    p_lote_id: params.loteId || null,
+                    p_lote_id: params.loteId && params.loteId.length === 36 ? params.loteId : null,
                     p_voucher_empresa: params.voucherEmpresa || null,
                 }
             );

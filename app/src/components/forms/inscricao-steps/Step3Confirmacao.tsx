@@ -102,7 +102,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((id: any) => id && id.length === 36); // apenas UUIDs válidos
 
-            const rpcResult = await registrationService.registerWithSlots({
+            const registrationParams = {
                 projectId: projectId || '',
                 userId: userId || '',
                 nome: dados.nome,
@@ -126,7 +126,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 codigoPalestra: dados.cupomPalestra || null,
                 loteId: dados.loteId,
                 voucherEmpresa: dados.voucherEmpresa,
-            });
+            };
+
+            logger.debug('[Step3Confirmacao] Enviando payload de inscrição:', registrationParams);
+
+            const rpcResult = await registrationService.registerWithSlots(registrationParams);
 
             // Verificar retorno da RPC
             if (!rpcResult?.success) {
