@@ -6,20 +6,9 @@ import { ProjectProvider } from '@/contexts/ProjectContext';
 import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import './index.css';
-import { registerSW } from 'virtual:pwa-register';
 import { safeStorage } from '@/utils/safeStorage';
+// PWA registration is now handled by PWAProvider in App.tsx
 
-// PWA Registration
-registerSW({
-  onNeedRefresh() {
-    if (confirm('Nova versão disponível! Deseja atualizar agora?')) {
-      window.location.reload();
-    }
-  },
-  onOfflineReady() {
-    // logger.info('App pronto para uso offline');
-  },
-});
 
 // Valida configurações
 import { validateConfig } from '@/lib/config';

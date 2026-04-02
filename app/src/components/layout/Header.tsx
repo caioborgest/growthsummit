@@ -101,7 +101,7 @@ export function Header() {
             className="flex items-center group transition-transform duration-300 hover:scale-105"
           >
             <img
-              src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png"
+              src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.jpg"
               alt="Growth Experience"
               className="h-8 sm:h-11 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
             />

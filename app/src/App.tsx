@@ -115,6 +115,8 @@ const GuiaInterno = lazyWithRetry(() => import('./components/app/GuiaInterno'), 
 const PWAInstallPrompt = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'PWAInstallPrompt');
 const IOSInstallBadge = lazyWithRetry(() => import('./components/PWAInstallPrompt'), 'IOSInstallBadge');
 const PopupManager = lazyWithRetry(() => import('./components/marketing/PopupManager'), 'PopupManager');
+import { PWAProvider } from './contexts/PWAContext';
+
 
 // ── Legal Pages (Shared Component Stub)
 function LegalPage({ title }: { title: string }) {
@@ -406,50 +408,23 @@ function AppRoutes() {
 }
 
 function App() {
-  useEffect(() => {
-    // Sistema de Atualização Forçada (Cache Buster)
-    // Se a versão do app mudar, força um recarregamento para limpar caches antigos do Service Worker
-    const APP_VERSION = '1.2.1';
-    const lastVersion = localStorage.getItem('ge_app_version');
-
-    if (lastVersion && lastVersion !== APP_VERSION) {
-      console.info(`[PWA] Atualizando da versão ${lastVersion} para ${APP_VERSION}...`);
-      localStorage.setItem('ge_app_version', APP_VERSION);
-      // Aguarda o SW registrar a nova versão e recarrega
-      setTimeout(() => window.location.reload(), 500);
-    } else if (!lastVersion) {
-      localStorage.setItem('ge_app_version', APP_VERSION);
-    }
-
-    // Interceptador de erros do Zod para facilitar o diagnóstico de campos obrigatórios vazios
-    const originalError = console.error;
-    console.error = (...args) => {
-      const errorMsg = args.join(' ');
-      if (errorMsg.includes('ZodError') || errorMsg.includes('String must contain at least 1 character(s)')) {
-        console.group('🔍 GROWTH PLATFORM - DETECTOR DE ERRO DE VALIDAÇÃO');
-        console.warn('Campo(s) com erro:', errorMsg);
-        console.info('DICA: Procure por campos marcados como .min(1) que estão recebendo strings vazias.');
-        console.debug('Rastro do Erro (Stack Trace):');
-        console.groupEnd();
-      }
-      originalError.apply(console, args as any);
-    };
-  }, []);
-
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Suspense fallback={null}>
-          <IOSInstallBadge />
-        </Suspense>
-        <AppRoutes />
-        <Suspense fallback={null}>
-          <PWAInstallPrompt />
-          <PopupManager />
-        </Suspense>
-      </BrowserRouter>
+      <PWAProvider>
+        <BrowserRouter>
+          <Suspense fallback={null}>
+            <IOSInstallBadge />
+          </Suspense>
+          <AppRoutes />
+          <Suspense fallback={null}>
+            <PWAInstallPrompt />
+            <PopupManager />
+          </Suspense>
+        </BrowserRouter>
+      </PWAProvider>
     </ErrorBoundary>
   );
 }
+
 
 export default App;
