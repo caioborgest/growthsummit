@@ -10,7 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers, Users, CircleDollarSign, Info } from 'lucide-react';
+
+import { 
+  X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, 
+  Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers, Users, CircleDollarSign, Info,
+  Check, Rocket, Target, Zap
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
@@ -226,19 +232,34 @@ export default function AdminProjetos() {
   const activeProjects = projects.filter(p => p.status === 'active');
   const draftProjects = projects.filter(p => p.status === 'draft');
   const completedProjects = projects.filter(p => p.status === 'completed' || p.status === 'cancelled');
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Projetos</h1>
-          <p className="text-[#94A3B8] mt-1">Gerencie todos os eventos e edições</p>
+    <div className="space-y-12 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-[10px] font-black text-brand-orange-coral uppercase tracking-[0.3em]">Ambiente de Gestão</span>
+            <div className="h-[1px] w-12 bg-brand-orange-coral/30"></div>
+          </div>
+
+          <h1 className="text-6xl font-black text-white italic uppercase tracking-tighter leading-none group-hover:translate-x-2 transition-transform duration-500 cursor-default">
+            Gestão de <span className="text-teal-400 group-hover:text-white transition-colors">Projetos</span>
+          </h1>
+          <div className="flex items-center gap-4 pt-2">
+            <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Growth Experience V3.0
+            </div>
+            <p className="text-[11px] text-[#475569] font-bold uppercase tracking-widest">Controle estratégico de eventos e edições</p>
+          </div>
         </div>
+        
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openCreateDialog} className="bg-gradient-to-r from-[#21808D] to-[#2A9D8F] hover:from-[#1a6a73] hover:to-[#21808D]">
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Projeto
+            <Button 
+                onClick={openCreateDialog} 
+                className="h-16 px-10 rounded-2xl bg-teal-500 hover:bg-teal-400 text-white shadow-glow-teal transition-all font-black uppercase text-[11px] tracking-widest border-none group"
+            >
+              <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform duration-500" />
+              Lançar Novo Projeto
             </Button>
           </DialogTrigger>
 
@@ -1104,122 +1125,184 @@ export default function AdminProjetos() {
         </Dialog>
       </div>
 
+
       {selectedProject && (
-        <Card className="bg-gradient-to-r from-[#21808D]/20 to-[#2A9D8F]/20 border-[#21808D]">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#21808D] to-[#2A9D8F] flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-white" />
+        <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="group relative"
+        >
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-teal-800 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+            <Card className="relative bg-[#0F172A]/80 backdrop-blur-xl border-white/5 rounded-[2.5rem] overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
+                    <Layers className="h-32 w-32 text-teal-500" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Projeto Selecionado</h3>
-                  <p className="text-[#94A3B8]">{selectedProject.name}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Badge className={projectStatusLabels[selectedProject.status].color}>
-                  {projectStatusLabels[selectedProject.status].label}
-                </Badge>
-                <Button variant="outline" size="sm" onClick={() => setSelectedProject(null)} className="border-[#334155]">
-                  Trocar Projeto
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <CardContent className="p-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 shadow-glow-teal/10">
+                                <CheckCircle2 className="w-8 h-8 text-teal-400" />
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-3">
+                                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Projeto <span className="text-teal-400">Selecionado</span></h3>
+                                    <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        ATIVO
+                                    </Badge>
+                                </div>
+                                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em]">{selectedProject.name}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button 
+                                variant="ghost" 
+                                onClick={() => setSelectedProject(null)} 
+                                className="h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#475569] hover:text-white hover:bg-white/5 transition-all border border-white/5"
+                            >
+                                <X className="w-4 h-4 mr-2" /> Trocar Projeto
+                            </Button>
+                            <Button 
+                                onClick={() => openEditDialog(selectedProject)}
+                                className="h-14 px-8 rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all font-black uppercase text-[11px] tracking-widest"
+                            >
+                                <Edit className="w-4 h-4 mr-2" /> Editar Setup
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </motion.div>
       )}
 
+
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="bg-[#1E293B] border border-[#334155]">
-          <TabsTrigger value="active" className="data-[state=active]:bg-[#21808D]">
+        <TabsList className="bg-[#0F172A] border border-white/5 p-1.5 h-auto rounded-[1.5rem] mb-10 w-fit">
+          <TabsTrigger value="active" className="rounded-[1.2rem] py-3 px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all duration-500">
             Ativos ({activeProjects.length})
           </TabsTrigger>
-          <TabsTrigger value="draft" className="data-[state=active]:bg-[#21808D]">
+          <TabsTrigger value="draft" className="rounded-[1.2rem] py-3 px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all duration-500">
             Rascunhos ({draftProjects.length})
           </TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:bg-[#21808D]">
+          <TabsTrigger value="completed" className="rounded-[1.2rem] py-3 px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all duration-500">
             Concluídos ({completedProjects.length})
           </TabsTrigger>
-          <TabsTrigger value="all" className="data-[state=active]:bg-[#21808D]">
+          <TabsTrigger value="all" className="rounded-[1.2rem] py-3 px-6 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all duration-500">
             Todos ({projects.length})
           </TabsTrigger>
         </TabsList>
 
         {['active', 'draft', 'completed', 'all'].map((tab) => (
           <TabsContent key={tab} value={tab} className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(tab === 'all' ? projects : tab === 'active' ? activeProjects : tab === 'draft' ? draftProjects : completedProjects).map((project) => {
-                const StatusIcon = projectStatusLabels[project.status].icon;
-                return (
-                  <Card key={project.id} className={`bg-[#1E293B] border-[#334155] hover:border-[#21808D] transition-all ${selectedProject?.id === project.id ? 'ring-2 ring-[#21808D]' : ''}`}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <Badge variant="outline" className="mb-2 border-[#21808D] text-[#21808D]">
-                            {projectTypeLabels[project.type]}
-                          </Badge>
-                          <CardTitle className="text-lg text-white">{project.name}</CardTitle>
-                        </div>
-                        <StatusIcon className={`w-5 h-5 ${projectStatusLabels[project.status].color.replace('bg-', 'text-')}`} />
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-[#94A3B8] line-clamp-2">{project.description}</p>
 
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-[#94A3B8]">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(project.startDate)} - {formatDate(project.endDate)}</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {(tab === 'all' ? projects : tab === 'active' ? activeProjects : tab === 'draft' ? draftProjects : completedProjects).map((project) => (
+                    <motion.div
+                        key={project.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{ y: -5 }}
+                        className="group relative"
+                    >
+                      {selectedProject?.id === project.id && (
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-[#2A9D8F] rounded-[2.5rem] blur opacity-60 animate-pulse"></div>
+                      )}
+                      
+                      <Card className={`relative bg-[#0F172A]/60 backdrop-blur-xl border-white/5 rounded-[2.5rem] overflow-hidden transition-all duration-500 h-full flex flex-col ${selectedProject?.id === project.id ? 'border-teal-500/50 shadow-2xl shadow-teal-500/10' : 'hover:border-white/10'}`}>
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity duration-500">
+                          <Ticket className="h-24 w-24 text-white" />
                         </div>
-                        <div className="flex items-center gap-2 text-[#94A3B8]">
-                          <MapPin className="w-4 h-4" />
-                          <span>{project.city}, {project.state}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[#94A3B8]">
-                          <SettingsIcon className="w-4 h-4" />
-                          <span>
-                            {[
-                              project.settings?.enableMentoring && 'Mentorias',
-                              project.settings?.enableB2B && 'B2B',
-                              project.settings?.enableStartups && 'Startups',
-                            ].filter(Boolean).join(', ')}
-                          </span>
-                        </div>
-                      </div>
 
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={`flex-1 ${selectedProject?.id === project.id ? 'bg-[#21808D] text-white border-[#21808D]' : 'border-[#334155] text-[#94A3B8]'}`}
-                          onClick={() => selectProject(project)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          {selectedProject?.id === project.id ? 'Selecionado' : 'Selecionar'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-[#334155] text-[#94A3B8]"
-                          onClick={() => openEditDialog(project)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-[#334155] text-red-400 hover:text-red-300"
-                          onClick={() => handleDelete(project.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        <CardHeader className="p-8 pb-4">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-3">
+                              <Badge variant="outline" className="border-teal-500/30 text-teal-400 bg-teal-500/5 font-black uppercase text-[8px] tracking-[0.2em] px-3 py-1 rounded-full">
+                                {projectTypeLabels[project.type]}
+                              </Badge>
+                              <CardTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none group-hover:text-teal-400 transition-colors">
+                                {project.name}
+                              </CardTitle>
+                            </div>
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors ${selectedProject?.id === project.id ? 'bg-teal-500 border-teal-400 text-white shadow-glow-teal' : 'bg-white/5 border-white/10 text-gray-500 group-hover:border-white/20'}`}>
+                              {selectedProject?.id === project.id ? <Check className="w-6 h-6 font-black" /> : <Layers className="w-5 h-5" />}
+                            </div>
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className="px-8 pb-8 flex-1 flex flex-col space-y-6">
+                          <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-2">
+                            {project.description || 'Nenhuma descrição técnica informada para este projeto estratégico.'}
+                          </p>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
+                              <Calendar className="w-4 h-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Período</span>
+                                <span className="text-[10px] text-white font-bold">{formatDate(project.startDate)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-2xl border border-white/5">
+                              <MapPin className="w-4 h-4 text-gray-600" />
+                              <div className="flex flex-col">
+                                <span className="text-[7px] font-black text-gray-600 uppercase tracking-widest">Cidade</span>
+                                <span className="text-[10px] text-white font-bold">{project.city || 'N/A'}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {project.settings?.enableMentoring && (
+                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                <Zap className="w-3 h-3 text-purple-400" />
+                                <span className="text-[8px] font-black text-purple-400 uppercase tracking-widest">MENTORIA</span>
+                              </div>
+                            )}
+                            {project.settings?.enableB2B && (
+                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                                <Rocket className="w-3 h-3 text-blue-400" />
+                                <span className="text-[8px] font-black text-blue-400 uppercase tracking-widest">B2B</span>
+                              </div>
+                            )}
+                            {project.settings?.enableStartups && (
+                              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                                <Target className="w-3 h-3 text-orange-400" />
+                                <span className="text-[8px] font-black text-orange-400 uppercase tracking-widest">STARTUPS</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex gap-3 pt-4 mt-auto">
+                            <Button
+                              onClick={() => selectProject(project)}
+                              className={`flex-1 h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all duration-300 ${selectedProject?.id === project.id ? 'bg-teal-500 text-white shadow-glow-teal border-none' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'}`}
+                            >
+                              {selectedProject?.id === project.id ? 'SELECIONADO' : 'SELECIONAR'}
+                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 rounded-2xl border-white/5 bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+                                onClick={() => openEditDialog(project)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-12 w-12 rounded-2xl border-white/5 bg-white/5 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                                onClick={() => handleDelete(project.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
           </TabsContent>
         ))}
       </Tabs>
