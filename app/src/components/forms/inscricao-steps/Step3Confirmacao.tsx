@@ -140,12 +140,14 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             // ── ETAPA 2: Calcular valor (já feito no escopo superior)
             const statusPagamento = (dados.comprarPalestras && valorPagoTotal > 0) ? 'pendente' : 'pago';
 
-            const isValidUUID = (id: any) => typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+            const isUuid = (id: any) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || '');
+            const cleanProjectId = isUuid(selectedProject?.id) ? selectedProject?.id : (isUuid(projectId) ? projectId : null);
+
             // ── ETAPA 3: Inscrição atômica via Service Layer (verifica vagas + insere + incrementa)
             const sessionIds = dados.cursosSelecionados
-                .filter((id: any) => isValidUUID(id));
+                .filter((id: any) => isUuid(id));
             const registrationParams = {
-                projectId: (selectedProject?.id && isValidUUID(selectedProject.id)) ? selectedProject.id : (isValidUUID(projectId) ? projectId : null),
+                projectId: cleanProjectId,
                 userId: null, // Passamos null agora
                 nome: dados.nome,
                 email: cleanEmail,
