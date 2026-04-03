@@ -17,6 +17,8 @@ export interface DadosInscricao {
     indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'parceiro' | 'outro' | 'nenhum';
     indicacaoNome?: string;
     partnerId?: string;
+    /** Código de acesso do parceiro (obrigatório se o parceiro tiver access_code no banco) */
+    partnerAccessCode?: string;
     codigo?: string;
     descontoSocial?: number;
 

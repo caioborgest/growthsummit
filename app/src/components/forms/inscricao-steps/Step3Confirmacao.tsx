@@ -170,6 +170,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 codigoPalestra: dados.cupomPalestra || null,
                 loteId: dados.loteId,
                 voucherEmpresa: dados.voucherEmpresa,
+                partnerAccessCode: dados.partnerAccessCode || null,
             };
 
             logger.debug('[Step3Confirmacao] Enviando payload de inscrição antecipada (sem user ainda):', registrationParams);

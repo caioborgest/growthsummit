@@ -28,6 +28,7 @@ import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
 import { CertificateService } from '@/lib/certificateService';
 import { useProject } from '@/contexts/ProjectContext';
+import { checkInRegistrationAtomic } from '@/lib/checkInAtomic';
 
 export function AdminCheckIn() {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ export function AdminCheckIn() {
   const { data: mentors } = useMentors();
   const { data: companies } = useCompanies();
   const { data: startups } = useStartups();
-  const { data: registrations, update } = useRegistrations();
+  const { data: registrations, update, refetch } = useRegistrations();
   const { data: checkIns, create: createEventCheckIn } = useCheckIns();
   const { data: sessions } = useSessions();
   const { data: sessionAttendance, create: createSessionAttendance } = useCheckInsAtividades();
@@ -79,21 +80,28 @@ export function AdminCheckIn() {
           return;
         }
 
-        await update(registration.id, {
-          checkedIn: true,
-          checkInTime: new Date().toISOString()
-        } as any);
-
-        await createEventCheckIn({
-          projectId: registration.projectId,
+        const atomic = await checkInRegistrationAtomic({
           registrationId: registration.id,
+          projectId: registration.projectId,
           userId: registration.userId,
           ticketNumber: registration.ticketNumber,
-          timestamp: new Date().toISOString(),
+          operatorId: user?.id,
           location: 'Entrada Principal',
           method: 'manual',
-          operatorId: user?.id
         });
+
+        if (!atomic.ok) {
+          if (atomic.duplicate) {
+            setScanResult('duplicate');
+            setResultRegistration(registration);
+            triggerVibrate('error');
+            toast.info('Participante já credenciado.');
+            return;
+          }
+          throw new Error(atomic.message);
+        }
+
+        await refetch?.(true);
 
         // Emitir certificado de participação no evento e notificar
         if (selectedProject) {
@@ -149,7 +157,7 @@ export function AdminCheckIn() {
       triggerVibrate('error');
       toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
     }
-  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id, selectedProject]);
+  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id, selectedProject, refetch]);
 
   const handleScannerSuccess = useCallback((res: QRData | null) => {
     if (!res) return;

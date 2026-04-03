@@ -26,6 +26,7 @@ export interface RegistrationParams {
     indicacaoTipo?: string;
     indicacaoNome?: string | null;
     partnerId?: string | null;
+    partnerAccessCode?: string | null;
     codigoSocial?: string | null;
     codigoPalestra?: string | null;
     extraData?: Record<string, unknown>;
@@ -58,8 +59,10 @@ export const registrationService = {
             return { valid: !!row?.valid, errorMessage: row?.error_message || undefined };
         } catch (err) {
             logger.error('[registrationService] Erro na validação:', err);
-            // Em caso de erro geral de rede, permitimos avançar pra não travar a venda (fallback agressivo)
-            return { valid: true };
+            return {
+                valid: false,
+                errorMessage: 'Não foi possível validar seus dados. Verifique a conexão e tente novamente.',
+            };
         }
     },
 
@@ -131,22 +134,30 @@ export const registrationService = {
                 emailService.sendWelcome(params.email, params.nome).catch(e => logger.warn('[registrationService] Erro ao enviar boas-vindas:', e));
             }
 
-            // Se for inscrição de parceiro, vincular na tabela de equipe
-            if (isValidUUID(params.partnerId) && data) {
-                const partnerQR = `GE-PARTNER|${data.id || payload.p_user_id || 'new'}|${Date.now()}`;
+            // Se for inscrição de parceiro, vincular na tabela de equipe (RPC valida access_code e limite)
+            const rpcPayload = data as { success?: boolean; inscricao_id?: string };
+            if (isValidUUID(params.partnerId) && rpcPayload?.success !== false) {
+                const inscId = rpcPayload?.inscricao_id;
+                const partnerQR = `GE-PARTNER|${inscId || payload.p_user_id || 'new'}|${Date.now()}`;
                 try {
-                    await (supabase.from('parceiros_equipe' as any).insert({
-                        partner_id: params.partnerId,
-                        project_id: payload.p_project_id,
-                        user_id: payload.p_user_id,
-                        name: params.nome,
-                        email: params.email,
-                        phone: params.telefone,
-                        cpf: params.cpf,
-                        role: 'Integrante',
-                        qr_code: partnerQR
-                    } as any));
-                    logger.info(`[registrationService] Vínculo com parceiro ${params.partnerId} criado com sucesso.`);
+                    const { data: peData, error: peErr } = await (supabase.rpc as any)('register_parceiro_equipe_member', {
+                        p_partner_id: params.partnerId,
+                        p_partner_access_code: params.partnerAccessCode ?? null,
+                        p_project_id: payload.p_project_id,
+                        p_user_id: payload.p_user_id,
+                        p_name: params.nome,
+                        p_email: params.email,
+                        p_phone: params.telefone,
+                        p_cpf: params.cpf,
+                        p_qr_code: partnerQR,
+                    });
+                    if (peErr) throw peErr;
+                    const row = typeof peData === 'object' && peData !== null ? peData : {};
+                    if (!(row as { success?: boolean }).success) {
+                        logger.warn('[registrationService] Parceiro equipe RPC retornou falha:', peData);
+                    } else {
+                        logger.info(`[registrationService] Vínculo com parceiro ${params.partnerId} criado com sucesso.`);
+                    }
                 } catch (peErr) {
                     logger.error('[registrationService] Erro ao criar vínculo com equipe de parceiro:', peErr);
                 }

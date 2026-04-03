@@ -81,9 +81,11 @@ export function useRegistrationQRQuery(id: string) {
         .single());
 
       if (error) throw error;
-      return { 
-        qrCode: (data as any).qr_code || `GE-${(data as any).id}`, 
-        ticketNumber: (data as any).ticket_number || '0000' 
+      const row = data as { qr_code?: string | null; ticket_number?: string | null; id: string };
+      return {
+        qrCode: row.qr_code ?? null,
+        ticketNumber: row.ticket_number || '0000',
+        registrationId: row.id,
       };
     },
     enabled: !!id,

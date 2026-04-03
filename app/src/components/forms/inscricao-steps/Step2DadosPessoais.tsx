@@ -141,16 +141,13 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             if (partnerError) logger.error('[Step2] Erro ao buscar parceiro:', partnerError);
 
             if (partner) {
-                // Verificar limite de membros da equipe
-                const { count, error: countError } = await supabase
-                    .from('parceiros_equipe')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('partner_id', partner.id);
+                const { data: usageData, error: usageErr } = await (supabase as any).rpc('get_parceiro_equipe_usage', {
+                    p_partner_id: partner.id,
+                });
+                if (usageErr) logger.error('[Step2] Erro ao contar equipe:', usageErr);
 
-                if (countError) logger.error('[Step2] Erro ao contar equipe:', countError);
-
-                const usedMembers = count || 0;
-                const limit = partner.max_team_members || 10;
+                const usedMembers = (usageData as { member_count?: number })?.member_count ?? 0;
+                const limit = (usageData as { max_members?: number })?.max_members ?? partner.max_team_members ?? 10;
 
                 if (usedMembers >= limit) {
                     setErrors(prev => ({ ...prev, codigo: `Limite de equipe atingido para este parceiro (${limit})` }));
@@ -236,6 +233,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
                 partnerId: partnerId || '',
+                partnerAccessCode: partnerId ? codigo.trim().toUpperCase() : undefined,
                 codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
                 descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0,
                 loteId: indicacaoTipo === 'empresa' ? loteId : '',
