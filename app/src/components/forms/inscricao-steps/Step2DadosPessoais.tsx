@@ -24,9 +24,10 @@ interface Step2DadosPessoaisProps {
     dados: DadosInscricao;
     onContinuar: (dados: Partial<DadosInscricao>) => void;
     onVoltar: () => void;
+    onUpdate?: (novosDados: Partial<DadosInscricao>) => void;
 }
 
-export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosPessoaisProps) {
+export function Step2DadosPessoais({ dados, onContinuar, onVoltar, onUpdate }: Step2DadosPessoaisProps) {
     const [nome, setNome] = useState(dados.nome);
     const [cpf, setCpf] = useState(dados.cpf || '');
     const [email, setEmail] = useState(dados.email);

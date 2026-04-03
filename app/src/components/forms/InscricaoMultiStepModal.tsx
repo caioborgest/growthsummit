@@ -223,6 +223,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             nextStep();
                         }}
                         onVoltar={prevStep}
+                        onUpdate={updateDados}
                     />
                 );
             case 3:
