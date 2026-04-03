@@ -166,7 +166,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 indicacaoNome: dados.indicacaoNome || null,
                 codigoSocial: dados.codigo || null,
                 codigoPalestra: dados.cupomPalestra || null,
-                loteId: dados.loteId,
+                loteId: isValidUUID(dados.loteId) ? dados.loteId : null,
                 voucherEmpresa: dados.voucherEmpresa,
                 partnerAccessCode: dados.partnerAccessCode || null,
             };
