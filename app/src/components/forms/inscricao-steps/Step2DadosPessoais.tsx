@@ -95,54 +95,64 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
 
         try {
             // Priority 1: Lote de Empresa (Voucher Corporativo)
-            if (indicacaoTipo === 'empresa') {
-                const { data: lot, error } = await supabase
-                    .from('lotes_inscricao_empresa')
-                    .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
-                    .eq('voucher_code', cleanCodigo)
-                    .eq('project_id', projectId)
-                    .maybeSingle();
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
 
-                if (error) throw error;
+            let lotQuery = supabase
+                .from('lotes_inscricao_empresa')
+                .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
+                .eq('voucher_code', cleanCodigo);
+            
+            if (isUuid) {
+                lotQuery = lotQuery.eq('project_id', projectId);
+            }
 
-                if (lot) {
-                    if (lot.vagas_utilizadas >= lot.quantidade_vagas || lot.status_pagamento !== 'pago') {
-                        setErrors(prev => ({ ...prev, codigo: 'Voucher inválido, limite excedido ou pagamento pendente' }));
-                        setCodigoValidado(false);
-                    } else {
-                        setCodigoValidado(true);
-                        setLoteId(lot.id);
-                        setVoucherEmpresa(lot.voucher_code);
-                        setIndicacaoNome(lot.nome_empresa);
-                        setDesconto(100);
-                        onUpdate?.({ 
-                            indicacaoNome: lot.nome_empresa, 
-                            descontoSocial: 100, 
-                            loteId: lot.id, 
-                            voucherEmpresa: lot.voucher_code,
-                            tipoInscricao: (lot.tipo_ingresso || 'pro') as any
-                        });
-                        toast.success('Voucher corporativo validado!');
-                    }
-                    return;
+            const { data: lot, error } = await lotQuery.maybeSingle();
+
+            if (error) throw error;
+
+            if (lot) {
+                const isPaid = lot.status_pagamento === 'pago' || lot.status_pagamento === 'paid';
+                if (lot.vagas_utilizadas >= lot.quantidade_vagas || !isPaid) {
+                    setErrors(prev => ({ ...prev, codigo: 'Voucher inválido, limite excedido ou pagamento pendente' }));
+                    setCodigoValidado(false);
+                } else {
+                    setCodigoValidado(true);
+                    setLoteId(lot.id);
+                    setVoucherEmpresa(lot.voucher_code);
+                    setIndicacaoNome(lot.nome_empresa);
+                    setIndicacaoTipo('empresa'); // Auto-set the badge
+                    setDesconto(100);
+                    onUpdate?.({ 
+                        indicacaoNome: lot.nome_empresa, 
+                        descontoSocial: 100, 
+                        loteId: (lot as any).id, 
+                        voucherEmpresa: lot.voucher_code,
+                        tipoInscricao: ((lot as any).tipo_ingresso || 'pro') as any
+                    });
+                    toast.success('Voucher corporativo validado!');
                 }
+                return;
             }
 
             // Priority 2: Parceiros Diretos (Expositores/Vex)
             // Estes usam um access_code na tabela 'parceiros'
-            const { data: partner, error: partnerError } = await supabase
+            let partnerQuery = (supabase as any)
                 .from('parceiros')
                 .select('id, name, access_code, max_team_members')
                 .eq('access_code', cleanCodigo)
-                .eq('project_id', projectId)
-                .eq('status', 'active')
-                .maybeSingle();
+                .eq('status', 'active');
+            
+            if (isUuid) {
+                partnerQuery = partnerQuery.eq('project_id', projectId);
+            }
+
+            const { data: partner, error: partnerError } = await partnerQuery.maybeSingle();
 
             if (partnerError) logger.error('[Step2] Erro ao buscar parceiro:', partnerError);
 
             if (partner) {
                 const { data: usageData, error: usageErr } = await (supabase as any).rpc('get_parceiro_equipe_usage', {
-                    p_partner_id: partner.id,
+                    p_partner_id: (partner as any).id,
                 });
                 if (usageErr) logger.error('[Step2] Erro ao contar equipe:', usageErr);
 
@@ -169,12 +179,16 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             }
 
             // Priority 3: Cupons Sociais e Promocionais
-            const { data: couponData, error: couponError } = await supabase
+            let couponQuery = supabase
                 .from('cupons_parceria_social')
                 .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
-                .eq('codigo', cleanCodigo)
-                .eq('project_id', projectId)
-                .maybeSingle();
+                .eq('codigo', cleanCodigo);
+            
+            if (isUuid) {
+                couponQuery = couponQuery.eq('project_id', projectId);
+            }
+
+            const { data: couponData, error: couponError } = await couponQuery.maybeSingle();
 
             if (couponError) throw couponError;
 

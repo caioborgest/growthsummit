@@ -7,6 +7,29 @@ dotenv.config();
 const { Client } = pg;
 
 const sql = `
+-- Fix RLS for coupons and vouchers allowing anonymous read access
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Permitir leitura anonima de cupons" ON public.cupons_parceria_social;
+    DROP POLICY IF EXISTS "Permitir leitura anonima de lotes" ON public.lotes_inscricao_empresa;
+    DROP POLICY IF EXISTS "Permitir leitura anonima de parceiros" ON public.parceiros;
+    
+    CREATE POLICY "Permitir leitura anonima de cupons" ON public.cupons_parceria_social 
+    FOR SELECT TO anon, authenticated
+    USING (ativo = true);
+
+    CREATE POLICY "Permitir leitura anonima de lotes" ON public.lotes_inscricao_empresa 
+    FOR SELECT TO anon, authenticated
+    USING (status_pagamento IN ('pago', 'paid'));
+
+    CREATE POLICY "Permitir leitura anonima de parceiros" ON public.parceiros 
+    FOR SELECT TO anon, authenticated
+    USING (status = 'active');
+EXCEPTION
+    WHEN undefined_table OR undefined_object THEN
+        NULL;
+END $$;
+
 CREATE OR REPLACE FUNCTION public.register_participant_with_slots(
         p_project_id UUID,
         p_user_id UUID,

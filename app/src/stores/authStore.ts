@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
           const user = data.user;
           const mappedUser: User = {
             id: user.id,
-            email: user.email,
+            email: user.email || '',
             name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário',
             role: user.user_metadata?.role || 'user',
             createdAt: user.created_at,
@@ -93,7 +93,7 @@ export const useAuthStore = create<AuthState>()(
           const user = signUpData.user!;
           const mappedUser: User = {
             id: user.id,
-            email: user.email,
+            email: user.email || '',
             name: user.user_metadata?.full_name || 'Usuário',
             role: user.user_metadata?.role || 'user',
             createdAt: user.created_at,
@@ -128,7 +128,7 @@ export const useAuthStore = create<AuthState>()(
       
       // Refresh token (Supabase faz automaticamente se configurado)
       refreshToken: async () => {
-        const { data, error } = await supabase.auth.refreshSession();
+        const { error } = await supabase.auth.refreshSession();
         if (error) {
           get().logout();
         }
@@ -146,7 +146,7 @@ export const useAuthStore = create<AuthState>()(
 
           const mappedUser: User = {
             id: user.id,
-            email: user.email,
+            email: user.email || '',
             name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário',
             role: user.user_metadata?.role || 'user',
             createdAt: user.created_at,
@@ -171,7 +171,7 @@ export const useAuthStore = create<AuthState>()(
           const { data: updatedData, error } = await supabase.auth.updateUser({
             data: {
               full_name: data.name,
-              avatar_url: data.avatarUrl,
+              avatar_url: (data as any).avatar_url || (data as any).avatarUrl,
             }
           });
           
@@ -180,7 +180,7 @@ export const useAuthStore = create<AuthState>()(
           const user = updatedData.user;
           const mappedUser: User = {
             id: user.id,
-            email: user.email,
+            email: user.email || '',
             name: user.user_metadata?.full_name || 'Usuário',
             role: user.user_metadata?.role || 'user',
             createdAt: user.created_at,

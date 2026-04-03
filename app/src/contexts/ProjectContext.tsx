@@ -35,10 +35,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       if (!isAlreadySelected) {
         // 🕵️ Tentar buscar do Supabase: Aceita ID (UUID) OU Slug (Texto)
         import('@/lib/supabase').then(({ supabase }) => {
-          supabase.from('projects' as any)
-            .select('*')
-            .or(`id.eq.${urlProjectId},slug.eq.${urlProjectId}`)
-            .maybeSingle()
+          const isUrlUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlProjectId);
+          let query = supabase.from('projects' as any).select('*');
+          
+          if (isUrlUUID) {
+            query = query.eq('id', urlProjectId);
+          } else {
+            query = query.eq('slug', urlProjectId);
+          }
+          
+          query.maybeSingle()
             .then(({ data, error }) => {
               if (!error && data) {
                 const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
