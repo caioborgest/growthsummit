@@ -93,11 +93,13 @@ export function EdicaoAnteriorVideo({
                                     className="w-full h-full object-cover"
                                     controls
                                     playsInline
-                                    preload="metadata"
+                                    autoPlay
+                                    muted
+                                    loop
+                                    preload="auto"
                                     style={{ aspectRatio: '9/16' }}
                                 >
-                                    <source src={videoSrc} type="video/mp4" />
-                                    <source src={videoSrc} type="video/quicktime" />
+                                    <source src={`${videoSrc}?t=${Date.now()}`} type="video/mp4" />
                                     Seu navegador não suporta reprodução de vídeo.
                                 </video>
 
