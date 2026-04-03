@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { safeStorage } from '@/utils/safeStorage';
 import type { Project } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface ProjectContextType {
   selectedProject: Project | null;
@@ -23,11 +24,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
+  const urlProjectId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('project') : null;
+
   useEffect(() => {
     // 1. Prioridade: Parâmetro da URL (projeto externo ou embed)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlProjectId = urlParams.get('project');
-
     if (urlProjectId) {
       const isAlreadySelected = selectedProject && 
         (selectedProject.id === urlProjectId || selectedProject.slug === urlProjectId);
