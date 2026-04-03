@@ -86,20 +86,24 @@ export const registrationService = {
             throw new Error('Identificador do projeto é inválido ou temporário. Por favor, aguarde o carregamento completo da página.');
         }
 
+        const cleanSessionIds = Array.isArray(params.sessionIds) 
+            ? params.sessionIds.filter(id => isValidUUID(id))
+            : [];
+
         const payload = {
             p_project_id: cleanProjectId,
-            p_user_id: cleanUserId,
+            p_user_id: cleanUserId || null,
             p_nome: params.nome || '',
-            p_email: params.email?.trim().toLowerCase() || '',
+            p_email: (params.email || '').trim().toLowerCase(),
             p_telefone: params.telefone || '',
             p_cpf: params.cpf || '',
-            p_session_ids: Array.isArray(params.sessionIds) ? params.sessionIds.filter(id => isValidUUID(id)) : [],
+            p_session_ids: cleanSessionIds,
             p_tipo_inscricao: params.tipoInscricao || 'standard',
             p_valor_pago: Number(params.valorPago) || 0,
             p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
             p_status: params.status || (params.palestrasNoturnas ? 'pendente' : 'ativo'),
-            p_evento: params.evento || null,
-            p_palestras_noturnas: !!params.palestrasNoturnas,
+            p_evento: params.evento || 'Growth Experience',
+            p_palestras_noturnas: Boolean(params.palestrasNoturnas),
             p_tipo_atividade: params.tipoAtividade || null,
             p_sala_atividade: params.salaAtividade || null,
             p_horario_atividade: params.horarioAtividade || null,
@@ -109,7 +113,7 @@ export const registrationService = {
             p_codigo_social: params.codigoSocial || null,
             p_codigo_palestra: params.codigoPalestra || null,
             p_extra_data: params.extraData || {},
-            p_lote_id: cleanLoteId,
+            p_lote_id: cleanLoteId || null,
             p_voucher_empresa: params.voucherEmpresa || null
         };
 
