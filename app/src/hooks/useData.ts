@@ -230,7 +230,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   const result: Record<string, unknown> = {};
   
   // Entities that do NOT use the Portuguese semantic map (nome -> name)
-  const skipSemanticMap = ['partners', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins'].includes(entityName || '');
+  const skipSemanticMap = ['partners', 'sessions', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins'].includes(entityName || '');
 
   for (const [key, value] of Object.entries(item)) {
     // 1. Try semantic map first (only if not skipped)
