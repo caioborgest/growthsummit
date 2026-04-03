@@ -95,7 +95,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         
         try {
             if (indicacaoTipo === 'empresa') {
-                const { data, error } = await supabase
+                const { data, error } = (await supabase
                     .from('lotes_inscricao_empresa')
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                     .eq('project_id', projectId)
@@ -119,7 +119,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                 }
             } else {
                 // Primeiro tenta como Código de Parceiro/Expositor
-                const { data: partner, error: partnerError } = await supabase
+                const { data: partner, error: partnerError } = (await supabase
                     .from('parceiros')
                     .select('id, name, access_code, max_team_members')
                     .eq('project_id', projectId)
@@ -145,7 +145,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     }
                 } else {
                     // Se não for parceiro, tenta como Cupom Tradicional
-                    const { data, error } = await supabase
+                    const { data, error } = (await supabase
                         .from('cupons_parceria_social')
                         .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
                         .eq('project_id', projectId)
