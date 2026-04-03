@@ -8,13 +8,17 @@ import { useProject } from '@/contexts/ProjectContext';
 
 export function ExitIntentPopup() {
   const { selectedProject } = useProject();
+  const exitIntentEnabled =
+    selectedProject?.settings?.publicContent?.exitIntentPopup?.active === true;
+
   const [isVisible, setIsVisible] = useState(false);
   const [hasShown, setHasShown] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
 
   useEffect(() => {
-    // 1. Verificar se já foi mostrado nesta sessão
+    if (!exitIntentEnabled) return;
+
     const shown = sessionStorage.getItem('gx_exit_intent_shown');
     if (shown) {
       setHasShown(true);
@@ -56,7 +60,7 @@ export function ExitIntentPopup() {
     }
   };
 
-  if (!isVisible) return null;
+  if (!exitIntentEnabled || !isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">

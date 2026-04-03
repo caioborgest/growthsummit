@@ -6,16 +6,22 @@ import { Card } from '@/components/ui/card';
 import { useProject } from '@/contexts/ProjectContext';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
+/** Desligado: pop-ups públicos vêm de Admin → Gestão de Pop-ups (tabela project_popups). Defina true só se for reativar este banner legado. */
+const LOTE_PROMO_POPUP_LEGACY_ENABLED = false;
+
 export function LotePromocionalPopUp() {
     const { selectedProject } = useProject();
     const popupConfig = selectedProject?.settings?.publicContent?.popup;
+    const enabled =
+        LOTE_PROMO_POPUP_LEGACY_ENABLED && popupConfig?.active === true;
 
     const [isOpen, setIsOpen] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
 
     useEffect(() => {
+        if (!enabled) return;
+
         const timer = setTimeout(() => {
-            // Verificar se o popup já foi mostrado hoje
             const lastShownDate = localStorage.getItem('lotePromocionalLastShown');
             const today = new Date().toDateString();
 
@@ -26,7 +32,7 @@ export function LotePromocionalPopUp() {
         }, 20000);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [enabled]);
 
     const handleClose = () => {
         setIsOpen(false);
@@ -42,7 +48,7 @@ export function LotePromocionalPopUp() {
         handleClose();
     };
 
-    if (!popupConfig?.active || !shouldRender) return null;
+    if (!enabled || !shouldRender) return null;
 
     return (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>

@@ -86,6 +86,10 @@ export interface ProjectSettings {
       description: string;
       buttonText: string;
     };
+    /** Pop-up de saída (exit intent); desligado por padrão — use Gestão de Pop-ups quando possível */
+    exitIntentPopup?: {
+      active?: boolean;
+    };
     palestrantes?: {
       nome: string;
       cargo: string;
