@@ -125,12 +125,12 @@ export const registrationService = {
 
             // Se for inscrição de parceiro, vincular na tabela de equipe
             if (params.partnerId && data) {
-                const partnerQR = `GE-PARTNER|${data.id || params.userId}|${Date.now()}`;
+                const partnerQR = `GE-PARTNER|${data.id || payload.p_user_id}|${Date.now()}`;
                 try {
                     await (supabase.from('parceiros_equipe' as any).insert({
                         partner_id: params.partnerId,
-                        project_id: params.projectId,
-                        user_id: params.userId,
+                        project_id: payload.p_project_id,
+                        user_id: payload.p_user_id,
                         name: params.nome,
                         email: params.email,
                         phone: params.telefone,
