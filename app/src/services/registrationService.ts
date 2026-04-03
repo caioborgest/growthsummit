@@ -72,13 +72,16 @@ export const registrationService = {
         const isValidUUID = (id: any): id is string => 
             typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-        if (!isValidUUID(params.projectId)) {
+        // Se projectId não for UUID, tenta extrair se for um objeto ou falha
+        const cleanProjectId = isValidUUID(params.projectId) ? params.projectId : null;
+
+        if (!cleanProjectId) {
             logger.error('[registrationService] Tentativa de registro com projectId inválido:', params.projectId);
             throw new Error('ID do Projeto inválido. Por favor, recarregue a página.');
         }
 
         const payload = {
-            p_project_id: params.projectId, // Agora garantido como UUID
+            p_project_id: cleanProjectId,
             p_user_id: isValidUUID(params.userId) ? params.userId : null,
             p_nome: params.nome,
             p_email: params.email?.trim().toLowerCase(),
@@ -129,8 +132,8 @@ export const registrationService = {
             }
 
             // Se for inscrição de parceiro, vincular na tabela de equipe
-            if (params.partnerId && data) {
-                const partnerQR = `GE-PARTNER|${data.id || payload.p_user_id}|${Date.now()}`;
+            if (isValidUUID(params.partnerId) && data) {
+                const partnerQR = `GE-PARTNER|${data.id || payload.p_user_id || 'new'}|${Date.now()}`;
                 try {
                     await (supabase.from('parceiros_equipe' as any).insert({
                         partner_id: params.partnerId,

@@ -139,7 +139,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
 
         const updates: Partial<DadosInscricao> = {
-            loteId: activeBatch?.id || 'default',
+            loteId: activeBatch?.id || null,
             tipoInscricao: (activeTier?.id || 'standard') as 'pro' | 'standard' | 'vip' | 'social'
         };
 

@@ -145,8 +145,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((id: any) => id && id.length === 36); // apenas UUIDs válidos
 
+            const isValidUUID = (id: any) => typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
             const registrationParams = {
-                projectId: projectId || '',
+                projectId: isValidUUID(projectId) ? projectId : null,
                 userId: null, // Passamos null agora
                 nome: dados.nome,
                 email: cleanEmail,
