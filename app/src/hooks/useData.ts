@@ -226,17 +226,27 @@ const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_F
   return acc;
 }, {} as Record<string, string>);
 
-const mapFromSupabase = (item: Record<string, unknown>): Record<string, unknown> => {
+const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
+  
+  // Entities that do NOT use the Portuguese semantic map (nome -> name)
+  const skipSemanticMap = ['partners', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins'].includes(entityName || '');
+
   for (const [key, value] of Object.entries(item)) {
-    // 1. Try semantic map first
-    const semanticKey = SEMANTIC_MAP_FROM_DB[key];
+    // 1. Try semantic map first (only if not skipped)
+    const semanticKey = !skipSemanticMap ? SEMANTIC_MAP_FROM_DB[key] : null;
+    
     if (semanticKey) {
       result[semanticKey] = value;
     } else {
       // 2. Fallback to generic camelCase
       result[toCamelCase(key)] = value;
     }
+  }
+
+  // Partner-specific collision safety: if both 'name' and 'nome' somehow exist or if we need to force DB 'name'
+  if (entityName === 'partners' && item.name) {
+    result.name = item.name;
   }
 
   // Cross-entity specific logic
@@ -641,7 +651,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       // Basic mapping from snake_case to CamelCase
       const mappedData = (supabaseData || []).map((item: Record<string, unknown>) => {
-        const mappedItem = mapFromSupabase(item);
+        const mappedItem = mapFromSupabase(item, entityName);
 
         // Project Specific Mapping for Projects Entity (Complex nested structure)
         if (entityName === 'projects') {
@@ -1033,7 +1043,7 @@ export function useProfile(userId?: string) {
       if (error) throw error;
 
       if (supabaseData) {
-        setData(mapFromSupabase(supabaseData) as unknown as Profile);
+        setData(mapFromSupabase(supabaseData, 'profiles') as unknown as Profile);
       }
     } catch (err) {
       logger.error('Erro ao buscar perfil:', err);
