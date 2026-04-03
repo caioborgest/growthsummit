@@ -195,25 +195,26 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
             if (couponData) {
                 const isExpired = couponData.vencimento && new Date(couponData.vencimento) < new Date();
                 const isFull = couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite;
-                const isCompatible = couponData.indicacao_tipo === indicacaoTipo || 
-                                   couponData.indicacao_tipo === 'promocional' || 
-                                   indicacaoTipo === 'nenhum';
 
                 if (!couponData.ativo || isExpired || isFull) {
                     setErrors(prev => ({ ...prev, codigo: 'Cupom inativo, expirado ou limite de uso atingido' }));
                     setCodigoValidado(false);
-                } else if (!isCompatible) {
-                    setErrors(prev => ({ ...prev, codigo: `Cupom incompatível com a categoria selecionada (${couponData.indicacao_tipo})` }));
-                    setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
                     setDesconto(couponData.porcentagem_desconto);
-                    onUpdate?.({ descontoSocial: couponData.porcentagem_desconto });
+                    // Sincroniza a categoria visível com a categoria do cupom gerado
+                    if (couponData.indicacao_tipo) {
+                        setIndicacaoTipo(couponData.indicacao_tipo as any);
+                    }
+                    onUpdate?.({ 
+                        descontoSocial: couponData.porcentagem_desconto,
+                        indicacaoTipo: (couponData.indicacao_tipo || indicacaoTipo) as any 
+                    });
                     toast.success(`Cupom de ${couponData.porcentagem_desconto}% aplicado!`);
                 }
             } else {
                 logger.warn('[Step2] Código não encontrado em nenhuma categoria:', cleanCodigo);
-                setErrors(prev => ({ ...prev, codigo: 'Código não encontrado para este evento. Verifique a categoria selecionada.' }));
+                setErrors(prev => ({ ...prev, codigo: 'Código não encontrado. Verifique se digitou corretamente.' }));
                 setCodigoValidado(false);
             }
         } catch (err) {
