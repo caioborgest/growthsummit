@@ -290,7 +290,7 @@ export function DashboardParticipante() {
             <PwaDashboardHero 
               eventName={selectedProject?.name || 'Growth Experience'}
               location={selectedProject?.location || 'Evento'}
-              date={selectedProject?.slug?.includes('triunfo') ? '16 ABR 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026')}
+              date={selectedProject?.slug?.includes('triunfo') ? '16 ABR 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '2026')}
               eventDate={selectedProject?.slug?.includes('triunfo') ? '2026-04-16T17:00:00' : selectedProject?.startDate}
               stats={{
                 people: '300+',

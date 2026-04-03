@@ -88,6 +88,8 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
       case 'transactions': return 'transacoes_growth_experience';
       case 'partners': return 'parceiros';
       case 'partner_team': return 'parceiros_equipe';
+      case 'email_templates': return 'email_templates';
+      case 'email_campaigns': return 'email_campaigns';
       default: return entity;
     }
   }
@@ -97,7 +99,7 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates', 'audit_logs', 'login_attempts'].includes(entity);
+  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates', 'audit_logs', 'login_attempts', 'email_templates', 'email_campaigns'].includes(entity);
 };
 
 function toCamelCase(str: string): string {
@@ -214,6 +216,9 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   user_id: 'userId',
   access_code: 'accessCode',
   max_team_members: 'maxTeamMembers',
+  date: 'date',
+  recipients_filter: 'recipientsFilter',
+  template_id: 'templateId',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -509,7 +514,9 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
     partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id,created_at,updated_at',
-    partner_team: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at'
+    partner_team: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
+    email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
+    email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'
   };
   return fields[entity] ?? '*';
 }
@@ -1057,6 +1064,14 @@ export function useNotifications() {
 
 export function useRegistrationBatches() {
   return useData<RegistrationBatch>([], 'registration_batches');
+}
+
+export function useEmailTemplates() {
+  return useData<EmailTemplate>([], 'email_templates', { realtime: true });
+}
+
+export function useEmailCampaigns() {
+  return useData<EmailCampaign>([], 'email_campaigns', { realtime: true });
 }
 
 /** Hook para discovery B2B: retorna empresas aprovadas SEM dados sensíveis (telefone, email, cnpj). LGPD-safe. */

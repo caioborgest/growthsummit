@@ -133,7 +133,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                             Growth Experience
                         </span>
                         <span className={`bg-gradient-to-r ${isPetrolina ? 'from-teal-400 to-teal-600' : 'from-brand-orange-coral via-brand-orange-gradient to-brand-orange-intense'} bg-clip-text text-transparent drop-shadow-sm`}>
-                            {selectedProject?.city} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').getFullYear() : '2026'}
+                            {selectedProject?.city} {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T12:00:00').getFullYear() : '2026'}
                         </span>
                     </h1>
 
@@ -179,7 +179,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                     style={{ animationDelay: '0.5s' }}
                 >
                     {[
-                        { icon: Calendar, text: isTriunfo ? '16 Abr 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : 'Data a definir') },
+                        { icon: Calendar, text: isTriunfo ? '16 Abr 2026' : (selectedProject?.startDate ? new Date(selectedProject.startDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }) : 'Data a definir') },
                         { icon: Clock, text: isTriunfo ? '17:00 - 22:30' : '08:00 - 23:00' },
                         { icon: MapPin, text: selectedProject?.city || 'Espaço Parque' }
                     ].map((info, idx) => (

@@ -413,6 +413,7 @@ export interface Session {
   type: 'palestra' | 'talk' | 'panel' | 'workshop' | 'networking' | 'circuito' | 'curso' | 'oficina' | 'mentoria' | 'startup' | 'b2b';
   track?: string;
   day?: 1 | 2;
+  date?: string; // Date-only string (YYYY-MM-DD)
   startTime: string;
   endTime: string;
   room: string;

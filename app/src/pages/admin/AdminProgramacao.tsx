@@ -113,6 +113,7 @@ export function AdminProgramacao() {
     maxCapacity: '',
     topics: '',
     color: 'orange',
+    date: '',
   });
 
   const filteredSessions = useMemo(() => {
@@ -182,6 +183,7 @@ export function AdminProgramacao() {
       maxCapacity: '',
       topics: '',
       color: 'orange',
+      date: '',
     });
   };
 
@@ -252,6 +254,7 @@ export function AdminProgramacao() {
       maxCapacity: session.maxCapacity?.toString() || '',
       topics: session.topics?.join('\n') || '',
       color: session.color || 'orange',
+      date: session.date || '',
     });
     setShowForm(true);
   };
@@ -371,6 +374,17 @@ export function AdminProgramacao() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter text-brand-orange-coral">Data Específica</label>
+                  <Input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="bg-dark-100 border-dark-300 text-white h-12 focus:border-brand-orange-coral font-bold"
+                  />
+                  <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-widest italic">Opcional: use para garantir a ordenação correta em eventos de múltiplos dias.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -500,6 +514,11 @@ export function AdminProgramacao() {
                     <Clock className="h-5 w-5" />
                     <span>{session.startTime} - {session.endTime}</span>
                   </div>
+                  {session.date && (
+                    <span className="text-xs text-brand-orange-coral/80 font-black uppercase tracking-widest mb-1">
+                      {new Date(session.date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                  )}
                   <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em]">{categoryName}</span>
                 </div>
 

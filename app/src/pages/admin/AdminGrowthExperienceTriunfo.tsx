@@ -89,7 +89,7 @@ export function AdminGrowthExperienceTriunfo() {
                         {selectedProject?.name || 'Projeto Growth Experience'}
                     </h1>
                     <p className="text-gray-400">
-                        Painel de gestão do evento • {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
+                        Painel de gestão do evento • {selectedProject?.startDate ? new Date(selectedProject.startDate + 'T12:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
                     </p>
                 </div>
                 <div className="flex gap-3">

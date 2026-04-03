@@ -35,7 +35,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 
-import { useRegistrations, useNotifications, useUsers } from '@/hooks/useData';
+import { useRegistrations, useNotifications, useUsers, useEmailTemplates, useEmailCampaigns } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { notificationService } from '@/services/notificationService';
 import { emailService } from '@/services/emailService';
@@ -60,17 +60,9 @@ export default function AdminComunicacao() {
   const { selectedProject } = useProject();
   const { data: users } = useUsers();
   const { data: registrations } = useRegistrations();
-  const { data: notificationsList, refetch: refetchNotifications } = useNotifications();
-  
-  const [templates, setTemplates] = useState<EmailTemplate[]>(() => {
-    const saved = localStorage.getItem('gs_email_templates');
-    return saved ? JSON.parse(saved) : initialEmailTemplates;
-  });
-
-  const [campaigns, setCampaigns] = useState<EmailCampaign[]>(() => {
-    const saved = localStorage.getItem('gs_email_campaigns');
-    return saved ? JSON.parse(saved) : initialEmailCampaigns;
-  });
+  const { data: notificationsList } = useNotifications();
+  const { data: templates, create: createTemplate, remove: removeTemplate } = useEmailTemplates();
+  const { data: campaigns, create: createCampaign, update: updateCampaign } = useEmailCampaigns();
 
   const stats = useMemo(() => {
     const totalSent = campaigns.reduce((acc: number, c) => acc + (c.stats?.sent || 0), 0);
@@ -85,14 +77,6 @@ export default function AdminComunicacao() {
       notifications: notificationsList?.length || 0,
     };
   }, [campaigns, templates, notificationsList]);
-
-  useEffect(() => {
-    localStorage.setItem('gs_email_templates', JSON.stringify(templates));
-  }, [templates]);
-
-  useEffect(() => {
-    localStorage.setItem('gs_email_campaigns', JSON.stringify(campaigns));
-  }, [campaigns]);
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
@@ -127,64 +111,57 @@ export default function AdminComunicacao() {
   const [selectedTemplate, setSelectedTemplate] = useState<typeof initialEmailTemplates[0] | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
-  const handleCreateTemplate = (e: React.FormEvent) => {
+  const handleCreateTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!templateFormData.name || !templateFormData.subject) {
       toast.error('Preencha os campos obrigatórios');
       return;
     }
 
-    const newTemplate: EmailTemplate = {
-      id: Math.random().toString(36).substr(2, 9),
-      projectId: selectedProject?.id || '',
-      variables: ['nome'],
-      ...templateFormData,
-    };
-
-    setTemplates([newTemplate, ...templates]);
-    toast.success('Template criado com sucesso!');
-    setIsTemplateModalOpen(false);
-    setTemplateFormData({ name: '', subject: '', category: 'Inscrições', body: '' });
+    try {
+      await createTemplate({
+        projectId: selectedProject?.id || '',
+        name: templateFormData.name,
+        subject: templateFormData.subject,
+        category: templateFormData.category,
+        body: templateFormData.body,
+        variables: ['nome', 'email', 'empresa', 'ticket', 'data', 'evento']
+      });
+      toast.success('Template criado com sucesso!');
+      setIsTemplateModalOpen(false);
+      setTemplateFormData({ name: '', subject: '', category: 'Inscrições', body: '' });
+    } catch (err) {
+      toast.error('Erro ao criar template no banco');
+    }
   };
 
-  const handleCreateCampaign = (e: React.FormEvent) => {
+  const handleCreateCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!campaignFormData.name || !campaignFormData.templateId) {
       toast.error('Preencha os campos obrigatórios');
       return;
     }
 
-    let count = 0;
-    const filter = campaignFormData.recipients;
-    
-    if (filter === 'all') count = registrations.length;
-    else if (filter === 'paid') count = registrations.filter(r => r.status === 'paid' || r.status_pagamento === 'pago').length;
-    else if (filter === 'pending') count = registrations.filter(r => r.status === 'pending' || r.status_pagamento === 'pendente').length;
-    else if (filter === 'vip') count = registrations.filter(r => r.ticketType === 'vip' || r.tipo_inscricao === 'vip').length;
-    else if (filter === 'mentors') count = (users?.filter(u => u.role === 'mentor').length || 0);
-    else if (filter === 'speakers') count = (users?.filter(u => u.role === 'speaker').length || 0);
-    else if (filter === 'sponsors') count = (users?.filter(u => u.role === 'sponsor').length || 0);
-    else count = registrations.length; // Fallback
-
-    const newCampaign: EmailCampaign = {
-      id: Math.random().toString(36).substr(2, 9),
-      projectId: selectedProject?.id || '',
-      name: campaignFormData.name,
-      templateId: campaignFormData.templateId,
-      recipients: [] as string[], // We'll store number as count in stats for simplicity or cast
-      status: 'draft',
-      stats: {
-        sent: count,
-        opened: 0,
-        clicked: 0,
-        bounced: 0
-      }
-    };
-
-    setCampaigns([newCampaign, ...campaigns]);
-    toast.success('Campanha criada com sucesso!');
-    setIsCampaignModalOpen(false);
-    setCampaignFormData({ name: '', templateId: '', recipients: 'all' });
+    try {
+      await createCampaign({
+        projectId: selectedProject?.id || '',
+        name: campaignFormData.name,
+        templateId: campaignFormData.templateId,
+        recipientsFilter: campaignFormData.recipients,
+        status: 'draft',
+        stats: {
+          sent: 0,
+          opened: 0,
+          clicked: 0,
+          bounced: 0
+        }
+      });
+      toast.success('Campanha criada com sucesso!');
+      setIsCampaignModalOpen(false);
+      setCampaignFormData({ name: '', templateId: '', recipients: 'all' });
+    } catch (err) {
+      toast.error('Erro ao criar campanha no banco');
+    }
   };
 
   const handleSend = async () => {
@@ -334,13 +311,14 @@ export default function AdminComunicacao() {
       recipients: campaign.recipients_filter || 'all'
     });
 
-    // Auto trigger send after a small delay to ensure state update (or call handleSend directly with inject)
-    setTimeout(() => {
-      handleSend();
+    // Auto trigger send after a small delay to ensure state update
+    setTimeout(async () => {
+      await handleSend();
       // Update campaign status
-      setCampaigns((prev: any) => prev.map((c: any) => 
-        c.id === campaignId ? { ...c, status: 'sent', sentAt: new Date().toISOString(), sent: campaign.recipients } : c
-      ));
+      await updateCampaign(campaignId, {
+        status: 'sent',
+        sentAt: new Date().toISOString()
+      });
     }, 100);
   };
 
@@ -400,7 +378,6 @@ export default function AdminComunicacao() {
         message: '',
         actionUrl: ''
       }));
-      refetchNotifications();
     } catch (error) {
       logger.error('Error sending notifications:', error);
       toast.error('Erro ao enviar notificações: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
