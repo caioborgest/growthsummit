@@ -19,7 +19,8 @@ export function Step1SelecionarCursos({
     const { selectedProject } = useProject();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
 
-    const isTriunfo = selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026';
+    const isTriunfo = selectedProject?.slug?.toLowerCase().includes('triunfo') || 
+                      selectedProject?.name?.toLowerCase().includes('triunfo');
 
     // Mostrar toda a programação diurna disponível no banco
     const cursosDisponiveis = sessions.filter(s => {
