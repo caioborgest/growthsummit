@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/api/client';
-import { endpoints } from '@/api/endpoints';
+import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import type { Project } from '@/types';
 
@@ -19,10 +18,15 @@ export function useProjectsQuery(filters?: Record<string, any>) {
   return useQuery({
     queryKey: projectKeys.list(filters || {}),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.projects.base, {
-        params: filters,
-      });
-      return response.data as Project[];
+      let query: any = supabase.from('projetos_growth_experience' as any).select('*');
+      
+      if (filters?.active !== undefined) {
+        query = query.eq('active', filters.active);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Project[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -33,8 +37,14 @@ export function useProjectQuery(id: string) {
   return useQuery({
     queryKey: projectKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.projects.byId(id));
-      return response.data as Project;
+      const { data, error } = await (supabase
+        .from('projetos_growth_experience' as any)
+        .select('*')
+        .eq('id', id)
+        .single());
+
+      if (error) throw error;
+      return data as Project;
     },
     enabled: !!id,
   });
@@ -45,8 +55,19 @@ export function useProjectStatsQuery(id: string) {
   return useQuery({
     queryKey: projectKeys.stats(id),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.projects.stats(id));
-      return response.data;
+      // Suposta RPC ou agregação direta para estatísticas
+      const { data, error } = await supabase.rpc('get_project_stats', { p_project_id: id });
+      
+      if (error) {
+        // Fallback se a RPC não existir
+        const { count: inscriptions } = await (supabase
+          .from('inscricoes_growth_experience' as any)
+          .select('*', { count: 'exact', head: true })
+          .eq('project_id', id));
+          
+        return { inscriptions_count: inscriptions || 0 };
+      }
+      return data;
     },
     enabled: !!id,
     staleTime: 1 * 60 * 1000, // 1 minuto
@@ -61,8 +82,14 @@ export function useProjectsMutation() {
   // Criar projeto
   const createMutation = useMutation({
     mutationFn: async (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const response = await apiClient.post(endpoints.projects.base, data);
-      return response.data as Project;
+      const { data: newProject, error } = await (supabase
+        .from('projetos_growth_experience' as any)
+        .insert(data)
+        .select()
+        .single());
+
+      if (error) throw error;
+      return newProject as Project;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
@@ -72,8 +99,15 @@ export function useProjectsMutation() {
   // Atualizar projeto
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Project> }) => {
-      const response = await apiClient.patch(endpoints.projects.byId(id), data);
-      return response.data as Project;
+      const { data: updatedProject, error } = await (supabase
+        .from('projetos_growth_experience' as any)
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single());
+
+      if (error) throw error;
+      return updatedProject as Project;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(data.id) });
@@ -84,7 +118,12 @@ export function useProjectsMutation() {
   // Deletar projeto
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(endpoints.projects.byId(id));
+      const { error } = await (supabase
+        .from('projetos_growth_experience' as any)
+        .delete()
+        .eq('id', id));
+
+      if (error) throw error;
       return id;
     },
     onSuccess: (id) => {
@@ -96,8 +135,14 @@ export function useProjectsMutation() {
   // Selecionar projeto
   const selectMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.post(endpoints.projects.select(id));
-      return response.data as Project;
+      const { data, error } = await (supabase
+        .from('projetos_growth_experience' as any)
+        .select('*')
+        .eq('id', id)
+        .single());
+
+      if (error) throw error;
+      return data as Project;
     },
     onSuccess: (data) => {
       setSelectedProject(data);

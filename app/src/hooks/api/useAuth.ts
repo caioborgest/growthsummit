@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
-import apiClient from '@/api/client';
-import { endpoints } from '@/api/endpoints';
-import type { User } from '@/types';
+import { supabase } from '@/lib/supabase';
+import type { User as AppUser } from '@/types';
 
 // Query keys
 export const authKeys = {
@@ -19,8 +18,18 @@ export function useAuth() {
   const profileQuery = useQuery({
     queryKey: authKeys.profile(),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.auth.me);
-      return response.data as User;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      
+      // Mapeia usuário do auth para o tipo User da aplicação
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário',
+        role: user.user_metadata?.role || 'user',
+        avatarUrl: user.user_metadata?.avatar_url,
+        createdAt: user.created_at,
+      } as unknown as AppUser;
     },
     enabled: authStore.isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutos
@@ -29,14 +38,20 @@ export function useAuth() {
   // Mutation para login
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const response = await apiClient.post(endpoints.auth.login, { email, password });
-      return response.data;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
     },
-    onSuccess: (data) => {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      queryClient.setQueryData(authKeys.profile(), data.user);
-      authStore.fetchProfile();
+    onSuccess: (data: any) => {
+      // Supabase já trata persistência automaticamente se configurado no client
+      if (data.user) {
+        queryClient.setQueryData(authKeys.profile(), {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || 'Usuário',
+        });
+        authStore.fetchProfile();
+      }
     },
   });
   
@@ -48,24 +63,36 @@ export function useAuth() {
       password: string;
       phone?: string;
     }) => {
-      const response = await apiClient.post(endpoints.auth.register, data);
-      return response.data;
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.name,
+            phone: data.phone,
+          }
+        }
+      });
+      if (error) throw error;
+      return signUpData;
     },
-    onSuccess: (data) => {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      queryClient.setQueryData(authKeys.profile(), data.user);
+    onSuccess: (data: any) => {
+      if (data.user) {
+        queryClient.setQueryData(authKeys.profile(), {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name,
+        });
+      }
     },
   });
   
   // Mutation para logout
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiClient.post(endpoints.auth.logout);
+      await supabase.auth.signOut();
     },
     onSuccess: () => {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       queryClient.clear();
       authStore.logout();
     },

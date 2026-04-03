@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/api/client';
-import { endpoints } from '@/api/endpoints';
+import { supabase } from '@/lib/supabase';
+import { registrationService } from '@/services/registrationService';
 import type { Registration } from '@/types';
+import { logger } from '@/lib/logger';
 
 // Query keys
 export const registrationKeys = {
@@ -18,10 +19,15 @@ export function useRegistrationsQuery(filters?: Record<string, any>) {
   return useQuery({
     queryKey: registrationKeys.list(filters),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.registrations.base, {
-        params: filters,
-      });
-      return response.data as Registration[];
+      let query: any = supabase.from('inscricoes_growth_experience' as any).select('*');
+      
+      if (filters?.email) query = query.eq('email', filters.email);
+      if (filters?.status) query = query.eq('status', filters.status);
+      if (filters?.projectId) query = query.eq('project_id', filters.projectId);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Registration[];
     },
   });
 }
@@ -31,8 +37,16 @@ export function useMyRegistrationsQuery() {
   return useQuery({
     queryKey: registrationKeys.my(),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.registrations.my);
-      return response.data as Registration[];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await (supabase
+        .from('inscricoes_growth_experience' as any)
+        .select('*')
+        .eq('user_id', user.id));
+
+      if (error) throw error;
+      return data as Registration[];
     },
   });
 }
@@ -42,20 +56,35 @@ export function useRegistrationQuery(id: string) {
   return useQuery({
     queryKey: registrationKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.registrations.byId(id));
-      return response.data as Registration;
+      const { data, error } = await (supabase
+        .from('inscricoes_growth_experience' as any)
+        .select('*')
+        .eq('id', id)
+        .single());
+
+      if (error) throw error;
+      return data as Registration;
     },
     enabled: !!id,
   });
 }
 
-// Hook para QR Code
+// Hook para QR Code (Simulado via metadata por enquanto ou campo qr_code)
 export function useRegistrationQRQuery(id: string) {
   return useQuery({
     queryKey: registrationKeys.qrCode(id),
     queryFn: async () => {
-      const response = await apiClient.get(endpoints.registrations.qrCode(id));
-      return response.data as { qrCode: string; ticketNumber: string };
+      const { data, error } = await (supabase
+        .from('inscricoes_growth_experience' as any)
+        .select('id, ticket_number, qr_code')
+        .eq('id', id)
+        .single());
+
+      if (error) throw error;
+      return { 
+        qrCode: (data as any).qr_code || `GE-${(data as any).id}`, 
+        ticketNumber: (data as any).ticket_number || '0000' 
+      };
     },
     enabled: !!id,
   });
@@ -65,25 +94,37 @@ export function useRegistrationQRQuery(id: string) {
 export function useRegistrationsMutation() {
   const queryClient = useQueryClient();
   
-  // Criar checkout
+  // Criar checkout (Mapeia para a lógica de inscrição do Supabase)
   const checkoutMutation = useMutation({
     mutationFn: async (data: {
       ticketType: 'standard' | 'pro' | 'vip';
       paymentMethod: 'credit_card' | 'pix' | 'boleto';
       projectId: string;
+      dadosInscricao?: any; // Dados extras necessários para o Supabase
     }) => {
-      const response = await apiClient.post(endpoints.registrations.checkout, data);
-      return response.data;
+      logger.info('[useRegistrationsMutation] Iniciando checkout via Supabase');
+      
+      // Se tivermos os dados brutos da inscrição, usamos o service
+      if (data.dadosInscricao) {
+        return registrationService.registerWithSlots(data.dadosInscricao);
+      }
+
+      // Fallback básico para checkout via API simulada no client
+      throw new Error('Assinatura de checkout requer dados completos da inscrição para processar via Supabase.');
     },
   });
   
-  // Verificar pagamento
+  // Verificar pagamento (Polling local ou trigger de confirmação)
   const verifyPaymentMutation = useMutation({
     mutationFn: async (registrationId: string) => {
-      const response = await apiClient.post(endpoints.registrations.verifyPayment, {
-        registrationId,
-      });
-      return response.data;
+      const { data, error } = await (supabase
+        .from('inscricoes_growth_experience' as any)
+        .select('status_pagamento')
+        .eq('id', registrationId)
+        .single());
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: registrationKeys.my() });
@@ -93,10 +134,13 @@ export function useRegistrationsMutation() {
   // Cancelar inscrição
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.patch(endpoints.registrations.byId(id), {
-        status: 'cancelled',
-      });
-      return response.data;
+      const { data, error } = await (supabase
+        .from('inscricoes_growth_experience' as any)
+        .update({ status: 'cancelled' })
+        .eq('id', id));
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: registrationKeys.my() });

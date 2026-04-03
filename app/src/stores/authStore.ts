@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import apiClient from '@/api/client';
-import { endpoints } from '@/api/endpoints';
+import { supabase } from '@/lib/supabase';
 import type { User } from '@/types';
 import { safeStorage } from '@/utils/safeStorage';
 
@@ -43,24 +42,30 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiClient.post(endpoints.auth.login, {
+          const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           
-          const { user, accessToken, refreshToken } = response.data;
+          if (error) throw error;
           
-          safeStorage.setItem('accessToken', accessToken);
-          safeStorage.setItem('refreshToken', refreshToken);
+          const user = data.user;
+          const mappedUser: User = {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário',
+            role: user.user_metadata?.role || 'user',
+            createdAt: user.created_at,
+          };
           
           set({
-            user,
+            user: mappedUser,
             isAuthenticated: true,
             isLoading: false,
           });
         } catch (error: any) {
           set({
-            error: error.response?.data?.message || 'Erro ao fazer login',
+            error: error.message || 'Erro ao fazer login',
             isLoading: false,
           });
           throw error;
@@ -71,21 +76,37 @@ export const useAuthStore = create<AuthState>()(
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiClient.post(endpoints.auth.register, data);
+          const { data: signUpData, error } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+            options: {
+              data: {
+                full_name: data.name,
+                phone: data.phone,
+                role: data.role || 'user',
+              }
+            }
+          });
           
-          const { user, accessToken, refreshToken } = response.data;
+          if (error) throw error;
           
-          safeStorage.setItem('accessToken', accessToken);
-          safeStorage.setItem('refreshToken', refreshToken);
+          const user = signUpData.user!;
+          const mappedUser: User = {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.full_name || 'Usuário',
+            role: user.user_metadata?.role || 'user',
+            createdAt: user.created_at,
+          };
           
           set({
-            user,
+            user: mappedUser,
             isAuthenticated: true,
             isLoading: false,
           });
         } catch (error: any) {
           set({
-            error: error.response?.data?.message || 'Erro ao criar conta',
+            error: error.message || 'Erro ao criar conta',
             isLoading: false,
           });
           throw error;
@@ -95,10 +116,8 @@ export const useAuthStore = create<AuthState>()(
       // Logout
       logout: async () => {
         try {
-          await apiClient.post(endpoints.auth.logout);
+          await supabase.auth.signOut();
         } finally {
-          safeStorage.removeItem('accessToken');
-          safeStorage.removeItem('refreshToken');
           set({
             user: null,
             isAuthenticated: false,
@@ -107,18 +126,10 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      // Refresh token
+      // Refresh token (Supabase faz automaticamente se configurado)
       refreshToken: async () => {
-        try {
-          const refreshToken = safeStorage.getItem('refreshToken');
-          const response = await apiClient.post(endpoints.auth.refresh, {
-            refreshToken,
-          });
-          
-          const { accessToken } = response.data;
-          localStorage.setItem('accessToken', accessToken);
-        } catch (error) {
-          // Refresh falhou - fazer logout
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error) {
           get().logout();
         }
       },
@@ -126,9 +137,23 @@ export const useAuthStore = create<AuthState>()(
       // Fetch profile
       fetchProfile: async () => {
         try {
-          const response = await apiClient.get(endpoints.auth.me);
+          const { data: { user }, error } = await supabase.auth.getUser();
+          
+          if (error || !user) {
+            set({ user: null, isAuthenticated: false });
+            return;
+          }
+
+          const mappedUser: User = {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuário',
+            role: user.user_metadata?.role || 'user',
+            createdAt: user.created_at,
+          };
+
           set({
-            user: response.data,
+            user: mappedUser,
             isAuthenticated: true,
           });
         } catch (error) {
@@ -143,14 +168,31 @@ export const useAuthStore = create<AuthState>()(
       updateProfile: async (data) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.patch(endpoints.users.profile, data);
+          const { data: updatedData, error } = await supabase.auth.updateUser({
+            data: {
+              full_name: data.name,
+              avatar_url: data.avatarUrl,
+            }
+          });
+          
+          if (error) throw error;
+          
+          const user = updatedData.user;
+          const mappedUser: User = {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.full_name || 'Usuário',
+            role: user.user_metadata?.role || 'user',
+            createdAt: user.created_at,
+          };
+
           set({
-            user: response.data,
+            user: mappedUser,
             isLoading: false,
           });
         } catch (error: any) {
           set({
-            error: error.response?.data?.message || 'Erro ao atualizar perfil',
+            error: error.message || 'Erro ao atualizar perfil',
             isLoading: false,
           });
           throw error;
