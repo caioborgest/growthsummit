@@ -27,8 +27,9 @@ interface Step2DadosPessoaisProps {
     onUpdate?: (novosDados: Partial<DadosInscricao>) => void;
 }
 
-export function Step2DadosPessoais({ dados, onContinuar, onVoltar, onUpdate }: Step2DadosPessoaisProps) {
-    const [nome, setNome] = useState(dados.nome);
+export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
+    const { dados, onContinuar, onVoltar, onUpdate } = props;
+    const [nome, setNome] = useState(dados.nome);  
     const [cpf, setCpf] = useState(dados.cpf || '');
     const [email, setEmail] = useState(dados.email);
     const [telefone, setTelefone] = useState(dados.telefone);
@@ -123,13 +124,15 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar, onUpdate }: S
                     setIndicacaoNome(lot.nome_empresa);
                     setIndicacaoTipo('empresa'); // Auto-set the badge
                     setDesconto(100);
-                    onUpdate?.({ 
-                        indicacaoNome: lot.nome_empresa, 
-                        descontoSocial: 100, 
-                        loteId: (lot as any).id, 
-                        voucherEmpresa: lot.voucher_code,
-                        tipoInscricao: ((lot as any).tipo_ingresso || 'pro') as any
-                    });
+                    if (onUpdate) {
+                        onUpdate({ 
+                            indicacaoNome: lot.nome_empresa, 
+                            descontoSocial: 100, 
+                            loteId: (lot as any).id, 
+                            voucherEmpresa: lot.voucher_code,
+                            tipoInscricao: ((lot as any).tipo_ingresso || 'pro') as any
+                        });
+                    }
                     toast.success('Voucher corporativo validado!');
                 }
                 return;
@@ -168,12 +171,14 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar, onUpdate }: S
                     setPartnerId(partner.id);
                     setIndicacaoNome(partner.name);
                     setDesconto(100);
-                    onUpdate?.({ 
-                        indicacaoNome: partner.name, 
-                        partnerId: partner.id, 
-                        descontoSocial: 100,
-                        tipoInscricao: 'pro'
-                    });
+                    if (onUpdate) {
+                        onUpdate({ 
+                            indicacaoNome: partner.name, 
+                            partnerId: partner.id, 
+                            descontoSocial: 100,
+                            tipoInscricao: 'pro'
+                        });
+                    }
                     toast.success('Código de parceiro validado!');
                 }
                 return;
@@ -207,10 +212,12 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar, onUpdate }: S
                     if (couponData.indicacao_tipo) {
                         setIndicacaoTipo(couponData.indicacao_tipo as any);
                     }
-                    onUpdate?.({ 
-                        descontoSocial: couponData.porcentagem_desconto,
-                        indicacaoTipo: (couponData.indicacao_tipo || indicacaoTipo) as any 
-                    });
+                    if (onUpdate) {
+                        onUpdate({ 
+                            descontoSocial: couponData.porcentagem_desconto,
+                            indicacaoTipo: (couponData.indicacao_tipo || indicacaoTipo) as any 
+                        });
+                    }
                     toast.success(`Cupom de ${couponData.porcentagem_desconto}% aplicado!`);
                 }
             } else {

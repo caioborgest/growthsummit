@@ -231,6 +231,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (hasCoreData) {
       setIsLoading(false);
       logger.debug('✅ UI liberada com dados otimistas (JWT)');
+      
+      // Se já temos nome e role, só buscamos do banco se for admin ou se quisermos garantir refresh
+      // Para usuários normais, o JWT é suficiente e evita timeouts de RLS
+      if (optimisticUser.role !== 'admin') {
+        isSyncingRef.current = false;
+        return;
+      }
     }
 
     // 4. Buscar metadados enriquecidos no banco em background
@@ -675,5 +682,3 @@ export function useAuth() {
   if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
-
-

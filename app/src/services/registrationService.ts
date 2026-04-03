@@ -77,19 +77,22 @@ export const registrationService = {
 
         // Se projectId não for UUID, tenta extrair se for um objeto ou falha
         const cleanProjectId = isValidUUID(params.projectId) ? params.projectId : null;
+        const cleanUserId = isValidUUID(params.userId) ? params.userId : null;
+        const cleanLoteId = isValidUUID(params.loteId) ? params.loteId : null;
+        const cleanPartnerId = isValidUUID(params.partnerId) ? params.partnerId : null;
 
         if (!cleanProjectId) {
-            logger.error('[registrationService] Tentativa de registro com projectId inválido:', params.projectId);
-            throw new Error('ID do Projeto inválido. Por favor, recarregue a página.');
+            logger.error('[registrationService] Tentativa de registro com projectId inválido (não UUID):', params.projectId);
+            throw new Error('Identificador do projeto é inválido ou temporário. Por favor, aguarde o carregamento completo da página.');
         }
 
         const payload = {
             p_project_id: cleanProjectId,
-            p_user_id: isValidUUID(params.userId) ? params.userId : null,
-            p_nome: params.nome,
-            p_email: params.email?.trim().toLowerCase(),
-            p_telefone: params.telefone,
-            p_cpf: params.cpf,
+            p_user_id: cleanUserId,
+            p_nome: params.nome || '',
+            p_email: params.email?.trim().toLowerCase() || '',
+            p_telefone: params.telefone || '',
+            p_cpf: params.cpf || '',
             p_session_ids: Array.isArray(params.sessionIds) ? params.sessionIds.filter(id => isValidUUID(id)) : [],
             p_tipo_inscricao: params.tipoInscricao || 'standard',
             p_valor_pago: Number(params.valorPago) || 0,
@@ -106,7 +109,7 @@ export const registrationService = {
             p_codigo_social: params.codigoSocial || null,
             p_codigo_palestra: params.codigoPalestra || null,
             p_extra_data: params.extraData || {},
-            p_lote_id: isValidUUID(params.loteId) ? params.loteId : null,
+            p_lote_id: cleanLoteId,
             p_voucher_empresa: params.voucherEmpresa || null
         };
 
@@ -136,15 +139,15 @@ export const registrationService = {
 
             // Se for inscrição de parceiro, vincular na tabela de equipe (RPC valida access_code e limite)
             const rpcPayload = data as { success?: boolean; inscricao_id?: string };
-            if (isValidUUID(params.partnerId) && rpcPayload?.success !== false) {
+            if (cleanPartnerId && rpcPayload?.success !== false) {
                 const inscId = rpcPayload?.inscricao_id;
-                const partnerQR = `GE-PARTNER|${inscId || payload.p_user_id || 'new'}|${Date.now()}`;
+                const partnerQR = `GE-PARTNER|${inscId || cleanUserId || 'new'}|${Date.now()}`;
                 try {
                     const { data: peData, error: peErr } = await (supabase.rpc as any)('register_parceiro_equipe_member', {
-                        p_partner_id: params.partnerId,
+                        p_partner_id: cleanPartnerId,
                         p_partner_access_code: params.partnerAccessCode ?? null,
-                        p_project_id: payload.p_project_id,
-                        p_user_id: payload.p_user_id,
+                        p_project_id: cleanProjectId,
+                        p_user_id: cleanUserId,
                         p_name: params.nome,
                         p_email: params.email,
                         p_phone: params.telefone,
@@ -156,7 +159,7 @@ export const registrationService = {
                     if (!(row as { success?: boolean }).success) {
                         logger.warn('[registrationService] Parceiro equipe RPC retornou falha:', peData);
                     } else {
-                        logger.info(`[registrationService] Vínculo com parceiro ${params.partnerId} criado com sucesso.`);
+                        logger.info(`[registrationService] Vínculo com parceiro ${cleanPartnerId} criado com sucesso.`);
                     }
                 } catch (peErr) {
                     logger.error('[registrationService] Erro ao criar vínculo com equipe de parceiro:', peErr);

@@ -604,15 +604,24 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       if (!isGlobal && projectId) {
         // Proteção contra 'uuid = text': apenas aplicar o filtro .eq se o projectId for um UUID válido
         // ou se soubermos que a tabela aceita slugs (raro, a maioria usa UUID)
-        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        const isActuallyUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
         
-        if (isValidUUID) {
+        if (isActuallyUUID) {
           query = query.eq('project_id', projectId);
         } else {
-          // Se não for UUID, talvez seja um slug — tentar filtrar por slug se a tabela suportar
-          // Mas para a maioria das tabelas GE, o project_id É UUID.
-          // Se for slug, não aplicamos o filtro ID para evitar o erro de 'uuid = text'
-          logger.debug(`[useData:${entityName}] Ignorando filtro project_id: ${projectId} não é UUID válido.`);
+          // Se não for UUID (ex: slug temporário), não aplicamos o filtro project_id na consulta SQL 
+          // para evitar o erro fatal 'operator does not exist: uuid = text' na tabela do Supabase.
+          logger.debug(`[useData:${entityName}] Ignorando filtro project_id via UUID (valor recebido: ${projectId})`);
+          
+          // Fallback seguro: se é uma tabela que requer project_id mas não temos um UUID, 
+          // a query retornaria 0 resultados de qualquer forma ou erro. 
+          // Retornamos vazio se não for global e não tivermos o ID correto.
+          if (!isGlobal) {
+            setData([]);
+            setIsLoading(false);
+            isFetchingRef.current = false;
+            return;
+          }
         }
       }
 
