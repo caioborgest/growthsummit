@@ -1,9 +1,12 @@
-import { CheckCircle2, Circle, ArrowRight, Settings as SettingsIcon, Calendar, Users, Ticket, PlayCircle, Layout } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Settings as SettingsIcon, Calendar, Users, Ticket, PlayCircle, Layout, CheckSquare, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Project } from '@/types';
+import { useProjects } from '@/hooks/useData';
+import { toast } from 'sonner';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface Step {
   id: string;
@@ -22,6 +25,7 @@ interface SetupWizardProps {
     registrationsCount: number;
     couponsCount: number;
   };
+  onUpdate?: (project: Project) => void;
 }
 
 export function SetupWizard({ project, data }: SetupWizardProps) {
@@ -77,8 +81,66 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
       isCompleted: (p) => p.status === 'active',
     },
   ];
+  
+  const { setSelectedProject } = useProject();
+  const { update } = useProjects();
 
-  const currentStepIndex = steps.findIndex(s => !s.isCompleted(project, data));
+  const toggleStep = async (stepId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const currentManualSteps = project.settings?.publicContent?.manualSteps || [];
+    const isCurrentlyManual = currentManualSteps.includes(stepId);
+    
+    let newManualSteps;
+    if (isCurrentlyManual) {
+      newManualSteps = currentManualSteps.filter(id => id !== stepId);
+    } else {
+      newManualSteps = [...currentManualSteps, stepId];
+    }
+
+    try {
+      // Create the updated settings object
+      const newSettings = {
+        ...project.settings,
+        publicContent: {
+          ...project.settings?.publicContent,
+          manualSteps: newManualSteps
+        }
+      };
+
+      // Update local context for snappy UI
+      setSelectedProject({
+        ...project,
+        settings: newSettings
+      });
+
+      // Persist to database using useData's update (entityName 'projects')
+      // For global entities like 'projects', useData expects (id, data)
+      await (update as any)(project.id, {
+        settings: newSettings
+      });
+      
+      toast.success(isCurrentlyManual ? 'Etapa marcada como pendente' : 'Etapa marcada como realizada');
+    } catch (error) {
+      logger.error('Erro ao atualizar etapas do wizard:', error);
+      toast.error('Erro ao salvar progresso no banco');
+    }
+  };
+
+  const isStepDone = (step: Step) => {
+    // Check automatic completion
+    if (step.isCompleted(project, data)) return true;
+    // Check manual completion
+    return (project.settings?.publicContent?.manualSteps || []).includes(step.id);
+  };
+
+  const completedCount = steps.filter(s => isStepDone(s)).length;
+  const progressPercentage = Math.round((completedCount / steps.length) * 100);
+  
+  // Se estiver 100% concluído, o componente desaparece (conforme solicitado)
+  if (progressPercentage === 100) return null;
+
+  const currentStepIndex = steps.findIndex(s => !isStepDone(s));
   const activeStep = currentStepIndex === -1 ? steps[steps.length - 1] : steps[currentStepIndex];
 
   return (
@@ -110,22 +172,22 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
         <div className="w-full bg-[#0F172A] rounded-full h-1.5 mb-8 overflow-hidden">
           <motion.div 
             initial={{ width: 0 }}
-            animate={{ width: `${(steps.filter(s => s.isCompleted(project, data)).length / steps.length) * 100}%` }}
+            animate={{ width: `${progressPercentage}%` }}
             className="bg-gradient-to-r from-[#21808D] to-[#2A9D8F] h-full rounded-full shadow-[0_0_10px_rgba(33,128,141,0.5)]"
           />
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {steps.map((step, index) => {
-            const completed = step.isCompleted(project, data);
+            const completed = isStepDone(step);
+            const isManual = (project.settings?.publicContent?.manualSteps || []).includes(step.id);
             const active = index === currentStepIndex;
 
             return (
               <motion.div
                 key={step.id}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => navigate(step.path)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer group ${
+                whileHover={{ scale: 1.01 }}
+                className={`p-4 rounded-xl border transition-all cursor-pointer group relative ${
                   completed 
                     ? 'bg-[#21808D]/10 border-[#21808D]/30' 
                     : active 
@@ -133,7 +195,10 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
                       : 'bg-[#0F172A]/50 border-[#334155] opacity-60'
                 }`}
               >
-                <div className="flex items-start gap-3">
+                <div 
+                  className="flex items-start gap-3"
+                  onClick={() => navigate(step.path)}
+                >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     completed ? 'bg-[#21808D] text-white' : 'bg-[#1E293B] text-gray-500'
                   }`}>
@@ -147,6 +212,18 @@ export function SetupWizard({ project, data }: SetupWizardProps) {
                       {step.description}
                     </p>
                   </div>
+                  
+                  {/* Manual Toggle Checkbox */}
+                  <button
+                    onClick={(e) => toggleStep(step.id, e)}
+                    className={`p-1 rounded-md transition-colors ${
+                      isManual ? 'text-[#21808D] hover:bg-[#21808D]/20' : 'text-gray-600 hover:bg-white/5'
+                    }`}
+                    title={isManual ? "Marcar como pendente" : "Marcar como realizada"}
+                  >
+                    {isManual ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                  </button>
+
                   {!completed && active && (
                     <ArrowRight className="w-4 h-4 text-[#21808D] animate-bounce-horizontal" />
                   )}

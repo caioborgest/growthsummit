@@ -327,6 +327,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     'staffRole',     // not stored as a separate column  
     'permissions',   // stored in metadata/jwt
     'twoFactorEnabled', // stored in auth
+    'publicContent',    // nested object in settings, not a separate column
   ]);
 
   // First pass: map directly using semantic map and snake case — skip virtual fields

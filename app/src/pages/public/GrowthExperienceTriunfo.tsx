@@ -72,7 +72,7 @@ const palestrantes = [
   {
     nome: "Vanylton Matias",
     cargo: "CEO, Grupo Núcleo",
-    descricao: "Especialista em métodos de gestão para escalar negócios",
+    descricao: "Gestão inteligente para escala de negócios",
     tema: "Escalando Negócios com Equilíbrio e Humanidade",
     horario: "21:10 - 22:30",
     foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
@@ -426,11 +426,11 @@ export function GrowthExperienceTriunfo() {
                   }))
                 : [
                   { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
-                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Liderança em momentos desafiadores' },
-                  { time: '19:00', event: 'Talk Show: Leandro & João Daniel', desc: 'Bastidores de negócios que cresceram no interior' },
-                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Jurídica', desc: 'Redução de riscos e engajamento de equipes' },
-                  { time: '21:10', event: 'Vanylton Matias: Gestão para Escalar', desc: 'Equilíbrio entre resultados e olhar humano' },
-                  { time: '22:30', event: 'Networking e Encerramento', desc: 'Conexões finais e encerramento oficial (23h).' }
+                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Estratégias para momentos desafiadores' },
+                  { time: '19:00', event: 'Talk Show: Leandro Batista & João Daniel', desc: 'Bastidores de negócios de sucesso no interior' },
+                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Inteligente', desc: 'Redução de riscos e engajamento humano' },
+                  { time: '21:10', event: 'Vanylton Matias: Escalando com Equilíbrio', desc: 'Acelerando resultados com gestão humanizada' },
+                  { time: '22:30', event: 'Networking Premium e Encerramento', desc: 'Momento final de conexões de alto nível' }
                 ];
 
               return sessionsToRender.map((item, idx) => (

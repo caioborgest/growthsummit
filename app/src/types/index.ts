@@ -105,6 +105,7 @@ export interface ProjectSettings {
       vagas: number;
       destaque?: boolean;
     }[];
+    manualSteps?: string[];
   };
 }
 
