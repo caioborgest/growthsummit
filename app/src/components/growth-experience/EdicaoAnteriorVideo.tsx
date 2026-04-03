@@ -99,7 +99,7 @@ export function EdicaoAnteriorVideo({
                                     preload="auto"
                                     style={{ aspectRatio: '9/16' }}
                                 >
-                                    <source src={`${videoSrc}?t=${Date.now()}`} type="video/mp4" />
+                                    <source src={`${videoSrc}?v=2026.1`} type="video/mp4" />
                                     Seu navegador não suporta reprodução de vídeo.
                                 </video>
 

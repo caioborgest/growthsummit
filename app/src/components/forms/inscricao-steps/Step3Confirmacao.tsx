@@ -145,7 +145,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             const sessionIds = dados.cursosSelecionados
                 .filter((id: any) => isValidUUID(id));
             const registrationParams = {
-                projectId: isValidUUID(projectId) ? projectId : null,
+                projectId: (selectedProject?.id && isValidUUID(selectedProject.id)) ? selectedProject.id : (isValidUUID(projectId) ? projectId : null),
                 userId: null, // Passamos null agora
                 nome: dados.nome,
                 email: cleanEmail,
