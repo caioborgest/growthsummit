@@ -191,8 +191,6 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   quantidade_dia: 'quantidadeDia',
   quantidade_noite: 'quantidadeNoite',
   valor_investido: 'investmentAmount',
-  // Mentoria additional business info
-  // nome_startup: 'startupName', // Already defined at line 104
   // Registration Batch
   nome_responsavel: 'nomeResponsavel',
   email_responsavel: 'emailResponsavel',
@@ -202,23 +200,33 @@ const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
   vagas_utilizadas: 'vagasUtilizadas',
   tipo_ingresso: 'tipoIngresso',
   valor_total: 'valorTotal',
-  owner_id: 'ownerId',
-  owner_type: 'ownerType',
-  company_id: 'companyId',
-  visitor_phone: 'visitorPhone',
-  visitor_cpf: 'visitorCpf',
-  // Raffle / Stand fields
-  stand_id: 'standId',
-  winner_registration_id: 'winnerRegistrationId',
-  drawn_at: 'drawnAt',
-  project_id: 'projectId',
-  partner_id: 'partnerId',
-  user_id: 'userId',
+  status_pagamento: 'statusPagamento',
+  observacoes: 'observacoes',
+  cnpj: 'cnpj',
+  nome_empresa: 'nomeEmpresa',
+  // Partner
+  contact_name: 'contactName',
+  contact_email: 'contactEmail',
+  contact_phone: 'contactPhone',
   access_code: 'accessCode',
   max_team_members: 'maxTeamMembers',
-  date: 'date',
-  recipients_filter: 'recipientsFilter',
-  template_id: 'templateId',
+  sponsor_id: 'sponsorId',
+  stand_id: 'standId',
+  logo_url: 'logoUrl',
+  // Coupon
+  codigo: 'codigo',
+  indicacao_tipo: 'indicacaoTipo',
+  indicacao_nome: 'indicacaoNome',
+  porcentagem_desconto: 'porcentagemDesconto',
+  uso_limite: 'usoLimite',
+  uso_atual: 'usoAtual',
+  vencimento: 'vencimento',
+  ativo: 'ativo',
+  // Common
+  project_id: 'projectId',
+  user_id: 'userId',
+  created_at: 'createdAt',
+  updated_at: 'updatedAt',
 };
 
 const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
@@ -230,7 +238,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   const result: Record<string, unknown> = {};
   
   // Entities that do NOT use the Portuguese semantic map (nome -> name)
-  const skipSemanticMap = ['partners', 'sessions', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins'].includes(entityName || '');
+  const skipSemanticMap = ['partners', 'sessions', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins', 'registration_batches'].includes(entityName || '');
 
   for (const [key, value] of Object.entries(item)) {
     // 1. Try semantic map first (only if not skipped)
@@ -358,6 +366,9 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';
       else if (entity === 'transactions' && key === 'amount') dbKey = 'amount';
+      else if (entity === 'partners' && key === 'name') dbKey = 'name'; // Partner uses 'name' column directly
+      else if (entity === 'registration_batches' && key === 'nomeEmpresa') dbKey = 'nome_empresa';
+      else if (entity === 'cupons' && key === 'codigo') dbKey = 'codigo';
       else {
         // Use generic semantic map or snake_case fallback
         dbKey = SEMANTIC_MAP_TO_DB[key] || toSnakeCase(key);
