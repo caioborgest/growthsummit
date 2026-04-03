@@ -8,7 +8,6 @@ import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
 import { Step3Confirmacao } from './inscricao-steps/Step3Confirmacao';
-import { Step4OfertaPalestras } from './inscricao-steps/Step4OfertaPalestras';
 import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
@@ -37,10 +36,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         comprarPalestras: false
     });
 
-    const totalSteps = 7;
+    const totalSteps = 6;
 
     const handleClose = () => {
-        if (currentStep === 7) {
+        if (currentStep === 6) {
             onClose();
             clearDraft();
         } else {
@@ -88,7 +87,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     // Salvar rascunho
     useEffect(() => {
-        if (isOpen && currentStep < 7) {
+        if (isOpen && currentStep < 6) {
             const draftData = {
                 data: {
                     ...dados,
@@ -159,21 +158,13 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedProject?.id, allSessions?.length]);
 
-    // Skip Step 4 para Triunfo (oferta de palestras não é necessária — todas já incluem pagamento)
+    // Skip do Step 4 (Pagamento) quando já está pago (Gratuito/Voucher)
     useEffect(() => {
-        if (currentStep === 4 && selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
+        if (currentStep === 4 && dados.statusPagamento === 'pago') {
             nextStep(true);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStep, selectedProject?.slug]);
-
-    // Skip seguro do Step 5 quando não há pagamento pendente
-    useEffect(() => {
-        if (currentStep === 5 && !(dados.comprarPalestras && dados.statusPagamento !== 'pago')) {
-            nextStep(true);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStep, dados.comprarPalestras, dados.statusPagamento]);
+    }, [currentStep, dados.statusPagamento]);
 
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
@@ -200,13 +191,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         
         let targetStep = currentStep - 1;
 
-        // Lógica reversa de skip
-        if (targetStep === 5) {
-            const hasPendingPayment = dados.comprarPalestras && dados.statusPagamento !== 'pago';
-            if (!hasPendingPayment) targetStep = 4;
-        }
-        
-        if (targetStep === 4 && selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
+        // Skip reverso do Pagamento (Novo Step 4)
+        if (targetStep === 4 && dados.statusPagamento === 'pago') {
             targetStep = 3;
         }
 
@@ -253,95 +239,14 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     />
                 );
             case 4:
-                // Passo skipado no Triunfo
-                if (selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
-                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" /></div>;
-                }
                 return (
-                    <Step4OfertaPalestras
+                    <Step5PagamentoPix
                         dados={dados}
-                        onComprar={async () => {
-                            if (isProcessing) return;
-                            setIsProcessing(true);
-                            if (dados.inscricaoId) {
-                                try {
-                                    const { supabase } = await import('@/lib/supabase');
-                                    // Cálculo de valor (mesma lógica do Step 3)
-                                    const valorOriginal = 179.99;
-                                    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
-                                    const valorComDesconto = valorOriginal * (1 - descontoEfetivo / 100);
-
-                                    if (dados.voucherEmpresa) {
-                                        const { error: rpcError } = await supabase.rpc('aplicar_voucher_empresa', {
-                                            p_inscricao_id: dados.inscricaoId,
-                                            p_voucher_code: dados.voucherEmpresa
-                                        });
-                                        if (rpcError) throw rpcError;
-                                    } else {
-                                        await (supabase
-                                            .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
-                                            .update({
-                                                palestras_noturnas: true,
-                                                valor_pago: valorComDesconto,
-                                                status_pagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
-                                                status: valorComDesconto > 0 ? 'pendente' : 'ativo',
-                                                cupom_palestra: dados.cupomPalestra || null,
-                                                codigo_palestra: dados.cupomPalestra || null,
-                                                valor_desconto_palestra: (dados.descontoPalestra || 0)
-                                            })
-                                            .eq('id', dados.inscricaoId);
-                                    }
-
-                                    updateDados({
-                                        comprarPalestras: true,
-                                        statusPagamento: valorComDesconto > 0 ? 'pendente' : 'pago',
-                                        valorFinal: valorComDesconto
-                                    });
-                                } catch (err) {
-                                    logger.error('Erro ao atualizar compra de palestras:', { error: err });
-                                    updateDados({ comprarPalestras: true, statusPagamento: 'pendente' });
-                                }
-                            } else {
-                                updateDados({ comprarPalestras: true, statusPagamento: 'pendente' });
-                            }
-                            setIsProcessing(false);
-                            nextStep();
-                        }}
-                        onPular={async () => {
-                            // Mesmo pular, garantimos que está false (já é por padrão, mas reforçamos se for refazer o fluxo)
-                            if (dados.inscricaoId) {
-                                try {
-                                    const { supabase } = await import('@/lib/supabase');
-                                    await (supabase
-                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
-                                        .update({ palestras_noturnas: false, valor_pago: 0 })
-                                        .eq('id', dados.inscricaoId);
-                                } catch (e) {
-                                    logger.error('Erro ao pular palestras:', { error: e });
-                                }
-                            }
-                            updateDados({ comprarPalestras: false });
-                            nextStep();
-                        }}
+                        onContinuar={nextStep}
                         onVoltar={prevStep}
-                        onUpdate={updateDados}
                     />
                 );
             case 5:
-                // Passo condicional: Se comprou palestras e está pendente, mostra pagamento
-                if (dados.comprarPalestras && dados.statusPagamento !== 'pago') {
-                    return (
-                        <Step5PagamentoPix
-                            dados={dados}
-                            onContinuar={nextStep}
-                            onVoltar={prevStep}
-                        />
-                    );
-                } else {
-                    // Bug fix: não chamar nextStep() no corpo do render — useEffect abaixo cuida disso
-                    return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin" /></div>;
-                }
-            case 6:
                 return (
                     <Step6DownloadApp
                         onVoltar={prevStep}
@@ -365,7 +270,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         }}
                     />
                 );
-            case 7:
+            case 6:
                 return (
                     <Step7Conclusao
                         dados={dados}
@@ -417,10 +322,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         />
 
                         {[
-                            selectedProject?.slug === 'ge-triunfo-2026' ? '-' : 'Cursos',
+                            'Cursos',
                             'Dados',
                             'Confirmar',
-                            selectedProject?.slug === 'ge-triunfo-2026' ? '-' : 'Upgrade',
                             'Pagamento',
                             'App',
                             'OK'
