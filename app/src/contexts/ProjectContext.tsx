@@ -55,12 +55,19 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Persistência
     if (selectedProject) {
-      safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
+      // Pequena validação para evitar salvar slugs como 'id' por acidente (legado ou URL corrupta)
+      const isIdUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(selectedProject.id);
+      if (isIdUUID) {
+        safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
+      } else {
+        // Se o ID for slug, não salve — deixe a recuperação via URL buscar do Supabase novamente
+        logger.debug('ProjectContext: ID atual não é UUID, pulando persistência.');
+      }
     } else if (!urlProjectId) {
       // Só remove se não tiver projeto na URL também
       safeStorage.removeItem('selectedProject');
     }
-  }, [selectedProject]);
+  }, [selectedProject, urlProjectId]);
 
   const handleSetProject = useCallback((project: Project | null) => {
     setSelectedProject(current => {

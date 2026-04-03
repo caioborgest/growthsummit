@@ -133,19 +133,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 throw new Error(validation.errorMessage || 'Dados inválidos.');
             }
 
-            // ── ETAPA 1: Autenticar / criar usuário (lógica centralizada)
-            const { userId } = await getOrCreateUser({
-                email: cleanEmail,
-                password: dados.senha,
-                name: dados.nome,
-                phone: dados.telefone,
-                role: 'participant',
-            });
-
-            if (!userId) throw new Error('Usuário não identificado para a inscrição.');
-
-            // ── ETAPA 1.5: Aguardar sincronização (Prevenção de race condition no FK)
-            await waitForUserSync(userId);
+            // ── ETAPA 1: Autenticar / criar usuário (ADIAdo para o final do fluxo para evitar acesso antecipado)
+            // Agora apenas realizamos a inscrição no banco. O usuário será criado no Step 7.
+            const userId = null;
 
             // ── ETAPA 2: Calcular valor (já feito no escopo superior)
             const statusPagamento = (dados.comprarPalestras && valorPagoTotal > 0) ? 'pendente' : 'pago';
@@ -157,7 +147,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
             const registrationParams = {
                 projectId: projectId || '',
-                userId: userId || '',
+                userId: null, // Passamos null agora
                 nome: dados.nome,
                 email: cleanEmail,
                 telefone: dados.telefone,
@@ -181,7 +171,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 voucherEmpresa: dados.voucherEmpresa,
             };
 
-            logger.debug('[Step3Confirmacao] Enviando payload de inscrição:', registrationParams);
+            logger.debug('[Step3Confirmacao] Enviando payload de inscrição antecipada (sem user ainda):', registrationParams);
 
             const rpcResult = await registrationService.registerWithSlots(registrationParams);
 
@@ -199,7 +189,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             const finalInscricaoId = rpcResult.inscricao_id || null;
 
             // ── ETAPA 5: Sucesso
-            onConfirmar(userId, finalInscricaoId || '', statusPagamento);
+            onConfirmar('', finalInscricaoId || '', statusPagamento);
             
             // Salvar o valor final calculado no estado global
             onUpdate?.({ valorFinal: valorFinal });

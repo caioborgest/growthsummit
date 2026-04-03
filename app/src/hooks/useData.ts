@@ -602,7 +602,18 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       // Filtro por projeto para tabelas não genéricas
       if (!isGlobal && projectId) {
-        query = query.eq('project_id', projectId);
+        // Proteção contra 'uuid = text': apenas aplicar o filtro .eq se o projectId for um UUID válido
+        // ou se soubermos que a tabela aceita slugs (raro, a maioria usa UUID)
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        
+        if (isValidUUID) {
+          query = query.eq('project_id', projectId);
+        } else {
+          // Se não for UUID, talvez seja um slug — tentar filtrar por slug se a tabela suportar
+          // Mas para a maioria das tabelas GE, o project_id É UUID.
+          // Se for slug, não aplicamos o filtro ID para evitar o erro de 'uuid = text'
+          logger.debug(`[useData:${entityName}] Ignorando filtro project_id: ${projectId} não é UUID válido.`);
+        }
       }
 
       const resultRaw = await withTimeout(
@@ -821,8 +832,10 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
           event: '*',
           schema: 'public',
           table: tableName,
-          filter: `project_id=eq.${projectId}`
-        },
+        filter: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)
+          ? `project_id=eq.${projectId}`
+          : undefined
+      },
         () => {
           // logger.debug(`[useData:${entityName}] Mudança detectada no banco. Atualizando...`);
           fetchData(true);
