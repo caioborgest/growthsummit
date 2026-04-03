@@ -43,7 +43,7 @@ SELECT id,
     max_vagas,
     registered_count INTO v_session
 FROM public.programacao_evento
-WHERE id = v_session_id FOR
+WHERE id = v_session_id::UUID FOR
 UPDATE;
 IF FOUND
 AND v_session.max_vagas IS NOT NULL
@@ -121,7 +121,7 @@ IF p_session_ids IS NOT NULL
 AND array_length(p_session_ids, 1) > 0 THEN FOREACH v_session_id IN ARRAY p_session_ids LOOP
 UPDATE public.programacao_evento
 SET registered_count = COALESCE(registered_count, 0) + 1
-WHERE id = v_session_id;
+WHERE id = v_session_id::UUID;
 END LOOP;
 END IF;
 RETURN jsonb_build_object(
