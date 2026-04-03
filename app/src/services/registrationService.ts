@@ -72,8 +72,7 @@ export const registrationService = {
      */
     async registerWithSlots(params: RegistrationParams) {
         // 👮 Validação rigorosa de UUID (8-4-4-4-12) para evitar erro 42883 'uuid = text'
-        const isValidUUID = (id: any): id is string => 
-            typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const isValidUUID = registrationService.isValidUUID;
 
         // Se projectId não for UUID, tenta extrair se for um objeto ou falha
         const cleanProjectId = isValidUUID(params.projectId) ? params.projectId : null;
@@ -207,5 +206,8 @@ export const registrationService = {
             
         if (error) throw error;
         return data;
+    },
+    isValidUUID(id: any): id is string {
+        return typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     }
 };

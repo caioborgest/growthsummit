@@ -140,12 +140,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             // ── ETAPA 2: Calcular valor (já feito no escopo superior)
             const statusPagamento = (dados.comprarPalestras && valorPagoTotal > 0) ? 'pendente' : 'pago';
 
-            const isUuid = (id: any) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || '');
-            const cleanProjectId = isUuid(selectedProject?.id) ? selectedProject?.id : (isUuid(projectId) ? projectId : null);
+            const cleanProjectId = registrationService.isValidUUID(selectedProject?.id) ? selectedProject?.id : (registrationService.isValidUUID(projectId) ? projectId : null);
 
             // ── ETAPA 3: Inscrição atômica via Service Layer (verifica vagas + insere + incrementa)
             const sessionIds = dados.cursosSelecionados
-                .filter((id: any) => isUuid(id));
+                .filter((id: any) => registrationService.isValidUUID(id));
             const registrationParams = {
                 projectId: cleanProjectId,
                 userId: null, // Passamos null agora
@@ -168,7 +167,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 indicacaoNome: dados.indicacaoNome || null,
                 codigoSocial: dados.codigo || null,
                 codigoPalestra: dados.cupomPalestra || null,
-                loteId: isValidUUID(dados.loteId) ? dados.loteId : null,
+                loteId: registrationService.isValidUUID(dados.loteId) ? dados.loteId : null,
                 voucherEmpresa: dados.voucherEmpresa,
                 partnerAccessCode: dados.partnerAccessCode || null,
             };
