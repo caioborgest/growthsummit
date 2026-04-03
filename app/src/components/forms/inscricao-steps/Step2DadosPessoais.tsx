@@ -87,102 +87,126 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
 
     const validarCodigo = async () => {
         if (!codigo.trim()) return;
-        const cleanCodigo = codigo.trim().toUpperCase();
         setValidating(true);
         setErrors(prev => ({ ...prev, codigo: '' }));
-        
-        logger.debug(`[Step2] Validando código: ${cleanCodigo} para projeto: ${projectId} (Tipo: ${indicacaoTipo})`);
-        
+
+        const cleanCodigo = codigo.trim().toUpperCase();
+        logger.debug('[Step2] Validando código:', { cleanCodigo, tipo: indicacaoTipo, project: projectId });
+
         try {
+            // Priority 1: Lote de Empresa (Voucher Corporativo)
             if (indicacaoTipo === 'empresa') {
-                const { data, error } = (await supabase
+                const { data: lot, error } = await supabase
                     .from('lotes_inscricao_empresa')
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
-                    .eq('project_id', projectId)
                     .eq('voucher_code', cleanCodigo)
-                    .single()) as { data: any, error: any };
-                
-                if (error || !data) {
-                    logger.warn(`[Step2] Voucher corporativo não encontrado: ${cleanCodigo} no projeto ${projectId}`, { error, projectId, code: cleanCodigo });
-                    setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
-                } else if (data.status_pagamento !== 'pago') {
-                    setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento' }));
-                } else if (data.vagas_utilizadas >= data.quantidade_vagas) {
-                    setErrors(prev => ({ ...prev, codigo: 'Limite de vagas deste voucher esgotado' }));
-                } else {
-                    setDesconto(100);
-                    setCodigoValidado(true);
-                    setLoteId(data.id);
-                    setVoucherEmpresa(data.voucher_code);
-                    setIndicacaoNome(data.nome_empresa);
-                    toast.success('PAGAMENTO CONFIRMADO PELA EMPRESA! 🎉');
-                }
-            } else {
-                // Primeiro tenta como Código de Parceiro/Expositor
-                const { data: partner, error: partnerError } = (await supabase
-                    .from('parceiros')
-                    .select('id, name, access_code, max_team_members')
                     .eq('project_id', projectId)
-                    .eq('access_code', cleanCodigo)
-                    .single()) as { data: any, error: any };
+                    .maybeSingle();
 
-                if (partner && !partnerError) {
-                    // Verificar limite de membros
-                    const { count } = await supabase
-                        .from('parceiros_equipe')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('partner_id', partner.id);
+                if (error) throw error;
 
-                    if (count !== null && count >= (partner.max_team_members || 10)) {
-                        setErrors(prev => ({ ...prev, codigo: 'Limite de membros da equipe atingido' }));
+                if (lot) {
+                    if (lot.vagas_utilizadas >= lot.quantidade_vagas || lot.status_pagamento !== 'pago') {
+                        setErrors(prev => ({ ...prev, codigo: 'Voucher inválido, limite excedido ou pagamento pendente' }));
+                        setCodigoValidado(false);
                     } else {
-                        setDesconto(100);
                         setCodigoValidado(true);
-                        setPartnerId(partner.id);
-                        setIndicacaoTipo('parceiro');
-                        setIndicacaoNome(partner.name);
-                        toast.success(`BEM-VINDO À EQUIPE DA ${partner.name.toUpperCase()}! 🚀`);
+                        setLoteId(lot.id);
+                        setVoucherEmpresa(lot.voucher_code);
+                        setIndicacaoNome(lot.nome_empresa);
+                        setDesconto(100);
+                        onUpdate?.({ 
+                            indicacaoNome: lot.nome_empresa, 
+                            descontoSocial: 100, 
+                            loteId: lot.id, 
+                            voucherEmpresa: lot.voucher_code,
+                            tipoInscricao: (lot.tipo_ingresso || 'pro') as any
+                        });
+                        toast.success('Voucher corporativo validado!');
                     }
-                } else {
-                    // Se não for parceiro, tenta como Cupom Tradicional
-                    const { data, error } = (await supabase
-                        .from('cupons_parceria_social')
-                        .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
-                        .eq('project_id', projectId)
-                        .eq('codigo', cleanCodigo)
-                        .eq('ativo', true)
-                        .single()) as { data: any, error: any };
-                    
-                    if (error || !data) {
-                        logger.warn(`[Step2] Cupom social não encontrado ou inativo: ${cleanCodigo} no projeto ${projectId}`, { error, projectId, code: cleanCodigo });
-                        setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
-                    } else {
-                        const couponData = data;
-                        const isCompatible = couponData.indicacao_tipo === indicacaoTipo || couponData.indicacao_tipo === 'promocional';
-                        
-                        // Verificação de expiração robusta
-                        const now = new Date();
-                        const expiry = couponData.vencimento ? new Date(couponData.vencimento) : null;
-                        const isExpired = expiry ? expiry < now : false;
-
-                        if (!isCompatible) {
-                            setErrors(prev => ({ ...prev, codigo: `Este código pertence à outra categoria. Selecione a correta acima.` }));
-                        } else if (isExpired) {
-                            logger.warn(`[Step2] Cupom expirado: ${cleanCodigo} (Vencimento: ${couponData.vencimento})`);
-                            setErrors(prev => ({ ...prev, codigo: 'Este código de parceria já expirou' }));
-                        } else if (couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite) {
-                            setErrors(prev => ({ ...prev, codigo: 'Limite de usos atingido' }));
-                        } else {
-                            setDesconto(couponData.porcentagem_desconto);
-                            setCodigoValidado(true);
-                            setPartnerId(''); // Limpa se for cupom
-                            toast.success(`CÓDIGO CONFIRMADO! -${couponData.porcentagem_desconto}% de desconto.`);
-                        }
-                    }
+                    return;
                 }
             }
+
+            // Priority 2: Parceiros Diretos (Expositores/Vex)
+            // Estes usam um access_code na tabela 'parceiros'
+            const { data: partner, error: partnerError } = await supabase
+                .from('parceiros')
+                .select('id, name, access_code, max_team_members')
+                .eq('access_code', cleanCodigo)
+                .eq('project_id', projectId)
+                .eq('status', 'active')
+                .maybeSingle();
+
+            if (partnerError) logger.error('[Step2] Erro ao buscar parceiro:', partnerError);
+
+            if (partner) {
+                // Verificar limite de membros da equipe
+                const { count, error: countError } = await supabase
+                    .from('parceiros_equipe')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('partner_id', partner.id);
+
+                if (countError) logger.error('[Step2] Erro ao contar equipe:', countError);
+
+                const usedMembers = count || 0;
+                const limit = partner.max_team_members || 10;
+
+                if (usedMembers >= limit) {
+                    setErrors(prev => ({ ...prev, codigo: `Limite de equipe atingido para este parceiro (${limit})` }));
+                    setCodigoValidado(false);
+                } else {
+                    setCodigoValidado(true);
+                    setPartnerId(partner.id);
+                    setIndicacaoNome(partner.name);
+                    setDesconto(100);
+                    onUpdate?.({ 
+                        indicacaoNome: partner.name, 
+                        partnerId: partner.id, 
+                        descontoSocial: 100,
+                        tipoInscricao: 'pro'
+                    });
+                    toast.success('Código de parceiro validado!');
+                }
+                return;
+            }
+
+            // Priority 3: Cupons Sociais e Promocionais
+            const { data: couponData, error: couponError } = await supabase
+                .from('cupons_parceria_social')
+                .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
+                .eq('codigo', cleanCodigo)
+                .eq('project_id', projectId)
+                .maybeSingle();
+
+            if (couponError) throw couponError;
+
+            if (couponData) {
+                const isExpired = couponData.vencimento && new Date(couponData.vencimento) < new Date();
+                const isFull = couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite;
+                const isCompatible = couponData.indicacao_tipo === indicacaoTipo || 
+                                   couponData.indicacao_tipo === 'promocional' || 
+                                   indicacaoTipo === 'nenhum';
+
+                if (!couponData.ativo || isExpired || isFull) {
+                    setErrors(prev => ({ ...prev, codigo: 'Cupom inativo, expirado ou limite de uso atingido' }));
+                    setCodigoValidado(false);
+                } else if (!isCompatible) {
+                    setErrors(prev => ({ ...prev, codigo: `Cupom incompatível com a categoria selecionada (${couponData.indicacao_tipo})` }));
+                    setCodigoValidado(false);
+                } else {
+                    setCodigoValidado(true);
+                    setDesconto(couponData.porcentagem_desconto);
+                    onUpdate?.({ descontoSocial: couponData.porcentagem_desconto });
+                    toast.success(`Cupom de ${couponData.porcentagem_desconto}% aplicado!`);
+                }
+            } else {
+                logger.warn('[Step2] Código não encontrado em nenhuma categoria:', cleanCodigo);
+                setErrors(prev => ({ ...prev, codigo: 'Código não encontrado para este evento. Verifique a categoria selecionada.' }));
+                setCodigoValidado(false);
+            }
         } catch (err) {
-            logger.error('[Step2] Erro ao validar código', err);
+            logger.error('[Step2] Erro crítico ao validar código:', err);
             setErrors(prev => ({ ...prev, codigo: 'Erro de conexão ao validar' }));
             setCodigoValidado(false);
         } finally {
