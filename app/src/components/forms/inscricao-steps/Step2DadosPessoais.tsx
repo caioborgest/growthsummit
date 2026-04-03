@@ -201,7 +201,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
         if (!telefone.trim()) newErrors.telefone = 'Telefone é obrigatório';
         else if (telefone.replace(/\D/g, '').length < 10) newErrors.telefone = 'Telefone inválido';
         if (!senha) newErrors.senha = 'Senha é obrigatória';
-        else if (senha.length < 8) newErrors.senha = 'Senha deve ter pelo menos 8 caracteres';
+        else if (senha.length < 6) newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
         if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
         else if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
         if (indicacaoTipo !== 'nenhum' && !codigoValidado) newErrors.codigo = 'Por favor, valide o código antes de continuar';
@@ -302,7 +302,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                             <input
                                 id="senha" type={showSenha ? 'text' : 'password'} value={senha} autoComplete="new-password"
                                 onChange={e => { setSenha(e.target.value); if (errors.senha) setErrors({ ...errors, senha: '' }); }}
-                                placeholder="Mínimo 8 caracteres"
+                                placeholder="Mínimo 6 caracteres"
                                 className={`form-input${errors.senha ? ' error' : ''}`}
                             />
                             <button type="button" onClick={() => setShowSenha(!showSenha)} className="form-input-icon-end">

@@ -38,7 +38,7 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
         if (!nome.trim()) newErrors.nome = 'Nome é obrigatório';
         if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Email inválido';
         if (!telefone.trim() || telefone.replace(/\D/g, '').length < 10) newErrors.telefone = 'Telefone inválido';
-        if (!senha || senha.length < 8) newErrors.senha = 'Senha de no mínimo 8 caracteres';
+        if (!senha || senha.length < 6) newErrors.senha = 'Senha de no mínimo 6 caracteres';
         if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
 
         setErrors(newErrors);
@@ -132,7 +132,7 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
                             <div className="relative">
                                 <Input
                                     id="senha"
-                                    placeholder="Mínimo 8 caracteres"
+                                    placeholder="Mínimo 6 caracteres"
                                     type={showSenha ? 'text' : 'password'}
                                     value={senha}
                                     onChange={(e) => {

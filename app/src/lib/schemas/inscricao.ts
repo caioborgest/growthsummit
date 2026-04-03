@@ -14,7 +14,7 @@ export const DadosPessoaisSchema = z.object({
     telefone: z.string()
         .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato de telefone inválido (esperado: (XX) XXXXX-XXXX)'),
     senha: z.string()
-        .min(8, 'A senha deve ter pelo menos 8 caracteres'),
+        .min(6, 'A senha deve ter pelo menos 6 caracteres'),
 });
 
 /**
