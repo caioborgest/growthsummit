@@ -28,17 +28,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     const urlParams = new URLSearchParams(window.location.search);
     const urlProjectId = urlParams.get('project');
 
-    if (urlProjectId && (!selectedProject || selectedProject.id !== urlProjectId)) {
-      // Tentar buscar do Supabase se o ID for diferente do atual
+    if (urlProjectId && (!selectedProject || (selectedProject.id !== urlProjectId && selectedProject.slug !== urlProjectId))) {
+      // 🕵️ Tentar buscar do Supabase: Aceita ID (UUID) OU Slug (Texto)
+      // O Supabase suporta filtros or(), evitando erro de cast 'uuid = text' do Postgres
       import('@/lib/supabase').then(({ supabase }) => {
         supabase.from('projects' as any)
           .select('*')
-          .eq('id', urlProjectId)
-          .single()
+          .or(`id.eq.${urlProjectId},slug.eq.${urlProjectId}`)
+          .maybeSingle()
           .then(({ data, error }) => {
             if (!error && data) {
-              // Simple mapping to avoid importing complex useData logic here
-              const mapped = Object.entries(data).reduce((acc, [key, val]) => {
+              const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
                 const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
                 acc[camelKey] = val;
                 return acc;

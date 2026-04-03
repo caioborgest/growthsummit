@@ -68,37 +68,49 @@ export const registrationService = {
      * Chama a função RPC 'register_participant_with_slots' no Supabase.
      */
     async registerWithSlots(params: RegistrationParams) {
-        const isValidUUID = (id?: string | null) => id && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        // 👮 Validação rigorosa de UUID (8-4-4-4-12) para evitar erro 42883 'uuid = text'
+        const isValidUUID = (id?: string | null) => 
+            id && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+        const payload = {
+            p_project_id: isValidUUID(params.projectId) ? params.projectId : null,
+            p_user_id: isValidUUID(params.userId) ? params.userId : null,
+            p_nome: params.nome,
+            p_email: params.email?.trim().toLowerCase(),
+            p_telefone: params.telefone,
+            p_cpf: params.cpf,
+            p_session_ids: Array.isArray(params.sessionIds) ? params.sessionIds.filter(id => isValidUUID(id)) : [],
+            p_tipo_inscricao: params.tipoInscricao || 'standard',
+            p_valor_pago: Number(params.valorPago) || 0,
+            p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
+            p_status: params.status || (params.palestrasNoturnas ? 'pendente' : 'ativo'),
+            p_evento: params.evento || null,
+            p_palestras_noturnas: !!params.palestrasNoturnas,
+            p_tipo_atividade: params.tipoAtividade || null,
+            p_sala_atividade: params.salaAtividade || null,
+            p_horario_atividade: params.horarioAtividade || null,
+            p_nivel_atividade: params.nivelAtividade || null,
+            p_indicacao_tipo: params.indicacaoTipo || 'nenhum',
+            p_indicacao_nome: params.indicacaoNome || null,
+            p_codigo_social: params.codigoSocial || null,
+            p_codigo_palestra: params.codigoPalestra || null,
+            p_extra_data: params.extraData || {},
+            p_lote_id: isValidUUID(params.loteId) ? params.loteId : null,
+            p_voucher_empresa: params.voucherEmpresa || null
+        };
+
+        logger.info('[registrationService] Executando RPC register_participant_with_slots:', {
+            project: payload.p_project_id,
+            user: payload.p_user_id,
+            sessions: payload.p_session_ids.length,
+            lote: payload.p_lote_id,
+            tipo: payload.p_tipo_inscricao
+        });
 
         try {
             const { data, error } = await (supabase.rpc as any)(
                 'register_participant_with_slots',
-                {
-                    p_project_id: isValidUUID(params.projectId) ? params.projectId : null,
-                    p_user_id: isValidUUID(params.userId) ? params.userId : null,
-                    p_nome: params.nome,
-                    p_email: params.email,
-                    p_telefone: params.telefone,
-                    p_cpf: params.cpf,
-                    p_session_ids: params.sessionIds || [],
-                    p_tipo_inscricao: params.tipoInscricao || 'standard',
-                    p_valor_pago: params.valorPago || 0,
-                    p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
-                    p_status: params.status || (params.palestrasNoturnas ? 'pendente' : 'ativo'),
-                    p_evento: params.evento || null,
-                    p_palestras_noturnas: params.palestrasNoturnas || false,
-                    p_tipo_atividade: params.tipoAtividade,
-                    p_sala_atividade: params.salaAtividade,
-                    p_horario_atividade: params.horarioAtividade,
-                    p_nivel_atividade: params.nivelAtividade,
-                    p_indicacao_tipo: params.indicacaoTipo || 'nenhum',
-                    p_indicacao_nome: params.indicacaoNome,
-                    p_codigo_social: params.codigoSocial,
-                    p_codigo_palestra: params.codigoPalestra,
-                    p_extra_data: params.extraData || {},
-                    p_lote_id: params.loteId && params.loteId.length === 36 ? params.loteId : null,
-                    p_voucher_empresa: params.voucherEmpresa || null,
-                }
+                payload
             );
 
             if (error) {
