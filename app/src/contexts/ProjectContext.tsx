@@ -28,31 +28,36 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     const urlParams = new URLSearchParams(window.location.search);
     const urlProjectId = urlParams.get('project');
 
-    if (urlProjectId && (!selectedProject || (selectedProject.id !== urlProjectId && selectedProject.slug !== urlProjectId))) {
-      // 🕵️ Tentar buscar do Supabase: Aceita ID (UUID) OU Slug (Texto)
-      // O Supabase suporta filtros or(), evitando erro de cast 'uuid = text' do Postgres
-      import('@/lib/supabase').then(({ supabase }) => {
-        supabase.from('projects' as any)
-          .select('*')
-          .or(`id.eq.${urlProjectId},slug.eq.${urlProjectId}`)
-          .maybeSingle()
-          .then(({ data, error }) => {
-            if (!error && data) {
-              const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
-                const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
-                acc[camelKey] = val;
-                return acc;
-              }, {} as any);
-              setSelectedProject(mapped);
-            }
-          });
-      });
+    if (urlProjectId) {
+      const isAlreadySelected = selectedProject && 
+        (selectedProject.id === urlProjectId || selectedProject.slug === urlProjectId);
+
+      if (!isAlreadySelected) {
+        // 🕵️ Tentar buscar do Supabase: Aceita ID (UUID) OU Slug (Texto)
+        import('@/lib/supabase').then(({ supabase }) => {
+          supabase.from('projects' as any)
+            .select('*')
+            .or(`id.eq.${urlProjectId},slug.eq.${urlProjectId}`)
+            .maybeSingle()
+            .then(({ data, error }) => {
+              if (!error && data) {
+                const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
+                  const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
+                  acc[camelKey] = val;
+                  return acc;
+                }, {} as any);
+                setSelectedProject(mapped);
+              }
+            });
+        });
+      }
     }
 
     // 2. Persistência
     if (selectedProject) {
       safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
     } else if (!urlProjectId) {
+      // Só remove se não tiver projeto na URL também
       safeStorage.removeItem('selectedProject');
     }
   }, [selectedProject]);

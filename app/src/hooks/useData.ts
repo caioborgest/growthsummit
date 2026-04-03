@@ -383,7 +383,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     if (s.goalRevenue !== undefined) result.goal_revenue = s.goalRevenue;
     if (s.goalSponsorship !== undefined) result.goal_sponsorship = s.goalSponsorship;
     if (s.goalRegistrations !== undefined) result.goal_registrations = s.goalRegistrations;
-    if (s.publicContent !== undefined) result.public_content = s.publicContent;
+    if (s.settings !== undefined) result.settings = s.settings;
     if (s.ticketTiers !== undefined) result.ticket_tiers = s.ticketTiers;
     // Remove the raw settings object — it was expanded above into flat columns
     delete result.settings;
@@ -497,7 +497,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
-    projects: 'id,name,slug,type,description,location,city,state,start_date,start_time,end_date,end_time,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,target_revenue,target_registrations,public_content,ticket_tiers,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,max_registrations,max_mentors,max_startups,max_companies,primary_color',
+    projects: 'id,name,slug,type,description,location,city,state,start_date,start_time,end_date,end_time,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,target_revenue,target_registrations,settings,ticket_tiers,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,max_registrations,max_mentors,max_startups,max_companies,primary_color',
     cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
     b2b_meetings: 'id,project_id,status,scheduled_at,duration_minutes,table_number,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
@@ -643,7 +643,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
             goalSponsorship: item['goal_sponsorship'],
             goalRegistrations: item['goal_registrations'],
             ticketTiers: item['ticket_tiers'] || [],
-            publicContent: item['public_content'] || {},
+            settings: item['settings'] || {},
           };
         }
 
