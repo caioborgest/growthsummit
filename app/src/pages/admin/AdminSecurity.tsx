@@ -19,10 +19,10 @@ interface AuditLog {
     id: string;
     event: string;
     user_id: string;
-    metadata: any;
+    metadata: Record<string, unknown>;
     ip_address: string;
     browser_agent: string;
-    created_at: string; // Unificado de timestamp para created_at
+    created_at: string;
 }
 
 interface SuspiciousLogin {
@@ -82,7 +82,7 @@ export function SecurityDashboard() {
                     throw logsErr;
                 }
                 if (logs) setAuditLogs(logs);
-            } catch (e) { 
+            } catch { 
                 logger.debug('Audit logs table potentially missing or inaccessible');
             }
 
@@ -106,7 +106,7 @@ export function SecurityDashboard() {
             } catch { /* Table potentially missing */ }
 
             // Calcular estatísticas básicas com cautela
-            let usersData: any[] = [];
+            let usersData: { id: string; two_factor_enabled: boolean }[] = [];
             try {
                 const { data: users, error: usersErr } = await supabase
                     .from('users')
@@ -125,7 +125,7 @@ export function SecurityDashboard() {
                 if (sessions) activeSessionsCount = sessions.length;
             } catch { /* ignore */ }
 
-            let recentLoginsData: any[] = [];
+            let recentLoginsData: { id: string; success: boolean }[] = [];
             try {
                 const { data: recentLogins } = await supabase
                     .from('login_attempts')
@@ -191,27 +191,46 @@ export function SecurityDashboard() {
 
     return (
         <div className="space-y-8">
+            {/* Status Alert for Missing Tables */}
+            {tablesMissing && (
+                <Card className="p-6 border-amber-500/50 bg-amber-500/5 animate-pulse">
+                    <div className="flex items-start gap-4">
+                        <AlertTriangle className="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                            <h3 className="text-amber-500 font-black uppercase text-sm mb-1 tracking-wider">Tabelas de Segurança Ausentes</h3>
+                            <p className="text-amber-200/70 text-xs leading-relaxed max-w-2xl">
+                                O banco de dados ainda não possui as tabelas <code className="text-white bg-white/10 px-1 rounded">audit_logs</code> e <code className="text-white bg-white/10 px-1 rounded">login_attempts</code>. 
+                                Execute o script SQL de configuração no painel do Supabase para ativar o rastreamento em tempo real.
+                            </p>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Dashboard de Segurança</h1>
-                    <p className="text-gray-400">Monitoramento e auditoria de segurança do sistema</p>
+                    <h1 className="text-3xl font-bold text-white mb-2 uppercase italic tracking-tighter">
+                        SEGURANÇA & <span className="text-brand-orange-coral">LOGS</span>
+                    </h1>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Monitoramento e auditoria de ecossistema v3.0</p>
                 </div>
                 <div className="flex gap-3">
                     <Button
                         onClick={loadSecurityData}
                         variant="outline"
-                        className="border-white/20"
+                        className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest px-6"
                     >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Atualizar
+                        <RefreshCw className="h-3.5 w-3.5 mr-2" />
+                        Sincronizar
                     </Button>
                     <Button
                         onClick={exportAuditLogs}
-                        className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100"
+                        disabled={auditLogs.length === 0}
+                        className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-dark-100 rounded-xl text-[10px] font-black uppercase tracking-widest px-6 shadow-lg shadow-orange-500/20"
                     >
-                        <Download className="h-4 w-4 mr-2" />
-                        Exportar Logs
+                        <Download className="h-3.5 w-3.5 mr-2" />
+                        Exportar CSV
                     </Button>
                 </div>
             </div>
