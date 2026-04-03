@@ -62,8 +62,11 @@ export function SecurityDashboard() {
         loadSecurityData();
     }, []);
 
+    const [tablesMissing, setTablesMissing] = useState(false);
+
     const loadSecurityData = async () => {
         setLoading(true);
+        setTablesMissing(false);
         try {
             // Cada busca é independente e falha silenciosamente se a tabela não existir
             
@@ -74,9 +77,14 @@ export function SecurityDashboard() {
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(100);
-                if (logsErr) throw logsErr;
+                if (logsErr) {
+                    if (logsErr.code === '42P01') setTablesMissing(true);
+                    throw logsErr;
+                }
                 if (logs) setAuditLogs(logs);
-            } catch { /* Table potentially missing */ }
+            } catch (e) { 
+                logger.debug('Audit logs table potentially missing or inaccessible');
+            }
 
             // Carregar logins suspeitos
             try {
@@ -136,7 +144,6 @@ export function SecurityDashboard() {
 
         } catch (error) {
             logger.debug('Algumas tabelas de segurança estão indisponíveis.');
-
             logger.error('Erro ao carregar dados de segurança:', error);
         } finally {
             setLoading(false);
