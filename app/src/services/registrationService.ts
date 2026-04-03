@@ -68,12 +68,14 @@ export const registrationService = {
      * Chama a função RPC 'register_participant_with_slots' no Supabase.
      */
     async registerWithSlots(params: RegistrationParams) {
+        const isValidUUID = (id?: string | null) => id && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
         try {
             const { data, error } = await (supabase.rpc as any)(
                 'register_participant_with_slots',
                 {
-                    p_project_id: params.projectId && params.projectId.length === 36 ? params.projectId : null,
-                    p_user_id: params.userId && params.userId.length === 36 ? params.userId : null,
+                    p_project_id: isValidUUID(params.projectId) ? params.projectId : null,
+                    p_user_id: isValidUUID(params.userId) ? params.userId : null,
                     p_nome: params.nome,
                     p_email: params.email,
                     p_telefone: params.telefone,

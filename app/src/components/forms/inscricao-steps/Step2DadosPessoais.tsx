@@ -100,10 +100,10 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
                     .eq('project_id', projectId)
                     .eq('voucher_code', cleanCodigo)
-                    .single();
+                    .single()) as { data: any, error: any };
                 
                 if (error || !data) {
-                    logger.warn(`[Step2] Voucher corporativo não encontrado: ${cleanCodigo}`, error);
+                    logger.warn(`[Step2] Voucher corporativo não encontrado: ${cleanCodigo} no projeto ${projectId}`, { error, projectId, code: cleanCodigo });
                     setErrors(prev => ({ ...prev, codigo: 'Voucher corporativo não encontrado' }));
                 } else if (data.status_pagamento !== 'pago') {
                     setErrors(prev => ({ ...prev, codigo: 'Este voucher aguarda confirmação de pagamento' }));
@@ -124,7 +124,7 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                     .select('id, name, access_code, max_team_members')
                     .eq('project_id', projectId)
                     .eq('access_code', cleanCodigo)
-                    .single();
+                    .single()) as { data: any, error: any };
 
                 if (partner && !partnerError) {
                     // Verificar limite de membros
@@ -151,10 +151,10 @@ export function Step2DadosPessoais({ dados, onContinuar, onVoltar }: Step2DadosP
                         .eq('project_id', projectId)
                         .eq('codigo', cleanCodigo)
                         .eq('ativo', true)
-                        .single();
+                        .single()) as { data: any, error: any };
                     
                     if (error || !data) {
-                        logger.warn(`[Step2] Código não encontrado: ${cleanCodigo} no projeto ${projectId}`, error);
+                        logger.warn(`[Step2] Cupom social não encontrado ou inativo: ${cleanCodigo} no projeto ${projectId}`, { error, projectId, code: cleanCodigo });
                         setErrors(prev => ({ ...prev, codigo: 'Código inválido ou inativo' }));
                     } else {
                         const couponData = data;

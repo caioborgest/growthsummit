@@ -15,7 +15,7 @@ type ProjectRow = Database['public']['Tables']['projects']['Row'];
 type ProjectUpdate = Database['public']['Tables']['projects']['Update'];
 type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 
-const GE_TRIUNFO_SLUG = 'ge-triunfo-2026';
+const GE_TRIUNFO_SLUG = 'ge-triunfo-pocket-edition-noturno-2026';
 const GE_TRIUNFO_FIXED_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
 const PROJECT_DATA: any = {

@@ -28,15 +28,14 @@ const trustBadges = [
 
 const editions = [
   {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    name: 'Growth Experience Triunfo',
+    name: 'Growth Experience Triunfo - Pocket Edition (Noturno)',
     city: 'Triunfo-PE',
     date: '16 de Abril de 2026',
     description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Imersão completa em Growth e IA.',
     price: 0,
     proPrice: 179.99,
     image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
-    slug: 'ge-triunfo-2026',
+    slug: 'ge-triunfo-pocket-edition-noturno-2026',
     color: 'orange',
     tag: 'Edição Flagship',
     features: [
@@ -55,7 +54,7 @@ const editions = [
     price: 0,
     proPrice: 179.99,
     image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg',
-    slug: 'ge-petrolina-2026',
+    slug: 'ge-petrolina-pocket-edition-2026',
     color: 'teal',
     tag: 'Edição Vale',
     features: [

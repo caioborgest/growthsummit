@@ -53,13 +53,15 @@ export async function getOrCreateUser({
     const { data: { session: existingSession } } = await supabase.auth.getSession();
 
     if (existingSession?.user?.email === cleanEmail) {
-        logger.debug('[auth-helpers] Reutilizando sessão existente para:', cleanEmail);
+        logger.info('[auth-helpers] Reutilizando sessão existente', { email: cleanEmail });
         return {
             userId: existingSession.user.id,
             isNew: false,
             sessionCreated: false,
         };
     }
+
+    logger.debug('[auth-helpers] Iniciando tentativa de login', { email: cleanEmail });
 
     // ── STEP 2: Tentar LOGIN primeiro (mais rápido e evita rate-limit de signUp para existentes)
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -98,6 +100,7 @@ export async function getOrCreateUser({
     }
 
     // ── STEP 3: Se o login falhou (provavelmente não existe), tentamos o SignUp
+    logger.info('[auth-helpers] Login falhou ou usuário inexistente. Tentando signUp', { email: cleanEmail });
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
@@ -122,10 +125,10 @@ export async function getOrCreateUser({
             }, { onConflict: 'id' });
 
             if (syncError) {
-                logger.warn('[auth-helpers] Manual sync warning (non-blocking):', syncError.message);
+                logger.warn('[auth-helpers] Manual sync warning (non-blocking)', { error: syncError.message });
             }
-        } catch (e) {
-            logger.warn('[auth-helpers] Manual sync failed (non-blocking).');
+        } catch {
+            logger.warn('[auth-helpers] Manual sync failed (non-blocking)');
         }
 
         logger.info('[auth-helpers] Novo usuário criado:', { userId, email: cleanEmail });

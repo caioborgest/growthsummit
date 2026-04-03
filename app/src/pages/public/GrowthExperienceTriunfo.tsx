@@ -169,7 +169,7 @@ export function GrowthExperienceTriunfo() {
     try {
       const project = await ensureProject({
         name: 'Growth Experience Triunfo-PE 2026',
-        slug: 'ge-triunfo-2026',
+        slug: 'ge-triunfo-pocket-edition-noturno-2026',
         type: 'growth_experience',
         description: 'GX Growth Experience Triunfo – Noite de Palestras e Negócios. Programação especial das 17h às 23h em 16 de abril de 2026 no Espaço Parque. Palestras, talk shows e networking.',
         shortDescription: 'Edição Triunfo-PE',

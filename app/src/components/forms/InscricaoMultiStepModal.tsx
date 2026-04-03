@@ -144,7 +144,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             tipoInscricao: (activeTier?.id || 'standard') as 'pro' | 'standard' | 'vip' | 'social'
         };
 
-        if (selectedProject.slug === 'ge-triunfo-2026') {
+        if (selectedProject.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
             updates.comprarPalestras = true;
             updates.cursosSelecionados = TriumphSessions;
         }
@@ -161,7 +161,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     // Skip Step 4 para Triunfo (oferta de palestras não é necessária — todas já incluem pagamento)
     useEffect(() => {
-        if (currentStep === 4 && selectedProject?.slug === 'ge-triunfo-2026') {
+        if (currentStep === 4 && selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
             nextStep(true);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,7 +206,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             if (!hasPendingPayment) targetStep = 4;
         }
         
-        if (targetStep === 4 && selectedProject?.slug === 'ge-triunfo-2026') {
+        if (targetStep === 4 && selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
             targetStep = 3;
         }
 
@@ -254,7 +254,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 );
             case 4:
                 // Passo skipado no Triunfo
-                if (selectedProject?.slug === 'ge-triunfo-2026') {
+                if (selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026') {
                     return <div className="flex items-center justify-center p-20"><Loader2 className="h-10 w-10 animate-spin text-brand-orange-coral" /></div>;
                 }
                 return (

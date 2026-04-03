@@ -93,7 +93,7 @@ function StatItem({ icon: Icon, value, label, suffix = '+', delay = 0 }: StatIte
 }
 
 export function StatsSection({ project }: StatsSectionProps) {
-    const isTriunfo = project?.slug === 'ge-triunfo-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
+    const isTriunfo = project?.slug === 'ge-triunfo-pocket-edition-noturno-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
     const isPetrolina = project?.slug === 'ge-petrolina-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('petrolina'));
 
     const getStats = () => {
