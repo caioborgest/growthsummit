@@ -151,7 +151,13 @@ DECLARE
     v_cupom RECORD;
     v_base_price NUMERIC;
     v_expected_max NUMERIC;
+    -- Normaliza IDs de sessão: evita erro 42883 (uuid = text) com ANY/unnest e colunas legadas
+    v_session_ids UUID[] := ARRAY[]::UUID[];
 BEGIN
+    SELECT COALESCE(array_agg(z::uuid), ARRAY[]::uuid[])
+    INTO v_session_ids
+    FROM unnest(COALESCE(p_session_ids, ARRAY[]::uuid[])::text[]) AS z
+    WHERE NULLIF(trim(z), '') IS NOT NULL;
     v_cupom_code := NULLIF(trim(COALESCE(p_codigo_palestra, '')), '');
     IF v_cupom_code IS NULL THEN
         v_cupom_code := NULLIF(trim(COALESCE(p_codigo_social, '')), '');
@@ -161,7 +167,7 @@ BEGIN
         SELECT *
         INTO v_cupom
         FROM public.cupons_parceria_social
-        WHERE project_id = p_project_id
+        WHERE project_id::text = p_project_id::text
           AND upper(trim(codigo)) = upper(trim(v_cupom_code))
         FOR UPDATE;
 
@@ -188,7 +194,7 @@ BEGIN
         SELECT COALESCE(ticket_price_pro, ticket_price_standard, 0)::NUMERIC
         INTO v_base_price
         FROM public.projects
-        WHERE id = p_project_id;
+        WHERE id::text = p_project_id::text;
 
         v_expected_max := v_base_price * (1 - COALESCE(v_cupom.porcentagem_desconto, 0) / 100.0);
         IF p_valor_pago > v_expected_max + 0.02 THEN
@@ -200,11 +206,11 @@ BEGIN
         END IF;
     END IF;
 
-    IF p_session_ids IS NOT NULL AND array_length(p_session_ids, 1) > 0 THEN
-        FOREACH v_sess_id IN ARRAY p_session_ids LOOP
+    IF array_length(v_session_ids, 1) > 0 THEN
+        FOREACH v_sess_id IN ARRAY v_session_ids LOOP
             SELECT id, title, max_vagas, registered_count INTO v_sess
             FROM public.programacao_evento
-            WHERE id = v_sess_id
+            WHERE id::text = v_sess_id::text
             FOR UPDATE;
             IF FOUND AND v_sess.max_vagas IS NOT NULL AND v_sess.max_vagas > 0 THEN
                 IF COALESCE(v_sess.registered_count, 0) >= v_sess.max_vagas THEN
@@ -229,7 +235,7 @@ BEGIN
         horario_atividade, nivel_atividade, indicacao_tipo, indicacao_nome,
         codigo_social, codigo_palestra, cupom_palestra, extra_data, lote_id, voucher_empresa, created_at
     ) VALUES (
-        p_project_id, p_user_id, p_nome, p_email, p_telefone, p_cpf, p_session_ids,
+        p_project_id, p_user_id, p_nome, p_email, p_telefone, p_cpf, v_session_ids,
         p_tipo_inscricao, p_valor_pago, p_status_pagamento, p_status, p_evento,
         p_palestras_noturnas, p_tipo_atividade, p_sala_atividade, p_horario_atividade,
         p_nivel_atividade, p_indicacao_tipo, p_indicacao_nome,
@@ -253,10 +259,10 @@ BEGIN
     )
     WHERE id = v_insc_id;
 
-    IF p_session_ids IS NOT NULL AND array_length(p_session_ids, 1) > 0 THEN
+    IF array_length(v_session_ids, 1) > 0 THEN
         UPDATE public.programacao_evento
         SET registered_count = COALESCE(registered_count, 0) + 1
-        WHERE id = ANY(p_session_ids);
+        WHERE id = ANY(v_session_ids);
     END IF;
 
     RETURN jsonb_build_object('success', true, 'inscricao_id', v_insc_id);
@@ -431,6 +437,8 @@ GRANT EXECUTE ON FUNCTION public.check_in_registration_atomic(UUID, UUID, UUID, 
 -- ───────────────────────────────────────────────────────────
 DROP POLICY IF EXISTS "permitir_select_equipe_publico" ON public.parceiros_equipe;
 DROP POLICY IF EXISTS "permitir_insert_equipe_publico" ON public.parceiros_equipe;
+DROP POLICY IF EXISTS "parceiros_equipe_select_self_or_admin" ON public.parceiros_equipe;
+DROP POLICY IF EXISTS "parceiros_equipe_admin_all" ON public.parceiros_equipe;
 
 CREATE POLICY "parceiros_equipe_select_self_or_admin"
 ON public.parceiros_equipe FOR SELECT
