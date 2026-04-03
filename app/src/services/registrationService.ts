@@ -113,7 +113,8 @@ export const registrationService = {
             p_codigo_palestra: params.codigoPalestra || null,
             p_extra_data: params.extraData || {},
             p_lote_id: cleanLoteId || null,
-            p_voucher_empresa: params.voucherEmpresa || null
+            p_voucher_empresa: params.voucherEmpresa || null,
+            p_partner_id: cleanPartnerId || null
         };
 
         logger.info('[registrationService] Executando RPC register_participant_with_slots:', {
