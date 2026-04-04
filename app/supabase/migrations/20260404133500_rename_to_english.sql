@@ -145,7 +145,7 @@ BEGIN
             'growth_experience_mentors', 'scheduled_mentorings', 
             'company_registration_batches', 'social_partnership_coupons',
             'activity_check_ins', 'partners', 'partner_team',
-            'event_sessions', 'startup_pitches', 'b2b_registration',
+            'event_schedule', 'startup_pitches', 'b2b_registration',
             'growth_experience_transactions', 'raffle_registrations'
         ) 
     LOOP
@@ -162,9 +162,9 @@ CREATE POLICY "admin_all_rg" ON public.growth_experience_registrations FOR ALL U
 CREATE POLICY "public_insert_rg" ON public.growth_experience_registrations FOR INSERT WITH CHECK (true);
 CREATE POLICY "users_own_update_rg" ON public.growth_experience_registrations FOR UPDATE USING (user_id = auth.uid() OR public.is_admin());
 
-ALTER TABLE IF EXISTS event_sessions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public_read_es" ON public.event_sessions FOR SELECT USING (true);
-CREATE POLICY "admin_all_es" ON public.event_sessions FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+ALTER TABLE IF EXISTS event_schedule ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read_es" ON public.event_schedule FOR SELECT USING (true);
+CREATE POLICY "admin_all_es" ON public.event_schedule FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 ALTER TABLE IF EXISTS growth_experience_mentors ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_gm" ON public.growth_experience_mentors FOR SELECT USING (status = 'approved' OR public.is_admin() OR user_id = auth.uid());

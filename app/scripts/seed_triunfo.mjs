@@ -104,10 +104,10 @@ async function seed() {
   console.log('Seeding sessions for Triunfo...');
   
   // Cleanup old sessions first to avoid duplicates (since we don't have IDs for all of them here)
-  await supabase.from('programacao_evento').delete().eq('project_id', TRIUNFO_ID);
+  await supabase.from('event_schedule').delete().eq('project_id', TRIUNFO_ID);
   
   const { data, error } = await supabase
-    .from('programacao_evento')
+    .from('event_schedule')
     .insert(sessions);
     
   if (error) {

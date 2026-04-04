@@ -21,12 +21,18 @@ export function Step1SelecionarCursos({
 
     // Debug log (client-side console)
     useEffect(() => {
+        console.log(`[Step1] Loading state:`, { isLoading, projectId, sessionsCount: sessions?.length });
+        
         if (sessions && sessions.length > 0) {
-            console.log(`[Step1] \${sessions.length} sessions loaded for project:`, selectedProject?.name);
+            console.log(`[Step1] ${sessions.length} sessions loaded for project:`, selectedProject?.name || projectId);
         } else if (!isLoading) {
-            console.warn(`[Step1] No sessions found for project:`, selectedProject?.id, selectedProject?.slug);
+            console.warn(`[Step1] No sessions found for project:`, {
+                id: projectId || selectedProject?.id,
+                slug: selectedProject?.slug,
+                name: selectedProject?.name
+            });
         }
-    }, [sessions, isLoading, selectedProject]);
+    }, [sessions, isLoading, selectedProject, projectId]);
 
     const isTriunfo = selectedProject?.slug?.toLowerCase().includes('triunfo') || 
                       selectedProject?.name?.toLowerCase().includes('triunfo') ||

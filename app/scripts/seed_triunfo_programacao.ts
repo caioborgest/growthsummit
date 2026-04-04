@@ -164,7 +164,7 @@ async function seed() {
 
     // Limpar programação existente para este projeto (opcional, mas bom para refazer)
     const { error: deleteError } = await supabase
-        .from('programacao_evento')
+        .from('event_schedule')
         .delete()
         .eq('project_id', PROJECT_ID);
 
@@ -175,7 +175,7 @@ async function seed() {
     }
 
     const { data, error } = await supabase
-        .from('programacao_evento')
+        .from('event_schedule')
         .insert(sessions);
 
     if (error) {

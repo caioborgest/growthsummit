@@ -199,7 +199,8 @@ CREATE TABLE IF NOT EXISTS public.sessions (
 );
 
 -- Alias para compatibilidade regional (Programação)
-CREATE TABLE IF NOT EXISTS public.programacao_evento (
+-- Alias para compatibilidade regional (Programação)
+CREATE TABLE IF NOT EXISTS public.event_schedule (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
     title TEXT NOT NULL,

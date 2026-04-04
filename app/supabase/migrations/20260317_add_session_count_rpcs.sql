@@ -3,23 +3,23 @@
 -- Date: 2026-03-17
 -- ============================================================
 
--- Function to increment registered_count in programacao_evento
+-- Function to increment registered_count in event_schedule
 CREATE OR REPLACE FUNCTION public.increment_session_count(session_id UUID)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
 BEGIN
-    UPDATE public.programacao_evento
+    UPDATE public.event_schedule
     SET registered_count = COALESCE(registered_count, 0) + 1
     WHERE id = session_id;
 END;
 $$;
 
--- Function to decrement registered_count in programacao_evento
+-- Function to decrement registered_count in event_schedule
 CREATE OR REPLACE FUNCTION public.decrement_session_count(session_id UUID)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
 BEGIN
-    UPDATE public.programacao_evento
+    UPDATE public.event_schedule
     SET registered_count = GREATEST(0, COALESCE(registered_count, 0) - 1)
     WHERE id = session_id;
 END;

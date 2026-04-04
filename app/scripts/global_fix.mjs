@@ -51,7 +51,7 @@ async function globalFix() {
     }
 
     console.log('Ensuring sessions are linked correctly...');
-    const { data: sessCount } = await supabase.from('programacao_evento').select('count', { count: 'exact' }).eq('project_id', TRIUNFO_ID);
+    const { data: sessCount } = await supabase.from('event_schedule').select('count', { count: 'exact' }).eq('project_id', TRIUNFO_ID);
     console.log(`Found ${sessCount?.[0]?.count || 0} sessions for Triunfo in DB.`);
 
     if (!sessCount || sessCount.length === 0 || sessCount[0].count === 0) {

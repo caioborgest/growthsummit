@@ -274,7 +274,7 @@ BEGIN
     IF p_session_ids IS NOT NULL AND array_length(p_session_ids, 1) > 0 THEN
         FOREACH v_sess_id IN ARRAY p_session_ids LOOP
             SELECT id, title, max_vagas, registered_count INTO v_sess
-            FROM public.programacao_evento WHERE id = v_sess_id FOR UPDATE;
+            FROM public.event_schedule WHERE id = v_sess_id FOR UPDATE;
             IF FOUND AND v_sess.max_vagas IS NOT NULL AND v_sess.max_vagas > 0 THEN
                 IF COALESCE(v_sess.registered_count, 0) >= v_sess.max_vagas THEN
                     v_full_sess := array_append(v_full_sess, v_sess.title);

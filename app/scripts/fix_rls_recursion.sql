@@ -39,16 +39,16 @@ INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Usuários podem atualizar seu próprio perfil" ON public.users;
 CREATE POLICY "Usuários podem atualizar seu próprio perfil" ON public.users FOR
 UPDATE USING (auth.uid() = id);
--- 2. Garantir que programacao_evento tenha políticas de leitura pública
--- Se a tabela programacao_evento existir, ela precisa de RLS liberado para leitura
+-- 2. Garantir que event_schedule tenha políticas de leitura pública
+-- Se a tabela event_schedule existir, ela precisa de RLS liberado para leitura
 DO $$ BEGIN IF EXISTS (
     SELECT
     FROM pg_tables
-    WHERE tablename = 'programacao_evento'
+    WHERE tablename = 'event_schedule'
 ) THEN
-ALTER TABLE public.programacao_evento ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Leitura pública de programação" ON public.programacao_evento;
-CREATE POLICY "Leitura pública de programação" ON public.programacao_evento FOR
+ALTER TABLE public.event_schedule ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Leitura pública de programação" ON public.event_schedule;
+CREATE POLICY "Leitura pública de programação" ON public.event_schedule FOR
 SELECT USING (true);
 END IF;
 IF EXISTS (
