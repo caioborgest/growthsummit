@@ -328,151 +328,154 @@ export default function AdminParceiros() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Nome da Empresa *</Label>
-                <Input
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-white/5 border-white/10"
-                  placeholder="Ex: ABC Tecnologia"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">CNPJ (Opcional)</Label>
-                <Input
-                  value={formData.cnpj}
-                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                  className="bg-white/5 border-white/10"
-                  placeholder="00.000.000/0000-00"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Tipo de Parceiro</Label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
-                >
-                  {Object.entries(typeLabels).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Categoria de Parceria</Label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
-                >
-                  {Object.entries(categoryLabels).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-brand-orange-coral">Código de Auto-Inscrição</Label>
-                <div className="flex gap-2">
+          <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+            <div className="form-container-scrollable space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase text-gray-500">Nome da Empresa *</Label>
                   <Input
-                    value={formData.accessCode}
-                    onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
-                    className="bg-white/5 border-brand-orange-coral/20 text-brand-orange-coral font-bold"
-                    placeholder="EX: BMW-2026"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                    placeholder="Ex: ABC Tecnologia"
                   />
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-                      setFormData({ ...formData, accessCode: code });
-                    }}
-                    className="flex-shrink-0"
-                  >
-                    Gerar
-                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase text-gray-500">CNPJ (Opcional)</Label>
+                  <Input
+                    value={formData.cnpj}
+                    onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                    placeholder="00.000.000/0000-00"
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Limite de Membros</Label>
-                <Input
-                  type="number"
-                  value={formData.maxTeamMembers}
-                  onChange={(e) => setFormData({ ...formData, maxTeamMembers: parseInt(e.target.value) })}
-                  className="bg-white/5 border-white/10"
-                />
-              </div>
-            </div>
 
-            <div className="space-y-4 pt-4 border-t border-white/5">
-              <Label className="text-xs font-black uppercase text-brand-orange-coral tracking-widest block">Informações de Contato</Label>
-              <div className="space-y-2">
-                <Input
-                  required
-                  placeholder="Nome do Responsável"
-                  value={formData.contactName}
-                  onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                  className="bg-white/5 border-white/10"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  type="email"
-                  placeholder="E-mail"
-                  value={formData.contactEmail}
-                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                  className="bg-white/5 border-white/10"
-                />
-                <Input
-                  placeholder="WhatsApp/Telefone"
-                  value={formData.contactPhone}
-                  onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                  className="bg-white/5 border-white/10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t border-white/5">
-              <Label className="text-xs font-black uppercase text-gray-500 tracking-widest block">Vínculos (Opcional)</Label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold text-gray-600">Patrocinador Vinculado</Label>
+                  <Label className="text-xs font-black uppercase text-gray-500">Tipo de Parceiro</Label>
                   <select
-                    value={formData.sponsorId}
-                    onChange={(e) => setFormData({ ...formData, sponsorId: e.target.value })}
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
                   >
-                    <option value="">Nenhum</option>
-                    {sponsors.map(s => (
-                      <option key={s.id} value={s.id}>{s.companyName}</option>
+                    {Object.entries(typeLabels).map(([val, label]) => (
+                      <option key={val} value={val}>{label}</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold text-gray-600">Stand/Expositor Vinculado</Label>
+                  <Label className="text-xs font-black uppercase text-gray-500">Categoria de Parceria</Label>
                   <select
-                    value={formData.standId}
-                    onChange={(e) => setFormData({ ...formData, standId: e.target.value })}
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
                   >
-                    <option value="">Nenhum</option>
-                    {stands.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                    {Object.entries(categoryLabels).map(([val, label]) => (
+                      <option key={val} value={val}>{label}</option>
                     ))}
                   </select>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase text-brand-orange-coral">Código de Auto-Inscrição</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={formData.accessCode}
+                      onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
+                      className="bg-white/5 border-brand-orange-coral/20 text-brand-orange-coral font-bold"
+                      placeholder="EX: BMW-2026"
+                    />
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                        setFormData({ ...formData, accessCode: code });
+                      }}
+                      className="flex-shrink-0"
+                    >
+                      Gerar
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase text-gray-500">Limite de Membros</Label>
+                  <Input
+                    type="number"
+                    value={formData.maxTeamMembers}
+                    onChange={(e) => setFormData({ ...formData, maxTeamMembers: parseInt(e.target.value) })}
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xs font-black uppercase text-brand-orange-coral tracking-widest block">Informações de Contato</Label>
+                <div className="space-y-2">
+                  <Input
+                    required
+                    placeholder="Nome do Responsável"
+                    value={formData.contactName}
+                    onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    type="email"
+                    placeholder="E-mail"
+                    value={formData.contactEmail}
+                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                  />
+                  <Input
+                    placeholder="WhatsApp/Telefone"
+                    value={formData.contactPhone}
+                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xs font-black uppercase text-gray-500 tracking-widest block">Vínculos (Opcional)</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-gray-600">Patrocinador Vinculado</Label>
+                    <select
+                      value={formData.sponsorId}
+                      onChange={(e) => setFormData({ ...formData, sponsorId: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
+                    >
+                      <option value="">Nenhum</option>
+                      {sponsors.map(s => (
+                        <option key={s.id} value={s.id}>{s.companyName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-gray-600">Stand/Expositor Vinculado</Label>
+                    <select
+                      value={formData.standId}
+                      onChange={(e) => setFormData({ ...formData, standId: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 text-sm font-bold h-10 outline-none"
+                    >
+                      <option value="">Nenhum</option>
+                      {stands.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="ios-form-padding h-2" />
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
+            <div className="flex justify-end gap-3 pt-6 border-t border-white/5 bg-[#0c0e12]">
               <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-gray-500">
                 Cancelar
               </Button>

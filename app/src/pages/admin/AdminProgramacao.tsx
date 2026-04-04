@@ -12,7 +12,8 @@ import {
   QrCode,
   Printer,
   Rocket,
-  Briefcase
+  Briefcase,
+  Database
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import {
@@ -31,9 +32,12 @@ import { useProject } from '@/contexts/ProjectContext';
 import type { Session } from '@/types';
 import { Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { seedTriunfoSchedule } from '@/lib/triunfoSeeding';
 
 const typeIcons: Record<string, React.ElementType> = {
   palestra: Mic,
+  talk: Mic,
+  panel: Users2,
   workshop: Wrench,
   curso: Wrench,
   oficina: Wrench,
@@ -45,15 +49,15 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const typeLabels: Record<string, string> = {
-  palestra: 'Palestra / Painel',
+  palestra: 'Lecture / Panel',
   workshop: 'Workshop',
-  curso: 'Curso',
-  oficina: 'Oficina',
+  curso: 'Course',
+  oficina: 'Workshop Lab',
   networking: 'Networking',
-  circuito: 'Circuito / Estação',
-  mentoria: 'Mentoria',
+  circuito: 'Circuit / Station',
+  mentoria: 'Mentoring',
   startup: 'Startup / Pitch',
-  b2b: 'Rodada B2B',
+  b2b: 'B2B Round',
 };
 
 const typeColors: Record<string, string> = {
@@ -69,37 +73,38 @@ const typeColors: Record<string, string> = {
 };
 
 const categories = [
-  { id: 'manha_ancora', name: 'Manhã - Âncora (Credenciamento/Aberturas)' },
-  { id: 'manha_bloco_1', name: 'Manhã - Bloco 1 (08:30 - 10:00)' },
-  { id: 'manha_circulacao', name: 'Manhã - Coffee/Networking' },
-  { id: 'manha_bloco_2', name: 'Manhã - Bloco 2 (10:15 - 11:45)' },
-  { id: 'manha_encerramento', name: 'Manhã - Encerramento' },
-  { id: 'tarde_ancora', name: 'Tarde - Retorno/Almoço' },
-  { id: 'tarde_bloco_3', name: 'Tarde - Bloco 3 (14:00 - 15:30)' },
-  { id: 'tarde_circulacao', name: 'Tarde - Coffee/Networking' },
-  { id: 'tarde_bloco_4', name: 'Tarde - Bloco 4 (15:45 - 17:15)' },
-  { id: 'tarde_encerramento', name: 'Tarde - Encerramento' },
-  { id: 'noturna', name: 'Night Experience (Noite)' },
-  { id: 'circuito', name: 'Circuito de Experiências (Contínuo)' },
+  { id: 'manha_ancora', name: 'Morning - Anchor (Check-in/Opening)' },
+  { id: 'manha_bloco_1', name: 'Morning - Block 1 (08:30 - 10:00)' },
+  { id: 'manha_circulacao', name: 'Morning - Coffee/Networking' },
+  { id: 'manha_bloco_2', name: 'Morning - Block 2 (10:15 - 11:45)' },
+  { id: 'manha_encerramento', name: 'Morning - Closing' },
+  { id: 'tarde_ancora', name: 'Afternoon - Return/Lunch' },
+  { id: 'tarde_bloco_3', name: 'Afternoon - Block 3 (14:00 - 15:30)' },
+  { id: 'tarde_circulacao', name: 'Afternoon - Coffee/Networking' },
+  { id: 'tarde_bloco_4', name: 'Afternoon - Block 4 (15:45 - 17:15)' },
+  { id: 'tarde_encerramento', name: 'Afternoon - Closing' },
+  { id: 'noturna', name: 'Night Experience (Evening)' },
+  { id: 'circuito', name: 'Experience Circuit (Continuous)' },
 ];
 
 const rooms = [
-  { id: 'salao', name: 'Salão Principal' },
-  { id: 'sala1', name: 'Sala 01' },
-  { id: 'sala2', name: 'Sala 02' },
-  { id: 'sala3', name: 'Sala 03' },
+  { id: 'salao', name: 'Main Hall' },
+  { id: 'sala1', name: 'Room 01' },
+  { id: 'sala2', name: 'Room 02' },
+  { id: 'sala3', name: 'Room 03' },
   { id: 'arena', name: 'Arena Pitches' },
-  { id: 'circuito', name: 'Espaço Circuito' },
-  { id: 'convivencia', name: 'Área de Convivência' },
+  { id: 'circuito', name: 'Circuit Space' },
+  { id: 'convivencia', name: 'Social Area' },
 ];
 
 export function AdminProgramacao() {
   const { projectId } = useProject();
-  const { data: sessions, create, update, remove } = useSessions();
+  const { data: sessions, create, update, remove, refetch } = useSessions();
   const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
   const [showForm, setShowForm] = useState(false);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [qrSession, setQrSession] = useState<Session | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -118,7 +123,7 @@ export function AdminProgramacao() {
 
   const filteredSessions = useMemo(() => {
     return sessions.filter(s => {
-      // Garantir que a atividade pertence ao projeto selecionado
+      // Ensure the activity belongs to the selected project
       if (projectId && s.projectId !== projectId) return false;
       
       const category = s.category || '';
@@ -133,7 +138,7 @@ export function AdminProgramacao() {
     e.preventDefault();
 
     if (!projectId) {
-      toast.error('Por favor, selecione um projeto no menu lateral antes de criar atividades.');
+      toast.error('Please select a project in the sidebar before creating activities.');
       return;
     }
 
@@ -150,22 +155,47 @@ export function AdminProgramacao() {
           ...payload,
           type: payload.type as Session['type'],
         });
-        toast.success('Atividade atualizada com sucesso!');
+        toast.success('Activity updated successfully!');
       } else {
         await create({
           ...payload,
-          projectId: projectId, // Usar o ID do contexto, sem fallback para slug se possível
+          projectId: projectId,
           registeredCount: 0,
           type: payload.type as Session['type'],
         });
-        toast.success('Atividade criada com sucesso!');
+        toast.success('Activity created successfully!');
       }
       setShowForm(false);
       setEditingSession(null);
       resetForm();
     } catch (err: any) {
-      console.error('Erro ao salvar atividade:', err);
-      toast.error(`Erro ao salvar: ${err.message || 'Ocorreu um erro inesperado'}`);
+      console.error('Error saving activity:', err);
+      toast.error(`Error saving: ${err.message || 'An unexpected error occurred'}`);
+    }
+  };
+
+  const handleSeedTriunfo = async () => {
+    if (!projectId) {
+      toast.error('Please select a project first.');
+      return;
+    }
+
+    const confirmText = 'This will clear and replace ALL activities for this project with the default Growth Experience Triunfo schedule. Are you sure?';
+    if (!confirm(confirmText)) return;
+
+    setIsSeeding(true);
+    try {
+      const res = await seedTriunfoSchedule();
+      if (res.success) {
+        toast.success(`Successfully imported ${res.count} activities!`);
+        await refetch(true); // Force refetch to update UI
+      } else {
+        toast.error('Error seeding schedule.');
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred.');
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -197,7 +227,7 @@ export function AdminProgramacao() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Imprimir QR Code - ${qrSession?.title}</title>
+          <title>Print QR Code - ${qrSession?.title}</title>
           <style>
             body { 
               font-family: sans-serif; 
@@ -222,8 +252,8 @@ export function AdminProgramacao() {
           <div class="container">
             <h1>${qrSession?.title}</h1>
             <h2>${qrSession?.room}</h2>
-            ${printContent.innerHTML}
-            <div class="footer">Escaneie para confirmar presença - Growth Experience</div>
+            \${printContent.innerHTML}
+            <div class="footer">Scan to confirm attendance - Growth Experience</div>
           </div>
           <script>
             window.onload = () => {
@@ -260,13 +290,13 @@ export function AdminProgramacao() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta atividade?')) {
+    if (confirm('Are you sure you want to delete this activity?')) {
       try {
         await remove(id);
-        toast.success('Atividade excluída com sucesso!');
+        toast.success('Activity deleted successfully!');
       } catch (err: any) {
-        console.error('Erro ao excluir atividade:', err);
-        toast.error(`Erro ao excluir: ${err.message || 'Ocorreu um erro inesperado'}`);
+        console.error('Error deleting activity:', err);
+        toast.error(`Error deleting: \${err.message || 'An unexpected error occurred'}`);
       }
     }
   };
@@ -276,14 +306,14 @@ export function AdminProgramacao() {
       {/* View Tabs */}
       <div className="flex space-x-4 border-b border-dark-300">
         {[
-          { id: 'diurna', label: 'Diurna', icon: Clock },
-          { id: 'noturna', label: 'Noturna', icon: Mic },
-          { id: 'circuito', label: 'Circuito', icon: Zap },
+          { id: 'diurna', label: 'Daytime', icon: Clock },
+          { id: 'noturna', label: 'Night Experience', icon: Mic },
+          { id: 'circuito', label: 'Circuit', icon: Zap },
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as 'diurna' | 'noturna' | 'circuito')}
-            className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
+            className={`pb-4 text-sm font-medium transition-colors flex items-center gap-2 \${activeTab === tab.id
               ? 'text-brand-orange-coral border-b-2 border-brand-orange-coral'
               : 'text-gray-400 hover:text-white'
               }`}
@@ -295,24 +325,39 @@ export function AdminProgramacao() {
       </div>
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center bg-dark-200/50 p-6 rounded-[1.5rem] border border-white/5">
         <div>
           <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
-            Gestão da Programação - {activeTab.toUpperCase()}
+            Schedule Management - {activeTab.toUpperCase()}
           </h2>
-          <p className="text-gray-400 text-sm">{filteredSessions.length} atividades cadastradas neste grupo</p>
+          <p className="text-gray-400 text-sm">{filteredSessions.length} activities registered in this group</p>
         </div>
-        <Button
-          className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold"
-          onClick={() => {
-            setEditingSession(null);
-            resetForm();
-            setShowForm(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Atividade
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="border-brand-orange-coral/50 text-brand-orange-coral hover:bg-brand-orange-coral hover:text-white font-bold h-11 rounded-xl"
+            onClick={handleSeedTriunfo}
+            disabled={isSeeding}
+          >
+            {isSeeding ? (
+              <Zap className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4 mr-2" />
+            )}
+            {isSeeding ? 'Importing...' : 'Import Triunfo Schedule'}
+          </Button>
+          <Button
+            className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-11 rounded-xl shadow-lg shadow-brand-orange-coral/20"
+            onClick={() => {
+              setEditingSession(null);
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Activity
+          </Button>
+        </div>
       </div>
 
       {/* Activity Form Dialog */}
@@ -326,10 +371,10 @@ export function AdminProgramacao() {
           <DialogHeader className="px-6 pt-6">
             <DialogTitle className="text-2xl font-black flex items-center gap-2">
               {editingSession ? <Edit2 className="h-6 w-6 text-brand-orange-coral" /> : <Plus className="h-6 w-6 text-brand-orange-coral" />}
-              {editingSession ? 'Editar Atividade' : 'Nova Atividade'}
+              {editingSession ? 'Edit Activity' : 'New Activity'}
             </DialogTitle>
             <DialogDescription className="text-gray-400">
-              {editingSession ? 'Altere os detalhes da atividade selecionada.' : 'Preencha os dados para criar uma nova atividade na programação.'}
+              {editingSession ? 'Change the details of the selected activity.' : 'Fill in the data to create a new activity in the schedule.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -337,19 +382,19 @@ export function AdminProgramacao() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Título</label>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Title</label>
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Ex: Do Improviso ao Plano"
+                    placeholder="Ex: From Improvisation to Planning"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Categoria/Bloco</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Category / Block</label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -362,7 +407,7 @@ export function AdminProgramacao() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tipo</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Type</label>
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -377,19 +422,19 @@ export function AdminProgramacao() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter text-brand-orange-coral">Data Específica</label>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter text-brand-orange-coral">Specific Date</label>
                   <Input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white h-12 focus:border-brand-orange-coral font-bold"
                   />
-                  <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-widest italic">Opcional: use para garantir a ordenação correta em eventos de múltiplos dias.</p>
+                  <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-widest italic">Optional: use to ensure correct sorting in multi-day events.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Início</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Start Time</label>
                     <Input
                       type="time"
                       value={formData.startTime}
@@ -399,7 +444,7 @@ export function AdminProgramacao() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Horário Fim</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">End Time</label>
                     <Input
                       type="time"
                       value={formData.endTime}
@@ -413,13 +458,13 @@ export function AdminProgramacao() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Local/Sala</label>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Location / Room</label>
                   <select
                     value={formData.room}
                     onChange={(e) => setFormData({ ...formData, room: e.target.value })}
                     className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
                   >
-                    <option value="">Outro/Manual</option>
+                    <option value="">Other / Manual</option>
                     {rooms.map(r => (
                       <option key={r.id} value={r.name}>{r.name}</option>
                     ))}
@@ -427,33 +472,33 @@ export function AdminProgramacao() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Palestrantes / Responsáveis</label>
+                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Speakers / Leads</label>
                   <Input
                     value={formData.speakers}
                     onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
                     className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Nome 1, Nome 2 (opcional)"
+                    placeholder="Name 1, Name 2 (optional)"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Parceiro</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Partner</label>
                     <Input
                       value={formData.partner}
                       onChange={(e) => setFormData({ ...formData, partner: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="Ex: SEBRAE (opcional)"
+                      placeholder="Ex: SEBRAE (optional)"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacidade</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Capacity</label>
                     <Input
                       type="number"
                       value={formData.maxCapacity}
                       onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
                       className="bg-dark-100 border-dark-300 text-white h-12"
-                      placeholder="0 = Ilimitado"
+                      placeholder="0 = Unlimited"
                     />
                   </div>
                 </div>
@@ -461,17 +506,17 @@ export function AdminProgramacao() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tópicos / Pontos Chave (um por linha)</label>
+              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Topics / Key Points (one per line)</label>
               <textarea
                 value={formData.topics}
                 onChange={(e) => setFormData({ ...formData, topics: e.target.value })}
                 className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white min-h-[100px]"
-                placeholder="Tópico 1&#10;Tópico 2&#10;Tópico 3"
+                placeholder="Topic 1&#10;Topic 2&#10;Topic 3"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Descrição Curta</label>
+              <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-tighter">Short Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -481,7 +526,7 @@ export function AdminProgramacao() {
 
             <div className="flex space-x-4 pt-4">
               <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
-                {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR ATIVIDADE'}
+                {editingSession ? 'SAVE CHANGES' : 'CREATE ACTIVITY'}
               </Button>
               <Button
                 type="button"
@@ -492,7 +537,7 @@ export function AdminProgramacao() {
                   setEditingSession(null);
                 }}
               >
-                CANCELAR
+                CANCEL
               </Button>
             </div>
           </form>
@@ -525,7 +570,7 @@ export function AdminProgramacao() {
                 {/* Content */}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <Badge className={`${typeColors[session.type]} px-3 py-1 font-black text-[10px] uppercase tracking-widest`}>
+                    <Badge className={`\${typeColors[session.type]} px-3 py-1 font-black text-[10px] uppercase tracking-widest`}>
                       <Icon className="h-3 w-3 mr-1.5" />
                       {typeLabels[session.type]}
                     </Badge>
@@ -552,7 +597,7 @@ export function AdminProgramacao() {
                           {t}
                         </div>
                       ))}
-                      {session.topics.length > 3 && <span className="text-[9px] text-gray-600 font-black self-center uppercase tracking-widest">+{session.topics.length - 3} mais</span>}
+                      {session.topics.length > 3 && <span className="text-[9px] text-gray-600 font-black self-center uppercase tracking-widest">+{session.topics.length - 3} more</span>}
                     </div>
                   )}
                 </div>
@@ -564,7 +609,7 @@ export function AdminProgramacao() {
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral animate-pulse" />
                       <span className="text-brand-orange-coral font-black">{session.registeredCount}</span>
                       <span className="text-gray-500 font-bold">/</span>
-                      <span className="text-gray-400 font-black uppercase tracking-widest">{session.maxCapacity} inscritos</span>
+                      <span className="text-gray-400 font-black uppercase tracking-widest">{session.maxCapacity} registered</span>
                     </div>
                   )}
 
@@ -574,7 +619,7 @@ export function AdminProgramacao() {
                       variant="outline"
                       className="w-10 h-10 p-0 rounded-xl border-brand-orange-coral/30 text-brand-orange-coral hover:text-white hover:bg-brand-orange-coral shadow-lg transition-all active:scale-90"
                       onClick={() => setQrSession(session)}
-                      title="Gerar QR Code para Check-in"
+                      title="Generate QR Code for Check-in"
                     >
                       <QrCode className="h-5 w-5" />
                     </Button>
@@ -585,7 +630,7 @@ export function AdminProgramacao() {
                       onClick={() => handleEdit(session)}
                     >
                       <Edit2 className="h-4 w-4" />
-                      Editar
+                      Edit
                     </Button>
                     <Button
                       size="sm"
@@ -605,14 +650,17 @@ export function AdminProgramacao() {
         {filteredSessions.length === 0 && (
           <div className="text-center py-20 bg-white/[0.01] rounded-3xl border border-dashed border-white/5">
             <LayoutGrid className="h-12 w-12 text-gray-700 mx-auto mb-4" />
-            <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Nenhuma atividade encontrada neste grupo</p>
-            <Button
-              variant="link"
-              className="text-brand-orange-coral mt-2"
-              onClick={() => setShowForm(true)}
-            >
-              Começar a cadastrar agora
-            </Button>
+            <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">No activities found in this group</p>
+            <div className="flex flex-col items-center gap-2 mt-4">
+              <Button
+                variant="link"
+                className="text-brand-orange-coral"
+                onClick={() => setShowForm(true)}
+              >
+                Start registering now
+              </Button>
+              <p className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Or use the Import button above</p>
+            </div>
           </div>
         )}
       </div>
@@ -623,10 +671,10 @@ export function AdminProgramacao() {
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <QrCode className="text-brand-orange-coral" />
-              QR Code de Check-in
+              Check-in QR Code
             </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Imprima este QR Code e coloque-o na entrada da sala para que os participantes confirmem presença.
+              Print this QR Code and place it at the room entrance for participants to confirm attendance.
             </DialogDescription>
           </DialogHeader>
 
@@ -647,18 +695,18 @@ export function AdminProgramacao() {
 
           <div className="flex gap-3">
             <Button
-              className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white"
+              className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white h-12 rounded-xl"
               onClick={handlePrintQR}
             >
               <Printer className="h-4 w-4 mr-2" />
-              Imprimir QR Code
+              Print QR Code
             </Button>
             <Button
               variant="outline"
-              className="flex-1 border-dark-300 text-gray-400"
+              className="flex-1 border-dark-300 text-gray-400 h-12 rounded-xl"
               onClick={() => setQrSession(null)}
             >
-              Fechar
+              Close
             </Button>
           </div>
         </DialogContent>

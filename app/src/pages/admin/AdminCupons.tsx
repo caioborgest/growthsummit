@@ -424,128 +424,130 @@ export default function AdminCupons() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="glass-card max-w-xl w-full p-0 overflow-hidden shadow-2xl border-teal-500/20">
-                        <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">
-                                    {editingCoupon ? 'Editar Parceria / Cupom' : 'Nova Parceria / Cupom'}
-                                </h2>
-                                <p className="text-gray-400 text-xs mt-1">Configure as regras de desconto e vigência.</p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500">
-                                <XCircle className="h-5 w-5" />
-                            </Button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Código do Voucher</label>
-                                    <Input
-                                        required
-                                        placeholder="EX: GROWTH100"
-                                        value={formData.code}
-                                        onChange={e => setFormData({ ...formData, code: e.target.value })}
-                                        className="bg-dark-100 border-dark-300 text-white uppercase font-black"
-                                    />
-                                    <p className="text-[10px] text-gray-500 mt-1">O código que o usuário digitará.</p>
+                        <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh]">
+                            <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30 shrink-0">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">
+                                        {editingCoupon ? 'Editar Parceria / Cupom' : 'Nova Parceria / Cupom'}
+                                    </h2>
+                                    <p className="text-gray-400 text-xs mt-1">Configure as regras de desconto e vigência.</p>
                                 </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Desconto (%)</label>
-                                    <div className="relative">
+                                <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500">
+                                    <XCircle className="h-5 w-5" />
+                                </Button>
+                            </div>
+
+                            <div className="form-container-scrollable p-6 space-y-5 flex-1">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-1">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Código do Voucher</label>
                                         <Input
-                                            type="number"
-                                            min="0"
-                                            max="100"
                                             required
-                                            value={formData.discountPercentage}
-                                            onChange={e => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
-                                            className="bg-dark-100 border-dark-300 text-white pl-4 pr-10"
+                                            placeholder="EX: GROWTH100"
+                                            value={formData.code}
+                                            onChange={e => setFormData({ ...formData, code: e.target.value })}
+                                            className="bg-dark-100 border-dark-300 text-white uppercase font-black"
                                         />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                                        <p className="text-[10px] text-gray-500 mt-1">O código que o usuário digitará.</p>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Desconto (%)</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                required
+                                                value={formData.discountPercentage}
+                                                onChange={e => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
+                                                className="bg-dark-100 border-dark-300 text-white pl-4 pr-10"
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tipo de Convênio</label>
-                                    <select
-                                        value={formData.referralType}
-                                        onChange={e => setFormData({ ...formData, referralType: e.target.value as Coupon['referralType'] })}
-                                        className="w-full h-11 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    >
-                                        {Object.entries(typeConfig).map(([key, config]) => (
-                                            <option key={key} value={key}>{config.label}</option>
-                                        ))}
-                                    </select>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-1">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tipo de Convênio</label>
+                                        <select
+                                            value={formData.referralType}
+                                            onChange={e => setFormData({ ...formData, referralType: e.target.value as Coupon['referralType'] })}
+                                            className="w-full h-11 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        >
+                                            {Object.entries(typeConfig).map(([key, config]) => (
+                                                <option key={key} value={key}>{config.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Limite de Usos</label>
+                                        <Input
+                                            type="number"
+                                            placeholder="Infinito"
+                                            value={formData.usageLimit}
+                                            onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
+                                            className="bg-dark-100 border-dark-300 text-white"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Limite de Usos</label>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Parceiro / Origem</label>
                                     <Input
-                                        type="number"
-                                        placeholder="Infinito"
-                                        value={formData.usageLimit}
-                                        onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
+                                        required
+                                        placeholder="Ex: Secretaria de Desenvolvimento / Nome do Influencer"
+                                        value={formData.referralName}
+                                        onChange={e => setFormData({ ...formData, referralName: e.target.value })}
                                         className="bg-dark-100 border-dark-300 text-white"
                                     />
                                 </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Parceiro / Origem</label>
-                                <Input
-                                    required
-                                    placeholder="Ex: Secretaria de Desenvolvimento / Nome do Influencer"
-                                    value={formData.referralName}
-                                    onChange={e => setFormData({ ...formData, referralName: e.target.value })}
-                                    className="bg-dark-100 border-dark-300 text-white"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Data de Vencimento</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="date"
-                                            value={formData.expiresAt}
-                                            onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
-                                            className="bg-dark-100 border-dark-300 text-white pl-10"
-                                        />
-                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-2 sm:col-span-1">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Data de Vencimento</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                value={formData.expiresAt}
+                                                onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
+                                                className="bg-dark-100 border-dark-300 text-white pl-10"
+                                            />
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2 sm:col-span-1 flex items-end">
+                                        <div className="flex items-center gap-3 bg-dark-100 border border-dark-300 rounded-lg h-11 px-4 w-full">
+                                            <input
+                                                type="checkbox"
+                                                id="ativo_modal"
+                                                checked={formData.isActive}
+                                                onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+                                                className="w-5 h-5 rounded border-dark-300 bg-dark-200 text-teal-500 focus:ring-teal-500"
+                                            />
+                                            <label htmlFor="ativo_modal" className="text-sm font-bold text-gray-300 cursor-pointer select-none">
+                                                Cupom Habilitado
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="col-span-2 sm:col-span-1 flex items-end">
-                                    <div className="flex items-center gap-3 bg-dark-100 border border-dark-300 rounded-lg h-11 px-4 w-full">
-                                        <input
-                                            type="checkbox"
-                                            id="ativo_modal"
-                                            checked={formData.isActive}
-                                            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                            className="w-5 h-5 rounded border-dark-300 bg-dark-200 text-teal-500 focus:ring-teal-500"
-                                        />
-                                        <label htmlFor="ativo_modal" className="text-sm font-bold text-gray-300 cursor-pointer select-none">
-                                            Cupom Habilitado
-                                        </label>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Observações Internas</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        placeholder="Detalhes sobre a parceria, contrato ou finalidade deste cupom..."
+                                    />
+                                    <div className="flex items-center gap-2 mt-2 text-gray-500">
+                                        <FileText className="h-3.5 w-3.5" />
+                                        <span className="text-[10px]">As observações não são visíveis para o usuário final.</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Observações Internas</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    placeholder="Detalhes sobre a parceria, contrato ou finalidade deste cupom..."
-                                />
-                                <div className="flex items-center gap-2 mt-2 text-gray-500">
-                                    <FileText className="h-3.5 w-3.5" />
-                                    <span className="text-[10px]">As observações não são visíveis para o usuário final.</span>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
+                            <div className="p-6 border-t border-dark-300 bg-dark-300/10 flex gap-4 shrink-0">
                                 <Button
                                     type="button"
                                     variant="outline"

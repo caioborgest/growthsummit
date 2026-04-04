@@ -267,14 +267,17 @@ export default function AdminProjetos() {
           </DialogTrigger>
 
 
-          <DialogContent className="bg-[#0F172A] border-white/5 text-white sm:max-w-[1440px] h-fit max-h-[98vh] rounded-[3rem] p-10 overflow-x-hidden scrollbar-hide">
-            <DialogHeader>
-              <DialogTitle>{editingProject ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
-              <DialogDescription className="sr-only">
-                Formulário para configuração técnica e visual do projeto/evento.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
+          <DialogContent className="bg-[#0F172A] border-white/5 text-white sm:max-w-[1440px] h-fit max-h-[90vh] rounded-[3rem] p-0 overflow-hidden flex flex-col">
+            <div className="p-10 pb-0">
+              <DialogHeader>
+                <DialogTitle>{editingProject ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Formulário para configuração técnica e visual do projeto/evento.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+            
+            <div className="flex-1 overflow-hidden p-10 pt-4 flex flex-col">
               <Tabs defaultValue="geral" className="w-full">
 
                 <TabsList className="bg-[#0F172A] border border-white/5 mb-8 flex flex-wrap h-auto p-1.5 rounded-[1.5rem] gap-1">
@@ -286,7 +289,8 @@ export default function AdminProjetos() {
                 </TabsList>
 
 
-                <TabsContent value="geral" className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-10">
+                <div className="form-container-scrollable flex-1">
+                  <TabsContent value="geral" className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-10 bg-black/40 border border-white/5 rounded-[3rem]">
                     <div className="space-y-3">
                       <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#475569] ml-1">
