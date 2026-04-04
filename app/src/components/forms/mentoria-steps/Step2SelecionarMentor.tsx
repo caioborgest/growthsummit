@@ -49,11 +49,11 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     useEffect(() => {
         async function fetchMentores() {
             try {
-                const { data, error } = await (supabase
+                const { data, error } = await supabase
                     .from('growth_experience_mentors')
-                    .select('id,project_id,user_id,nome,email,empresa,cargo,specialties,bio,photo_url,status,years_experience,max_mentorings')
+                    .select('id,project_id,user_id,nome,email,empresa,role_title,specialties,bio,photo_url,status,years_experience,max_mentorings')
                     .eq('project_id', projectId as any)
-                    .in('status', ['aprovado', 'approved']) as any);
+                    .in('status', ['aprovado', 'approved']);
 
                 if (error) throw error;
                 // Database returns snake_case, but we use camelCase in the app
@@ -187,7 +187,7 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h5 className="text-lg font-black text-white italic leading-tight truncate">{mentor.name}</h5>
-                                        <p className="text-gray-500 text-xs font-bold truncate mt-1">{mentor.position} @ {mentor.company}</p>
+                                        <p className="text-gray-500 text-xs font-bold truncate mt-1">{mentor.roleTitle} @ {mentor.company}</p>
                                         <div className="flex items-center justify-between mt-2">
                                             <div className="flex gap-1">
                                                 {mentor.specialties?.slice(0, 3).map((e: string) => <Badge key={e} className="text-[8px] bg-white/5 text-gray-400 border-none font-black uppercase">{e}</Badge>)}

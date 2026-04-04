@@ -97,7 +97,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
           <div className="text-center sm:text-left">
             <h3 className="text-2xl font-black text-white mb-1">{mentor.name}</h3>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center">
-              <p className="text-brand-orange-coral font-bold">{mentor.position}</p>
+              <p className="text-brand-orange-coral font-bold">{mentor.roleTitle}</p>
               <span className="text-gray-600">•</span>
               <p className="text-gray-400">{mentor.company}</p>
             </div>
@@ -268,7 +268,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
     email: mentor.email || '',
     phone: mentor.phone || '',
     company: mentor.company || '',
-    position: mentor.position || '',
+    roleTitle: mentor.roleTitle || '',
     bio: mentor.bio || '',
     linkedin: mentor.linkedin || '',
     yearsExperience: mentor.yearsExperience || 0,
@@ -322,7 +322,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
         name: form.name,
         phone: form.phone,
         company: form.company,
-        position: form.position,
+        role_title: form.roleTitle,
         bio: form.bio,
         linkedin: form.linkedin,
         yearsExperience: Number(form.yearsExperience),
@@ -421,7 +421,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Cargo</label>
-                <Input value={form.position} onChange={e => setForm(p => ({ ...p, position: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Ex: CEO, Diretor..." />
+                <Input value={form.roleTitle} onChange={e => setForm(p => ({ ...p, roleTitle: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Ex: CEO, Diretor..." />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Anos de Experiência</label>
@@ -510,7 +510,7 @@ export function AdminMentores() {
     email: '',
     phone: '',
     company: '',
-    position: '',
+    roleTitle: '',
     bio: '',
     specialties: [] as string[],
     linkedin: '',
@@ -617,7 +617,7 @@ export function AdminMentores() {
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
-        position: formData.position,
+        role_title: formData.roleTitle,
         bio: formData.bio,
         yearsExperience: formData.yearsExperience,
         maxMentories: formData.maxMentories,
@@ -647,7 +647,7 @@ export function AdminMentores() {
       email: '',
       phone: '',
       company: '',
-      position: '',
+      roleTitle: '',
       bio: '',
       specialties: [],
       linkedin: '',

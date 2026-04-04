@@ -39,7 +39,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
             try {
                 const { data, error } = await supabase
                     .from('growth_experience_mentors')
-                    .select('id,nome,email,empresa,cargo,specialties,bio,photo_url')
+                    .select('id,nome,email,empresa,role_title,specialties,bio,photo_url')
                     .eq('id', dados.mentorId)
                     .single();
 

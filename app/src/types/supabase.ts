@@ -741,7 +741,7 @@ export type Database = {
           scheduled_at: string
           status: string
           three_steps: string[] | null
-          topic: string | null
+          topic_of_interest: string | null
           updated_at: string | null
         }
         Insert: {
@@ -765,7 +765,7 @@ export type Database = {
           scheduled_at: string
           status?: string
           three_steps?: string[] | null
-          topic?: string | null
+          topic_of_interest?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -789,7 +789,7 @@ export type Database = {
           scheduled_at?: string
           status?: string
           three_steps?: string[] | null
-          topic?: string | null
+          topic_of_interest?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -835,9 +835,9 @@ export type Database = {
           max_mentorings: number | null
           name: string
           photo: string | null
-          position: string | null
           project_id: string
           rejection_reason: string | null
+          role_title: string | null
           session_duration: number | null
           specialties: string[]
           status: string
@@ -858,9 +858,9 @@ export type Database = {
           max_mentorings?: number | null
           name: string
           photo?: string | null
-          position?: string | null
           project_id: string
           rejection_reason?: string | null
+          role_title?: string | null
           session_duration?: number | null
           specialties: string[]
           status?: string
@@ -881,9 +881,9 @@ export type Database = {
           max_mentorings?: number | null
           name?: string
           photo?: string | null
-          position?: string | null
           project_id?: string
           rejection_reason?: string | null
+          role_title?: string | null
           session_duration?: number | null
           specialties?: string[]
           status?: string

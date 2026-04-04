@@ -194,7 +194,7 @@ export interface Mentor {
   tracks: string[];
   yearsExperience: number;
   company: string;
-  position: string;
+  roleTitle: string;
   linkedin?: string;
   status: 'pending' | 'approved' | 'rejected';
   maxMentories: number;
@@ -604,7 +604,7 @@ export interface MentoringSession {
   scheduledAt: string;
   duration: number;
   status: 'pending' | 'scheduled' | 'completed' | 'cancelled' | 'no_show';
-  topic?: string;
+  topicOfInterest?: string;
   notes?: string;
   startupName?: string;
   sector?: string;

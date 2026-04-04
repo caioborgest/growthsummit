@@ -15,7 +15,7 @@ interface MentorshipSectionProps {
     myMentorships: any[];
     availableSlots: any[];
     handleCancelMentoring: (id: string) => void;
-    handleBookMentoring: (slotId: string, topic: string) => void;
+    handleBookMentoring: (slotId: string, topicOfInterest: string) => void;
     handleJoinWaitlist: (challenge: string) => void;
     setRatingModal: (modal: any) => void;
     setIsMentoriaModalOpen: (open: boolean) => void;
@@ -63,7 +63,7 @@ export function MentorshipSection({
                                         </div>
                                         <div>
                                             <h4 className="font-black text-white uppercase tracking-tight">{mentorship.mentorName}</h4>
-                                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{mentorship.topic || 'Mentoria Estratégica'}</p>
+                                            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{mentorship.topicOfInterest || 'Mentoria Estratégica'}</p>
                                         </div>
                                     </div>
                                     <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral font-black text-[9px] uppercase tracking-widest border-none">

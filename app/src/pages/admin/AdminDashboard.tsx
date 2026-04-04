@@ -623,8 +623,8 @@ export function AdminDashboard() {
               </div>
               <p className="text-foreground font-black text-lg tracking-tight mb-1 group-hover:text-teal-400 transition-colors">{session.mentorName}</p>
               <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">{session.menteeName}</p>
-              {session.topic && (
-                <p className="text-muted-foreground text-[11px] leading-relaxed italic border-l-2 border-teal-500/30 pl-3">{session.topic}</p>
+              {session.topicOfInterest && (
+                <p className="text-muted-foreground text-[11px] leading-relaxed italic border-l-2 border-teal-500/30 pl-3">{session.topicOfInterest}</p>
               )}
             </div>
           ))}

@@ -15,7 +15,7 @@ interface Mentor {
     email: string;
     phone?: string;
     company: string;
-    position: string;
+    roleTitle: string;
     bio: string;
     specialties: string[];
     linkedin?: string;
@@ -74,7 +74,7 @@ export function MentorCard({ mentor, availableSlots = [], onBookClick }: MentorC
                         {mentor.name}
                     </h3>
                     <p className="text-brand-orange-coral font-bold text-xs uppercase tracking-widest line-clamp-1">
-                        {mentor.position} @ {mentor.company}
+                        {mentor.roleTitle} @ {mentor.company}
                     </p>
                     <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
                         {limitWords(mentor.bio, 100)}
@@ -135,7 +135,7 @@ export function MentorCard({ mentor, availableSlots = [], onBookClick }: MentorC
                             </div>
                             <div className="text-center sm:text-left">
                                 <DialogTitle className="text-3xl font-black mb-2">{mentor.name}</DialogTitle>
-                                <p className="text-brand-orange-coral font-bold text-lg mb-4">{mentor.position} <span className="text-gray-500 mx-2">•</span> {mentor.company}</p>
+                                <p className="text-brand-orange-coral font-bold text-lg mb-4">{mentor.roleTitle} <span className="text-gray-500 mx-2">•</span> {mentor.company}</p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-4">
                                     {mentor.linkedin && (
                                         <a href={mentor.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors">

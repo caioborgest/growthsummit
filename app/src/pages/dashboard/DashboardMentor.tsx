@@ -43,7 +43,7 @@ export default function DashboardMentor() {
     specialties: '',
     bio: '',
     company: '',
-    position: ''
+    roleTitle: ''
   });
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     if (selectedProject?.startDate) {
@@ -119,7 +119,7 @@ export default function DashboardMentor() {
           status: 'scheduled',
           scheduledAt: scheduledDate.toISOString(),
           duration: 20,
-          topic: 'Disponível para Mentoria',
+          topicOfInterest: 'Disponível para Mentoria',
           notes: 'Slot de disponibilidade criado pelo mentor.',
           // Required fields for GE table to satisfy NOT NULL constraints
           menteeName: 'Slot Livre',
@@ -203,7 +203,7 @@ export default function DashboardMentor() {
                   specialties: Array.isArray(mentorData.specialties) ? mentorData.specialties.join(', ') : mentorData.specialties || '',
                   bio: mentorData.bio || '',
                   company: mentorData.company || '',
-                  position: mentorData.position || ''
+                  roleTitle: mentorData.roleTitle || ''
                 });
               }
             }}
@@ -232,7 +232,7 @@ export default function DashboardMentor() {
             {upcomingSessions[0] && (
               <NextActivityCard 
                 title={`Mentoria com ${upcomingSessions[0].menteeName}`}
-                subtitle={upcomingSessions[0].topic || "Sessão de Mentoria"}
+                subtitle={upcomingSessions[0].topicOfInterest || "Sessão de Mentoria"}
                 time={new Date(upcomingSessions[0].scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 duration="20 min"
                 isConfirmed={true}

@@ -31,7 +31,7 @@ export function ProfileForm() {
         name: user?.name || '',
         phone: user?.phone || '',
         company: '',
-        position: '',
+        roleTitle: '',
         bio: '',
         website: '',
         linkedin: '',
@@ -48,7 +48,7 @@ export function ProfileForm() {
             setFormData(prev => ({
                 ...prev,
                 company: profile.company || '',
-                position: profile.position || '',
+                roleTitle: profile.roleTitle || '',
                 bio: profile.bio || '',
                 website: profile.website || '',
                 linkedin: profile.linkedin || '',
@@ -77,7 +77,7 @@ export function ProfileForm() {
             try {
                 await updateProfileData({
                     company: formData.company,
-                    position: formData.position,
+                    roleTitle: formData.roleTitle,
                     bio: formData.bio,
                     website: formData.website,
                     linkedin: formData.linkedin,
@@ -103,7 +103,7 @@ export function ProfileForm() {
                             nome: formData.name,
                             phone: formData.phone,
                             empresa: formData.company,
-                            role_title: formData.position,
+                            role_title: formData.roleTitle,
                             bio: formData.bio,
                             linkedin_url: formData.linkedin,
                             years_experience: Number(formData.yearsExperience) || 0,
@@ -317,8 +317,8 @@ export function ProfileForm() {
                         <div className="relative">
                             <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                             <Input
-                                value={formData.position}
-                                onChange={e => setFormData({ ...formData, position: e.target.value })}
+                                value={formData.roleTitle}
+                                onChange={e => setFormData({ ...formData, roleTitle: e.target.value })}
                                 placeholder="Ex: Diretor de Marketing"
                                 className="pl-12 bg-dark-100 border-dark-300"
                             />

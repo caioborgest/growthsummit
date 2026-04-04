@@ -223,7 +223,7 @@ export const generateMentoriasReport = async (sessions: any[], projectName: stri
         s.menteeName || '---',
         s.scheduledAt ? format(new Date(s.scheduledAt), 'dd/MM HH:mm') : '---',
         s.status || '---',
-        s.topic || '---'
+        s.topicOfInterest || '---'
     ]);
 
     (doc as any).autoTable({

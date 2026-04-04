@@ -61,7 +61,7 @@ export function AdminMentorias() {
     menteeId: '',
     slotId: '',
     scheduledAt: '',
-    topic: '',
+    topicOfInterest: '',
     duration: 20
   });
 
@@ -92,7 +92,7 @@ export function AdminMentorias() {
     const matchesSearch =
       (session.mentorName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (session.menteeName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-      (session.topic?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+      (session.topicOfInterest?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     return matchesSearch;
   }).sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
 
@@ -121,7 +121,7 @@ export function AdminMentorias() {
         mentorId: formData.mentorId,
         scheduledAt: formData.scheduledAt,
         status: 'scheduled',
-        topic: formData.topic,
+        topicOfInterest: formData.topicOfInterest,
         duration: Number(formData.duration) || 20,
         mentorName: mentor?.name || '',
         menteeName: registration?.name || 'Participante'
@@ -136,7 +136,7 @@ export function AdminMentorias() {
           status: 'scheduled',
           menteeId: payload.menteeId,
           menteeName: payload.menteeName,
-          topic: payload.topic,
+          topicOfInterest: payload.topicOfInterest,
           duration: payload.duration
         });
       } else {
@@ -150,7 +150,7 @@ export function AdminMentorias() {
         menteeId: '',
         slotId: '',
         scheduledAt: '',
-        topic: '',
+        topicOfInterest: '',
         duration: 20
       });
     } catch (err: any) {
@@ -240,8 +240,8 @@ export function AdminMentorias() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tópico de Discussão</Label>
                   <Input
-                    value={formData.topic}
-                    onChange={e => setFormData({ ...formData, topic: e.target.value })}
+                    value={formData.topicOfInterest}
+                    onChange={e => setFormData({ ...formData, topicOfInterest: e.target.value })}
                     placeholder="Ex: Estratégia de Go-to-Market"
                     className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                   />
@@ -391,7 +391,7 @@ export function AdminMentorias() {
                                 <p className="text-[10px] text-teal-500 font-extrabold uppercase tracking-[0.2em]">Desafio Central</p>
                              </div>
                              <div className="bg-dark-300/50 p-5 rounded-3xl border border-teal-500/10 relative">
-                                <p className="text-gray-300 text-[11px] leading-relaxed italic line-clamp-3">"{session.notes || session.topic || 'Sessão de mentoria técnica e estratégica'}"</p>
+                                <p className="text-gray-300 text-[11px] leading-relaxed italic line-clamp-3">"{session.notes || session.topicOfInterest || 'Sessão de mentoria técnica e estratégica'}"</p>
                              </div>
                           </div>
                         </div>
