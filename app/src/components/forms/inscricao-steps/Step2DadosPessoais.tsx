@@ -93,7 +93,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         setErrors(prev => ({ ...prev, code: '' }));
 
         const cleanCodigo = code.trim().toUpperCase();
-        logger.debug('[Step2] Validating code:', { cleanCodigo, type: indicacaoTipo, project: projectId });
+        logger.debug('[Step2] Validating code:', { cleanCodigo, type: referralType, project: projectId });
 
         try {
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
@@ -468,7 +468,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                                         type="text" value={code} disabled={validating}
                                         onChange={e => { setCode(e.target.value); setCodigoValidado(false); if (errors.code) setErrors({ ...errors, code: '' }); }}
                                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleValidarCodigo(); } }}
-                                        placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-XXX' : 'DIGITE O CÓDIGO'}
+                                        placeholder={referralType === 'empresa' ? 'EX: GROWTH-XXX' : 'DIGITE O CÓDIGO'}
                                         className={`form-input form-code-input${errors.code ? ' error' : ''}`}
                                     />
                                     <button

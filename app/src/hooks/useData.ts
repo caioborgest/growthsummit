@@ -138,7 +138,12 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   if (item.user_id) result.userId = item.user_id;
   if (item.company_name) result.companyName = item.company_name;
   if (entityName === 'registration_batches') {
-    // ticket_type and contact_email are handled by the generic toCamelCase loop
+    if (item.company_name) result.name = item.company_name;
+    if (item.vacancy_count) result.maxSlots = item.vacancy_count;
+    if (item.used_vacancies) result.usedSlots = item.used_vacancies;
+    if (item.total_amount) result.price = item.total_amount;
+    if (item.registration_type) result.ticketType = item.registration_type;
+    if (item.is_active !== undefined) result.active = item.is_active;
   }
   if (entityName === 'sessions' || entityName === 'event_schedule') {
     if (item.max_slots) result.maxCapacity = item.max_slots;
@@ -258,20 +263,21 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     
     return {
       project_id: projectId,
-      name: data.name || data.companyName, // support both for transition
+      company_name: data.companyName || data.name, // Support both during transition
       contact_email: data.contactEmail,
       responsible_name: data.responsibleName,
       responsible_email: data.responsibleEmail,
       voucher_code: data.voucherCode,
-      max_slots: data.maxSlots || data.totalSlots, // support both
-      used_slots: data.usedSlots || 0,
-      ticket_type: data.ticketType || 'pro',
-      price: data.price || data.totalAmount, // support both
-      active: data.active !== undefined ? data.active : true,
+      vacancy_count: data.vacancyCount || data.maxSlots || 0,
+      used_vacancies: data.usedVacancies || data.usedSlots || 0,
+      registration_type: data.registrationType || data.ticketType || 'pro',
+      total_amount: data.totalAmount || data.price || 0,
+      is_active: data.active !== undefined ? data.active : true,
       expires_at: data.expiresAt || null,
       payment_status: status,
       cnpj: data.cnpj || null,
-      notes: data.notes || null
+      notes: data.notes || null,
+      updated_at: new Date().toISOString()
     };
   }
 
@@ -364,7 +370,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,interest_type,interest_areas,created_at,company_name,responsible_name',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,company_name,description,responsible_name',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
-    transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
+    transactions: 'id,project_id,type,category,description,reference_person,amount,date,status,related_id,related_type,created_at',
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
@@ -385,7 +391,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
     partners: 'id,project_id,name,logo_url,website,description,tier,active,created_at,updated_at,cnpj,type,category,status,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id',
-    registration_batches: 'id,project_id,name,max_slots,used_slots,price,active,expires_at,voucher_code,ticket_type,payment_status,responsible_name,responsible_email,contact_email,cnpj,notes,created_at,updated_at',
+    registration_batches: 'id,project_id,company_name,vacancy_count,used_vacancies,total_amount,voucher_code,registration_type,payment_status,responsible_name,responsible_email,expires_at,is_active,contact_email,cnpj,notes,created_at,updated_at',
     partner_team_members: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
     email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
     email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'

@@ -34,9 +34,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         }
 
         // If the user selected a specific batch
-        if (dados.loteId) {
+        if (dados.batchId) {
             for (const tier of selectedProject.settings.ticketTiers) {
-                const batch = tier.batches.find(b => b.id === dados.loteId);
+                const batch = tier.batches.find(b => b.id === dados.batchId);
                 if (batch) return batch.price;
             }
         }
@@ -49,19 +49,19 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     };
 
     const valorOriginal = getActivePrice();
-    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
+    const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
     const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
     const valorFormatado = valorFinal.toFixed(2);
-    const valorPagoTotal = dados.comprarPalestras ? valorFinal : 0;
+    const valorPagoTotal = dados.buyLectures ? valorFinal : 0;
 
     // Get current batch/category name for summary
     const getTicketLabel = () => {
         if (!selectedProject?.settings?.ticketTiers) return 'Passaporte Night Experience';
         
         const tier = selectedProject.settings.ticketTiers.find(t => 
-            t.batches.some(b => b.id === dados.loteId || b.active)
+            t.batches.some(b => b.id === dados.batchId || b.active)
         );
-        const batch = tier?.batches.find(b => b.id === dados.loteId || b.active);
+        const batch = tier?.batches.find(b => b.id === dados.batchId || b.active);
         
         if (tier && batch) return `${tier.name} - ${batch.name}`;
         return 'Passaporte Growth Experience';
@@ -72,9 +72,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         if (!selectedProject?.settings?.ticketTiers) return false;
         
         const tier = selectedProject.settings.ticketTiers.find(t => 
-            t.batches.some(b => b.id === dados.loteId || b.active)
+            t.batches.some(b => b.id === dados.batchId || b.active)
         );
-        const batch = tier?.batches.find(b => b.id === dados.loteId || b.active);
+        const batch = tier?.batches.find(b => b.id === dados.batchId || b.active);
         
         if (batch?.maxCapacity && (batch.soldCount || 0) >= batch.maxCapacity) {
             return true;
@@ -126,7 +126,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
         try {
             // PHASE 0: Server-side validation of personal data
-            const validation = await registrationService.validateInscricaoData(dados.nome, dados.email, dados.phone);
+            const validation = await registrationService.validateInscricaoData(dados.name, dados.email, dados.phone);
             if (!validation.valid) {
                 throw new Error(validation.errorMessage || 'Dados inválidos.');
             }
@@ -264,18 +264,18 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             </div>
                         </div>
 
-                        {dados.indicacaoNome && (
+                        {dados.referralName && (
                             <div className="flex items-start gap-3">
-                                {dados.indicacaoTipo === 'prefeitura' ? (
+                                {dados.referralType === 'prefeitura' ? (
                                     <Landmark className="h-4 w-4 text-gray-400 mt-1" />
                                 ) : (
                                     <Award className="h-4 w-4 text-gray-400 mt-1" />
                                 )}
                                 <div>
                                     <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
-                                        {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
+                                        {dados.referralType === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
                                     </p>
-                                    <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
+                                    <p className="text-brand-orange-coral font-semibold">{dados.referralName}</p>
                                     {(dados.socialDiscount && dados.socialDiscount > 0) || dados.companyVoucher ? (
                                         <div className="mt-1 flex items-center gap-2">
                                             <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
@@ -363,7 +363,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             <div className="flex items-center gap-2">
                                 <span className="text-green-500 font-bold">Desconto Aplicado</span>
                                 <Badge className="bg-green-500/10 text-green-500 border-none px-1.5 py-0 text-[10px] font-bold">
-                                    {dados.code || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Parceiro')}
+                                    {dados.code || (dados.registrationType === 'pro' ? 'VIP' : 'Parceiro')}
                                 </Badge>
                             </div>
                             <span className="text-green-500 font-mono">- R$ {((valorOriginal * descontoEfetivo) / 100).toFixed(2).replace('.', ',')}</span>
