@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useSessions } from '@/hooks/useData';
 import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
@@ -16,23 +16,46 @@ export function Step1SelecionarCursos({
     onVoltar
 }: Step1SelecionarCursosProps) {
     const { data: sessions, isLoading } = useSessions();
-    const { selectedProject } = useProject();
+    const { projectId, selectedProject } = useProject();
     const [selecionados, setSelecionados] = useState<string[]>(inicial);
 
+    // Log para debug (aparecerá no console do navegador do usuário)
+    useEffect(() => {
+        if (sessions && sessions.length > 0) {
+            console.log(`[Step1] ${sessions.length} sessões carregadas para o projeto:`, selectedProject?.name);
+        } else if (!isLoading) {
+            console.warn(`[Step1] Nenhuma sessão encontrada para o projeto:`, selectedProject?.id, selectedProject?.slug);
+        }
+    }, [sessions, isLoading, selectedProject]);
+
     const isTriunfo = selectedProject?.slug?.toLowerCase().includes('triunfo') || 
-                      selectedProject?.name?.toLowerCase().includes('triunfo');
+                      selectedProject?.name?.toLowerCase().includes('triunfo') ||
+                      selectedProject?.id === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 
-    // Mostrar toda a programação diurna disponível no banco
-    const cursosDisponiveis = sessions.filter(s => {
-        const category = (s.category as string)?.toLowerCase();
+    const cursosDisponiveis = useMemo(() => {
+        if (!sessions) return [];
+        
+        return sessions.filter(s => {
+            const title = s.title?.toLowerCase() || '';
+            const category = s.category?.toLowerCase() || '';
+            
+            // Debug individual da sessão se for Triunfo e estiver vazio
+            if (isTriunfo && sessions.length < 5) {
+                console.debug("[Step1] Avaliando sessão p/ Triunfo:", s.title, "categoria:", category);
+            }
 
-        // Excluir apenas atividades noturnas (que possuem fluxo de upgrade próprio no passo 4)
-        // EXCETO para Triunfo, onde a programação principal É noturna
-        if (category === 'noturna' && !isTriunfo) return false;
-
-        // Inclui tudo que for diurno (Salão Principal, Salas 1, 2, 3, etc)
-        return true;
-    });
+            // No Triunfo, aceitamos tudo que vier ou filtramos por categoria noturna se existirem outras
+            if (isTriunfo) {
+                // Se a sessão for do Triunfo, a princípio mostramos
+                return true; 
+            }
+            
+            // Para outros projetos, mantém filtro original
+            if (category === 'noturna') return false;
+            
+            return true;
+        });
+    }, [sessions, isTriunfo]);
 
     // Para Triunfo, derivamos os selecionados diretamente dos cursos disponíveis
     const selecionadosFinal = isTriunfo ? cursosDisponiveis.map(c => c.id) : selecionados;
