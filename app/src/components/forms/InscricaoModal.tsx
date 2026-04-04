@@ -25,7 +25,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         empresa: '',
         senha: '',
         confirmarSenha: '',
-        cupom: '' // Novo campo
+        code: '' // Novo campo
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -41,10 +41,10 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
         try {
             const { data, error: cError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('cupons_desconto') as any)
-                .select('id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_name,referral_type')
-                .eq('codigo', codigo.toUpperCase())
-                .eq('ativo', true)
+                .from('social_partnership_coupons') as any)
+                .select('id,code,discount_percentage,usage_limit,current_usage,is_active,expires_at,referral_name,referral_type')
+                .eq('code', codigo.toUpperCase())
+                .eq('is_active', true)
                 .single();
 
             if (cError || !data) {
@@ -160,7 +160,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     paid_amount: valorFinal,
                     payment_status: valorFinal === 0 ? 'pago' : 'pendente',
                     status: 'ativo',
-                    social_code: formData.cupom || null
+                    social_code: formData.code || null
                 });
 
             if (insError) throw insError;
@@ -169,9 +169,9 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             await emailService.sendWelcome(formData.email, formData.nome).catch(e => logger.warn('Erro ao enviar boas-vindas:', e));
 
             // 3. Atualizar uso do cupom se existir
-            if (formData.cupom && cupomValido) {
+            if (formData.code && cupomValido) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await (supabase.rpc as any)('increment_coupon_usage', { coupon_code: formData.cupom.toUpperCase() });
+                await (supabase.rpc as any)('increment_coupon_usage', { coupon_code: formData.code.toUpperCase() });
             }
 
             // 4. Redirecionamento ou Sucesso
@@ -187,7 +187,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     `• *Empresa:* ${formData.empresa || 'Não informada'}\n` +
                     `• *Evento:* ${eventoNome}\n` +
                     `• *Valor a Pagar:* ${valorFormatado}\n` +
-                    (formData.cupom ? `• *Voucher:* ${formData.cupom.toUpperCase()}\n` : '') +
+                    (formData.code ? `• *Voucher:* ${formData.code.toUpperCase()}\n` : '') +
                     `\nPor favor, me envie as instruções de PIX.`
                 );
                 window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
@@ -369,10 +369,10 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                             type="text"
                                             id="cupom"
                                             name="cupom"
-                                            value={formData.cupom}
+                                            value={formData.code}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                setFormData({ ...formData, cupom: val });
+                                                setFormData({ ...formData, code: val });
                                                 if (val.length >= 3) handleValidarCupom(val);
                                                 else setCupomValido(null);
                                             }}

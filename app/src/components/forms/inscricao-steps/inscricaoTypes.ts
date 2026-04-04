@@ -19,7 +19,7 @@ export interface DadosInscricao {
     partnerId?: string;
     /** Código de acesso do parceiro (obrigatório se o parceiro tiver access_code no banco) */
     partnerAccessCode?: string;
-    codigo?: string;
+    code?: string;
     descontoSocial?: number;
 
     // Etapa 4 (Night Experience)

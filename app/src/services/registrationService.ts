@@ -23,12 +23,12 @@ export interface RegistrationParams {
     salaAtividade?: string | null;
     horarioAtividade?: string | null;
     nivelAtividade?: string | null;
-    indicacaoTipo?: string;
-    indicacaoNome?: string | null;
+    referralType?: string;
+    referralName?: string | null;
     partnerId?: string | null;
     partnerAccessCode?: string | null;
-    codigoSocial?: string | null;
-    codigoPalestra?: string | null;
+    socialCode?: string | null;
+    palestraCode?: string | null;
     extraData?: Record<string, unknown>;
 }
 
@@ -107,13 +107,13 @@ export const registrationService = {
             p_sala_atividade: params.salaAtividade || null,
             p_horario_atividade: params.horarioAtividade || null,
             p_nivel_atividade: params.nivelAtividade || null,
-            p_indicacao_tipo: params.indicacaoTipo || 'nenhum',
-            p_indicacao_nome: params.indicacaoNome || null,
-            p_codigo_social: params.codigoSocial || null,
-            p_codigo_palestra: params.codigoPalestra || null,
+            p_referral_type: params.referralType || 'nenhum',
+            p_referral_name: params.referralName || null,
+            p_social_code: params.socialCode || null,
+            p_palestra_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
-            p_lote_id: cleanLoteId || null,
-            p_voucher_empresa: params.voucherEmpresa || null
+            p_batch_id: cleanLoteId || null,
+            p_voucher_code: params.voucherEmpresa || null
         };
 
         logger.info('[registrationService] Executando RPC register_participant_with_slots:', {

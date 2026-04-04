@@ -180,7 +180,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             voucherEmpresa: '',
             indicacaoTipo: 'nenhum',
             indicacaoNome: '',
-            codigo: '',
+            code: '',
             descontoSocial: 0
         });
         setCurrentStep(1);

@@ -31,10 +31,10 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
         try {
             // Tenta validar como Cupom Social
             const { data } = await (supabase
-                .from('cupons_desconto') as any)
-                .select('id,project_id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_name,referral_type')
-                .eq('codigo', cupom.trim().toUpperCase())
-                .eq('ativo', true)
+                .from('social_partnership_coupons') as any)
+                .select('id,project_id,code,discount_percentage,usage_limit,current_usage,is_active,expires_at,referral_name,referral_type')
+                .eq('code', cupom.trim().toUpperCase())
+                .eq('is_active', true)
                 .maybeSingle();
 
             if (data) {

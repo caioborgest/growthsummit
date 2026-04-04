@@ -163,10 +163,10 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 salaAtividade: salaAtividade || null,
                 horarioAtividade: horarioAtividade || null,
                 nivelAtividade: nivelAtividade || null,
-                indicacaoTipo: dados.indicacaoTipo || 'nenhum',
-                indicacaoNome: dados.indicacaoNome || null,
-                codigoSocial: dados.codigo || null,
-                codigoPalestra: dados.cupomPalestra || null,
+                referralType: dados.indicacaoTipo || 'nenhum',
+                referralName: dados.indicacaoNome || null,
+                socialCode: dados.code || null,
+                palestraCode: dados.cupomPalestra || null,
                 loteId: registrationService.isValidUUID(dados.loteId) ? dados.loteId : null,
                 voucherEmpresa: dados.voucherEmpresa,
                 partnerAccessCode: dados.partnerAccessCode || null,
@@ -292,7 +292,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                                             <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
                                                 {dados.voucherEmpresa 
                                                     ? `Pago pela Empresa (Voucher: ${dados.voucherEmpresa})` 
-                                                    : `${descontoEfetivo}% de desconto aplicado ${dados.codigo && `(Code: ${dados.codigo})`}`}
+                                                    : `${descontoEfetivo}% de desconto aplicado ${dados.code && `(Code: ${dados.code})`}`}
                                             </Badge>
                                         </div>
                                     ) : null}
@@ -376,7 +376,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             <div className="flex items-center gap-2">
                                 <span className="text-green-500 font-bold">Desconto Aplicado</span>
                                 <Badge className="bg-green-500/10 text-green-500 border-none px-1.5 py-0 text-[10px] font-bold">
-                                    {dados.codigo || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Sócio')}
+                                    {dados.code || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Sócio')}
                                 </Badge>
                             </div>
                             <span className="text-green-500 font-mono">- R$ {((valorOriginal * descontoEfetivo) / 100).toFixed(2).replace('.', ',')}</span>

@@ -27,7 +27,7 @@ export const InscricaoSchema = DadosPessoaisSchema.extend({
     tipoInscricao: z.enum(['standard', 'pro', 'vip']).default('standard'),
     indicacaoTipo: z.string().optional(),
     indicacaoNome: z.string().optional(),
-    codigo: z.string().optional(), // código de desconto social
+    code: z.string().optional(), // código de desconto social
     cupomPalestra: z.string().optional(), // cupom para palestras noturnas
 });
 
