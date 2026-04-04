@@ -137,6 +137,10 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   if (item.project_id) result.projectId = item.project_id;
   if (item.user_id) result.userId = item.user_id;
   if (item.company_name) result.companyName = item.company_name;
+  if (entityName === 'registration_batches') {
+    if (item.tipo_ingresso) result.ticketType = item.tipo_ingresso;
+    if (item.contact_email) result.contactEmail = item.contact_email;
+  }
   if (entityName === 'sessions' || entityName === 'event_schedule') {
     if (item.max_slots) result.maxCapacity = item.max_slots;
   }
@@ -246,19 +250,28 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     delete result.settings;
   }
 
-  // Special status mapping for registrations and batches
-  if ((entity === 'registrations' || entity === 'registration_batches') && (data.status || data.paymentStatus)) {
-    const s = String(data.status || data.paymentStatus).toLowerCase();
-    if (s === 'paid' || s === 'pago') {
-      result.payment_status = 'pago';
-      if (entity === 'registrations') result.status = 'ativo';
-    } else if (s === 'pending' || s === 'pendente') {
-      result.payment_status = 'pendente';
-      if (entity === 'registrations') result.status = 'pendente';
-    } else if (s === 'cancelado' || s === 'cancelado') {
-      result.payment_status = 'cancelado';
-      if (entity === 'registrations') result.status = 'cancelado';
-    }
+
+  // Specific mapping for registration_batches to use correct column names
+  if (entity === 'registration_batches') {
+    const rawStatus = String(data.paymentStatus || 'pending').toLowerCase();
+    const status = (rawStatus === 'paid' || rawStatus === 'pago') ? 'paid' : 
+                   (rawStatus === 'pending' || rawStatus === 'pendente') ? 'pending' : 'cancelled';
+    
+    return {
+      project_id: projectId,
+      company_name: data.companyName,
+      contact_email: data.contactEmail,
+      responsible_name: data.responsibleName,
+      responsible_email: data.responsibleEmail,
+      voucher_code: data.voucherCode,
+      total_slots: data.totalSlots,
+      used_slots: data.usedSlots || 0,
+      tipo_ingresso: data.ticketType || 'pro',
+      total_amount: data.totalAmount,
+      payment_status: status,
+      cnpj: data.cnpj || null,
+      notes: data.notes || null
+    };
   }
 
   // Project isolation

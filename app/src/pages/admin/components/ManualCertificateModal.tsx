@@ -232,14 +232,20 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
                 <Calendar className="h-3 w-3" /> Modalidade
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {['event', 'course', 'lecture', 'workshop', 'oficina'].map(t => (
+                {[
+                  { id: 'event', label: 'Evento' },
+                  { id: 'course', label: 'Curso' },
+                  { id: 'lecture', label: 'Palestra' },
+                  { id: 'workshop', label: 'Workshop' },
+                  { id: 'oficina', label: 'Oficina' }
+                ].map(t => (
                   <button
-                    key={t}
+                    key={t.id}
                     type="button"
-                    onClick={() => setType(t)}
-                    className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${type === t ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-lg shadow-brand-orange-coral/20' : 'bg-dark-100 border-white/5 text-gray-500 hover:border-white/20'}`}
+                    onClick={() => setType(t.id)}
+                    className={`px-4 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${type === t.id ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-lg shadow-brand-orange-coral/20' : 'bg-dark-100 border-white/5 text-gray-500 hover:border-white/20'}`}
                   >
-                    {t}
+                    {t.label}
                   </button>
                 ))}
               </div>

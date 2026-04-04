@@ -110,7 +110,7 @@ const navigationGroups: SidebarGroup[] = [
     items: [
       { id: 'comunicacao', name: 'E-mail & Push', icon: Mail, path: '/admin/comunicacao' },
       { id: 'newsletter', name: 'Leads Newsletter', icon: Users, path: '/admin/newsletter' },
-      { id: 'popups', name: 'Gestão de Pop-ups', icon: MessageCircle, path: '/admin/popups', badge: 'NEW' },
+      { id: 'popups', name: 'Gestão de Pop-ups', icon: MessageCircle, path: '/admin/popups', badge: 'NOVO' },
       { id: 'suporte', name: 'Atendimento Suporte', icon: Headset, path: '/admin/suporte' },
     ]
   },
@@ -118,7 +118,7 @@ const navigationGroups: SidebarGroup[] = [
     title: 'Configurações',
     items: [
       { id: 'usuarios', name: 'Usuários Admin', icon: Users, path: '/admin/usuarios' },
-      { id: 'integracoes', name: 'Integrações Externas', icon: Share2, path: '/admin/integracoes', badge: 'NEW' },
+      { id: 'integracoes', name: 'Integrações Externas', icon: Share2, path: '/admin/integracoes', badge: 'NOVO' },
       { id: 'seguranca', name: 'Segurança & Logs', icon: AlertCircle, path: '/admin/seguranca' },
       { id: 'guia', name: 'Manual do Sistema', icon: BookOpen, path: '/admin/guia' },
     ]
@@ -393,7 +393,7 @@ export function AdminLayout() {
               <div className="hidden sm:block">
                 <div className="flex items-center gap-2 text-[10px] font-black text-brand-orange-coral uppercase tracking-[0.25em] mb-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral animate-pulse" />
-                  Management Platform v3.0
+                  Plataforma de Gestão v3.0
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tighter flex items-center gap-3">
                   {navigationGroups.flatMap(g => g.items).find(i => isActive(i.path))?.name || 'Dashboard Central'}
@@ -503,7 +503,7 @@ export function AdminLayout() {
                       className="w-full h-8 text-[10px] font-black uppercase text-gray-500 hover:text-white"
                       onClick={() => navigate('/admin/comunicacao')}
                     >
-                      Ver Todas Corretamente
+                      Ver todas as notificações
                     </Button>
                   </div>
                 </PopoverContent>
@@ -550,7 +550,7 @@ export function AdminLayout() {
 
             <footer className="px-8 py-8 border-t border-border-theme text-center sm:text-left bg-black/40 backdrop-blur-sm">
               <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.3em] font-sans">
-                © 2026 Growth Experience • Advanced Management Ecosystem
+                © 2026 Growth Experience • Ecossistema de Gestão Avançada
               </p>
             </footer>
           </div>

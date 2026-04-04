@@ -56,7 +56,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
     // Get current batch/category name for summary
     const getTicketLabel = () => {
-        if (!selectedProject?.settings?.ticketTiers) return 'Night Experience Passport';
+        if (!selectedProject?.settings?.ticketTiers) return 'Passaporte Night Experience';
         
         const tier = selectedProject.settings.ticketTiers.find(t => 
             t.batches.some(b => b.id === dados.loteId || b.active)
@@ -64,7 +64,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         const batch = tier?.batches.find(b => b.id === dados.loteId || b.active);
         
         if (tier && batch) return `${tier.name} - ${batch.name}`;
-        return 'Growth Experience Passport';
+        return 'Passaporte Growth Experience';
     };
 
     // Check if batch is sold out
@@ -95,14 +95,14 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 return {
                     id: dbSession.id,
                     titulo: dbSession.title,
-                    local: dbSession.room || 'Auditorium',
+                    local: dbSession.room || 'Auditório',
                     horario_inicio: dbSession.startTime,
                     horario_fim: dbSession.endTime,
                     tipo: dbSession.type as TipoAtividade,
                     descricao: dbSession.description || '',
                     gratuito: true,
                     tags: dbSession.topics || [],
-                    nivel: 'Beginner' // Default level for DB sessions
+                    nivel: 'Iniciante' // Default level for DB sessions
                 };
             }
             return null;
@@ -128,7 +128,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             // PHASE 0: Server-side validation of personal data
             const validation = await registrationService.validateInscricaoData(dados.nome, dados.email, dados.phone);
             if (!validation.valid) {
-                throw new Error(validation.errorMessage || 'Invalid data.');
+                throw new Error(validation.errorMessage || 'Dados inválidos.');
             }
 
             // PHASE 2: Calculate value
@@ -173,11 +173,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
             if (!rpcResult?.success) {
                 if (rpcResult?.error === 'SESSION_FULL') {
-                    throw new Error(`Sold out spots for: \${rpcResult.full_sessions?.join(', ') || 'selected activity'}. Please choose another activity.`);
+                    throw new Error(`Vagas esgotadas para: ${rpcResult.full_sessions?.join(', ') || 'atividade selecionada'}. Por favor, escolha outra atividade.`);
                 } else if (rpcResult?.error === 'ALREADY_REGISTERED') {
-                    throw new Error('This email is already registered for this event.');
+                    throw new Error('Este e-mail já está inscrito neste evento.');
                 } else {
-                    throw new Error(rpcResult?.message || 'Error processing registration.');
+                    throw new Error(rpcResult?.message || 'Erro ao processar inscrição.');
                 }
             }
 
@@ -189,7 +189,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         } catch (err: unknown) {
             const error = err as Error;
             logger.error('Critical error in registration:', error);
-            setError(error.message || 'Error processing registration. Please try again.');
+            setError(error.message || 'Erro ao processar inscrição. Por favor, tente novamente.');
         } finally {
             setLoading(false);
             setIsProcessing(false);
@@ -199,11 +199,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <h3 className="text-3xl font-bold text-white mb-3">
-                    Confirm your Details
+                <h3 className="text-3xl font-black text-white mb-3 uppercase italic tracking-tighter">
+                    Confirme seus <span className="text-brand-orange-coral">Dados</span>
                 </h3>
-                <p className="text-gray-400 text-lg">
-                    Review your information before finishing
+                <p className="text-gray-400 text-lg font-medium">
+                    Revise suas informações antes de finalizar
                 </p>
             </div>
 
@@ -213,17 +213,17 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="w-10 h-10 rounded-lg bg-brand-orange-coral/20 flex items-center justify-center">
                             <User className="h-5 w-5 text-brand-orange-coral" />
                         </div>
-                        <h4 className="font-bold text-white text-lg">Personal Details</h4>
+                        <h4 className="font-bold text-white text-lg">Dados Pessoais</h4>
                     </div>
                     {dados.indicacaoTipo && dados.indicacaoTipo !== 'nenhum' && (
                         <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                            {dados.indicacaoTipo === 'prefeitura' ? 'City Hall Partnership' :
-                                dados.indicacaoTipo === 'politico' ? 'Leadership Quota' :
-                                    dados.indicacaoTipo === 'empresa' ? 'Company Agreement' :
+                            {dados.indicacaoTipo === 'prefeitura' ? 'Parceria Prefeitura' :
+                                dados.indicacaoTipo === 'politico' ? 'Cota Liderança' :
+                                    dados.indicacaoTipo === 'empresa' ? 'Convênio Empresa' :
                                         dados.indicacaoTipo === 'influenciador' ? 'VIP Influencer' :
-                                            dados.indicacaoTipo === 'associacao' ? 'Association Partnership' :
-                                                dados.indicacaoTipo === 'instituicao' ? 'Institution Partnership' :
-                                                    dados.indicacaoTipo === 'promocional' ? 'Promotion' : 'Partner'}
+                                            dados.indicacaoTipo === 'associacao' ? 'Parceria Associação' :
+                                                dados.indicacaoTipo === 'instituicao' ? 'Parceria Instituição' :
+                                                    dados.indicacaoTipo === 'promocional' ? 'Promocional' : 'Parceiro'}
                         </Badge>
                     )}
                 </div>
@@ -233,7 +233,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="flex items-start gap-3">
                             <User className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
-                                <p className="text-xs text-gray-500">Name</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Nome</p>
                                 <p className="text-white font-semibold">{dados.nome}</p>
                             </div>
                         </div>
@@ -241,7 +241,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="flex items-start gap-3">
                             <Mail className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
-                                <p className="text-xs text-gray-500">Email</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">E-mail</p>
                                 <p className="text-white font-semibold">{dados.email}</p>
                             </div>
                         </div>
@@ -249,7 +249,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="flex items-start gap-3">
                             <Contact className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
-                                <p className="text-xs text-gray-500">CPF</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">CPF</p>
                                 <p className="text-white font-semibold">{dados.cpf}</p>
                             </div>
                         </div>
@@ -259,7 +259,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="flex items-start gap-3">
                             <Phone className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
-                                <p className="text-xs text-gray-500">Phone</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Telefone</p>
                                 <p className="text-white font-semibold">{dados.phone}</p>
                             </div>
                         </div>
@@ -272,16 +272,16 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                                     <Award className="h-4 w-4 text-gray-400 mt-1" />
                                 )}
                                 <div>
-                                    <p className="text-xs text-gray-500">
-                                        {dados.indicacaoTipo === 'prefeitura' ? 'City Hall' : 'Referral from'}
+                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
+                                        {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
                                     </p>
                                     <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
                                     {(dados.descontoSocial && dados.descontoSocial > 0) || dados.voucherEmpresa ? (
                                         <div className="mt-1 flex items-center gap-2">
                                             <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
                                                 {dados.voucherEmpresa 
-                                                    ? `Paid by Company (Voucher: \${dados.voucherEmpresa})` 
-                                                    : `\${descontoEfetivo}% discount applied \${dados.code && `(Code: \${dados.code})`}`}
+                                                    ? `Pago pela Empresa (Voucher: ${dados.voucherEmpresa})` 
+                                                    : `${descontoEfetivo}% de desconto aplicado ${dados.code && `(Código: ${dados.code})`}`}
                                             </Badge>
                                         </div>
                                     ) : null}
@@ -298,7 +298,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <BookOpen className="h-5 w-5 text-brand-orange-coral" />
                     </div>
                     <h4 className="font-bold text-white text-lg">
-                        {selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? 'Your Access' : 'Selected Activity'}
+                        {selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? 'Seu Acesso' : 'Atividade Selecionada'}
                     </h4>
                 </div>
 
@@ -329,17 +329,17 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-semibold leading-tight">
-                                    GX Growth Experience Triunfo Passport
+                                    GX Growth Experience Triunfo Passaporte
                                 </p>
                                 <div className="flex items-center gap-3 mt-2 text-sm">
-                                    <span className="text-brand-orange-coral font-semibold">5 PM to 11 PM</span>
+                                    <span className="text-brand-orange-coral font-semibold">17h às 23h</span>
                                     <span className="text-gray-500">•</span>
-                                    <span className="text-gray-400">Park Space</span>
+                                    <span className="text-gray-400">Parque de Exposições</span>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <p className="text-gray-500 text-sm italic">No specific activity selected.</p>
+                        <p className="text-gray-500 text-sm italic">Nenhuma atividade selecionada.</p>
                     )}
                 </div>
             </Card>
@@ -349,7 +349,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                     <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
                         <Award className="h-5 w-5 text-green-500" />
                     </div>
-                    <h4 className="font-bold text-white text-lg uppercase tracking-tight">Investment Summary</h4>
+                    <h4 className="font-bold text-white text-lg uppercase tracking-tight italic">Resumo do Investimento</h4>
                 </div>
 
                 <div className="space-y-4">
@@ -361,9 +361,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                     {descontoEfetivo > 0 ? (
                         <div className="flex justify-between items-center text-sm">
                             <div className="flex items-center gap-2">
-                                <span className="text-green-500 font-bold">Discount Applied</span>
+                                <span className="text-green-500 font-bold">Desconto Aplicado</span>
                                 <Badge className="bg-green-500/10 text-green-500 border-none px-1.5 py-0 text-[10px] font-bold">
-                                    {dados.code || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Partner')}
+                                    {dados.code || (dados.tipoInscricao === 'pro' ? 'VIP' : 'Parceiro')}
                                 </Badge>
                             </div>
                             <span className="text-green-500 font-mono">- R$ {((valorOriginal * descontoEfetivo) / 100).toFixed(2).replace('.', ',')}</span>
@@ -372,8 +372,8 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
                     <div className="pt-4 border-t border-white/5 flex justify-between items-end">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Balance to Pay</p>
-                            <p className="text-[10px] text-gray-400">PIX or Card</p>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Saldo a Pagar</p>
+                            <p className="text-[10px] text-gray-400">PIX ou Cartão</p>
                         </div>
                         <div className="text-right">
                             <p className="text-3xl font-black text-white leading-none">
@@ -386,7 +386,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center animate-pulse">
                             <p className="text-green-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                                 <CheckCircle className="h-4 w-4" />
-                                Free Registration (Instant Release)
+                                Inscrição Gratuita (Liberação Imediata)
                             </p>
                         </div>
                     )}
@@ -399,12 +399,12 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <CheckCircle className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                        <h4 className="font-bold text-white text-sm mb-1">What happens next?</h4>
+                        <h4 className="font-bold text-white text-sm mb-1">O que acontece agora?</h4>
                         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] sm:text-xs text-gray-400">
-                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Account created automatically</li>
-                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Registration validated</li>
-                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> Activity reserved</li>
-                            <li className="flex items-center gap-1.5"><span className="text-brand-orange-coral">•</span> App access granted</li>
+                            <li className="flex items-center gap-1.5 font-bold"><span className="text-brand-orange-coral">•</span> Conta criada automaticamente</li>
+                            <li className="flex items-center gap-1.5 font-bold"><span className="text-brand-orange-coral">•</span> Inscrição validada</li>
+                            <li className="flex items-center gap-1.5 font-bold"><span className="text-brand-orange-coral">•</span> Vaga reservada na atividade</li>
+                            <li className="flex items-center gap-1.5 font-bold"><span className="text-brand-orange-coral">•</span> Acesso ao App liberado</li>
                         </ul>
                     </div>
                 </div>
@@ -421,23 +421,23 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
             <div className="form-actions flex gap-2">
                 <button type="button" onClick={onVoltar} disabled={loading} className="btn-form-back">
-                    Back
+                    Voltar
                 </button>
                 <button
                     type="button"
                     onClick={handleConfirmar}
                     disabled={loading || isSoldOut}
-                    className={`btn-form-primary flex-1 \${isSoldOut ? 'opacity-40 grayscale-[0.8] cursor-not-allowed border-red-500/30' : ''}`}
+                    className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-40 grayscale-[0.8] cursor-not-allowed border-red-500/30' : ''}`}
                 >
                     {loading ? (
-                        <><Loader2 className="h-5 w-5 animate-spin" />Confirming...</>
+                        <><Loader2 className="h-5 w-5 animate-spin" />Confirmando...</>
                     ) : isSoldOut ? (
                         <div className="flex items-center justify-center gap-2">
                              <AlertCircle className="h-5 w-5 text-red-500 animate-pulse" />
-                             <span className="font-black text-red-500 uppercase tracking-widest text-[10px] sm:text-xs">Sold Out Batch</span>
+                             <span className="font-black text-red-500 uppercase tracking-widest text-[10px] sm:text-xs">Lote Esgotado</span>
                         </div>
                     ) : (
-                        <><CheckCircle className="h-5 w-5" />Proceed</>
+                        <><CheckCircle className="h-5 w-5" />Prosseguir</>
                     )}
                 </button>
             </div>

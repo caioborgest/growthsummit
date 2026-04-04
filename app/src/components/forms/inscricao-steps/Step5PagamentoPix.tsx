@@ -51,8 +51,8 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 if (pollingInterval.current) {
                     clearInterval(pollingInterval.current);
                 }
-                toast.success('PAYMENT CONFIRMED! 🎉', {
-                    description: 'Your access has been granted automatically.',
+                toast.success('PAGAMENTO CONFIRMADO! 🎉', {
+                    description: 'Seu acesso foi liberado automaticamente.',
                     duration: 5000
                 });
                 setTimeout(onContinuar, 2000);
@@ -69,27 +69,27 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
     const handleCopy = () => {
         navigator.clipboard.writeText(cnpj);
         setCopied(true);
-        toast.success("CNPJ copied!");
+        toast.success("CNPJ copiado!");
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleStripe = () => {
         const STRIPE_LINK = EVENT_CONFIG.stripePaymentLink;
         window.open(STRIPE_LINK, '_blank');
-        toast.info("Stripe link opened. Access will be granted after card confirmation.");
+        toast.info("Link do Stripe aberto. O acesso será liberado após a confirmação do cartão.");
     };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
-                <Badge className="mb-3 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-1">
-                    PAYMENT STAGE
+                <Badge className="mb-3 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-1 font-bold">
+                    ETAPA DE PAGAMENTO
                 </Badge>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight">
-                    Complete your <span className="text-brand-orange-coral">Night Passport</span>
+                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 tracking-tight uppercase italic underline decoration-brand-orange-coral/20">
+                    Finalize seu <span className="text-brand-orange-coral">Passaporte Noturno</span>
                 </h3>
-                <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">
-                    Copy the CNPJ below to make the payment via PIX in your banking app.
+                <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto font-medium">
+                    Copie o CNPJ abaixo para realizar o pagamento via PIX no seu app do banco.
                 </p>
             </div>
 
@@ -99,40 +99,40 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 <div className="space-y-6 relative z-10">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div className="space-y-1 text-center sm:text-left">
-                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Upgrade Value</p>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Valor do Upgrade</p>
                             <p className="text-4xl font-black text-white">
                                 R$ <span className="text-brand-orange-coral">{valorFormatado.replace('.', ',')}</span>
                             </p>
                             {descontoEfetivo > 0 && (
                                 <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
-                                    {descontoEfetivo}% discount applied {dados.code && `(Code: \${dados.code})`}
+                                    {descontoEfetivo}% de desconto aplicado {dados.code && `(Código: ${dados.code})`}
                                 </Badge>
                             )}
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">PIX Key (CNPJ)</p>
+                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Chave PIX (CNPJ)</p>
                         <div className="form-pix-row">
                             <div className="form-pix-code">{cnpj}</div>
                             <button
                                 type="button"
                                 onClick={handleCopy}
-                                className={`btn-form-primary shrink-0 \${copied ? 'bg-green-600' : ''}`}
+                                className={`btn-form-primary shrink-0 ${copied ? 'bg-green-600' : ''}`}
                             >
                                 {copied ? <CheckCircle className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                                {copied ? 'COPIED!' : 'COPY'}
+                                {copied ? 'COPIADO!' : 'COPIAR'}
                             </button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Beneficiary</p>
+                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Beneficiário</p>
                                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                                     <p className="text-xs font-bold text-foreground uppercase truncate">{merchantName}</p>
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Bank</p>
+                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Banco</p>
                                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                                     <p className="text-xs font-bold text-foreground uppercase">CORA</p>
                                 </div>
@@ -145,8 +145,8 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             <div className="flex items-start gap-4 p-4 rounded-2xl bg-brand-orange-coral/5 border border-brand-orange-coral/10">
                 <AlertCircle className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
-                    <p className="text-sm text-gray-300 leading-relaxed">
-                        After making the payment, the system will identify it automatically. If you prefer, you can send the receipt via support.
+                    <p className="text-sm text-gray-300 leading-relaxed font-bold">
+                        Após realizar o pagamento, o sistema identificará automaticamente. Se preferir, você pode enviar o comprovante via suporte.
                     </p>
                 </div>
             </div>
@@ -154,7 +154,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             <div className="form-actions flex gap-2">
                 {onVoltar && (
                     <button type="button" onClick={onVoltar} className="btn-form-back">
-                        Back
+                        Voltar
                     </button>
                 )}
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -164,21 +164,21 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                         className="btn-form-primary !bg-gradient-to-r !from-blue-600 !to-blue-700 !shadow-[0_6px_24px_rgba(37,99,235,0.4)]"
                     >
                         <Landmark className="h-5 w-5 hidden sm:block" />
-                        CARD (UP TO 12X)
+                        CARTÃO (ATÉ 12X)
                     </button>
                     <button
                         type="button"
                         onClick={onContinuar}
                         className="btn-form-primary !bg-white !text-gray-900 !shadow-xl hover:!bg-gray-100"
                     >
-                        NEXT STEP
+                        PRÓXIMO PASSO
                         <ArrowRight className="h-5 w-5" />
                     </button>
                 </div>
             </div>
 
             <p className="text-center text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                By clicking proceed, you continue to the app installation area.
+                Ao clicar em prosseguir, você continua para a área de instalação do aplicativo.
             </p>
         </div>
     );

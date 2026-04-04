@@ -333,108 +333,102 @@ export default function AdminBatches() {
                                 {/* Seção Empresa */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Empresa</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Empresa</Label>
                                         <Input 
                                             required 
                                             value={formData.companyName} 
                                             onChange={e => setFormData({ ...formData, companyName: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="Ex: Growth & IA Hub"
+                                            placeholder="Ex: CBX Marketing Digital"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CNPJ (Opcional)</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CNPJ</Label>
                                         <Input 
                                             value={formData.cnpj} 
                                             onChange={e => setFormData({ ...formData, cnpj: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="00.000.000/0000-00"
+                                            placeholder="00.000.000/0001-00"
                                         />
                                     </div>
                                 </div>
-
                                 {/* Seção Responsável */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Responsável (Líder)</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome do Responsável</Label>
                                         <Input 
                                             required 
                                             value={formData.responsibleName} 
                                             onChange={e => setFormData({ ...formData, responsibleName: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="Nome Completo"
+                                            placeholder="Ex: João Silva"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Acesso</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail do Responsável</Label>
                                         <Input 
                                             required
                                             type="email"
                                             value={formData.responsibleEmail} 
-                                            onChange={e => setFormData({ ...formData, responsibleEmail: e.target.value, contactEmail: e.target.value })} 
+                                            onChange={e => setFormData({ ...formData, responsibleEmail: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="email@equipe.com"
+                                            placeholder="responsavel@empresa.com.br"
                                         />
                                     </div>
                                 </div>
-
                                 {/* Seção Financeira/Voucher */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail Financeiro</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Contato</Label>
                                         <Input 
                                             type="email" 
                                             value={formData.contactEmail} 
                                             onChange={e => setFormData({ ...formData, contactEmail: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="pago@empresa.com"
+                                            placeholder="contato@empresa.com.br"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Voucher Personalizado</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Código do Voucher</Label>
                                         <div className="flex gap-2">
                                             <Input 
                                                 required 
                                                 value={formData.voucherCode} 
                                                 onChange={e => setFormData({ ...formData, voucherCode: e.target.value.toUpperCase() })} 
                                                 className="bg-dark-100 border-brand-orange-coral/20 text-brand-orange-coral font-black uppercase h-11 rounded-xl tracking-widest" 
+                                                placeholder="Gerado automaticamente"
                                             />
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
-                                                size="icon" 
-                                                onClick={generateVoucher} 
-                                                className="border-white/5 hover:border-brand-orange-coral/50 text-gray-400 hover:text-brand-orange-coral h-11 w-11 rounded-xl"
+                                            <button
+                                                type="button"
+                                                onClick={generateVoucher}
+                                                className="border-white/5 hover:border-brand-orange-coral/50 text-gray-400 hover:text-brand-orange-coral h-11 w-11 rounded-xl bg-dark-100 border flex items-center justify-center transition-colors"
                                             >
                                                 <CreditCard className="h-4 w-4" />
-                                            </Button>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-
                                 {/* Seção Valores/Status */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Qtd de Vagas</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total de Vagas</Label>
                                         <Input
                                             type="number"
                                             min="1"
                                             value={formData.totalSlots}
                                             onChange={e => handleQtyChange(Number(e.target.value))}
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
+                                            placeholder="Ex: 10"
                                         />
-                                        {formData.totalSlots < 5 && (
-                                            <p className="text-[9px] text-yellow-500 font-bold uppercase tracking-tighter">Mín. 5 para 30% desc.</p>
-                                        )}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total (R$)</Label>
                                         <div className="bg-dark-100 border border-white/5 rounded-xl h-11 flex items-center px-4 text-white font-black text-lg">
-                                            R$ {formData.totalAmount}
+                                            R$ {formData.totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status do Pagamento</Label>
                                         <select
                                             value={formData.paymentStatus}
                                             onChange={e => setFormData({ ...formData, paymentStatus: e.target.value as any })}
@@ -446,14 +440,25 @@ export default function AdminBatches() {
                                         </select>
                                     </div>
                                 </div>
-
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo de Ingresso</Label>
+                                    <select
+                                        value={formData.ticketType}
+                                        onChange={e => setFormData({ ...formData, ticketType: e.target.value as any })}
+                                        className="w-full h-11 px-4 bg-dark-100 border border-white/5 rounded-xl text-white text-sm font-bold focus:ring-1 focus:ring-brand-orange-coral/50 outline-none appearance-none cursor-pointer"
+                                    >
+                                        <option value="pro">Pro</option>
+                                        <option value="morning">Standard</option>
+                                        <option value="vip">VIP</option>
+                                    </select>
+                                </div>
                                 <div className="space-y-1.5">
                                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Observações</Label>
                                     <textarea 
                                         value={formData.notes} 
                                         onChange={e => setFormData({ ...formData, notes: e.target.value })} 
                                         className="w-full bg-dark-100 border border-white/5 rounded-xl p-4 text-white text-sm min-h-[80px] focus:border-brand-orange-coral/30 outline-none transition-colors" 
-                                        placeholder="Forma de pagamento, responsável pela venda..." 
+                                        placeholder="Informações adicionais..." 
                                     />
                                 </div>
                             </div>

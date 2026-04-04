@@ -348,7 +348,7 @@ export function AdminFinanceiro() {
                   <DollarSign className={`h-7 w-7 ${balance >= 0 ? 'text-teal-400' : 'text-red-400'}`} />
                 </div>
                 <Badge className={balance >= 0 ? 'bg-teal-500/10 text-teal-400 border-none px-3 py-1 font-black text-[9px] tracking-widest uppercase' : 'bg-red-500/10 text-red-400 border-none px-3 py-1 font-black text-[9px] tracking-widest uppercase'}>
-                  {balance >= 0 ? 'SURPLUS' : 'DÉFICIT'}
+                  {balance >= 0 ? 'SUPERÁVIT' : 'DÉFICIT'}
                 </Badge>
               </div>
               <div className="relative z-10">
@@ -643,7 +643,7 @@ export function AdminFinanceiro() {
               onClick={() => toast.info('Exportação iniciada...')}
             >
               <Download className="h-4 w-4 mr-2" />
-              DOWNLOAD CSV
+              BAIXAR CSV
             </Button>
           </div>
 

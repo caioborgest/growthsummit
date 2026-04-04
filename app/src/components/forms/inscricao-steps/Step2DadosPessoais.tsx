@@ -114,7 +114,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             if (lot) {
                 const isPaid = lot.payment_status === 'pago' || lot.payment_status === 'paid';
                 if (lot.used_slots >= lot.total_slots || !isPaid) {
-                    setErrors(prev => ({ ...prev, code: 'Invalid voucher, limit exceeded or pending payment' }));
+                    setErrors(prev => ({ ...prev, code: 'Voucher inválido, limite excedido ou pagamento pendente' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
@@ -133,7 +133,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             tipoInscricao: ((lot as any).tipo_ingresso || 'pro') as any
                         });
                     }
-                    toast.success('Corporate voucher validated!');
+                    toast.success('Voucher corporativo validado!');
                 }
                 return;
             }
@@ -162,7 +162,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 const limit = (usageData as { max_members?: number })?.max_members ?? partner.max_team_members ?? 10;
 
                 if (usedMembers >= limit) {
-                    setErrors(prev => ({ ...prev, code: `Team limit reached for this partner (${limit})` }));
+                    setErrors(prev => ({ ...prev, code: `Limite de equipe atingido para este parceiro (${limit})` }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
@@ -179,7 +179,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             tipoInscricao: 'pro'
                         });
                     }
-                    toast.success('Partner code validated!');
+                    toast.success('Código de parceiro validado!');
                 }
                 return;
             }
@@ -202,7 +202,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 const isFull = couponData.usage_limit && couponData.current_usage >= couponData.usage_limit;
 
                 if (!couponData.is_active || isExpired || isFull) {
-                    setErrors(prev => ({ ...prev, code: 'Coupon inactive, expired or usage limit reached' }));
+                    setErrors(prev => ({ ...prev, code: 'Cupom inativo, expirado ou limite de uso atingido' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
@@ -216,16 +216,16 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             indicacaoTipo: (couponData.referral_type || indicacaoTipo) as any 
                         });
                     }
-                    toast.success(`Coupon for ${couponData.discount_percentage}% applied!`);
+                    toast.success(`Cupom de ${couponData.discount_percentage}% aplicado!`);
                 }
             } else {
                 logger.warn('[Step2] Code not found in any category:', cleanCodigo);
-                setErrors(prev => ({ ...prev, code: 'Code not found. Please check and try again.' }));
+                setErrors(prev => ({ ...prev, code: 'Código não encontrado. Verifique e tente novamente.' }));
                 setCodigoValidado(false);
             }
         } catch (err) {
             logger.error('[Step2] Critical error validating code:', err);
-            setErrors(prev => ({ ...prev, code: 'Connection error while validating' }));
+            setErrors(prev => ({ ...prev, code: 'Erro de conexão ao validar' }));
             setCodigoValidado(false);
         } finally {
             setValidating(false);
@@ -234,19 +234,19 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
     const handleContinuar = async () => {
         const newErrors: Record<string, string> = {};
-        if (!nome.trim()) newErrors.nome = 'Name is required';
-        else if (nome.trim().length < 3) newErrors.nome = 'Name must be at least 3 characters';
-        if (!cpf.trim()) newErrors.cpf = 'CPF is required';
-        else if (!validateCPF(cpf)) newErrors.cpf = 'Invalid CPF';
-        if (!email.trim()) newErrors.email = 'Email is required';
-        else if (!validateEmail(email)) newErrors.email = 'Invalid email';
-        if (!telefone.trim()) newErrors.phone = 'Phone is required';
-        else if (telefone.replace(/\D/g, '').length < 10) newErrors.phone = 'Invalid phone number';
-        if (!senha) newErrors.senha = 'Password is required';
-        else if (senha.length < 6) newErrors.senha = 'Password must be at least 6 characters';
-        if (!confirmSenha) newErrors.confirmSenha = 'Confirm your password';
-        else if (senha !== confirmSenha) newErrors.confirmSenha = 'Passwords do not match';
-        if (indicacaoTipo !== 'nenhum' && code.trim() && !codigoValidado) newErrors.code = 'Please validate the code before continuing';
+        if (!nome.trim()) newErrors.nome = 'Nome é obrigatório';
+        else if (nome.trim().length < 3) newErrors.nome = 'O nome deve ter pelo menos 3 caracteres';
+        if (!cpf.trim()) newErrors.cpf = 'CPF é obrigatório';
+        else if (!validateCPF(cpf)) newErrors.cpf = 'CPF inválido';
+        if (!email.trim()) newErrors.email = 'E-mail é obrigatório';
+        else if (!validateEmail(email)) newErrors.email = 'E-mail inválido';
+        if (!telefone.trim()) newErrors.phone = 'Telefone é obrigatório';
+        else if (telefone.replace(/\D/g, '').length < 10) newErrors.phone = 'Telefone inválido';
+        if (!senha) newErrors.senha = 'Senha é obrigatória';
+        else if (senha.length < 6) newErrors.senha = 'A senha deve ter pelo menos 6 caracteres';
+        if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
+        else if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
+        if (indicacaoTipo !== 'nenhum' && code.trim() && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
         setErrors(newErrors);
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
@@ -270,11 +270,11 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-1">
-                    Your Personal Details
+                <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-1 uppercase italic">
+                    Suas Informações <span className="text-brand-orange-coral">Pessoais</span>
                 </h3>
-                <p className="text-foreground/40 text-sm sm:text-base font-medium">
-                    Fill in your details to create your account
+                <p className="text-gray-500 text-sm sm:text-base font-medium">
+                    Preencha seus dados para criar sua conta de acesso
                 </p>
             </div>
 
@@ -283,12 +283,12 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     <div className="form-field">
                         <label htmlFor="nome" className="form-label">
-                            <User className="h-4 w-4" />Full Name
+                            <User className="h-4 w-4" />Nome Completo
                         </label>
                         <input
                             id="nome" type="text" value={nome} autoComplete="name"
                             onChange={e => { setNome(e.target.value); if (errors.nome) setErrors({ ...errors, nome: '' }); }}
-                            placeholder="Your full name"
+                            placeholder="Seu nome completo"
                             className={`form-input${errors.nome ? ' error' : ''}`}
                         />
                         {errors.nome && <p className="form-error"><AlertCircle />{errors.nome}</p>}
@@ -309,26 +309,26 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     <div className="form-field">
                         <label htmlFor="email" className="form-label">
-                            <Mail className="h-4 w-4" />Email
+                            <Mail className="h-4 w-4" />E-mail
                         </label>
                         <input
                             id="email" type="email" inputMode="email" value={email} autoComplete="email"
                             onChange={e => { setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: '' }); }}
-                            placeholder="your@email.com"
+                            placeholder="seu@email.com.br"
                             className={`form-input${errors.email ? ' error' : ''}`}
                         />
                         {errors.email && <p className="form-error"><AlertCircle />{errors.email}</p>}
-                        <p className="form-hint">You will use this email to log in to the app</p>
+                        <p className="form-hint">Você usará este e-mail para acessar o aplicativo</p>
                     </div>
 
                     <div className="form-field">
                         <label htmlFor="telefone" className="form-label">
-                            <Phone className="h-4 w-4" />Phone / WhatsApp
+                            <Phone className="h-4 w-4" />Telefone / WhatsApp
                         </label>
                         <input
                             id="telefone" type="tel" inputMode="tel" value={telefone} autoComplete="tel"
                             onChange={e => { setTelefone(formatTelefone(e.target.value)); if (errors.phone) setErrors({ ...errors, phone: '' }); }}
-                            placeholder="(88) 98843-2310"
+                            placeholder="(87) 9.8888-7777"
                             className={`form-input${errors.phone ? ' error' : ''}`}
                         />
                         {errors.phone && <p className="form-error"><AlertCircle />{errors.phone}</p>}
@@ -336,35 +336,35 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     <div className="form-field">
                         <label htmlFor="senha" className="form-label">
-                            <Lock className="h-4 w-4" />Create Password
+                            <Lock className="h-4 w-4" />Criar Senha
                         </label>
                         <div className="form-input-wrapper">
                             <input
                                 id="senha" type={showSenha ? 'text' : 'password'} value={senha} autoComplete="new-password"
                                 onChange={e => { setSenha(e.target.value); if (errors.senha) setErrors({ ...errors, senha: '' }); }}
-                                placeholder="Minimum 6 characters"
+                                placeholder="Mínimo 6 caracteres"
                                 className={`form-input${errors.senha ? ' error' : ''}`}
                             />
-                            <button type="button" onClick={() => setShowSenha(!showSenha)} className="form-input-icon-end">
+                            <button type="button" onClick={() => setShowSenha(!showSenha)} className="form-input-icon-end text-gray-400">
                                 {showSenha ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>
                         </div>
                         {errors.senha && <p className="form-error"><AlertCircle />{errors.senha}</p>}
-                        <p className="form-hint">Use this password to access the Growth Experience app</p>
+                        <p className="form-hint">Use esta senha para acessar o App do Growth Experience</p>
                     </div>
 
                     <div className="form-field">
                         <label htmlFor="confirmSenha" className="form-label">
-                            <Lock className="h-4 w-4" />Confirm Password
+                            <Lock className="h-4 w-4" />Confirmar Senha
                         </label>
                         <div className="form-input-wrapper">
                             <input
                                 id="confirmSenha" type={showConfirmSenha ? 'text' : 'password'} value={confirmSenha} autoComplete="new-password"
                                 onChange={e => { setConfirmSenha(e.target.value); if (errors.confirmSenha) setErrors({ ...errors, confirmSenha: '' }); }}
-                                placeholder="Type your password again"
+                                placeholder="Digite sua senha novamente"
                                 className={`form-input${errors.confirmSenha ? ' error' : ''}`}
                             />
-                            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="form-input-icon-end">
+                            <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="form-input-icon-end text-gray-400">
                                 {showConfirmSenha ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>
                         </div>
@@ -373,24 +373,24 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     <div className="form-section-divider">
                         <div className="form-section-divider-label">
-                            <Award className="h-4 w-4" />Social Registration Program
+                            <Award className="h-4 w-4" />Programa de Inscrição Social
                         </div>
                     </div>
                     <p className="form-hint -mt-2">
-                        Is your registration part of a partnership with a City Hall, Company or local Leadership?
+                        Sua inscrição é fruto de parceria com Prefeitura, Empresa ou Liderança local?
                     </p>
 
                     <div className="form-badge-group">
                         {[
-                            { id: 'prefeitura', label: '🏛️ City Hall' },
-                            { id: 'politico', label: '⚖️ Political' },
-                            { id: 'empresa', label: '🏢 Company' },
+                            { id: 'prefeitura', label: '🏛️ Prefeitura' },
+                            { id: 'politico', label: '⚖️ Político' },
+                            { id: 'empresa', label: '🏢 Empresa' },
                             { id: 'influenciador', label: '📱 Influencer' },
-                            { id: 'associacao', label: '🤝 Association' },
-                            { id: 'instituicao', label: '🎓 Institution' },
-                            { id: 'parceiro', label: '🎖️ Partner/Vex' },
-                            { id: 'promocional', label: '🎁 Promotion' },
-                            { id: 'nenhum', label: '✕ None' },
+                            { id: 'associacao', label: '🤝 Associação' },
+                            { id: 'instituicao', label: '🎓 Instituição' },
+                            { id: 'parceiro', label: '🎖️ Parceiro/Vex' },
+                            { id: 'promocional', label: '🎁 Promocional' },
+                            { id: 'nenhum', label: '✕ Nenhum' },
                         ].map(tipo => (
                             <button
                                 key={tipo.id} type="button"
@@ -424,18 +424,18 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                             <div className="form-field">
                                 <label htmlFor="indicacaoNome" className="form-label" style={{ fontSize: '0.72rem' }}>
-                                    {indicacaoTipo === 'prefeitura' ? 'Which City Hall?' :
-                                        indicacaoTipo === 'politico' ? 'Which Politician?' :
-                                            indicacaoTipo === 'empresa' ? 'Company / Team Name?' :
-                                                indicacaoTipo === 'influenciador' ? 'Influencer Name?' :
-                                                    indicacaoTipo === 'associacao' ? 'Association Name?' :
-                                                        indicacaoTipo === 'instituicao' ? 'Institution Name?' :
-                                                            'Origin Name / Partner?'}
+                                    {indicacaoTipo === 'prefeitura' ? 'Qual a Prefeitura?' :
+                                        indicacaoTipo === 'politico' ? 'Qual o Político / Liderança?' :
+                                            indicacaoTipo === 'empresa' ? 'Nome da Empresa / Equipe?' :
+                                                indicacaoTipo === 'influenciador' ? 'Qual o Influenciador?' :
+                                                    indicacaoTipo === 'associacao' ? 'Qual a Associação?' :
+                                                        indicacaoTipo === 'instituicao' ? 'Qual a Instituição?' :
+                                                            'Nome da Origem / Parceiro?'}
                                 </label>
                                 {indicacaoTipo === 'prefeitura' ? (
                                     <Select value={indicacaoNome} onValueChange={setIndicacaoNome}>
                                         <SelectTrigger className="form-input h-auto">
-                                            <SelectValue placeholder="Select city" />
+                                            <SelectValue placeholder="Selecione a cidade" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-dark-100 border-white/10 text-white">
                                             {PAJEU_CITIES.map(cidade => (
@@ -449,7 +449,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                                     <input
                                         id="indicacaoNome" type="text" value={indicacaoNome}
                                         onChange={e => { setIndicacaoNome(e.target.value); if (errors.indicacaoNome) setErrors({ ...errors, indicacaoNome: '' }); }}
-                                        placeholder="Company or partner name"
+                                        placeholder="Nome do parceiro ou empresa"
                                         className={`form-input${errors.indicacaoNome ? ' error' : ''}`}
                                     />
                                 )}
@@ -459,14 +459,14 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             <div className="form-field">
                                 <label className="form-label" style={{ fontSize: '0.72rem' }}>
                                     <Key className="h-4 w-4" />
-                                    {indicacaoTipo === 'empresa' ? 'Corporate Voucher Code' : 'Partnership Code'}
+                                    {indicacaoTipo === 'empresa' ? 'Código do Voucher Corporativo' : 'Código de Parceria'}
                                 </label>
                                 <div className="form-code-row">
                                     <input
                                         type="text" value={code} disabled={validating}
                                         onChange={e => { setCode(e.target.value); setCodigoValidado(false); if (errors.code) setErrors({ ...errors, code: '' }); }}
                                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleValidarCodigo(); } }}
-                                        placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-XXX' : 'ENTER CODE'}
+                                        placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-XXX' : 'DIGITE O CÓDIGO'}
                                         className={`form-input form-code-input${errors.code ? ' error' : ''}`}
                                     />
                                     <button
@@ -475,17 +475,17 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                                         className={`form-code-validate-btn${codigoValidado ? ' validated' : ''}`}
                                     >
                                         {validating ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                                            codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validate'}
+                                            codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validar'}
                                     </button>
                                 </div>
                                 {errors.code && <p className="form-error"><AlertCircle />{errors.code}</p>}
                                 {codigoValidado && (
-                                    <p className="form-success-badge"><CheckCircle />CODE CONFIRMED! (-{desconto}% OFF)</p>
+                                    <p className="form-success-badge"><CheckCircle />CÓDIGO CONFIRMADO! (-{desconto}% OFF)</p>
                                 )}
                                 <p className="form-hint">
                                     {indicacaoTipo === 'empresa'
-                                        ? 'This code was sent to the person responsible for the company purchase.'
-                                        : 'This code is provided by your company or GX organizers.'}
+                                        ? 'Este código foi enviado ao responsável pela compra do lote corporativo.'
+                                        : 'Este código é fornecido pela sua empresa ou organização do GX.'}
                                 </p>
                             </div>
                         </div>
@@ -496,12 +496,12 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             {/* Actions */}
             <div className="form-actions">
                 <button type="button" onClick={onVoltar} disabled={validating} className="btn-form-back">
-                    Back
+                    Voltar
                 </button>
                 <button type="button" onClick={handleContinuar} disabled={validating} className="btn-form-primary flex-1">
                     {validating
-                        ? <><Loader2 className="h-5 w-5 animate-spin" />Validating...</>
-                        : 'Continue to Confirmation'
+                        ? <><Loader2 className="h-5 w-5 animate-spin" />Validando...</>
+                        : 'Continuar para Confirmação'
                     }
                 </button>
             </div>

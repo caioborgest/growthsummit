@@ -246,10 +246,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     <div className="flex items-center justify-between mb-4 sm:mb-6">
                         <div>
                             <DialogTitle className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
-                                Registration <span className="text-brand-orange-coral">{selectedProject?.name || 'Event'}</span>
+                                Inscrição <span className="text-brand-orange-coral">{selectedProject?.name || 'Evento'}</span>
                             </DialogTitle>
                             <DialogDescription className="sr-only">
-                                Registration for {selectedProject?.name || 'Growth Experience'}.
+                                Inscrição para {selectedProject?.name || 'Growth Experience'}.
                             </DialogDescription>
                         </div>
                         <Button variant="ghost" size="icon" onClick={handleClose} className="rounded-full h-10 w-10">
@@ -261,10 +261,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         <div className="absolute top-4 sm:top-5 left-8 right-8 h-[1px] sm:h-[2px] bg-white/5 -z-10" />
                         <div
                             className="absolute top-4 sm:top-5 left-8 h-[1px] sm:h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
-                            style={{ width: `\${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
+                            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
-                        {['Tracks', 'Details', 'Confirm', 'Offer', 'Payment', 'App', 'Finish'].map((label, index) => {
+                        {['Trilhas', 'Dados', 'Confirmar', 'Oferta', 'Pagamento', 'App', 'Concluir'].map((label, index) => {
                             const step = index + 1;
                             const isActive = step === currentStep;
                             const isCompleted = step < currentStep;
@@ -272,7 +272,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             return (
                                 <div key={step} className="flex flex-col items-center gap-2 relative">
                                     <div
-                                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 \${isCompleted
+                                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
                                             ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
                                             : isActive
                                                 ? 'bg-brand-orange-coral border-brand-orange-coral text-white scale-110 shadow-[0_0_20px_rgba(255,112,67,0.4)]'
@@ -281,7 +281,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                     >
                                         {isCompleted ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" /> : <span className="text-[10px] sm:text-sm">{step}</span>}
                                     </div>
-                                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider transition-colors \${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-600'} hidden sm:block`}>
+                                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-600'} hidden sm:block`}>
                                         {label}
                                     </span>
                                 </div>

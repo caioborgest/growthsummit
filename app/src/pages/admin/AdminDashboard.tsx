@@ -38,7 +38,6 @@ import {
   useCheckIns,
   useSupportTickets,
   useRaffles,
-  useStandCheckIns,
   useSessions,
   useCoupons,
   useRegistrationBatches,
@@ -194,8 +193,8 @@ export function AdminDashboard() {
         )
         .reduce((sum, r) => sum + (r.amount || 0), 0) +
         (batches || [])
-          .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
-          .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0))
+          .filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago')
+          .reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0))
       : transactions
         .filter(t => t.type === 'income' && t.status === 'completed')
         .reduce((sum, t) => sum + t.amount, 0);
@@ -210,7 +209,6 @@ export function AdminDashboard() {
     };
 
     const publicRegistrations = registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).referral_type !== 'parceiro');
-    const workTeamCount = (registrations.length - publicRegistrations.length) + (partnerTeam.length - (registrations.length - publicRegistrations.length));
     // Simplificando: Pega todos de partner_team_members que estão cadastrados
     const totalStaff = partnerTeam.length;
 
@@ -318,7 +316,7 @@ export function AdminDashboard() {
         `"${r.name || r.nome || ''}"`,
         r.email,
         `"${r.empresa || ''}"`,
-        r.tipoInscricao || 'padrão',
+        r.ticketType || 'padrão',
         r.status
       ].join(','))
     ].join('\n');
@@ -379,7 +377,7 @@ export function AdminDashboard() {
               size="sm"
               className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
             >
-              PROJECT SETUP
+              CONFIGURAÇÃO DO PROJETO
             </Button>
           </Link>
         </div>
@@ -468,7 +466,7 @@ export function AdminDashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { label: 'Startups', val: startups.length, icon: Rocket, color: 'text-brand-orange-coral', bg: 'orange-500/10', path: '/admin/startups' },
-            { label: 'Sponsors', val: _sponsors.length, icon: Gem, color: 'text-yellow-400', bg: 'yellow-500/10', path: '/admin/patrocinadores' },
+            { label: 'Patrocinadores', val: _sponsors.length, icon: Gem, color: 'text-yellow-400', bg: 'yellow-500/10', path: '/admin/patrocinadores' },
             { label: 'Check-ins Hoje', val: checkIns.length, icon: QrCode, color: 'text-teal-400', bg: 'teal-500/10', path: '/admin/check-in' },
             { label: 'Pendências', val: (tickets.filter(t => t.status === 'open').length + pendingMentors.length + pendingStartups.length), icon: AlertCircle, color: 'text-red-400', bg: 'red-500/10', path: '/admin/suporte' },
           ].map((op, i) => (
@@ -612,7 +610,11 @@ export function AdminDashboard() {
                     session.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                       'bg-red-500/10 text-red-400 border-red-500/20'
                 }>
-                  <p className="text-[10px] font-black tracking-widest">{session.status.toUpperCase()}</p>
+                  <p className="text-[10px] font-black tracking-widest">
+                    {session.status === 'scheduled' ? 'AGENDADO' : 
+                     session.status === 'completed' ? 'CONCLUÍDO' : 
+                     session.status.toUpperCase()}
+                  </p>
                 </Badge>
                 <div className="flex items-center text-teal-400 text-xs font-bold">
                   <Clock className="h-3.5 w-3.5 mr-1.5" />

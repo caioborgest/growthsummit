@@ -77,18 +77,18 @@ export function Step1SelecionarCursos({
             {/* Header */}
             <div className="text-left">
                 <h3 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-2 sm:mb-4 tracking-tighter">
-                    AVAILABLE <span className="text-brand-orange-coral italic underline decoration-brand-orange-coral/30">TRACKS</span>
+                    TRILHAS <span className="text-brand-orange-coral italic underline decoration-brand-orange-coral/30">DISPONÍVEIS</span>
                 </h3>
                 <p className="text-gray-400 text-base sm:text-lg max-w-xl font-medium">
                     {isTriunfo 
-                        ? 'Check the full program included in your ticket.' 
-                        : 'Select an activity to personalize your journey. Each activity has limited spots.'}
+                        ? 'Confira a programação completa inclusa no seu ingresso.' 
+                        : 'Selecione uma atividade para personalizar sua jornada. Cada atividade tem vagas limitadas.'}
                 </p>
                 {selecionadosFinal.length > 0 && (
                     <div className="mt-4 flex animate-bounce-subtle">
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-1.5 text-[10px] uppercase tracking-widest font-black shadow-glow-green">
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            READY TO PROCEED
+                            PRONTO PARA CONTINUAR
                         </Badge>
                     </div>
                 )}
@@ -99,7 +99,7 @@ export function Step1SelecionarCursos({
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                         <Loader2 className="h-12 w-12 animate-spin mb-4 text-brand-orange-coral" />
-                        <p className="font-bold uppercase tracking-widest text-xs">Loading activities...</p>
+                        <p className="font-bold uppercase tracking-widest text-xs">Carregando atividades...</p>
                     </div>
                 ) : cursosDisponiveis.length > 0 ? (
                     cursosDisponiveis.map((curso) => {
@@ -109,7 +109,7 @@ export function Step1SelecionarCursos({
                         return (
                             <div
                                 key={curso.id}
-                                className={`relative group p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-500 border-2 overflow-hidden \${isSelected
+                                className={`relative group p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-500 border-2 overflow-hidden ${isSelected
                                     ? 'border-brand-orange-coral bg-brand-orange-coral/10 shadow-[0_20px_50px_rgba(255,112,67,0.2)] ring-1 ring-brand-orange-coral/30'
                                     : isFull
                                         ? 'border-red-500/20 bg-red-500/5 cursor-not-allowed opacity-60'
@@ -125,7 +125,7 @@ export function Step1SelecionarCursos({
                                 <div className="flex items-start gap-6 sm:gap-8 relative z-10">
                                     {/* Custom Radio Circle */}
                                     <div className="pt-2 select-none">
-                                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 \${isSelected
+                                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${isSelected
                                             ? 'border-brand-orange-coral bg-brand-orange-coral shadow-[0_0_15px_rgba(255,112,67,0.5)]'
                                             : isFull
                                                 ? 'border-red-500/30 bg-red-500/10'
@@ -144,29 +144,29 @@ export function Step1SelecionarCursos({
                                         {/* Badges and Title */}
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                                             <div className="flex items-center gap-2">
-                                                <Badge className={`px-3 py-0.5 text-[10px] sm:text-[11px] uppercase font-black tracking-wider \${curso.type === 'workshop' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]' :
+                                                <Badge className={`px-3 py-0.5 text-[10px] sm:text-[11px] uppercase font-black tracking-wider ${curso.type === 'workshop' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]' :
                                                     curso.type === 'circuito' ? 'bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20' :
                                                         curso.type === 'palestra' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                                                             curso.type === 'curso' ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' :
                                                                 'bg-gray-500/10 text-gray-400 border-gray-500/20'
                                                     }`}>
-                                                    {(curso.type || 'COURSE').toUpperCase()}
+                                                    {(curso.type || 'CURSO').toUpperCase()}
                                                 </Badge>
                                                 {isFull && (
                                                     <Badge className="bg-red-500/20 text-red-500 border-red-500/30 text-[10px] font-black tracking-widest">
-                                                        SOLD OUT
+                                                        ESGOTADO
                                                     </Badge>
                                                 )}
                                             </div>
                                             {(curso.maxCapacity ?? 0) > 0 && !isFull && (
                                                 <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
                                                     <Users className="h-3.5 w-3.5" />
-                                                    <span>{(curso.maxCapacity ?? 0) - (curso.registeredCount || 0)} spots left</span>
+                                                    <span>{(curso.maxCapacity ?? 0) - (curso.registeredCount || 0)} vagas restantes</span>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <h4 className={`text-xl sm:text-2xl font-black tracking-tight mb-2 transition-colors \${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                                        <h4 className={`text-xl sm:text-2xl font-black tracking-tight mb-2 transition-colors ${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
                                             {curso.title}
                                         </h4>
 
@@ -209,7 +209,7 @@ export function Step1SelecionarCursos({
                     })
                 ) : (
                     <div className="text-center py-20 bg-dark-200/40 rounded-[2rem] border-2 border-dashed border-white/5">
-                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm italic">No activities available at the moment.</p>
+                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm italic">Nenhuma atividade disponível no momento.</p>
                     </div>
                 )}
             </div>
@@ -219,18 +219,18 @@ export function Step1SelecionarCursos({
                 <div className="form-actions flex gap-2">
                     {onVoltar && (
                         <button type="button" onClick={onVoltar} className="btn-form-back">
-                            Back
+                            Voltar
                         </button>
                     )}
                     <button
                         type="button"
                         disabled={selecionadosFinal.length === 0}
                         onClick={handleContinuar}
-                        className={`btn-form-primary flex-1 \${selecionadosFinal.length === 0 ? 'opacity-40 pointer-events-none' : ''}`}
+                        className={`btn-form-primary flex-1 ${selecionadosFinal.length === 0 ? 'opacity-40 pointer-events-none' : ''}`}
                     >
                         {selecionadosFinal.length === 0
-                            ? 'Select your Track'
-                            : 'Confirm & Next Step'}
+                            ? 'Selecione sua Trilha'
+                            : 'Confirmar e Próximo Passo'}
                     </button>
                 </div>
 
@@ -239,7 +239,7 @@ export function Step1SelecionarCursos({
                         <div className="h-full bg-brand-orange-coral w-[14%]" />
                     </div>
                     <p className="text-[10px] text-gray-600 uppercase tracking-[0.3em] font-black whitespace-nowrap">
-                        Step 1 of 7 • Choose Activity
+                        Passo 1 de 7 • Escolha a Atividade
                     </p>
                     <div className="h-1 flex-1 bg-white/5 rounded-full" />
                 </div>
