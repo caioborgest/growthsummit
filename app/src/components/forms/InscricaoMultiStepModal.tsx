@@ -33,7 +33,17 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         email: '',
         phone: '',
         senha: '',
-        comprarPalestras: false
+        comprarPalestras: false,
+        code: '',
+        descontoSocial: 0,
+        descontoPalestra: 0,
+        tipoInscricao: 'standard',
+        loteId: null,
+        voucherEmpresa: '',
+        indicacaoTipo: 'nenhum',
+        indicacaoNome: '',
+        partnerId: '',
+        partnerAccessCode: '',
     });
 
     const totalSteps = 6;
@@ -76,7 +86,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             try {
                 const parsed = JSON.parse(saved);
                 setDados(prev => ({ ...prev, ...parsed.data }));
-                setCurrentStep(parsed.step || 1);
+                const restoredStep = parsed.step || 1;
+                const safeStep = (restoredStep >= 3 && !parsed.data?.inscricaoId) ? 2 : restoredStep;
+                setCurrentStep(safeStep);
                 logger.debug('Rascunho de inscrição carregado');
             } catch (e: unknown) {
                 const errorMsg = e instanceof Error ? e.message : String(e);

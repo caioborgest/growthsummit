@@ -125,6 +125,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                     setDesconto(100);
                     if (onUpdate) {
                         onUpdate({ 
+                            code: cleanCodigo,
                             indicacaoNome: lot.company_name, 
                             descontoSocial: 100, 
                             loteId: (lot as any).id, 
@@ -170,6 +171,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                     setDesconto(100);
                     if (onUpdate) {
                         onUpdate({ 
+                            code: cleanCodigo,
+                            partnerAccessCode: cleanCodigo,
                             indicacaoNome: partner.name, 
                             partnerId: partner.id, 
                             descontoSocial: 100,
@@ -243,11 +246,15 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         else if (senha.length < 6) newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
         if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
         else if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
-        if (indicacaoTipo !== 'nenhum' && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
+        if (indicacaoTipo !== 'nenhum' && code.trim() && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
         setErrors(newErrors);
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
-                nome, cpf, email, telefone, senha,
+                nome,
+                cpf,
+                email,
+                phone: telefone,
+                senha,
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
                 partnerId: partnerId || '',
@@ -387,7 +394,25 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         ].map(tipo => (
                             <button
                                 key={tipo.id} type="button"
-                                onClick={() => { setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo']); setCodigoValidado(false); setCode(''); }}
+                                onClick={() => {
+                                    setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo']);
+                                    setCodigoValidado(false);
+                                    setCode('');
+                                    setLoteId('');
+                                    setVoucherEmpresa('');
+                                    setPartnerId('');
+                                    setDesconto(0);
+                                    setIndicacaoNome('');
+                                    onUpdate?.({
+                                        code: '',
+                                        descontoSocial: 0,
+                                        loteId: '',
+                                        voucherEmpresa: '',
+                                        partnerId: '',
+                                        indicacaoNome: '',
+                                        partnerAccessCode: ''
+                                    });
+                                }}
                                 className={`form-badge-btn${indicacaoTipo === tipo.id ? ' active' : ''}`}
                             >
                                 {tipo.label}

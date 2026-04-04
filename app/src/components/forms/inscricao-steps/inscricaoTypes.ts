@@ -33,8 +33,8 @@ export interface DadosInscricao {
     inscricaoId?: string;
     statusPagamento?: string;
     appInstalado?: boolean;
-    loteId?: string;
-    voucherEmpresa?: string;
+    loteId?: string | null;
+    voucherEmpresa?: string | null;
     tipoInscricao?: 'standard' | 'pro' | 'vip' | 'social';
     valorFinal?: number;
 }

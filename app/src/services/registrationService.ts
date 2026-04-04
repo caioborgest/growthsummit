@@ -42,7 +42,7 @@ export const registrationService = {
             const { data, error } = await (supabase.rpc as any)('validate_inscricao_dados', {
                 p_nome: nome?.trim() || '',
                 p_email: email?.trim() || '',
-                p_telefone: telefone?.trim() || '',
+                p_telefone: phone?.trim() || '',
             });
 
             // Se der erro de função não encontrada ou cache (PGRST), aplicamos fallback cliente
@@ -50,7 +50,7 @@ export const registrationService = {
                 logger.warn('[registrationService] RPC de validação não encontrada. Usando fallback no client-side.');
                 if (!nome || nome.trim().length < 3) return { valid: false, errorMessage: 'Nome completo é obrigatório.' };
                 if (!email || !email.includes('@')) return { valid: false, errorMessage: 'E-mail inválido.' };
-                if (!telefone || telefone.trim().length < 10) return { valid: false, errorMessage: 'Telefone inválido.' };
+                if (!phone || phone.trim().length < 10) return { valid: false, errorMessage: 'Telefone inválido.' };
                 return { valid: true };
             }
 
@@ -113,14 +113,16 @@ export const registrationService = {
             p_palestra_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
             p_batch_id: cleanLoteId || null,
-            p_voucher_code: params.voucherEmpresa || null
+            p_voucher_code: params.voucherEmpresa || null,
+            p_partner_id: cleanPartnerId || null,
+            p_app_instalado: Boolean(params.appInstalado),
         };
 
         logger.info('[registrationService] Executando RPC register_participant_with_slots:', {
             project: payload.p_project_id,
             user: payload.p_user_id,
             sessions: payload.p_session_ids.length,
-            lote: payload.p_lote_id,
+            lote: payload.p_batch_id,
             tipo: payload.p_registration_type
         });
 
@@ -208,6 +210,6 @@ export const registrationService = {
         return data;
     },
     isValidUUID(id: any): id is string {
-        return typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        return typeof id === 'string' && id.length === 36 && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
     }
 };
