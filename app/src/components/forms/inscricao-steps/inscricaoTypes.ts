@@ -1,14 +1,14 @@
-// Tipos compartilhados entre os steps de inscrição
+// Shared types for registration steps
 
 export interface DadosInscricao {
-    // Etapa 1 - Atividades Diurnas
+    // Step 1 - Daytime Activities
     cursosSelecionados: string[];
     tipoAtividadeSelecionada?: string;
     salaAtividade?: string;
     horarioAtividade?: string;
     nivelAtividade?: string;
 
-    // Etapa 2
+    // Step 2 - Personal Details
     nome: string;
     cpf: string;
     email: string;
@@ -17,18 +17,18 @@ export interface DadosInscricao {
     indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'parceiro' | 'outro' | 'nenhum';
     indicacaoNome?: string;
     partnerId?: string;
-    /** Código de acesso do parceiro (obrigatório se o parceiro tiver access_code no banco) */
+    /** Partner access code (required if partner has access_code in DB) */
     partnerAccessCode?: string;
     code?: string;
     descontoSocial?: number;
 
-    // Etapa 4 (Night Experience)
+    // Step 4 (Night Experience)
     comprarPalestras: boolean;
     cupomPalestra?: string;
     descontoPalestra?: number;
     tipoSocioPalestra?: string;
 
-    // Controle
+    // Control
     userId?: string;
     inscricaoId?: string;
     statusPagamento?: string;

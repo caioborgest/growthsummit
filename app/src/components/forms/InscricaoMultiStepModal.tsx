@@ -53,8 +53,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             onClose();
             clearDraft();
         } else {
-            // No modo rascunho, podemos fechar sem medo de perder tudo, 
-            // mas ainda é bom ter um aviso se for uma ação brusca
+            // Draft mode - can close without losing everything
             onClose();
         }
     };
@@ -79,7 +78,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
     }, [currentStep]);
 
-    // Carregar rascunho ao iniciar
+    // Load draft on mount
     useEffect(() => {
         const saved = localStorage.getItem(DRAFT_KEY);
         if (saved) {
@@ -89,21 +88,21 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 const restoredStep = parsed.step || 1;
                 const safeStep = (restoredStep >= 3 && !parsed.data?.inscricaoId) ? 2 : restoredStep;
                 setCurrentStep(safeStep);
-                logger.debug('Rascunho de inscrição carregado');
+                logger.debug('Registration draft loaded');
             } catch (e: unknown) {
                 const errorMsg = e instanceof Error ? e.message : String(e);
-                logger.warn('Erro ao carregar rascunho de inscrição:', { error: errorMsg });
+                logger.warn('Error loading registration draft:', { error: errorMsg });
             }
         }
     }, []);
 
-    // Salvar rascunho
+    // Save draft
     useEffect(() => {
         if (isOpen && currentStep < 6) {
             const draftData = {
                 data: {
                     ...dados,
-                    senha: '' // Higienizar
+                    senha: '' // Sanitize
                 },
                 step: currentStep,
                 timestamp: new Date().toISOString()
@@ -112,9 +111,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
     }, [dados, currentStep, isOpen]);
 
-    // Skip seguro do Step 1 removido para permitir visualizar programação em Triunfo
-
-    // Para Triunfo e outros: define o Lote/Categoria Ativo automaticamente
+    // For Triunfo and others: define active Ticket Batch / Tier automatically
     useEffect(() => {
         if (!selectedProject) return;
 
@@ -122,16 +119,16 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             ?.filter(s => s.projectId === selectedProject.id)
             .map(s => s.id) || [];
         
-        // Busca a precificação avançada (Tiers)
+        // Advanced Pricing (Tiers)
         const tiers = selectedProject.settings?.ticketTiers || [];
         
-        // Helper para verificar se um lote é válido por tempo
+        // Helper to check if a batch is within time validity
         const isBatchTimeValid = (batch: any) => {
             const now = new Date();
             const start = batch.startDate ? new Date(batch.startDate) : null;
             const end = batch.endDate ? new Date(batch.endDate) : null;
             
-            // Ajustar datas para considerar início do dia (start) e fim do dia (end)
+            // Adjust dates to cover full day start/end
             if (start) start.setHours(0, 0, 0, 0);
             if (end) end.setHours(23, 59, 59, 999);
             
@@ -140,11 +137,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             return true;
         };
 
-        // Encontra o primeiro Tier ativo
+        // Find first active Tier
         const activeTier = tiers.find((t: any) => t.active) || tiers[0];
         
-        // Encontra o primeiro lote VÁLIDO por tempo dentro do tier ativo
-        // Se nenhum estiver no período de validade, pega o marcado como 'active' como fallback
+        // Find first valid Batch within the active tier
         let activeBatch = activeTier?.batches.find((b: any) => isBatchTimeValid(b));
         if (!activeBatch) {
             activeBatch = activeTier?.batches.find((b: any) => b.active) || activeTier?.batches?.[0];
@@ -160,7 +156,6 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             updates.cursosSelecionados = TriumphSessions;
         }
         
-        // Se não houver tiers configurados, garante um estado válido
         if (tiers.length === 0) {
             updates.tipoInscricao = 'standard';
             updates.loteId = 'default';
@@ -170,9 +165,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedProject?.id, allSessions?.length]);
 
-    // Skip do Step 4 (Pagamento) quando já está pago (Gratuito/Voucher)
+    // Skip Payment Step (Step 4) if already paid (Free/Voucher)
     useEffect(() => {
-        if (currentStep === 4 && dados.statusPagamento === 'pago') {
+        if (currentStep === 4 && (dados.statusPagamento === 'pago' || dados.statusPagamento === 'paid')) {
             nextStep(true);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -193,7 +188,11 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             indicacaoTipo: 'nenhum',
             indicacaoNome: '',
             code: '',
-            descontoSocial: 0
+            descontoSocial: 0,
+            descontoPalestra: 0,
+            tipoInscricao: 'standard',
+            partnerId: '',
+            partnerAccessCode: ''
         });
         setCurrentStep(1);
     };
@@ -203,8 +202,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         
         let targetStep = currentStep - 1;
 
-        // Skip reverso do Pagamento (Novo Step 4)
-        if (targetStep === 4 && dados.statusPagamento === 'pago') {
+        // Reversed skip for Payment
+        if (targetStep === 4 && (dados.statusPagamento === 'pago' || dados.statusPagamento === 'paid')) {
             targetStep = 3;
         }
 
@@ -244,8 +243,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         dados={dados}
                         onConfirmar={(userId, inscricaoId, statusPagamento) => {
                             updateDados({ userId, inscricaoId, statusPagamento });
-                            // Don't set isProcessing here since Step3 handles its own loading state
-                            nextStep(true); // Force next step
+                            nextStep(true);
                         }}
                         onVoltar={prevStep}
                         onUpdate={updateDados}
@@ -275,7 +273,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                         .eq('id', dados.inscricaoId);
                                     updateDados({ appInstalado: true });
                                 } catch (err) {
-                                    logger.error('Erro ao marcar app como instalado:', { error: err });
+                                    logger.error('Error marking app as installed:', { error: err });
                                 }
                             }
                             setIsProcessing(false);
@@ -302,15 +300,15 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[92dvh] sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
-                {/* Header com Progresso */}
+                {/* Header with Progress */}
                 <div className="bg-dark-100/50 backdrop-blur-md pb-3 pt-4 sm:pb-6 sm:pt-6 px-4 sm:px-10 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
                     <div className="flex items-center justify-between mb-4 sm:mb-6">
                         <div>
                             <DialogTitle className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
-                                Inscrição <span className="text-brand-orange-coral">{selectedProject?.shortDescription || selectedProject?.name || 'Evento'}</span>
+                                Registration <span className="text-brand-orange-coral">{selectedProject?.shortDescription || selectedProject?.name || 'Event'}</span>
                             </DialogTitle>
                             <DialogDescription className="sr-only">
-                                Processo de inscrição para workshops e treinamentos do {selectedProject?.name || 'Growth Experience'}.
+                                Registration process for workshops and training at {selectedProject?.name || 'Growth Experience'}.
                             </DialogDescription>
                             <p className="text-gray-500 text-[10px] sm:text-xs mt-0.5">{selectedProject?.name || 'Growth Experience'} • © 2026</p>
                         </div>
@@ -324,23 +322,21 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         </Button>
                     </div>
 
-                    {/* Step Indicators Compactos e Elegantes */}
+                    {/* Compact Step Indicators */}
                     <div className="flex items-center justify-between relative px-2 sm:px-6">
-                        {/* Linha de fundo conectora */}
                         <div className="absolute top-4 sm:top-5 left-8 right-8 h-[1px] sm:h-[2px] bg-white/5 -z-10" />
-                        {/* Linha de progresso ativa */}
                         <div
                             className="absolute top-4 sm:top-5 left-8 h-[1px] sm:h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
                             style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
                         {[
-                            'Cursos',
-                            'Dados',
-                            'Confirmar',
-                            'Pagamento',
+                            'Sessions',
+                            'Details',
+                            'Confirm',
+                            'Payment',
                             'App',
-                            'OK'
+                            'Done'
                         ].map((label, index) => {
                             const step = index + 1;
                             const isActive = step === currentStep;
@@ -381,7 +377,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
                 </div>
 
-                {/* Content com Scrollbar Customizada */}
+                {/* Content with Custom Scrollbar */}
                 <div
                     ref={scrollContainerRef}
                     className="flex-1 px-4 pt-6 pb-24 sm:px-12 sm:pb-10 sm:pt-8 overflow-y-auto custom-scrollbar bg-dark-100/30 ios-scroll"
