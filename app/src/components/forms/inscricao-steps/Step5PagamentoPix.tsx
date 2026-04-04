@@ -41,12 +41,12 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             if (!dados.inscricaoId || isConfirmed) return;
 
             const { data } = await supabase
-                .from('inscricoes_growth_experience')
-                .select('status_pagamento')
+                .from('growth_experience_registrations')
+                .select('payment_status')
                 .eq('id', dados.inscricaoId)
                 .single();
 
-            if ((data as any)?.status_pagamento === 'pago') {
+            if ((data as any)?.payment_status === 'pago') {
                 setIsConfirmed(true);
                 if (pollingInterval.current) {
                     clearInterval(pollingInterval.current);

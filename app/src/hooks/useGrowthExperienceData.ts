@@ -9,12 +9,12 @@ export interface InscricaoTriunfo {
     id: string;
     nome: string;
     email: string;
-    telefone: string;
+    phone: string;
     empresa: string | null;
-    tipo_inscricao: 'palestra' | 'mentor' | 'cursos';
+    registration_type: 'palestra' | 'mentor' | 'cursos';
     evento: string;
-    valor_pago: number;
-    status_pagamento: 'pendente' | 'pago' | 'processando' | 'erro';
+    paid_amount: number;
+    payment_status: 'pendente' | 'pago' | 'processando' | 'erro';
     status: 'ativo' | 'cancelado' | 'pendente';
     stripe_payment_intent_id: string | null;
     stripe_session_id: string | null;
@@ -27,12 +27,12 @@ export interface InscricaoTriunfo {
 export interface StartupArenaPitch {
     id: string;
     // Fundador
-    nome_fundador: string;
+    founder_name: string;
     email: string;
-    telefone: string;
+    phone: string;
     // Startup
-    nome_startup: string;
-    descricao_startup: string;
+    startup_name: string;
+    startup_description: string;
     setor: string;
     estagio: 'ideia' | 'mvp' | 'tracao' | 'escala';
     // Pitch
@@ -56,12 +56,12 @@ export interface StartupArenaPitch {
 export interface EmpresaB2B {
     id: string;
     // Representante
-    nome_representante: string;
-    cargo: string;
+    representative_name: string;
+    role_title: string;
     email: string;
-    telefone: string;
+    phone: string;
     // Empresa
-    nome_empresa: string;
+    company_name: string;
     cnpj: string | null;
     setor: string;
     porte: 'mei' | 'micro' | 'pequena' | 'media' | 'grande';
@@ -72,9 +72,9 @@ export interface EmpresaB2B {
     site_url: string | null;
     linkedin_url: string | null;
     // Objetivos
-    tipo_interesse: string[];
-    areas_interesse: string[];
-    descricao_objetivos: string;
+    interest_type: string[];
+    interest_areas: string[];
+    objectives_description: string;
     // Status
     status: 'pendente' | 'aprovado' | 'rejeitado';
     created_at: string;
@@ -99,7 +99,7 @@ export function useInscricoesTriunfo() {
         try {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
-                .from('inscricoes_growth_experience')
+                .from('growth_experience_registrations')
                 .select('*')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
@@ -124,7 +124,7 @@ export function useInscricoesTriunfo() {
         try {
             const { error: updateError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('inscricoes_growth_experience') as any)
+                .from('growth_experience_registrations') as any)
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
@@ -142,7 +142,7 @@ export function useInscricoesTriunfo() {
         try {
             const { error: deleteError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('inscricoes_growth_experience') as any)
+                .from('growth_experience_registrations') as any)
                 .delete()
                 .eq('id', id);
 
@@ -181,7 +181,7 @@ export function useStartupsArenaPitch() {
         try {
             setLoading(true);
             const { data: startups, error: fetchError } = await supabase
-                .from('startups_arena_pitch')
+                .from('arena_pitch_startups')
                 .select('*')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
@@ -220,7 +220,7 @@ export function useStartupsArenaPitch() {
 
             const { error: updateError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('startups_arena_pitch') as any)
+                .from('arena_pitch_startups') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -238,7 +238,7 @@ export function useStartupsArenaPitch() {
         try {
             const { error: deleteError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('startups_arena_pitch') as any)
+                .from('arena_pitch_startups') as any)
                 .delete()
                 .eq('id', id);
 
@@ -277,7 +277,7 @@ export function useEmpresasB2B() {
         try {
             setLoading(true);
             const { data: empresas, error: fetchError } = await supabase
-                .from('rodada_negocios_b2b')
+                .from('b2b_business_rounds')
                 .select('*')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
@@ -311,7 +311,7 @@ export function useEmpresasB2B() {
 
             const { error: updateError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('rodada_negocios_b2b') as any)
+                .from('b2b_business_rounds') as any)
                 .update(updateData)
                 .eq('id', id);
 
@@ -329,7 +329,7 @@ export function useEmpresasB2B() {
         try {
             const { error: deleteError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('rodada_negocios_b2b') as any)
+                .from('b2b_business_rounds') as any)
                 .delete()
                 .eq('id', id);
 
@@ -364,11 +364,11 @@ export function useGrowthExperienceStats() {
     const stats = {
         // Inscrições
         totalInscricoes: inscricoes.length,
-        inscricoesPagas: inscricoes.filter(i => i.status_pagamento === 'pago').length,
-        inscricoesPendentes: inscricoes.filter(i => i.status_pagamento === 'pendente').length,
-        inscricoesPalestra: inscricoes.filter(i => i.tipo_inscricao === 'palestra').length,
-        inscricoesMentor: inscricoes.filter(i => i.tipo_inscricao === 'mentor').length,
-        inscricoesCursos: inscricoes.filter(i => i.tipo_inscricao === 'cursos').length,
+        inscricoesPagas: inscricoes.filter(i => i.payment_status === 'pago').length,
+        inscricoesPendentes: inscricoes.filter(i => i.payment_status === 'pendente').length,
+        inscricoesPalestra: inscricoes.filter(i => i.registration_type === 'palestra').length,
+        inscricoesMentor: inscricoes.filter(i => i.registration_type === 'mentor').length,
+        inscricoesCursos: inscricoes.filter(i => i.registration_type === 'cursos').length,
 
         // Startups
         totalStartups: startups.length,
@@ -384,11 +384,11 @@ export function useGrowthExperienceStats() {
 
         // Receita
         receitaTotal: inscricoes
-            .filter(i => i.status_pagamento === 'pago')
-            .reduce((sum, i) => sum + (Number(i.valor_pago) || 0), 0),
+            .filter(i => i.payment_status === 'pago')
+            .reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0),
         receitaPendente: inscricoes
-            .filter(i => i.status_pagamento === 'pendente' && i.tipo_inscricao === 'palestra')
-            .reduce((sum, i) => sum + (Number(i.valor_pago) || 0), 0),
+            .filter(i => i.payment_status === 'pendente' && i.registration_type === 'palestra')
+            .reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0),
     };
 
     return stats;

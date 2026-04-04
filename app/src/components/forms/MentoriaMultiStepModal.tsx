@@ -26,7 +26,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
         descricaoProblema: '',
         nome: '',
         email: '',
-        telefone: '',
+        phone: '',
         senha: '',
         nomeNegocio: '',
         estagioNegocio: ''
@@ -47,7 +47,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
                 ...prev,
                 nome: user.name || prev.nome,
                 email: user.email || prev.email,
-                telefone: (user as any).phone || prev.telefone,
+                phone: (user as any).phone || prev.phone,
                 userId: user.id
             }));
         }

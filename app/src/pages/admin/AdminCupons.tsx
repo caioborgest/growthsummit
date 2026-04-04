@@ -51,7 +51,7 @@ export default function AdminCupons() {
         porcentagemDesconto: 100,
         usoLimite: '',
         descricao: '',
-        vencimento: '',
+        expires_at: '',
         ativo: true
     });
 
@@ -101,7 +101,7 @@ export default function AdminCupons() {
                     porcentagemDesconto: Number(formData.porcentagemDesconto),
                     usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
                     descricao: formData.descricao,
-                    vencimento: formData.vencimento ? `${formData.vencimento}T23:59:59Z` : undefined,
+                    expires_at: formData.expires_at ? `${formData.expires_at}T23:59:59Z` : undefined,
                     ativo: formData.ativo,
                 });
                 toast.success('Cupom atualizado com sucesso!');
@@ -115,7 +115,7 @@ export default function AdminCupons() {
                     usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
                     usoAtual: 0,
                     descricao: formData.descricao,
-                    vencimento: formData.vencimento ? `${formData.vencimento}T23:59:59Z` : undefined,
+                    expires_at: formData.expires_at ? `${formData.expires_at}T23:59:59Z` : undefined,
                     ativo: formData.ativo,
                 });
                 toast.success('Novo cupom gerado com sucesso!');
@@ -138,7 +138,7 @@ export default function AdminCupons() {
             porcentagemDesconto: 100,
             usoLimite: '',
             descricao: '',
-            vencimento: '',
+            expires_at: '',
             ativo: true
         });
     };
@@ -146,16 +146,16 @@ export default function AdminCupons() {
     const handleEdit = (coupon: Coupon) => {
         setEditingCoupon(coupon);
 
-        // Formatar data de vencimento para o input type="date" (YYYY-MM-DD)
+        // Formatar data de expires_at para o input type="date" (YYYY-MM-DD)
         let vencimentoFormatado = '';
-        if (coupon.vencimento) {
+        if (coupon.expires_at) {
             try {
-                const date = new Date(coupon.vencimento);
+                const date = new Date(coupon.expires_at);
                 if (!isNaN(date.getTime())) {
                     vencimentoFormatado = date.toISOString().split('T')[0];
                 }
             } catch (e) {
-                logger.warn('Data de vencimento inválida:', coupon.vencimento);
+                logger.warn('Data de expires_at inválida:', coupon.expires_at);
             }
         }
 
@@ -166,7 +166,7 @@ export default function AdminCupons() {
             porcentagemDesconto: coupon.porcentagemDesconto,
             usoLimite: coupon.usoLimite?.toString() || '',
             descricao: coupon.descricao || '',
-            vencimento: vencimentoFormatado,
+            expires_at: vencimentoFormatado,
             ativo: coupon.ativo
         });
         setIsModalOpen(true);
@@ -188,9 +188,9 @@ export default function AdminCupons() {
         toast.success(`Código ${text} copiado para a área de transferência!`);
     };
 
-    const isExpired = (vencimento?: string) => {
-        if (!vencimento) return false;
-        return new Date(vencimento) < new Date();
+    const isExpired = (expires_at?: string) => {
+        if (!expires_at) return false;
+        return new Date(expires_at) < new Date();
     };
 
     return (
@@ -246,7 +246,7 @@ export default function AdminCupons() {
                     },
                     {
                         label: 'Cupons Ativos',
-                        value: cupons.filter(c => c.ativo && !isExpired(c.vencimento)).length,
+                        value: cupons.filter(c => c.ativo && !isExpired(c.expires_at)).length,
                         icon: CheckCircle,
                         color: 'emerald',
                         detail: 'Prontos para uso'
@@ -340,11 +340,11 @@ export default function AdminCupons() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5" data-label="Venc.">
-                                        {coupon.vencimento ? (
-                                            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.vencimento) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
+                                        {coupon.expires_at ? (
+                                            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.expires_at) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
                                                 <Calendar className="h-3.5 w-3.5" />
                                                 {(() => {
-                                                    const d = new Date(coupon.vencimento);
+                                                    const d = new Date(coupon.expires_at);
                                                     return isNaN(d.getTime()) ? 'Data inválida' : d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                                                 })()}
                                             </div>
@@ -356,7 +356,7 @@ export default function AdminCupons() {
                                         <div className="flex items-center">
                                             {!coupon.ativo ? (
                                                 <Badge className="bg-white/5 text-gray-500 border border-white/10 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Inativo</Badge>
-                                            ) : isExpired(coupon.vencimento) ? (
+                                            ) : isExpired(coupon.expires_at) ? (
                                                 <Badge className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Expirado</Badge>
                                             ) : (
                                                 <div className="flex items-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full">
@@ -508,8 +508,8 @@ export default function AdminCupons() {
                                     <div className="relative">
                                         <Input
                                             type="date"
-                                            value={formData.vencimento}
-                                            onChange={e => setFormData({ ...formData, vencimento: e.target.value })}
+                                            value={formData.expires_at}
+                                            onChange={e => setFormData({ ...formData, expires_at: e.target.value })}
                                             className="bg-dark-100 border-dark-300 text-white pl-10"
                                         />
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />

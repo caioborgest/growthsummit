@@ -50,7 +50,7 @@ export default function AdminBatches() {
         tipoIngresso: 'pro' as 'morning' | 'pro',
         valorTotal: 0,
         statusPagamento: 'pending' as 'pending' | 'paid' | 'cancelled',
-        observacoes: ''
+        notes: ''
     });
 
     if (!isProjectSelected) {
@@ -143,7 +143,7 @@ export default function AdminBatches() {
             tipoIngresso: 'pro',
             valorTotal: calculateTotal(5),
             statusPagamento: 'pending',
-            observacoes: ''
+            notes: ''
         });
     };
 
@@ -160,7 +160,7 @@ export default function AdminBatches() {
             tipoIngresso: batch.tipoIngresso,
             valorTotal: batch.valorTotal,
             statusPagamento: batch.statusPagamento,
-            observacoes: batch.observacoes || ''
+            notes: batch.notes || ''
         });
         setIsModalOpen(true);
     };
@@ -450,8 +450,8 @@ export default function AdminBatches() {
                                 <div className="space-y-1.5">
                                     <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Observações</Label>
                                     <textarea 
-                                        value={formData.observacoes} 
-                                        onChange={e => setFormData({ ...formData, observacoes: e.target.value })} 
+                                        value={formData.notes} 
+                                        onChange={e => setFormData({ ...formData, notes: e.target.value })} 
                                         className="w-full bg-dark-100 border border-white/5 rounded-xl p-4 text-white text-sm min-h-[80px] focus:border-brand-orange-coral/30 outline-none transition-colors" 
                                         placeholder="Forma de pagamento, responsável pela venda..." 
                                     />

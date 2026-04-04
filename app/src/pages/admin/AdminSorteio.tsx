@@ -108,7 +108,7 @@ export default function AdminSorteio() {
     let participants: any[] = [];
     if (raffle.type === 'realtime_qr') {
       const data = await raffleService.getParticipants(raffle.id);
-      participants = data.map((p: any) => p.inscricoes_growth_experience);
+      participants = data.map((p: any) => p.growth_experience_registrations);
     } else {
       const standCheckins = checkins.filter(c => c.standId === raffle.standId);
       const regIds = Array.from(new Set(standCheckins.map(c => c.registrationId)));

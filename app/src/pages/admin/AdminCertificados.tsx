@@ -113,7 +113,7 @@ export function AdminCertificados() {
         try {
             const { data, error } = await supabase
                 .from('certificates' as any)
-                .select('*, registration:inscricoes_growth_experience(nome, email)')
+                .select('*, registration:growth_experience_registrations(nome, email)')
                 .eq('project_id', selectedProject.id)
                 .order('issue_date', { ascending: false });
 

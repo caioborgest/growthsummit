@@ -12,18 +12,18 @@ export const MentorSchema = z.object({
         .email('E-mail inválido')
         .toLowerCase()
         .trim(),
-    telefone: z.string()
+    phone: z.string()
         .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato de telefone inválido (esperado: (XX) XXXXX-XXXX)'),
     empresa: z.string()
         .min(2, 'Nome da empresa deve ter pelo menos 2 caracteres')
         .max(100, 'Nome da empresa muito longo')
         .optional(),
-    cargo: z.string()
+    role_title: z.string()
         .max(100, 'Cargo muito longo')
         .optional(),
-    especialidades: z.array(z.string())
+    specialties: z.array(z.string())
         .min(1, 'Selecione pelo menos uma especialidade')
-        .max(10, 'Máximo de 10 especialidades'),
+        .max(10, 'Máximo de 10 specialties'),
     bio: z.string()
         .min(50, 'A bio deve ter pelo menos 50 caracteres')
         .max(1000, 'Bio muito longa (máximo 1000 caracteres)')

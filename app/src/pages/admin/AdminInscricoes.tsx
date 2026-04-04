@@ -97,7 +97,7 @@ function DetalhesModal({
             {/* Quick Status Bar */}
             <div className="flex items-center gap-3">
               {(() => {
-                const config = getStatusConfig(reg.status_pagamento || reg.status);
+                const config = getStatusConfig(reg.payment_status || reg.status);
                 const Icon = config.icon || CheckCircle2;
                 return (
                   <Badge className={`${config.color} border-none px-4 py-2 font-black text-[10px] uppercase tracking-widest italic rounded-xl shadow-glow-sm`}>
@@ -193,10 +193,10 @@ function DetalhesModal({
 
                   <Button
                     onClick={() => onUpdateStatus(reg.id, 'paid')}
-                    disabled={['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.status_pagamento || reg.status || '').toLowerCase())}
+                    disabled={['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())}
                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
                   >
-                    {['pago', 'paid', 'ativo', 'active'].includes((reg.status_pagamento || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
+                    {['pago', 'paid', 'ativo', 'active'].includes((reg.payment_status || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
                   </Button>
 
                   <Button
@@ -286,14 +286,14 @@ export default function AdminInscricoes() {
 
       // Normalização de status para o padrão Growth Experience
       if (status === 'paid' || status === 'pago' || status === 'free' || status === 'ativo') {
-        updates.status_pagamento = 'pago';
+        updates.payment_status = 'pago';
         updates.paymentStatus = 'pago';
         updates.status = 'ativo';
       }
 
       if (status === 'free') {
         updates.amount = 0;
-        updates.valor_pago = 0;
+        updates.paid_amount = 0;
         updates.palestrasNoturnas = false;
       }
 
@@ -419,15 +419,15 @@ export default function AdminInscricoes() {
       (reg.name?.toLowerCase() || '').includes(q) ||
       (reg.email?.toLowerCase() || '').includes(q);
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'pago' && ['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.status_pagamento || reg.status || '').toLowerCase())) ||
-                         (statusFilter === 'pendente' && ['pendente', 'pending', 'waiting'].includes((reg.status_pagamento || reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pago' && ['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pendente' && ['pendente', 'pending', 'waiting'].includes((reg.payment_status || reg.status || '').toLowerCase())) ||
                          reg.status === statusFilter;
     const matchesNight =
       nightFilter === 'all' ||
       (nightFilter === 'sim' && reg.palestrasNoturnas) ||
       (nightFilter === 'nao' && !reg.palestrasNoturnas);
     
-    const isPartnerTeam = (reg as any).indicacaoTipo === 'parceiro' || (reg as any).indicacao_tipo === 'parceiro';
+    const isPartnerTeam = (reg as any).indicacaoTipo === 'parceiro' || (reg as any).referral_type === 'parceiro';
     const matchesTab = activeListTab === 'all' || 
                        (activeListTab === 'participantes' && !isPartnerTeam) ||
                        (activeListTab === 'trabalho' && isPartnerTeam);
@@ -549,11 +549,11 @@ export default function AdminInscricoes() {
         <TabsList className="bg-white/5 border border-white/10 p-1 mb-6 rounded-2xl h-auto min-h-[3.5rem] flex-wrap justify-start sm:justify-center overflow-x-auto custom-scrollbar">
           <TabsTrigger value="participantes" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-teal-500 data-[state=active]:text-white transition-all whitespace-nowrap">
             <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-            PARTICIPANTES ({registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro').length})
+            PARTICIPANTES ({registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).referral_type !== 'parceiro').length})
           </TabsTrigger>
           <TabsTrigger value="trabalho" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-brand-orange-coral data-[state=active]:text-white transition-all whitespace-nowrap">
             <Handshake className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-            TRABALHO ({registrations.filter(r => (r as any).indicacaoTipo === 'parceiro' || (r as any).indicacao_tipo === 'parceiro').length})
+            TRABALHO ({registrations.filter(r => (r as any).indicacaoTipo === 'parceiro' || (r as any).referral_type === 'parceiro').length})
           </TabsTrigger>
           <TabsTrigger value="all" className="flex-1 sm:flex-none h-12 sm:h-full px-4 sm:px-8 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all whitespace-nowrap">
             TODOS ({registrations.length})
@@ -709,7 +709,7 @@ export default function AdminInscricoes() {
                            <div>
                             <div className="flex items-center gap-2 mb-1">
                               <p className="text-white text-sm font-black italic uppercase leading-none">{reg.name || '---'}</p>
-                              {((reg as any).indicacaoTipo === 'parceiro' || (reg as any).indicacao_tipo === 'parceiro') && (
+                              {((reg as any).indicacaoTipo === 'parceiro' || (reg as any).referral_type === 'parceiro') && (
                                 <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[8px] font-black uppercase px-2 py-0 h-4">EQUIPE</Badge>
                               )}
                             </div>
@@ -738,7 +738,7 @@ export default function AdminInscricoes() {
                     <td className="p-6" data-label="Financeiro">
                        <div className="flex flex-col gap-1.5 items-end sm:items-start">
                           {(() => {
-                            const config = getStatusConfig(reg.status_pagamento || reg.status);
+                            const config = getStatusConfig(reg.payment_status || reg.status);
                             return (
                               <Badge className={`${config.color} border-none text-[8px] font-black uppercase tracking-widest italic h-5 flex items-center`}>
                                 {config.label}

@@ -15,13 +15,13 @@ export function useSessionsRealtime() {
     if (!projectId) return;
 
     const channel = supabase
-      .channel(`programacao_evento_${projectId}`)
+      .channel(`event_schedule_${projectId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'programacao_evento',
+          table: 'event_schedule',
           filter: `project_id=eq.${projectId}`,
         },
         () => {

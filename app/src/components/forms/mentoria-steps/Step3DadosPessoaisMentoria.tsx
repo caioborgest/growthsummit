@@ -16,7 +16,7 @@ interface Step3DadosPessoaisMentoriaProps {
 export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Step3DadosPessoaisMentoriaProps) {
     const [nome, setNome] = useState(dados.nome);
     const [email, setEmail] = useState(dados.email);
-    const [telefone, setTelefone] = useState(dados.telefone);
+    const [telefone, setTelefone] = useState(dados.phone);
     const [senha, setSenha] = useState(dados.senha);
     const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
     const [showSenha, setShowSenha] = useState(false);
@@ -37,7 +37,7 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
         const newErrors: Record<string, string> = {};
         if (!nome.trim()) newErrors.nome = 'Nome é obrigatório';
         if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Email inválido';
-        if (!telefone.trim() || telefone.replace(/\D/g, '').length < 10) newErrors.telefone = 'Telefone inválido';
+        if (!telefone.trim() || telefone.replace(/\D/g, '').length < 10) newErrors.phone = 'Telefone inválido';
         if (!senha || senha.length < 6) newErrors.senha = 'Senha de no mínimo 6 caracteres';
         if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
 
@@ -110,11 +110,11 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
                                 placeholder="(00) 00000-0000"
                                 onChange={(e) => {
                                     setTelefone(formatTelefone(e.target.value));
-                                    if (errors.telefone) setErrors(prev => ({ ...prev, telefone: '' }));
+                                    if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }));
                                 }}
-                                className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl focus:ring-brand-orange-coral ${errors.telefone ? 'border-red-500' : ''}`}
+                                className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl focus:ring-brand-orange-coral ${errors.phone ? 'border-red-500' : ''}`}
                             />
-                            {errors.telefone && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.telefone}</p>}
+                            {errors.phone && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.phone}</p>}
                         </div>
 
                         {/* Placeholder/Empty to align passwords */}

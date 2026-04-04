@@ -129,7 +129,7 @@ export function AdminIntegracoes() {
               Códigos de <span className="text-gradient">Integração</span>
             </h1>
             <p className="text-gray-400 text-lg leading-relaxed">
-              Integre os formulários de inscrição e captação do <span className="text-white font-bold">{selectedProject?.name || 'evento'}</span> diretamente no seu site institucional, landing pages de parceiros ou portais de notícias.
+              Integre os formulários de inscrição e captação do <span className="text-white font-bold">{selectedProject?.name || 'evento'}</span> diretamente no seu site institucional, landing pages de partners ou portais de notícias.
             </p>
           </div>
           <div className="hidden lg:block">

@@ -31,7 +31,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         nome: '',
         cpf: '',
         email: '',
-        telefone: '',
+        phone: '',
         senha: '',
         comprarPalestras: false
     });
@@ -173,7 +173,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             nome: '',
             cpf: '',
             email: '',
-            telefone: '',
+            phone: '',
             senha: '',
             comprarPalestras: false,
             loteId: '',
@@ -258,7 +258,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                                 try {
                                     const { supabase } = await import('@/lib/supabase');
                                     await (supabase
-                                        .from('inscricoes_growth_experience') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
+                                        .from('growth_experience_registrations') as unknown as { update: (v: Record<string, unknown>) => { eq: (col: string, val: string) => Promise<unknown> } })
                                         .update({ app_instalado: true })
                                         .eq('id', dados.inscricaoId);
                                     updateDados({ appInstalado: true });

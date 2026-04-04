@@ -34,9 +34,9 @@ export const generateInscricoesReport = async (registrations: any[], projectName
     const tableRows = registrations.map(reg => [
         reg.nome || reg.name || '---',
         reg.email || '---',
-        reg.telefone || reg.phone || '---',
+        reg.phone || reg.phone || '---',
         reg.ticketType || 'standard',
-        (reg.status_pagamento || reg.paymentStatus || '---').toUpperCase(),
+        (reg.payment_status || reg.paymentStatus || '---').toUpperCase(),
         reg.createdAt ? format(new Date(reg.createdAt), 'dd/MM/yyyy') : '---'
     ]);
 

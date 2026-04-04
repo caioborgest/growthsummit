@@ -182,7 +182,7 @@ export default function AdminProjetos() {
           ...formData.settings?.publicContent,
           palestrantes: [
             ...currentPalestrantes,
-            { nome: '', cargo: '', descricao: '', tema: '', horario: '' }
+            { nome: '', role_title: '', descricao: '', tema: '', horario: '' }
           ]
         }
       }
@@ -989,10 +989,10 @@ export default function AdminProjetos() {
                               />
                               <Input 
                                 placeholder="Bio/Cargo" 
-                                value={p.cargo} 
+                                value={p.role_title} 
                                 onChange={(e) => {
                                    const list = [...(formData.settings?.publicContent?.palestrantes || [])];
-                                   list[i].cargo = e.target.value;
+                                   list[i].role_title = e.target.value;
                                    setFormData({...formData, settings: {...formData.settings!, publicContent: {...formData.settings?.publicContent, palestrantes: list}}});
                                 }} 
                                 className="bg-transparent border-none text-gray-500 font-bold p-0 h-4 text-[10px] uppercase tracking-widest placeholder:text-gray-800 focus:ring-0 uppercase"

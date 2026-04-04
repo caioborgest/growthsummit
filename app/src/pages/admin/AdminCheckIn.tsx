@@ -196,7 +196,7 @@ export function AdminCheckIn() {
     if (!registration && res.type === 'registration') {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       import('@/lib/supabase').then(async ({ supabase }) => {
-        const tableName = selectedProject?.id ? 'inscricoes_growth_experience' : 'registrations';
+        const tableName = selectedProject?.id ? 'growth_experience_registrations' : 'registrations';
         let query = (supabase as any).from(tableName as any).select('*').eq('id', res.id);
         
         if (selectedProject?.id) {
@@ -529,7 +529,7 @@ export function AdminCheckIn() {
                         <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1 truncate max-w-[150px]">
                           {item.ticketNumber || (item.email || item.contactEmail)}
                         </p>
-                        {item._role === 'participant' && item.status_pagamento === 'pendente' && (
+                        {item._role === 'participant' && item.payment_status === 'pendente' && (
                           <div className="flex items-center gap-1 mt-1">
                             <AlertCircle className="h-2.5 w-2.5 text-red-400" />
                             <span className="text-red-400 text-[8px] font-black uppercase tracking-widest">Pagamento Pendente</span>

@@ -12,7 +12,7 @@ export interface DadosInscricao {
     nome: string;
     cpf: string;
     email: string;
-    telefone: string;
+    phone: string;
     senha: string;
     indicacaoTipo?: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'parceiro' | 'outro' | 'nenhum';
     indicacaoNome?: string;

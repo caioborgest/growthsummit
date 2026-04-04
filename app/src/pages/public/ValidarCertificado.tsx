@@ -50,7 +50,7 @@ export function ValidarCertificado() {
         .from('certificates' as any) as any)
         .select(`
           *,
-          registration:inscricoes_growth_experience (nome, email),
+          registration:growth_experience_registrations (nome, email),
           project:projects (name, metadata, city)
         `)
         .eq('code', searchCode.toUpperCase())

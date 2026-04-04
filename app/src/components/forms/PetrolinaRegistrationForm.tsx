@@ -91,12 +91,12 @@ export function PetrolinaRegistrationForm() {
                 userId: userId || '',
                 nome: formData.nome,
                 email: formData.email,
-                telefone: formData.whatsapp,
+                phone: formData.whatsapp,
                 cpf: formData.cpf,
                 sessionIds: [], // Petrolina ainda não tem sessões específicas no seletor
                 tipoInscricao: 'standard',
                 evento: selectedProject?.name || 'Growth Experience Petrolina',
-                status_pagamento: 'pago',
+                payment_status: 'pago',
                 status: 'ativo',
                 extraData: {
                     empresa: formData.empresa,

@@ -42,21 +42,21 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 const palestrantes = [
   {
     nome: "Jeronimo Freire",
-    cargo: "Empresário, Consultor e Mentor de Negócios",
+    role_title: "Empresário, Consultor e Mentor de Negócios",
     descricao: "Especialista em gestão estratégica e expansão de negócios",
     tema: "Gestão e Liderança em Momentos Desafiadores",
     horario: "18:00 - 18:50"
   },
   {
     nome: "Leandro Batista",
-    cargo: "CEO, Fitness Exclusive",
+    role_title: "CEO, Fitness Exclusive",
     descricao: "CEO da rede de academias que mais cresce no interior do Nordeste",
     tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
     horario: "19:00 - 19:50"
   },
   {
     nome: "João Daniel",
-    cargo: "CEO, Cedan Rações",
+    role_title: "CEO, Cedan Rações",
     descricao: "CEO de uma das maiores indústrias de rações do Nordeste",
     tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
     horario: "19:00 - 19:50",
@@ -64,14 +64,14 @@ const palestrantes = [
   },
   {
     nome: "Carolinne Castro",
-    cargo: "Advogada Empresarial e Conselheira OAB",
+    role_title: "Advogada Empresarial e Conselheira OAB",
     descricao: "Expert em liderança inteligente e redução de riscos jurídicos",
     tema: "Liderança Inteligente: Redução de Riscos e Engajamento",
     horario: "20:10 - 21:00"
   },
   {
     nome: "Vanylton Matias",
-    cargo: "CEO, Grupo Núcleo",
+    role_title: "CEO, Grupo Núcleo",
     descricao: "Gestão inteligente para escala de negócios",
     tema: "Escalando Negócios com Equilíbrio e Humanidade",
     horario: "21:10 - 22:30",
@@ -378,7 +378,7 @@ export function GrowthExperienceTriunfo() {
               <PalestranteCardRefined
                 key={i}
                 nome={p.nome}
-                cargo={p.cargo}
+                cargo={p.role_title}
                 descricao={p.descricao}
                 tema={p.tema}
                 horario={p.horario}

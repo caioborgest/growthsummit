@@ -92,7 +92,7 @@ export interface ProjectSettings {
     };
     palestrantes?: {
       nome: string;
-      cargo: string;
+      role_title: string;
       descricao: string;
       tema: string;
       horario: string;
@@ -150,15 +150,15 @@ export interface Registration {
   name?: string;
   email?: string;
   empresa?: string;
-  cargo?: string;
+  role_title?: string;
   whatsapp?: string;
   ticketType: 'standard' | 'pro' | 'vip' | string;
   status: 'pending' | 'paid' | 'cancelled' | 'refunded' | 'pago' | 'ativo' | 'error' | string;
   qrCode: string;
   ticketNumber: string;
   amount: number;
-  valor_pago?: number;
-  status_pagamento?: 'pendente' | 'pago' | 'cancelado' | 'erro' | string;
+  paid_amount?: number;
+  payment_status?: 'pendente' | 'pago' | 'cancelado' | 'erro' | string;
   paymentStatus?: 'pending' | 'paid' | 'cancelled' | 'error' | 'pago' | 'pendente' | string;
   paymentMethod?: string;
   paymentDate?: string;
@@ -175,9 +175,9 @@ export interface Registration {
   externalPaymentUrl?: string;
   loteId?: string;
   voucherEmpresa?: string;
-  tipo_inscricao?: string; // Snake case mapping
+  registration_type?: string; // Snake case mapping
   nome?: string; // Snake case mapping
-  telefone?: string; // Snake case mapping
+  phone?: string; // Snake case mapping
 }
 
 export interface Mentor {
@@ -204,7 +204,7 @@ export interface Company {
   id: string;
   projectId: string;
   userId: string;
-  companyName: string; // Primary field from DB 'nome_empresa'
+  companyName: string; // Primary field from DB 'company_name'
   name?: string; // Fallback for 'nome' (sometimes used)
   cnpj: string;
   type: 'anchor' | 'vendor';
@@ -214,7 +214,7 @@ export interface Company {
   website?: string;
   logo?: string;
   logoUrl?: string; // New field for public url
-  contactName: string; // From DB 'nome_representante'
+  contactName: string; // From DB 'representative_name'
   contactEmail: string;
   contactPhone: string;
   position?: string; // From DB 'cargo'
@@ -223,7 +223,7 @@ export interface Company {
   maxMeetings: number;
   interestType?: 'comprar' | 'vender' | 'parceria' | 'todos' | string;
   interestAreas?: string;
-  objectives?: string; // From DB 'descricao_objetivos'
+  objectives?: string; // From DB 'objectives_description'
   companySize?: string; // From DB 'porte'
   annualRevenue?: string; // From DB 'faturamento_anual'
   employeeCount?: string; // From DB 'numero_funcionarios'
@@ -545,7 +545,7 @@ export interface Coupon {
   usoLimite: number | null;
   usoAtual: number;
   descricao?: string;
-  vencimento?: string;
+  expires_at?: string;
   createdAt: string;
 }
 
@@ -579,7 +579,7 @@ export interface RegistrationBatch {
   tipoIngresso: string;
   valorTotal: number;
   statusPagamento: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
-  observacoes?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }

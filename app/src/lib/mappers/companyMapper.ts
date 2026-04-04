@@ -1,7 +1,7 @@
 /**
  * Mapper: Company (B2B / Rodada de Negócios)
  *
- * Responsabilidade única: converter entre o banco (nome_empresa, nome_representante,
+ * Responsabilidade única: converter entre o banco (company_name, representative_name,
  * descricao_empresa) e o tipo TypeScript `Company`.
  */
 import type { Company } from '@/types';
@@ -15,9 +15,9 @@ export function mapCompanyFromDB(item: DbRow): Company {
         projectId: (item['project_id'] as string) ?? undefined,
         userId: (item['user_id'] as string) ?? undefined,
 
-        // Triunfo usa: nome_empresa, nome_representante, descricao_empresa
-        name: (item['nome_empresa'] ?? item['name'] ?? '') as string,
-        contactName: (item['nome_representante'] ?? item['contact_name'] ?? '') as string,
+        // Triunfo usa: company_name, representative_name, descricao_empresa
+        name: (item['company_name'] ?? item['name'] ?? '') as string,
+        contactName: (item['representative_name'] ?? item['contact_name'] ?? '') as string,
         contactEmail: (item['email'] ?? item['contact_email'] ?? '') as string,
         sector: (item['setor'] ?? item['sector'] ?? '') as string,
         description: (item['descricao_empresa'] ?? item['description'] ?? '') as string,
@@ -33,11 +33,11 @@ export function mapCompanyFromDB(item: DbRow): Company {
         linkedinUrl: (item['linkedin_url'] ?? '') as string,
         logoUrl: (item['logo_url'] ?? '') as string,
 
-        tipoInteresse: (item['tipo_interesse'] ?? '') as string,
-        areasInteresse: (item['areas_interesse'] ?? []) as string[],
-        descricaoObjetivos: (item['descricao_objetivos'] ?? '') as string,
+        tipoInteresse: (item['interest_type'] ?? '') as string,
+        areasInteresse: (item['interest_areas'] ?? []) as string[],
+        descricaoObjetivos: (item['objectives_description'] ?? '') as string,
 
-        cargo: (item['cargo'] ?? '') as string,
+        role_title: (item['cargo'] ?? '') as string,
         packageType: (item['package_type'] ?? '') as string,
 
         createdAt: (item['created_at'] ?? '') as string,
@@ -62,15 +62,15 @@ export function mapCompanyToDB(data: Partial<Company>, isTriunfo = false): DbRow
     if (data.siteUrl !== undefined) result['site_url'] = data.siteUrl;
     if (data.linkedinUrl !== undefined) result['linkedin_url'] = data.linkedinUrl;
     if (data.logoUrl !== undefined) result['logo_url'] = data.logoUrl;
-    if (data.tipoInteresse !== undefined) result['tipo_interesse'] = data.tipoInteresse;
-    if (data.areasInteresse !== undefined) result['areas_interesse'] = data.areasInteresse;
-    if (data.descricaoObjetivos !== undefined) result['descricao_objetivos'] = data.descricaoObjetivos;
-    if (data.cargo !== undefined) result['cargo'] = data.cargo;
+    if (data.tipoInteresse !== undefined) result['interest_type'] = data.tipoInteresse;
+    if (data.areasInteresse !== undefined) result['interest_areas'] = data.areasInteresse;
+    if (data.descricaoObjetivos !== undefined) result['objectives_description'] = data.descricaoObjetivos;
+    if (data.role_title !== undefined) result['cargo'] = data.role_title;
     if (data.packageType !== undefined) result['package_type'] = data.packageType;
 
     if (isTriunfo) {
-        if (data.name !== undefined) result['nome_empresa'] = data.name;
-        if (data.contactName !== undefined) result['nome_representante'] = data.contactName;
+        if (data.name !== undefined) result['company_name'] = data.name;
+        if (data.contactName !== undefined) result['representative_name'] = data.contactName;
         if (data.description !== undefined) result['descricao_empresa'] = data.description;
     } else {
         if (data.name !== undefined) result['name'] = data.name;

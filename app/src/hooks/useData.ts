@@ -53,7 +53,7 @@ const isGEProject = (projectId: string | undefined, slug?: string): boolean => {
 const getTableName = (projectId: string | undefined, entity: string, slug?: string) => {
   const isGE = isGEProject(projectId, slug);
   // Global table mappings (not project-scoped)
-  if (entity === 'cupons') return 'cupons_parceria_social';
+  if (entity === 'cupons') return 'social_partnership_coupons';
   if (entity === 'projects') return 'projects';
   if (entity === 'users') return 'users';
   if (entity === 'profiles') return 'profiles';
@@ -63,31 +63,31 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
   if (entity === 'login_attempts') return 'login_attempts';
 
   // Specific mapping for registration batches (always points to this table)
-  if (entity === 'registration_batches') return 'lotes_inscricao_empresa';
+  if (entity === 'registration_batches') return 'company_registration_batches';
 
   // Specific mappings for Growth Experience projects (ge-*)
   if (isGE) {
     switch (entity) {
-      case 'registrations': return 'inscricoes_growth_experience';
-      case 'startups': return 'startups_arena_pitch';
-      case 'companies': return 'rodada_negocios_b2b';
-      case 'mentoring_sessions': return 'mentorias_agendadas';
-      case 'mentors': return 'mentores_growth_experience';
+      case 'registrations': return 'growth_experience_registrations';
+      case 'startups': return 'arena_pitch_startups';
+      case 'companies': return 'b2b_business_rounds';
+      case 'mentoring_sessions': return 'scheduled_mentorings';
+      case 'mentors': return 'growth_experience_mentors';
       case 'mentoring_waitlist': return 'mentoring_waitlist';
-      case 'sessions': return 'programacao_evento';
+      case 'sessions': return 'event_schedule';
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_chat_messages': return 'b2b_chat_messages';
-      case 'empresas_incentivadoras': return 'inscricoes_empresas_incentivadoras';
+      case 'empresas_incentivadoras': return 'incentive_company_registrations';
       case 'stands': return 'stands';
       case 'stand_checkins': return 'stand_checkins';
       case 'raffles': return 'raffles';
       case 'raffle_participants': return 'raffle_participants';
       case 'support_tickets': return 'support_tickets';
       case 'support_ticket_messages': return 'support_ticket_messages';
-      case 'transactions': return 'transacoes_growth_experience';
-      case 'partners': return 'parceiros';
-      case 'partner_team': return 'parceiros_equipe';
+      case 'transactions': return 'growth_experience_transactions';
+      case 'partners': return 'partners';
+      case 'partner_team_members': return 'partner_team_members';
       case 'email_templates': return 'email_templates';
       case 'email_campaigns': return 'email_campaigns';
       default: return entity;
@@ -119,141 +119,13 @@ function toSnakeCase(str: string): string {
   return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
-const SEMANTIC_MAP_FROM_DB: Record<string, string> = {
-  nome: 'name',
-  telefone: 'phone',
-  empresa: 'company',
-  cargo: 'position',
-  especialidades: 'specialties',
-  bio: 'bio',
-  foto_url: 'photo',
-  linkedin_url: 'linkedin',
-  avatar_url: 'avatar',
-  setor: 'sector',
-  estagio: 'stage',
-  descricao_startup: 'startupDescription',
-  nome_startup: 'startupName',
-  nome_fundador: 'founderName',
-  nome_representante: 'contactName',
-  descricao_empresa: 'companyDescription',
-  nome_empresa: 'companyName',
-  tipo_inscricao: 'ticketType',
-  status_pagamento: 'paymentStatus',
-  palestras_noturnas: 'palestrasNoturnas',
-  cursos_selecionados: 'cursosSelecionados',
-  cupom_palestra: 'couponCode',
-  valor_pago: 'amount',
-  valor_desconto_palestra: 'discountAmount',
-  check_in_at: 'checkInTime',
-  external_payment_id: 'externalPaymentId',
-  external_payment_url: 'externalPaymentUrl',
-  indicacao_tipo: 'indicacaoTipo',
-  indicacao_nome: 'indicacaoNome',
-  porcentagem_desconto: 'porcentagemDesconto',
-  uso_limite: 'usoLimite',
-  uso_atual: 'usoAtual',
-  start_time: 'startTime',
-  end_time: 'endTime',
-  max_capacity: 'maxCapacity',
-  registered_count: 'registeredCount',
-  // Mentorship (standard)
-  mentee_id: 'menteeId',
-  mentor_id: 'mentorId',
-  mentee_name: 'menteeName',
-  scheduled_at: 'scheduledAt',
-  topic: 'topic',
-  notes: 'notes',
-  // Mentorship (GE semantic mapping)
-  mentorado_id: 'menteeId',
-  // mentor_id: 'mentorId', // Already defined above
-  nome_mentorado: 'menteeName',
-  email_mentorado: 'menteeEmail',
-  telefone_mentorado: 'menteePhone',
-  tema_interesse: 'topic',
-  anotacoes: 'notes',
-  data_mentoria: 'scheduledAt',
-  localizacao: 'location',
-  descricao: 'description',
-  avaliacao_mentoria: 'mentoringRating',
-  indicacao_mentor: 'mentorIndicationRating',
-  // Other GE fields
-  nome_mentor: 'mentorName',
-  duracao: 'duration',
-  mentor_name: 'mentorName',
-  years_experience: 'yearsExperience',
-  max_mentories: 'maxMentories',
-  porte: 'companySize',
-  faturamento_anual: 'annualRevenue',
-  numero_funcionarios: 'employeeCount',
-  produtos_servicos: 'productsServices',
-  tipo_interesse: 'interestType',
-  areas_interesse: 'interestAreas',
-  descricao_objetivos: 'objectives',
-  // Notifications
-  read: 'read',
-  read_at: 'readAt',
-  quantidade_dia: 'quantidadeDia',
-  quantidade_noite: 'quantidadeNoite',
-  valor_investido: 'investmentAmount',
-  // Registration Batch
-  nome_responsavel: 'nomeResponsavel',
-  email_responsavel: 'emailResponsavel',
-  email_contato: 'emailContato',
-  voucher_code: 'voucherCode',
-  quantidade_vagas: 'quantidadeVagas',
-  vagas_utilizadas: 'vagasUtilizadas',
-  tipo_ingresso: 'tipoIngresso',
-  valor_total: 'valorTotal',
-  status_pagamento: 'statusPagamento',
-  observacoes: 'observacoes',
-  cnpj: 'cnpj',
-  nome_empresa: 'nomeEmpresa',
-  // Partner
-  contact_name: 'contactName',
-  contact_email: 'contactEmail',
-  contact_phone: 'contactPhone',
-  access_code: 'accessCode',
-  max_team_members: 'maxTeamMembers',
-  sponsor_id: 'sponsorId',
-  stand_id: 'standId',
-  logo_url: 'logoUrl',
-  // Coupon
-  codigo: 'codigo',
-  indicacao_tipo: 'indicacaoTipo',
-  indicacao_nome: 'indicacaoNome',
-  porcentagem_desconto: 'porcentagemDesconto',
-  uso_limite: 'usoLimite',
-  uso_atual: 'usoAtual',
-  vencimento: 'vencimento',
-  ativo: 'ativo',
-  // Common
-  project_id: 'projectId',
-  user_id: 'userId',
-  created_at: 'createdAt',
-  updated_at: 'updatedAt',
-};
-
-const SEMANTIC_MAP_TO_DB: Record<string, string> = Object.entries(SEMANTIC_MAP_FROM_DB).reduce((acc, [db, app]) => {
-  acc[app] = db;
-  return acc;
-}, {} as Record<string, string>);
+// Legacy semantic mapping removed, using standard database keys.
 
 const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
   
-  // Entities that do NOT use the Portuguese semantic map (nome -> name)
-  const skipSemanticMap = ['partners', 'sessions', 'projects', 'users', 'notifications', 'stand_checkins', 'leads', 'transactions', 'check_ins', 'registration_batches'].includes(entityName || '');
-
   for (const [key, value] of Object.entries(item)) {
-    // 1. Try semantic map first (only if not skipped)
-    const semanticKey = !skipSemanticMap ? SEMANTIC_MAP_FROM_DB[key] : null;
-    
-    if (semanticKey) {
-      result[semanticKey] = value;
-    } else {
-      // 2. Fallback to generic camelCase
-      result[toCamelCase(key)] = value;
-    }
+    result[toCamelCase(key)] = value;
   }
 
   // Partner-specific collision safety: if both 'name' and 'nome' somehow exist or if we need to force DB 'name'
@@ -264,9 +136,9 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   // Cross-entity specific logic
   if (item.project_id) result.projectId = item.project_id;
   if (item.user_id) result.userId = item.user_id;
-  if (item.nome_empresa) result.nomeEmpresa = item.nome_empresa;
-  if (entityName === 'sessions' || entityName === 'programacao_evento') {
-    if (item.max_vagas) result.maxCapacity = item.max_vagas;
+  if (item.company_name) result.nomeEmpresa = item.company_name;
+  if (entityName === 'sessions' || entityName === 'event_schedule') {
+    if (item.max_slots) result.maxCapacity = item.max_slots;
   }
   if (!result.ticketNumber && item.id && (item.id as string).length > 20) {
     result.ticketNumber = (item.id as string).split('-')[0].toUpperCase();
@@ -274,8 +146,8 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
 
   // 2. Semantic status value translation (GE inscricoes use Portuguese status)
   // Translate both payment_status and general status to standard English equivalents
-  if (item.status_pagamento !== undefined) {
-    result.paymentStatus = STATUS_MAPPING[String(item.status_pagamento)] || String(item.status_pagamento);
+  if (item.payment_status !== undefined) {
+    result.paymentStatus = STATUS_MAPPING[String(item.payment_status)] || String(item.payment_status);
     // Backward compatibility: Ensure 'status' is also set from paymentStatus for registrations if not already set
     if (!result.status) result.status = result.paymentStatus;
   }
@@ -327,10 +199,6 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
 const mapToSupabase = (projectId: string | undefined, entity: string, data: Record<string, unknown>): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
 
-  // Entities that use the global SEMANTIC_MAP (Portuguese column names)
-  // Projects, sessions, users etc use standard English snake_case columns
-  const useSemanticMap = !['projects', 'sessions', 'users', 'profiles', 'certificates', 'notifications', 'audit_logs', 'stand_checkins', 'leads', 'transactions', 'check_ins', 'check_ins_atividades', 'partners'].includes(entity);
-
   // Virtual / computed fields that exist only in the frontend model (never DB columns)
   // These are generated by mapFromSupabase and must NOT be sent back to the DB
   const VIRTUAL_FIELDS = new Set([
@@ -344,44 +212,10 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     'publicContent',    // nested object in settings, not a separate column
   ]);
 
-  // First pass: map directly using semantic map and snake case — skip virtual fields
   for (const [key, value] of Object.entries(data)) {
     if (VIRTUAL_FIELDS.has(key)) continue;
 
-    // Resolve semantic map collisions based on entity type
-    let dbKey: string;
-
-    if (useSemanticMap) {
-      // Priority overrides for specific entities to resolve app-to-db collisions
-      if (entity === 'mentors' && key === 'name') dbKey = 'nome';
-      else if (entity === 'mentors' && key === 'description') dbKey = 'bio';
-      else if (entity === 'mentors' && key === 'specialties') dbKey = 'especialidades';
-      else if (entity === 'startups' && key === 'name') dbKey = 'nome_startup';
-      else if (entity === 'startups' && key === 'description') dbKey = 'descricao_startup';
-      else if (entity === 'companies' && key === 'name') dbKey = 'nome_empresa';
-      else if (entity === 'companies' && key === 'description') dbKey = 'descricao_empresa';
-      else if (entity === 'mentoring_sessions' && key === 'scheduledAt') dbKey = isGEProject(projectId) ? 'data_mentoria' : 'scheduled_at';
-      else if (entity === 'mentoring_sessions' && key === 'topic') dbKey = isGEProject(projectId) ? 'tema_interesse' : 'topic';
-      else if (entity === 'mentoring_sessions' && key === 'notes') dbKey = isGEProject(projectId) ? 'anotacoes' : 'notes';
-      else if (entity === 'mentoring_sessions' && key === 'menteeId') dbKey = isGEProject(projectId) ? 'mentorado_id' : 'mentee_id';
-      else if (entity === 'mentoring_sessions' && key === 'menteeName') dbKey = isGEProject(projectId) ? 'nome_mentorado' : 'mentee_name';
-      else if (entity === 'mentoring_sessions' && key === 'mentorName') dbKey = 'mentor_name';
-      else if (entity === 'mentoring_sessions' && key === 'duration') dbKey = isGEProject(projectId) ? 'duracao' : 'duration';
-      else if (entity === 'mentoring_sessions' && key === 'mentorId') dbKey = 'mentor_id';
-      else if (entity === 'registrations' && key === 'amount') dbKey = 'valor_pago';
-      else if (entity === 'companies' && key === 'amount') dbKey = 'valor_investido';
-      else if (entity === 'empresas_incentivadoras' && key === 'amount') dbKey = 'valor_investido';
-      else if (entity === 'transactions' && key === 'amount') dbKey = 'amount';
-      else if (entity === 'partners' && key === 'name') dbKey = 'name'; // Partner uses 'name' column directly
-      else if (entity === 'registration_batches' && key === 'nomeEmpresa') dbKey = 'nome_empresa';
-      else if (entity === 'cupons' && key === 'codigo') dbKey = 'codigo';
-      else {
-        // Use generic semantic map or snake_case fallback
-        dbKey = SEMANTIC_MAP_TO_DB[key] || toSnakeCase(key);
-      }
-    } else {
-      dbKey = toSnakeCase(key);
-    }
+    let dbKey = toSnakeCase(key);
 
     // Clean up: convert empty strings to null for ID/foreign key fields to avoid UUID errors
     if (typeof value === 'string' && value.trim() === '') {
@@ -413,21 +247,20 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     if (s.goalRegistrations !== undefined) result.goal_registrations = s.goalRegistrations;
     if (s.settings !== undefined) result.settings = s.settings;
     if (s.ticketTiers !== undefined) result.ticket_tiers = s.ticketTiers;
-    // Remove the raw settings object — it was expanded above into flat columns
     delete result.settings;
   }
 
   // Special status mapping for registrations and batches
-  if ((entity === 'registrations' || entity === 'registration_batches') && (data.status || data.statusPagamento)) {
-    const s = String(data.status || data.statusPagamento).toLowerCase();
+  if ((entity === 'registrations' || entity === 'registration_batches') && (data.status || data.paymentStatus)) {
+    const s = String(data.status || data.paymentStatus).toLowerCase();
     if (s === 'paid' || s === 'pago') {
-      result.status_pagamento = 'pago';
+      result.payment_status = 'pago';
       if (entity === 'registrations') result.status = 'ativo';
     } else if (s === 'pending' || s === 'pendente') {
-      result.status_pagamento = 'pendente';
+      result.payment_status = 'pendente';
       if (entity === 'registrations') result.status = 'pendente';
     } else if (s === 'cancelado' || s === 'cancelado') {
-      result.status_pagamento = 'cancelado';
+      result.payment_status = 'cancelado';
       if (entity === 'registrations') result.status = 'cancelado';
     }
   }
@@ -484,13 +317,13 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
       return '*';
     }
     if (entity === 'mentors') {
-      return 'id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,created_at,years_experience,max_mentories';
+      return 'id,project_id,user_id,name,email,phone,company,role,specialties,bio,linkedin_url,photo_url,status,created_at,years_experience,max_mentorings';
     }
     if (entity === 'empresas_incentivadoras') {
-      return 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at';
+      return 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,paid_amount,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em';
+      return 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic,notes,status,created_at,start_date,duration,mentoring_rating,mentor_indication,rated_at';
     }
     if (entity === 'b2b_meetings') {
       // Remover company_a_id se estiver dando erro (pode ser company_a_id ou name_a em versões diferentes)
@@ -514,23 +347,23 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   }
 
   const fields: Record<string, string> = {
-    registrations: 'id,project_id,user_id,ticket_type,status,ticket_number,qr_code,amount,payment_method,payment_date,checked_in,check_in_at,created_at',
-    mentors: 'id,project_id,user_id,name,email,phone,company,position,specialties,tracks,years_experience,status,max_mentories,photo,created_at',
-    mentoring_sessions: 'id,project_id,mentorado_id,mentor_id,nome_mentorado,email_mentorado,telefone_mentorado,tema_interesse,anotacoes,status,created_at,data_mentoria,duracao,avaliacao_mentoria,indicacao_mentor,avaliado_em',
+    registrations: 'id,project_id,user_id,registration_type,status,ticket_number,qr_code,paid_amount,payment_method,payment_date,checked_in,check_in_at,created_at',
+    mentors: 'id,project_id,user_id,name,email,phone,company,role,specialties,tracks,years_experience,status,max_mentorings,photo_url,created_at',
+    mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic,notes,status,created_at,start_date,duration,mentoring_rating,mentor_indication,rated_at',
     mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',
-    companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,tipo_interesse,areas_interesse,created_at,nome_empresa,nome_representante',
-    startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,nome_startup,descricao_startup,nome_fundador,estagio',
+    companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,interest_type,interest_areas,created_at,company_name,responsible_name',
+    startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,company_name,description,responsible_name',
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,amount,date,status,created_at',
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
     sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,start_time,end_date,end_time,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,target_revenue,target_registrations,settings,ticket_tiers,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,max_registrations,max_mentors,max_startups,max_companies,primary_color',
-    cupons: 'id,project_id,codigo,indicacao_tipo,indicacao_nome,porcentagem_desconto,ativo,uso_limite,uso_atual,descricao,vencimento,created_at',
+    cupons: 'id,project_id,codigo,referral_type,referral_name,discount_percentage,ativo,usage_limit,current_usage,descricao,expires_at,created_at',
     b2b_meetings: 'id,project_id,status,scheduled_at,duration_minutes,table_number,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,status,created_at',
-    empresas_incentivadoras: 'id,project_id,nome_responsavel,email,telefone,nome_empresa,quantidade_equipe,quantidade_dia,quantidade_noite,objetivo,status,valor_investido,created_at',
+    empresas_incentivadoras: 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,paid_amount,created_at',
     users: 'id,email,name,role,phone,avatar_url,created_at',
     speakers: 'id,project_id,name,role,company,bio,image,linkedin,twitter,website,track,is_featured,order_index',
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
@@ -542,7 +375,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
     partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id,created_at,updated_at',
-    partner_team: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
+    partner_team_members: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
     email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
     email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'
   };
@@ -1021,7 +854,7 @@ export function useCoupons() {
 }
 
 export function useCheckInsAtividades() {
-  return useData<ActivityAttendance>([], 'check_ins_atividades');
+  return useData<ActivityAttendance>([], 'activity_check_ins');
 }
 
 export function usePitchScores() {
@@ -1045,7 +878,7 @@ export function usePartners() {
 }
 
 export function usePartnerTeam() {
-  return useData<PartnerTeamMember>([], 'partner_team');
+  return useData<PartnerTeamMember>([], 'partner_team_members');
 }
 
 export function useProfile(userId?: string) {

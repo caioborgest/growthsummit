@@ -182,40 +182,40 @@ export default function AdminComunicacao() {
         return;
       }
       if (composeData.recipients === 'all') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any).eq('project_id', selectedProject.id);
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'paid') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any).eq('project_id', selectedProject.id).eq('status_pagamento', 'pago');
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'pago');
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'pending') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any).eq('project_id', selectedProject.id).eq('status_pagamento', 'pendente');
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'pendente');
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'vip') {
-        const { data } = await (supabase.from('inscricoes_growth_experience').select('email, nome, tipo_inscricao') as any).eq('project_id', selectedProject.id).eq('tipo_inscricao', 'vip');
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('registration_type', 'vip');
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'mentors') {
-        const { data } = await (supabase.from('mentores_growth_experience').select('email, nome') as any).eq('project_id', selectedProject.id);
-        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.nome_fundador }));
+        const { data } = await (supabase.from('growth_experience_mentors').select('email, nome') as any).eq('project_id', selectedProject.id);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.founder_name }));
       } else if (composeData.recipients === 'startups') {
-        const { data } = await (supabase.from('startups_arena_pitch').select('email, nome_startup, nome_fundador') as any).eq('project_id', selectedProject.id);
-        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome_startup || item.nome_fundador }));
+        const { data } = await (supabase.from('arena_pitch_startups').select('email, startup_name, founder_name') as any).eq('project_id', selectedProject.id);
+        recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.startup_name || item.founder_name }));
       } else if (composeData.recipients === 'sponsors') {
         const { data } = await (supabase.from('sponsors').select('contact_email, company_name, contact_name') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.contact_email, name: item.company_name || item.contact_name }));
       } else if (composeData.recipients === 'companies') {
         const [b2bRes, incentiveRes] = await Promise.all([
-          (supabase.from('rodada_negocios_b2b').select('email, nome_empresa, nome_representante') as any).eq('project_id', selectedProject.id),
-          (supabase.from('inscricoes_empresas_incentivadoras').select('email, nome_empresa, nome_responsavel') as any).eq('project_id', selectedProject.id)
+          (supabase.from('b2b_business_rounds').select('email, company_name, representative_name') as any).eq('project_id', selectedProject.id),
+          (supabase.from('incentive_company_registrations').select('email, company_name, responsible_name') as any).eq('project_id', selectedProject.id)
         ]);
         recipientsData = [
-          ...(b2bRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_representante) as string })),
-          ...(incentiveRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.nome_empresa || item.nome_responsavel) as string }))
+          ...(b2bRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.company_name || item.representative_name) as string })),
+          ...(incentiveRes.data || []).map((item: Record<string, unknown>) => ({ email: item.email as string, name: (item.company_name || item.responsible_name) as string }))
         ];
       } else if (composeData.recipients === 'partners') {
-        const { data } = await (supabase.from('parceiros').select('contact_email, name, contact_name') as any).eq('project_id', selectedProject.id);
+        const { data } = await (supabase.from('partners').select('contact_email, name, contact_name') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.contact_email, name: item.name || item.contact_name }));
-      } else if (composeData.recipients === 'partner_team') {
-        const { data } = await (supabase.from('parceiros_equipe').select('email, name') as any).eq('project_id', selectedProject.id);
+      } else if (composeData.recipients === 'partner_team_members') {
+        const { data } = await (supabase.from('partner_team_members').select('email, name') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.name }));
       } else if (composeData.recipients === 'exhibitors') {
         // Expositores are owners of stands
@@ -227,14 +227,14 @@ export default function AdminComunicacao() {
           const sponsorIds = stands.filter((s: any) => s.owner_type === 'sponsor' && s.owner_id).map((s: any) => s.owner_id);
 
           const queries = [];
-          if (startupIds.length > 0) queries.push((supabase.from('startups_arena_pitch').select('email, nome_startup') as any).in('id', startupIds));
-          if (companyIds.length > 0) queries.push((supabase.from('rodada_negocios_b2b').select('email, nome_empresa') as any).in('id', companyIds));
+          if (startupIds.length > 0) queries.push((supabase.from('arena_pitch_startups').select('email, startup_name') as any).in('id', startupIds));
+          if (companyIds.length > 0) queries.push((supabase.from('b2b_business_rounds').select('email, company_name') as any).in('id', companyIds));
           if (sponsorIds.length > 0) queries.push((supabase.from('sponsors').select('contact_email, company_name') as any).in('id', sponsorIds));
 
           const results = await Promise.all(queries);
           recipientsData = results.flatMap((res: any) => (res.data || []).map((item: any) => ({ 
             email: item.email || item.contact_email, 
-            name: item.nome_startup || item.nome_empresa || item.company_name 
+            name: item.startup_name || item.company_name || item.company_name 
           })));
         }
       } else if (composeData.recipients === 'speakers') {
@@ -256,9 +256,9 @@ export default function AdminComunicacao() {
       
       const sendPromises = uniqueRecipients.map(async (recipient) => {
         let personalizedBody = composeData.body;
-        const nome = recipient.nome || recipient.nome_fundador || recipient.nome_representante || recipient.nome_responsavel || 'Participante';
-        const empresa = recipient.nome_empresa || recipient.company_name || recipient.startup_name || '';
-        const ticket = recipient.tipo_inscricao || '';
+        const nome = recipient.nome || recipient.founder_name || recipient.representative_name || recipient.responsible_name || 'Participante';
+        const empresa = recipient.company_name || recipient.company_name || recipient.startup_name || '';
+        const ticket = recipient.registration_type || '';
 
         personalizedBody = personalizedBody
           .replace(/{{nome}}/g, nome)
@@ -351,7 +351,7 @@ export default function AdminComunicacao() {
         let role = notificationFormData.recipients;
         
         // Mapear filtros amigáveis para roles reais se necessário
-        if (role === 'partner_team') role = 'staff'; 
+        if (role === 'partner_team_members') role = 'staff'; 
         
         const projectUserIds = new Set(registrations?.map(r => r.userId));
         targetUserIds = users?.filter(u => 
@@ -534,7 +534,7 @@ export default function AdminComunicacao() {
                           <option value="mentors">Mentores</option>
                           <option value="speakers">Palestrantes</option>
                           <option value="partners">Parceiros Institucionais</option>
-                          <option value="partner_team">Equipe de Parceiros</option>
+                          <option value="partner_team_members">Equipe de Parceiros</option>
                         </optgroup>
                       </select>
                     </div>
@@ -802,7 +802,7 @@ export default function AdminComunicacao() {
                       <option value="mentors">Mentores</option>
                       <option value="speakers">Palestrantes</option>
                       <option value="partners">Parceiros Institucionais</option>
-                      <option value="partner_team">Equipe de Parceiros</option>
+                      <option value="partner_team_members">Equipe de Parceiros</option>
                     </optgroup>
                   </select>
               </div>
@@ -895,7 +895,7 @@ export default function AdminComunicacao() {
                     <option value="mentor">Mentores</option>
                     <option value="speaker">Palestrantes</option>
                     <option value="sponsor">Patrocinadores</option>
-                    <option value="partner_team">Equipe de Parceiros</option>
+                    <option value="partner_team_members">Equipe de Parceiros</option>
                   </optgroup>
                 </select>
               </div>

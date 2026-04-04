@@ -128,7 +128,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
         try {
             // ── ETAPA 0: Validação server-side dos dados pessoais
-            const validation = await registrationService.validateInscricaoData(dados.nome, dados.email, dados.telefone);
+            const validation = await registrationService.validateInscricaoData(dados.nome, dados.email, dados.phone);
             if (!validation.valid) {
                 throw new Error(validation.errorMessage || 'Dados inválidos.');
             }
@@ -150,7 +150,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 userId: null, // Passamos null agora
                 nome: dados.nome,
                 email: cleanEmail,
-                telefone: dados.telefone,
+                phone: dados.phone,
                 cpf: dados.cpf,
                 sessionIds: sessionIds.length > 0 ? sessionIds : [],
                 tipoInscricao: 'standard',
@@ -271,7 +271,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             <Phone className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
                                 <p className="text-xs text-gray-500">Telefone</p>
-                                <p className="text-white font-semibold">{dados.telefone}</p>
+                                <p className="text-white font-semibold">{dados.phone}</p>
                             </div>
                         </div>
 

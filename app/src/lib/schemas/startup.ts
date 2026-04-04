@@ -13,7 +13,7 @@ export const StartupSchema = z.object({
         .email('E-mail inválido')
         .toLowerCase()
         .trim(),
-    telefone: z.string()
+    phone: z.string()
         .regex(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato de telefone inválido (esperado: (XX) XXXXX-XXXX)'),
 
     // Dados da startup

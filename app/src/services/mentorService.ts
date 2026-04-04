@@ -6,10 +6,10 @@ export interface MentorParams {
     userId?: string;
     nome: string;
     email: string;
-    telefone: string;
+    phone: string;
     empresa?: string;
-    cargo?: string;
-    especialidades?: string[];
+    role_title?: string;
+    specialties?: string[];
     bio?: string;
     linkedinUrl?: string;
     fotoUrl?: string;
@@ -23,8 +23,8 @@ export const mentorService = {
      */
     async listApproved(projectId: string) {
         const { data, error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
-            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,years_experience,max_mentories,created_at')
+            .from('growth_experience_mentors' as any) as any)
+            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,specialties,bio,linkedin_url,photo_url,status,years_experience,max_mentorings,created_at')
             .eq('project_id', projectId)
             .eq('status', 'approved')
             .order('nome');
@@ -41,8 +41,8 @@ export const mentorService = {
      */
     async listAll(projectId: string) {
         const { data, error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
-            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,linkedin_url,foto_url,status,years_experience,max_mentories,created_at')
+            .from('growth_experience_mentors' as any) as any)
+            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,specialties,bio,linkedin_url,photo_url,status,years_experience,max_mentorings,created_at')
             .eq('project_id', projectId)
             .order('created_at', { ascending: false });
 
@@ -58,21 +58,21 @@ export const mentorService = {
      */
     async apply(params: MentorParams) {
         const { data, error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
+            .from('growth_experience_mentors' as any) as any)
             .insert([{
                 project_id: params.projectId,
                 user_id: params.userId || null,
                 nome: params.nome,
                 email: params.email,
-                telefone: params.telefone,
+                phone: params.phone,
                 empresa: params.empresa || null,
-                cargo: params.cargo || null,
-                especialidades: params.especialidades || [],
+                role_title: params.role_title || null,
+                specialties: params.specialties || [],
                 bio: params.bio || null,
                 linkedin_url: params.linkedinUrl || null,
-                foto_url: params.fotoUrl || null,
+                photo_url: params.fotoUrl || null,
                 years_experience: params.yearsExperience || 0,
-                max_mentories: params.maxMentories || 5,
+                max_mentorings: params.maxMentories || 5,
                 status: 'pendente'
             }])
             .select()
@@ -90,8 +90,8 @@ export const mentorService = {
      */
     async getByUserId(userId: string, projectId: string) {
         const { data, error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
-            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
+            .from('growth_experience_mentors' as any) as any)
+            .select('id,project_id,user_id,nome,email,telefone,empresa,cargo,specialties,bio,photo_url,status,years_experience,max_mentorings')
             .eq('user_id', userId)
             .eq('project_id', projectId)
             .maybeSingle();
@@ -108,7 +108,7 @@ export const mentorService = {
      */
     async approve(mentorId: string) {
         const { error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
+            .from('growth_experience_mentors' as any) as any)
             .update({ status: 'approved' })
             .eq('id', mentorId);
 
@@ -123,7 +123,7 @@ export const mentorService = {
      */
     async reject(mentorId: string, reason?: string) {
         const { error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
+            .from('growth_experience_mentors' as any) as any)
             .update({ status: 'rejected', rejection_reason: reason || null })
             .eq('id', mentorId);
 
@@ -139,18 +139,18 @@ export const mentorService = {
     async update(mentorId: string, updates: Partial<MentorParams>) {
         const payload: Record<string, unknown> = {};
         if (updates.nome !== undefined) payload.nome = updates.nome;
-        if (updates.telefone !== undefined) payload.telefone = updates.telefone;
+        if (updates.phone !== undefined) payload.phone = updates.phone;
         if (updates.empresa !== undefined) payload.empresa = updates.empresa;
-        if (updates.cargo !== undefined) payload.cargo = updates.cargo;
-        if (updates.especialidades !== undefined) payload.especialidades = updates.especialidades;
+        if (updates.role_title !== undefined) payload.role_title = updates.role_title;
+        if (updates.specialties !== undefined) payload.specialties = updates.specialties;
         if (updates.bio !== undefined) payload.bio = updates.bio;
         if (updates.linkedinUrl !== undefined) payload.linkedin_url = updates.linkedinUrl;
-        if (updates.fotoUrl !== undefined) payload.foto_url = updates.fotoUrl;
+        if (updates.fotoUrl !== undefined) payload.photo_url = updates.fotoUrl;
         if (updates.yearsExperience !== undefined) payload.years_experience = updates.yearsExperience;
-        if (updates.maxMentories !== undefined) payload.max_mentories = updates.maxMentories;
+        if (updates.maxMentories !== undefined) payload.max_mentorings = updates.maxMentories;
 
         const { error } = await (supabase
-            .from('mentores_growth_experience' as any) as any)
+            .from('growth_experience_mentors' as any) as any)
             .update(payload)
             .eq('id', mentorId);
 

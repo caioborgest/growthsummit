@@ -37,7 +37,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
             setFormData({
                 nomeResponsavel: editingData.nomeResponsavel || '',
                 email: editingData.email || '',
-                phone: editingData.phone || editingData.telefone || '',
+                phone: editingData.phone || editingData.phone || '',
                 nomeEmpresa: editingData.nomeEmpresa || '',
                 quantidadeNoite: String(editingData.quantidadeNoite || '0'),
                 objetivo: editingData.objetivo || '',
@@ -118,26 +118,26 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
             // 2. Salvar na tabela de inscrições
             const dbData = {
                 project_id: projectId || null,
-                nome_responsavel: formData.nomeResponsavel,
+                responsible_name: formData.nomeResponsavel,
                 email: formData.email,
-                telefone: formData.phone,
-                nome_empresa: formData.nomeEmpresa,
-                quantidade_noite: parseInt(formData.quantidadeNoite) || 0,
+                phone: formData.phone,
+                company_name: formData.nomeEmpresa,
+                night_quantity: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
-                valor_investido: parseFloat(formData.amount) || 0,
+                invested_amount: parseFloat(formData.amount) || 0,
                 status: isAdmin ? (editingData?.status || 'aprovado') : 'pendente'
             };
 
             if (editingData?.id) {
                 const { error: dbError } = await (supabase as any)
-                    .from('inscricoes_empresas_incentivadoras')
+                    .from('incentive_company_registrations')
                     .update(dbData)
                     .eq('id', editingData.id);
                 if (dbError) throw dbError;
                 logger.info('Empresa atualizada com sucesso');
             } else {
                 const { error: dbError } = await (supabase as any)
-                    .from('inscricoes_empresas_incentivadoras')
+                    .from('incentive_company_registrations')
                     .insert([dbData]);
                 if (dbError) throw dbError;
                 logger.info('Nova empresa inserida com sucesso');

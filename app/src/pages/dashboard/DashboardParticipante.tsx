@@ -219,7 +219,7 @@ export function DashboardParticipante() {
 
     if (isGE && (qrData.type === 'registration' || qrData.type === 'entry')) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: entryErr } = await (supabase as any).from('inscricoes_growth_experience').update({
+        const { error: entryErr } = await (supabase as any).from('growth_experience_registrations').update({
             checked_in: true,
             check_in_at: new Date().toISOString()
         }).eq('id', registration.id);
@@ -239,7 +239,7 @@ export function DashboardParticipante() {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from('inscricoes_growth_experience').update({ 
+    const { error } = await (supabase as any).from('growth_experience_registrations').update({ 
         checked_in: true, 
         check_in_at: new Date().toISOString() 
     }).eq('id', registration.id);
@@ -247,7 +247,7 @@ export function DashboardParticipante() {
     if (error) throw error;
 
     // Call RPC or direct insert for activities
-    const { error: activityError } = await supabase.from('check_ins_atividades').insert({
+    const { error: activityError } = await supabase.from('activity_check_ins').insert({
         project_id: selectedProject?.id,
         session_id: qrData.id,
         registration_id: registration.id,

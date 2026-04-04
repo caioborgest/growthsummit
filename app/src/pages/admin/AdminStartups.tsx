@@ -54,15 +54,15 @@ export function AdminStartups() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     // Fundador
-    nome_fundador: '',
+    founder_name: '',
     email: '',
-    telefone: '',
+    phone: '',
     senha: '',
     confirmarSenha: '',
 
     // Startup
-    nome_startup: '',
-    descricao_startup: '',
+    startup_name: '',
+    startup_description: '',
     setor: '',
     estagio: 'mvp' as 'ideia' | 'mvp' | 'validacao' | 'tracao' | 'escala',
 
@@ -95,7 +95,7 @@ export function AdminStartups() {
     if (isSuperAdminFounder) return false;
 
     const matchesSearch =
-      (startup.nome_startup?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (startup.startup_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.sector?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.foundingTeam?.[0]?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || startup.status === statusFilter;
@@ -105,7 +105,7 @@ export function AdminStartups() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!formData.nome_startup || !formData.nome_fundador || !formData.email) {
+      if (!formData.startup_name || !formData.founder_name || !formData.email) {
         toast.error('Preencha os campos obrigatórios');
         return;
       }
@@ -117,12 +117,12 @@ export function AdminStartups() {
 
       await create({
         projectId: projectId || '',
-        startupName: formData.nome_startup,
+        startupName: formData.startup_name,
         sector: formData.setor,
-        startupDescription: formData.descricao_startup,
+        startupDescription: formData.startup_description,
         stage: formData.estagio,
         status: 'approved',
-        foundingTeam: [{ name: formData.nome_fundador, role: 'Founder', email: formData.email, phone: formData.telefone }],
+        foundingTeam: [{ name: formData.founder_name, role: 'Founder', email: formData.email, phone: formData.phone }],
         packageType: formData.packageType,
         // Informações completas do Pitch
         metadata: {
@@ -134,7 +134,7 @@ export function AdminStartups() {
           pitchDeckUrl: formData.pitch_deck_url,
           videoPitchUrl: formData.video_pitch_url,
           founderEmail: formData.email,
-          founderPhone: formData.telefone
+          founderPhone: formData.phone
         }
       } as any);
 
@@ -149,13 +149,13 @@ export function AdminStartups() {
 
   const resetForm = () => {
     setFormData({
-      nome_fundador: '',
+      founder_name: '',
       email: '',
-      telefone: '',
+      phone: '',
       senha: '',
       confirmarSenha: '',
-      nome_startup: '',
-      descricao_startup: '',
+      startup_name: '',
+      startup_description: '',
       setor: '',
       estagio: 'mvp',
       problema: '',
@@ -251,8 +251,8 @@ export function AdminStartups() {
                     <Label>Nome Completo *</Label>
                     <Input
                       required
-                      value={formData.nome_fundador}
-                      onChange={e => setFormData({ ...formData, nome_fundador: e.target.value })}
+                      value={formData.founder_name}
+                      onChange={e => setFormData({ ...formData, founder_name: e.target.value })}
                       className="bg-dark-100 border-dark-300"
                       placeholder="Nome do fundador"
                     />
@@ -272,8 +272,8 @@ export function AdminStartups() {
                     <Label>Telefone/WhatsApp *</Label>
                     <Input
                       required
-                      value={formData.telefone}
-                      onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                      value={formData.phone}
+                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
                       className="bg-dark-100 border-dark-300"
                       placeholder="(00) 00000-0000"
                     />
@@ -309,8 +309,8 @@ export function AdminStartups() {
                     <Label>Nome da Startup *</Label>
                     <Input
                       required
-                      value={formData.nome_startup}
-                      onChange={e => setFormData({ ...formData, nome_startup: e.target.value })}
+                      value={formData.startup_name}
+                      onChange={e => setFormData({ ...formData, startup_name: e.target.value })}
                       className="bg-dark-100 border-dark-300"
                     />
                   </div>
@@ -359,8 +359,8 @@ export function AdminStartups() {
                     <Textarea
                       required
                       maxLength={500}
-                      value={formData.descricao_startup}
-                      onChange={e => setFormData({ ...formData, descricao_startup: e.target.value })}
+                      value={formData.startup_description}
+                      onChange={e => setFormData({ ...formData, startup_description: e.target.value })}
                       className="bg-dark-100 border-dark-300 min-h-[100px]"
                       placeholder="Descreva sua startup..."
                     />
@@ -532,9 +532,9 @@ export function AdminStartups() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-white mb-1">{startup.nome_startup || (startup as any).startupName}</h3>
+              <h3 className="text-lg font-semibold text-white mb-1">{startup.startup_name || (startup as any).startupName}</h3>
               <p className="text-teal-400 text-sm mb-1">{startup.sector}</p>
-              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.descricao_startup || (startup as any).startupDescription}</p>
+              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startup_description || (startup as any).startupDescription}</p>
 
               {/* Metrics */}
               {startup.metrics && (

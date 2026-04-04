@@ -242,7 +242,7 @@ export function DynamicEventPage() {
                 <PalestranteCardRefined
                   key={i}
                   nome={p.nome}
-                  cargo={p.cargo}
+                  cargo={p.role_title}
                   descricao={p.descricao}
                   tema={p.tema}
                   horario={p.horario}

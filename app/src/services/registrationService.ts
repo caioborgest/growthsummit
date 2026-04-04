@@ -7,7 +7,7 @@ export interface RegistrationParams {
     userId: string;
     nome: string;
     email: string;
-    telefone: string;
+    phone: string;
     cpf: string;
     sessionIds: string[];
     tipoInscricao?: string;
@@ -37,7 +37,7 @@ export const registrationService = {
      * Valida dados da inscrição no servidor (LGPD/segurança).
      * Deve ser chamado antes de registerWithSlots.
      */
-    async validateInscricaoData(nome: string, email: string, telefone: string): Promise<{ valid: boolean; errorMessage?: string }> {
+    async validateInscricaoData(nome: string, email: string, phone: string): Promise<{ valid: boolean; errorMessage?: string }> {
         try {
             const { data, error } = await (supabase.rpc as any)('validate_inscricao_dados', {
                 p_nome: nome?.trim() || '',
@@ -94,12 +94,12 @@ export const registrationService = {
             p_user_id: cleanUserId || null,
             p_nome: params.nome || '',
             p_email: (params.email || '').trim().toLowerCase(),
-            p_telefone: params.telefone || '',
+            p_telefone: params.phone || '',
             p_cpf: params.cpf || '',
             p_session_ids: cleanSessionIds,
-            p_tipo_inscricao: params.tipoInscricao || 'standard',
-            p_valor_pago: Number(params.valorPago) || 0,
-            p_status_pagamento: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
+            p_registration_type: params.tipoInscricao || 'standard',
+            p_paid_amount: Number(params.valorPago) || 0,
+            p_payment_status: params.statusPagamento || (params.palestrasNoturnas ? 'pendente' : 'pago'),
             p_status: params.status || (params.palestrasNoturnas ? 'pendente' : 'ativo'),
             p_evento: params.evento || 'Growth Experience',
             p_palestras_noturnas: Boolean(params.palestrasNoturnas),
@@ -121,7 +121,7 @@ export const registrationService = {
             user: payload.p_user_id,
             sessions: payload.p_session_ids.length,
             lote: payload.p_lote_id,
-            tipo: payload.p_tipo_inscricao
+            tipo: payload.p_registration_type
         });
 
         try {
@@ -153,7 +153,7 @@ export const registrationService = {
                         p_user_id: cleanUserId,
                         p_name: params.nome,
                         p_email: params.email,
-                        p_phone: params.telefone,
+                        p_phone: params.phone,
                         p_cpf: params.cpf,
                         p_qr_code: partnerQR,
                     });
@@ -180,9 +180,9 @@ export const registrationService = {
      * Busca inscrições por projeto e filtro opcional
      */
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
-        let query: any = supabase.from('inscricoes_growth_experience' as any);
+        let query: any = supabase.from('growth_experience_registrations' as any);
         
-        query = query.select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas');
+        query = query.select('id,project_id,user_id,nome,email,telefone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures');
         query = query.eq('project_id', projectId);
 
         if (filters.email) query = query.eq('email', filters.email);
@@ -197,10 +197,10 @@ export const registrationService = {
      * Busca uma inscrição pelo ID
      */
     async getById(id: string) {
-        const query: any = supabase.from('inscricoes_growth_experience' as any);
+        const query: any = supabase.from('growth_experience_registrations' as any);
         
         const { data, error } = await query
-            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,status_pagamento,valor_pago,checked_in,check_in_at,created_at,cursos_selecionados,palestras_noturnas,tipo_inscricao,qr_code,qr_code_data')
+            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,registration_type,qr_code,qr_code_data')
             .eq('id', id)
             .single();
             

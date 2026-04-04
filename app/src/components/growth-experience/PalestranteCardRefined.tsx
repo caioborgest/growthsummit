@@ -5,7 +5,7 @@ import { placeholderPalestrante } from '@/lib/storage';
 
 interface PalestranteCardProps {
     nome: string;
-    cargo: string;
+    role_title: string;
     descricao: string;
     tema: string;
     horario: string;

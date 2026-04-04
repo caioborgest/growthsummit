@@ -98,16 +98,16 @@ export function ProfileForm() {
                     // or we could use the update function from useData if it was exposed correctly.
                     // For now, let's use direct supabase to be sure about the mapping.
                     const { error: mentorError } = await supabase
-                        .from('mentores_growth_experience')
+                        .from('growth_experience_mentors')
                         .update({
                             nome: formData.name,
-                            telefone: formData.phone,
+                            phone: formData.phone,
                             empresa: formData.company,
-                            cargo: formData.position,
+                            role_title: formData.position,
                             bio: formData.bio,
                             linkedin_url: formData.linkedin,
                             years_experience: Number(formData.yearsExperience) || 0,
-                            max_mentories: Number(formData.maxMentories) || 0
+                            max_mentorings: Number(formData.maxMentories) || 0
                         })
                         .eq('id', mentorRecord.id);
 
@@ -177,8 +177,8 @@ export function ProfileForm() {
             // Also sync mentor photo if needed
             if (user?.role === 'mentor' && mentorRecord) {
                 await supabase
-                    .from('mentores_growth_experience')
-                    .update({ foto_url: photoUrl })
+                    .from('growth_experience_mentors')
+                    .update({ photo_url: photoUrl })
                     .eq('id', mentorRecord.id);
             }
             toast.success('✅ Foto de perfil atualizada!');

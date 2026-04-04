@@ -22,14 +22,14 @@ import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 const conselheiros = [
     {
         nome: "Caio Borges",
-        cargo: "CEO da CBX Growth & IA",
+        role_title: "CEO da CBX Growth & IA",
         bio: "Especialista em growth e inteligência artificial para performance de negócios.",
         empresa: "CBX Growth & IA",
         foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/caio-borges.png"
     },
     {
         nome: "Leandro Batista",
-        cargo: "CEO da Fitness Exclusive",
+        role_title: "CEO da Fitness Exclusive",
         bio: "CEO da rede de academias que mais cresce no interior do Nordeste.",
         empresa: "Fitness Exclusive",
         foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg"
@@ -182,7 +182,7 @@ export function GrowthExperiencePetrolina() {
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-black text-white group-hover:text-teal-400 transition-colors tracking-tight uppercase italic">{mentor.nome}</h3>
-                                        <p className="text-teal-400 font-black text-[10px] uppercase tracking-[0.2em] mb-2">{mentor.cargo}</p>
+                                        <p className="text-teal-400 font-black text-[10px] uppercase tracking-[0.2em] mb-2">{mentor.role_title}</p>
                                         <p className="text-gray-500 text-xs leading-relaxed font-medium">{mentor.bio}</p>
                                     </div>
                                 </div>

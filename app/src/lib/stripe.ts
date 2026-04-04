@@ -42,7 +42,7 @@ export async function createStripeCheckoutSession(
                 nome: params.nome,
                 valor: params.valor,
                 evento_nome: params.eventoNome,
-                tipo_inscricao: params.tipoInscricao,
+                registration_type: params.tipoInscricao,
                 success_url: `${window.location.origin}/pagamento/sucesso?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${window.location.origin}/?canceled=true`,
             }),
@@ -173,7 +173,7 @@ export async function updateInscricaoStatus(
         }
 
         const { error } = await (supabase
-            .from('inscricoes_growth_experience') as any)
+            .from('growth_experience_registrations') as any)
             .update(updateData)
             .eq('id', inscricaoId);
 
@@ -242,7 +242,7 @@ export async function processPayment(params: CreateCheckoutSessionParams): Promi
             status: 'pending',
             metadata: {
                 evento: params.eventoNome,
-                tipo_inscricao: params.tipoInscricao,
+                registration_type: params.tipoInscricao,
             },
         });
 

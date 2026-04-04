@@ -168,8 +168,8 @@ export function AdminFinanceiro() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const paidRegistrations = registrations.filter(r => 
-    r.status_pagamento === 'pago' || 
-    r.status_pagamento === 'paid' || 
+    r.payment_status === 'pago' || 
+    r.payment_status === 'paid' || 
     (r as any).paymentStatus === 'pago' ||
     (r as any).paymentStatus === 'paid' ||
     r.status === 'paid' ||
@@ -179,7 +179,7 @@ export function AdminFinanceiro() {
   const paidRegistrationsCount = paidRegistrations.length;
   
   // Somar receita de inscrições individuais + Lotes Corporativos (Equipes)
-  const individualRevenue = paidRegistrations.reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
+  const individualRevenue = paidRegistrations.reduce((sum, r) => sum + (r.paid_amount || r.amount || 0), 0);
   const batchRevenue = (batches || [])
     .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
     .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0);

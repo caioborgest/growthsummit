@@ -153,7 +153,7 @@ export function RodadaB2B() {
               </h2>
               <p className="text-gray-400 mb-8">
                 A Rodada B2B do Growth Experience é uma oportunidade única de conectar 
-                sua empresa com potenciais parceiros, fornecedores e clientes em 
+                sua empresa com potenciais partners, fornecedores e clientes em 
                 um ambiente profissional e focado em resultados.
               </p>
               
@@ -258,7 +258,7 @@ export function RodadaB2B() {
             Pronto para fazer negócios?
           </h2>
           <p className="text-xl text-gray-400 mb-8">
-            Cadastre sua empresa e comece a conectar com potenciais parceiros
+            Cadastre sua empresa e comece a conectar com potenciais partners
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

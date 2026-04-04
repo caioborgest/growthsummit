@@ -16,16 +16,16 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const DRAFT_KEY = 'startup_form_draft';
     const [formData, setFormData] = useState({
         // Fundador
-        nome_fundador: '',
+        founder_name: '',
         email: '',
-        telefone: '',
+        phone: '',
         senha: '',
         confirmarSenha: '',
         lgpdConsent: false,
 
         // Startup
-        nome_startup: '',
-        descricao_startup: '',
+        startup_name: '',
+        startup_description: '',
         setor: '',
         estagio: '',
 
@@ -80,8 +80,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
-            nome_fundador: '', email: '', telefone: '', senha: '', confirmarSenha: '', lgpdConsent: false,
-            nome_startup: '', descricao_startup: '', setor: '', estagio: '',
+            founder_name: '', email: '', phone: '', senha: '', confirmarSenha: '', lgpdConsent: false,
+            startup_name: '', startup_description: '', setor: '', estagio: '',
             problema: '', solucao: '', diferencial: '', faturamento_mensal: '',
             investimento_buscado: '', pitch_deck_url: '', video_pitch_url: '',
         });
@@ -123,20 +123,20 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             const cleanEmail = formData.email.trim().toLowerCase();
 
             // Validações específicas
-            if (!formData.nome_fundador.trim()) throw new Error('Nome do fundador é obrigatório');
+            if (!formData.founder_name.trim()) throw new Error('Nome do fundador é obrigatório');
             if (!formData.email.trim()) throw new Error('E-mail é obrigatório');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(cleanEmail)) throw new Error('Por favor, insira um email válido');
 
-            if (!formData.telefone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
+            if (!formData.phone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
             if (!formData.senha) throw new Error('Senha é obrigatória');
             if (formData.senha.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres');
             if (formData.senha !== formData.confirmarSenha) throw new Error('As senhas não coincidem');
 
-            if (!formData.nome_startup.trim()) throw new Error('Nome da Startup é obrigatório');
+            if (!formData.startup_name.trim()) throw new Error('Nome da Startup é obrigatório');
             if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
             if (!formData.estagio) throw new Error('Estágio da Startup é obrigatório');
-            if (!formData.descricao_startup.trim()) throw new Error('Descrição da Startup é obrigatória');
+            if (!formData.startup_description.trim()) throw new Error('Descrição da Startup é obrigatória');
 
             if (!formData.problema.trim()) throw new Error('O problema que você resolve é obrigatório');
             if (!formData.solucao.trim()) throw new Error('Sua solução é obrigatória');
@@ -153,8 +153,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             const { userId } = await getOrCreateUser({
                 email: cleanEmail,
                 password: formData.senha,
-                name: formData.nome_fundador,
-                phone: formData.telefone,
+                name: formData.founder_name,
+                phone: formData.phone,
                 role: 'startup-founder'
             });
 
@@ -165,11 +165,11 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
             const dataToInsert = {
                 project_id: projectId,
                 user_id: userId,
-                nome_fundador: formData.nome_fundador,
+                founder_name: formData.founder_name,
                 email: cleanEmail,
-                telefone: formData.telefone,
-                nome_startup: formData.nome_startup,
-                descricao_startup: formData.descricao_startup,
+                phone: formData.phone,
+                startup_name: formData.startup_name,
+                startup_description: formData.startup_description,
                 setor: formData.setor,
                 estagio: formData.estagio,
                 problema: formData.problema,
@@ -184,7 +184,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
 
             // Salvar no Supabase
             const { error: supabaseError } = await supabase
-                .from('startups_arena_pitch')
+                .from('arena_pitch_startups')
                 .insert([dataToInsert]);
 
             if (supabaseError) throw supabaseError;
@@ -307,8 +307,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            name="nome_fundador"
-                                            value={formData.nome_fundador}
+                                            name="founder_name"
+                                            value={formData.founder_name}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -336,7 +336,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                         <input
                                             type="tel"
                                             name="telefone"
-                                            value={formData.telefone}
+                                            value={formData.phone}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -386,8 +386,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            name="nome_startup"
-                                            value={formData.nome_startup}
+                                            name="startup_name"
+                                            value={formData.startup_name}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -435,8 +435,8 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                             Descrição da Startup * (máx. 500 caracteres)
                                         </label>
                                         <textarea
-                                            name="descricao_startup"
-                                            value={formData.descricao_startup}
+                                            name="startup_description"
+                                            value={formData.startup_description}
                                             onChange={handleChange}
                                             required
                                             maxLength={500}
@@ -445,7 +445,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                             placeholder="Descreva sua startup em poucas palavras..."
                                         />
                                         <p className="text-xs text-gray-500 mt-1">
-                                            {formData.descricao_startup.length}/500 caracteres
+                                            {formData.startup_description.length}/500 caracteres
                                         </p>
                                     </div>
                                 </div>

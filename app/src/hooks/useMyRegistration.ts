@@ -16,7 +16,7 @@ export interface MyRegistration {
     email?: string;
     nome?: string;
     name?: string;
-    telefone?: string;
+    phone?: string;
     tipoInscricao?: string;
     ticketType?: string;
     status?: string;
@@ -34,19 +34,19 @@ export interface MyRegistration {
 }
 
 const GE_TABLES: Record<string, string> = {
-    'ge-triunfo-pocket-edition-noturno-2026': 'inscricoes_growth_experience',
-    'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'inscricoes_growth_experience',
-    'ge-petrolina-2026': 'inscricoes_growth_experience',
-    'b2c3d4e5-f6a7-8901-bcde-f12345678901': 'inscricoes_growth_experience',
+    'ge-triunfo-pocket-edition-noturno-2026': 'growth_experience_registrations',
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'growth_experience_registrations',
+    'ge-petrolina-2026': 'growth_experience_registrations',
+    'b2c3d4e5-f6a7-8901-bcde-f12345678901': 'growth_experience_registrations',
 };
 
 function getTable(projectId: string): string {
-    return GE_TABLES[projectId] || 'inscricoes_growth_experience';
+    return GE_TABLES[projectId] || 'growth_experience_registrations';
 }
 
 function mapRow(row: Record<string, unknown>): MyRegistration {
-    const isProType = (row['tipo_inscricao'] as string || '').toLowerCase() === 'pro' || (row['tipo_inscricao'] as string || '').toLowerCase() === 'vip';
-    const statusPagamento = (row['status_pagamento'] as string || '').toLowerCase();
+    const isProType = (row['registration_type'] as string || '').toLowerCase() === 'pro' || (row['registration_type'] as string || '').toLowerCase() === 'vip';
+    const statusPagamento = (row['payment_status'] as string || '').toLowerCase();
     const st = (row['status'] as string || '').toLowerCase();
     
     // Determine if actually paid
@@ -60,26 +60,26 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         email: (row['email'] as string) || undefined,
         nome: (row['nome'] as string) || (row['name'] as string) || undefined,
         name: (row['nome'] as string) || (row['name'] as string) || undefined,
-        telefone: (row['telefone'] as string) || undefined,
-        tipoInscricao: (row['tipo_inscricao'] as string) || undefined,
-        ticketType: (row['tipo_inscricao'] as string) || undefined,
+        phone: (row['telefone'] as string) || undefined,
+        tipoInscricao: (row['registration_type'] as string) || undefined,
+        ticketType: (row['registration_type'] as string) || undefined,
         status: (row['status'] as string) || undefined,
-        statusPagamento: (row['status_pagamento'] as string) || undefined,
+        statusPagamento: (row['payment_status'] as string) || undefined,
         // Pro if explicitly true OR if it's a Pro ticket and it's paid
-        palestrasNoturnas: Array.isArray(row['palestras_noturnas'])
-            ? row['palestras_noturnas'].length > 0
-            : Boolean(row['palestras_noturnas']) || 
+        palestrasNoturnas: Array.isArray(row['night_lectures'])
+            ? row['night_lectures'].length > 0
+            : Boolean(row['night_lectures']) || 
               (isProType && isActuallyPaid) || 
               ((row['project_id'] === 'ge-triunfo-pocket-edition-noturno-2026' || row['project_id'] === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') && isActuallyPaid),
-        cursosSelecionados: Array.isArray(row['cursos_selecionados'])
-            ? (row['cursos_selecionados'] as string[])
+        cursosSelecionados: Array.isArray(row['selected_courses'])
+            ? (row['selected_courses'] as string[])
             : [],
-        valorPago: (row['valor_pago'] as number) || 0,
-        amount: (row['valor_pago'] as number) || 0,
+        valorPago: (row['paid_amount'] as number) || 0,
+        amount: (row['paid_amount'] as number) || 0,
         projectId: (row['project_id'] as string) || undefined,
         createdAt: (row['created_at'] as string) || undefined,
         isPaid: isActuallyPaid,
-        photo: (row['foto_url'] as string) || (row['photo_url'] as string) || undefined,
+        photo: (row['photo_url'] as string) || (row['photo_url'] as string) || undefined,
         checkedIn: Boolean(row['checked_in']),
         checkInTime: (row['check_in_at'] as string) || undefined,
     };
@@ -104,7 +104,7 @@ export function useMyRegistration() {
             
             if (!targetProjectId) {
                 const { data: latestReg } = await supabase
-                    .from('inscricoes_growth_experience')
+                    .from('growth_experience_registrations')
                     .select('project_id')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
@@ -116,7 +116,7 @@ export function useMyRegistration() {
                 } else {
                     // Tenta por email
                     const { data: emailReg } = await supabase
-                        .from('inscricoes_growth_experience')
+                        .from('growth_experience_registrations')
                         .select('project_id')
                         .eq('email', user.email)
                         .order('created_at', { ascending: false })
@@ -132,7 +132,7 @@ export function useMyRegistration() {
             }
 
             const table = getTable(targetProjectId);
-            const fields = 'id,project_id,user_id,nome,email,telefone,tipo_inscricao,status,status_pagamento,valor_pago,palestras_noturnas,cursos_selecionados,created_at';
+            const fields = 'id,project_id,user_id,nome,email,telefone,registration_type,status,payment_status,paid_amount,night_lectures,selected_courses,created_at';
 
             // 1) Tenta por user_id
             let { data, error: err } = (await withTimeout(
@@ -253,7 +253,7 @@ export function useMyRegistration() {
         if (!registration?.id || !projectId) return;
         const table = getTable(projectId);
         const { error } = await (supabase.from(table as never) as any)
-            .update({ cursos_selecionados: cursoIds })
+            .update({ selected_courses: cursoIds })
             .eq('id', registration.id);
         if (error) throw error;
         setRegistration(prev => prev ? { ...prev, cursosSelecionados: cursoIds } : prev);

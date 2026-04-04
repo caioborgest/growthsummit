@@ -268,7 +268,7 @@ export function Inscricoes() {
                 Leve o <span className="text-gradient">Growth Experience</span> para sua cidade
               </h2>
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Quer transformar o ecossistema empresarial da sua região? Buscamos empresários parceiros, prefeituras e associações para levar nossa imersão de Growth e IA a novos horizontes.
+                Quer transformar o ecossistema empresarial da sua região? Buscamos empresários partners, prefeituras e associações para levar nossa imersão de Growth e IA a novos horizontes.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-6 mb-10 text-left">

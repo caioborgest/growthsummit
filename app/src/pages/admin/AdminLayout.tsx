@@ -75,7 +75,7 @@ const navigationGroups: SidebarGroup[] = [
       { id: 'programacao', name: 'Grade de Programação', icon: Calendar, path: '/admin/programacao' },
       { id: 'patrocinadores', name: 'Patrocinadores & Cotas', icon: Gem, path: '/admin/patrocinadores' },
       { id: 'stands', name: 'Circuito de Stands', icon: Store, path: '/admin/stands' },
-      { id: 'parceiros', name: 'Gestão de Parceiros', icon: Handshake, path: '/admin/parceiros' },
+      { id: 'partners', name: 'Gestão de Parceiros', icon: Handshake, path: '/admin/partners' },
     ]
   },
   {

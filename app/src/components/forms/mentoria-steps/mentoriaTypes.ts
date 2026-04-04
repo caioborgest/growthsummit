@@ -41,7 +41,7 @@ export interface DadosMentoria {
     descricaoProblema: string;
     nome: string;
     email: string;
-    telefone: string;
+    phone: string;
     senha: string;
     userId?: string;
     inscricaoId?: string;

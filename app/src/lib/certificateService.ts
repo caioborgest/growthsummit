@@ -33,7 +33,7 @@ export class CertificateService {
 
             // 2. Issuance Logic: Check if they checked into this activity
             const { data: attendance, error: attendanceError } = await supabase
-                .from('check_ins_atividades')
+                .from('activity_check_ins')
                 .select('id')
                 .eq('session_id', session.id)
                 .eq('registration_id', registrationId)
@@ -84,7 +84,7 @@ export class CertificateService {
             // 6. Send Automated Email
             if (registrationId) {
                 const { data: reg } = await supabase
-                    .from('inscricoes_growth_experience')
+                    .from('growth_experience_registrations')
                     .select('nome, email')
                     .eq('id', registrationId)
                     .maybeSingle();
@@ -163,7 +163,7 @@ export class CertificateService {
             // 6. Send Automated Email
             if (registrationId) {
                 const { data: reg } = await supabase
-                    .from('inscricoes_growth_experience')
+                    .from('growth_experience_registrations')
                     .select('nome, email')
                     .eq('id', registrationId)
                     .maybeSingle();

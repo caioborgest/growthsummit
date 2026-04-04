@@ -50,15 +50,15 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
         async function fetchMentores() {
             try {
                 const { data, error } = await (supabase
-                    .from('mentores_growth_experience')
-                    .select('id,project_id,user_id,nome,email,empresa,cargo,especialidades,bio,foto_url,status,years_experience,max_mentories')
+                    .from('growth_experience_mentors')
+                    .select('id,project_id,user_id,nome,email,empresa,cargo,specialties,bio,photo_url,status,years_experience,max_mentorings')
                     .eq('project_id', projectId as any)
                     .in('status', ['aprovado', 'approved']) as any);
 
                 if (error) throw error;
                 // Database returns snake_case, but we use camelCase in the app
                 const mapped = (data || []).map((m: any) => {
-                    let specs = m.especialidades || [];
+                    let specs = m.specialties || [];
                     if (typeof specs === 'string') {
                         try {
                             // Tenta parsear se for um JSON stringificado
@@ -77,13 +77,13 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                         name: m.nome,
                         email: m.email,
                         company: m.empresa,
-                        position: m.cargo,
+                        position: m.role_title,
                         specialties: Array.isArray(specs) ? specs : [],
                         bio: m.bio,
-                        photo: m.foto_url,
+                        photo: m.photo_url,
                         status: m.status,
                         yearsExperience: m.years_experience,
-                        maxMentories: m.max_mentories
+                        maxMentories: m.max_mentorings
                     };
                 });
                 setMentores(mapped as any[]);

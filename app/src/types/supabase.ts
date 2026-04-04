@@ -494,52 +494,52 @@ export type Database = {
           },
         ]
       }
-      inscricoes_empresas_incentivadoras: {
+      incentive_company_registrations: {
         Row: {
           created_at: string | null
           email: string
           id: string
-          nome_empresa: string
-          nome_responsavel: string
+          company_name: string
+          responsible_name: string
           objetivo: string | null
           project_id: string | null
-          quantidade_noite: number
+          night_quantity: number
           status: string
-          telefone: string
+          phone: string
           updated_at: string | null
-          valor_investido: number | null
+          invested_amount: number | null
         }
         Insert: {
           created_at?: string | null
           email: string
           id?: string
-          nome_empresa: string
-          nome_responsavel: string
+          company_name: string
+          responsible_name: string
           objetivo?: string | null
           project_id?: string | null
-          quantidade_noite?: number
+          night_quantity?: number
           status?: string
-          telefone: string
+          phone: string
           updated_at?: string | null
-          valor_investido?: number | null
+          invested_amount?: number | null
         }
         Update: {
           created_at?: string | null
           email?: string
           id?: string
-          nome_empresa?: string
-          nome_responsavel?: string
+          company_name?: string
+          responsible_name?: string
           objetivo?: string | null
           project_id?: string | null
-          quantidade_noite?: number
+          night_quantity?: number
           status?: string
-          telefone?: string
+          phone?: string
           updated_at?: string | null
-          valor_investido?: number | null
+          invested_amount?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "inscricoes_empresas_incentivadoras_project_id_fkey"
+            foreignKeyName: "incentive_company_registrations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -547,98 +547,98 @@ export type Database = {
           },
         ]
       }
-      inscricoes_growth_experience: {
+      growth_experience_registrations: {
         Row: {
           app_instalado: boolean | null
-          codigo_palestra: string | null
-          codigo_social: string | null
+          lecture_code: string | null
+          social_code: string | null
           created_at: string | null
-          cupom_palestra: string | null
-          cursos_selecionados: string[] | null
+          lecture_coupon: string | null
+          selected_courses: string[] | null
           email: string | null
           evento: string | null
-          horario_atividade: string | null
+          activity_schedule: string | null
           id: string
-          indicacao_nome: string | null
-          indicacao_tipo: string | null
-          nivel_atividade: string | null
+          referral_name: string | null
+          referral_type: string | null
+          activity_level: string | null
           nome: string | null
-          palestras_noturnas: boolean | null
+          night_lectures: boolean | null
           project_id: string | null
-          sala_atividade: string | null
+          activity_room: string | null
           status: string | null
-          status_pagamento: string | null
-          telefone: string | null
-          tipo_atividade_selecionada: string | null
-          tipo_inscricao: string | null
+          payment_status: string | null
+          phone: string | null
+          selected_activity_type: string | null
+          registration_type: string | null
           updated_at: string | null
           user_id: string | null
-          valor_pago: number | null
+          paid_amount: number | null
         }
         Insert: {
           app_instalado?: boolean | null
-          codigo_palestra?: string | null
-          codigo_social?: string | null
+          lecture_code?: string | null
+          social_code?: string | null
           created_at?: string | null
-          cupom_palestra?: string | null
-          cursos_selecionados?: string[] | null
+          lecture_coupon?: string | null
+          selected_courses?: string[] | null
           email?: string | null
           evento?: string | null
-          horario_atividade?: string | null
+          activity_schedule?: string | null
           id?: string
-          indicacao_nome?: string | null
-          indicacao_tipo?: string | null
-          nivel_atividade?: string | null
+          referral_name?: string | null
+          referral_type?: string | null
+          activity_level?: string | null
           nome?: string | null
-          palestras_noturnas?: boolean | null
+          night_lectures?: boolean | null
           project_id?: string | null
-          sala_atividade?: string | null
+          activity_room?: string | null
           status?: string | null
-          status_pagamento?: string | null
-          telefone?: string | null
-          tipo_atividade_selecionada?: string | null
-          tipo_inscricao?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          selected_activity_type?: string | null
+          registration_type?: string | null
           updated_at?: string | null
           user_id?: string | null
-          valor_pago?: number | null
+          paid_amount?: number | null
         }
         Update: {
           app_instalado?: boolean | null
-          codigo_palestra?: string | null
-          codigo_social?: string | null
+          lecture_code?: string | null
+          social_code?: string | null
           created_at?: string | null
-          cupom_palestra?: string | null
-          cursos_selecionados?: string[] | null
+          lecture_coupon?: string | null
+          selected_courses?: string[] | null
           email?: string | null
           evento?: string | null
-          horario_atividade?: string | null
+          activity_schedule?: string | null
           id?: string
-          indicacao_nome?: string | null
-          indicacao_tipo?: string | null
-          nivel_atividade?: string | null
+          referral_name?: string | null
+          referral_type?: string | null
+          activity_level?: string | null
           nome?: string | null
-          palestras_noturnas?: boolean | null
+          night_lectures?: boolean | null
           project_id?: string | null
-          sala_atividade?: string | null
+          activity_room?: string | null
           status?: string | null
-          status_pagamento?: string | null
-          telefone?: string | null
-          tipo_atividade_selecionada?: string | null
-          tipo_inscricao?: string | null
+          payment_status?: string | null
+          phone?: string | null
+          selected_activity_type?: string | null
+          registration_type?: string | null
           updated_at?: string | null
           user_id?: string | null
-          valor_pago?: number | null
+          paid_amount?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "inscricoes_growth_experience_project_id_fkey"
+            foreignKeyName: "growth_experience_registrations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "inscricoes_growth_experience_user_id_fkey"
+            foreignKeyName: "growth_experience_registrations_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -832,7 +832,7 @@ export type Database = {
           email: string
           id: string
           linkedin: string | null
-          max_mentories: number | null
+          max_mentorings: number | null
           name: string
           photo: string | null
           position: string | null
@@ -855,7 +855,7 @@ export type Database = {
           email: string
           id?: string
           linkedin?: string | null
-          max_mentories?: number | null
+          max_mentorings?: number | null
           name: string
           photo?: string | null
           position?: string | null
@@ -878,7 +878,7 @@ export type Database = {
           email?: string
           id?: string
           linkedin?: string | null
-          max_mentories?: number | null
+          max_mentorings?: number | null
           name?: string
           photo?: string | null
           position?: string | null
@@ -1259,68 +1259,68 @@ export type Database = {
           },
         ]
       }
-      rodada_negocios_b2b: {
+      b2b_business_rounds: {
         Row: {
-          areas_interesse: string | null
+          interest_areas: string | null
           created_at: string | null
           faturamento_anual: number | null
           id: string
           linkedin_url: string | null
           logo_url: string | null
-          nome_representante: string | null
+          representative_name: string | null
           numero_funcionarios: number | null
           project_id: string | null
           site_url: string | null
           status: string | null
-          telefone: string | null
-          tipo_interesse: string | null
+          phone: string | null
+          interest_type: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
-          areas_interesse?: string | null
+          interest_areas?: string | null
           created_at?: string | null
           faturamento_anual?: number | null
           id?: string
           linkedin_url?: string | null
           logo_url?: string | null
-          nome_representante?: string | null
+          representative_name?: string | null
           numero_funcionarios?: number | null
           project_id?: string | null
           site_url?: string | null
           status?: string | null
-          telefone?: string | null
-          tipo_interesse?: string | null
+          phone?: string | null
+          interest_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          areas_interesse?: string | null
+          interest_areas?: string | null
           created_at?: string | null
           faturamento_anual?: number | null
           id?: string
           linkedin_url?: string | null
           logo_url?: string | null
-          nome_representante?: string | null
+          representative_name?: string | null
           numero_funcionarios?: number | null
           project_id?: string | null
           site_url?: string | null
           status?: string | null
-          telefone?: string | null
-          tipo_interesse?: string | null
+          phone?: string | null
+          interest_type?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "rodada_negocios_b2b_project_id_fkey"
+            foreignKeyName: "b2b_business_rounds_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "rodada_negocios_b2b_user_id_fkey"
+            foreignKeyName: "b2b_business_rounds_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -1730,19 +1730,19 @@ export type Database = {
           },
         ]
       }
-      startups_arena_pitch: {
+      arena_pitch_startups: {
         Row: {
           avaliado_at: string | null
           created_at: string | null
-          descricao_startup: string | null
+          startup_description: string | null
           diferencial: string | null
           estagio: string | null
           faturamento_mensal: number | null
           feedback: string | null
           id: string
           investimento_buscado: number | null
-          nome_fundador: string | null
-          nome_startup: string | null
+          founder_name: string | null
+          startup_name: string | null
           pitch_deck_url: string | null
           pontuacao: number | null
           problema: string | null
@@ -1757,15 +1757,15 @@ export type Database = {
         Insert: {
           avaliado_at?: string | null
           created_at?: string | null
-          descricao_startup?: string | null
+          startup_description?: string | null
           diferencial?: string | null
           estagio?: string | null
           faturamento_mensal?: number | null
           feedback?: string | null
           id?: string
           investimento_buscado?: number | null
-          nome_fundador?: string | null
-          nome_startup?: string | null
+          founder_name?: string | null
+          startup_name?: string | null
           pitch_deck_url?: string | null
           pontuacao?: number | null
           problema?: string | null
@@ -1780,15 +1780,15 @@ export type Database = {
         Update: {
           avaliado_at?: string | null
           created_at?: string | null
-          descricao_startup?: string | null
+          startup_description?: string | null
           diferencial?: string | null
           estagio?: string | null
           faturamento_mensal?: number | null
           feedback?: string | null
           id?: string
           investimento_buscado?: number | null
-          nome_fundador?: string | null
-          nome_startup?: string | null
+          founder_name?: string | null
+          startup_name?: string | null
           pitch_deck_url?: string | null
           pontuacao?: number | null
           problema?: string | null
@@ -1802,14 +1802,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "startups_arena_pitch_project_id_fkey"
+            foreignKeyName: "arena_pitch_startups_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "startups_arena_pitch_user_id_fkey"
+            foreignKeyName: "arena_pitch_startups_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -1964,12 +1964,12 @@ export type Database = {
           p_sala_atividade?: string
           p_session_ids: string[]
           p_status?: string
-          p_status_pagamento?: string
+          p_payment_status?: string
           p_telefone: string
           p_tipo_atividade?: string
-          p_tipo_inscricao?: string
+          p_registration_type?: string
           p_user_id: string
-          p_valor_pago?: number
+          p_paid_amount?: number
         }
         Returns: Json
       }

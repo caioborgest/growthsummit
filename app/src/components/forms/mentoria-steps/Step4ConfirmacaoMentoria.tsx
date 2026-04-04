@@ -20,10 +20,10 @@ interface Step4ConfirmacaoMentoriaProps {
 interface Mentor {
     id: string;
     nome: string;
-    foto_url?: string;
+    photo_url?: string;
     email?: string;
     empresa?: string;
-    cargo?: string;
+    role_title?: string;
 }
 
 export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4ConfirmacaoMentoriaProps) {
@@ -38,8 +38,8 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
         async function fetchMentor() {
             try {
                 const { data, error } = await supabase
-                    .from('mentores_growth_experience')
-                    .select('id,nome,email,empresa,cargo,especialidades,bio,foto_url')
+                    .from('growth_experience_mentors')
+                    .select('id,nome,email,empresa,cargo,specialties,bio,photo_url')
                     .eq('id', dados.mentorId)
                     .single();
 
@@ -79,7 +79,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     options: {
                         data: {
                             name: dados.nome,
-                            phone: dados.telefone,
+                            phone: dados.phone,
                             role: 'participant'
                         }
                     }
@@ -122,7 +122,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         id: userId,
                         email: dados.email,
                         name: dados.nome,
-                        phone: dados.telefone,
+                        phone: dados.phone,
                         role: 'participant',
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'id' });
@@ -139,15 +139,15 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 scheduled_date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
             }
 
-            const mentoriasTable = supabase.from('mentorias_agendadas' as any) as any;
+            const mentoriasTable = supabase.from('scheduled_mentorings' as any) as any;
 
             // 1. First, check if there's an existing available slot (mentor habilitou esse horário)
             const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
             const { data: existingSlots } = await mentoriasTable
                 .select('id')
                 .eq('mentor_id', dados.mentorId)
-                .eq('data_mentoria', scheduled_date.toISOString())
-                .or(`mentorado_id.is.null,mentorado_id.eq.${PLACEHOLDER_ID}`)
+                .eq('mentoring_date', scheduled_date.toISOString())
+                .or(`mentee_id.is.null,mentee_id.eq.${PLACEHOLDER_ID}`)
                 .eq('status', 'scheduled')
                 .limit(1);
 
@@ -158,13 +158,13 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 // Update existing slot
                 mentoriaResult = await mentoriasTable
                     .update({
-                        mentorado_id: userId || null,
-                        nome_mentorado: dados.nome,
-                        email_mentorado: dados.email,
-                        telefone_mentorado: dados.telefone,
-                        tema_interesse: dados.area,
-                        anotacoes: dados.descricaoProblema,
-                        nome_startup: dados.nomeNegocio,
+                        mentee_id: userId || null,
+                        mentee_name: dados.nome,
+                        mentee_email: dados.email,
+                        mentee_phone: dados.phone,
+                        topic_of_interest: dados.area,
+                        notes: dados.descricaoProblema,
+                        startup_name: dados.nomeNegocio,
                         setor: dados.estagioNegocio,
                         status: 'scheduled',
                         duracao: 20
@@ -176,15 +176,15 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 mentoriaResult = await mentoriasTable
                     .insert({
                         project_id: projectId,
-                        mentorado_id: userId || null,
+                        mentee_id: userId || null,
                         mentor_id: dados.mentorId,
-                        nome_mentorado: dados.nome,
-                        email_mentorado: dados.email,
-                        telefone_mentorado: dados.telefone,
-                        tema_interesse: dados.area,
-                        anotacoes: dados.descricaoProblema,
-                        data_mentoria: scheduled_date.toISOString(),
-                        nome_startup: dados.nomeNegocio,
+                        mentee_name: dados.nome,
+                        mentee_email: dados.email,
+                        mentee_phone: dados.phone,
+                        topic_of_interest: dados.area,
+                        notes: dados.descricaoProblema,
+                        mentoring_date: scheduled_date.toISOString(),
+                        startup_name: dados.nomeNegocio,
                         setor: dados.estagioNegocio,
                         status: 'scheduled',
                         duracao: 20
@@ -259,7 +259,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
 
                     <div className="space-y-3 px-2 relative z-10">
                         <p className="text-white font-medium flex items-center gap-3"><User size={14} className="text-teal-400" /> {dados.nome}</p>
-                        <p className="text-gray-400 text-sm flex items-center gap-3"><Phone size={14} className="text-teal-400" /> {dados.telefone}</p>
+                        <p className="text-gray-400 text-sm flex items-center gap-3"><Phone size={14} className="text-teal-400" /> {dados.phone}</p>
                         <p className="text-gray-400 text-sm flex items-center gap-3"><Mail size={14} className="text-teal-400" /> {dados.email}</p>
                     </div>
                 </Card>
@@ -287,9 +287,9 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                         <div className="flex items-center gap-5">
                             <div className="relative">
-                                {mentor?.foto_url ? (
+                                {mentor?.photo_url ? (
                                     <img
-                                        src={mentor.foto_url}
+                                        src={mentor.photo_url}
                                         className="w-20 h-20 rounded-2xl object-cover border-2 border-brand-orange-coral/30"
                                         alt={mentor.nome}
                                     />

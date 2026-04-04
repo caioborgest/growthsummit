@@ -398,7 +398,7 @@ function AppRoutes() {
           <Route path="suporte" element={<AdminSupport />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="popups" element={<AdminPopups />} />
-          <Route path="parceiros" element={<AdminParceiros />} />
+          <Route path="partners" element={<AdminParceiros />} />
           <Route path="guia" element={<GuiaInterno />} />
         </Route>
 

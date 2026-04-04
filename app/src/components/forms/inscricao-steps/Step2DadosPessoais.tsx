@@ -32,7 +32,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     const [nome, setNome] = useState(dados.nome);  
     const [cpf, setCpf] = useState(dados.cpf || '');
     const [email, setEmail] = useState(dados.email);
-    const [telefone, setTelefone] = useState(dados.telefone);
+    const [telefone, setTelefone] = useState(dados.phone);
     const [senha, setSenha] = useState(dados.senha);
     const [indicacaoTipo, setIndicacaoTipo] = useState<DadosInscricao['indicacaoTipo']>(dados.indicacaoTipo || 'nenhum');
     const [indicacaoNome, setIndicacaoNome] = useState(dados.indicacaoNome || '');
@@ -100,8 +100,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
 
             let lotQuery = supabase
-                .from('lotes_inscricao_empresa')
-                .select('id,project_id,nome_empresa,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
+                .from('company_registration_batches')
+                .select('id,project_id,company_name,voucher_code,total_slots,used_slots,tipo_ingresso,payment_status')
                 .eq('voucher_code', cleanCodigo);
             
             if (isUuid) {
@@ -113,20 +113,20 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             if (error) throw error;
 
             if (lot) {
-                const isPaid = lot.status_pagamento === 'pago' || lot.status_pagamento === 'paid';
-                if (lot.vagas_utilizadas >= lot.quantidade_vagas || !isPaid) {
+                const isPaid = lot.payment_status === 'pago' || lot.payment_status === 'paid';
+                if (lot.used_slots >= lot.total_slots || !isPaid) {
                     setErrors(prev => ({ ...prev, codigo: 'Voucher inválido, limite excedido ou pagamento pendente' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
                     setLoteId(lot.id);
                     setVoucherEmpresa(lot.voucher_code);
-                    setIndicacaoNome(lot.nome_empresa);
+                    setIndicacaoNome(lot.company_name);
                     setIndicacaoTipo('empresa'); // Auto-set the badge
                     setDesconto(100);
                     if (onUpdate) {
                         onUpdate({ 
-                            indicacaoNome: lot.nome_empresa, 
+                            indicacaoNome: lot.company_name, 
                             descontoSocial: 100, 
                             loteId: (lot as any).id, 
                             voucherEmpresa: lot.voucher_code,
@@ -139,9 +139,9 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             }
 
             // Priority 2: Parceiros Diretos (Expositores/Vex)
-            // Estes usam um access_code na tabela 'parceiros'
+            // Estes usam um access_code na tabela 'partners'
             let partnerQuery = (supabase as any)
-                .from('parceiros')
+                .from('partners')
                 .select('id, name, access_code, max_team_members')
                 .eq('access_code', cleanCodigo)
                 .eq('status', 'active');
@@ -186,8 +186,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
             // Priority 3: Cupons Sociais e Promocionais
             let couponQuery = supabase
-                .from('cupons_parceria_social')
-                .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_tipo')
+                .from('social_partnership_coupons')
+                .select('id,project_id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_type')
                 .eq('codigo', cleanCodigo);
             
             if (isUuid) {
@@ -199,26 +199,26 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             if (couponError) throw couponError;
 
             if (couponData) {
-                const isExpired = couponData.vencimento && new Date(couponData.vencimento) < new Date();
-                const isFull = couponData.uso_limite && couponData.uso_atual >= couponData.uso_limite;
+                const isExpired = couponData.expires_at && new Date(couponData.expires_at) < new Date();
+                const isFull = couponData.usage_limit && couponData.current_usage >= couponData.usage_limit;
 
                 if (!couponData.ativo || isExpired || isFull) {
                     setErrors(prev => ({ ...prev, codigo: 'Cupom inativo, expirado ou limite de uso atingido' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
-                    setDesconto(couponData.porcentagem_desconto);
+                    setDesconto(couponData.discount_percentage);
                     // Sincroniza a categoria visível com a categoria do cupom gerado
-                    if (couponData.indicacao_tipo) {
-                        setIndicacaoTipo(couponData.indicacao_tipo as any);
+                    if (couponData.referral_type) {
+                        setIndicacaoTipo(couponData.referral_type as any);
                     }
                     if (onUpdate) {
                         onUpdate({ 
-                            descontoSocial: couponData.porcentagem_desconto,
-                            indicacaoTipo: (couponData.indicacao_tipo || indicacaoTipo) as any 
+                            descontoSocial: couponData.discount_percentage,
+                            indicacaoTipo: (couponData.referral_type || indicacaoTipo) as any 
                         });
                     }
-                    toast.success(`Cupom de ${couponData.porcentagem_desconto}% aplicado!`);
+                    toast.success(`Cupom de ${couponData.discount_percentage}% aplicado!`);
                 }
             } else {
                 logger.warn('[Step2] Código não encontrado em nenhuma categoria:', cleanCodigo);
@@ -242,8 +242,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         else if (!validateCPF(cpf)) newErrors.cpf = 'CPF inválido';
         if (!email.trim()) newErrors.email = 'Email é obrigatório';
         else if (!validateEmail(email)) newErrors.email = 'Email inválido';
-        if (!telefone.trim()) newErrors.telefone = 'Telefone é obrigatório';
-        else if (telefone.replace(/\D/g, '').length < 10) newErrors.telefone = 'Telefone inválido';
+        if (!telefone.trim()) newErrors.phone = 'Telefone é obrigatório';
+        else if (telefone.replace(/\D/g, '').length < 10) newErrors.phone = 'Telefone inválido';
         if (!senha) newErrors.senha = 'Senha é obrigatória';
         else if (senha.length < 6) newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
         if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
@@ -331,11 +331,11 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         </label>
                         <input
                             id="telefone" type="tel" inputMode="tel" value={telefone} autoComplete="tel"
-                            onChange={e => { setTelefone(formatTelefone(e.target.value)); if (errors.telefone) setErrors({ ...errors, telefone: '' }); }}
+                            onChange={e => { setTelefone(formatTelefone(e.target.value)); if (errors.phone) setErrors({ ...errors, phone: '' }); }}
                             placeholder="(88) 98843-2310"
-                            className={`form-input${errors.telefone ? ' error' : ''}`}
+                            className={`form-input${errors.phone ? ' error' : ''}`}
                         />
-                        {errors.telefone && <p className="form-error"><AlertCircle />{errors.telefone}</p>}
+                        {errors.phone && <p className="form-error"><AlertCircle />{errors.phone}</p>}
                     </div>
 
                     {/* Senha */}

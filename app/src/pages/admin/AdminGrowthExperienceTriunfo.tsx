@@ -42,10 +42,10 @@ export function AdminGrowthExperienceTriunfo() {
         
         if (activeTab === 'inscricoes') {
             activeData = inscricoes;
-            filename = 'inscricoes_growth_experience.csv';
+            filename = 'growth_experience_registrations.csv';
         } else if (activeTab === 'startups') {
             activeData = startups;
-            filename = 'startups_arena_pitch.csv';
+            filename = 'arena_pitch_startups.csv';
         } else if (activeTab === 'b2b') {
             activeData = empresasB2B;
             filename = 'empresas_b2b.csv';
@@ -349,16 +349,16 @@ export function AdminGrowthExperienceTriunfo() {
                                         <td className="p-6">
                                             <div className="space-y-1">
                                                 <Badge variant="outline" className="bg-white/5 border-white/10 text-gray-400 font-black uppercase text-[8px] tracking-widest px-2">
-                                                    {item.tipo_inscricao}
+                                                    {item.registration_type}
                                                 </Badge>
-                                                <p className="text-xs text-gray-400">R$ {Number(item.valor_pago).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                                <p className="text-xs text-gray-400">R$ {Number(item.paid_amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                             </div>
                                         </td>
                                         <td className="p-6">
                                             <Badge className={`font-black uppercase text-[8px] tracking-widest ${
-                                                item.status_pagamento === 'pago' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'
+                                                item.payment_status === 'pago' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'
                                             }`}>
-                                                {item.status_pagamento}
+                                                {item.payment_status}
                                             </Badge>
                                         </td>
                                         <td className="p-6 text-right">
@@ -377,13 +377,13 @@ export function AdminGrowthExperienceTriunfo() {
                                                     <Rocket className="h-5 w-5 text-brand-blue" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-white font-bold">{item.nome_startup}</p>
+                                                    <p className="text-white font-bold">{item.startup_name}</p>
                                                     <p className="text-xs text-gray-500">{item.setor} • {item.estagio}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-6">
-                                            <p className="text-xs text-gray-400 line-clamp-2 max-w-xs">{item.descricao_startup}</p>
+                                            <p className="text-xs text-gray-400 line-clamp-2 max-w-xs">{item.startup_description}</p>
                                         </td>
                                         <td className="p-6">
                                             <Badge className={`font-black uppercase text-[8px] tracking-widest ${
@@ -422,13 +422,13 @@ export function AdminGrowthExperienceTriunfo() {
                                                     <Handshake className="h-5 w-5 text-brand-orange-coral" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-white font-bold">{item.nome_empresa}</p>
+                                                    <p className="text-white font-bold">{item.company_name}</p>
                                                     <p className="text-xs text-gray-500">{item.porte} • {item.setor}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-6 text-xs text-gray-400">
-                                            {item.areas_interesse?.join(', ')}
+                                            {item.interest_areas?.join(', ')}
                                         </td>
                                         <td className="p-6">
                                             <Badge className={`font-black uppercase text-[8px] tracking-widest ${

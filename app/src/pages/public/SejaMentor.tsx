@@ -71,10 +71,10 @@ export function SejaMentor() {
         projectId,
         nome: formData.name,
         email: formData.email,
-        telefone: formData.phone,
+        phone: formData.phone,
         empresa: formData.company,
-        cargo: formData.position,
-        especialidades: formData.expertise.split(',').map(s => s.trim()),
+        role_title: formData.position,
+        specialties: formData.expertise.split(',').map(s => s.trim()),
         bio: formData.bio || formData.expertise,
         linkedinUrl: formData.linkedin,
         fotoUrl: photoUrl

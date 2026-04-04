@@ -36,7 +36,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                     email: dados.email.trim().toLowerCase(),
                     password: dados.senha,
                     name: dados.nome,
-                    phone: dados.telefone,
+                    phone: dados.phone,
                     role: 'participant',
                 });
 
@@ -46,7 +46,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
 
                     // 3. Vincular Inscrição
                     await (supabase
-                        .from('inscricoes_growth_experience') as any)
+                        .from('growth_experience_registrations') as any)
                         .update({ user_id: userId })
                         .eq('id', dados.inscricaoId);
                     

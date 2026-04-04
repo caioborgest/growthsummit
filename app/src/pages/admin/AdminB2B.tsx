@@ -66,15 +66,15 @@ export function AdminB2B() {
 
   const [companyFormData, setCompanyFormData] = useState({
     // Representante
-    nome_representante: '',
-    cargo: '',
+    representative_name: '',
+    role_title: '',
     email: '',
-    telefone: '',
+    phone: '',
     senha: '',
     confirmarSenha: '',
 
     // Empresa
-    nome_empresa: '',
+    company_name: '',
     cnpj: '',
     setor: '',
     porte: '',
@@ -88,9 +88,9 @@ export function AdminB2B() {
     linkedin_url: '',
 
     // Objetivos
-    tipo_interesse: 'vender' as 'comprar' | 'vender' | 'parceria' | 'todos',
-    areas_interesse: '',
-    descricao_objetivos: '',
+    interest_type: 'vender' as 'comprar' | 'vender' | 'parceria' | 'todos',
+    interest_areas: '',
+    objectives_description: '',
     type: 'vendor' as 'anchor' | 'vendor',
     maxMeetings: 10
   });
@@ -153,7 +153,7 @@ export function AdminB2B() {
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!companyFormData.nome_empresa || !companyFormData.nome_representante || !companyFormData.email) {
+      if (!companyFormData.company_name || !companyFormData.representative_name || !companyFormData.email) {
         toast.error('Preencha os campos obrigatórios');
         return;
       }
@@ -165,10 +165,10 @@ export function AdminB2B() {
 
       await createCompany({
         projectId: projectId || '',
-        companyName: companyFormData.nome_empresa,
-        contactName: companyFormData.nome_representante,
+        companyName: companyFormData.company_name,
+        contactName: companyFormData.representative_name,
         contactEmail: companyFormData.email,
-        contactPhone: companyFormData.telefone,
+        contactPhone: companyFormData.phone,
         sector: companyFormData.setor,
         type: companyFormData.type,
         maxMeetings: companyFormData.maxMeetings,
@@ -176,16 +176,16 @@ export function AdminB2B() {
         companyDescription: companyFormData.descricao_empresa,
         productsServices: companyFormData.produtos_servicos,
         website: companyFormData.site_url,
-        interestType: companyFormData.tipo_interesse,
-        interestAreas: companyFormData.areas_interesse,
-        objectives: companyFormData.descricao_objetivos,
-        position: companyFormData.cargo,
+        interestType: companyFormData.interest_type,
+        interestAreas: companyFormData.interest_areas,
+        objectives: companyFormData.objectives_description,
+        position: companyFormData.role_title,
         cnpj: companyFormData.cnpj,
         companySize: companyFormData.porte,
         annualRevenue: companyFormData.faturamento_anual,
         employeeCount: companyFormData.numero_funcionarios,
         userId: '', // Admin-created companies might not have a direct user yet
-        description: companyFormData.descricao_empresa || companyFormData.nome_empresa
+        description: companyFormData.descricao_empresa || companyFormData.company_name
       });
 
       toast.success('Empresa cadastrada com sucesso!');
@@ -200,13 +200,13 @@ export function AdminB2B() {
 
   const resetCompanyForm = () => {
     setCompanyFormData({
-      nome_representante: '',
-      cargo: '',
+      representative_name: '',
+      role_title: '',
       email: '',
-      telefone: '',
+      phone: '',
       senha: '',
       confirmarSenha: '',
-      nome_empresa: '',
+      company_name: '',
       cnpj: '',
       setor: '',
       porte: '',
@@ -216,9 +216,9 @@ export function AdminB2B() {
       produtos_servicos: '',
       site_url: '',
       linkedin_url: '',
-      tipo_interesse: 'vender',
-      areas_interesse: '',
-      descricao_objetivos: '',
+      interest_type: 'vender',
+      interest_areas: '',
+      objectives_description: '',
       type: 'vendor',
       maxMeetings: 10
     });
@@ -407,8 +407,8 @@ export function AdminB2B() {
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</Label>
                         <Input
                           required
-                          value={companyFormData.nome_representante}
-                          onChange={e => setCompanyFormData({ ...companyFormData, nome_representante: e.target.value })}
+                          value={companyFormData.representative_name}
+                          onChange={e => setCompanyFormData({ ...companyFormData, representative_name: e.target.value })}
                           className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50 placeholder:text-gray-700"
                         />
                       </div>
@@ -416,8 +416,8 @@ export function AdminB2B() {
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo *</Label>
                         <Input
                           required
-                          value={companyFormData.cargo}
-                          onChange={e => setCompanyFormData({ ...companyFormData, cargo: e.target.value })}
+                          value={companyFormData.role_title}
+                          onChange={e => setCompanyFormData({ ...companyFormData, role_title: e.target.value })}
                           className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
                           placeholder="Ex: CEO, Diretor"
                         />
@@ -446,8 +446,8 @@ export function AdminB2B() {
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Fantasia da Empresa *</Label>
                         <Input
                           required
-                          value={companyFormData.nome_empresa}
-                          onChange={e => setCompanyFormData({ ...companyFormData, nome_empresa: e.target.value })}
+                          value={companyFormData.company_name}
+                          onChange={e => setCompanyFormData({ ...companyFormData, company_name: e.target.value })}
                           className="h-12 bg-dark-100 border-white/5 focus:border-brand-orange-coral/50"
                         />
                       </div>

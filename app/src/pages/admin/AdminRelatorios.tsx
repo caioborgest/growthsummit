@@ -143,7 +143,7 @@ export function AdminRelatorios() {
     return registrations.filter(r => {
       const dateMatch = (!dateRange.start || r.createdAt >= dateRange.start) && 
                        (!dateRange.end || r.createdAt <= dateRange.end);
-      const currentStatus = (r as any).status || (r as any).status_pagamento;
+      const currentStatus = (r as any).status || (r as any).payment_status;
       const statusMatch = statusFilter === 'all' || currentStatus === statusFilter;
       return dateMatch && statusMatch;
     });
@@ -241,8 +241,8 @@ export function AdminRelatorios() {
     totalReceita: (() => {
       const transIncome = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
       const regIncome = filteredRegistrations
-        .filter(r => r.status === 'ativo' || r.status === 'pago' || r.status === 'paid' || (r as any).status_pagamento === 'pago' || (r as any).paymentStatus === 'pago')
-        .reduce((sum, r) => sum + (r.valor_pago || r.amount || 0), 0);
+        .filter(r => r.status === 'ativo' || r.status === 'pago' || r.status === 'paid' || (r as any).payment_status === 'pago' || (r as any).paymentStatus === 'pago')
+        .reduce((sum, r) => sum + (r.paid_amount || r.amount || 0), 0);
       const batchIncome = (batches || [])
         .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
         .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0);

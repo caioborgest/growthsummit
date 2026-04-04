@@ -17,15 +17,15 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const DRAFT_KEY = 'b2b_form_draft';
     const [formData, setFormData] = useState({
         // Representante
-        nome_representante: '',
-        cargo: '',
+        representative_name: '',
+        role_title: '',
         email: '',
-        telefone: '',
+        phone: '',
         senha: '',
         confirmarSenha: '',
 
         // Empresa
-        nome_empresa: '',
+        company_name: '',
         cnpj: '',
         setor: '',
         porte: '',
@@ -39,9 +39,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
         linkedin_url: '',
 
         // Objetivos
-        tipo_interesse: '',
-        areas_interesse: '',
-        descricao_objetivos: '',
+        interest_type: '',
+        interest_areas: '',
+        objectives_description: '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,11 +88,11 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
-            nome_representante: '', cargo: '', email: '', telefone: '', senha: '',
-            confirmarSenha: '', nome_empresa: '', cnpj: '', setor: '', porte: '',
+            representative_name: '', role_title: '', email: '', phone: '', senha: '',
+            confirmarSenha: '', company_name: '', cnpj: '', setor: '', porte: '',
             faturamento_anual: '', numero_funcionarios: '', descricao_empresa: '',
-            produtos_servicos: '', site_url: '', linkedin_url: '', tipo_interesse: '',
-            areas_interesse: '', descricao_objetivos: '',
+            produtos_servicos: '', site_url: '', linkedin_url: '', interest_type: '',
+            interest_areas: '', objectives_description: '',
         });
         setLogoFile(null);
         setLogoPreview(null);
@@ -148,26 +148,26 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // Validações específicas do Representante
             // Validações básicas
-            if (!formData.nome_representante.trim()) throw new Error('Nome do representante é obrigatório');
+            if (!formData.representative_name.trim()) throw new Error('Nome do representante é obrigatório');
             if (!formData.email.trim()) throw new Error('E-mail é obrigatório');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(cleanEmail)) throw new Error('Por favor, insira um email válido');
 
-            if (!formData.telefone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
+            if (!formData.phone.trim()) throw new Error('WhatsApp/Telefone é obrigatório');
             if (!formData.senha) throw new Error('Senha é obrigatória');
             if (formData.senha.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres');
             if (formData.senha !== formData.confirmarSenha) throw new Error('As senhas não coincidem');
 
-            if (!formData.nome_empresa.trim()) throw new Error('Nome da empresa é obrigatório');
+            if (!formData.company_name.trim()) throw new Error('Nome da empresa é obrigatório');
             if (!formData.setor) throw new Error('Setor de atuação é obrigatório');
-            if (!formData.tipo_interesse) throw new Error('Objetivo é obrigatório'); // Changed from 'objetivo' to 'tipo_interesse' based on formData structure
+            if (!formData.interest_type) throw new Error('Objetivo é obrigatório'); // Changed from 'objetivo' to 'interest_type' based on formData structure
 
             // 1. Garantir Usuário (Auth)
             const { userId } = await getOrCreateUser({
                 email: cleanEmail,
                 password: formData.senha,
-                name: formData.nome_representante,
-                phone: formData.telefone,
+                name: formData.representative_name,
+                phone: formData.phone,
                 role: 'b2b-matchmaking'
             });
 
@@ -205,14 +205,14 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
 
             // 2. Salvar na tabela de rodadas de negócios
             const { error: dbError } = await supabase
-                .from('rodada_negocios_b2b')
+                .from('b2b_business_rounds')
                 .insert([{
                     project_id: projectId,
                     user_id: userId,
-                    nome_representante: formData.nome_representante,
+                    representative_name: formData.representative_name,
                     email: cleanEmail,
-                    telefone: formData.telefone,
-                    nome_empresa: formData.nome_empresa,
+                    phone: formData.phone,
+                    company_name: formData.company_name,
                     cnpj: formData.cnpj || null,
                     porte: formData.porte || null,
                     faturamento_anual: formData.faturamento_anual ? parseFloat(formData.faturamento_anual) : null,
@@ -222,10 +222,10 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     site_url: formData.site_url || null,
                     linkedin_url: formData.linkedin_url || null,
                     setor: formData.setor,
-                    cargo: formData.cargo,
-                    tipo_interesse: formData.tipo_interesse,
-                    areas_interesse: formData.areas_interesse,
-                    descricao_objetivos: formData.descricao_objetivos,
+                    role_title: formData.role_title,
+                    interest_type: formData.interest_type,
+                    interest_areas: formData.interest_areas,
+                    objectives_description: formData.objectives_description,
                     logo_url: logoUrl || null,
                     status: 'pendente'
                 }]);
@@ -351,8 +351,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            name="nome_representante"
-                                            value={formData.nome_representante}
+                                            name="representative_name"
+                                            value={formData.representative_name}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
@@ -366,7 +366,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         <input
                                             type="text"
                                             name="cargo"
-                                            value={formData.cargo}
+                                            value={formData.role_title}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
@@ -394,7 +394,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         <input
                                             type="tel"
                                             name="telefone"
-                                            value={formData.telefone}
+                                            value={formData.phone}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
@@ -444,8 +444,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            name="nome_empresa"
-                                            value={formData.nome_empresa}
+                                            name="company_name"
+                                            value={formData.company_name}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
@@ -639,8 +639,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                             Tipo de Interesse *
                                         </label>
                                         <select
-                                            name="tipo_interesse"
-                                            value={formData.tipo_interesse}
+                                            name="interest_type"
+                                            value={formData.interest_type}
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
@@ -658,8 +658,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                             Áreas de Interesse * (máx. 300 caracteres)
                                         </label>
                                         <textarea
-                                            name="areas_interesse"
-                                            value={formData.areas_interesse}
+                                            name="interest_areas"
+                                            value={formData.interest_areas}
                                             onChange={handleChange}
                                             required
                                             maxLength={300}
@@ -673,8 +673,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                             Descreva seus Objetivos * (máx. 500 caracteres)
                                         </label>
                                         <textarea
-                                            name="descricao_objetivos"
-                                            value={formData.descricao_objetivos}
+                                            name="objectives_description"
+                                            value={formData.objectives_description}
                                             onChange={handleChange}
                                             required
                                             maxLength={500}

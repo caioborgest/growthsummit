@@ -17,19 +17,19 @@ export function mapMentorFromDB(item: DbRow): Mentor {
         projectId: (item['project_id'] as string) ?? undefined,
         userId: (item['user_id'] as string) ?? undefined,
 
-        // Triunfo usa: nome, cargo, empresa, telefone, especialidades, foto_url, linkedin_url
+        // Triunfo usa: nome, cargo, empresa, telefone, specialties, photo_url, linkedin_url
         name: (item['nome'] ?? item['name'] ?? '') as string,
         email: (item['email'] ?? '') as string,
         phone: (item['telefone'] ?? item['phone'] ?? '') as string,
         company: (item['empresa'] ?? item['company'] ?? '') as string,
         position: (item['cargo'] ?? item['position'] ?? '') as string,
-        specialties: (item['especialidades'] ?? item['specialties'] ?? []) as string[],
+        specialties: (item['specialties'] ?? item['specialties'] ?? []) as string[],
         bio: (item['bio'] ?? '') as string,
-        photo: (item['foto_url'] ?? item['photo'] ?? '') as string,
+        photo: (item['photo_url'] ?? item['photo'] ?? '') as string,
         linkedin: (item['linkedin_url'] ?? item['linkedin'] ?? '') as string,
         status: (item['status'] ?? 'pending') as string,
         yearsExperience: (item['years_experience'] ?? 0) as number,
-        maxMentories: (item['max_mentories'] ?? 0) as number,
+        maxMentories: (item['max_mentorings'] ?? 0) as number,
 
         createdAt: (item['created_at'] ?? '') as string,
     } as Mentor;
@@ -50,8 +50,8 @@ export function mapMentorToDB(data: Partial<Mentor>, isTriunfo = false): DbRow {
         if (data.phone !== undefined) result['telefone'] = data.phone;
         if (data.company !== undefined) result['empresa'] = data.company;
         if (data.position !== undefined) result['cargo'] = data.position;
-        if (data.specialties !== undefined) result['especialidades'] = data.specialties;
-        if (data.photo !== undefined) result['foto_url'] = data.photo;
+        if (data.specialties !== undefined) result['specialties'] = data.specialties;
+        if (data.photo !== undefined) result['photo_url'] = data.photo;
         if (data.linkedin !== undefined) result['linkedin_url'] = data.linkedin;
     } else {
         if (data.name !== undefined) result['name'] = data.name;

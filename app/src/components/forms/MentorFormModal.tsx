@@ -24,12 +24,12 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
-        telefone: '',
+        phone: '',
         empresa: '',
-        cargo: '',
+        role_title: '',
         bio: '',
         linkedin: '',
-        especialidades: [] as string[],
+        specialties: [] as string[],
         senha: '',
         confirmarSenha: '',
         foto: null as File | null,
@@ -88,8 +88,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setFormData({
-            nome: '', email: '', telefone: '', empresa: '', cargo: '',
-            bio: '', linkedin: '', especialidades: [], senha: '', confirmarSenha: '',
+            nome: '', email: '', phone: '', empresa: '', role_title: '',
+            bio: '', linkedin: '', specialties: [], senha: '', confirmarSenha: '',
             foto: null, fotoPreview: '', anosExperiencia: 0, capacidadeSlots: 3
         });
         setStep(1);
@@ -100,9 +100,9 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const toggleEspecialidade = (esp: string) => {
         setFormData(prev => ({
             ...prev,
-            especialidades: prev.especialidades.includes(esp)
-                ? prev.especialidades.filter(e => e !== esp)
-                : [...prev.especialidades, esp]
+            specialties: prev.specialties.includes(esp)
+                ? prev.specialties.filter(e => e !== esp)
+                : [...prev.specialties, esp]
         }));
     };
 
@@ -111,14 +111,14 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
             if (!formData.foto && !formData.fotoPreview) return 'Por favor, anexe uma foto de perfil.';
             if (!formData.nome.trim()) return 'O nome completo é obrigatório.';
             if (!formData.email.trim()) return 'O e-mail é obrigatório.';
-            if (!formData.telefone.trim()) return 'O WhatsApp é obrigatório.';
+            if (!formData.phone.trim()) return 'O WhatsApp é obrigatório.';
             if (!formData.empresa.trim()) return 'A empresa/instituição é obrigatória.';
-            if (!formData.cargo.trim()) return 'O cargo/função é obrigatório.';
+            if (!formData.role_title.trim()) return 'O cargo/função é obrigatório.';
             if (!formData.senha.trim()) return 'A senha é obrigatória.';
             if (formData.senha.length < 6) return 'A senha deve ter pelo menos 6 caracteres.';
             if (formData.senha !== formData.confirmarSenha) return 'As senhas não coincidem.';
         } else if (currentStep === 2) {
-            if (formData.especialidades.length === 0) return 'Selecione pelo menos uma especialidade.';
+            if (formData.specialties.length === 0) return 'Selecione pelo menos uma especialidade.';
             if (!formData.bio.trim()) return 'A bio/experiência é obrigatória.';
             if (formData.bio.length < 50) return 'Sua bio deve ter pelo menos 50 caracteres para uma boa apresentação.';
             const wordCount = formData.bio.trim().split(/\s+/).length;
@@ -172,7 +172,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 email: cleanEmail,
                 password: formData.senha,
                 name: formData.nome,
-                phone: formData.telefone,
+                phone: formData.phone,
                 role: 'mentor'
             });
 
@@ -221,7 +221,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         .from('users')
                         .update({
                             name: formData.nome,
-                            phone: formData.telefone,
+                            phone: formData.phone,
                             avatar_url: fotoUrl || formData.fotoPreview || undefined
                         })
                         .eq('id', userId);
@@ -237,16 +237,16 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 logger.info('ID de usuário identificado para mentor:', { userId });
             }
 
-            // 4. Save Record in mentores_growth_experience via Service Layer
+            // 4. Save Record in growth_experience_mentors via Service Layer
             await mentorService.apply({
                 projectId: projectId || '',
                 userId: userId, // Agora retornamos garantido
                 nome: formData.nome,
                 email: cleanEmail,
-                telefone: formData.telefone,
+                phone: formData.phone,
                 empresa: formData.empresa,
-                cargo: formData.cargo,
-                especialidades: formData.especialidades,
+                role_title: formData.role_title,
+                specialties: formData.specialties,
                 bio: formData.bio,
                 linkedinUrl: formData.linkedin,
                 fotoUrl: fotoUrl || formData.fotoPreview || '',
@@ -400,8 +400,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                                 <input
                                                     required
                                                     className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
-                                                    value={formData.telefone}
-                                                    onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                                                    value={formData.phone}
+                                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                                     placeholder="(00) 00000-0000"
                                                 />
                                             </div>
@@ -422,8 +422,8 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                                 <input
                                                     required
                                                     className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
-                                                    value={formData.cargo}
-                                                    onChange={e => setFormData({ ...formData, cargo: e.target.value })}
+                                                    value={formData.role_title}
+                                                    onChange={e => setFormData({ ...formData, role_title: e.target.value })}
                                                     placeholder="Ex: Diretor de Vendas"
                                                 />
                                             </div>
@@ -465,7 +465,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                                         key={esp}
                                                         type="button"
                                                         onClick={() => toggleEspecialidade(esp)}
-                                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${formData.especialidades.includes(esp)
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${formData.specialties.includes(esp)
                                                             ? 'bg-brand-orange-coral text-white border-brand-orange-coral'
                                                             : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
                                                             }`}

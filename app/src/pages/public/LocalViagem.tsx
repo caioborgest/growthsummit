@@ -203,7 +203,7 @@ export function LocalViagem() {
               Onde Ficar
             </h2>
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-              Descontos especiais para participantes do Growth Experience em hotéis parceiros.
+              Descontos especiais para participantes do Growth Experience em hotéis partners.
               Use o código <span className="text-teal-400 font-semibold">GROWTH2026</span>.
             </p>
           </div>

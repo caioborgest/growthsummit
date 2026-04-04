@@ -461,15 +461,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.warn('Erro ao atualizar tabela users (ignorado pois Auth funcionou):', dbError.message);
       }
 
-      // 2.1 Se for mentor, sincronizar com mentores_growth_experience
+      // 2.1 Se for mentor, sincronizar com growth_experience_mentors
       if (user.role === 'mentor') {
         const mentorUpdates: any = {};
         if (updates.name) mentorUpdates.nome = updates.name;
-        if (updates.avatar) mentorUpdates.foto_url = updates.avatar;
+        if (updates.avatar) mentorUpdates.photo_url = updates.avatar;
 
         if (Object.keys(mentorUpdates).length > 0) {
           await supabase
-            .from('mentores_growth_experience')
+            .from('growth_experience_mentors')
             .update(mentorUpdates)
             .eq('user_id', user.id);
         }

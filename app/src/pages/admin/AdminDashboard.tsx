@@ -189,7 +189,7 @@ export function AdminDashboard() {
           r.status === 'ativo' || 
           r.status === 'pago' || 
           r.status === 'paid' || 
-          (r as any).status_pagamento === 'pago' ||
+          (r as any).payment_status === 'pago' ||
           (r as any).paymentStatus === 'pago'
         )
         .reduce((sum, r) => sum + (r.amount || 0), 0) +
@@ -209,9 +209,9 @@ export function AdminDashboard() {
       b2b: selectedProject?.settings?.maxCompanies ? selectedProject.settings.maxCompanies * 2 : 120,
     };
 
-    const publicRegistrations = registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).indicacao_tipo !== 'parceiro');
+    const publicRegistrations = registrations.filter(r => (r as any).indicacaoTipo !== 'parceiro' && (r as any).referral_type !== 'parceiro');
     const workTeamCount = (registrations.length - publicRegistrations.length) + (partnerTeam.length - (registrations.length - publicRegistrations.length));
-    // Simplificando: Pega todos de parceiros_equipe que estão cadastrados
+    // Simplificando: Pega todos de partner_team_members que estão cadastrados
     const totalStaff = partnerTeam.length;
 
     return {

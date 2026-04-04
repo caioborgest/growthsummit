@@ -1,8 +1,8 @@
 /**
  * Mapper: Startup (Arena Pitch)
  *
- * Responsabilidade única: converter entre o banco (nome_startup, descricao_startup,
- * nome_fundador, estagio) e o tipo TypeScript `Startup`.
+ * Responsabilidade única: converter entre o banco (startup_name, startup_description,
+ * founder_name, estagio) e o tipo TypeScript `Startup`.
  */
 import type { Startup } from '@/types';
 
@@ -18,17 +18,17 @@ export function mapStartupFromDB(item: DbRow): Startup {
         projectId,
         userId: (item['user_id'] as string) ?? undefined,
 
-        // Triunfo usa: nome_startup, descricao_startup, nome_fundador, estagio
-        name: (item['nome_startup'] ?? item['name'] ?? '') as string,
-        description: (item['descricao_startup'] ?? item['description'] ?? '') as string,
+        // Triunfo usa: startup_name, startup_description, founder_name, estagio
+        name: (item['startup_name'] ?? item['name'] ?? '') as string,
+        description: (item['startup_description'] ?? item['description'] ?? '') as string,
         sector: (item['setor'] ?? item['sector'] ?? '') as string,
         stage: (item['estagio'] ?? item['stage'] ?? 'idea') as Startup['stage'],
         status: (item['status'] ?? 'pending') as Startup['status'],
         packageType: (item['package_type'] ?? 'expo') as Startup['packageType'],
 
         // Founder info
-        foundingTeam: item['nome_fundador']
-            ? [{ name: item['nome_fundador'] as string, role: 'Founder' }]
+        foundingTeam: item['founder_name']
+            ? [{ name: item['founder_name'] as string, role: 'Founder' }]
             : (item['founding_team'] as Startup['foundingTeam']) ?? [],
 
         // Links
@@ -86,10 +86,10 @@ export function mapStartupToDB(data: Partial<Startup>, isTriunfo = false): DbRow
     if (data.packageType !== undefined) result['package_type'] = data.packageType;
 
     if (isTriunfo) {
-        if (data.name !== undefined) result['nome_startup'] = data.name;
-        if (data.description !== undefined) result['descricao_startup'] = data.description;
+        if (data.name !== undefined) result['startup_name'] = data.name;
+        if (data.description !== undefined) result['startup_description'] = data.description;
         if (data.stage !== undefined) result['estagio'] = data.stage;
-        if (data.foundingTeam?.[0]?.name !== undefined) result['nome_fundador'] = data.foundingTeam[0].name;
+        if (data.foundingTeam?.[0]?.name !== undefined) result['founder_name'] = data.foundingTeam[0].name;
     } else {
         if (data.name !== undefined) result['name'] = data.name;
         if (data.description !== undefined) result['description'] = data.description;

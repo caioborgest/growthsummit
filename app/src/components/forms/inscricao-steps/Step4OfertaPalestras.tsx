@@ -32,42 +32,42 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             // Tenta validar como Cupom Social
             const { data } = await (supabase
                 .from('cupons_desconto') as any)
-                .select('id,project_id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_nome,indicacao_tipo')
+                .select('id,project_id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_name,referral_type')
                 .eq('codigo', cupom.trim().toUpperCase())
                 .eq('ativo', true)
                 .maybeSingle();
 
             if (data) {
-                if (data.vencimento && new Date(data.vencimento) < new Date()) {
+                if (data.expires_at && new Date(data.expires_at) < new Date()) {
                     setError('Este código já expirou');
                     return;
                 }
-                if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+                if (data.usage_limit && data.current_usage >= data.usage_limit) {
                     setError('Limite de usos atingido');
                     return;
                 }
                 setCupomAplicado(true);
                 onUpdate?.({
-                    descontoPalestra: data.porcentagem_desconto,
+                    descontoPalestra: data.discount_percentage,
                     cupomPalestra: cupom.trim().toUpperCase(),
-                    tipoSocioPalestra: data.indicacao_tipo
+                    tipoSocioPalestra: data.referral_type
                 });
                 return;
             }
 
             // Tenta validar como Lote Corporativo (Voucher Empresa)
             const { data: batchData } = await (supabase
-                .from('lotes_inscricao_empresa') as any)
-                .select('id,voucher_code,quantidade_vagas,vagas_utilizadas,tipo_ingresso,status_pagamento')
+                .from('company_registration_batches') as any)
+                .select('id,voucher_code,total_slots,used_slots,tipo_ingresso,payment_status')
                 .eq('voucher_code', cupom.trim().toUpperCase())
                 .maybeSingle();
 
             if (batchData) {
                 const batch = batchData as unknown as RegistrationBatch;
                 // Check both English and Portuguese field names from Supabase mapping
-                const isPaid = batch.statusPagamento === 'paid' || (batchData as any).status_pagamento === 'pago';
-                const used = batch.vagasUtilizadas ?? (batchData as any).vagas_utilizadas ?? 0;
-                const total = batch.quantidadeVagas ?? (batchData as any).quantidade_vagas ?? 0;
+                const isPaid = batch.statusPagamento === 'paid' || (batchData as any).payment_status === 'pago';
+                const used = batch.vagasUtilizadas ?? (batchData as any).used_slots ?? 0;
+                const total = batch.quantidadeVagas ?? (batchData as any).total_slots ?? 0;
 
                 if (!isPaid) {
                     setError('O pagamento desse lote se encontra pendente. Entre em contato com o responsável da sua empresa.');

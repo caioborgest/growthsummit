@@ -21,7 +21,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
-        telefone: '',
+        phone: '',
         empresa: '',
         senha: '',
         confirmarSenha: '',
@@ -42,7 +42,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             const { data, error: cError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .from('cupons_desconto') as any)
-                .select('id,codigo,porcentagem_desconto,uso_limite,uso_atual,ativo,vencimento,indicacao_nome,indicacao_tipo')
+                .select('id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_name,referral_type')
                 .eq('codigo', codigo.toUpperCase())
                 .eq('ativo', true)
                 .single();
@@ -53,23 +53,23 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
             }
 
             // Verificar validade por data
-            if (data.vencimento && new Date(data.vencimento) < new Date()) {
+            if (data.expires_at && new Date(data.expires_at) < new Date()) {
                 setCupomValido(null);
                 setError('Este código de voucher já expirou.');
                 return;
             }
 
             // Verificar limite de uso
-            if (data.uso_limite && data.uso_atual >= data.uso_limite) {
+            if (data.usage_limit && data.current_usage >= data.usage_limit) {
                 setCupomValido(null);
                 setError('Este código atingiu o limite de utilizações.');
                 return;
             }
 
             setCupomValido({
-                porcentagem: data.porcentagem_desconto,
-                nome: data.indicacao_nome,
-                tipo: data.indicacao_tipo
+                porcentagem: data.discount_percentage,
+                nome: data.referral_name,
+                tipo: data.referral_type
             });
             setError('');
         } catch (err) {
@@ -122,7 +122,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
         try {
             // Validações
-            if (!formData.nome || !formData.email || !formData.telefone || !formData.senha) {
+            if (!formData.nome || !formData.email || !formData.phone || !formData.senha) {
                 throw new Error('Preencha os campos obrigatórios');
             }
 
@@ -130,7 +130,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                 email: formData.email,
                 password: formData.senha,
                 name: formData.nome,
-                phone: formData.telefone,
+                phone: formData.phone,
                 role: 'participant'
             });
 
@@ -148,19 +148,19 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             const { error: insError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('inscricoes_growth_experience') as any).insert({
+                .from('growth_experience_registrations') as any).insert({
                     project_id: projectId,
                     user_id: userId || null,
                     nome: formData.nome,
                     email: formData.email,
-                    telefone: formData.telefone,
+                    phone: formData.phone,
                     empresa: formData.empresa || cupomValido?.nome || null,
-                    tipo_inscricao: tipo,
+                    registration_type: tipo,
                     evento: eventoNome,
-                    valor_pago: valorFinal,
-                    status_pagamento: valorFinal === 0 ? 'pago' : 'pendente',
+                    paid_amount: valorFinal,
+                    payment_status: valorFinal === 0 ? 'pago' : 'pendente',
                     status: 'ativo',
-                    codigo_social: formData.cupom || null
+                    social_code: formData.cupom || null
                 });
 
             if (insError) throw insError;
@@ -183,7 +183,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     `*Dados da Inscrição:*\n` +
                     `• *Nome:* ${formData.nome}\n` +
                     `• *Email:* ${formData.email}\n` +
-                    `• *WhatsApp:* ${formData.telefone}\n` +
+                    `• *WhatsApp:* ${formData.phone}\n` +
                     `• *Empresa:* ${formData.empresa || 'Não informada'}\n` +
                     `• *Evento:* ${eventoNome}\n` +
                     `• *Valor a Pagar:* ${valorFormatado}\n` +
@@ -304,7 +304,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                     type="tel"
                                     id="telefone"
                                     name="telefone"
-                                    value={formData.telefone}
+                                    value={formData.phone}
                                     onChange={handleChange}
                                     required
                                     className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
