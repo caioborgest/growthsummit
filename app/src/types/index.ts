@@ -537,15 +537,15 @@ export interface ProjectStats {
 export interface Coupon {
   id: string;
   projectId: string;
-  codigo: string;
-  indicacaoTipo: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro';
-  indicacaoNome: string;
-  porcentagemDesconto: number;
-  ativo: boolean;
-  usoLimite: number | null;
-  usoAtual: number;
-  descricao?: string;
-  expires_at?: string;
+  code: string;
+  referralType: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro';
+  referralName: string;
+  discountPercentage: number;
+  isActive: boolean;
+  usageLimit: number | null;
+  currentUsage: number;
+  description?: string;
+  expiresAt?: string;
   createdAt: string;
 }
 

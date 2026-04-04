@@ -29,14 +29,14 @@ interface Step2DadosPessoaisProps {
 
 export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     const { dados, onContinuar, onVoltar, onUpdate } = props;
-    const [nome, setNome] = useState(dados.nome);  
+    const [nome, setNome] = useState(dados.nome || '');  
     const [cpf, setCpf] = useState(dados.cpf || '');
-    const [email, setEmail] = useState(dados.email);
-    const [telefone, setTelefone] = useState(dados.phone);
-    const [senha, setSenha] = useState(dados.senha);
+    const [email, setEmail] = useState(dados.email || '');
+    const [telefone, setTelefone] = useState(dados.phone || '');
+    const [senha, setSenha] = useState(dados.senha || '');
     const [indicacaoTipo, setIndicacaoTipo] = useState<DadosInscricao['indicacaoTipo']>(dados.indicacaoTipo || 'nenhum');
     const [indicacaoNome, setIndicacaoNome] = useState(dados.indicacaoNome || '');
-    const [codigo, setCodigo] = useState(dados.codigo || '');
+    const [code, setCode] = useState(dados.code || '');
     const [loteId, setLoteId] = useState(dados.loteId || '');
     const [voucherEmpresa, setVoucherEmpresa] = useState(dados.voucherEmpresa || '');
     const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
@@ -45,7 +45,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [validating, setValidating] = useState(false);
     const [desconto, setDesconto] = useState(dados.descontoSocial || 0);
-    const [codigoValidado, setCodigoValidado] = useState(!!dados.codigo);
+    const [codigoValidado, setCodigoValidado] = useState(!!dados.code);
     const [partnerId, setPartnerId] = useState(dados.partnerId || '');
     const { projectId } = useProject();
 
@@ -87,16 +87,15 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
     const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    const validarCodigo = async () => {
-        if (!codigo.trim()) return;
+    const handleValidarCodigo = async () => {
+        if (!code.trim()) return;
         setValidating(true);
-        setErrors(prev => ({ ...prev, codigo: '' }));
+        setErrors(prev => ({ ...prev, code: '' }));
 
-        const cleanCodigo = codigo.trim().toUpperCase();
+        const cleanCodigo = code.trim().toUpperCase();
         logger.debug('[Step2] Validando código:', { cleanCodigo, tipo: indicacaoTipo, project: projectId });
 
         try {
-            // Priority 1: Lote de Empresa (Voucher Corporativo)
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
 
             let lotQuery = supabase
@@ -115,14 +114,14 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             if (lot) {
                 const isPaid = lot.payment_status === 'pago' || lot.payment_status === 'paid';
                 if (lot.used_slots >= lot.total_slots || !isPaid) {
-                    setErrors(prev => ({ ...prev, codigo: 'Voucher inválido, limite excedido ou pagamento pendente' }));
+                    setErrors(prev => ({ ...prev, code: 'Voucher inválido, limite excedido ou pagamento pendente' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
                     setLoteId(lot.id);
                     setVoucherEmpresa(lot.voucher_code);
                     setIndicacaoNome(lot.company_name);
-                    setIndicacaoTipo('empresa'); // Auto-set the badge
+                    setIndicacaoTipo('empresa');
                     setDesconto(100);
                     if (onUpdate) {
                         onUpdate({ 
@@ -138,8 +137,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 return;
             }
 
-            // Priority 2: Parceiros Diretos (Expositores/Vex)
-            // Estes usam um access_code na tabela 'partners'
             let partnerQuery = (supabase as any)
                 .from('partners')
                 .select('id, name, access_code, max_team_members')
@@ -164,7 +161,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 const limit = (usageData as { max_members?: number })?.max_members ?? partner.max_team_members ?? 10;
 
                 if (usedMembers >= limit) {
-                    setErrors(prev => ({ ...prev, codigo: `Limite de equipe atingido para este parceiro (${limit})` }));
+                    setErrors(prev => ({ ...prev, code: `Limite de equipe atingido para este parceiro (${limit})` }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
@@ -184,11 +181,10 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 return;
             }
 
-            // Priority 3: Cupons Sociais e Promocionais
             let couponQuery = supabase
                 .from('social_partnership_coupons')
-                .select('id,project_id,codigo,discount_percentage,usage_limit,current_usage,ativo,expires_at,referral_type')
-                .eq('codigo', cleanCodigo);
+                .select('id,project_id,code,discount_percentage,usage_limit,current_usage,is_active,expires_at,referral_type')
+                .eq('code', cleanCodigo);
             
             if (isUuid) {
                 couponQuery = couponQuery.eq('project_id', projectId);
@@ -202,13 +198,12 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 const isExpired = couponData.expires_at && new Date(couponData.expires_at) < new Date();
                 const isFull = couponData.usage_limit && couponData.current_usage >= couponData.usage_limit;
 
-                if (!couponData.ativo || isExpired || isFull) {
-                    setErrors(prev => ({ ...prev, codigo: 'Cupom inativo, expirado ou limite de uso atingido' }));
+                if (!couponData.is_active || isExpired || isFull) {
+                    setErrors(prev => ({ ...prev, code: 'Cupom inativo, expirado ou limite de uso atingido' }));
                     setCodigoValidado(false);
                 } else {
                     setCodigoValidado(true);
                     setDesconto(couponData.discount_percentage);
-                    // Sincroniza a categoria visível com a categoria do cupom gerado
                     if (couponData.referral_type) {
                         setIndicacaoTipo(couponData.referral_type as any);
                     }
@@ -222,12 +217,12 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 }
             } else {
                 logger.warn('[Step2] Código não encontrado em nenhuma categoria:', cleanCodigo);
-                setErrors(prev => ({ ...prev, codigo: 'Código não encontrado. Verifique se digitou corretamente.' }));
+                setErrors(prev => ({ ...prev, code: 'Código não encontrado. Verifique se digitou corretamente.' }));
                 setCodigoValidado(false);
             }
         } catch (err) {
             logger.error('[Step2] Erro crítico ao validar código:', err);
-            setErrors(prev => ({ ...prev, codigo: 'Erro de conexão ao validar' }));
+            setErrors(prev => ({ ...prev, code: 'Erro de conexão ao validar' }));
             setCodigoValidado(false);
         } finally {
             setValidating(false);
@@ -248,7 +243,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         else if (senha.length < 6) newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
         if (!confirmSenha) newErrors.confirmSenha = 'Confirme sua senha';
         else if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
-        if (indicacaoTipo !== 'nenhum' && !codigoValidado) newErrors.codigo = 'Por favor, valide o código antes de continuar';
+        if (indicacaoTipo !== 'nenhum' && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
         setErrors(newErrors);
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
@@ -256,8 +251,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 indicacaoTipo,
                 indicacaoNome: indicacaoTipo !== 'nenhum' ? indicacaoNome : '',
                 partnerId: partnerId || '',
-                partnerAccessCode: partnerId ? codigo.trim().toUpperCase() : undefined,
-                codigo: indicacaoTipo !== 'nenhum' ? codigo.trim().toUpperCase() : '',
+                partnerAccessCode: partnerId ? code.trim().toUpperCase() : undefined,
+                code: indicacaoTipo !== 'nenhum' ? code.trim().toUpperCase() : '',
                 descontoSocial: indicacaoTipo !== 'nenhum' ? desconto : 0,
                 loteId: indicacaoTipo === 'empresa' ? loteId : '',
                 voucherEmpresa: indicacaoTipo === 'empresa' ? voucherEmpresa : ''
@@ -267,7 +262,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div>
                 <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-1">
                     Seus Dados Pessoais
@@ -277,11 +271,9 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 </p>
             </div>
 
-            {/* Formulário */}
             <div className="form-card">
                 <div className="space-y-5">
 
-                    {/* Nome */}
                     <div className="form-field">
                         <label htmlFor="nome" className="form-label">
                             <User className="h-4 w-4" />Nome Completo
@@ -295,7 +287,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         {errors.nome && <p className="form-error"><AlertCircle />{errors.nome}</p>}
                     </div>
 
-                    {/* CPF */}
                     <div className="form-field">
                         <label htmlFor="cpf" className="form-label">
                             <Contact className="h-4 w-4" />CPF
@@ -309,7 +300,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         {errors.cpf && <p className="form-error"><AlertCircle />{errors.cpf}</p>}
                     </div>
 
-                    {/* Email */}
                     <div className="form-field">
                         <label htmlFor="email" className="form-label">
                             <Mail className="h-4 w-4" />Email
@@ -324,7 +314,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         <p className="form-hint">Você usará este email para fazer login no app</p>
                     </div>
 
-                    {/* Telefone */}
                     <div className="form-field">
                         <label htmlFor="telefone" className="form-label">
                             <Phone className="h-4 w-4" />Telefone / WhatsApp
@@ -338,7 +327,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         {errors.phone && <p className="form-error"><AlertCircle />{errors.phone}</p>}
                     </div>
 
-                    {/* Senha */}
                     <div className="form-field">
                         <label htmlFor="senha" className="form-label">
                             <Lock className="h-4 w-4" />Criar Senha
@@ -358,7 +346,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         <p className="form-hint">Use esta senha para acessar o app Growth Experience</p>
                     </div>
 
-                    {/* Confirmar Senha */}
                     <div className="form-field">
                         <label htmlFor="confirmSenha" className="form-label">
                             <Lock className="h-4 w-4" />Confirmar Senha
@@ -377,7 +364,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         {errors.confirmSenha && <p className="form-error"><AlertCircle />{errors.confirmSenha}</p>}
                     </div>
 
-                    {/* Programa Social */}
                     <div className="form-section-divider">
                         <div className="form-section-divider-label">
                             <Award className="h-4 w-4" />Programa de Inscrição Social
@@ -401,7 +387,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                         ].map(tipo => (
                             <button
                                 key={tipo.id} type="button"
-                                onClick={() => { setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo']); setCodigoValidado(false); setCodigo(''); }}
+                                onClick={() => { setIndicacaoTipo(tipo.id as DadosInscricao['indicacaoTipo']); setCodigoValidado(false); setCode(''); }}
                                 className={`form-badge-btn${indicacaoTipo === tipo.id ? ' active' : ''}`}
                             >
                                 {tipo.label}
@@ -411,7 +397,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     {indicacaoTipo && indicacaoTipo !== 'nenhum' && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            {/* Nome indicação */}
                             <div className="form-field">
                                 <label htmlFor="indicacaoNome" className="form-label" style={{ fontSize: '0.72rem' }}>
                                     {indicacaoTipo === 'prefeitura' ? 'Qual Prefeitura?' :
@@ -446,7 +431,6 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                                 {errors.indicacaoNome && <p className="form-error"><AlertCircle />{errors.indicacaoNome}</p>}
                             </div>
 
-                            {/* Código */}
                             <div className="form-field">
                                 <label className="form-label" style={{ fontSize: '0.72rem' }}>
                                     <Key className="h-4 w-4" />
@@ -454,22 +438,22 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                                 </label>
                                 <div className="form-code-row">
                                     <input
-                                        type="text" value={codigo} disabled={validating}
-                                        onChange={e => { setCodigo(e.target.value); setCodigoValidado(false); if (errors.codigo) setErrors({ ...errors, codigo: '' }); }}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); validarCodigo(); } }}
+                                        type="text" value={code} disabled={validating}
+                                        onChange={e => { setCode(e.target.value); setCodigoValidado(false); if (errors.code) setErrors({ ...errors, code: '' }); }}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleValidarCodigo(); } }}
                                         placeholder={indicacaoTipo === 'empresa' ? 'EX: GROWTH-XXX' : 'INSIRA O CÓDIGO'}
-                                        className={`form-input form-code-input${errors.codigo ? ' error' : ''}`}
+                                        className={`form-input form-code-input${errors.code ? ' error' : ''}`}
                                     />
                                     <button
-                                        type="button" onClick={validarCodigo}
-                                        disabled={validating || !codigo.trim() || codigoValidado}
+                                        type="button" onClick={handleValidarCodigo}
+                                        disabled={validating || !code.trim() || codigoValidado}
                                         className={`form-code-validate-btn${codigoValidado ? ' validated' : ''}`}
                                     >
                                         {validating ? <Loader2 className="h-4 w-4 animate-spin" /> :
                                             codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validar'}
                                     </button>
                                 </div>
-                                {errors.codigo && <p className="form-error"><AlertCircle />{errors.codigo}</p>}
+                                {errors.code && <p className="form-error"><AlertCircle />{errors.code}</p>}
                                 {codigoValidado && (
                                     <p className="form-success-badge"><CheckCircle />CÓDIGO CONFIRMADO! (-{desconto}% OFF)</p>
                                 )}

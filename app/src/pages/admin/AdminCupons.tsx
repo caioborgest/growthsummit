@@ -24,7 +24,7 @@ import type { Coupon } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
-const typeConfig: Record<Coupon['indicacaoTipo'], { label: string; color: string }> = {
+const typeConfig: Record<Coupon['referralType'], { label: string; color: string }> = {
     promocional: { label: 'Promocional', color: 'bg-blue-500/20 text-blue-400' },
     empresa: { label: 'Empresa / Equipe', color: 'bg-teal-500/20 text-teal-400' },
     prefeitura: { label: 'Prefeitura', color: 'bg-orange-500/20 text-orange-400' },
@@ -40,19 +40,19 @@ export default function AdminCupons() {
     const navigate = useNavigate();
     const { data: cupons, create, update, remove, isLoading } = useCoupons();
     const [searchQuery, setSearchQuery] = useState('');
-    const [typeFilter, setTypeFilter] = useState<Coupon['indicacaoTipo'] | 'all'>('all');
+    const [typeFilter, setTypeFilter] = useState<Coupon['referralType'] | 'all'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
     const [formData, setFormData] = useState({
-        codigo: '',
-        indicacaoTipo: 'promocional' as Coupon['indicacaoTipo'],
-        indicacaoNome: '',
-        porcentagemDesconto: 100,
-        usoLimite: '',
-        descricao: '',
-        expires_at: '',
-        ativo: true
+        code: '',
+        referralType: 'promocional' as Coupon['referralType'],
+        referralName: '',
+        discountPercentage: 100,
+        usageLimit: '',
+        description: '',
+        expiresAt: '',
+        isActive: true
     });
 
     // Redirecionar para projetos se nenhum estiver selecionado
@@ -82,11 +82,11 @@ export default function AdminCupons() {
 
 
     const filteredCupons = cupons.filter(c => {
-        const codigo = c.codigo || '';
-        const indicacaoNome = c.indicacaoNome || '';
-        const matchesSearch = codigo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            indicacaoNome.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesType = typeFilter === 'all' || c.indicacaoTipo === typeFilter;
+        const code = c.code || '';
+        const referralName = c.referralName || '';
+        const matchesSearch = code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            referralName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = typeFilter === 'all' || c.referralType === typeFilter;
         return matchesSearch && matchesType;
     });
 
@@ -95,28 +95,28 @@ export default function AdminCupons() {
         try {
             if (editingCoupon) {
                 await update(editingCoupon.id, {
-                    codigo: (formData.codigo || '').toUpperCase().trim(),
-                    indicacaoTipo: formData.indicacaoTipo,
-                    indicacaoNome: formData.indicacaoNome,
-                    porcentagemDesconto: Number(formData.porcentagemDesconto),
-                    usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
-                    descricao: formData.descricao,
-                    expires_at: formData.expires_at ? `${formData.expires_at}T23:59:59Z` : undefined,
-                    ativo: formData.ativo,
+                    code: (formData.code || '').toUpperCase().trim(),
+                    referralType: formData.referralType,
+                    referralName: formData.referralName,
+                    discountPercentage: Number(formData.discountPercentage),
+                    usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
+                    description: formData.description,
+                    expiresAt: formData.expiresAt ? `${formData.expiresAt}T23:59:59Z` : undefined,
+                    isActive: formData.isActive,
                 });
                 toast.success('Cupom atualizado com sucesso!');
             } else {
                 await create({
                     projectId: projectId || '',
-                    codigo: (formData.codigo || '').toUpperCase().trim(),
-                    indicacaoTipo: formData.indicacaoTipo,
-                    indicacaoNome: formData.indicacaoNome,
-                    porcentagemDesconto: Number(formData.porcentagemDesconto),
-                    usoLimite: formData.usoLimite ? Number(formData.usoLimite) : null,
-                    usoAtual: 0,
-                    descricao: formData.descricao,
-                    expires_at: formData.expires_at ? `${formData.expires_at}T23:59:59Z` : undefined,
-                    ativo: formData.ativo,
+                    code: (formData.code || '').toUpperCase().trim(),
+                    referralType: formData.referralType,
+                    referralName: formData.referralName,
+                    discountPercentage: Number(formData.discountPercentage),
+                    usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
+                    currentUsage: 0,
+                    description: formData.description,
+                    expiresAt: formData.expiresAt ? `${formData.expiresAt}T23:59:59Z` : undefined,
+                    isActive: formData.isActive,
                 });
                 toast.success('Novo cupom gerado com sucesso!');
             }
@@ -132,42 +132,42 @@ export default function AdminCupons() {
     const resetForm = () => {
         setEditingCoupon(null);
         setFormData({
-            codigo: '',
-            indicacaoTipo: 'promocional',
-            indicacaoNome: '',
-            porcentagemDesconto: 100,
-            usoLimite: '',
-            descricao: '',
-            expires_at: '',
-            ativo: true
+            code: '',
+            referralType: 'promocional',
+            referralName: '',
+            discountPercentage: 100,
+            usageLimit: '',
+            description: '',
+            expiresAt: '',
+            isActive: true
         });
     };
 
     const handleEdit = (coupon: Coupon) => {
         setEditingCoupon(coupon);
 
-        // Formatar data de expires_at para o input type="date" (YYYY-MM-DD)
-        let vencimentoFormatado = '';
-        if (coupon.expires_at) {
+        // Formatar data de expiresAt para o input type="date" (YYYY-MM-DD)
+        let formattedExpiresAt = '';
+        if (coupon.expiresAt) {
             try {
-                const date = new Date(coupon.expires_at);
+                const date = new Date(coupon.expiresAt);
                 if (!isNaN(date.getTime())) {
-                    vencimentoFormatado = date.toISOString().split('T')[0];
+                    formattedExpiresAt = date.toISOString().split('T')[0];
                 }
             } catch (e) {
-                logger.warn('Data de expires_at inválida:', coupon.expires_at);
+                logger.warn('Data de expiresAt inválida:', coupon.expiresAt);
             }
         }
 
         setFormData({
-            codigo: coupon.codigo,
-            indicacaoTipo: coupon.indicacaoTipo,
-            indicacaoNome: coupon.indicacaoNome,
-            porcentagemDesconto: coupon.porcentagemDesconto,
-            usoLimite: coupon.usoLimite?.toString() || '',
-            descricao: coupon.descricao || '',
-            expires_at: vencimentoFormatado,
-            ativo: coupon.ativo
+            code: coupon.code,
+            referralType: coupon.referralType,
+            referralName: coupon.referralName,
+            discountPercentage: coupon.discountPercentage,
+            usageLimit: coupon.usageLimit?.toString() || '',
+            description: coupon.description || '',
+            expiresAt: formattedExpiresAt,
+            isActive: coupon.isActive
         });
         setIsModalOpen(true);
     };
@@ -188,9 +188,9 @@ export default function AdminCupons() {
         toast.success(`Código ${text} copiado para a área de transferência!`);
     };
 
-    const isExpired = (expires_at?: string) => {
-        if (!expires_at) return false;
-        return new Date(expires_at) < new Date();
+    const isExpired = (expiresAt?: string) => {
+        if (!expiresAt) return false;
+        return new Date(expiresAt) < new Date();
     };
 
     return (
@@ -212,7 +212,7 @@ export default function AdminCupons() {
                         <Filter className="h-4 w-4 text-gray-500" />
                         <select
                             value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as Coupon['indicacaoTipo'] | 'all')}
+                            onChange={(e) => setTypeFilter(e.target.value as Coupon['referralType'] | 'all')}
                             className="px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
                             <option value="all">Todos os Tipos</option>
@@ -246,21 +246,21 @@ export default function AdminCupons() {
                     },
                     {
                         label: 'Cupons Ativos',
-                        value: cupons.filter(c => c.ativo && !isExpired(c.expires_at)).length,
+                        value: cupons.filter(c => c.isActive && !isExpired(c.expiresAt)).length,
                         icon: CheckCircle,
                         color: 'emerald',
                         detail: 'Prontos para uso'
                     },
                     {
                         label: 'Total de Resgates',
-                        value: cupons.reduce((sum, c) => sum + (c.usoAtual || 0), 0),
+                        value: cupons.reduce((sum, c) => sum + (c.currentUsage || 0), 0),
                         icon: Users,
                         color: 'teal',
                         detail: 'Utilizados no checkout'
                     },
                     {
                         label: 'Desconto Médio',
-                        value: `${cupons.length > 0 ? (cupons.reduce((sum, c) => sum + (c.porcentagemDesconto || 0), 0) / cupons.length).toFixed(0) : 0}%`,
+                        value: `${cupons.length > 0 ? (cupons.reduce((sum, c) => sum + (c.discountPercentage || 0), 0) / cupons.length).toFixed(0) : 0}%`,
                         icon: TrendingUp,
                         color: 'purple',
                         detail: 'Média de abatimento'
@@ -305,11 +305,11 @@ export default function AdminCupons() {
                                         <div className="flex items-center gap-3">
                                             <div className="bg-gradient-to-br from-teal-500/20 to-teal-600/10 px-4 py-2 rounded-xl border border-teal-500/20 shadow-inner">
                                                 <code className="text-teal-400 font-black tracking-widest text-sm uppercase">
-                                                    {coupon.codigo}
+                                                    {coupon.code}
                                                 </code>
                                             </div>
                                             <button
-                                                onClick={() => copyToClipboard(coupon.codigo)}
+                                                onClick={() => copyToClipboard(coupon.code)}
                                                 className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-white transition-all bg-white/5 p-2 rounded-xl border border-white/10"
                                                 title="Copiar código"
                                             >
@@ -319,14 +319,14 @@ export default function AdminCupons() {
                                     </td>
                                     <td className="px-6 py-5" data-label="Parceiro">
                                         <div>
-                                            <p className="text-white font-black italic tracking-tight">{coupon.indicacaoNome}</p>
+                                            <p className="text-white font-black italic tracking-tight">{coupon.referralName}</p>
                                             <div className="flex items-center gap-2 mt-1.5">
-                                                <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0 border-transparent ${typeConfig[coupon.indicacaoTipo]?.color || 'bg-gray-500/20 text-gray-400'}`}>
-                                                    {typeConfig[coupon.indicacaoTipo]?.label || coupon.indicacaoTipo}
+                                                <Badge variant="outline" className={`text-[9px] font-black uppercase px-2 py-0 border-transparent ${typeConfig[coupon.referralType]?.color || 'bg-gray-500/20 text-gray-400'}`}>
+                                                    {typeConfig[coupon.referralType]?.label || coupon.referralType}
                                                 </Badge>
-                                                {coupon.descricao && (
-                                                    <span className="text-gray-600 text-[10px] truncate max-w-[150px] font-medium" title={coupon.descricao}>
-                                                        • {coupon.descricao}
+                                                {coupon.description && (
+                                                    <span className="text-gray-600 text-[10px] truncate max-w-[150px] font-medium" title={coupon.description}>
+                                                        • {coupon.description}
                                                     </span>
                                                 )}
                                             </div>
@@ -335,16 +335,16 @@ export default function AdminCupons() {
                                     <td className="px-6 py-5" data-label="Desc.">
                                         <div className="relative inline-block">
                                             <Badge className="bg-teal-500 text-dark-100 font-black px-3 py-1 text-xs rounded-lg shadow-lg shadow-teal-500/20">
-                                                {coupon.porcentagemDesconto}% OFF
+                                                {coupon.discountPercentage}% OFF
                                             </Badge>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5" data-label="Venc.">
-                                        {coupon.expires_at ? (
-                                            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.expires_at) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
+                                        {coupon.expiresAt ? (
+                                            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired(coupon.expiresAt) ? 'text-red-400/80 bg-red-400/5 px-2 py-1 rounded-lg' : 'text-gray-400'}`}>
                                                 <Calendar className="h-3.5 w-3.5" />
                                                 {(() => {
-                                                    const d = new Date(coupon.expires_at);
+                                                    const d = new Date(coupon.expiresAt);
                                                     return isNaN(d.getTime()) ? 'Data inválida' : d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                                                 })()}
                                             </div>
@@ -354,9 +354,9 @@ export default function AdminCupons() {
                                     </td>
                                     <td className="px-6 py-5" data-label="Status">
                                         <div className="flex items-center">
-                                            {!coupon.ativo ? (
+                                            {!coupon.isActive ? (
                                                 <Badge className="bg-white/5 text-gray-500 border border-white/10 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Inativo</Badge>
-                                            ) : isExpired(coupon.expires_at) ? (
+                                            ) : isExpired(coupon.expiresAt) ? (
                                                 <Badge className="bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-wider">Expirado</Badge>
                                             ) : (
                                                 <div className="flex items-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full">
@@ -369,13 +369,13 @@ export default function AdminCupons() {
                                     <td className="px-6 py-5" data-label="Uso">
                                         <div className="space-y-2 lg:max-w-[120px] w-full">
                                             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                                <span>{coupon.usoAtual} USOS</span>
-                                                <span>{coupon.usoLimite || '∞'}</span>
+                                                <span>{coupon.currentUsage} USOS</span>
+                                                <span>{coupon.usageLimit || '∞'}</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
-                                                    className={`h-full transition-all duration-1000 ${coupon.usoLimite && coupon.usoAtual >= coupon.usoLimite ? 'bg-red-500' : 'bg-gradient-to-r from-teal-500 to-teal-400'}`}
-                                                    style={{ width: `${coupon.usoLimite ? Math.min((coupon.usoAtual / coupon.usoLimite) * 100, 100) : 100}%` }}
+                                                    className={`h-full transition-all duration-1000 ${coupon.usageLimit && coupon.currentUsage >= coupon.usageLimit ? 'bg-red-500' : 'bg-gradient-to-r from-teal-500 to-teal-400'}`}
+                                                    style={{ width: `${coupon.usageLimit ? Math.min((coupon.currentUsage / coupon.usageLimit) * 100, 100) : 100}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -443,8 +443,8 @@ export default function AdminCupons() {
                                     <Input
                                         required
                                         placeholder="EX: GROWTH100"
-                                        value={formData.codigo}
-                                        onChange={e => setFormData({ ...formData, codigo: e.target.value })}
+                                        value={formData.code}
+                                        onChange={e => setFormData({ ...formData, code: e.target.value })}
                                         className="bg-dark-100 border-dark-300 text-white uppercase font-black"
                                     />
                                     <p className="text-[10px] text-gray-500 mt-1">O código que o usuário digitará.</p>
@@ -457,8 +457,8 @@ export default function AdminCupons() {
                                             min="0"
                                             max="100"
                                             required
-                                            value={formData.porcentagemDesconto}
-                                            onChange={e => setFormData({ ...formData, porcentagemDesconto: Number(e.target.value) })}
+                                            value={formData.discountPercentage}
+                                            onChange={e => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
                                             className="bg-dark-100 border-dark-300 text-white pl-4 pr-10"
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
@@ -470,8 +470,8 @@ export default function AdminCupons() {
                                 <div className="col-span-1">
                                     <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tipo de Convênio</label>
                                     <select
-                                        value={formData.indicacaoTipo}
-                                        onChange={e => setFormData({ ...formData, indicacaoTipo: e.target.value as Coupon['indicacaoTipo'] })}
+                                        value={formData.referralType}
+                                        onChange={e => setFormData({ ...formData, referralType: e.target.value as Coupon['referralType'] })}
                                         className="w-full h-11 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     >
                                         {Object.entries(typeConfig).map(([key, config]) => (
@@ -484,8 +484,8 @@ export default function AdminCupons() {
                                     <Input
                                         type="number"
                                         placeholder="Infinito"
-                                        value={formData.usoLimite}
-                                        onChange={e => setFormData({ ...formData, usoLimite: e.target.value })}
+                                        value={formData.usageLimit}
+                                        onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
                                         className="bg-dark-100 border-dark-300 text-white"
                                     />
                                 </div>
@@ -496,8 +496,8 @@ export default function AdminCupons() {
                                 <Input
                                     required
                                     placeholder="Ex: Secretaria de Desenvolvimento / Nome do Influencer"
-                                    value={formData.indicacaoNome}
-                                    onChange={e => setFormData({ ...formData, indicacaoNome: e.target.value })}
+                                    value={formData.referralName}
+                                    onChange={e => setFormData({ ...formData, referralName: e.target.value })}
                                     className="bg-dark-100 border-dark-300 text-white"
                                 />
                             </div>
@@ -508,8 +508,8 @@ export default function AdminCupons() {
                                     <div className="relative">
                                         <Input
                                             type="date"
-                                            value={formData.expires_at}
-                                            onChange={e => setFormData({ ...formData, expires_at: e.target.value })}
+                                            value={formData.expiresAt}
+                                            onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
                                             className="bg-dark-100 border-dark-300 text-white pl-10"
                                         />
                                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -520,8 +520,8 @@ export default function AdminCupons() {
                                         <input
                                             type="checkbox"
                                             id="ativo_modal"
-                                            checked={formData.ativo}
-                                            onChange={e => setFormData({ ...formData, ativo: e.target.checked })}
+                                            checked={formData.isActive}
+                                            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                             className="w-5 h-5 rounded border-dark-300 bg-dark-200 text-teal-500 focus:ring-teal-500"
                                         />
                                         <label htmlFor="ativo_modal" className="text-sm font-bold text-gray-300 cursor-pointer select-none">
@@ -534,8 +534,8 @@ export default function AdminCupons() {
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Observações Internas</label>
                                 <textarea
-                                    value={formData.descricao}
-                                    onChange={e => setFormData({ ...formData, descricao: e.target.value })}
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-teal-500"
                                     placeholder="Detalhes sobre a parceria, contrato ou finalidade deste cupom..."
                                 />
