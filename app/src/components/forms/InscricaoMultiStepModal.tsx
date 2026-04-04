@@ -192,7 +192,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         switch (currentStep) {
             case 1:
                 return <Step1SelecionarCursos 
-                            selectedSessions={dados.cursosSelecionados} 
+                            selectedSessions={dados.cursosSelecionados || []} 
                             onContinuar={(cursos) => { updateDados({ cursosSelecionados: cursos }); nextStep(); }} 
                             onVoltar={handleClose} 
                         />;
@@ -264,7 +264,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
-                        {['Trilhas', 'Dados', 'Confirmar', 'Oferta', 'Pagamento', 'App', 'Concluir'].map((label, index) => {
+                        {['Programação', 'Dados', 'Confirmar', 'Oferta', 'Pagamento', 'App', 'Concluir'].map((label, index) => {
                             const step = index + 1;
                             const isActive = step === currentStep;
                             const isCompleted = step < currentStep;

@@ -1,15 +1,61 @@
-import { useSessionsRealtime } from '@/hooks/useSessionsRealtime';
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
 import type { Session } from '@/types';
 import { formatEventTime, compareEventTimes } from '@/lib/formatTime';
 
+const TRIUNFO_PROJECT_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
 export function useProgramacaoTriunfo() {
-    const { data: sessions, isLoading, error } = useSessionsRealtime();
+    const [sessions, setSessions] = useState<Session[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        const fetchSessions = async () => {
+            setIsLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('event_schedule')
+                    .select('*')
+                    .eq('project_id' as any, TRIUNFO_PROJECT_ID)
+                    .order('created_at');
+
+                if (error) throw error;
+                setSessions((data as any) || []);
+            } catch (err: any) {
+                setError(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSessions();
+
+        const channel = supabase
+            .channel(`public_event_schedule_${TRIUNFO_PROJECT_ID}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'event_schedule',
+                    filter: `project_id=eq.${TRIUNFO_PROJECT_ID}`,
+                },
+                () => {
+                    fetchSessions();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     const programacao = useMemo(() => {
         const transformAtividade = (s: Session) => ({
             id: s.id,
-            horario: formatEventTime(s.startTime),  // Formata 'HH:MM:SS' → 'HH:MM' (fuso Recife/UTC-3)
+            horario: formatEventTime(s.startTime),
             titulo: s.title,
             tipo: s.type,
             capacidade: s.maxCapacity,
@@ -20,7 +66,6 @@ export function useProgramacaoTriunfo() {
 
         const filterByCategory = (cat: string) => sessions.filter(s => s.category === cat).sort((a, b) => compareEventTimes(a.startTime, b.startTime));
 
-        // Momentos Âncora
         const manhaAncora = filterByCategory('manha_ancora').map(s => ({
             horario: formatEventTime(s.startTime),
             atividade: s.title,
@@ -33,31 +78,28 @@ export function useProgramacaoTriunfo() {
             local: s.room || 'Espaço Parque'
         }));
 
-        // Diurna Manhã
         const b1_sessions = filterByCategory('manha_bloco_1');
-        const b1_salao = b1_sessions.find(s => s.room?.toLowerCase().includes('salao') || s.room?.toLowerCase().includes('principal'));
+        const b1_salao = b1_sessions.find(s => (s.room || '').toLowerCase().includes('salao') || (s.room || '').toLowerCase().includes('principal'));
         const b1_salas = b1_sessions.filter(s => s !== b1_salao).map((s, idx) => ({ ...transformAtividade(s), numero: idx + 1 }));
 
         const b2_sessions = filterByCategory('manha_bloco_2');
-        const b2_salao = b2_sessions.find(s => s.room?.toLowerCase().includes('salao') || s.room?.toLowerCase().includes('principal'));
+        const b2_salao = b2_sessions.find(s => (s.room || '').toLowerCase().includes('salao') || (s.room || '').toLowerCase().includes('principal'));
         const b2_salas = b2_sessions.filter(s => s !== b2_salao).map((s, idx) => ({ ...transformAtividade(s), numero: idx + 1 }));
 
         const circ1 = filterByCategory('manha_circulacao')[0];
         const enc_manha = filterByCategory('manha_encerramento')[0];
 
-        // Diurna Tarde
         const b3_sessions = filterByCategory('tarde_bloco_3');
-        const b3_salao = b3_sessions.find(s => s.room?.toLowerCase().includes('salao') || s.room?.toLowerCase().includes('principal'));
+        const b3_salao = b3_sessions.find(s => (s.room || '').toLowerCase().includes('salao') || (s.room || '').toLowerCase().includes('principal'));
         const b3_salas = b3_sessions.filter(s => s !== b3_salao).map((s, idx) => ({ ...transformAtividade(s), numero: idx + 1 }));
 
         const b4_sessions = filterByCategory('tarde_bloco_4');
-        const b4_salao = b4_sessions.find(s => s.room?.toLowerCase().includes('salao') || s.room?.toLowerCase().includes('principal'));
+        const b4_salao = b4_sessions.find(s => (s.room || '').toLowerCase().includes('salao') || (s.room || '').toLowerCase().includes('principal'));
         const b4_salas = b4_sessions.filter(s => s !== b4_salao).map((s, idx) => ({ ...transformAtividade(s), numero: idx + 1 }));
 
         const circ2 = filterByCategory('tarde_circulacao')[0];
         const enc_tarde = filterByCategory('tarde_encerramento')[0];
 
-        // Noturna
         const noturna = filterByCategory('noturna').map(s => ({
             horario: formatEventTime(s.startTime),
             atividade: s.title
@@ -72,14 +114,13 @@ export function useProgramacaoTriunfo() {
                 tempo: meta.tempo || '10-15 min',
                 temas: s.topics || [],
                 cor: s.color || 'orange',
-                icon: () => null, // Placeholder fixed below
+                icon: () => null,
                 formato: s.type,
                 capacidade: s.maxCapacity?.toString() || '300/dia',
                 totalDia: meta.totalDia || 'Contínuo',
             };
         });
 
-        // Lista plana para Agora/Próximo (sessões com horário definido)
         const allActivitiesWithTimes = [
             ...b1_sessions, ...b2_sessions, ...b3_sessions, ...b4_sessions,
             ...filterByCategory('manha_ancora'), ...filterByCategory('tarde_ancora'),
@@ -94,7 +135,6 @@ export function useProgramacaoTriunfo() {
             local: s.room || 'Espaço Parque',
         }));
 
-        // Default structure to avoid crashes if empty
         return {
             allActivitiesWithTimes,
             momentosAncora: { manha: manhaAncora, tarde: tardeAncora },
@@ -115,5 +155,5 @@ export function useProgramacaoTriunfo() {
         };
     }, [sessions]);
 
-    return { programacao, isLoading, error };
+    return { programacao, sessions, isLoading, loading: isLoading, error };
 }

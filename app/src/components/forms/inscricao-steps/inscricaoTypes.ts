@@ -2,7 +2,8 @@
 
 export interface DadosInscricao {
     // Step 1 - Daytime Activities
-    cursosSelecionados: string[];
+    cursosSelecionados?: string[];
+    session_ids?: string[];
     selectedActivityType?: string;
     activityRoom?: string;
     activitySchedule?: string;

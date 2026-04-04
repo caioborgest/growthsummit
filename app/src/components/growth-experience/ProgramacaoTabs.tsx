@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Clock, Users, MapPin, Coffee, Mic2, Award, Zap, UserPlus, Radio, ChevronRight, Heart } from 'lucide-react';
+import { Clock, Users, MapPin, Coffee, Mic2, Zap, UserPlus, Radio, ChevronRight, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -90,12 +90,9 @@ export interface ProgramacaoTabsProps {
     eventDate?: string;
     allActivitiesWithTimes?: { id: string; titulo: string; horario: string; startTime?: string; endTime?: string; local?: string }[];
     hasNightAccess?: boolean;
+    isLoading?: boolean;
 }
 
-const corMap: Record<string, string> = {
-    orange: 'bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30',
-    neutral: 'bg-white/5 text-gray-400 border-white/10',
-};
 
 function parseTimeToMinutes(t: string): number {
     const m = (t || '').match(/(\d{1,2}):(\d{2})/);
@@ -112,7 +109,8 @@ export function ProgramacaoTabs({
     onInscricao,
     eventDate,
     allActivitiesWithTimes = [],
-    hasNightAccess = false
+    hasNightAccess = false,
+    isLoading = false
 }: ProgramacaoTabsProps) {
     const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
     const { projectId } = useProject();
@@ -132,7 +130,7 @@ export function ProgramacaoTabs({
 
         const sorted = [...allActivitiesWithTimes]
             .filter(a => a.startTime)
-            .sort((a, b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime));
+            .sort((a, b) => parseTimeToMinutes(a.startTime || '') - parseTimeToMinutes(b.startTime || ''));
 
         for (const a of sorted) {
             const start = parseTimeToMinutes(a.startTime || '');
@@ -407,8 +405,21 @@ export function ProgramacaoTabs({
                 ))}
             </div>
 
+            {isLoading && (
+                <div className="space-y-6 animate-pulse">
+                    <div className="h-24 bg-white/5 rounded-2xl border border-white/10" />
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="h-48 bg-white/5 rounded-2xl border border-white/10" />
+                        <div className="h-48 bg-white/5 rounded-2xl border border-white/10" />
+                        <div className="h-48 bg-white/5 rounded-2xl border border-white/10" />
+                    </div>
+                    <div className="h-64 bg-white/5 rounded-2xl border border-white/10" />
+                </div>
+            )}
+
             {/* Tab Content */}
-            <div className="min-h-[500px] animate-fade-in">
+            {!isLoading && (
+                <div className="min-h-[500px] animate-fade-in">
                 {/* Nota sobre alteração de programação */}
                 <div className="mb-10 px-6 py-4 bg-brand-orange-coral/5 rounded-2xl border border-brand-orange-coral/20 flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
@@ -622,6 +633,7 @@ export function ProgramacaoTabs({
                     </div>
                 )}
             </div>
+        )}
         </div>
     );
 }

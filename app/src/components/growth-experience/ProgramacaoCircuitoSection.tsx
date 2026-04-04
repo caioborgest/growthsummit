@@ -1,24 +1,16 @@
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Zap, Trophy, Briefcase, GraduationCap, Landmark } from 'lucide-react';
-import { ProgramacaoTabs, type ProgramacaoDiurna, type ProgramacaoTarde, type Estacao, type MomentoAncora } from './ProgramacaoTabs';
+import { ProgramacaoTabs, type Estacao } from './ProgramacaoTabs';
 import { useProgramacaoTriunfo } from '@/hooks/useProgramacaoTriunfo';
 import { useProject } from '@/contexts/ProjectContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRegistrations } from '@/hooks/useData';
-import {
-    circuitoExperienciasData,
-    momentosAncoraData,
-    programacaoManhaData,
-    programacaoNoturnaData,
-    programacaoTardeData
-} from '@/data/programacaoCircuito';
 
 interface ProgramacaoCircuitoSectionProps {
     onInscricao?: () => void;
 }
 
-// Mapa de ícones para as estações (baseado no nome ou categoria)
 const getIcon = (nome: string) => {
     const n = nome.toLowerCase();
     if (n.includes('sebrae') || n.includes('negócio') || n.includes('consultório')) return Briefcase;
@@ -33,59 +25,41 @@ const getIcon = (nome: string) => {
 export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoSectionProps) {
     const { user } = useAuth();
     const { data: registrations } = useRegistrations();
-    const { programacao } = useProgramacaoTriunfo();
+    const { programacao, isLoading } = useProgramacaoTriunfo();
     const { selectedProject } = useProject();
 
-    // Verifica se o usuário tem acesso à noite (Night Experience) no projeto atual
     const hasNightAccess = useMemo(() => {
         if (!user || !registrations || !selectedProject) return false;
         const currentReg = (registrations || []).find(r => r.projectId === selectedProject.id);
-        // O acesso à noite é confirmado se a inscrição existe, o pagamento está confirmado e o campo comprarPalestras é true (ou se for VIP/Sócio)
-        return currentReg?.status === 'confirmed' && currentReg?.subscriptionData?.comprarPalestras === true;
+        // O acesso à noite é confirmado se a inscrição existe, o pagamento está confirmado e o campo palestrasNoturnas é true
+        const isConfirmed = currentReg?.status === 'confirmed' || currentReg?.status === 'paid' || currentReg?.status === 'pago' || currentReg?.status === 'ativo';
+        return isConfirmed && currentReg?.palestrasNoturnas === true;
     }, [user, registrations, selectedProject]);
 
-    // Se não houver dados no banco, usa os estáticos como fallback
-    // Isso garante que a página não fique vazia enquanto o admin não preenche
     const hasData = programacao && (
         programacao.programacaoNoturna.length > 0 ||
         programacao.circuitoExperiencias.length > 0 ||
         programacao.momentosAncora.manha.length > 0
     );
 
-    const finalData: {
-        programacaoManha: ProgramacaoDiurna;
-        programacaoTarde: ProgramacaoTarde;
-        programacaoNoturna: { horario: string; atividade: string }[];
-        circuitoExperiencias: Estacao[];
-        momentosAncora: {
-            manha: MomentoAncora[];
-            tarde: MomentoAncora[];
-        };
-    } = hasData ? {
-        ...programacao,
-        circuitoExperiencias: programacao.circuitoExperiencias.map(est => ({
+    const formattedCircuito = useMemo(() => {
+        if (!programacao?.circuitoExperiencias) return [];
+        return programacao.circuitoExperiencias.map(est => ({
             ...est,
             icon: getIcon(est.nome)
-        })) as Estacao[]
-    } : {
-            programacaoManha: programacaoManhaData,
-            programacaoTarde: programacaoTardeData,
-            programacaoNoturna: programacaoNoturnaData,
-            circuitoExperiencias: circuitoExperienciasData,
-            momentosAncora: momentosAncoraData
-        };
+        })) as Estacao[];
+    }, [programacao.circuitoExperiencias]);
 
     return (
         <section id="programacao" className="py-24 bg-dark relative overflow-hidden">
-            {/* Background Decorativo */}
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2032&auto=format&fit=crop')] opacity-5 bg-cover bg-center" />
             <div className="absolute inset-0 bg-gradient-to-b from-dark via-dark/95 to-dark" />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-                        <BookOpen className="h-3 w-3 mr-2" />
-                        PROGRAMAÇÃO EXCLUSIVA {hasData && <span className="ml-2">• ATUALIZADO</span>}
+                        < BookOpen className="h-3 w-3 mr-2" />
+                        PROGRAMAÇÃO EXCLUSIVA {hasData && !isLoading && <span className="ml-2">• ATUALIZADO</span>}
                     </Badge>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                         Circuito de<br />
@@ -99,17 +73,26 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
                     </p>
                 </div>
 
-                <ProgramacaoTabs
-                    programacaoManha={finalData.programacaoManha}
-                    programacaoTarde={finalData.programacaoTarde}
-                    programacaoNoturna={finalData.programacaoNoturna}
-                    circuitoExperiencias={finalData.circuitoExperiencias}
-                    momentosAncora={finalData.momentosAncora}
-                    onInscricao={onInscricao}
-                    eventDate={selectedProject?.startDate}
-                    allActivitiesWithTimes={programacao?.allActivitiesWithTimes}
-                    hasNightAccess={hasNightAccess}
-                />
+                {programacao && (
+                    <ProgramacaoTabs
+                        programacaoManha={programacao.programacaoManha}
+                        programacaoTarde={programacao.programacaoTarde}
+                        programacaoNoturna={programacao.programacaoNoturna}
+                        circuitoExperiencias={formattedCircuito}
+                        momentosAncora={programacao.momentosAncora}
+                        onInscricao={onInscricao}
+                        eventDate={selectedProject?.startDate}
+                        allActivitiesWithTimes={programacao?.allActivitiesWithTimes}
+                        hasNightAccess={hasNightAccess}
+                        isLoading={isLoading}
+                    />
+                )}
+
+                {!isLoading && !hasData && (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                        <p className="text-gray-500 font-bold uppercase tracking-widest">Programação em breve</p>
+                    </div>
+                )}
             </div>
         </section>
     );
