@@ -45,7 +45,7 @@ const statusColors: Record<string, string> = {
 export function AdminB2B() {
   const { projectId } = useProject();
   const { data: companies, create: createCompany } = useCompanies();
-  const { data: meetings, create: createMeeting, update, isLoading: isMeetingLoading } = useB2BMeetings();
+  const { data: meetings, create: createMeeting, update, isLoading: isMeetingLoading, refetch: refetchMeetings } = useB2BMeetings();
   const { data: appointments } = useB2BAppointmentsTriunfo();
   const { data: matches, refetch: refetchMatches } = useB2BMatches();
 
@@ -136,6 +136,7 @@ export function AdminB2B() {
 
       toast.success('Reunião agendada com sucesso!');
       setIsMeetingModalOpen(false);
+      await refetchMeetings(true);
       setMeetingFormData({
         companyAnchorId: '',
         companyVendorId: '',

@@ -5,7 +5,6 @@ import {
   CheckCircle,
   ExternalLink,
   Plus,
-  MoreHorizontal,
   TrendingUp,
   Target
 } from 'lucide-react';
@@ -117,8 +116,9 @@ export default function AdminPatrocinadores() {
         } as any);
         toast.success('Patrocinador adicionado com sucesso!');
       }
-      setIsModalOpen(false);
       setEditingSponsor(null);
+      setIsModalOpen(false);
+      await refetch();
     } catch (err: any) {
       logger.error('Erro ao adicionar patrocinador:', err);
       toast.error('Erro ao adicionar patrocinador: ' + (err.message || 'Erro desconhecido'));
@@ -134,6 +134,7 @@ export default function AdminPatrocinadores() {
 
   const handleStatusChange = async (id: string, status: 'prospect' | 'negotiation' | 'closed' | 'cancelled') => {
     await update(id, { status });
+    await refetch();
   };
 
   return (

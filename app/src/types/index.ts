@@ -391,6 +391,7 @@ export interface EmailTemplate {
   body: string;
   variables: string[];
   category: string;
+  createdAt: string;
 }
 
 export interface EmailCampaign {
@@ -408,6 +409,7 @@ export interface EmailCampaign {
     clicked: number;
     bounced: number;
   };
+  createdAt: string;
 }
 
 export interface Session {
@@ -428,6 +430,9 @@ export interface Session {
   maxCapacity?: number;
   registeredCount: number;
   topics?: string[];
+  speakerName?: string;
+  speakerRole?: string;
+  speakerImage?: string;
   color?: string;
   metadata?: Record<string, unknown>;
   createdAt: string;
@@ -569,18 +574,20 @@ export interface EmpresaIncentivadora {
 export interface RegistrationBatch {
   id: string;
   projectId: string;
-  companyName: string;
+  name: string;
   cnpj?: string;
-  responsibleName: string;
-  responsibleEmail: string;
+  responsibleName?: string;
+  responsibleEmail?: string;
   contactEmail: string;
   voucherCode: string;
-  totalSlots: number;
+  maxSlots: number;
   usedSlots: number;
   ticketType: string;
-  totalAmount: number;
+  price: number;
+  active: boolean;
   paymentStatus: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
   notes?: string;
+  expiresAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -687,13 +694,17 @@ export interface Partner {
   projectId: string;
   name: string;
   cnpj?: string;
-  type: 'sponsor' | 'exhibitor' | 'media' | 'institutional' | 'other';
-  category: 'permuta' | 'investimento' | 'misto';
-  status: 'active' | 'inactive';
+  type?: 'sponsor' | 'exhibitor' | 'media' | 'institutional' | 'other';
+  category?: 'permuta' | 'investimento' | 'misto';
+  status?: 'active' | 'inactive';
   logoUrl?: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
+  website?: string;
+  description?: string;
+  tier?: string;
+  active: boolean;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
   accessCode?: string;
   maxTeamMembers?: number;
   sponsorId?: string;

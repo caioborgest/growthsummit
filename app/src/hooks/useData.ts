@@ -9,7 +9,7 @@ import type {
   B2BSwipe, B2BMatch, B2BAppointmentTriunfo, User, Profile, Certificate,
   EmpresaIncentivadora, Notification, B2BChatMessage, RegistrationBatch,
   Stand, StandCheckIn, SupportTicket, SupportMessage, Raffle, RaffleParticipant, MentoringWaitlist,
-  ActivityAttendance, Partner, PartnerTeamMember
+  ActivityAttendance, Partner, PartnerTeamMember, EmailTemplate, EmailCampaign
 } from '@/types';
 // Unused imports removed
 import { withTimeout } from '@/lib/promiseUtils';
@@ -258,15 +258,17 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     
     return {
       project_id: projectId,
-      company_name: data.companyName,
+      name: data.name || data.companyName, // support both for transition
       contact_email: data.contactEmail,
       responsible_name: data.responsibleName,
       responsible_email: data.responsibleEmail,
       voucher_code: data.voucherCode,
-      total_slots: data.totalSlots,
+      max_slots: data.maxSlots || data.totalSlots, // support both
       used_slots: data.usedSlots || 0,
       ticket_type: data.ticketType || 'pro',
-      total_amount: data.totalAmount,
+      price: data.price || data.totalAmount, // support both
+      active: data.active !== undefined ? data.active : true,
+      expires_at: data.expiresAt || null,
       payment_status: status,
       cnpj: data.cnpj || null,
       notes: data.notes || null
@@ -382,7 +384,8 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     support_ticket_messages: 'id,ticket_id,user_id,message,is_admin,created_at',
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
-    partners: 'id,project_id,name,cnpj,type,category,status,logo_url,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id,created_at,updated_at',
+    partners: 'id,project_id,name,logo_url,website,description,tier,active,created_at,updated_at,cnpj,type,category,status,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id',
+    registration_batches: 'id,project_id,name,max_slots,used_slots,price,active,expires_at,voucher_code,ticket_type,payment_status,responsible_name,responsible_email,contact_email,cnpj,notes,created_at,updated_at',
     partner_team_members: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
     email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
     email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'

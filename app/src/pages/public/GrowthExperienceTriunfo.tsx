@@ -1,15 +1,19 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { Project } from '@/types';
+import type { Project, Session } from '@/types';
 import {
-  TrendingUp,
   Building2,
+  Users,
   Mic2,
-  Zap,
-  Trophy,
-  ArrowRight,
-  CheckCircle,
-  QrCode,
+  Search,
+  Plus,
+  LayoutGrid,
+  TrendingUp,
+  Download,
+  Calendar,
+  Filter,
+  RefreshCw,
+  Target
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
 import { useRegistrations, useSessions, useCheckInsAtividades } from '@/hooks/useData';
@@ -20,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { InscricaoModal } from '@/components/forms/InscricaoModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getPalestranteImage, getStandImage, getStorageUrl } from '@/lib/storage';
+import { getPalestranteImage } from '@/lib/storage';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
@@ -34,50 +38,9 @@ import { LotePromocionalPopUp } from '@/components/growth-experience/LotePromoci
 import { useProject } from '@/contexts/ProjectContext';
 import { ensureProject } from '@/lib/ensureProject';
 import { CertificateService } from '@/lib/certificateService';
-import { PatrocinioCard } from '@/components/growth-experience/PatrocinioCard';
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
-import { EVENT_CONFIG } from '@/config/eventConfig';
 
-// Dados do evento
-const palestrantes = [
-  {
-    nome: "Jeronimo Freire",
-    role_title: "Empresário, Consultor e Mentor de Negócios",
-    descricao: "Especialista em gestão estratégica e expansão de negócios",
-    tema: "Gestão e Liderança em Momentos Desafiadores",
-    horario: "18:00 - 18:50"
-  },
-  {
-    nome: "Leandro Batista",
-    role_title: "CEO, Fitness Exclusive",
-    descricao: "CEO da rede de academias que mais cresce no interior do Nordeste",
-    tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
-    horario: "19:00 - 19:50"
-  },
-  {
-    nome: "João Daniel",
-    role_title: "CEO, Cedan Rações",
-    descricao: "CEO de uma das maiores indústrias de rações do Nordeste",
-    tema: "Talk Show: Experiências e Bastidores de Negócios no Interior",
-    horario: "19:00 - 19:50",
-    foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png"
-  },
-  {
-    nome: "Carolinne Castro",
-    role_title: "Advogada Empresarial e Conselheira OAB",
-    descricao: "Expert em liderança inteligente e redução de riscos jurídicos",
-    tema: "Liderança Inteligente: Redução de Riscos e Engajamento",
-    horario: "20:10 - 21:00"
-  },
-  {
-    nome: "Vanylton Matias",
-    role_title: "CEO, Grupo Núcleo",
-    descricao: "Gestão inteligente para escala de negócios",
-    tema: "Escalando Negócios com Equilíbrio e Humanidade",
-    horario: "21:10 - 22:30",
-    foto: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png"
-  }
-];
+// Speakers data is now derived from sessions in event_schedule
 
 
 
@@ -94,6 +57,23 @@ export function GrowthExperienceTriunfo() {
   const { data: userRegistrations } = useRegistrations();
   const { create: registerSessionCheckIn } = useCheckInsAtividades();
   const { data: allSessions } = useSessions();
+
+  // Derivar palestrantes das sessões (filtrando por tipo palestra)
+  const palestrantesDinamicos = useMemo(() => {
+    if (!allSessions || !currentProject) return [];
+    
+    return allSessions
+      .filter(s => s.projectId === currentProject.id && (s.type === 'palestra' || s.type === 'talk'))
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+      .map((s: Session) => ({
+        nome: s.speakers && s.speakers.length > 0 ? s.speakers[0] : s.speakerName || "Palestrante Convidado",
+        role_title: s.speakerRole || "Convidado Especial",
+        descricao: s.description || "Palestra exclusiva sobre tecnologia e negócios.",
+        tema: s.title,
+        horario: `${s.startTime} - ${s.endTime}`,
+        foto: s.speakerImage || getPalestranteImage(s.speakers?.[0] || 'convidado')
+      }));
+  }, [allSessions, currentProject]);
 
   // initialized MUST be declared before initProject to avoid use-before-declaration
   const initialized = useRef(false);
@@ -153,7 +133,7 @@ export function GrowthExperienceTriunfo() {
 
         toast.success("Presença confirmada! Seu certificado já está disponível na sua galeria.");
       } else {
-        toast.error("Este QR Code não é válido para confirmação de presença em atividades.");
+        toast.error("Este QR Code não é válido para confirmar presença em atividades.");
       }
     } catch (err) {
       console.error("Erro ao registrar check-in:", err);
@@ -374,19 +354,25 @@ export function GrowthExperienceTriunfo() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto mb-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            {palestrantes.map((p, i) => (
-              <PalestranteCardRefined
-                key={i}
-                nome={p.nome}
-                cargo={p.role_title}
-                descricao={p.descricao}
-                tema={p.tema}
-                horario={p.horario}
-                foto={getPalestranteImage(p.nome)}
-                destaque={true}
-                onInscricao={() => handleOpenModal('inscricao')}
-              />
-            ))}
+            {palestrantesDinamicos.length > 0 ? (
+              palestrantesDinamicos.map((p, i: number) => (
+                <PalestranteCardRefined
+                  key={i}
+                  nome={p.nome}
+                  role_title={p.role_title}
+                  descricao={p.descricao}
+                  tema={p.tema}
+                  horario={p.horario}
+                  foto={p.foto}
+                  destaque={true}
+                  onInscricao={() => handleOpenModal('inscricao')}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-10">
+                <p className="text-gray-500 italic">Palestrantes em breve...</p>
+              </div>
+            )}
           </div>
 
           <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
@@ -426,27 +412,13 @@ export function GrowthExperienceTriunfo() {
                 .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
               if (displaySessions.length === 0) {
-                return [
-                  { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Início da jornada de conexões no Espaço Parque' },
-                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Estratégias avançadas para mercados competitivos' },
-                  { time: '19:00', event: 'Talk Show: Inovação e Resultados', desc: 'Leandro Batista & João Daniel compartilham bastidores' },
-                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Inteligente', desc: 'Otimização de processos e engajamento humano' },
-                  { time: '21:10', event: 'Vanylton Matias: Escala de Negócios', desc: 'Acelerando seu faturamento com estratégia digital' },
-                  { time: '22:30', event: 'Networking Premium e Encerramento', desc: 'Conexões finais de alto nível e brindes' }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-6 items-start group">
-                    <div className="flex flex-col items-center">
-                      <div className="w-20 text-brand-orange-coral font-black text-2xl italic tracking-tighter text-right pr-4 border-r-2 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all">
-                        {item.time}
-                      </div>
-                      <div className="w-px h-16 bg-white/5 group-last:hidden" />
-                    </div>
-                    <div className="glass-card border-white/5 p-8 rounded-[2rem] flex-1 hover:border-brand-orange-coral/30 hover:bg-white/[0.03] transition-all duration-500 group-hover:translate-x-2">
-                       <h4 className="text-white font-black text-xl italic uppercase mb-2 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
-                       <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{item.desc}</p>
-                    </div>
+                return (
+                  <div className="text-center py-20 bg-dark-200/40 rounded-[2rem] border-2 border-dashed border-white/5">
+                    <p className="text-gray-500 font-bold uppercase tracking-widest text-sm italic">
+                      Programação em breve. Estamos preparando algo especial para você!
+                    </p>
                   </div>
-                ));
+                );
               }
 
               return displaySessions.map((s) => (
@@ -468,6 +440,12 @@ export function GrowthExperienceTriunfo() {
                           <Building2 className="h-3 w-3 text-brand-orange-coral/60" />
                           <span className="text-white/40 font-black text-[9px] uppercase tracking-widest">{s.room || 'Auditório Principal'}</span>
                         </div>
+                        {s.speakers && s.speakers.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Mic2 className="h-3 w-3 text-brand-orange-coral/60" />
+                            <span className="text-white/40 font-black text-[9px] uppercase tracking-widest">{s.speakers.join(', ')}</span>
+                          </div>
+                        )}
                      </div>
                   </div>
                 </div>

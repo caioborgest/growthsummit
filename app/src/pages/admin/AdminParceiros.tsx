@@ -56,7 +56,7 @@ const categoryColors: Record<string, string> = {
 
 export default function AdminParceiros() {
   const { projectId } = useProject();
-  const { data: partners, create, update, remove, isLoading } = usePartners();
+  const { data: partners, create, update, remove, isLoading, refetch } = usePartners();
   const { data: teamMembers } = usePartnerTeam();
   const { data: sponsors } = useSponsors();
   const { data: stands } = useStands();
@@ -82,6 +82,10 @@ export default function AdminParceiros() {
     status: 'active' as any,
     sponsorId: '',
     standId: '',
+    website: '',
+    description: '',
+    tier: '',
+    active: true,
   });
 
   const filteredPartners = useMemo(() => {
@@ -110,6 +114,10 @@ export default function AdminParceiros() {
         status: partner.status || 'active',
         sponsorId: partner.sponsorId || '',
         standId: partner.standId || '',
+        website: partner.website || '',
+        description: partner.description || '',
+        tier: partner.tier || '',
+        active: partner.active !== undefined ? partner.active : true,
       });
     } else {
       setEditingPartner(null);
@@ -126,6 +134,10 @@ export default function AdminParceiros() {
         status: 'active',
         sponsorId: '',
         standId: '',
+        website: '',
+        description: '',
+        tier: '',
+        active: true,
       });
     }
     setIsModalOpen(true);
@@ -145,6 +157,7 @@ export default function AdminParceiros() {
         toast.success('Parceiro adicionado com sucesso!');
       }
       setIsModalOpen(false);
+      await refetch(true); // Force refetch from Supabase
     } catch (err) {
       logger.error('Erro ao salvar parceiro:', err);
       toast.error('Erro ao salvar parceiro');
@@ -156,6 +169,7 @@ export default function AdminParceiros() {
       try {
         await remove(id);
         toast.success('Parceiro removido com sucesso');
+        await refetch(true); // Force refetch from Supabase
       } catch (err) {
         logger.error('Erro ao remover parceiro:', err);
         toast.error('Erro ao remover parceiro');
@@ -438,6 +452,49 @@ export default function AdminParceiros() {
                     onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                     className="bg-white/5 border-white/10"
                   />
+                </div>
+              </div>
+
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xs font-black uppercase text-gray-400 tracking-widest block">Informações Adicionais</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-gray-600">Website</Label>
+                    <Input
+                      placeholder="https://..."
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-gray-600">Tier / Nível</Label>
+                    <Input
+                      placeholder="Ex: Platinum, Gold..."
+                      value={formData.tier}
+                      onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-gray-600">Descrição / Bio</Label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm min-h-[80px]"
+                    placeholder="Breve descrição da empresa..."
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="active"
+                    checked={formData.active}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                    className="w-5 h-5 rounded border-white/10 bg-white/5"
+                  />
+                  <Label htmlFor="active" className="text-xs font-bold text-gray-400 cursor-pointer">Parceiro Ativo</Label>
                 </div>
               </div>
 

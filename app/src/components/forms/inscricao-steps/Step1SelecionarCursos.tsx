@@ -19,24 +19,28 @@ export function Step1SelecionarCursos({
     const { projectId, selectedProject } = useProject();
     const [selectedIds, setSelectedIds] = useState<string[]>(inicial);
 
+    const isTriunfo = useMemo(() => {
+        return selectedProject?.slug?.toLowerCase().includes('triunfo') || 
+               selectedProject?.name?.toLowerCase().includes('triunfo') ||
+               selectedProject?.id === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    }, [selectedProject]);
+
     // Debug log (client-side console)
     useEffect(() => {
-        console.log(`[Step1] Loading state:`, { isLoading, projectId, sessionsCount: sessions?.length });
+        console.debug(`[Step1] Loading state:`, { isLoading, projectId, sessionsCount: sessions?.length });
         
         if (sessions && sessions.length > 0) {
-            console.log(`[Step1] ${sessions.length} sessions loaded for project:`, selectedProject?.name || projectId);
+            console.debug(`[Step1] ${sessions.length} sessions loaded for project:`, selectedProject?.name || projectId);
         } else if (!isLoading) {
-            console.warn(`[Step1] No sessions found for project:`, {
-                id: projectId || selectedProject?.id,
+            console.warn(`[Step1] No sessions found! Query info:`, {
+                projectId: projectId || selectedProject?.id,
                 slug: selectedProject?.slug,
-                name: selectedProject?.name
+                name: selectedProject?.name,
+                isTriunfo: isTriunfo,
+                allSessionsExist: !!sessions
             });
         }
-    }, [sessions, isLoading, selectedProject, projectId]);
-
-    const isTriunfo = selectedProject?.slug?.toLowerCase().includes('triunfo') || 
-                      selectedProject?.name?.toLowerCase().includes('triunfo') ||
-                      selectedProject?.id === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+    }, [sessions, isLoading, selectedProject, projectId, isTriunfo]);
 
     const cursosDisponiveis = useMemo(() => {
         if (!sessions) return [];

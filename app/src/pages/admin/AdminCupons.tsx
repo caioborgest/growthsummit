@@ -38,7 +38,7 @@ const typeConfig: Record<Coupon['referralType'], { label: string; color: string 
 export default function AdminCupons() {
     const { projectId, isProjectSelected } = useProject();
     const navigate = useNavigate();
-    const { data: cupons, create, update, remove, isLoading } = useCoupons();
+    const { data: cupons, create, update, remove, isLoading, refetch } = useCoupons();
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState<Coupon['referralType'] | 'all'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,6 +123,7 @@ export default function AdminCupons() {
 
             setIsModalOpen(false);
             resetForm();
+            await refetch(true); // Force refetch from Supabase
         } catch (err: any) {
             logger.error('Erro ao salvar cupom:', err);
             toast.error(err.message || 'Erro ao salvar cupom. Verifique se o código já existe.');
@@ -177,6 +178,7 @@ export default function AdminCupons() {
             if (confirm('Tem certeza que deseja excluir este cupom?')) {
                 await remove(id);
                 toast.success('Cupom excluído com sucesso');
+                await refetch(true); // Force refetch from Supabase
             }
         } catch (err: any) {
             toast.error('Erro ao excluir cupom');

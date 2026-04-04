@@ -33,22 +33,24 @@ import { logger } from '@/lib/logger';
 export default function AdminBatches() {
     const { projectId, isProjectSelected } = useProject();
     const navigate = useNavigate();
-    const { data: batches, create, update, remove, isLoading } = useRegistrationBatches();
+    const { data: batches, create, update, remove, isLoading, refetch } = useRegistrationBatches();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBatch, setEditingBatch] = useState<RegistrationBatch | null>(null);
 
     const [formData, setFormData] = useState({
-        companyName: '',
+        name: '',
         cnpj: '',
         responsibleName: '',
         responsibleEmail: '',
         contactEmail: '',
         voucherCode: '',
-        totalSlots: 5,
-        ticketType: 'pro' as 'morning' | 'pro',
-        totalAmount: 0,
+        maxSlots: 5,
+        ticketType: 'pro' as 'morning' | 'pro' | 'vip',
+        price: 0,
+        active: true,
+        expiresAt: '',
         paymentStatus: 'pending' as 'pending' | 'paid' | 'cancelled',
         notes: ''
     });
@@ -75,7 +77,7 @@ export default function AdminBatches() {
     }
 
     const filteredBatches = batches.filter(b => {
-        const matchesSearch = (b.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = (b.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (b.voucherCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (b.contactEmail || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || b.paymentStatus === statusFilter;
@@ -93,14 +95,14 @@ export default function AdminBatches() {
     const handleQtyChange = (qty: number) => {
         setFormData({
             ...formData,
-            totalSlots: qty,
-            totalAmount: calculateTotal(qty)
+            maxSlots: qty,
+            price: calculateTotal(qty)
         });
     };
 
     const generateVoucher = () => {
         const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const prefix = formData.companyName.substring(0, 3).toUpperCase().replace(/\s/g, 'X');
+        const prefix = (formData.name || 'GX').substring(0, 3).toUpperCase().replace(/\s/g, 'X');
         setFormData({ ...formData, voucherCode: `GX-${prefix}-${random}` });
     };
 
@@ -124,6 +126,7 @@ export default function AdminBatches() {
             }
             setIsModalOpen(false);
             resetForm();
+            await refetch(true); // Force refetch
         } catch (err: any) {
             logger.error('Erro ao salvar lote:', err);
             toast.error('Erro ao salvar lote corporativo.');
@@ -133,15 +136,17 @@ export default function AdminBatches() {
     const resetForm = () => {
         setEditingBatch(null);
         setFormData({
-            companyName: '',
+            name: '',
             cnpj: '',
             responsibleName: '',
             responsibleEmail: '',
             contactEmail: '',
             voucherCode: '',
-            totalSlots: 5,
+            maxSlots: 5,
             ticketType: 'pro',
-            totalAmount: calculateTotal(5),
+            price: calculateTotal(5),
+            active: true,
+            expiresAt: '',
             paymentStatus: 'pending',
             notes: ''
         });
@@ -150,15 +155,17 @@ export default function AdminBatches() {
     const handleEdit = (batch: RegistrationBatch) => {
         setEditingBatch(batch);
         setFormData({
-            companyName: batch.companyName,
+            name: batch.name,
             cnpj: batch.cnpj || '',
             responsibleName: batch.responsibleName || '',
             responsibleEmail: batch.responsibleEmail || '',
             contactEmail: batch.contactEmail,
             voucherCode: batch.voucherCode,
-            totalSlots: batch.totalSlots,
+            maxSlots: batch.maxSlots,
             ticketType: batch.ticketType as any,
-            totalAmount: batch.totalAmount,
+            price: batch.price,
+            active: batch.active !== undefined ? batch.active : true,
+            expiresAt: batch.expiresAt || '',
             paymentStatus: batch.paymentStatus as any,
             notes: batch.notes || ''
         });
@@ -208,9 +215,9 @@ export default function AdminBatches() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total de Lotes', value: batches.length, icon: Building2, color: 'blue' },
-                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.totalSlots, 0), icon: Users, color: 'emerald' },
+                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.maxSlots, 0), icon: Users, color: 'emerald' },
                     { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.usedSlots, 0), icon: Ticket, color: 'orange' },
-                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago').reduce((sum, b) => sum + Number(b.totalAmount), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
+                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago').reduce((sum, b) => sum + Number(b.price), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card p-6 border-l-4 border-brand-orange-coral shadow-lg">
                         <div className="flex items-start justify-between">
@@ -243,7 +250,7 @@ export default function AdminBatches() {
                                 <tr key={batch.id} className="hover:bg-white/[0.04] transition-all group">
                                     <td className="px-6 py-5" data-label="Empresa">
                                         <div>
-                                            <p className="text-white font-black italic tracking-tight">{batch.companyName}</p>
+                                            <p className="text-white font-black italic tracking-tight">{batch.name}</p>
                                             <p className="text-gray-500 text-[10px] font-medium">{batch.contactEmail}</p>
                                         </div>
                                     </td>
@@ -260,19 +267,19 @@ export default function AdminBatches() {
                                     <td className="px-6 py-5" data-label="Vagas">
                                         <div className="space-y-1.5 w-full lg:w-32">
                                             <div className="flex justify-between text-[10px] text-gray-500 font-black uppercase tracking-widest">
-                                                <span>{batch.usedSlots} / {batch.totalSlots}</span>
-                                                <span className="text-brand-orange-coral">{Math.round((batch.usedSlots / batch.totalSlots) * 100)}%</span>
+                                                <span>{batch.usedSlots} / {batch.maxSlots}</span>
+                                                <span className="text-brand-orange-coral">{Math.round((batch.usedSlots / Math.max(1, batch.maxSlots)) * 100)}%</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
                                                     className="h-full bg-brand-orange-coral shadow-[0_0_8px_rgba(255,112,67,0.4)]"
-                                                    style={{ width: `${(batch.usedSlots / batch.totalSlots) * 100}%` }}
+                                                    style={{ width: `${(batch.usedSlots / Math.max(1, batch.maxSlots)) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-white font-black text-sm italic tracking-tight" data-label="Valor">
-                                        R$ {Number(batch.totalAmount).toLocaleString()}
+                                        R$ {Number(batch.price).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5" data-label="Status">
                                         <Badge className={`font-black text-[10px] uppercase tracking-widest px-3 py-1 ${
@@ -299,7 +306,12 @@ export default function AdminBatches() {
                                                 <DropdownMenuItem onClick={() => navigate(`/admin/inscricoes?lote=${batch.id}`)}>
                                                     <Users className="h-4 w-4 mr-2" /> Ver Integrantes
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-red-400" onClick={() => remove(batch.id)}>
+                                                <DropdownMenuItem className="text-red-400" onClick={async () => {
+                                                    if (confirm('Excluir este lote?')) {
+                                                        await remove(batch.id);
+                                                        await refetch(true);
+                                                    }
+                                                }}>
                                                     <Trash2 className="h-4 w-4 mr-2" /> Excluir
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -336,8 +348,8 @@ export default function AdminBatches() {
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Empresa</Label>
                                         <Input 
                                             required 
-                                            value={formData.companyName} 
-                                            onChange={e => setFormData({ ...formData, companyName: e.target.value })} 
+                                            value={formData.name} 
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="Ex: CBX Marketing Digital"
                                         />
@@ -415,7 +427,7 @@ export default function AdminBatches() {
                                         <Input
                                             type="number"
                                             min="1"
-                                            value={formData.totalSlots}
+                                            value={formData.maxSlots}
                                             onChange={e => handleQtyChange(Number(e.target.value))}
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
                                             placeholder="Ex: 10"
@@ -424,7 +436,7 @@ export default function AdminBatches() {
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total (R$)</Label>
                                         <div className="bg-dark-100 border border-white/5 rounded-xl h-11 flex items-center px-4 text-white font-black text-lg">
-                                            R$ {formData.totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                            R$ {formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
