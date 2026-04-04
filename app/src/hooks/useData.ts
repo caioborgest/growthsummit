@@ -99,7 +99,11 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
 };
 
 const isGlobalEntity = (entity: string) => {
-  return ['projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 'stand_checkins', 'notifications', 'certificates', 'audit_logs', 'login_attempts', 'email_templates', 'email_campaigns', 'cupons'].includes(entity);
+  return [
+    'projects', 'users', 'profiles', 'support_ticket_messages', 'raffle_participants', 
+    'stand_checkins', 'notifications', 'certificates', 'audit_logs', 'login_attempts', 
+    'email_templates', 'email_campaigns', 'cupons'
+  ].includes(entity);
 };
 
 function toCamelCase(str: string): string {
@@ -260,8 +264,10 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   // Cross-entity specific logic
   if (item.project_id) result.projectId = item.project_id;
   if (item.user_id) result.userId = item.user_id;
-  // Handle company name cross-naming (AdminBatches uses nomeEmpresa)
   if (item.nome_empresa) result.nomeEmpresa = item.nome_empresa;
+  if (entityName === 'sessions' || entityName === 'programacao_evento') {
+    if (item.max_vagas) result.maxCapacity = item.max_vagas;
+  }
   if (!result.ticketNumber && item.id && (item.id as string).length > 20) {
     result.ticketNumber = (item.id as string).split('-')[0].toUpperCase();
   }
@@ -420,7 +426,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     } else if (s === 'pending' || s === 'pendente') {
       result.status_pagamento = 'pendente';
       if (entity === 'registrations') result.status = 'pendente';
-    } else if (s === 'cancelled' || s === 'cancelado') {
+    } else if (s === 'cancelado' || s === 'cancelado') {
       result.status_pagamento = 'cancelado';
       if (entity === 'registrations') result.status = 'cancelado';
     }
@@ -591,9 +597,13 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
 
     // Proteção: não buscar entidades não globais sem projectId
-    const globalTables = ['projects', 'users', 'checkins', 'profiles', 'empresas_incentivadoras', 'vouchers', 'cupons', 'campanhas_whatsapp', 'programacao', 'atividades', 'locais', 'palestrantes', 'mentorias', 'matches_b2b', 'matches', 'registration_batches', 'leads_scanner', 'notifications', 'certificates', 'support_ticket_messages', 'stand_checkins', 'raffle_participants'];
+    const globalTables = [
+      'projects', 'users', 'profiles', 'vouchers', 'cupons', 
+      'notifications', 'certificates', 'audit_logs', 'login_attempts'
+    ];
+    
     if (!globalTables.includes(entityName) && !projectId) {
-      logger.debug(`[useData] Ignorando busca de ${entityName} (requer projectId)`);
+      // Se não for global e não tiver projectId, não busca
       setIsLoading(false);
       return;
     }
@@ -624,26 +634,23 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       // Filtro por projeto para tabelas não genéricas
       if (!isGlobal && projectId) {
-        // Proteção contra 'uuid = text': apenas aplicar o filtro .eq se o projectId for um UUID válido
-        // ou se soubermos que a tabela aceita slugs (raro, a maioria usa UUID)
-        const isActuallyUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        // Apenas aplicar o filtro .eq se o projectId parecer ser um UUID ou se for explicitamente um slug GE
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        const isGESlug = projectId.startsWith('ge-') || projectId.startsWith('growth-');
         
-        if (isActuallyUUID) {
+        if (isUUID) {
+          query = query.eq('project_id', projectId);
+        } else if (isGESlug) {
+          // No Growth Experience, algumas tabelas aceitam slug mas a maioria usa UUID.
+          // Se recebemos um slug, tentamos filtrar, mas o RLS ou a falta de coluna uuid=text pode dar erro.
+          // Por garantia, se não for UUID mas for slug, tentamos filtrar.
           query = query.eq('project_id', projectId);
         } else {
-          // Se não for UUID (ex: slug temporário), não aplicamos o filtro project_id na consulta SQL 
-          // para evitar o erro fatal 'operator does not exist: uuid = text' na tabela do Supabase.
-          logger.debug(`[useData:${entityName}] Ignorando filtro project_id via UUID (valor recebido: ${projectId})`);
-          
-          // Fallback seguro: se é uma tabela que requer project_id mas não temos um UUID, 
-          // a query retornaria 0 resultados de qualquer forma ou erro. 
-          // Retornamos vazio se não for global e não tivermos o ID correto.
-          if (!isGlobal) {
-            setData([]);
-            setIsLoading(false);
-            isFetchingRef.current = false;
-            return;
-          }
+          // Se não é UUID nem slug válido, retorna vazio para evitar erro 500/400 do PG
+          setData([]);
+          setIsLoading(false);
+          isFetchingRef.current = false;
+          return;
         }
       }
 
@@ -733,8 +740,11 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     setIsLoading(true);
     try {
-      const tableName = getTableName(projectId!, entityName);
-      const dataToInsert = mapToSupabase(projectId!, entityName, item as Record<string, unknown>);
+      const tableName = getTableName(projectId!, entityName, selectedProject?.slug);
+      const dataToInsert = mapToSupabase(projectId!, entityName, {
+        ...(item as any),
+        projectId: projectId // Garantir que o projectId seja setado corretamente
+      }, selectedProject?.slug);
 
       const { data: inserted, error } = await (supabase
         .from(tableName as never)
@@ -761,8 +771,8 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     setIsLoading(true);
     try {
       const isGlobal = isGlobalEntity(entityName);
-      const tableName = getTableName(projectId!, entityName);
-      const dataToUpdate = mapToSupabase(projectId!, entityName, updates as Record<string, unknown>);
+      const tableName = getTableName(projectId!, entityName, selectedProject?.slug);
+      const dataToUpdate = mapToSupabase(projectId!, entityName, updates as Record<string, unknown>, selectedProject?.slug);
 
       let query = (supabase as any)
         .from(tableName as never)
@@ -797,7 +807,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     setIsLoading(true);
     try {
       const isGlobal = isGlobalEntity(entityName);
-      const tableName = getTableName(projectId!, entityName);
+      const tableName = getTableName(projectId!, entityName, selectedProject?.slug);
 
       let query = (supabase as any)
         .from(tableName as never)

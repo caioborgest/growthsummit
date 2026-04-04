@@ -402,46 +402,73 @@ export function GrowthExperienceTriunfo() {
         </div>
       </section>
 
-      {/* Programação - Timeline Simples */}
+      {/* Programação - Timeline Premium Dinâmica */}
       <section id="programacao" className="py-24 bg-dark relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-brand-orange-coral/5 to-transparent pointer-events-none" />
+        
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
-              PROGRAMAÇÃO NOTURNA
+          <div className="text-center mb-16 animate-fade-in-up">
+            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1 font-black text-[10px] uppercase tracking-[0.2em]">
+              EXPERIÊNCIA NOTURNA
             </Badge>
-            <h2 className="text-4xl font-bold text-white">Cronograma Oficial</h2>
+            <h2 className="text-4xl sm:text-6xl font-black text-white italic uppercase tracking-tighter mb-4">
+              Grade de <span className="text-brand-orange-coral">Programação</span>
+            </h2>
+            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed">
+              UMA NOITE INTEIRA DE CONTEÚDO E NETWORKING NO SERTÃO DO PAJEÚ
+            </p>
           </div>
-
-          <div className="space-y-8">
+          
+          <div className="space-y-6">
             {(() => {
-              const displaySessions = (allSessions || []).filter(s => s.projectId === currentProject?.id);
-              
-              const sessionsToRender = displaySessions.length > 0 
-                ? displaySessions
-                  .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-                  .map(s => ({
-                    time: new Date(s.startTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }),
-                    event: s.title,
-                    desc: s.description
-                  }))
-                : [
-                  { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Networking e conexões no Espaço Parque' },
-                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Estratégias para momentos desafiadores' },
-                  { time: '19:00', event: 'Talk Show: Leandro Batista & João Daniel', desc: 'Bastidores de negócios de sucesso no interior' },
-                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Inteligente', desc: 'Redução de riscos e engajamento humano' },
-                  { time: '21:10', event: 'Vanylton Matias: Escalando com Equilíbrio', desc: 'Acelerando resultados com gestão humanizada' },
-                  { time: '22:30', event: 'Networking Premium e Encerramento', desc: 'Momento final de conexões de alto nível' }
-                ];
+              const displaySessions = (allSessions || [])
+                .filter(s => s.projectId === currentProject?.id)
+                .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
-              return sessionsToRender.map((item, idx) => (
-                <div key={idx} className="flex gap-6 items-start group">
-                  <div className="flex flex-col items-center">
-                    <div className="text-brand-orange-coral font-black text-xl italic">{item.time}</div>
-                    <div className="w-px h-16 bg-white/10 group-last:hidden" />
+              if (displaySessions.length === 0) {
+                return [
+                  { time: '17:00', event: 'Credenciamento e Exposição de Marcas', desc: 'Início da jornada de conexões no Espaço Parque' },
+                  { time: '18:00', event: 'Jerônimo Freire: Gestão e Liderança', desc: 'Estratégias avançadas para mercados competitivos' },
+                  { time: '19:00', event: 'Talk Show: Inovação e Resultados', desc: 'Leandro Batista & João Daniel compartilham bastidores' },
+                  { time: '20:10', event: 'Dra. Carolinne Castro: Liderança Inteligente', desc: 'Otimização de processos e engajamento humano' },
+                  { time: '21:10', event: 'Vanylton Matias: Escala de Negócios', desc: 'Acelerando seu faturamento com estratégia digital' },
+                  { time: '22:30', event: 'Networking Premium e Encerramento', desc: 'Conexões finais de alto nível e brindes' }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-6 items-start group">
+                    <div className="flex flex-col items-center">
+                      <div className="w-20 text-brand-orange-coral font-black text-2xl italic tracking-tighter text-right pr-4 border-r-2 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all">
+                        {item.time}
+                      </div>
+                      <div className="w-px h-16 bg-white/5 group-last:hidden" />
+                    </div>
+                    <div className="glass-card border-white/5 p-8 rounded-[2rem] flex-1 hover:border-brand-orange-coral/30 hover:bg-white/[0.03] transition-all duration-500 group-hover:translate-x-2">
+                       <h4 className="text-white font-black text-xl italic uppercase mb-2 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
+                       <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{item.desc}</p>
+                    </div>
                   </div>
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex-1 hover:border-brand-orange-coral/40 transition-all">
-                    <h4 className="text-white font-bold text-lg mb-1 group-hover:text-brand-orange-coral transition-colors">{item.event}</h4>
-                    <p className="text-gray-400 text-sm">{item.desc}</p>
+                ));
+              }
+
+              return displaySessions.map((s) => (
+                <div key={s.id} className="flex gap-6 items-start group">
+                  <div className="flex flex-col items-center">
+                    <div className="w-24 text-brand-orange-coral font-black text-2xl italic tracking-tighter text-right pr-4 border-r-2 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all">
+                      {s.startTime?.match(/(\d{2}:\d{2})/)?.[0] || '00:00'}
+                    </div>
+                    <div className="w-px h-16 bg-white/5 group-last:hidden" />
+                  </div>
+                  <div className="glass-card border-white/5 p-8 rounded-[2rem] flex-1 hover:border-brand-orange-coral/30 hover:bg-white/[0.03] transition-all duration-500 group-hover:translate-x-2">
+                     <div className="flex items-center justify-between mb-2">
+                       <h4 className="text-white font-black text-xl italic uppercase group-hover:text-brand-orange-coral transition-colors">{s.title}</h4>
+                       {s.type && <Badge className="bg-white/5 text-gray-500 border-none font-black text-[8px] tracking-widest">{s.type}</Badge>}
+                     </div>
+                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-4">{s.description}</p>
+                     <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-3 w-3 text-brand-orange-coral/60" />
+                          <span className="text-white/40 font-black text-[9px] uppercase tracking-widest">{s.room || 'Auditório Principal'}</span>
+                        </div>
+                     </div>
                   </div>
                 </div>
               ));
