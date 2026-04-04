@@ -136,7 +136,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   // Cross-entity specific logic
   if (item.project_id) result.projectId = item.project_id;
   if (item.user_id) result.userId = item.user_id;
-  if (item.company_name) result.nomeEmpresa = item.company_name;
+  if (item.company_name) result.companyName = item.company_name;
   if (entityName === 'sessions' || entityName === 'event_schedule') {
     if (item.max_slots) result.maxCapacity = item.max_slots;
   }
@@ -157,10 +157,6 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
     result.status = STATUS_MAPPING[rawStatus] ?? rawStatus;
   }
   
-  // Sync statusPagamento for entities using that naming (RegistrationBatch)
-  if (result.paymentStatus && !result.statusPagamento) {
-    result.statusPagamento = result.paymentStatus;
-  }
 
   // 3. Asset Redirect: Force high-res local logos to Supabase Storage URLs
   // This avoids build errors for large assets while maintaining DB compatibility
@@ -196,7 +192,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
 //   return result;
 // };
 
-const mapToSupabase = (projectId: string | undefined, entity: string, data: Record<string, unknown>): Record<string, unknown> => {
+const mapToSupabase = (projectId: string | undefined, entity: string, data: Record<string, unknown>, _projectSlug?: string): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
 
   // Virtual / computed fields that exist only in the frontend model (never DB columns)

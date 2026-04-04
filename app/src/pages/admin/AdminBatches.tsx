@@ -40,16 +40,16 @@ export default function AdminBatches() {
     const [editingBatch, setEditingBatch] = useState<RegistrationBatch | null>(null);
 
     const [formData, setFormData] = useState({
-        nomeEmpresa: '',
+        companyName: '',
         cnpj: '',
-        nomeResponsavel: '',
-        emailResponsavel: '',
-        emailContato: '',
+        responsibleName: '',
+        responsibleEmail: '',
+        contactEmail: '',
         voucherCode: '',
-        quantidadeVagas: 5,
-        tipoIngresso: 'pro' as 'morning' | 'pro',
-        valorTotal: 0,
-        statusPagamento: 'pending' as 'pending' | 'paid' | 'cancelled',
+        totalSlots: 5,
+        ticketType: 'pro' as 'morning' | 'pro',
+        totalAmount: 0,
+        paymentStatus: 'pending' as 'pending' | 'paid' | 'cancelled',
         notes: ''
     });
 
@@ -75,10 +75,10 @@ export default function AdminBatches() {
     }
 
     const filteredBatches = batches.filter(b => {
-        const matchesSearch = (b.nomeEmpresa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = (b.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             (b.voucherCode || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (b.emailContato || '').toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || b.statusPagamento === statusFilter;
+            (b.contactEmail || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || b.paymentStatus === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
@@ -93,14 +93,14 @@ export default function AdminBatches() {
     const handleQtyChange = (qty: number) => {
         setFormData({
             ...formData,
-            quantidadeVagas: qty,
-            valorTotal: calculateTotal(qty)
+            totalSlots: qty,
+            totalAmount: calculateTotal(qty)
         });
     };
 
     const generateVoucher = () => {
         const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const prefix = formData.nomeEmpresa.substring(0, 3).toUpperCase().replace(/\s/g, 'X');
+        const prefix = formData.companyName.substring(0, 3).toUpperCase().replace(/\s/g, 'X');
         setFormData({ ...formData, voucherCode: `GX-${prefix}-${random}` });
     };
 
@@ -117,7 +117,7 @@ export default function AdminBatches() {
                 await create({
                     ...formData,
                     projectId: projectId || '',
-                    vagasUtilizadas: 0,
+                    usedSlots: 0,
                     voucherCode: (formData.voucherCode || '').toUpperCase()
                 });
                 toast.success('Lote corporativo criado com sucesso!');
@@ -133,16 +133,16 @@ export default function AdminBatches() {
     const resetForm = () => {
         setEditingBatch(null);
         setFormData({
-            nomeEmpresa: '',
+            companyName: '',
             cnpj: '',
-            nomeResponsavel: '',
-            emailResponsavel: '',
-            emailContato: '',
+            responsibleName: '',
+            responsibleEmail: '',
+            contactEmail: '',
             voucherCode: '',
-            quantidadeVagas: 5,
-            tipoIngresso: 'pro',
-            valorTotal: calculateTotal(5),
-            statusPagamento: 'pending',
+            totalSlots: 5,
+            ticketType: 'pro',
+            totalAmount: calculateTotal(5),
+            paymentStatus: 'pending',
             notes: ''
         });
     };
@@ -150,16 +150,16 @@ export default function AdminBatches() {
     const handleEdit = (batch: RegistrationBatch) => {
         setEditingBatch(batch);
         setFormData({
-            nomeEmpresa: batch.nomeEmpresa,
+            companyName: batch.companyName,
             cnpj: batch.cnpj || '',
-            nomeResponsavel: batch.nomeResponsavel || '',
-            emailResponsavel: batch.emailResponsavel || '',
-            emailContato: batch.emailContato,
+            responsibleName: batch.responsibleName || '',
+            responsibleEmail: batch.responsibleEmail || '',
+            contactEmail: batch.contactEmail,
             voucherCode: batch.voucherCode,
-            quantidadeVagas: batch.quantidadeVagas,
-            tipoIngresso: batch.tipoIngresso,
-            valorTotal: batch.valorTotal,
-            statusPagamento: batch.statusPagamento,
+            totalSlots: batch.totalSlots,
+            ticketType: batch.ticketType as any,
+            totalAmount: batch.totalAmount,
+            paymentStatus: batch.paymentStatus as any,
             notes: batch.notes || ''
         });
         setIsModalOpen(true);
@@ -208,9 +208,9 @@ export default function AdminBatches() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total de Lotes', value: batches.length, icon: Building2, color: 'blue' },
-                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.quantidadeVagas, 0), icon: Users, color: 'emerald' },
-                    { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.vagasUtilizadas, 0), icon: Ticket, color: 'orange' },
-                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.statusPagamento === 'paid').reduce((sum, b) => sum + Number(b.valorTotal), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
+                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.totalSlots, 0), icon: Users, color: 'emerald' },
+                    { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.usedSlots, 0), icon: Ticket, color: 'orange' },
+                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago').reduce((sum, b) => sum + Number(b.totalAmount), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card p-6 border-l-4 border-brand-orange-coral shadow-lg">
                         <div className="flex items-start justify-between">
@@ -243,8 +243,8 @@ export default function AdminBatches() {
                                 <tr key={batch.id} className="hover:bg-white/[0.04] transition-all group">
                                     <td className="px-6 py-5" data-label="Empresa">
                                         <div>
-                                            <p className="text-white font-black italic tracking-tight">{batch.nomeEmpresa}</p>
-                                            <p className="text-gray-500 text-[10px] font-medium">{batch.emailContato}</p>
+                                            <p className="text-white font-black italic tracking-tight">{batch.companyName}</p>
+                                            <p className="text-gray-500 text-[10px] font-medium">{batch.contactEmail}</p>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5" data-label="Voucher">
@@ -260,28 +260,28 @@ export default function AdminBatches() {
                                     <td className="px-6 py-5" data-label="Vagas">
                                         <div className="space-y-1.5 w-full lg:w-32">
                                             <div className="flex justify-between text-[10px] text-gray-500 font-black uppercase tracking-widest">
-                                                <span>{batch.vagasUtilizadas} / {batch.quantidadeVagas}</span>
-                                                <span className="text-brand-orange-coral">{Math.round((batch.vagasUtilizadas / batch.quantidadeVagas) * 100)}%</span>
+                                                <span>{batch.usedSlots} / {batch.totalSlots}</span>
+                                                <span className="text-brand-orange-coral">{Math.round((batch.usedSlots / batch.totalSlots) * 100)}%</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
                                                     className="h-full bg-brand-orange-coral shadow-[0_0_8px_rgba(255,112,67,0.4)]"
-                                                    style={{ width: `${(batch.vagasUtilizadas / batch.quantidadeVagas) * 100}%` }}
+                                                    style={{ width: `${(batch.usedSlots / batch.totalSlots) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-white font-black text-sm italic tracking-tight" data-label="Valor">
-                                        R$ {Number(batch.valorTotal).toLocaleString()}
+                                        R$ {Number(batch.totalAmount).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5" data-label="Status">
                                         <Badge className={`font-black text-[10px] uppercase tracking-widest px-3 py-1 ${
-                                            batch.statusPagamento === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                batch.statusPagamento === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                            (batch.paymentStatus === 'paid' || batch.paymentStatus === 'pago') ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                (batch.paymentStatus === 'pending' || batch.paymentStatus === 'pendente') ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                                                     'bg-red-500/10 text-red-500 border-red-500/20'
                                         }`}>
-                                            {(batch.statusPagamento === 'paid' ? 'PAGO' : 
-                                              batch.statusPagamento === 'pending' ? 'PENDENTE' : 
+                                            {(batch.paymentStatus === 'paid' || batch.paymentStatus === 'pago' ? 'PAGO' : 
+                                              batch.paymentStatus === 'pending' || batch.paymentStatus === 'pendente' ? 'PENDENTE' : 
                                               'CANCELADO')}
                                         </Badge>
                                     </td>
@@ -336,8 +336,8 @@ export default function AdminBatches() {
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Empresa</Label>
                                         <Input 
                                             required 
-                                            value={formData.nomeEmpresa} 
-                                            onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })} 
+                                            value={formData.companyName} 
+                                            onChange={e => setFormData({ ...formData, companyName: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="Ex: Growth & IA Hub"
                                         />
@@ -359,8 +359,8 @@ export default function AdminBatches() {
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Responsável (Líder)</Label>
                                         <Input 
                                             required 
-                                            value={formData.nomeResponsavel} 
-                                            onChange={e => setFormData({ ...formData, nomeResponsavel: e.target.value })} 
+                                            value={formData.responsibleName} 
+                                            onChange={e => setFormData({ ...formData, responsibleName: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="Nome Completo"
                                         />
@@ -370,8 +370,8 @@ export default function AdminBatches() {
                                         <Input 
                                             required
                                             type="email"
-                                            value={formData.emailResponsavel} 
-                                            onChange={e => setFormData({ ...formData, emailResponsavel: e.target.value, emailContato: e.target.value })} 
+                                            value={formData.responsibleEmail} 
+                                            onChange={e => setFormData({ ...formData, responsibleEmail: e.target.value, contactEmail: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="email@equipe.com"
                                         />
@@ -384,8 +384,8 @@ export default function AdminBatches() {
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail Financeiro</Label>
                                         <Input 
                                             type="email" 
-                                            value={formData.emailContato} 
-                                            onChange={e => setFormData({ ...formData, emailContato: e.target.value })} 
+                                            value={formData.contactEmail} 
+                                            onChange={e => setFormData({ ...formData, contactEmail: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="pago@empresa.com"
                                         />
@@ -419,25 +419,25 @@ export default function AdminBatches() {
                                         <Input
                                             type="number"
                                             min="1"
-                                            value={formData.quantidadeVagas}
+                                            value={formData.totalSlots}
                                             onChange={e => handleQtyChange(Number(e.target.value))}
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
                                         />
-                                        {formData.quantidadeVagas < 5 && (
+                                        {formData.totalSlots < 5 && (
                                             <p className="text-[9px] text-yellow-500 font-bold uppercase tracking-tighter">Mín. 5 para 30% desc.</p>
                                         )}
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total</Label>
                                         <div className="bg-dark-100 border border-white/5 rounded-xl h-11 flex items-center px-4 text-white font-black text-lg">
-                                            R$ {formData.valorTotal}
+                                            R$ {formData.totalAmount}
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</Label>
                                         <select
-                                            value={formData.statusPagamento}
-                                            onChange={e => setFormData({ ...formData, statusPagamento: e.target.value as any })}
+                                            value={formData.paymentStatus}
+                                            onChange={e => setFormData({ ...formData, paymentStatus: e.target.value as any })}
                                             className="w-full h-11 px-4 bg-dark-100 border border-white/5 rounded-xl text-white text-sm font-bold focus:ring-1 focus:ring-brand-orange-coral/50 outline-none appearance-none cursor-pointer"
                                         >
                                             <option value="pending">Pendente</option>

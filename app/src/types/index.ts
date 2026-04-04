@@ -568,17 +568,17 @@ export interface EmpresaIncentivadora {
 export interface RegistrationBatch {
   id: string;
   projectId: string;
-  nomeEmpresa: string;
+  companyName: string;
   cnpj?: string;
-  nomeResponsavel: string;
-  emailResponsavel: string;
-  emailContato: string;
+  responsibleName: string;
+  responsibleEmail: string;
+  contactEmail: string;
   voucherCode: string;
-  quantidadeVagas: number;
-  vagasUtilizadas: number;
-  tipoIngresso: string;
-  valorTotal: number;
-  statusPagamento: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
+  totalSlots: number;
+  usedSlots: number;
+  ticketType: string;
+  totalAmount: number;
+  paymentStatus: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
   notes?: string;
   createdAt: string;
   updatedAt: string;
