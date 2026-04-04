@@ -14,13 +14,13 @@ interface Step3DadosPessoaisMentoriaProps {
 }
 
 export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Step3DadosPessoaisMentoriaProps) {
-    const [nome, setNome] = useState(dados.nome);
+    const [name, setName] = useState(dados.name);
     const [email, setEmail] = useState(dados.email);
-    const [telefone, setTelefone] = useState(dados.phone);
-    const [senha, setSenha] = useState(dados.senha);
-    const [confirmSenha, setConfirmSenha] = useState(dados.senha || '');
-    const [showSenha, setShowSenha] = useState(false);
-    const [showConfirmSenha, setShowConfirmSenha] = useState(false);
+    const [phone, setPhone] = useState(dados.phone);
+    const [password, setPassword] = useState(dados.password);
+    const [confirmPassword, setConfirmPassword] = useState(dados.password || '');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const formatTelefone = (value: string) => {
@@ -35,15 +35,15 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
 
     const handleContinuar = () => {
         const newErrors: Record<string, string> = {};
-        if (!nome.trim()) newErrors.nome = 'Nome é obrigatório';
+        if (!name.trim()) newErrors.name = 'Nome é obrigatório';
         if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Email inválido';
-        if (!telefone.trim() || telefone.replace(/\D/g, '').length < 10) newErrors.phone = 'Telefone inválido';
-        if (!senha || senha.length < 6) newErrors.senha = 'Senha de no mínimo 6 caracteres';
-        if (senha !== confirmSenha) newErrors.confirmSenha = 'As senhas não coincidem';
+        if (!phone.trim() || phone.replace(/\D/g, '').length < 10) newErrors.phone = 'Telefone inválido';
+        if (!password || password.length < 6) newErrors.password = 'Senha de no mínimo 6 caracteres';
+        if (password !== confirmPassword) newErrors.confirmPassword = 'As senhas não coincidem';
 
         setErrors(newErrors);
         if (Object.keys(newErrors).length === 0) {
-            onContinuar({ nome, email, telefone, senha });
+            onContinuar({ name, email, phone, password });
         }
     };
 
@@ -64,20 +64,20 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                         {/* Nome Completo */}
                         <div className="space-y-2">
-                            <Label htmlFor="nome" className="text-white font-bold flex items-center gap-2 mb-1">
+                            <Label htmlFor="name" className="text-white font-bold flex items-center gap-2 mb-1">
                                 <User className="h-4 w-4 text-brand-orange-coral" /> Nome Completo
                             </Label>
                             <Input
-                                id="nome"
-                                value={nome}
+                                id="name"
+                                value={name}
                                 placeholder="Seu nome completo"
                                 onChange={(e) => {
-                                    setNome(e.target.value);
-                                    if (errors.nome) setErrors(prev => ({ ...prev, nome: '' }));
+                                    setName(e.target.value);
+                                    if (errors.name) setErrors(prev => ({ ...prev, name: '' }));
                                 }}
-                                className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl focus:ring-brand-orange-coral ${errors.nome ? 'border-red-500' : ''}`}
+                                className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl focus:ring-brand-orange-coral ${errors.name ? 'border-red-500' : ''}`}
                             />
-                            {errors.nome && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.nome}</p>}
+                            {errors.name && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.name}</p>}
                         </div>
 
                         {/* Email */}
@@ -101,15 +101,15 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
 
                         {/* Telefone */}
                         <div className="space-y-2">
-                            <Label htmlFor="telefone" className="text-white font-bold flex items-center gap-2 mb-1">
+                            <Label htmlFor="phone" className="text-white font-bold flex items-center gap-2 mb-1">
                                 <Phone className="h-4 w-4 text-brand-orange-coral" /> WhatsApp
                             </Label>
                             <Input
-                                id="telefone"
-                                value={telefone}
+                                id="phone"
+                                value={phone}
                                 placeholder="(00) 00000-0000"
                                 onChange={(e) => {
-                                    setTelefone(formatTelefone(e.target.value));
+                                    setPhone(formatTelefone(e.target.value));
                                     if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }));
                                 }}
                                 className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl focus:ring-brand-orange-coral ${errors.phone ? 'border-red-500' : ''}`}
@@ -124,51 +124,51 @@ export function Step3DadosPessoaisMentoria({ dados, onContinuar, onVoltar }: Ste
                             </div>
                         </div>
 
-                        {/* Senhas */}
+                        {/* Passwords */}
                         <div className="space-y-2">
-                            <Label htmlFor="senha" className="text-white font-bold flex items-center gap-2 mb-1">
+                            <Label htmlFor="password" className="text-white font-bold flex items-center gap-2 mb-1">
                                 <Lock className="h-4 w-4 text-brand-orange-coral" /> Criar Senha
                             </Label>
                             <div className="relative">
                                 <Input
-                                    id="senha"
+                                    id="password"
                                     placeholder="Mínimo 6 caracteres"
-                                    type={showSenha ? 'text' : 'password'}
-                                    value={senha}
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
                                     onChange={(e) => {
-                                        setSenha(e.target.value);
-                                        if (errors.senha) setErrors(prev => ({ ...prev, senha: '' }));
+                                        setPassword(e.target.value);
+                                        if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
                                     }}
-                                    className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl pr-12 focus:ring-brand-orange-coral ${errors.senha ? 'border-red-500' : ''}`}
+                                    className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl pr-12 focus:ring-brand-orange-coral ${errors.password ? 'border-red-500' : ''}`}
                                 />
-                                <button type="button" onClick={() => setShowSenha(!showSenha)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                                    {showSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
-                            {errors.senha && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.senha}</p>}
+                            {errors.password && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.password}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmSenha" className="text-white font-bold flex items-center gap-2 mb-1">
+                            <Label htmlFor="confirmPassword" className="text-white font-bold flex items-center gap-2 mb-1">
                                 <Lock className="h-4 w-4 text-brand-orange-coral" /> Confirmar Senha
                             </Label>
                             <div className="relative">
                                 <Input
-                                    id="confirmSenha"
+                                    id="confirmPassword"
                                     placeholder="Repita sua senha"
-                                    type={showConfirmSenha ? 'text' : 'password'}
-                                    value={confirmSenha}
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={confirmPassword}
                                     onChange={(e) => {
-                                        setConfirmSenha(e.target.value);
-                                        if (errors.confirmSenha) setErrors(prev => ({ ...prev, confirmSenha: '' }));
+                                        setConfirmPassword(e.target.value);
+                                        if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
                                     }}
-                                    className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl pr-12 focus:ring-brand-orange-coral ${errors.confirmSenha ? 'border-red-500' : ''}`}
+                                    className={`h-12 bg-dark-200/50 border-white/10 text-white rounded-xl pr-12 focus:ring-brand-orange-coral ${errors.confirmPassword ? 'border-red-500' : ''}`}
                                 />
-                                <button type="button" onClick={() => setShowConfirmSenha(!showConfirmSenha)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                                    {showConfirmSenha ? <EyeOff size={18} /> : <Eye size={18} />}
+                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
-                            {errors.confirmSenha && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.confirmSenha}</p>}
+                            {errors.confirmPassword && <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.confirmPassword}</p>}
                         </div>
                     </div>
                 </div>

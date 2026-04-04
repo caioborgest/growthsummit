@@ -33,7 +33,7 @@ export function Step5ConclusaoMentoria({ dados, onFechar }: Step5ConclusaoMentor
                     Agendamento <span className="text-brand-orange-coral">Solicitado!</span>
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto leading-relaxed">
-                    Parabéns, <span className="text-white font-bold">{dados.nome}</span>! Sua solicitação de mentoria foi enviada com sucesso para o mentor.
+                    Parabéns, <span className="text-white font-bold">{dados.name}</span>! Sua solicitação de mentoria foi enviada com sucesso para o mentor.
                 </p>
             </div>
 

@@ -38,14 +38,14 @@ export interface DadosMentoria {
     mentorId: string;
     slotId: string; // The time string (e.g. '08:00')
     selectedDate?: string; // The ISO date string (YYYY-MM-DD)
-    descricaoProblema: string;
-    nome: string;
+    problemDescription: string;
+    name: string;
     email: string;
     phone: string;
-    senha: string;
+    password: string;
     userId?: string;
     inscricaoId?: string;
     // Business data fields requested
-    nomeNegocio?: string;
-    estagioNegocio?: string;
+    businessName?: string;
+    businessStage?: string;
 }

@@ -23,13 +23,13 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
         area: 'OUTRO', // Default area if skipping step 1
         mentorId: initialMentorId || '',
         slotId: '',
-        descricaoProblema: '',
-        nome: '',
+        problemDescription: '',
+        name: '',
         email: '',
         phone: '',
-        senha: '',
-        nomeNegocio: '',
-        estagioNegocio: ''
+        password: '',
+        businessName: '',
+        businessStage: ''
     });
 
     // Jump to step 2 if initialMentorId is provided on open
@@ -45,7 +45,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
         if (isAuthenticated && user && isOpen && !dados.email) {
             setDados(prev => ({
                 ...prev,
-                nome: user.name || prev.nome,
+                name: user.name || prev.name,
                 email: user.email || prev.email,
                 phone: (user as any).phone || prev.phone,
                 userId: user.id
@@ -102,11 +102,11 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
                 return (
                     <Step1AreaMentoria
                         areaSelecionada={dados.area}
-                        descricaoProblema={dados.descricaoProblema}
-                        nomeNegocio={dados.nomeNegocio}
-                        estagioNegocio={dados.estagioNegocio}
-                        onContinuar={(area, descricao, neg, est) => {
-                            updateDados({ area, descricaoProblema: descricao, nomeNegocio: neg, estagioNegocio: est });
+                        problemDescription={dados.problemDescription}
+                        businessName={dados.businessName}
+                        businessStage={dados.businessStage}
+                        onContinuar={(area, desc, biz, stage) => {
+                            updateDados({ area, problemDescription: desc, businessName: biz, businessStage: stage });
                             nextStep();
                         }}
                         onVoltar={handleClose}

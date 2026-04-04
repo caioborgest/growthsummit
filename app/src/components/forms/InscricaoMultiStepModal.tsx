@@ -117,7 +117,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     useEffect(() => {
         if (isOpen && currentStep < 7) {
             const draftData = {
-                data: { ...dados, senha: '' },
+                data: { ...dados, password: '' },
                 step: currentStep,
                 timestamp: new Date().toISOString()
             };

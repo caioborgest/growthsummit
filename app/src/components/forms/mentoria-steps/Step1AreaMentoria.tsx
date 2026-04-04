@@ -37,20 +37,20 @@ const iconMap: Record<string, any> = {
 
 interface Step1AreaMentoriaProps {
     areaSelecionada: string;
-    descricaoProblema: string;
-    nomeNegocio?: string;
-    estagioNegocio?: string;
-    onContinuar: (area: string, descricao: string, neg: string, est: string) => void;
+    problemDescription: string;
+    businessName?: string;
+    businessStage?: string;
+    onContinuar: (area: string, description: string, business: string, stage: string) => void;
     onVoltar?: () => void;
 }
 
-export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNegocio = '', estagioNegocio = '', onContinuar, onVoltar }: Step1AreaMentoriaProps) {
+export function Step1AreaMentoria({ areaSelecionada, problemDescription, businessName = '', businessStage = '', onContinuar, onVoltar }: Step1AreaMentoriaProps) {
     const [tempArea, setTempArea] = useState(areaSelecionada);
-    const [tempDesc, setTempDesc] = useState(descricaoProblema);
-    const [tempNegocio, setTempNegocio] = useState(nomeNegocio);
-    const [tempEstagio, setTempEstagio] = useState(estagioNegocio);
+    const [tempDescription, setTempDescription] = useState(problemDescription);
+    const [tempBusiness, setTempBusiness] = useState(businessName);
+    const [tempStage, setTempStage] = useState(businessStage);
 
-    const estagios = [
+    const stages = [
         'Ideação / MVP',
         'Operação Inicial (Early Stage)',
         'Tração / Crescimento',
@@ -80,8 +80,8 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNego
                             <input
                                 className="w-full bg-dark-300 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-brand-orange-coral transition-all"
                                 placeholder="Sua Startup ou Empresa"
-                                value={tempNegocio}
-                                onChange={e => setTempNegocio(e.target.value)}
+                                value={tempBusiness}
+                                onChange={e => setTempBusiness(e.target.value)}
                             />
                         </div>
 
@@ -91,11 +91,11 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNego
                             </label>
                             <select
                                 className="w-full bg-dark-300 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-brand-orange-coral transition-all appearance-none"
-                                value={tempEstagio}
-                                onChange={e => setTempEstagio(e.target.value)}
+                                value={tempStage}
+                                onChange={e => setTempStage(e.target.value)}
                             >
                                 <option value="" disabled>Selecione o estágio</option>
-                                {estagios.map(e => <option key={e} value={e}>{e}</option>)}
+                                {stages.map(e => <option key={e} value={e}>{e}</option>)}
                             </select>
                         </div>
                     </div>
@@ -154,16 +154,16 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNego
                             required
                             rows={4}
                             className="w-full px-5 py-4 bg-dark-200/50 border border-white/10 rounded-2xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none resize-none placeholder:text-gray-600 transition-all"
-                            value={tempDesc}
-                            onChange={e => setTempDesc(e.target.value)}
+                            value={tempDescription}
+                            onChange={e => setTempDescription(e.target.value)}
                             placeholder="Ex: Gostaria de escalar meu negócio utilizando tráfego pago mas estou com dificuldade no CAC em relação ao LTV..."
                         />
                         <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest px-2">
-                            <span className={tempDesc.length >= 10 ? 'text-green-500' : 'text-gray-600'}>
+                            <span className={tempDescription.length >= 10 ? 'text-green-500' : 'text-gray-600'}>
                                 Mínimo 10 caracteres
                             </span>
                             <span className="text-gray-600">
-                                {tempDesc.length} caracteres
+                                {tempDescription.length} caracteres
                             </span>
                         </div>
                     </div>
@@ -183,9 +183,9 @@ export function Step1AreaMentoria({ areaSelecionada, descricaoProblema, nomeNego
                 )}
                 <Button
                     size="lg"
-                    disabled={!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio}
-                    onClick={() => onContinuar(tempArea, tempDesc, tempNegocio, tempEstagio)}
-                    className={`flex-1 sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDesc || tempDesc.length < 10 || !tempNegocio || !tempEstagio
+                    disabled={!tempArea || !tempDescription || tempDescription.length < 10 || !tempBusiness || !tempStage}
+                    onClick={() => onContinuar(tempArea, tempDescription, tempBusiness, tempStage)}
+                    className={`flex-1 sm:w-auto px-12 h-16 rounded-2xl font-black text-xl transition-all duration-500 shadow-xl ${!tempArea || !tempDescription || tempDescription.length < 10 || !tempBusiness || !tempStage
                         ? 'bg-white/5 text-gray-500 cursor-not-allowed opacity-50'
                         : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-glow-orange hover:scale-[1.02] active:scale-95'
                         }`}
