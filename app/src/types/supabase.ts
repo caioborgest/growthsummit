@@ -1949,27 +1949,46 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       register_participant_with_slots: {
         Args: {
-          p_codigo_palestra?: string
-          p_codigo_social?: string
+          p_lecture_code?: string
+          p_social_code?: string
           p_email: string
-          p_evento?: string
+          p_event_name?: string
           p_extra_data?: Json
-          p_horario_atividade?: string
-          p_indicacao_nome?: string
-          p_indicacao_tipo?: string
-          p_nivel_atividade?: string
-          p_nome: string
-          p_palestras_noturnas?: boolean
+          p_activity_schedule?: string
+          p_referral_name?: string
+          p_referral_type?: string
+          p_activity_level?: string
+          p_name: string
+          p_night_lectures?: boolean
           p_project_id: string
-          p_sala_atividade?: string
+          p_activity_room?: string
           p_session_ids: string[]
           p_status?: string
           p_payment_status?: string
-          p_telefone: string
-          p_tipo_atividade?: string
+          p_phone: string
+          p_activity_type?: string
           p_registration_type?: string
           p_user_id: string
           p_paid_amount?: number
+          p_batch_id?: string
+          p_company_voucher?: string
+          p_partner_id?: string
+          p_app_installed?: boolean
+        }
+        Returns: Json
+      }
+      apply_company_voucher: {
+        Args: {
+          p_registration_id: string
+          p_voucher_code: string
+        }
+        Returns: Json
+      }
+      validate_registration_data: {
+        Args: {
+          p_name: string
+          p_email: string
+          p_phone: string
         }
         Returns: Json
       }

@@ -224,11 +224,11 @@ export function Step1SelecionarCursos({
                     )}
                     <button
                         type="button"
-                        disabled={selecionadosFinal.length === 0}
+                        disabled={selectedIdsFinal.length === 0}
                         onClick={handleContinuar}
-                        className={`btn-form-primary flex-1 ${selecionadosFinal.length === 0 ? 'opacity-40 pointer-events-none' : ''}`}
+                        className={`btn-form-primary flex-1 ${selectedIdsFinal.length === 0 ? 'opacity-40 pointer-events-none' : ''}`}
                     >
-                        {selecionadosFinal.length === 0
+                        {selectedIdsFinal.length === 0
                             ? 'Selecione sua Trilha'
                             : 'Confirmar e Próximo Passo'}
                     </button>

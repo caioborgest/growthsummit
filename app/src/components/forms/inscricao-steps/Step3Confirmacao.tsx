@@ -181,7 +181,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 }
             }
 
-            const finalRegistrationId = rpcResult.registration_id || rpcResult.inscricao_id || null;
+            const finalRegistrationId = rpcResult.registration_id || null;
 
             onConfirmar('', finalRegistrationId || '', paymentStatus);
             onUpdate?.({ valorFinal: valorFinal });
@@ -276,11 +276,11 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                                         {dados.indicacaoTipo === 'prefeitura' ? 'Prefeitura' : 'Indicação de'}
                                     </p>
                                     <p className="text-brand-orange-coral font-semibold">{dados.indicacaoNome}</p>
-                                    {(dados.descontoSocial && dados.descontoSocial > 0) || dados.voucherEmpresa ? (
+                                    {(dados.socialDiscount && dados.socialDiscount > 0) || dados.companyVoucher ? (
                                         <div className="mt-1 flex items-center gap-2">
                                             <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[10px]">
-                                                {dados.voucherEmpresa 
-                                                    ? `Pago pela Empresa (Voucher: ${dados.voucherEmpresa})` 
+                                                {dados.companyVoucher 
+                                                    ? `Pago pela Empresa (Voucher: ${dados.companyVoucher})` 
                                                     : `${descontoEfetivo}% de desconto aplicado ${dados.code && `(Código: ${dados.code})`}`}
                                             </Badge>
                                         </div>

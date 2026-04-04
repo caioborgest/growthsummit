@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Loader2, CheckCircle, Contact } from 'lucide-react';
+import { ArrowRight, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
@@ -89,21 +89,21 @@ export function PetrolinaRegistrationForm() {
             const rpcResult = await registrationService.registerWithSlots({
                 projectId: selectedProject?.id || '',
                 userId: userId || '',
-                nome: formData.nome,
+                name: formData.nome,
                 email: formData.email,
                 phone: formData.whatsapp,
                 cpf: formData.cpf,
                 sessionIds: [], // Petrolina ainda não tem sessões específicas no seletor
-                tipoInscricao: 'standard',
-                evento: selectedProject?.name || 'Growth Experience Petrolina',
-                payment_status: 'pago',
+                registrationType: 'standard',
+                eventName: selectedProject?.name || 'Growth Experience Petrolina',
+                paymentStatus: 'pago',
                 status: 'ativo',
                 extraData: {
                     empresa: formData.empresa,
                     numero_colaboradores: formData.colaboradores,
                     faturamento_anual: formData.faturamento
                 },
-                codigoPalestra: formData.cupom || null
+                palestraCode: formData.cupom || null
             });
 
             if (!rpcResult?.success) {

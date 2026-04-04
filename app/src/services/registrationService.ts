@@ -39,10 +39,10 @@ export const registrationService = {
      */
     async validateInscricaoData(nome: string, email: string, phone: string): Promise<{ valid: boolean; errorMessage?: string }> {
         try {
-            const { data, error } = await (supabase.rpc as any)('validate_inscricao_dados', {
-                p_nome: nome?.trim() || '',
+            const { data, error } = await (supabase.rpc as any)('validate_registration_data', {
+                p_name: nome?.trim() || '',
                 p_email: email?.trim() || '',
-                p_telefone: phone?.trim() || '',
+                p_phone: phone?.trim() || '',
             });
 
             // If function not found or cache error (PGRST), apply client-side fallback
@@ -102,18 +102,18 @@ export const registrationService = {
             p_payment_status: params.paymentStatus || (params.palestrasNoturnas ? 'pending' : 'paid'),
             p_status: params.status || (params.palestrasNoturnas ? 'pending' : 'active'),
             p_event_name: params.eventName || 'Growth Experience',
-            p_palestras_noturnas: Boolean(params.palestrasNoturnas),
-            p_tipo_atividade: params.tipoAtividade || null,
-            p_sala_atividade: params.salaAtividade || null,
-            p_horario_atividade: params.horarioAtividade || null,
-            p_nivel_atividade: params.nivelAtividade || null,
+            p_night_lectures: Boolean(params.palestrasNoturnas),
+            p_activity_type: params.tipoAtividade || null,
+            p_activity_room: params.salaAtividade || null,
+            p_activity_schedule: params.horarioAtividade || null,
+            p_activity_level: params.nivelAtividade || null,
             p_referral_type: params.referralType || 'none',
             p_referral_name: params.referralName || null,
             p_social_code: params.socialCode || null,
-            p_palestra_code: params.palestraCode || null,
+            p_lecture_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
             p_batch_id: cleanBatchId || null,
-            p_voucher_code: params.companyVoucher || null,
+            p_company_voucher: params.companyVoucher || null,
             p_partner_id: cleanPartnerId || null,
             p_app_installed: Boolean(params.appInstalled),
         };
@@ -143,10 +143,10 @@ export const registrationService = {
             }
 
             // If partner registration, link in the team table (RPC validates access_code and limit)
-            const rpcPayload = data as { success?: boolean; inscricao_id?: string };
+            const rpcPayload = data as { success?: boolean; registration_id?: string };
             if (cleanPartnerId && rpcPayload?.success !== false) {
-                const inscId = rpcPayload?.inscricao_id;
-                const partnerQR = `GE-PARTNER|${inscId || cleanUserId || 'new'}|${Date.now()}`;
+                const regId = rpcPayload?.registration_id;
+                const partnerQR = `GE-PARTNER|${regId || cleanUserId || 'new'}|${Date.now()}`;
                 try {
                     const { data: peData, error: peErr } = await (supabase.rpc as any)('register_parceiro_equipe_member', {
                         p_partner_id: cleanPartnerId,

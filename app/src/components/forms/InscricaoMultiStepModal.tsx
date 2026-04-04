@@ -138,12 +138,12 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         const activeBatch = activeTier?.batches.find((b: any) => b.active) || activeTier?.batches?.[0];
 
         const updates: Partial<DadosInscricao> = {
-            loteId: activeBatch?.id || null,
-            tipoInscricao: (activeTier?.id || 'standard') as any
+            batchId: activeBatch?.id || null,
+            registrationType: (activeTier?.id || 'standard') as any
         };
 
         if (selectedProject.slug?.includes('triunfo')) {
-            updates.comprarPalestras = true;
+            updates.buyLectures = true;
             updates.cursosSelecionados = TriumphSessions;
         }
         
