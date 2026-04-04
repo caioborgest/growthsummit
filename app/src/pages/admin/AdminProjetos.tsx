@@ -1129,6 +1129,7 @@ export default function AdminProjetos() {
                     </div>
                   </div>
                 </TabsContent>
+                </div>
               </Tabs>
 
 
