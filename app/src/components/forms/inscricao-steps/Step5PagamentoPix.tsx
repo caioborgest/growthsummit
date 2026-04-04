@@ -31,19 +31,19 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
 
     // Price calculation
     const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
-    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
+    const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
     const valorFinal = valorOriginal * (1 - descontoEfetivo / 100);
     const valorFormatado = valorFinal.toFixed(2);
 
     useEffect(() => {
         // Start Polling for automatic confirmation
         pollingInterval.current = setInterval(async () => {
-            if (!dados.inscricaoId || isConfirmed) return;
+            if (!dados.registrationId || isConfirmed) return;
 
             const { data } = await supabase
                 .from('growth_experience_registrations')
                 .select('payment_status')
-                .eq('id', dados.inscricaoId)
+                .eq('id', dados.registrationId)
                 .single();
 
             if ((data as any)?.payment_status === 'pago' || (data as any)?.payment_status === 'paid') {
@@ -64,7 +64,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 clearInterval(pollingInterval.current);
             }
         };
-    }, [dados.inscricaoId, isConfirmed, onContinuar]);
+    }, [dados.registrationId, isConfirmed, onContinuar]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(cnpj);

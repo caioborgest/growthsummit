@@ -5,19 +5,19 @@ import { Loader2, Clock, MapPin, Users, CheckCircle, X } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 
 interface Step1SelecionarCursosProps {
-    cursosSelecionados: string[];
+    selectedSessions: string[];
     onContinuar: (cursos: string[]) => void;
     onVoltar?: () => void;
 }
 
 export function Step1SelecionarCursos({
-    cursosSelecionados: inicial,
+    selectedSessions: inicial,
     onContinuar,
     onVoltar
 }: Step1SelecionarCursosProps) {
     const { data: sessions, isLoading } = useSessions();
     const { projectId, selectedProject } = useProject();
-    const [selecionados, setSelecionados] = useState<string[]>(inicial);
+    const [selectedIds, setSelectedIds] = useState<string[]>(inicial);
 
     // Debug log (client-side console)
     useEffect(() => {
@@ -56,19 +56,19 @@ export function Step1SelecionarCursos({
     }, [sessions, isTriunfo]);
 
     // For Triunfo, selections are derived from available courses
-    const selecionadosFinal = isTriunfo ? cursosDisponiveis.map(c => c.id) : selecionados;
+    const selectedIdsFinal = isTriunfo ? cursosDisponiveis.map(c => c.id) : selectedIds;
 
     const selectCurso = (cursoId: string) => {
         // At Triunfo, we don't allow unselecting as it's a fixed bundle
         if (isTriunfo) return;
 
         // Only 1 selection allowed for other events/registration types
-        setSelecionados([cursoId]);
+        setSelectedIds([cursoId]);
     };
 
     const handleContinuar = () => {
-        if (selecionadosFinal.length > 0) {
-            onContinuar(selecionadosFinal);
+        if (selectedIdsFinal.length > 0) {
+            onContinuar(selectedIdsFinal);
         }
     };
 
@@ -84,7 +84,7 @@ export function Step1SelecionarCursos({
                         ? 'Confira a programação completa inclusa no seu ingresso.' 
                         : 'Selecione uma atividade para personalizar sua jornada. Cada atividade tem vagas limitadas.'}
                 </p>
-                {selecionadosFinal.length > 0 && (
+                {selectedIdsFinal.length > 0 && (
                     <div className="mt-4 flex animate-bounce-subtle">
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-1.5 text-[10px] uppercase tracking-widest font-black shadow-glow-green">
                             <CheckCircle className="h-4 w-4 mr-2" />
@@ -103,7 +103,7 @@ export function Step1SelecionarCursos({
                     </div>
                 ) : cursosDisponiveis.length > 0 ? (
                     cursosDisponiveis.map((curso) => {
-                        const isSelected = selecionadosFinal.includes(curso.id);
+                        const isSelected = selectedIdsFinal.includes(curso.id);
                         const isFull = (curso.maxCapacity ?? 0) > 0 && (curso.registeredCount || 0) >= (curso.maxCapacity ?? 0);
 
                         return (

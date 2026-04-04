@@ -157,8 +157,7 @@ export interface Registration {
   qrCode: string;
   ticketNumber: string;
   amount: number;
-  paid_amount?: number;
-  payment_status?: 'pendente' | 'pago' | 'cancelado' | 'erro' | string;
+  paidAmount?: number;
   paymentStatus?: 'pending' | 'paid' | 'cancelled' | 'error' | 'pago' | 'pendente' | string;
   paymentMethod?: string;
   paymentDate?: string;
@@ -173,11 +172,13 @@ export interface Registration {
   discountAmount?: number;
   externalPaymentId?: string;
   externalPaymentUrl?: string;
-  loteId?: string;
-  voucherEmpresa?: string;
-  registration_type?: string; // Snake case mapping
-  nome?: string; // Snake case mapping
-  phone?: string; // Snake case mapping
+  batchId?: string;
+  companyVoucher?: string;
+  registrationType?: string;
+  eventName?: string;
+  appInstalled?: boolean;
+  nome?: string; // Legacy snake case mapping
+  phone?: string; // Legacy snake case mapping
 }
 
 export interface Mentor {

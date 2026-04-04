@@ -138,8 +138,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   if (item.user_id) result.userId = item.user_id;
   if (item.company_name) result.companyName = item.company_name;
   if (entityName === 'registration_batches') {
-    if (item.tipo_ingresso) result.ticketType = item.tipo_ingresso;
-    if (item.contact_email) result.contactEmail = item.contact_email;
+    // ticket_type and contact_email are handled by the generic toCamelCase loop
   }
   if (entityName === 'sessions' || entityName === 'event_schedule') {
     if (item.max_slots) result.maxCapacity = item.max_slots;
@@ -266,7 +265,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
       voucher_code: data.voucherCode,
       total_slots: data.totalSlots,
       used_slots: data.usedSlots || 0,
-      tipo_ingresso: data.ticketType || 'pro',
+      ticket_type: data.ticketType || 'pro',
       total_amount: data.totalAmount,
       payment_status: status,
       cnpj: data.cnpj || null,
@@ -356,7 +355,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   }
 
   const fields: Record<string, string> = {
-    registrations: 'id,project_id,user_id,registration_type,status,ticket_number,qr_code,paid_amount,payment_method,payment_date,checked_in,check_in_at,created_at',
+    registrations: 'id,project_id,user_id,registration_type,status,ticket_number,qr_code,paid_amount,payment_method,payment_date,event_name,app_installed,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,role,specialties,tracks,years_experience,status,max_mentorings,photo_url,created_at',
     mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic,notes,status,created_at,start_date,duration,mentoring_rating,mentor_indication,rated_at',
     mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',

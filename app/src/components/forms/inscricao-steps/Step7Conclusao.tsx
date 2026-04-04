@@ -22,7 +22,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
             if (finalized || isFinalizing) return;
             
             // Finalize only if email, password, and a previous registration exist
-            if (!dados.email || !dados.senha || !dados.inscricaoId) {
+            if (!dados.email || !dados.password || !dados.registrationId) {
                 setFinalized(true);
                 return;
             }
@@ -35,8 +35,8 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                 // 1. Create/Get User
                 const { userId } = await getOrCreateUser({
                     email: dados.email.trim().toLowerCase(),
-                    password: dados.senha,
-                    name: dados.nome,
+                    password: dados.password,
+                    name: dados.name,
                     phone: dados.phone,
                     role: 'participant',
                 });
@@ -49,7 +49,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                     await (supabase
                         .from('growth_experience_registrations') as any)
                         .update({ user_id: userId })
-                        .eq('id', dados.inscricaoId);
+                        .eq('id', dados.registrationId);
                     
                     logger.info('Registration successfully linked to new user.');
                 }
@@ -106,7 +106,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
                     Inscrição <span className="text-brand-orange-coral">Confirmada!</span>
                 </h3>
                 <p className="text-gray-400 text-sm sm:text-lg max-w-xl mx-auto leading-relaxed font-medium">
-                    Parabéns, <span className="text-white font-bold">{dados.nome}</span>! Sua jornada no <span className="text-white font-bold">{selectedProject?.name || 'Growth Experience'}</span> começa agora.
+                    Parabéns, <span className="text-white font-bold">{dados.name}</span>! Sua jornada no <span className="text-white font-bold">{selectedProject?.name || 'Growth Experience'}</span> começa agora.
                 </p>
             </div>
 

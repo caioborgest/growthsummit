@@ -5,19 +5,19 @@ import { emailService } from './emailService';
 export interface RegistrationParams {
     projectId: string;
     userId: string;
-    nome: string;
+    name: string;
     email: string;
     phone: string;
     cpf: string;
     sessionIds: string[];
-    tipoInscricao?: string;
-    valorPago?: number;
-    statusPagamento?: string;
-    appInstalado?: boolean;
-    loteId?: string | null;
-    voucherEmpresa?: string | null;
+    registrationType?: string;
+    paidAmount?: number;
+    paymentStatus?: string;
+    appInstalled?: boolean;
+    batchId?: string | null;
+    companyVoucher?: string | null;
     status?: string;
-    evento?: string;
+    eventName?: string;
     palestrasNoturnas?: boolean;
     tipoAtividade?: string | null;
     salaAtividade?: string | null;
@@ -77,7 +77,7 @@ export const registrationService = {
         // If projectId is not UUID, try to extract if it's an object or fail
         const cleanProjectId = isValidUUID(params.projectId) ? params.projectId : null;
         const cleanUserId = isValidUUID(params.userId) ? params.userId : null;
-        const cleanLoteId = isValidUUID(params.loteId) ? params.loteId : null;
+        const cleanBatchId = isValidUUID(params.batchId) ? params.batchId : null;
         const cleanPartnerId = isValidUUID(params.partnerId) ? params.partnerId : null;
 
         if (!cleanProjectId) {
@@ -92,16 +92,16 @@ export const registrationService = {
         const payload = {
             p_project_id: cleanProjectId,
             p_user_id: cleanUserId || null,
-            p_nome: params.nome || '',
+            p_name: params.name || '',
             p_email: (params.email || '').trim().toLowerCase(),
-            p_telefone: params.phone || '',
+            p_phone: params.phone || '',
             p_cpf: params.cpf || '',
             p_session_ids: cleanSessionIds,
-            p_registration_type: params.tipoInscricao || 'standard',
-            p_paid_amount: Number(params.valorPago) || 0,
-            p_payment_status: params.statusPagamento || (params.palestrasNoturnas ? 'pending' : 'paid'),
+            p_registration_type: params.registrationType || 'standard',
+            p_paid_amount: Number(params.paidAmount) || 0,
+            p_payment_status: params.paymentStatus || (params.palestrasNoturnas ? 'pending' : 'paid'),
             p_status: params.status || (params.palestrasNoturnas ? 'pending' : 'active'),
-            p_evento: params.evento || 'Growth Experience',
+            p_event_name: params.eventName || 'Growth Experience',
             p_palestras_noturnas: Boolean(params.palestrasNoturnas),
             p_tipo_atividade: params.tipoAtividade || null,
             p_sala_atividade: params.salaAtividade || null,
@@ -112,10 +112,10 @@ export const registrationService = {
             p_social_code: params.socialCode || null,
             p_palestra_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
-            p_batch_id: cleanLoteId || null,
-            p_voucher_code: params.voucherEmpresa || null,
+            p_batch_id: cleanBatchId || null,
+            p_voucher_code: params.companyVoucher || null,
             p_partner_id: cleanPartnerId || null,
-            p_app_instalado: Boolean(params.appInstalado),
+            p_app_installed: Boolean(params.appInstalled),
         };
 
         logger.info('[registrationService] Executing RPC register_participant_with_slots:', {
@@ -138,8 +138,8 @@ export const registrationService = {
             }
 
             // Send Welcome e-mail (Resend Automation)
-            if (params.email && params.nome) {
-                emailService.sendWelcome(params.email, params.nome).catch(e => logger.warn('[registrationService] Error sending welcome email:', e));
+            if (params.email && params.name) {
+                emailService.sendWelcome(params.email, params.name).catch(e => logger.warn('[registrationService] Error sending welcome email:', e));
             }
 
             // If partner registration, link in the team table (RPC validates access_code and limit)
@@ -153,7 +153,7 @@ export const registrationService = {
                         p_partner_access_code: params.partnerAccessCode ?? null,
                         p_project_id: cleanProjectId,
                         p_user_id: cleanUserId,
-                        p_name: params.nome,
+                        p_name: params.name,
                         p_email: params.email,
                         p_phone: params.phone,
                         p_cpf: params.cpf,
@@ -184,7 +184,7 @@ export const registrationService = {
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
         let query: any = supabase.from('growth_experience_registrations' as any);
         
-        query = query.select('id,project_id,user_id,nome,email,telefone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures');
+        query = query.select('id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,event_name,app_installed');
         query = query.eq('project_id', projectId);
 
         if (filters.email) query = query.eq('email', filters.email);
@@ -202,7 +202,7 @@ export const registrationService = {
         const query: any = supabase.from('growth_experience_registrations' as any);
         
         const { data, error } = await query
-            .select('id,project_id,user_id,nome,email,telefone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,registration_type,qr_code,qr_code_data')
+            .select('id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,registration_type,qr_code,qr_code_data,event_name,app_installed')
             .eq('id', id)
             .single();
             

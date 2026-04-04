@@ -14,13 +14,13 @@ interface Step4OfertaPalestrasProps {
 }
 
 export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUpdate }: Step4OfertaPalestrasProps) {
-    const [cupom, setCupom] = useState(dados.cupomPalestra || '');
+    const [cupom, setCupom] = useState(dados.lectureCoupon || '');
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState('');
-    const [cupomAplicado, setCupomAplicado] = useState(!!dados.descontoPalestra);
+    const [cupomAplicado, setCupomAplicado] = useState(!!dados.lectureDiscount);
 
     const valorOriginal = 179.99;
-    const descontoEfetivo = Math.max(dados.descontoPalestra || 0, dados.descontoSocial || 0);
+    const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
     const precoFinal = valorOriginal * (1 - descontoEfetivo / 100);
 
     const handleValidarCupom = async () => {
@@ -48,9 +48,9 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                 }
                 setCupomAplicado(true);
                 onUpdate?.({
-                    descontoPalestra: data.discount_percentage,
-                    cupomPalestra: cupom.trim().toUpperCase(),
-                    tipoSocioPalestra: data.referral_type
+                    lectureDiscount: data.discount_percentage,
+                    lectureCoupon: cupom.trim().toUpperCase(),
+                    lecturePartnerType: data.referral_type
                 });
                 return;
             }
@@ -58,15 +58,15 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             // Validate as Corporate Batch (Company Voucher)
             const { data: batchData } = await (supabase
                 .from('company_registration_batches') as any)
-                .select('id,voucher_code,total_slots,used_slots,tipo_ingresso,payment_status')
+                .select('id,voucher_code,total_slots,used_slots,ticket_type,payment_status')
                 .eq('voucher_code', cupom.trim().toUpperCase())
                 .maybeSingle();
 
             if (batchData) {
                 const batch = batchData as unknown as RegistrationBatch;
-                const isPaid = batch.statusPagamento === 'paid' || (batchData as any).payment_status === 'pago';
-                const used = batch.vagasUtilizadas ?? (batchData as any).used_slots ?? 0;
-                const total = batch.quantidadeVagas ?? (batchData as any).total_slots ?? 0;
+                const isPaid = batch.paymentStatus === 'paid' || (batchData as any).payment_status === 'pago';
+                const used = batch.usedSlots ?? (batchData as any).used_slots ?? 0;
+                const total = batch.totalSlots ?? (batchData as any).total_slots ?? 0;
 
                 if (!isPaid) {
                     setError('Payment for this batch is pending. Please contact your company administrator.');
@@ -78,18 +78,18 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
                 }
                 setCupomAplicado(true);
                 onUpdate?.({
-                    descontoPalestra: 100,
-                    cupomPalestra: cupom.trim().toUpperCase(),
-                    tipoSocioPalestra: 'Corporate Batch',
-                    loteId: batch.id,
-                    voucherEmpresa: batch.voucherCode || (batchData as any).voucher_code
+                    lectureDiscount: 100,
+                    lectureCoupon: cupom.trim().toUpperCase(),
+                    lecturePartnerType: 'Corporate Batch',
+                    batchId: batch.id,
+                    companyVoucher: batch.voucherCode || (batchData as any).voucher_code
                 });
                 return;
             }
 
             setError('Invalid or inactive code');
             setCupomAplicado(false);
-            onUpdate?.({ descontoPalestra: 0, cupomPalestra: '', loteId: undefined, voucherEmpresa: undefined });
+            onUpdate?.({ lectureDiscount: 0, lectureCoupon: '', batchId: undefined, companyVoucher: undefined });
         } catch (err) {
             logger.error('Error validating lecture coupon:', err);
             setError('Failed to validate code');

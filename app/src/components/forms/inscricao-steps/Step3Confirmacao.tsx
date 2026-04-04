@@ -6,7 +6,7 @@ import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById, type TipoAtividade } from '@/data/programacao';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
-import { registrationService } from '@/services/registrationService';
+import { registrationService, type RegistrationParams } from '@/services/registrationService';
 import { logger } from '@/lib/logger';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
@@ -132,7 +132,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             }
 
             // PHASE 2: Calculate value
-            const statusPagamento = (dados.comprarPalestras && valorPagoTotal > 0) ? 'pendente' : 'pago';
+            const paymentStatus = (dados.buyLectures && valorPagoTotal > 0) ? 'pendente' : 'pago';
 
             const cleanProjectId = registrationService.isValidUUID(selectedProject?.id) ? selectedProject?.id : (registrationService.isValidUUID(projectId) ? projectId : null);
 
@@ -140,30 +140,30 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
             const sessionIds = (dados.cursosSelecionados || [])
                 .filter((id: any) => registrationService.isValidUUID(id));
             
-            const registrationParams = {
+            const registrationParams: RegistrationParams = {
                 projectId: cleanProjectId,
                 userId: null,
-                nome: dados.nome,
+                name: dados.name,
                 email: cleanEmail,
                 phone: dados.phone,
                 cpf: dados.cpf,
                 sessionIds: sessionIds.length > 0 ? sessionIds : [],
-                tipoInscricao: 'standard',
-                valorPago: valorPagoTotal,
-                statusPagamento,
-                status: statusPagamento === 'pago' ? 'ativo' : 'pendente',
-                evento: selectedProject?.name || 'Growth Experience',
-                palestrasNoturnas: dados.comprarPalestras ?? false,
-                tipoAtividade: tipoAtividade || null,
-                salaAtividade: salaAtividade || null,
-                horarioAtividade: horarioAtividade || null,
-                nivelAtividade: nivelAtividade || null,
-                referralType: dados.indicacaoTipo || 'nenhum',
-                referralName: dados.indicacaoNome || null,
+                registrationType: 'standard',
+                paidAmount: valorPagoTotal,
+                paymentStatus,
+                status: paymentStatus === 'pago' ? 'ativo' : 'pendente',
+                eventName: selectedProject?.name || 'Growth Experience',
+                palestrasNoturnas: dados.buyLectures ?? false,
+                tipoAtividade: dados.selectedActivityType || null,
+                salaAtividade: dados.activityRoom || null,
+                horarioAtividade: dados.activitySchedule || null,
+                nivelAtividade: dados.activityLevel || null,
+                referralType: dados.referralType || 'nenhum',
+                referralName: dados.referralName || null,
                 socialCode: dados.code || null,
-                palestraCode: dados.cupomPalestra || null,
-                loteId: registrationService.isValidUUID(dados.loteId) ? dados.loteId : null,
-                voucherEmpresa: dados.voucherEmpresa,
+                palestraCode: dados.lectureCoupon || null,
+                batchId: registrationService.isValidUUID(dados.batchId) ? dados.batchId : null,
+                companyVoucher: dados.companyVoucher,
                 partnerAccessCode: dados.partnerAccessCode || null,
             };
 
@@ -181,9 +181,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 }
             }
 
-            const finalInscricaoId = rpcResult.inscricao_id || null;
+            const finalRegistrationId = rpcResult.registration_id || rpcResult.inscricao_id || null;
 
-            onConfirmar('', finalInscricaoId || '', statusPagamento);
+            onConfirmar('', finalRegistrationId || '', paymentStatus);
             onUpdate?.({ valorFinal: valorFinal });
 
         } catch (err: unknown) {
@@ -215,15 +215,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         </div>
                         <h4 className="font-bold text-white text-lg">Dados Pessoais</h4>
                     </div>
-                    {dados.indicacaoTipo && dados.indicacaoTipo !== 'nenhum' && (
+                    {dados.referralType && dados.referralType !== 'nenhum' && (
                         <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                            {dados.indicacaoTipo === 'prefeitura' ? 'Parceria Prefeitura' :
-                                dados.indicacaoTipo === 'politico' ? 'Cota Liderança' :
-                                    dados.indicacaoTipo === 'empresa' ? 'Convênio Empresa' :
-                                        dados.indicacaoTipo === 'influenciador' ? 'VIP Influencer' :
-                                            dados.indicacaoTipo === 'associacao' ? 'Parceria Associação' :
-                                                dados.indicacaoTipo === 'instituicao' ? 'Parceria Instituição' :
-                                                    dados.indicacaoTipo === 'promocional' ? 'Promocional' : 'Parceiro'}
+                            {dados.referralType === 'prefeitura' ? 'Parceria Prefeitura' :
+                                dados.referralType === 'politico' ? 'Cota Liderança' :
+                                    dados.referralType === 'empresa' ? 'Convênio Empresa' :
+                                        dados.referralType === 'influenciador' ? 'VIP Influencer' :
+                                            dados.referralType === 'associacao' ? 'Parceria Associação' :
+                                                dados.referralType === 'instituicao' ? 'Parceria Instituição' :
+                                                    dados.referralType === 'promocional' ? 'Promocional' : 'Parceiro'}
                         </Badge>
                     )}
                 </div>
@@ -234,7 +234,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                             <User className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
                                 <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Nome</p>
-                                <p className="text-white font-semibold">{dados.nome}</p>
+                                <p className="text-white font-semibold">{dados.name}</p>
                             </div>
                         </div>
 

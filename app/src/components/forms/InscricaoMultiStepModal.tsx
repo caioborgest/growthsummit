@@ -29,20 +29,20 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     const [isProcessing, setIsProcessing] = useState(false);
     const [dados, setDados] = useState<DadosInscricao>({
         cursosSelecionados: [],
-        nome: '',
+        name: '',
         cpf: '',
         email: '',
         phone: '',
-        senha: '',
-        comprarPalestras: false,
+        password: '',
+        buyLectures: false,
         code: '',
-        descontoSocial: 0,
-        descontoPalestra: 0,
-        tipoInscricao: 'standard',
-        loteId: null,
-        voucherEmpresa: '',
-        indicacaoTipo: 'nenhum',
-        indicacaoNome: '',
+        socialDiscount: 0,
+        lectureDiscount: 0,
+        registrationType: 'standard',
+        batchId: null,
+        companyVoucher: '',
+        referralType: 'nenhum',
+        referralName: '',
         partnerId: '',
         partnerAccessCode: '',
     });
@@ -76,13 +76,13 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         let targetStep = currentStep - 1;
 
         // Skip Offer step backwards if already bought
-        if (targetStep === 4 && dados.comprarPalestras) {
+        if (targetStep === 4 && dados.buyLectures) {
             targetStep = 3;
         }
         
         // Skip Payment step backwards if free
-        if (targetStep === 5 && (dados.statusPagamento === 'pago' || (dados.valorFinal || 0) <= 0)) {
-            targetStep = (dados.comprarPalestras) ? 3 : 4;
+        if (targetStep === 5 && (dados.paymentStatus === 'pago' || (dados.valorFinal || 0) <= 0)) {
+            targetStep = (dados.buyLectures) ? 3 : 4;
         }
 
         if (targetStep >= 1) {
@@ -153,35 +153,35 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     // Smart logic for skipping steps
     useEffect(() => {
         // Skip Step 4 (Offer) if already bought or fixed package
-        if (currentStep === 4 && dados.comprarPalestras) {
+        if (currentStep === 4 && dados.buyLectures) {
             nextStep(true);
         }
         
         // Skip Step 5 (Payment) if total is zero or already paid
-        const isFree = (dados.valorFinal !== undefined && dados.valorFinal <= 0) || (dados.descontoSocial === 100);
-        if (currentStep === 5 && (dados.statusPagamento === 'pago' || isFree)) {
+        const isFree = (dados.valorFinal !== undefined && dados.valorFinal <= 0) || (dados.socialDiscount === 100);
+        if (currentStep === 5 && (dados.paymentStatus === 'pago' || isFree)) {
             nextStep(true);
         }
-    }, [currentStep, dados.comprarPalestras, dados.statusPagamento, dados.valorFinal, dados.descontoSocial]);
+    }, [currentStep, dados.buyLectures, dados.paymentStatus, dados.valorFinal, dados.socialDiscount]);
 
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
         setDados({
             cursosSelecionados: [],
-            nome: '',
+            name: '',
             cpf: '',
             email: '',
             phone: '',
-            senha: '',
-            comprarPalestras: false,
-            loteId: null,
-            voucherEmpresa: '',
-            indicacaoTipo: 'nenhum',
-            indicacaoNome: '',
+            password: '',
+            buyLectures: false,
+            batchId: null,
+            companyVoucher: '',
+            referralType: 'nenhum',
+            referralName: '',
             code: '',
-            descontoSocial: 0,
-            descontoPalestra: 0,
-            tipoInscricao: 'standard',
+            socialDiscount: 0,
+            lectureDiscount: 0,
+            registrationType: 'standard',
             partnerId: '',
             partnerAccessCode: ''
         });
@@ -192,7 +192,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         switch (currentStep) {
             case 1:
                 return <Step1SelecionarCursos 
-                            cursosSelecionados={dados.cursosSelecionados} 
+                            selectedSessions={dados.cursosSelecionados} 
                             onContinuar={(cursos) => { updateDados({ cursosSelecionados: cursos }); nextStep(); }} 
                             onVoltar={handleClose} 
                         />;
@@ -206,15 +206,15 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             case 3:
                 return <Step3Confirmacao 
                             dados={dados} 
-                            onConfirmar={(userId, inscricaoId, statusPagamento) => { updateDados({ userId, inscricaoId, statusPagamento }); nextStep(true); }} 
+                            onConfirmar={(userId, registrationId, paymentStatus) => { updateDados({ userId, registrationId, paymentStatus }); nextStep(true); }} 
                             onVoltar={prevStep} 
                             onUpdate={updateDados} 
                         />;
             case 4:
                 return <Step4OfertaPalestras 
                             dados={dados} 
-                            onComprar={() => { updateDados({ comprarPalestras: true }); nextStep(); }} 
-                            onPular={() => { updateDados({ comprarPalestras: false }); nextStep(); }} 
+                            onComprar={() => { updateDados({ buyLectures: true }); nextStep(); }} 
+                            onPular={() => { updateDados({ buyLectures: false }); nextStep(); }} 
                             onVoltar={prevStep} 
                             onUpdate={updateDados} 
                         />;
