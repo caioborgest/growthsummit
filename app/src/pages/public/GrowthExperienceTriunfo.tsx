@@ -144,6 +144,7 @@ export function GrowthExperienceTriunfo() {
 
     try {
       const project = await ensureProject({
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         name: 'Growth Experience Triunfo-PE 2026',
         slug: 'ge-triunfo-pocket-edition-noturno-2026',
         type: 'growth_experience',

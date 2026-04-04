@@ -48,6 +48,7 @@ export function GrowthExperiencePetrolina() {
         // Garantir dados atualizados do projeto
 
         const project = await ensureProject({
+            id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
             name: 'Growth Experience Petrolina-PE 2026',
             slug: 'ge-petrolina-2026',
             type: 'growth_experience',
