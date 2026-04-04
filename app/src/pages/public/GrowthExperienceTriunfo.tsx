@@ -20,7 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { InscricaoModal } from '@/components/forms/InscricaoModal';
 import { EmpresaIncentivadoraModal } from '@/components/forms/EmpresaIncentivadoraModal';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { getPalestranteImage } from '@/lib/storage';
+import { getPalestranteImage, getStorageUrl } from '@/lib/storage';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { SocialRegistrationSection } from '@/components/growth-experience/SocialRegistrationSection';
