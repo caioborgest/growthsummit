@@ -98,7 +98,7 @@ const AdminFinanceiro = lazyWithRetry(() => import('./pages/admin/AdminFinanceir
 const AdminCheckIn = lazyWithRetry(() => import('./pages/admin/AdminCheckIn'), 'AdminCheckIn');
 const AdminComunicacao = lazyWithRetry(() => import('./pages/admin/AdminComunicacao'));
 const AdminRelatorios = lazyWithRetry(() => import('./pages/admin/AdminRelatorios'), 'AdminRelatorios');
-const AdminProgramacao = lazyWithRetry(() => import('./pages/admin/AdminProgramacao'), 'AdminProgramacao');
+const AdminProjectSchedule = lazyWithRetry(() => import('./pages/admin/AdminProjectSchedule'), 'AdminProjectSchedule');
 const AdminSecurity = lazyWithRetry(() => import('./pages/admin/AdminSecurity'), 'AdminSecurity');
 const AdminCupons = lazyWithRetry(() => import('./pages/admin/AdminCupons'));
 const AdminUsuarios = lazyWithRetry(() => import('./pages/admin/AdminUsuarios'));
@@ -385,7 +385,7 @@ function AppRoutes() {
           <Route path="check-in" element={<AdminCheckIn />} />
           <Route path="comunicacao" element={<AdminComunicacao />} />
           <Route path="relatorios" element={<AdminRelatorios />} />
-          <Route path="programacao" element={<AdminProgramacao />} />
+          <Route path="programacao" element={<AdminProjectSchedule />} />
           <Route path="seguranca" element={<AdminSecurity />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
           <Route path="cupons" element={<AdminCupons />} />

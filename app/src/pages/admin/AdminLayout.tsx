@@ -72,7 +72,7 @@ const navigationGroups: SidebarGroup[] = [
     title: 'Planejamento e Estrutura',
     items: [
       { id: 'projetos', name: 'Gestão de Projetos', icon: FolderOpen, path: '/admin/projetos' },
-      { id: 'programacao', name: 'Grade de Programação', icon: Calendar, path: '/admin/programacao' },
+      { id: 'programacao', name: 'Programação', icon: Calendar, path: '/admin/programacao' },
       { id: 'patrocinadores', name: 'Patrocinadores & Cotas', icon: Gem, path: '/admin/patrocinadores' },
       { id: 'stands', name: 'Circuito de Stands', icon: Store, path: '/admin/stands' },
       { id: 'partners', name: 'Gestão de Parceiros', icon: Handshake, path: '/admin/partners' },
