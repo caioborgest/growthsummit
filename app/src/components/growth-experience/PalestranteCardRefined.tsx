@@ -16,7 +16,7 @@ interface PalestranteCardProps {
 
 export function PalestranteCardRefined({
     nome,
-    cargo,
+    role_title,
     descricao,
     tema,
     horario,
@@ -73,7 +73,7 @@ export function PalestranteCardRefined({
                     <div className="flex items-center gap-2 mb-3">
                         <div className="h-0.5 w-6 bg-brand-orange-coral rounded-full" />
                         <p className="text-brand-orange-coral font-bold text-[11px] sm:text-sm lg:text-base uppercase tracking-wider">
-                            {cargo}
+                            {role_title}
                         </p>
                     </div>
 

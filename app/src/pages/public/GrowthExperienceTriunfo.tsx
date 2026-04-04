@@ -3,17 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import type { Project, Session } from '@/types';
 import {
   Building2,
-  Users,
   Mic2,
-  Search,
-  Plus,
-  LayoutGrid,
   TrendingUp,
-  Download,
-  Calendar,
-  Filter,
-  RefreshCw,
-  Target
+  Zap,
+  Trophy,
+  CheckCircle,
+  ArrowRight,
+  QrCode
 } from 'lucide-react';
 import { QRScanner } from '@/components/app/QRScanner';
 import { useRegistrations, useSessions, useCheckInsAtividades } from '@/hooks/useData';
