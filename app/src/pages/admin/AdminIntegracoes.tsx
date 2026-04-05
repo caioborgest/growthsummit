@@ -87,7 +87,7 @@ export function AdminIntegracoes() {
   const [activeTab, setActiveTab] = useState<'link' | 'iframe' | 'widget'>('link');
 
   const baseUrl = window.location.origin;
-  const projectSlug = selectedProject?.slug || 'ge-triunfo-pocket-edition-noturno-2026';
+  const projectSlug = selectedProject?.slug || 'growth-experience-triunfo';
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);

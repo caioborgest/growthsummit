@@ -298,7 +298,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                         <BookOpen className="h-5 w-5 text-brand-orange-coral" />
                     </div>
                     <h4 className="font-bold text-white text-lg">
-                        {selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? 'Seu Acesso' : 'Atividade Selecionada'}
+                        {selectedProject?.slug === 'growth-experience-triunfo' ? 'Seu Acesso' : 'Atividade Selecionada'}
                     </h4>
                 </div>
 
@@ -324,7 +324,7 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                                 </div>
                             </div>
                         ))
-                    ) : selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? (
+                    ) : selectedProject?.slug === 'growth-experience-triunfo' ? (
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-dark-200/50 border border-white/5">
                             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                             <div className="flex-1 min-w-0">

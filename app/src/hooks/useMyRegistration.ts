@@ -34,7 +34,7 @@ export interface MyRegistration {
 }
 
 const GE_TABLES: Record<string, string> = {
-    'ge-triunfo-pocket-edition-noturno-2026': 'growth_experience_registrations',
+    'growth-experience-triunfo': 'growth_experience_registrations',
     'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'growth_experience_registrations',
     'ge-petrolina-2026': 'growth_experience_registrations',
     'b2c3d4e5-f6a7-8901-bcde-f12345678901': 'growth_experience_registrations',
@@ -70,7 +70,7 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
             ? row['night_lectures'].length > 0
             : Boolean(row['night_lectures']) || 
               (isProType && isActuallyPaid) || 
-              ((row['project_id'] === 'ge-triunfo-pocket-edition-noturno-2026' || row['project_id'] === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') && isActuallyPaid),
+              ((row['project_id'] === 'growth-experience-triunfo' || row['project_id'] === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') && isActuallyPaid),
         cursosSelecionados: Array.isArray(row['selected_courses'])
             ? (row['selected_courses'] as string[])
             : [],

@@ -142,6 +142,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   if (item.company_name) result.companyName = item.company_name;
   if (entityName === 'registration_batches') {
     result.name = item.name || item.company_name;
+    result.companyName = item.company_name || item.name;
     result.total_slots = item.total_slots || 0;
     result.used_slots = item.used_slots || 0;
     result.price = item.total_amount || item.price || 0;
@@ -267,6 +268,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     return {
       project_id: projectId,
       name: data.name, // standard column is 'name'
+      company_name: data.companyName || data.name,
       contact_email: data.contactEmail,
       responsible_name: data.responsibleName,
       responsible_email: data.responsibleEmail,
@@ -394,7 +396,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
     partners: 'id,project_id,name,logo_url,website,description,tier,active,created_at,updated_at,cnpj,type,category,status,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id',
-    registration_batches: 'id,project_id,name,total_slots,used_slots,total_amount,voucher_code,registration_type,payment_status,responsible_name,responsible_email,expires_at,is_active,contact_email,cnpj,notes,created_at,updated_at',
+    registration_batches: 'id,project_id,name,company_name,total_slots,used_slots,total_amount,voucher_code,registration_type,payment_status,responsible_name,responsible_email,expires_at,is_active,contact_email,cnpj,notes,created_at,updated_at',
     partner_team_members: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
     email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
     email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'

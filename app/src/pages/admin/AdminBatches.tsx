@@ -41,6 +41,7 @@ export default function AdminBatches() {
 
     const [formData, setFormData] = useState({
         name: '',
+        companyName: '',
         cnpj: '',
         responsibleName: '',
         responsibleEmail: '',
@@ -108,19 +109,29 @@ export default function AdminBatches() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Validação obrigatória: Garante que pelo menos um nome foi fornecido
+        const effectiveCompanyName = formData.companyName.trim() || formData.name.trim();
+        if (!effectiveCompanyName) {
+            toast.error('O nome da empresa ou identificação do lote é obrigatório.');
+            return;
+        }
+
         try {
+            const payload = {
+                ...formData,
+                companyName: effectiveCompanyName, // Aplica o fallback
+                voucherCode: (formData.voucherCode || '').toUpperCase()
+            };
+
             if (editingBatch) {
-                await update(editingBatch.id, {
-                    ...formData,
-                    voucherCode: (formData.voucherCode || '').toUpperCase()
-                });
+                await update(editingBatch.id, payload);
                 toast.success('Lote atualizado com sucesso!');
             } else {
                 await create({
-                    ...formData,
+                    ...payload,
                     projectId: projectId || '',
                     used_slots: 0,
-                    voucherCode: (formData.voucherCode || '').toUpperCase(),
                     updatedAt: new Date().toISOString()
                 } as any);
                 toast.success('Lote corporativo criado com sucesso!');
@@ -138,6 +149,7 @@ export default function AdminBatches() {
         setEditingBatch(null);
         setFormData({
             name: '',
+            companyName: '',
             cnpj: '',
             responsibleName: '',
             responsibleEmail: '',
@@ -157,6 +169,7 @@ export default function AdminBatches() {
         setEditingBatch(batch);
         setFormData({
             name: batch.name,
+            companyName: batch.companyName || batch.name || '',
             cnpj: batch.cnpj || '',
             responsibleName: batch.responsibleName || '',
             responsibleEmail: batch.responsibleEmail || '',
@@ -346,15 +359,26 @@ export default function AdminBatches() {
                                 {/* Seção Empresa */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome da Empresa</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Identificação do Lote</Label>
                                         <Input 
                                             required 
                                             value={formData.name} 
                                             onChange={e => setFormData({ ...formData, name: e.target.value })} 
-                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="Ex: CBX Marketing Digital"
+                                            className="bg-dark-100 border-white/10 text-white h-11 rounded-xl focus:border-brand-orange-coral/50" 
+                                            placeholder="Ex: Lote VIP CBX"
                                         />
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Razão Social / Empresa</Label>
+                                        <Input 
+                                            value={formData.companyName} 
+                                            onChange={e => setFormData({ ...formData, companyName: e.target.value })} 
+                                            className="bg-dark-100 border-brand-orange-coral/20 text-white h-11 rounded-xl focus:border-brand-orange-coral/50" 
+                                            placeholder="Obrigatório para corporativo"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CNPJ</Label>
                                         <Input 
@@ -362,6 +386,16 @@ export default function AdminBatches() {
                                             onChange={e => setFormData({ ...formData, cnpj: e.target.value })} 
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
                                             placeholder="00.000.000/0001-00"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Contato</Label>
+                                        <Input 
+                                            type="email" 
+                                            value={formData.contactEmail} 
+                                            onChange={e => setFormData({ ...formData, contactEmail: e.target.value })} 
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
+                                            placeholder="financeiro@empresa.com.br"
                                         />
                                     </div>
                                 </div>
@@ -389,18 +423,7 @@ export default function AdminBatches() {
                                         />
                                     </div>
                                 </div>
-                                {/* Seção Financeira/Voucher */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">E-mail de Contato</Label>
-                                        <Input 
-                                            type="email" 
-                                            value={formData.contactEmail} 
-                                            onChange={e => setFormData({ ...formData, contactEmail: e.target.value })} 
-                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl focus:border-brand-orange-coral/30" 
-                                            placeholder="contato@empresa.com.br"
-                                        />
-                                    </div>
+
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Código do Voucher</Label>
                                         <div className="flex gap-2">
@@ -420,7 +443,6 @@ export default function AdminBatches() {
                                             </button>
                                         </div>
                                     </div>
-                                </div>
                                 {/* Seção Valores/Status */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                                     <div className="space-y-1.5">

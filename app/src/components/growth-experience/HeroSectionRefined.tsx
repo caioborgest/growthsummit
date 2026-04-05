@@ -14,7 +14,7 @@ interface HeroSectionProps {
 export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSectionProps) {
     const { selectedProject: contextProject } = useProject();
     const selectedProject = propProject || contextProject;
-    const isTriunfo = selectedProject?.slug === 'ge-triunfo-pocket-edition-noturno-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
+    const isTriunfo = selectedProject?.slug === 'growth-experience-triunfo' || (typeof window !== 'undefined' && window.location.pathname.includes('triunfo'));
     const isPetrolina = selectedProject?.slug === 'ge-petrolina-2026' || (typeof window !== 'undefined' && window.location.pathname.includes('petrolina'));
     const [timeLeft, setTimeLeft] = useState({
         dias: 0,

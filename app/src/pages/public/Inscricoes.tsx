@@ -35,7 +35,7 @@ const editions = [
     price: 0,
     proPrice: 179.99,
     image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
-    slug: 'ge-triunfo-pocket-edition-noturno-2026',
+    slug: 'growth-experience-triunfo',
     color: 'orange',
     tag: 'Edição Flagship',
     features: [
@@ -84,11 +84,11 @@ export function Inscricoes() {
         location: edition.city,
         city: edition.city.split('-')[0],
         state: edition.city.split('-')[1],
-        startDate: edition.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? '2026-04-16' : '2026-04-30',
-        endDate: edition.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? '2026-04-16' : '2026-04-30',
+        startDate: edition.slug === 'growth-experience-triunfo' ? '2026-04-16' : '2026-04-30',
+        endDate: edition.slug === 'growth-experience-triunfo' ? '2026-04-16' : '2026-04-30',
         status: 'active',
         settings: {
-          maxRegistrations: edition.slug === 'ge-triunfo-pocket-edition-noturno-2026' ? 1500 : 500,
+          maxRegistrations: edition.slug === 'growth-experience-triunfo' ? 1500 : 500,
           enableB2B: true,
           enableMentoring: true,
           enableStartups: true,
