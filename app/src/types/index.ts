@@ -72,6 +72,7 @@ export interface ProjectSettings {
   goalRevenue?: number;
   goalSponsorship?: number;
   goalRegistrations?: number;
+  targetRegistrations?: number;
   targetRevenue?: number;
   publicContent?: {
     heroTitle?: string;

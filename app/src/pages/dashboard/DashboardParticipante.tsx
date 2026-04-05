@@ -13,7 +13,7 @@ import {
   Rocket,
   BookOpen,
   Shield,
-  Bell
+  Bell as BellIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -185,7 +185,7 @@ export function DashboardParticipante() {
     tabs.push({ id: 'documentos', icon: FileText, label: 'Docs' });
     tabs.push({ id: 'certificados', icon: Award, label: 'Certs' });
     tabs.push({ id: 'guia', icon: BookOpen, label: 'Guia' });
-    tabs.push({ id: 'notificacoes', icon: Bell, label: 'Notificações' });
+    tabs.push({ id: 'notificacoes', icon: BellIcon, label: 'Notificações' });
 
     return tabs;
   }, [selectedProject]);

@@ -4,6 +4,8 @@ import { CheckCircle, Home, Smartphone, Download, Loader2 } from 'lucide-react';
 import { usePWA } from '@/hooks/usePWA';
 import type { DadosInscricao } from './inscricaoTypes';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
+import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
 interface Step7ConclusaoProps {
     dados: DadosInscricao;
@@ -29,9 +31,6 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
 
             setIsFinalizing(true);
             try {
-                const { getOrCreateUser, waitForUserSync } = await import('@/lib/auth-helpers');
-                const { supabase } = await import('@/lib/supabase');
-                
                 // 1. Create/Get User
                 const { userId } = await getOrCreateUser({
                     email: dados.email.trim().toLowerCase(),

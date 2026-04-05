@@ -30,7 +30,7 @@ import QRCode from 'qrcode';
 export default function AdminStands() {
     const { projectId, isProjectSelected } = useProject();
     const navigate = useNavigate();
-    const { data: stands, create, update, remove, isLoading } = useStands();
+    const { data: stands, create, update, remove, isLoading, refetch } = useStands();
     const { data: checkins } = useStandCheckIns();
     const { data: inscricoes } = useInscricoes();
     const { data: startups } = useStartups();
@@ -179,6 +179,7 @@ export default function AdminStands() {
 
             setIsModalOpen(false);
             resetForm();
+            await refetch(true);
         } catch (err) {
             const error = err as Error;
             logger.error('Erro ao salvar stand:', error);

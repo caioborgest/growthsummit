@@ -29,6 +29,7 @@ import { AccreditationChecklistModal } from '@/components/admin/AccreditationChe
 import { CertificateService } from '@/lib/certificateService';
 import { useProject } from '@/contexts/ProjectContext';
 import { checkInRegistrationAtomic } from '@/lib/checkInAtomic';
+import { supabase } from '@/lib/supabase';
 
 export function AdminCheckIn() {
   const { user } = useAuth();
@@ -195,31 +196,36 @@ export function AdminCheckIn() {
     
     if (!registration && res.type === 'registration') {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
-      import('@/lib/supabase').then(async ({ supabase }) => {
-        const tableName = selectedProject?.id ? 'growth_experience_registrations' : 'registrations';
-        let query = (supabase as any).from(tableName as any).select('*').eq('id', res.id);
-        
-        if (selectedProject?.id) {
-          query = query.eq('project_id', selectedProject.id);
-        }
+      (async () => {
+        try {
+          const tableName = selectedProject?.id ? 'growth_experience_registrations' : 'registrations';
+          let query = (supabase as any).from(tableName as any).select('*').eq('id', res.id);
+          
+          if (selectedProject?.id) {
+            query = query.eq('project_id', selectedProject.id);
+          }
 
-        const { data, error } = await query.maybeSingle();
+          const { data, error } = await query.maybeSingle();
 
-        if (data && !error) {
-           const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
-                const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
-                acc[camelKey] = val;
-                return acc;
-            }, {} as Record<string, unknown>);
-           handleManualCheckIn(mapped as unknown as Registration);
-           toast.dismiss('fetch-reg');
-        } else {
-          setScanResult('error');
-          setResultRegistration(null);
-          triggerVibrate('error');
-          toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
+          if (data && !error) {
+             const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
+                  const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
+                  acc[camelKey] = val;
+                  return acc;
+              }, {} as Record<string, unknown>);
+             handleManualCheckIn(mapped as unknown as Registration);
+             toast.dismiss('fetch-reg');
+          } else {
+            setScanResult('error');
+            setResultRegistration(null);
+            triggerVibrate('error');
+            toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
+          }
+        } catch (err) {
+          logger.error('Erro ao buscar registro no scanner:', err);
+          toast.error('Erro de conexão ao buscar registro.', { id: 'fetch-reg' });
         }
-      });
+      })();
       return;
     }
 

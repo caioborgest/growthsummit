@@ -223,7 +223,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
   for (const [key, value] of Object.entries(data)) {
     if (VIRTUAL_FIELDS.has(key)) continue;
 
-    let dbKey = toSnakeCase(key);
+    const dbKey = toSnakeCase(key);
 
     // Clean up: convert empty strings to null for ID/foreign key fields to avoid UUID errors
     if (typeof value === 'string' && value.trim() === '') {
@@ -405,7 +405,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
 }
 
 // Generic hook for CRUD operations with project filtering
-export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations', options?: { realtime?: boolean, projectId?: string }) {
+export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations', options?: { realtime?: boolean, projectId?: string, filters?: Record<string, any> }) {
   const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -422,7 +422,6 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     const isGlobal = isGlobalEntity(entityName);
 
     if (!projectId && !isGlobal) {
-      // logger.debug(`[useData:${entityName}] Ignorando busca: sem projectId`);
       return;
     }
 
@@ -433,8 +432,6 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       isFetchingRef.current = false;
       return;
     }
-
-    // logger.debug(`[useData:${entityName}] Iniciando busca...`, { force, projectId });
 
     const now = Date.now();
 
@@ -475,7 +472,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
     // TTL dinâmico: entidades estáticas ficam mais tempo em cache
     const ttl = CACHE_TTL_MAP[entityName] ?? DEFAULT_CACHE_TTL;
-    if (!force && cached && Date.now() - cached.ts < ttl) {
+    if (!force && cached && Date.now() - cached.ts < ttl && !options?.filters) {
       setData(cached.data as T[]);
       return;
     }
@@ -493,15 +490,10 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       // Filtro por projeto para tabelas não genéricas
       if (!isGlobal && projectId) {
         // Apenas aplicar o filtro .eq se o projectId parecer ser um UUID ou se for explicitamente um slug GE
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId);
         const isGESlug = projectId.startsWith('ge-') || projectId.startsWith('growth-');
         
-        if (isUUID) {
-          query = query.eq('project_id', projectId);
-        } else if (isGESlug) {
-          // No Growth Experience, algumas tabelas aceitam slug mas a maioria usa UUID.
-          // Se recebemos um slug, tentamos filtrar, mas o RLS ou a falta de coluna uuid=text pode dar erro.
-          // Por garantia, se não for UUID mas for slug, tentamos filtrar.
+        if (isUUID || isGESlug) {
           query = query.eq('project_id', projectId);
         } else {
           // Se não é UUID nem slug válido, retorna vazio para evitar erro 500/400 do PG
@@ -510,6 +502,17 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
           isFetchingRef.current = false;
           return;
         }
+      }
+
+      // Apply additional filters from options
+      if (options?.filters) {
+        Object.entries(options.filters).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            query = query.in(key, value);
+          } else {
+            query = query.eq(key, value);
+          }
+        });
       }
 
       const resultRaw = await withTimeout(
@@ -559,7 +562,9 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
 
       setData(mappedData);
       // Store in cache
-      dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
+      if (!options?.filters) {
+        dataCache.set(cacheKey, { data: mappedData, ts: Date.now() });
+      }
     } catch (err: unknown) {
       const errStr = String(err).toLowerCase();
       const isAborted = (err as any)?.name === 'AbortError' || 
@@ -590,7 +595,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
       setIsLoading(false);
       isFetchingRef.current = false;
     }
-  }, [projectId, entityName]);
+  }, [projectId, entityName, options?.filters]);
 
   const create = useCallback(async (item: Omit<T, 'id' | 'createdAt'>) => {
     const isGlobal = isGlobalEntity(entityName);
@@ -623,7 +628,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, entityName, fetchData]);
+  }, [projectId, entityName, fetchData, selectedProject?.slug]);
 
   const update = useCallback(async (id: string, updates: Partial<T>) => {
     setIsLoading(true);
@@ -659,7 +664,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, entityName, fetchData]);
+  }, [projectId, entityName, fetchData, selectedProject?.slug]);
 
   const remove = useCallback(async (id: string) => {
     setIsLoading(true);
@@ -689,7 +694,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, entityName, fetchData]);
+  }, [projectId, entityName, fetchData, selectedProject?.slug]);
 
   const getById = useCallback((id: string) => {
     return data.find(item => item.id === id);
@@ -797,8 +802,12 @@ export function useMentoringSessions() {
   return useData<MentoringSession>([], 'mentoring_sessions');
 }
 
-export function useMentoringWaitlistHook() { 
+export function useMentoringWaitlist() { 
   return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
+}
+
+export function useUsers(filters?: Record<string, any>) {
+  return useData<User>([], 'users', { filters });
 }
 
 export function useCompanies() {
@@ -886,9 +895,6 @@ export function usePitchScores() {
   return useData<any>([], 'pitch_scores');
 }
 
-export function useUsers() {
-  return useData<User>([], 'users');
-}
 
 export function useStands() {
   return useData<Stand>([], 'stands');

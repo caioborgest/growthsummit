@@ -44,6 +44,7 @@ import { logger } from '@/lib/logger';
 import type { Registration } from '@/types';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
+import { supabase } from '@/lib/supabase';
 
 const PAGE_SIZE = 20;
 
@@ -310,7 +311,6 @@ export default function AdminInscricoes() {
       // Sincronização financeira e de sessões em caso de cancelamento
       if (status === 'cancelled' && oldStatus !== 'cancelled') {
         if (registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
-          const { supabase } = await import('@/lib/supabase');
           for (const sessionId of registration.cursosSelecionados) {
             try {
               // Decrementar contador de sessões via RPC
@@ -397,14 +397,12 @@ export default function AdminInscricoes() {
     setIsUpdating(true);
     try {
       if (registration.status !== 'cancelled' && registration.cursosSelecionados && registration.cursosSelecionados.length > 0) {
-        const { supabase } = await import('@/lib/supabase');
         for (const sessionId of registration.cursosSelecionados) {
           await supabase.rpc('decrement_session_count', { session_id: sessionId });
         }
       }
 
       const relatedTransactions = transactions.filter(t => t.relatedId === id);
-      const { supabase } = await import('@/lib/supabase');
       for (const t of relatedTransactions) {
         await supabase.from('transactions').delete().eq('id', t.id);
       }

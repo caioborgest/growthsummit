@@ -26,7 +26,7 @@ import {
   Share2,
   BarChart3,
   Settings as SettingsIcon,
-  Bell
+  Bell as BellIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -445,7 +445,7 @@ export function AdminLayout() {
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative bg-muted/50 hover:bg-accent text-muted-foreground h-10 w-10 flex items-center justify-center rounded-2xl transition-all border border-border-theme group shadow-sm">
-                    <Bell className="h-5 w-5 group-hover:text-brand-orange-coral transition-colors" />
+                    <BellIcon className="h-5 w-5 group-hover:text-brand-orange-coral transition-colors" />
                     {notifications.filter(n => !n.read).length > 0 && (
                       <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-background animate-pulse"></span>
                     )}
@@ -492,7 +492,7 @@ export function AdminLayout() {
                       </div>
                     ) : (
                       <div className="p-12 text-center">
-                        <Bell className="h-8 w-8 text-gray-800 mx-auto mb-3 opacity-20" />
+                        <BellIcon className="h-8 w-8 text-gray-800 mx-auto mb-3 opacity-20" />
                         <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest leading-none">Vazio por aqui</p>
                       </div>
                     )}

@@ -240,7 +240,7 @@ export default function AdminComunicacao() {
           })));
         }
       } else if (composeData.recipients === 'speakers') {
-        const { data } = await (supabase.from('users').select('email, name') as any).eq('role', 'speaker');
+        const { data } = await (supabase.from('speakers').select('email, name') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.name }));
       }
 

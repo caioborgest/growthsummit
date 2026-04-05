@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { safeStorage } from '@/utils/safeStorage';
-import type { Project } from '@/types';
+import { Project } from '@/types';
 import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 
 interface ProjectContextType {
   selectedProject: Project | null;
@@ -34,28 +35,31 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
       if (!isAlreadySelected) {
         // 🕵️ Tentar buscar do Supabase: Aceita ID (UUID) OU Slug (Texto)
-        import('@/lib/supabase').then(({ supabase }) => {
-          const isUrlUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlProjectId);
-          let query = supabase.from('projects' as any).select('*');
-          
-          if (isUrlUUID) {
-            query = query.eq('id', urlProjectId);
-          } else {
-            query = query.eq('slug', urlProjectId);
+        (async () => {
+          try {
+            const isUrlUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlProjectId);
+            let query = supabase.from('projects' as any).select('*');
+            
+            if (isUrlUUID) {
+              query = query.eq('id', urlProjectId);
+            } else {
+              query = query.eq('slug', urlProjectId);
+            }
+            
+            const { data, error } = await query.maybeSingle();
+            
+            if (!error && data) {
+              const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
+                const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
+                acc[camelKey] = val;
+                return acc;
+              }, {} as any);
+              setSelectedProject(mapped);
+            }
+          } catch (err) {
+            logger.error('ProjectContext: Erro ao buscar projeto via URL:', err);
           }
-          
-          query.maybeSingle()
-            .then(({ data, error }) => {
-              if (!error && data) {
-                const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
-                  const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
-                  acc[camelKey] = val;
-                  return acc;
-                }, {} as any);
-                setSelectedProject(mapped);
-              }
-            });
-        });
+        })();
       }
     }
 

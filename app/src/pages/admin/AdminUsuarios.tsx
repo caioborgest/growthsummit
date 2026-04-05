@@ -99,7 +99,10 @@ const roleColors: Record<string, string> = {
 
 export default function AdminUsuarios() {
     const navigate = useNavigate();
-    const { data: users, create, update, remove, isLoading } = useUsers();
+    // Filter by roles to avoid full table scans on 'users'
+    const { data: users, create, update, remove, isLoading } = useUsers({ 
+        role: ['admin', 'staff', 'mentor', 'sponsor', 'company', 'startup'] 
+    });
     const { data: checkIns } = useCheckIns();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
