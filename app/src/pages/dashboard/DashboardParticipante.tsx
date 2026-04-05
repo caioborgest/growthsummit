@@ -1,3 +1,4 @@
+// Force-recompile: 2026-04-05T15:31:30
 import { useState, useMemo } from 'react';
 import { 
   QrCode, 
