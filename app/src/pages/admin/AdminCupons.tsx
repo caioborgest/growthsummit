@@ -5,14 +5,12 @@ import {
     Search,
     Ticket,
     Trash2,
-    Edit3,
+    Pencil,
     CheckCircle,
-    XCircle,
     Copy,
     Users,
     Calendar,
     Filter,
-    FileText,
     TrendingUp
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +160,7 @@ export default function AdminCupons() {
                     formattedExpiresAt = date.toISOString().split('T')[0];
                 }
             } catch (e) {
-                logger.warn('Data de expiresAt inválida:', coupon.expiresAt);
+                logger.warn('Data de expiresAt inválida', { value: coupon.expiresAt });
             }
         }
 
@@ -396,7 +394,7 @@ export default function AdminCupons() {
                                                 className="h-9 w-9 p-0 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl border border-transparent hover:border-white/10 transition-all"
                                                 onClick={() => handleEdit(coupon)}
                                             >
-                                                <Edit3 className="h-4 w-4" />
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 size="sm"

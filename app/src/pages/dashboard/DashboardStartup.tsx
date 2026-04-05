@@ -8,7 +8,7 @@ import {
   MessageSquare,
   FileText,
   ExternalLink,
-  Edit3,
+  Pencil,
   User as UserIcon,
   Phone,
   Mail,
@@ -382,7 +382,7 @@ export function DashboardStartup() {
                     <h3 className="text-lg font-semibold text-white mb-4">Ações Rápidas</h3>
                     <div className="space-y-3">
                       <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white justify-start">
-                        <Edit3 className="h-4 w-4 mr-2" />
+                        <Pencil className="h-4 w-4 mr-2" />
                         Editar Perfil
                       </Button>
                       <Button variant="outline" className="w-full border-dark-300 text-gray-300 justify-start" onClick={() => navigate('/guia')}>

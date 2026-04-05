@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   Plus,
-  Edit2,
+  Pencil,
   Trash2,
   Mic,
   Wrench,
@@ -477,7 +477,7 @@ export function AdminProjectSchedule() {
 
                 <div className="flex items-center gap-2">
                   <Button variant="outline" className="h-10 px-4 rounded-xl" onClick={() => handleEdit(session)}>
-                    <Edit2 className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" className="w-10 h-10 p-0 text-red-500" onClick={() => handleDelete(session.id)}>
                     <Trash2 className="h-4 w-4" />

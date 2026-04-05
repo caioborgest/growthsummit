@@ -3,7 +3,7 @@ import {
   Search,
   Handshake,
   Plus,
-  Edit3,
+  Pencil,
   Trash2,
   Users,
   QrCode,
@@ -85,8 +85,8 @@ export default function AdminParceiros() {
 
   const filteredPartners = useMemo(() => {
     return partners.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.contactName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.contactName?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = typeFilter === 'all' || p.type === typeFilter;
       const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
       return matchesSearch && matchesType && matchesCategory;
@@ -263,11 +263,11 @@ export default function AdminParceiros() {
                   </div>
                   <div>
                     <h3 className="font-black text-white text-lg leading-tight tracking-tight">{partner.name}</h3>
-                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">{typeLabels[partner.type]}</p>
+                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">{typeLabels[partner.type as string] || partner.type}</p>
                   </div>
                 </div>
-                <Badge className={categoryColors[partner.category]}>
-                  {categoryLabels[partner.category]}
+                <Badge className={categoryColors[partner.category as string] || 'bg-gray-500/10'}>
+                  {categoryLabels[partner.category as string] || partner.category}
                 </Badge>
               </div>
 
@@ -308,7 +308,7 @@ export default function AdminParceiros() {
                     onClick={() => handleOpenModal(partner)}
                     className="w-10 h-10 border border-white/10 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white"
                   >
-                    <Edit3 className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     size="icon"

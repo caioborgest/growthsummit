@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Award, 
   User, 
@@ -10,15 +10,14 @@ import {
   Settings as SettingsIcon,
   ChevronDown,
   ChevronUp,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
 import { useRegistrations } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { emailService } from '@/services/emailService';
 import { notificationService } from '@/services/notificationService';
@@ -98,7 +97,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
           });
       }
 
-      if (selectedUser?.email) {
+      if (selectedUser?.email && selectedUser?.name) {
           const validateUrl = `${window.location.origin}/validar/${code}`;
           await emailService.sendCertificate(
               selectedUser.email,

@@ -4,7 +4,7 @@ import {
     Plus,
     Search,
     Trash2,
-    Edit3,
+    Pencil,
     QrCode,
     MapPin,
     Users,
@@ -467,7 +467,7 @@ export default function AdminStands() {
                                                         className="h-9 w-9 p-0 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl border border-transparent hover:border-white/10 transition-all"
                                                         onClick={() => handleEdit(stand)}
                                                     >
-                                                        <Edit3 className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         size="sm"

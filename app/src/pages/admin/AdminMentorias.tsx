@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { useMentoringSessions, useMentors, useRegistrations, useMentoringWaitlistHook, useNotifications } from '@/hooks/useData';
+import { useMentoringSessions, useMentors, useRegistrations, useMentoringWaitlist, useNotifications } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -47,7 +47,7 @@ export function AdminMentorias() {
   const { data: sessions, create, update } = useMentoringSessions();
   const { data: mentors } = useMentors();
   const { data: registrations } = useRegistrations();
-  const { data: waitlist, update: updateWaitlist } = useMentoringWaitlistHook();
+  const { data: waitlist, update: updateWaitlist } = useMentoringWaitlist();
   const { create: createNotification } = useNotifications();
   const { selectedProject } = useProject();
 

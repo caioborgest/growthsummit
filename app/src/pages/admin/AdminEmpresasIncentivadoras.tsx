@@ -12,7 +12,7 @@ import {
     Phone,
     Medal,
     TrendingUp,
-    Edit3
+    Pencil
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -188,7 +188,7 @@ export default function AdminEmpresasIncentivadoras() {
                                         onClick={() => handleOpenModal(emp)}
                                         className="h-8 w-8 p-0 text-teal-500/50 hover:text-teal-400 hover:bg-teal-500/10 rounded-lg"
                                     >
-                                        <Edit3 className="h-4 w-4" />
+                                        <Pencil className="h-4 w-4" />
                                     </Button>
                                     <Button
                                         variant="ghost"
