@@ -48,7 +48,7 @@ const levelLabels: Record<string, string> = {
 
 export default function AdminPatrocinadores() {
   const { projectId } = useProject();
-  const { data: sponsors, create, update, isLoading } = useSponsors();
+  const { data: sponsors, create, update, isLoading, refetch } = useSponsors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -170,7 +170,8 @@ export default function AdminPatrocinadores() {
               <Plus className="h-4 w-4 mr-2" />
               Novo Patrocinador
             </Button>
-          </DialogTrigge          <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+          </DialogTrigger>
+          <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
             <div className="admin-modal-header">
               <div>
                 <DialogTitle className="text-xl font-black italic uppercase leading-none">
@@ -287,7 +288,6 @@ export default function AdminPatrocinadores() {
               </div>
             </form>
           </DialogContent>
-Content>
         </Dialog>
       </div>
 
