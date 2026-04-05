@@ -103,7 +103,7 @@ export function AdminProjectSchedule() {
   const { projectId } = useProject();
   // Ensure we use the requested project ID if not defined in context
   const targetProjectId = projectId || FIXED_PROJECT_ID;
-  const { data: sessions, create, update, remove, refetch } = useSessions();
+  const { data: sessions, create, update, remove, refetch } = useSessions(targetProjectId);
   
   const [activeTab, setActiveTab] = useState<'diurna' | 'noturna' | 'circuito'>('diurna');
   const [showForm, setShowForm] = useState(false);

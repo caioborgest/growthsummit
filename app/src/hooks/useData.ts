@@ -27,6 +27,9 @@ import { STATUS_MAPPING } from '@/lib/constants';
 const isGEProject = (projectId: string | undefined, slug?: string): boolean => {
   if (!projectId && !slug) return false;
   
+  // 1. Fixed UUID detection (Triunfo)
+  if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') return true;
+
   // 1. Slug-based detection (direct slug or projectId acting as slug)
   const identifier = (slug || projectId || '').toLowerCase();
   if (identifier.startsWith('ge-') || 
@@ -400,11 +403,14 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
 }
 
 // Generic hook for CRUD operations with project filtering
-export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations', options?: { realtime?: boolean }) {
+export function useData<T extends WithId>(initialData: T[] = [], entityName: string = 'registrations', options?: { realtime?: boolean, projectId?: string }) {
   const [data, setData] = useState<T[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { projectId, selectedProject } = useProject();
+  const { projectId: contextProjectId, selectedProject } = useProject();
+  
+  // Use explicit projectId from options if provided, otherwise fallback to context
+  const projectId = options?.projectId || contextProjectId;
 
   const isFetchingRef = useRef(false);
   const consecutiveFetchCountRef = useRef(0);
@@ -817,8 +823,8 @@ export function useCheckIns() {
   return useData<CheckIn>([], 'check_ins');
 }
 
-export function useSessions() {
-  return useData<Session>([], 'sessions', { realtime: true });
+export function useSessions(projectId?: string) {
+  return useData<Session>([], 'sessions', { realtime: true, projectId });
 }
 
 export function useSpeakers() {
