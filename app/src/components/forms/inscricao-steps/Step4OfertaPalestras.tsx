@@ -58,7 +58,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             // Validate as Corporate Batch (Company Voucher)
             const { data: batchData } = await (supabase
                 .from('company_registration_batches') as any)
-                .select('id,voucher_code,total_slots:vacancy_count,used_slots:used_vacancies,ticket_type,payment_status')
+                .select('id,voucher_code,total_slots,used_slots,ticket_type,payment_status')
                 .eq('voucher_code', cupom.trim().toUpperCase())
                 .maybeSingle();
 

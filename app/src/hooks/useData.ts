@@ -138,9 +138,9 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   if (item.user_id) result.userId = item.user_id;
   if (item.company_name) result.companyName = item.company_name;
   if (entityName === 'registration_batches') {
-    result.name = item.company_name || item.name;
-    result.total_slots = item.vacancy_count || item.total_slots || 0;
-    result.used_slots = item.used_vacancies || item.used_slots || 0;
+    result.name = item.name || item.company_name;
+    result.total_slots = item.total_slots || 0;
+    result.used_slots = item.used_slots || 0;
     result.price = item.total_amount || item.price || 0;
     result.ticketType = item.registration_type || item.ticketType || 'pro';
     result.active = item.is_active !== undefined ? item.is_active : true;
@@ -263,13 +263,13 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     
     return {
       project_id: projectId,
-      company_name: data.name || data.companyName,
+      name: data.name, // standard column is 'name'
       contact_email: data.contactEmail,
       responsible_name: data.responsibleName,
       responsible_email: data.responsibleEmail,
       voucher_code: data.voucherCode,
-      vacancy_count: data.total_slots || data.maxSlots || 0,
-      used_vacancies: data.used_slots || data.usedSlots || 0,
+      total_slots: data.total_slots || data.maxSlots || 0,
+      used_slots: data.used_slots || data.usedSlots || 0,
       registration_type: data.registrationType || data.ticketType || 'pro',
       total_amount: data.totalAmount || data.price || 0,
       is_active: data.active !== undefined ? data.active : true,
@@ -391,7 +391,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     raffles: 'id,project_id,name,description,type,status,stand_id,winner_registration_id,drawn_at,created_at,updated_at',
     raffle_participants: 'id,raffle_id,registration_id,created_at',
     partners: 'id,project_id,name,logo_url,website,description,tier,active,created_at,updated_at,cnpj,type,category,status,contact_name,contact_email,contact_phone,access_code,max_team_members,sponsor_id,stand_id',
-    registration_batches: 'id,project_id,name:company_name,total_slots:vacancy_count,used_slots:used_vacancies,total_amount,voucher_code,registration_type,payment_status,responsible_name,responsible_email,expires_at,is_active,contact_email,cnpj,notes,created_at,updated_at',
+    registration_batches: 'id,project_id,name,total_slots,used_slots,total_amount,voucher_code,registration_type,payment_status,responsible_name,responsible_email,expires_at,is_active,contact_email,cnpj,notes,created_at,updated_at',
     partner_team_members: 'id,partner_id,project_id,user_id,name,email,phone,cpf,role,qr_code,checked_in,check_in_time,created_at',
     email_templates: 'id,project_id,name,subject,body,category,variables,created_at,updated_at',
     email_campaigns: 'id,project_id,name,template_id,recipients_filter,status,scheduled_at,sent_at,stats,created_at,updated_at'
