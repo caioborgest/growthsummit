@@ -11,7 +11,8 @@ import {
   Handshake,
   Rocket,
   BookOpen,
-  Shield
+  Shield,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
