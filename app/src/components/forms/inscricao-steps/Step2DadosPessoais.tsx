@@ -93,7 +93,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         setErrors(prev => ({ ...prev, code: '' }));
 
         const cleanCodigo = code.trim().toUpperCase();
-        logger.debug('[Step2] Validating code:', { cleanCodigo, type: referralType, project: projectId });
+        logger.debug('[Step2] Validating code:', { cleanCodigo, project: projectId });
 
         try {
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
@@ -130,7 +130,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             socialDiscount: 100, 
                             batchId: (lot as any).id, 
                             companyVoucher: lot.voucher_code,
-                            registrationType: ((lot as any).ticket_type || 'pro') as any
+                            registrationType: ((lot as any).ticket_type || 'pro') as any,
+                            referralType: 'empresa'
                         });
                     }
                     toast.success('Voucher corporativo validado!');
@@ -168,6 +169,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                     setCodigoValidado(true);
                     setPartnerId(partner.id);
                     setReferralName(partner.name);
+                    setReferralType('parceiro');
                     setSocialDiscount(100);
                     if (onUpdate) {
                         onUpdate({ 
@@ -176,7 +178,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             referralName: partner.name, 
                             partnerId: partner.id, 
                             socialDiscount: 100,
-                            registrationType: 'pro'
+                            registrationType: 'pro',
+                            referralType: 'parceiro'
                         });
                     }
                     toast.success('Código de parceiro validado!');
@@ -210,11 +213,13 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                     setCodigoValidado(true);
                     setSocialDiscount(couponData.discount_percentage);
                     setReferralType(couponData.referral_type as any);
+                    setReferralName(cleanCodigo); // For coupons, referral name is usually the code
                     if (onUpdate) {
                         onUpdate({ 
                             code: cleanCodigo, 
                             socialDiscount: couponData.discount_percentage,
-                            referralType: couponData.referral_type as any
+                            referralType: couponData.referral_type as any,
+                            referralName: cleanCodigo
                         });
                     }
                     toast.success(`Cupom validado! ${couponData.discount_percentage}% de desconto.`);
@@ -248,7 +253,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         else if (password.length < 6) newErrors.password = 'A senha deve ter pelo menos 6 caracteres';
         if (!confirmPassword) newErrors.confirmPassword = 'Confirme sua senha';
         else if (password !== confirmPassword) newErrors.confirmPassword = 'As senhas não coincidem';
-        if (referralType !== 'nenhum' && code.trim() && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
+        if (code.trim() && !codigoValidado) newErrors.code = 'Por favor, valide o código antes de continuar';
         setErrors(newErrors);
         if (Object.keys(newErrors).length === 0) {
             onContinuar({
@@ -257,12 +262,12 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 email,
                 phone,
                 password,
-                referralType,
-                referralName: referralType !== 'nenhum' ? referralName : '',
+                referralType: codigoValidado ? referralType : 'nenhum',
+                referralName: codigoValidado ? (referralName || code.trim()) : '',
                 partnerId: partnerId || '',
                 partnerAccessCode: partnerId ? code.trim().toUpperCase() : undefined,
-                code: referralType !== 'nenhum' ? code.trim().toUpperCase() : '',
-                socialDiscount: referralType !== 'nenhum' ? socialDiscount : 0,
+                code: code.trim().toUpperCase(),
+                socialDiscount: codigoValidado ? socialDiscount : 0,
                 batchId: referralType === 'empresa' ? batchId : '',
                 companyVoucher: referralType === 'empresa' ? companyVoucher : ''
             });
@@ -375,123 +380,44 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
                     <div className="form-section-divider">
                         <div className="form-section-divider-label">
-                            <Award className="h-4 w-4" />Programa de Inscrição Social
+                            <Award className="h-4 w-4" />Código de Desconto ou Voucher
                         </div>
                     </div>
-                    <p className="form-hint -mt-2">
-                        Sua inscrição é fruto de parceria com Prefeitura, Empresa ou Liderança local?
-                    </p>
-
-                    <div className="form-badge-group">
-                        {[
-                            { id: 'prefeitura', label: '🏛️ Prefeitura' },
-                            { id: 'politico', label: '⚖️ Político' },
-                            { id: 'empresa', label: '🏢 Empresa' },
-                            { id: 'influenciador', label: '📱 Influencer' },
-                            { id: 'associacao', label: '🤝 Associação' },
-                            { id: 'instituicao', label: '🎓 Instituição' },
-                            { id: 'parceiro', label: '🎖️ Parceiro/Vex' },
-                            { id: 'promocional', label: '🎁 Promocional' },
-                            { id: 'nenhum', label: '✕ Nenhum' },
-                        ].map(tipo => (
-                            <button
-                                key={tipo.id} type="button"
-                                onClick={() => {
-                                    setReferralType(tipo.id as DadosInscricao['referralType']);
-                                    setCodigoValidado(false);
-                                    setCode('');
-                                    setBatchId('');
-                                    setCompanyVoucher('');
-                                    setPartnerId('');
-                                    setSocialDiscount(0);
-                                    setReferralName('');
-                                    onUpdate?.({
-                                        code: '',
-                                        socialDiscount: 0,
-                                        batchId: '',
-                                        companyVoucher: '',
-                                        partnerId: '',
-                                        referralName: '',
-                                        partnerAccessCode: ''
-                                    });
-                                }}
-                                className={`form-badge-btn${referralType === tipo.id ? ' active' : ''}`}
-                            >
-                                {tipo.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {referralType && referralType !== 'nenhum' && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="form-field">
-                                <label htmlFor="referralName" className="form-label" style={{ fontSize: '0.72rem' }}>
-                                    {referralType === 'prefeitura' ? 'Qual a Prefeitura?' :
-                                        referralType === 'politico' ? 'Qual o Político / Liderança?' :
-                                            referralType === 'empresa' ? 'Nome da Empresa / Equipe?' :
-                                                referralType === 'influenciador' ? 'Qual o Influenciador?' :
-                                                    referralType === 'associacao' ? 'Qual a Associação?' :
-                                                        referralType === 'instituicao' ? 'Qual a Instituição?' :
-                                                            'Nome da Origem / Parceiro?'}
-                                </label>
-                                {referralType === 'prefeitura' ? (
-                                    <Select value={referralName} onValueChange={setReferralName}>
-                                        <SelectTrigger className="form-input h-auto">
-                                            <SelectValue placeholder="Selecione a cidade" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-dark-100 border-white/10 text-white">
-                                            {PAJEU_CITIES.map(cidade => (
-                                                <SelectItem key={cidade} value={cidade} className="focus:bg-brand-orange-coral/20 focus:text-white">
-                                                    {cidade}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <input
-                                        id="referralName" type="text" value={referralName}
-                                        onChange={e => { setReferralName(e.target.value); if (errors.referralName) setErrors({ ...errors, referralName: '' }); }}
-                                        placeholder="Nome do parceiro ou empresa"
-                                        className={`form-input${errors.referralName ? ' error' : ''}`}
-                                    />
-                                )}
-                                {errors.referralName && <p className="form-error"><AlertCircle />{errors.referralName}</p>}
+                    
+                    <div className="space-y-4">
+                        <div className="form-field">
+                            <label className="form-label" style={{ fontSize: '0.72rem' }}>
+                                <Key className="h-4 w-4" />
+                                Código Social ou Corporativo
+                            </label>
+                            <div className="form-code-row">
+                                <input
+                                    type="text" value={code} disabled={validating}
+                                    onChange={e => { setCode(e.target.value); setCodigoValidado(false); if (errors.code) setErrors({ ...errors, code: '' }); }}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleValidarCodigo(); } }}
+                                    placeholder="DIGITE O CÓDIGO AQUI"
+                                    className={`form-input form-code-input${errors.code ? ' error' : ''}`}
+                                />
+                                <button
+                                    type="button" onClick={handleValidarCodigo}
+                                    disabled={validating || !code.trim() || codigoValidado}
+                                    className={`form-code-validate-btn${codigoValidado ? ' validated' : ''}`}
+                                >
+                                    {validating ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                                        codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validar'}
+                                </button>
                             </div>
-
-                            <div className="form-field">
-                                <label className="form-label" style={{ fontSize: '0.72rem' }}>
-                                    <Key className="h-4 w-4" />
-                                    {referralType === 'empresa' ? 'Código do Voucher Corporativo' : 'Código de Parceria'}
-                                </label>
-                                <div className="form-code-row">
-                                    <input
-                                        type="text" value={code} disabled={validating}
-                                        onChange={e => { setCode(e.target.value); setCodigoValidado(false); if (errors.code) setErrors({ ...errors, code: '' }); }}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleValidarCodigo(); } }}
-                                        placeholder={referralType === 'empresa' ? 'EX: GROWTH-XXX' : 'DIGITE O CÓDIGO'}
-                                        className={`form-input form-code-input${errors.code ? ' error' : ''}`}
-                                    />
-                                    <button
-                                        type="button" onClick={handleValidarCodigo}
-                                        disabled={validating || !code.trim() || codigoValidado}
-                                        className={`form-code-validate-btn${codigoValidado ? ' validated' : ''}`}
-                                    >
-                                        {validating ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                                            codigoValidado ? <CheckCircle className="h-4 w-4" /> : 'Validar'}
-                                    </button>
-                                </div>
-                                {errors.code && <p className="form-error"><AlertCircle />{errors.code}</p>}
-                                {codigoValidado && (
-                                    <p className="form-success-badge"><CheckCircle />CÓDIGO CONFIRMADO! (-{socialDiscount}% OFF)</p>
-                                )}
-                                <p className="form-hint">
-                                    {referralType === 'empresa'
-                                        ? 'Este código foi enviado ao responsável pela compra do lote corporativo.'
-                                        : 'Este código é fornecido pela sua empresa ou organização do GX.'}
+                            {errors.code && <p className="form-error"><AlertCircle />{errors.code}</p>}
+                            {codigoValidado && (
+                                <p className="form-success-badge">
+                                    <CheckCircle />CÓDIGO {referralType === 'empresa' ? 'CORPORATIVO' : 'SOCIAL'} VALIDADO! (-{socialDiscount}% OFF)
                                 </p>
-                            </div>
+                            )}
+                            <p className="form-hint">
+                                Digite seu código de parceria ou voucher corporativo para aplicar o desconto.
+                            </p>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
 

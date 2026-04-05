@@ -89,6 +89,9 @@ export const registrationService = {
             ? params.sessionIds.filter(id => isValidUUID(id))
             : [];
 
+        const inferredReferralType = (params.socialCode || params.palestraCode) ? 'social' : 'nenhum';
+        const inferredReferralName = params.socialCode || params.palestraCode || null;
+
         const payload = {
             p_project_id: cleanProjectId,
             p_user_id: cleanUserId || null,
@@ -107,8 +110,8 @@ export const registrationService = {
             p_activity_room: params.salaAtividade || null,
             p_activity_schedule: params.horarioAtividade || null,
             p_activity_level: params.nivelAtividade || null,
-            p_referral_type: params.referralType || 'none',
-            p_referral_name: params.referralName || null,
+            p_referral_type: inferredReferralType,
+            p_referral_name: inferredReferralName,
             p_social_code: params.socialCode || null,
             p_lecture_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
