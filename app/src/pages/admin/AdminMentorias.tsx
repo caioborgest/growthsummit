@@ -18,15 +18,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
+  DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
 import { useMentoringSessions, useMentors, useRegistrations, useMentoringWaitlistHook, useNotifications } from '@/hooks/useData';
@@ -178,78 +176,92 @@ export function AdminMentorias() {
                 <Calendar className="h-4 w-4 mr-2" /> AGENDAR SESSÃO
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl shadow-2xl backdrop-blur-xl">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black italic">Nova <span className="text-brand-orange-coral">Mentoria</span></DialogTitle>
-                <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Preencha os dados do agendamento manual</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mentor Responsável</Label>
-                    <select
-                      required
-                      value={formData.mentorId}
-                      onChange={e => setFormData({ ...formData, mentorId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
-                    >
-                      <option value="">Selecione...</option>
-                      {mentors.filter(m => m.status === 'approved').map(mentor => (
-                        <option key={mentor.id} value={mentor.id}>{mentor.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Participante</Label>
-                    <select
-                      required
-                      value={formData.menteeId}
-                      onChange={e => setFormData({ ...formData, menteeId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
-                    >
-                      <option value="">Selecione...</option>
-                      {registrations.map(reg => (
-                        <option key={reg.id} value={reg.id}>{reg.name}</option>
-                      ))}
-                    </select>
-                  </div>
+            <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+              <div className="admin-modal-header">
+                <div>
+                  <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase leading-none">
+                    Nova <span className="text-brand-orange-coral">Mentoria</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                    Agendamento manual de sessão
+                  </DialogDescription>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Data e Hora</Label>
+              <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+                <div className="admin-modal-body">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mentor Responsável</label>
+                      <select
+                        required
+                        value={formData.mentorId}
+                        onChange={e => setFormData({ ...formData, mentorId: e.target.value })}
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
+                      >
+                        <option value="">Selecione...</option>
+                        {mentors.filter(m => m.status === 'approved').map(mentor => (
+                          <option key={mentor.id} value={mentor.id}>{mentor.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Participante</label>
+                      <select
+                        required
+                        value={formData.menteeId}
+                        onChange={e => setFormData({ ...formData, menteeId: e.target.value })}
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50"
+                      >
+                        <option value="">Selecione...</option>
+                        {registrations.map(reg => (
+                          <option key={reg.id} value={reg.id}>{reg.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6 mt-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Data e Hora</label>
+                      <Input
+                        required
+                        type="datetime-local"
+                        value={formData.scheduledAt}
+                        onChange={e => setFormData({ ...formData, scheduledAt: e.target.value })}
+                        className="h-11 bg-dark-100 border-white/5"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Duração (Min)</label>
+                      <Input
+                        type="number"
+                        value={formData.duration}
+                        onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
+                        className="h-11 bg-dark-100 border-white/5"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mt-6">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tópico de Discussão</label>
                     <Input
-                      required
-                      type="datetime-local"
-                      value={formData.scheduledAt}
-                      onChange={e => setFormData({ ...formData, scheduledAt: e.target.value })}
-                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
+                      value={formData.topicOfInterest}
+                      onChange={e => setFormData({ ...formData, topicOfInterest: e.target.value })}
+                      placeholder="Ex: Estratégia de Go-to-Market"
+                      className="h-11 bg-dark-100 border-white/5"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Duração (Min)</Label>
-                    <Input
-                      type="number"
-                      value={formData.duration}
-                      onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
-                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                    />
-                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tópico de Discussão</Label>
-                  <Input
-                    value={formData.topicOfInterest}
-                    onChange={e => setFormData({ ...formData, topicOfInterest: e.target.value })}
-                    placeholder="Ex: Estratégia de Go-to-Market"
-                    className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                  />
+                <div className="admin-modal-footer">
+                  <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-gray-500">
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-8">
+                    CONFIRMAR AGENDAMENTO
+                  </Button>
                 </div>
-
-                <Button type="submit" className="w-full h-14 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black rounded-2xl shadow-glow-orange transition-all">
-                  CONFIRMAR AGENDAMENTO
-                </Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -432,11 +444,11 @@ export function AdminMentorias() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
              {waitlist.filter(w => w.status === 'pending').length > 0 ? (
                waitlist.filter(w => w.status === 'pending').map((item) => (
-                 <Card key={item.id} className="bg-dark-200/80 border border-white/5 rounded-[2.5rem] p-8 space-y-6 flex flex-col border-l-4 border-l-yellow-500">
+                 <Card key={item.id} className="bg-dark-200/80 border border-white/5 rounded-[2.5rem] p-8 space-y-6 flex flex-col border-l-4 border-l-brand-orange-coral">
                     <div className="flex justify-between items-start">
                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-                             <User className="h-6 w-6 text-yellow-500" />
+                          <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
+                             <User className="h-6 w-6 text-brand-orange-coral" />
                           </div>
                           <div>
                              <p className="text-white font-black text-sm uppercase italic">{registrations.find(r => r.userId === item.registrationId || r.id === item.registrationId)?.name || 'Anônimo'}</p>
@@ -446,8 +458,8 @@ export function AdminMentorias() {
                     </div>
 
                     <div className="space-y-4 flex-1">
-                       <div className="bg-yellow-500/5 p-5 rounded-3xl border border-yellow-500/10 h-full">
-                          <p className="text-[9px] text-yellow-500 font-black uppercase tracking-[0.2em] mb-2">Desafio Exposto</p>
+                       <div className="bg-brand-orange-coral/5 p-5 rounded-3xl border border-brand-orange-coral/10 h-full">
+                          <p className="text-[9px] text-brand-orange-coral font-black uppercase tracking-[0.2em] mb-2">Desafio Exposto</p>
                           <p className="text-gray-300 text-[11px] italic leading-relaxed">"{item.challenge}"</p>
                        </div>
                     </div>
@@ -455,45 +467,65 @@ export function AdminMentorias() {
                     <div className="flex flex-col gap-3">
                        <Dialog>
                           <DialogTrigger asChild>
-                             <Button className="w-full h-12 bg-white/5 hover:bg-orange-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all">
+                             <Button className="w-full h-12 bg-white/5 hover:bg-brand-orange-coral text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all">
                                 DIRECIONAR PARA MENTOR
                              </Button>
                           </DialogTrigger>
-                          <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem]">
-                             <DialogHeader>
-                                <DialogTitle className="text-xl font-black italic uppercase">Vincular <span className="text-orange-500">Mentor</span></DialogTitle>
-                                <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest">Selecione um mentor disponível para este participante</DialogDescription>
-                             </DialogHeader>
-                             <div className="space-y-6 pt-4">
-                                <div className="space-y-3">
-                                   <p className="text-gray-400 text-xs italic">"{item.challenge}"</p>
-                                   <select className="w-full h-14 bg-dark-100 border border-white/5 rounded-2xl text-white font-bold px-4">
-                                      <option value="">Selecione um mentor disponível...</option>
-                                      {mentors.map(m => <option key={m.id} value={m.id}>{m.name} ({m.specialties})</option>)}
-                                   </select>
-                                </div>
-                                <Button className="w-full h-14 bg-orange-500 text-white font-black rounded-2xl" onClick={async () => {
-                                   await updateWaitlist(item.id, { status: 'redirected' });
-                                   
-                                   // Encontrar o userId do participante
-                                   const participant = registrations.find(r => r.id === item.registrationId || r.userId === item.registrationId);
+                          <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+                            <div className="admin-modal-header">
+                               <div>
+                                  <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                                     Vincular <span className="text-brand-orange-coral">Mentor</span>
+                                  </DialogTitle>
+                                  <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                                     Selecione um mentor disponível para este participante
+                                  </DialogDescription>
+                               </div>
+                            </div>
 
-                                   // Notificar o participante
-                                   await createNotification({
-                                      projectId: selectedProject?.id,
-                                      title: '🚀 Oportunidade de Mentoria!',
-                                      message: `Um mentor está disponível para te ajudar com: "${item.challenge.substring(0, 30)}...". Vá ao Lounge de Mentorias!`,
-                                      type: 'info',
-                                      userId: participant?.userId || item.registrationId, // Preferência pelo User ID
-                                      read: false
-                                   } as any);
+                            <div className="admin-modal-body">
+                               <div className="space-y-6">
+                                  <div className="bg-dark-300/50 p-5 rounded-3xl border border-white/5 relative">
+                                     <p className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.2em] mb-2">Desafio do Participante</p>
+                                     <p className="text-gray-300 text-[11px] italic leading-relaxed">"{item.challenge}"</p>
+                                  </div>
 
-                                   toast.success('Direcionado com sucesso! Participante notificado via App.');
-                                }}>
-                                   NOTIFICAR E VINCULAR
-                                </Button>
-                             </div>
-                          </DialogContent>
+                                  <div className="space-y-2">
+                                     <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mentor Disponível</label>
+                                     <select className="w-full h-14 bg-dark-100 border border-white/5 rounded-2xl text-white font-bold px-4 outline-none focus:border-brand-orange-coral/50 transition-all">
+                                        <option value="">Selecione um mentor...</option>
+                                        {mentors.map(m => <option key={m.id} value={m.id}>{m.name} ({m.specialties})</option>)}
+                                     </select>
+                                  </div>
+                               </div>
+                            </div>
+
+                            <div className="admin-modal-footer">
+                               <Button
+                                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                                  onClick={async () => {
+                                     await updateWaitlist(item.id, { status: 'redirected' });
+                                     
+                                     // Encontrar o userId do participante
+                                     const participant = registrations.find(r => r.id === item.registrationId || r.userId === item.registrationId);
+
+                                     // Notificar o participante
+                                     await createNotification({
+                                        projectId: selectedProject?.id,
+                                        title: '🚀 Oportunidade de Mentoria!',
+                                        message: `Um mentor está disponível para te ajudar com: "${item.challenge.substring(0, 30)}...". Vá ao Lounge de Mentorias!`,
+                                        type: 'info',
+                                        userId: participant?.userId || item.registrationId, // Preferência pelo User ID
+                                        read: false
+                                     } as any);
+
+                                     toast.success('Direcionado com sucesso! Participante notificado via App.');
+                                  }}
+                               >
+                                  NOTIFICAR E VINCULAR
+                               </Button>
+                            </div>
+                         </DialogContent>
                        </Dialog>
                     </div>
                  </Card>

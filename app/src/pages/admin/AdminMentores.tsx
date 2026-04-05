@@ -22,13 +22,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
@@ -77,146 +74,153 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 rounded-3xl space-y-6 relative border-brand-orange-coral/20">
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
-        >
-          <XCircle className="h-6 w-6" />
-        </button>
-
-        <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-orange-coral/20">
-            {mentor.photo ? (
-              <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover rounded-3xl" />
-            ) : (
-              mentor.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
-            )}
+    <div className="admin-modal-overlay">
+      <div className="admin-modal-content max-w-2xl">
+        <div className="admin-modal-header">
+          <div>
+            <h2 className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
+              Perfil do <span className="text-brand-orange-coral">Mentor</span>
+            </h2>
+            <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">Detalhes e gestão de candidatura</p>
           </div>
-          <div className="text-center sm:text-left">
-            <h3 className="text-2xl font-black text-white mb-1">{mentor.name}</h3>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center">
-              <p className="text-brand-orange-coral font-bold">{mentor.roleTitle}</p>
-              <span className="text-gray-600">•</span>
-              <p className="text-gray-400">{mentor.company}</p>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
-                {statusLabels[mentor.status] || mentor.status}
-              </Badge>
-            </div>
-          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+            <XCircle className="h-6 w-6" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Informações de Contato</h4>
-            <div className="space-y-3">
-              <div className="flex items-center text-gray-300">
-                <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />
-                <span className="text-sm">{mentor.email}</span>
+        <div className="admin-modal-body">
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-orange-coral/20">
+              {mentor.photo ? (
+                <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover rounded-3xl" />
+              ) : (
+                mentor.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+              )}
+            </div>
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl font-black text-white mb-1">{mentor.name}</h3>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2 items-center">
+                <p className="text-brand-orange-coral font-bold">{mentor.roleTitle}</p>
+                <span className="text-gray-600">•</span>
+                <p className="text-gray-400">{mentor.company}</p>
               </div>
-              {mentor.phone && (
+              <div className="mt-3 flex gap-2">
+                <Badge className={statusColors[mentor.status] || 'bg-gray-500/20 text-gray-400'}>
+                  {statusLabels[mentor.status] || mentor.status}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Informações de Contato</h4>
+              <div className="space-y-3">
                 <div className="flex items-center text-gray-300">
-                  <Phone className="h-4 w-4 mr-3 text-brand-orange-coral" />
-                  <span className="text-sm">{mentor.phone}</span>
+                  <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />
+                  <span className="text-sm">{mentor.email}</span>
                 </div>
-              )}
-              {mentor.linkedin && (
-                <a
-                  href={mentor.linkedin.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center text-teal-400 hover:text-teal-300 transition-colors"
-                >
-                  <Briefcase className="h-4 w-4 mr-3" />
-                  <span className="text-sm font-bold">LinkedIn Profile</span>
-                </a >
-              )}
-            </div >
-          </div >
-
-          <div className="space-y-4">
-            <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Estatísticas do Evento</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[10px] text-gray-500 uppercase font-black mb-1">Experiência</p>
-                <p className="text-white font-bold">{mentor.yearsExperience || 0} anos</p>
+                {mentor.phone && (
+                  <div className="flex items-center text-gray-300">
+                    <Phone className="h-4 w-4 mr-3 text-brand-orange-coral" />
+                    <span className="text-sm">{mentor.phone}</span>
+                  </div>
+                )}
+                {mentor.linkedin && (
+                  <a
+                    href={mentor.linkedin.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center text-teal-400 hover:text-teal-300 transition-colors"
+                  >
+                    <Linkedin className="h-4 w-4 mr-3" />
+                    <span className="text-sm font-bold">LinkedIn Profile</span>
+                  </a>
+                )}
               </div>
-              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[10px] text-gray-500 uppercase font-black mb-1">Capacidade</p>
-                <p className="text-white font-bold">{mentor.maxMentories || 0} slots</p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Estatísticas</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <p className="text-[9px] text-gray-500 uppercase font-black mb-1">Experiência</p>
+                  <p className="text-white font-bold">{mentor.yearsExperience || 0} anos</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <p className="text-[9px] text-gray-500 uppercase font-black mb-1">Capacidade</p>
+                  <p className="text-white font-bold">{mentor.maxMentories || 0} slots</p>
+                </div>
               </div>
             </div>
           </div>
-        </div >
 
-        <div className="space-y-4">
-          <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Biografia & Trajetória</h4>
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-            <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-              {mentor.bio || 'Nenhuma biografia fornecida.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-sm font-black text-gray-500 uppercase tracking-widest">Especialidades</h4>
-          <div className="flex flex-wrap gap-2">
-            {mentor.specialties?.length > 0 ? mentor.specialties.map((spec: string, i: number) => (
-              <Badge key={i} className="bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 px-3 py-1 font-bold">
-                {spec}
-              </Badge>
-            )) : <span className="text-gray-600 text-sm italic">Nenhuma especialidade listada.</span>}
-          </div>
-        </div>
-
-        {['approved', 'aprovado'].includes(mentor.status) && (
-          <div className="p-4 bg-teal-500/10 border border-teal-500/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <p className="text-white font-bold text-sm">Acesso do Mentor</p>
-              <p className="text-gray-400 text-[10px] uppercase font-black">Enviar link de acesso direto via e-mail</p>
+          <div className="space-y-4 mt-6">
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Biografia & Trajetória</h4>
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                {mentor.bio || 'Nenhuma biografia fornecida.'}
+              </p>
             </div>
-            <Button
-              size="sm"
-              className="bg-teal-500 hover:bg-teal-600 text-white font-black text-xs h-10 px-6 rounded-xl shadow-lg shadow-teal-500/20"
-              onClick={async () => {
-                try {
-                  const { error } = await supabase.auth.signInWithOtp({
-                    email: mentor.email,
-                    options: { emailRedirectTo: `${window.location.origin}/login` }
-                  });
-                  if (error) throw error;
-                  toast.success('Link mágico enviado com sucesso para o e-mail do mentor!');
-                } catch (err: any) {
-                  logger.error('Erro ao enviar link mágico:', err);
-                  toast.error('Erro ao enviar link mágico: ' + err.message);
-                }
-              }}
-            >
-              <Mail className="h-4 w-4 mr-2" /> ENVIAR LINK MÁGICO
-            </Button>
           </div>
-        )}
 
-        <div className="flex gap-3 pt-6 border-t border-white/5">
+          <div className="space-y-4 mt-6">
+            <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Especialidades</h4>
+            <div className="flex flex-wrap gap-2">
+              {mentor.specialties?.length > 0 ? mentor.specialties.map((spec: string, i: number) => (
+                <Badge key={i} className="bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 px-3 py-1 font-bold">
+                  {spec}
+                </Badge>
+              )) : <span className="text-gray-600 text-sm italic">Nenhuma especialidade listada.</span>}
+            </div>
+          </div>
+
+          {['approved', 'aprovado'].includes(mentor.status) && (
+            <div className="mt-6 p-4 bg-teal-500/10 border border-teal-500/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="text-white font-bold text-sm">Acesso do Mentor</p>
+                <p className="text-gray-400 text-[10px] uppercase font-black">Enviar link de acesso direto via e-mail</p>
+              </div>
+              <Button
+                size="sm"
+                className="bg-teal-500 hover:bg-teal-600 text-white font-black text-xs h-10 px-6 rounded-xl shadow-lg shadow-teal-500/20"
+                onClick={async () => {
+                  try {
+                    const { error } = await supabase.auth.signInWithOtp({
+                      email: mentor.email,
+                      options: { emailRedirectTo: `${window.location.origin}/login` }
+                    });
+                    if (error) throw error;
+                    toast.success('Link mágico enviado com sucesso para o e-mail do mentor!');
+                  } catch (err: any) {
+                    logger.error('Erro ao enviar link mágico:', err);
+                    toast.error('Erro ao enviar link mágico: ' + err.message);
+                  }
+                }}
+              >
+                <Mail className="h-4 w-4 mr-2" /> ENVIAR LINK MÁGICO
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="admin-modal-footer">
           {['pending', 'pendente'].includes(mentor.status) ? (
             <>
               <Button
                 onClick={() => { onApprove(mentor.id); onClose(); }}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold h-12 rounded-2xl"
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
-                Aprovar Mentor
+                Aprovar
               </Button>
               <Button
                 onClick={() => { onReject(mentor.id); onClose(); }}
                 variant="outline"
-                className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10 font-bold h-12 rounded-2xl"
+                className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10 font-bold"
               >
                 <XCircle className="h-5 w-5 mr-2" />
-                Rejeitar Candidatura
+                Rejeitar
               </Button>
             </>
           ) : (
@@ -228,20 +232,20 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
                   navigator.clipboard.writeText(url);
                   toast.success('Link de login copiado (o mentor precisará do OTP/Email)');
                 }}
-                className="flex-1 border-white/10 text-gray-400 hover:text-white font-bold h-12 rounded-2xl"
+                className="flex-1 border-white/10 text-gray-400 hover:text-white font-bold"
               >
-                Copiado Link de Login
+                Copiar Link
               </Button>
               <Button
                 onClick={onClose}
-                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold h-12 rounded-2xl border border-white/10"
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold border border-white/10"
               >
-                Fechar Perfil
+                Fechar
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => { if (confirm('Excluir permanentemente este mentor?')) { onDelete(mentor.id); onClose(); } }}
-                className="text-red-500 hover:bg-red-500/10 h-12 w-12 rounded-2xl p-0 flex items-center justify-center"
+                className="text-red-500 hover:bg-red-500/10 w-12 p-0 flex items-center justify-center shrink-0"
                 title="Excluir Mentor"
               >
                 <XCircle className="h-6 w-6" />
@@ -249,8 +253,8 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
             </div>
           )}
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }
 
@@ -304,7 +308,6 @@ function MentorEditModal({ mentor, onClose, onSave }: {
     try {
       let photoUrl = mentor.photo || '';
 
-      // Upload nova foto se selecionada
       if (form.photoFile) {
         setIsUploading(true);
         const ext = form.photoFile.name.split('.').pop();
@@ -343,150 +346,149 @@ function MentorEditModal({ mentor, onClose, onSave }: {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="glass-card max-w-2xl w-full max-h-[92vh] overflow-y-auto rounded-3xl border-teal-500/20 relative">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-dark-200/95 backdrop-blur-xl px-8 py-6 border-b border-white/5 flex items-center justify-between rounded-t-3xl">
+    <div className="admin-modal-overlay">
+      <div className="admin-modal-content max-w-2xl">
+        <div className="admin-modal-header">
           <div>
             <h2 className="text-xl font-black text-white flex items-center gap-3">
-              <Pencil className="h-5 w-5 text-teal-400" />
-              Editar Mentor
+              <Pencil className="h-5 w-5 text-brand-orange-coral" />
+              Editar <span className="text-brand-orange-coral">Mentor</span>
             </h2>
-            <p className="text-gray-500 text-xs mt-0.5">{mentor.name}</p>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">{mentor.name}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors bg-white/5 p-2.5 rounded-xl">
-            <XCircle className="h-5 w-5" />
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+            <XCircle className="h-6 w-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {/* Foto */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative group">
-              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-teal-500/20 to-teal-700/20 border-2 border-dashed border-teal-500/30 overflow-hidden flex items-center justify-center group-hover:border-teal-500/60 transition-all">
-                {form.photoPreview ? (
-                  <img src={form.photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="h-12 w-12 text-gray-500" />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="absolute -bottom-2 -right-2 bg-teal-500 hover:bg-teal-600 p-2.5 rounded-2xl text-white shadow-lg transition-all hover:scale-105 disabled:opacity-50"
-                title="Alterar foto"
-              >
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-              </button>
-              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
-            </div>
-            <p className="text-xs text-gray-500">Clique no ícone para alterar a foto • JPEG, PNG, WebP • Máx. 3MB</p>
-          </div>
-
-          {/* Dados pessoais */}
-          <div className="space-y-5">
-            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-              <User className="h-4 w-4 text-teal-400" /> Dados Pessoais
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Nome Completo *</label>
-                <Input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome do mentor" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">E-mail (não editável)</label>
-                <Input value={form.email} disabled className="bg-dark-100 border-dark-300 h-11 opacity-50 cursor-not-allowed" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">WhatsApp</label>
-                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="(88) 99999-9999" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">LinkedIn</label>
-                <Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="linkedin.com/in/..." />
-              </div>
-            </div>
-          </div>
-
-          {/* Carreira */}
-          <div className="space-y-5">
-            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-teal-400" /> Carreira
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Empresa</label>
-                <Input value={form.company} onChange={e => setForm(p => ({ ...p, company: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome da empresa" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Cargo</label>
-                <Input value={form.roleTitle} onChange={e => setForm(p => ({ ...p, roleTitle: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Ex: CEO, Diretor..." />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Anos de Experiência</label>
-                <Input type="number" min={0} max={60} value={form.yearsExperience} onChange={e => setForm(p => ({ ...p, yearsExperience: parseInt(e.target.value) || 0 }))} className="bg-dark-100 border-dark-300 h-11" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Capacidade de Mentorias</label>
-                <Input type="number" min={1} max={50} value={form.maxMentories} onChange={e => setForm(p => ({ ...p, maxMentories: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300 h-11" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">Bio / Trajetória Profissional</label>
-              <textarea
-                value={form.bio}
-                onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                rows={4}
-                placeholder="Conte um pouco sobre a trajetória deste mentor..."
-                className="w-full bg-dark-100 border border-dark-300 rounded-xl p-3 text-white text-sm focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Especialidades */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-teal-400" /> Especialidades
-              <span className="text-gray-600 font-normal normal-case tracking-normal">({form.specialties.length}/5 selecionadas)</span>
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {ESPECIALIDADES.map(spec => (
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+          <div className="admin-modal-body">
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <div className="relative group">
+                <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-brand-orange-coral/20 to-brand-orange-intense/20 border-2 border-dashed border-brand-orange-coral/30 overflow-hidden flex items-center justify-center group-hover:border-brand-orange-coral/60 transition-all">
+                  {form.photoPreview ? (
+                    <img src={form.photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-12 w-12 text-gray-500" />
+                  )}
+                </div>
                 <button
-                  key={spec}
                   type="button"
-                  onClick={() => toggleSpec(spec)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${form.specialties.includes(spec)
-                    ? 'bg-teal-500 text-white shadow-md shadow-teal-500/20'
-                    : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20 hover:text-white'
-                    }`}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="absolute -bottom-2 -right-2 bg-brand-orange-coral hover:bg-brand-orange-intense p-2.5 rounded-2xl text-white shadow-lg transition-all hover:scale-105 disabled:opacity-50"
+                  title="Alterar foto"
                 >
-                  {spec}
+                  {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                 </button>
-              ))}
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handlePhotoChange} />
+              </div>
+              <p className="text-[10px] text-gray-500 uppercase font-black">JPEG, PNG, WebP • Máx. 3MB</p>
+            </div>
+
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <User className="h-4 w-4 text-brand-orange-coral" /> Dados Pessoais
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Nome Completo *</label>
+                    <Input required value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome do mentor" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">E-mail (não editável)</label>
+                    <Input value={form.email} disabled className="bg-dark-100 border-dark-300 h-11 opacity-50 cursor-not-allowed" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">WhatsApp</label>
+                    <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="(88) 99999-9999" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">LinkedIn</label>
+                    <Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="linkedin.com/in/..." />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-brand-orange-coral" /> Carreira
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Empresa</label>
+                    <Input value={form.company} onChange={e => setForm(p => ({ ...p, company: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Nome da empresa" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Cargo</label>
+                    <Input value={form.roleTitle} onChange={e => setForm(p => ({ ...p, roleTitle: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="Ex: CEO, Diretor..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Anos de Experiência</label>
+                    <Input type="number" min={0} max={60} value={form.yearsExperience} onChange={e => setForm(p => ({ ...p, yearsExperience: parseInt(e.target.value) || 0 }))} className="bg-dark-100 border-dark-300 h-11" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Capacidade de Mentorias</label>
+                    <Input type="number" min={1} max={50} value={form.maxMentories} onChange={e => setForm(p => ({ ...p, maxMentories: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300 h-11" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Bio / Trajetória Profissional</label>
+                  <textarea
+                    value={form.bio}
+                    onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+                    rows={4}
+                    placeholder="Conte um pouco sobre a trajetória deste mentor..."
+                    className="w-full bg-dark-100 border border-dark-300 rounded-xl p-3 text-white text-sm focus:ring-2 focus:ring-brand-orange-coral outline-none transition-all resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-brand-orange-coral" /> Especialidades
+                  <span className="text-gray-600 font-normal normal-case tracking-normal">({form.specialties.length}/5)</span>
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {ESPECIALIDADES.map(spec => (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => toggleSpec(spec)}
+                      className={`px-4 py-2 rounded-full text-[10px] font-black uppercase transition-all ${form.specialties.includes(spec)
+                        ? 'bg-brand-orange-coral text-white shadow-md shadow-brand-orange-coral/20'
+                        : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20 hover:text-white'
+                        }`}
+                    >
+                      {spec}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Ações */}
-          <div className="flex gap-3 pt-4 border-t border-white/5">
-            <button
+          <div className="admin-modal-footer">
+            <Button
               type="button"
+              variant="ghost"
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all"
+              className="text-gray-500"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 rounded-xl"
             >
               {isSaving ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</>
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Salvando...</>
               ) : (
-                <><Save className="h-4 w-4" /> Salvar Alterações</>
+                <><Save className="h-4 w-4 mr-2" /> Salvar Alterações</>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -800,233 +802,239 @@ export function AdminMentores() {
             </Button>
           </DialogTrigger>
           <DialogContent
-            ref={scrollContainerRef}
-            className="bg-dark-200 border-dark-300 text-white max-w-xl p-0 overflow-y-auto max-h-[90vh] rounded-[2rem]"
+            className="admin-modal-content p-0 border-none max-w-xl"
           >
             {/* Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
               <div
-                className="h-full bg-teal-500 transition-all duration-500"
+                className="h-full bg-brand-orange-coral transition-all duration-500"
                 style={{ width: `${(currentStep / 3) * 100}%` }}
               />
             </div>
 
-            <DialogHeader className="p-8 pb-0">
-              <DialogTitle className="text-2xl font-black">Adicionar Novo Mentor</DialogTitle>
-              <DialogDescription className="text-gray-400 text-sm">Sincronizado com o formulário do site</DialogDescription>
-            </DialogHeader>
+            <div className="admin-modal-header">
+              <div>
+                <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
+                  Novo <span className="text-brand-orange-coral">Mentor</span>
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                  Passo {currentStep} de 3 • Sincronizado com o site
+                </DialogDescription>
+              </div>
+            </div>
 
-            <form onSubmit={handleCreate} className="p-8 space-y-6">
-              {currentStep === 1 && (
-                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                  <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-white/5">
-                    <div className="relative group">
-                      <div className="w-24 h-24 rounded-full bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-teal-500/50">
-                        {formData.photoPreview ? (
-                          <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
-                        ) : (
-                          <User className="h-10 w-10 text-gray-500" />
-                        )}
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+              <div ref={scrollContainerRef} className="admin-modal-body">
+                {currentStep === 1 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                    <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-white/5">
+                      <div className="relative group">
+                        <div className="w-24 h-24 rounded-3xl bg-dark-100 border-2 border-dashed border-dark-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-brand-orange-coral/50">
+                          {formData.photoPreview ? (
+                            <img src={formData.photoPreview} className="w-full h-full object-cover" alt="Preview" />
+                          ) : (
+                            <User className="h-10 w-10 text-gray-500" />
+                          )}
+                        </div>
+                        <label className="absolute -bottom-2 -right-2 p-2 bg-brand-orange-coral rounded-2xl cursor-pointer shadow-lg hover:bg-brand-orange-intense transition-colors">
+                          <Camera className="h-4 w-4 text-white" />
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setFormData({
+                                  ...formData,
+                                  photo: file,
+                                  photoPreview: URL.createObjectURL(file)
+                                });
+                              }
+                            }}
+                          />
+                        </label>
                       </div>
-                      <label className="absolute bottom-0 right-0 p-2 bg-teal-500 rounded-full cursor-pointer shadow-lg hover:bg-teal-600 transition-colors">
-                        <Camera className="h-4 w-4 text-white" />
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setFormData({
-                                ...formData,
-                                photo: file,
-                                photoPreview: URL.createObjectURL(file)
-                              });
-                            }
-                          }}
+                      <p className="text-[10px] text-gray-500 uppercase font-black">Foto do Mentor *</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Nome Completo *</label>
+                        <Input
+                          required
+                          value={formData.name}
+                          onChange={e => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Nome do mentor"
+                          className="bg-dark-100 border-dark-300 h-11"
                         />
-                      </label>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">E-mail Corporativo *</label>
+                        <Input
+                          type="email"
+                          required
+                          value={formData.email}
+                          onChange={e => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="email@empresa.com"
+                          className="bg-dark-100 border-dark-300 h-11"
+                        />
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500">Foto de Identificação *</p>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nome Completo *</Label>
-                      <Input
-                        required
-                        value={formData.name}
-                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Nome do mentor"
-                        className="bg-dark-100 border-dark-300 h-12"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">WhatsApp</label>
+                        <Input
+                          value={formData.phone}
+                          onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="(00) 00000-0000"
+                          className="bg-dark-100 border-dark-300 h-11"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Empresa</label>
+                        <Input
+                          value={formData.company}
+                          onChange={e => setFormData({ ...formData, company: e.target.value })}
+                          placeholder="Nome da empresa"
+                          className="bg-dark-100 border-dark-300 h-11"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>E-mail Corporativo *</Label>
-                      <Input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="email@empresa.com"
-                        className="bg-dark-100 border-dark-300 h-12"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>WhatsApp (Telefone)</Label>
-                      <Input
-                        value={formData.phone}
-                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="(00) 00000-0000"
-                        className="bg-dark-100 border-dark-300 h-12"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Cargo / Posição</label>
+                        <Input
+                          value={formData.roleTitle}
+                          onChange={e => setFormData({ ...formData, roleTitle: e.target.value })}
+                          placeholder="Ex: Diretor de Inovação"
+                          className="bg-dark-100 border-dark-300 h-11"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Crie uma Senha *</label>
+                        <Input
+                          type="password"
+                          required
+                          value={formData.password}
+                          onChange={e => setFormData({ ...formData, password: e.target.value })}
+                          className="bg-dark-100 border-dark-300 h-11"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Empresa</Label>
-                      <Input
-                        value={formData.company}
-                        onChange={e => setFormData({ ...formData, company: e.target.value })}
-                        placeholder="Nome da empresa"
-                        className="bg-dark-100 border-dark-300 h-12"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Cargo / Posição</Label>
-                      <Input
-                        value={formData.position}
-                        onChange={e => setFormData({ ...formData, position: e.target.value })}
-                        placeholder="Ex: Diretor de Inovação"
-                        className="bg-dark-100 border-dark-300 h-12"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Crie uma Senha *</Label>
+                      <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Confirme a Senha *</label>
                       <Input
                         type="password"
                         required
-                        value={formData.password}
-                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                        className="bg-dark-100 border-dark-300 h-12"
+                        value={formData.confirmPassword}
+                        onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        className="bg-dark-100 border-dark-300 h-11"
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Confirme a Senha *</Label>
-                    <Input
-                      type="password"
-                      required
-                      value={formData.confirmPassword}
-                      onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      className="bg-dark-100 border-dark-300 h-12"
-                    />
-                  </div>
-                </div>
-              )}
+                )}
 
-              {currentStep === 2 && (
-                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                  <div className="space-y-3">
-                    <Label className="text-gray-300">Especialidades (Selecione até 3)</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {ESPECIALIDADES.map(esp => (
-                        <button
-                          key={esp}
-                          type="button"
-                          onClick={() => toggleSpecialty(esp)}
-                          className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${formData.specialties.includes(esp)
-                            ? 'bg-teal-500 text-white border-teal-500'
-                            : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
-                            }`}
-                        >
-                          {esp}
-                        </button>
-                      ))}
+                {currentStep === 2 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                    <div className="space-y-3">
+                      <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest block">Especialidades (Até 3)</label>
+                      <div className="flex flex-wrap gap-2">
+                        {ESPECIALIDADES.map(esp => (
+                          <button
+                            key={esp}
+                            type="button"
+                            onClick={() => toggleSpecialty(esp)}
+                            className={`px-4 py-2 rounded-full text-[10px] font-black uppercase transition-all ${formData.specialties.includes(esp)
+                              ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-md shadow-brand-orange-coral/20'
+                              : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
+                              }`}
+                          >
+                            {esp}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Anos de Experiência</label>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={formData.yearsExperience}
+                          onChange={e => setFormData({ ...formData, yearsExperience: parseInt(e.target.value) || 0 })}
+                          className="bg-dark-100 border-dark-300 h-10"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Capacidade (Slots)</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={formData.maxMentories}
+                          onChange={e => setFormData({ ...formData, maxMentories: parseInt(e.target.value) || 0 })}
+                          className="bg-dark-100 border-dark-300 h-10"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label>Anos de Experiência</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.yearsExperience}
-                        onChange={e => setFormData({ ...formData, yearsExperience: parseInt(e.target.value) || 0 })}
-                        className="bg-dark-100 border-dark-300 h-10"
+                      <div className="flex justify-between items-end">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Bio / Experiência</label>
+                        <span className={`text-[10px] font-black ${formData.bio.trim().split(/\s+/).filter(Boolean).length > 100 ? 'text-red-500' : 'text-gray-500'}`}>
+                          {formData.bio.trim().split(/\s+/).filter(Boolean).length}/100 palavras
+                        </span>
+                      </div>
+                      <textarea
+                        required
+                        value={formData.bio}
+                        onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                        placeholder="Conte um pouco sobre a trajetória do mentor..."
+                        className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white text-sm min-h-[150px] outline-none focus:ring-2 focus:ring-brand-orange-coral transition-all"
                       />
                     </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div className="space-y-2">
-                      <Label>Capacidade (Slots)</Label>
+                      <label className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        <Linkedin className="h-3 w-3 text-blue-400" /> LinkedIn
+                      </label>
                       <Input
-                        type="number"
-                        min="1"
-                        value={formData.maxMentories}
-                        onChange={e => setFormData({ ...formData, maxMentories: parseInt(e.target.value) || 0 })}
-                        className="bg-dark-100 border-dark-300 h-10"
+                        value={formData.linkedin}
+                        onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                        placeholder="https://linkedin.com/in/perfil"
+                        className="bg-dark-100 border-dark-300 h-11"
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end">
-                      <Label>Bio / Experiência</Label>
-                      <span className={`text-[10px] ${formData.bio.trim().split(/\s+/).filter(Boolean).length > 100 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
-                        {formData.bio.trim().split(/\s+/).filter(Boolean).length}/100 palavras
-                      </span>
+                    <div className="bg-brand-orange-coral/10 p-6 rounded-2xl border border-brand-orange-coral/20">
+                      <h4 className="text-brand-orange-coral font-black text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <Target className="h-4 w-4" /> Compromisso
+                      </h4>
+                      <p className="text-xs text-gray-400 leading-relaxed font-bold">
+                        Ao finalizar o cadastro, o mentor receberá as credenciais de acesso via e-mail e será listado oficialmente no evento. Certifique-se de que todas as informações foram revisadas.
+                      </p>
                     </div>
-                    <Textarea
-                      required
-                      value={formData.bio}
-                      onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                      placeholder="Conte um pouco sobre a trajetória do mentor..."
-                      className="bg-dark-100 border-dark-300 min-h-[150px] resize-none"
-                    />
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
-              {currentStep === 3 && (
-                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4 text-blue-400" /> URL do LinkedIn
-                    </Label>
-                    <Input
-                      value={formData.linkedin}
-                      onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-                      placeholder="https://linkedin.com/in/perfil"
-                      className="bg-dark-100 border-dark-300 h-12"
-                    />
-                  </div>
-
-                  <div className="bg-teal-500/10 p-6 rounded-2xl border border-teal-500/20">
-                    <h4 className="text-teal-400 font-bold mb-2 flex items-center gap-2">
-                      <Target className="h-5 w-5" /> Compromisso
-                    </h4>
-                    <p className="text-sm text-gray-300 leading-relaxed">
-                      Ao adicionar este mentor, ele terá acesso à plataforma e será listado oficialmente.
-                      Certifique-se de que os dados estão corretos para sincronia com a agenda de mentorias.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-6 border-t border-dark-300">
+              <div className="admin-modal-footer">
                 {currentStep > 1 && (
-                  <Button type="button" variant="outline" onClick={() => setCurrentStep(prev => prev - 1)} className="flex-1 border-dark-300 text-gray-400">
+                  <Button type="button" variant="ghost" onClick={() => setCurrentStep(prev => prev - 1)} className="text-gray-500">
                     Voltar
                   </Button>
                 )}
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black h-12 rounded-xl"
+                  className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 rounded-xl"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-5 w-5 animate-spin" />

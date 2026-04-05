@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 interface ProjectPopup {
   id: string;
@@ -248,142 +248,149 @@ export function AdminPopups() {
 
       {/* Modal de Criação/Edição */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[700px] bg-dark-200 border border-white/10 rounded-[3rem] p-0 shadow-2xl overflow-hidden">
-          <DialogHeader className="p-10 pb-6 border-b border-white/5 bg-gradient-to-r from-brand-orange-coral/10 to-transparent">
-            <DialogTitle className="text-3xl font-black text-white tracking-tighter flex items-center gap-4">
-              <Sparkles className="h-8 w-8 text-brand-orange-coral" />
-              {editingPopup?.id ? 'Configurar Pop-up' : 'Novo Pop-up Estratégico'}
-            </DialogTitle>
-            <DialogDescription className="text-gray-500 font-medium text-lg leading-relaxed pt-2 italic">
-              Defina as regras de exibição e o gatilho emocional para conversão.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            {/* Bloco 1: Conteúdo */}
-            <div className="space-y-6">
-              <h4 className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                <Layout className="h-4 w-4" /> Conteúdo Visual
-                <div className="h-px bg-brand-orange-coral/20 flex-1" />
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Título do Banner</label>
-                  <Input 
-                    value={editingPopup?.title}
-                    onChange={e => setEditingPopup(p => ({ ...p, title: e.target.value }))}
-                    className="bg-dark-100 border-none h-14 text-white font-black text-lg focus:ring-2 focus:ring-brand-orange-coral"
-                    placeholder="Ex: 🚀 Convite Exclusivo!"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Tipo de Experiência</label>
-                  <select 
-                    value={editingPopup?.type}
-                    onChange={e => setEditingPopup(p => ({ ...p, type: e.target.value as any }))}
-                    className="w-full bg-dark-100 border-none rounded-2xl px-6 h-14 text-white font-bold appearance-none outline-none focus:ring-2 focus:ring-brand-orange-coral"
-                  >
-                    <option value="newsletter">Captura (Newsletter/Lead)</option>
-                    <option value="offer">Oferta (Venda/Inscrição)</option>
-                    <option value="info">Informativo (Aviso/Urgência)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-400">Descrição / Chamada para Ação</label>
-                <textarea 
-                  rows={3}
-                  value={editingPopup?.description}
-                  onChange={e => setEditingPopup(p => ({ ...p, description: e.target.value }))}
-                  className="w-full bg-dark-100 border-none rounded-3xl p-6 text-white text-lg leading-relaxed resize-none focus:ring-2 focus:ring-brand-orange-coral"
-                  placeholder="Explique o benefício de clicar..."
-                />
-              </div>
-            </div>
-
-            {/* Bloco 2: Regras de Exibição */}
-            <div className="space-y-6">
-              <h4 className="text-[10px] text-teal-500 font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                <Target className="h-4 w-4" /> Regras de Targeting
-                <div className="h-px bg-teal-500/20 flex-1" />
-              </h4>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-400">Páginas Escolhidas (URLs separadas por vírgula)</label>
-                <Input 
-                  value={editingPopup?.target_pages?.join(', ')}
-                  onChange={e => setEditingPopup(p => ({ ...p, target_pages: e.target.value.split(',').map(s => s.trim()) }))}
-                  className="bg-dark-100 border-none h-14 text-white font-bold"
-                  placeholder="Ex: *, /precos, /sobre"
-                />
-                <p className="text-[10px] text-gray-600 font-medium pl-2 italic">Use * para mostrar em todo o site.</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Delay (Segundos)</label>
-                  <Input 
-                    type="number"
-                    value={editingPopup?.show_after_seconds}
-                    onChange={e => setEditingPopup(p => ({ ...p, show_after_seconds: parseInt(e.target.value) }))}
-                    className="bg-dark-100 border-none h-14 text-white font-bold"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Prioridade de Exibição</label>
-                  <Input 
-                    type="number"
-                    value={editingPopup?.priority}
-                    onChange={e => setEditingPopup(p => ({ ...p, priority: parseInt(e.target.value) }))}
-                    className="bg-dark-100 border-none h-14 text-white font-bold"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Bloco 3: Botão de Ação */}
-            <div className="space-y-6">
-              <h4 className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.3em] flex items-center gap-3">
-                <ChevronRight className="h-4 w-4" /> Call to Action
-                <div className="h-px bg-brand-orange-coral/20 flex-1" />
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Texto do Botão</label>
-                  <Input 
-                    value={editingPopup?.cta_text}
-                    onChange={e => setEditingPopup(p => ({ ...p, cta_text: e.target.value }))}
-                    className="bg-dark-100 border-none h-14 text-white font-black"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400">Link de Destino (Opcional)</label>
-                  <Input 
-                    value={editingPopup?.cta_link}
-                    onChange={e => setEditingPopup(p => ({ ...p, cta_link: e.target.value }))}
-                    className="bg-dark-100 border-none h-14 text-white font-bold"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
+        <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-xl font-black italic uppercase leading-none flex items-center gap-4">
+                <Sparkles className="h-6 w-6 text-brand-orange-coral" />
+                {editingPopup?.id ? 'Configurar Pop-up' : 'Novo Pop-up Estratégico'}
+              </DialogTitle>
+              <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                Defina as regras de exibição e o gatilho emocional para conversão
+              </DialogDescription>
             </div>
           </div>
 
-          <DialogFooter className="p-10 bg-dark-300 border-t border-white/5 flex gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setIsModalOpen(false)}
-              className="flex-1 h-16 rounded-[1.8rem] border border-white/5 text-gray-500 font-bold hover:text-white"
-            >
-              Descartar
-            </Button>
-            <Button 
-              onClick={handleSave}
-              className="flex-[2] h-16 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black text-lg rounded-[1.8rem] shadow-2xl shadow-brand-orange-coral/20"
-            >
-              SALVAR CONFIGURAÇÃO
-            </Button>
-          </DialogFooter>
+          <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex flex-col min-h-0 overflow-hidden">
+            <div className="admin-modal-body">
+              <div className="space-y-8">
+                {/* Bloco 1: Conteúdo */}
+                <div className="space-y-6">
+                  <h4 className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Layout className="h-4 w-4" /> Conteúdo Visual
+                    <div className="h-px bg-white/5 flex-1" />
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Título do Banner</label>
+                      <Input 
+                        value={editingPopup?.title}
+                        onChange={e => setEditingPopup(p => ({ ...p, title: e.target.value }))}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="Ex: 🚀 Convite Exclusivo!"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo de Experiência</label>
+                      <select 
+                        value={editingPopup?.type}
+                        onChange={e => setEditingPopup(p => ({ ...p, type: e.target.value as any }))}
+                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl px-4 text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                      >
+                        <option value="newsletter">Captura (Newsletter/Lead)</option>
+                        <option value="offer">Oferta (Venda/Inscrição)</option>
+                        <option value="info">Informativo (Aviso/Urgência)</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Descrição / Chamada para Ação</label>
+                      <textarea 
+                        rows={3}
+                        value={editingPopup?.description}
+                        onChange={e => setEditingPopup(p => ({ ...p, description: e.target.value }))}
+                        className="w-full bg-dark-100 border border-white/5 rounded-2xl p-4 text-white font-medium resize-none focus:outline-none focus:border-brand-orange-coral/50 transition-all flex items-center min-h-[100px]"
+                        placeholder="Explique o benefício de clicar..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bloco 2: Regras de Exibição */}
+                <div className="space-y-6 pt-4 mt-4 border-t border-white/5">
+                  <h4 className="text-[10px] text-teal-500 font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Target className="h-4 w-4" /> Regras de Targeting
+                    <div className="h-px bg-white/5 flex-1" />
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Páginas Escolhidas (URLs separadas por vírgula)</label>
+                    <Input 
+                      value={editingPopup?.target_pages?.join(', ')}
+                      onChange={e => setEditingPopup(p => ({ ...p, target_pages: e.target.value.split(',').map(s => s.trim()) }))}
+                      className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      placeholder="Ex: *, /precos, /sobre"
+                    />
+                    <p className="text-[9px] text-gray-600 font-bold uppercase tracking-wider pl-1 font-mono">Dica: Use * para exibir em todas as páginas</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Delay (Segundos)</label>
+                      <Input 
+                        type="number"
+                        value={editingPopup?.show_after_seconds}
+                        onChange={e => setEditingPopup(p => ({ ...p, show_after_seconds: parseInt(e.target.value) }))}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Prioridade</label>
+                      <Input 
+                        type="number"
+                        value={editingPopup?.priority}
+                        onChange={e => setEditingPopup(p => ({ ...p, priority: parseInt(e.target.value) }))}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bloco 3: Botão de Ação */}
+                <div className="space-y-6 pt-4 mt-4 border-t border-white/5">
+                  <h4 className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.3em] flex items-center gap-3">
+                    <ChevronRight className="h-4 w-4" /> Call to Action
+                    <div className="h-px bg-white/5 flex-1" />
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Texto do Botão</label>
+                      <Input 
+                        value={editingPopup?.cta_text}
+                        onChange={e => setEditingPopup(p => ({ ...p, cta_text: e.target.value }))}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="Ex: Saiba mais"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link de Destino</label>
+                      <Input 
+                        value={editingPopup?.cta_link}
+                        onChange={e => setEditingPopup(p => ({ ...p, cta_link: e.target.value }))}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-modal-footer">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+              >
+                Descartar
+              </Button>
+              <Button 
+                type="submit"
+                className="flex-[2] h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+              >
+                SALVAR CONFIGURAÇÃO
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

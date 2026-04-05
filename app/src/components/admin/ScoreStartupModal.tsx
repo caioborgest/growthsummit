@@ -4,7 +4,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -88,70 +87,76 @@ export function ScoreStartupModal({ isOpen, onClose, startup, projectId }: Score
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-md">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                        Avaliar Startup: {startup.name}
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-400">
-                        Atribua notas de 1 a 10 para cada critério abaixo.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="admin-modal-content p-0 border-none max-w-md">
+                <div className="admin-modal-header">
+                    <div>
+                        <DialogTitle className="text-xl font-black italic uppercase leading-none flex items-center gap-2">
+                            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                            Avaliar <span className="text-brand-orange-coral">Startup</span>
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                            {startup.startupName || startup.name} • Evento Pitch Arena
+                        </DialogDescription>
+                    </div>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-                    <div className="space-y-6">
-                        <ScoreSlider
-                            label="Inovação & Tecnologia"
-                            value={scores.innovation}
-                            onChange={(v) => setScores({ ...scores, innovation: v })}
-                        />
-                        <ScoreSlider
-                            label="Potencial de Mercado"
-                            value={scores.market}
-                            onChange={(v) => setScores({ ...scores, market: v })}
-                        />
-                        <ScoreSlider
-                            label="Apresentação & Pitch"
-                            value={scores.presentation}
-                            onChange={(v) => setScores({ ...scores, presentation: v })}
-                        />
-                        <ScoreSlider
-                            label="Modelo de Negócio"
-                            value={scores.businessModel}
-                            onChange={(v) => setScores({ ...scores, businessModel: v })}
-                        />
+                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                    <div className="admin-modal-body">
+                        <div className="space-y-8">
+                            <div className="space-y-6">
+                                <ScoreSlider
+                                    label="Inovação & Tecnologia"
+                                    value={scores.innovation}
+                                    onChange={(v) => setScores({ ...scores, innovation: v })}
+                                />
+                                <ScoreSlider
+                                    label="Potencial de Mercado"
+                                    value={scores.market}
+                                    onChange={(v) => setScores({ ...scores, market: v })}
+                                />
+                                <ScoreSlider
+                                    label="Apresentação & Pitch"
+                                    value={scores.presentation}
+                                    onChange={(v) => setScores({ ...scores, presentation: v })}
+                                />
+                                <ScoreSlider
+                                    label="Modelo de Negócio"
+                                    value={scores.businessModel}
+                                    onChange={(v) => setScores({ ...scores, businessModel: v })}
+                                />
 
-                        <div className="space-y-2">
-                            <Label className="flex items-center gap-2 text-gray-300">
-                                <MessageSquare className="h-4 w-4" />
-                                Observações (Opcional)
-                            </Label>
-                            <Textarea
-                                value={scores.notes}
-                                onChange={(e) => setScores({ ...scores, notes: e.target.value })}
-                                placeholder="Feedback para os empreendedores..."
-                                className="bg-dark-100 border-dark-300 min-h-[100px] text-white"
-                            />
+                                <div className="space-y-2 pt-4 border-t border-white/5">
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest flex items-center gap-2">
+                                        <MessageSquare className="h-4 w-4" />
+                                        Observações (Opcional)
+                                    </label>
+                                    <Textarea
+                                        value={scores.notes}
+                                        onChange={(e) => setScores({ ...scores, notes: e.target.value })}
+                                        placeholder="Feedback construtivo para os empreendedores..."
+                                        className="bg-dark-100 border-white/5 text-white font-medium min-h-[100px] resize-none"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-dark-300">
+                    <div className="admin-modal-footer">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             onClick={onClose}
-                            className="flex-1 border-dark-300 text-gray-400 hover:bg-dark-100"
+                            className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
                         >
                             Cancelar
                         </Button>
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-bold"
+                            className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
                         >
                             <Save className="h-4 w-4 mr-2" />
-                            {loading ? 'Salvando...' : 'Salvar Nota'}
+                            {loading ? 'Salvando...' : 'Registrar Voto'}
                         </Button>
                     </div>
                 </form>

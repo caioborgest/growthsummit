@@ -18,7 +18,9 @@ import {
   Search,
   CheckCircle2,
   AlertTriangle,
-  Info
+  Info,
+  X,
+  Loader2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -406,68 +408,100 @@ export default function AdminComunicacao() {
                   <Plus className="h-4 w-4 mr-2" /> NOVO TEMPLATE
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-2xl shadow-2xl backdrop-blur-xl">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase">Criar <span className="text-teal-500">Novo Template</span></DialogTitle>
-                  <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
-                    Defina um novo modelo de email ou push para as comunicações do evento.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateTemplate} className="space-y-6 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                       <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome do Template *</Label>
-                       <Input
-                         required
-                         value={templateFormData.name}
-                         onChange={e => setTemplateFormData({ ...templateFormData, name: e.target.value })}
-                         className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                         placeholder="Ex: Boas-vindas Mentores"
-                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Categoria</Label>
-                      <select
-                        value={templateFormData.category}
-                        onChange={e => setTemplateFormData({ ...templateFormData, category: e.target.value })}
-                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
-                      >
-                        <option value="Inscrições">Inscrições</option>
-                        <option value="Lembretes">Lembretes</option>
-                        <option value="Mentorias">Mentorias</option>
-                        <option value="Patrocinadores">Patrocinadores</option>
-                        <option value="Empresas">Empresas</option>
-                        <option value="Acesso">Acesso</option>
-                        <option value="Outros">Outros</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do Email *</Label>
-                    <Input
-                      required
-                      value={templateFormData.subject}
-                      onChange={e => setTemplateFormData({ ...templateFormData, subject: e.target.value })}
-                      className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                      placeholder="Assunto que o usuário verá na caixa de entrada"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Corpo do Email (HTML/Texto)</Label>
-                    <p className="text-[10px] text-gray-500 font-bold mb-1 italic">
-                      Variáveis: {"{{nome}}"}, {"{{email}}"}, {"{{empresa}}"}.
+              <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                <div className="admin-modal-header">
+                  <div>
+                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                      <Plus className="h-7 w-7 text-teal-500" />
+                      Criar <span className="text-teal-500">Novo Template</span>
+                    </h3>
+                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                      Modelos de comunicação para e-mail ou push
                     </p>
-                    <Textarea
-                      value={templateFormData.body}
-                      onChange={e => setTemplateFormData({ ...templateFormData, body: e.target.value })}
-                      className="bg-dark-100 border-white/5 focus:border-teal-500/50 min-h-[300px] rounded-xl"
-                      placeholder="Olá {{nome}}, seja bem-vindo ao evento..."
-                    />
                   </div>
-                  <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
-                    CRIAR TEMPLATE PROFISSIONAL
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsTemplateModalOpen(false)}
+                    className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                  >
+                    <X className="h-6 w-6" />
                   </Button>
-                </form>
+                </div>
+
+                <div className="admin-modal-body">
+                  <form id="template-form" onSubmit={handleCreateTemplate} className="space-y-6 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome do Template *</Label>
+                        <Input
+                          required
+                          value={templateFormData.name}
+                          onChange={e => setTemplateFormData({ ...templateFormData, name: e.target.value })}
+                          className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                          placeholder="Ex: Boas-vindas Mentores"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Categoria</Label>
+                        <select
+                          value={templateFormData.category}
+                          onChange={e => setTemplateFormData({ ...templateFormData, category: e.target.value })}
+                          className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                        >
+                          <option value="Inscrições">Inscrições</option>
+                          <option value="Lembretes">Lembretes</option>
+                          <option value="Mentorias">Mentorias</option>
+                          <option value="Patrocinadores">Patrocinadores</option>
+                          <option value="Empresas">Empresas</option>
+                          <option value="Acesso">Acesso</option>
+                          <option value="Outros">Outros</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do Email *</Label>
+                      <Input
+                        required
+                        value={templateFormData.subject}
+                        onChange={e => setTemplateFormData({ ...templateFormData, subject: e.target.value })}
+                        className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                        placeholder="Assunto que o usuário verá na caixa de entrada"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between px-1">
+                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Conteúdo do Template</Label>
+                        <p className="text-[9px] text-gray-600 font-bold italic uppercase tracking-widest">
+                          Variáveis: {"{{nome}}"}, {"{{email}}"}, {"{{empresa}}"}
+                        </p>
+                      </div>
+                      <Textarea
+                        value={templateFormData.body}
+                        onChange={e => setTemplateFormData({ ...templateFormData, body: e.target.value })}
+                        className="bg-white/5 border-white/10 text-white font-medium min-h-[300px] rounded-2xl p-6 leading-relaxed"
+                        placeholder="Olá {{nome}}, seja bem-vindo ao evento..."
+                      />
+                    </div>
+                  </form>
+                </div>
+
+                <div className="admin-modal-footer">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsTemplateModalOpen(false)}
+                    className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                  >
+                    CANCELAR
+                  </Button>
+                  <Button 
+                    type="submit"
+                    form="template-form"
+                    className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
+                  >
+                    CRIAR TEMPLATE
+                  </Button>
+                </div>
               </DialogContent>
             </Dialog>
           )}
@@ -479,69 +513,101 @@ export default function AdminComunicacao() {
                     <Plus className="h-4 w-4 mr-2" /> NOVA CAMPANHA
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl shadow-2xl backdrop-blur-xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-black italic uppercase">Lançar <span className="text-teal-500">Nova Campanha</span></DialogTitle>
-                    <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
-                      Configure os disparos em massa para um público segmentado.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleCreateCampaign} className="space-y-6 py-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Campanha *</Label>
-                      <Input
-                        required
-                        value={campaignFormData.name}
-                        onChange={e => setCampaignFormData({ ...campaignFormData, name: e.target.value })}
-                        className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                        placeholder="Ex: Campanha de Lançamento"
-                      />
+                <DialogContent className="admin-modal-content max-w-xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                  <div className="admin-modal-header">
+                    <div>
+                      <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                        <BarChart3 className="h-7 w-7 text-teal-400" />
+                        Lançar <span className="text-teal-400">Nova Campanha</span>
+                      </h3>
+                      <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                        Disparo em massa para público segmentado
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Template Base *</Label>
-                      <select
-                        required
-                        value={campaignFormData.templateId}
-                        onChange={e => setCampaignFormData({ ...campaignFormData, templateId: e.target.value })}
-                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
-                      >
-                        <option value="">Selecione um template</option>
-                        {templates.map((t: any) => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Público Alvo</Label>
-                      <select
-                        value={campaignFormData.recipients}
-                        onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
-                        className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
-                      >
-                        <optgroup label="Participantes" className="bg-dark-300 font-black">
-                          <option value="all">Todos os inscritos</option>
-                          <option value="paid">Apenas pagos</option>
-                          <option value="pending">Apenas pendentes</option>
-                          <option value="vip">Apenas VIP</option>
-                        </optgroup>
-                        <optgroup label="Ecossistema & Negócios" className="bg-dark-300 font-black">
-                          <option value="startups">Startups (Arena Pitch)</option>
-                          <option value="companies">Empresas (Rodada/Incentivo)</option>
-                          <option value="sponsors">Patrocinadores</option>
-                          <option value="exhibitors">Expositores (Stands)</option>
-                        </optgroup>
-                        <optgroup label="Equipe & Convidados" className="bg-dark-300 font-black">
-                          <option value="mentors">Mentores</option>
-                          <option value="speakers">Palestrantes</option>
-                          <option value="partners">Parceiros Institucionais</option>
-                          <option value="partner_team_members">Equipe de Parceiros</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase">
-                      Agendar Disparo em Massa
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsCampaignModalOpen(false)}
+                      className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                    >
+                      <X className="h-6 w-6" />
                     </Button>
-                  </form>
+                  </div>
+
+                  <div className="admin-modal-body">
+                    <form id="campaign-form" onSubmit={handleCreateCampaign} className="space-y-6 py-4">
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Campanha *</Label>
+                        <Input
+                          required
+                          value={campaignFormData.name}
+                          onChange={e => setCampaignFormData({ ...campaignFormData, name: e.target.value })}
+                          className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                          placeholder="Ex: Campanha de Lançamento"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Template Base *</Label>
+                          <select
+                            required
+                            value={campaignFormData.templateId}
+                            onChange={e => setCampaignFormData({ ...campaignFormData, templateId: e.target.value })}
+                            className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                          >
+                            <option value="">Selecione um template</option>
+                            {templates.map((t: any) => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Público Alvo</Label>
+                          <select
+                            value={campaignFormData.recipients}
+                            onChange={e => setCampaignFormData({ ...campaignFormData, recipients: e.target.value })}
+                            className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                          >
+                            <optgroup label="Participantes" className="bg-dark-300 font-black">
+                              <option value="all">Todos os inscritos</option>
+                              <option value="paid">Apenas pagos</option>
+                              <option value="pending">Apenas pendentes</option>
+                              <option value="vip">Apenas VIP</option>
+                            </optgroup>
+                            <optgroup label="Ecossistema & Negócios" className="bg-dark-300 font-black">
+                              <option value="startups">Startups (Arena Pitch)</option>
+                              <option value="companies">Empresas (Rodada/Incentivo)</option>
+                              <option value="sponsors">Patrocinadores</option>
+                              <option value="exhibitors">Expositores (Stands)</option>
+                            </optgroup>
+                            <optgroup label="Equipe & Convidados" className="bg-dark-300 font-black">
+                              <option value="mentors">Mentores</option>
+                              <option value="speakers">Palestrantes</option>
+                              <option value="partners">Parceiros Institucionais</option>
+                              <option value="partner_team_members">Equipe de Parceiros</option>
+                            </optgroup>
+                          </select>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="admin-modal-footer">
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => setIsCampaignModalOpen(false)}
+                      className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                    >
+                      CANCELAR
+                    </Button>
+                    <Button 
+                      type="submit"
+                      form="campaign-form"
+                      className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
+                    >
+                      AGENDAR DISPARO
+                    </Button>
+                  </div>
                 </DialogContent>
              </Dialog>
           )}
@@ -1002,35 +1068,54 @@ export default function AdminComunicacao() {
 
       {/* Preview Modal */}
       <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
-        <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-2xl shadow-2xl backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black italic uppercase italic">Preview: <span className="text-teal-500">{selectedTemplate?.name}</span></DialogTitle>
-            <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
-              Visualize como o destinatário receberá esta comunicação.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-6">
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do E-mail</Label>
-              <div className="p-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold italic">
-                {selectedTemplate?.subject}
-              </div>
+        <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                <Eye className="h-7 w-7 text-teal-500" />
+                Visualizar <span className="text-teal-500">Template</span>
+              </h3>
+              <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                Modelo: {selectedTemplate?.name}
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Visualização do Conteúdo</Label>
-              <div className="p-6 bg-dark-100 border border-white/5 rounded-xl text-white font-bold min-h-[300px] whitespace-pre-wrap leading-relaxed">
-                {(selectedTemplate as typeof initialEmailTemplates[0] & { body?: string })?.body || 'Conteúdo do template...'}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsPreviewModalOpen(false)}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+
+          <div className="admin-modal-body">
+            <div className="space-y-8 py-4">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do E-mail</Label>
+                <div className="p-5 bg-white/[0.03] border border-white/10 rounded-2xl text-white font-black italic text-lg shadow-inner">
+                  {selectedTemplate?.subject}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Visualização do Conteúdo</Label>
+                <div className="p-8 bg-white/[0.03] border border-white/10 rounded-[2rem] text-gray-300 font-medium min-h-[400px] whitespace-pre-wrap leading-relaxed shadow-inner">
+                  {(selectedTemplate as typeof initialEmailTemplates[0] & { body?: string })?.body || 'Conteúdo do template...'}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-white/5">
-            <Button variant="outline" onClick={() => setIsPreviewModalOpen(false)} className="h-12 border-white/10 text-gray-500 hover:text-white rounded-xl uppercase font-black tracking-widest text-[9px]">
-              Fechar Visualização
+          <div className="admin-modal-footer">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsPreviewModalOpen(false)} 
+              className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+            >
+              FECHAR
             </Button>
             <Button
-              className="flex-1 h-12 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-xl shadow-glow-teal transition-all uppercase italic tracking-tighter"
+              className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none flex items-center gap-2"
               onClick={() => {
                 setComposeData({
                   ...composeData,
@@ -1041,7 +1126,7 @@ export default function AdminComunicacao() {
                 setIsPreviewModalOpen(false);
               }}
             >
-              Usar para Composição <ChevronRight className="h-4 w-4 ml-2" />
+              USAR TEMPLATE <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
         </DialogContent>

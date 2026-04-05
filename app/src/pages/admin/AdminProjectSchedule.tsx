@@ -308,116 +308,136 @@ export function AdminProjectSchedule() {
 
       {/* Activity Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2rem]">
-          <DialogHeader className="px-6 pt-6">
-            <DialogTitle className="text-2xl font-black">
-              {editingSession ? 'Editar Sessão' : 'Nova Sessão'}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="admin-modal-content p-0 border-none max-w-4xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
+                {editingSession ? 'Editar' : 'Nova'} <span className="text-brand-orange-coral">Sessão</span>
+              </DialogTitle>
+              <DialogDescription className="text-gray-500">
+                Configure os detalhes da atividade na programação do evento.
+              </DialogDescription>
+            </div>
+          </div>
 
-          <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Título</label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Título da sessão"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+            <div className="admin-modal-body">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Categoria</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      required
-                    >
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Tipo</label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-lg text-white font-bold"
-                      required
-                    >
-                      {Object.entries(typeLabels).map(([id, label]) => (
-                        <option key={id} value={id}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Início</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Título da Atividade</label>
                     <Input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                      className="bg-dark-100 border-dark-300 text-white h-12"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                      placeholder="Ex: Abertura Oficial"
                       required
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Categoria</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-xl text-white text-sm font-bold h-12 outline-none appearance-none"
+                        required
+                      >
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Tipo</label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="w-full px-4 py-3 bg-dark-100 border border-dark-300 rounded-xl text-white text-sm font-bold h-12 outline-none appearance-none"
+                        required
+                      >
+                        {Object.entries(typeLabels).map(([id, label]) => (
+                          <option key={id} value={id}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Início</label>
+                      <Input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Fim</label>
+                      <Input
+                        type="time"
+                        value={formData.endTime}
+                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Fim</label>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Local / Sala</label>
                     <Input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                      className="bg-dark-100 border-dark-300 text-white h-12"
-                      required
+                      value={formData.room}
+                      onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                      placeholder="Nome da sala ou espaço"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Vagas Máximas</label>
+                    <Input
+                      type="number"
+                      value={formData.maxSlots}
+                      onChange={(e) => setFormData({ ...formData, maxSlots: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                      placeholder="0 = Ilimitado"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Speakers (Nomes separados por vírgula)</label>
+                    <Input
+                      value={formData.speakers}
+                      onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
+                      className="bg-dark-100 border-dark-300 text-white h-12 rounded-xl"
+                      placeholder="João Silva, Maria Souza..."
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Local / Sala</label>
-                  <Input
-                    value={formData.room}
-                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Nome da sala"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Vagas Máximas (max_slots)</label>
-                  <Input
-                    type="number"
-                    value={formData.maxSlots}
-                    onChange={(e) => setFormData({ ...formData, maxSlots: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="0 = Ilimitado"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-400 mb-2 uppercase">Speakers (separado por vírgula)</label>
-                  <Input
-                    value={formData.speakers}
-                    onChange={(e) => setFormData({ ...formData, speakers: e.target.value })}
-                    className="bg-dark-100 border-dark-300 text-white h-12"
-                    placeholder="Nome 1, Nome 2"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-widest text-[10px]">Descrição / Objetivos da Sessão</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full bg-dark-100 border border-dark-300 rounded-xl p-4 text-white text-sm min-h-[100px] outline-none"
+                  placeholder="Descreva o que será abordado nesta atividade..."
+                />
               </div>
             </div>
 
-            <div className="flex space-x-4 pt-4">
-              <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-8 py-6 h-auto font-black text-lg">
+            <div className="admin-modal-footer">
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="text-gray-500">
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white px-10 py-6 h-auto font-black text-lg rounded-xl">
                 {editingSession ? 'SALVAR ALTERAÇÕES' : 'CRIAR SESSÃO'}
               </Button>
             </div>

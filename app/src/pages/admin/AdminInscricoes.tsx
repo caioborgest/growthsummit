@@ -33,6 +33,10 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
 import { getStatusConfig } from '@/lib/ui-constants';
 import { useRegistrations, useTransactions, useCheckIns, useSessions } from '@/hooks/useData';
 import { toast } from 'sonner';
@@ -58,44 +62,38 @@ function DetalhesModal({
   onDelete: (id: string) => Promise<void>;
 }) {
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="glass-card max-w-2xl w-full max-h-[90vh] overflow-hidden rounded-[2.5rem] border-white/5 relative flex flex-col"
-        >
-          {/* Header Decorator */}
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-brand-orange-coral/20 to-transparent pointer-events-none" />
-          
-          <div className="p-8 pb-4 relative z-10 flex items-center justify-between">
-             <div className="flex items-center gap-5">
-                <div className="w-20 h-20 rounded-3xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20">
-                  <User className="h-10 w-10 text-brand-orange-coral" />
+    <Dialog open={!!reg} onOpenChange={onClose}>
+      <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+        <div className="admin-modal-header">
+           <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">
+                <User className="h-8 w-8 text-brand-orange-coral" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
+                  {reg.name || 'Participante'}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-white/5 text-gray-500 border-none font-black text-[8px] uppercase tracking-widest">{reg.ticketNumber}</Badge>
+                  <div className="w-1 h-1 rounded-full bg-gray-800" />
+                  <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-none">{reg.email}</p>
                 </div>
-                <div>
-                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">{reg.name || 'Participante'}</h3>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-white/5 text-gray-400 border-none font-black text-[9px] uppercase tracking-widest">{reg.ticketNumber}</Badge>
-                    <div className="w-1 h-1 rounded-full bg-gray-700" />
-                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{reg.email}</p>
-                  </div>
-                </div>
-             </div>
-             <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="h-12 w-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5"
-              >
-                <X className="h-6 w-6" />
-              </Button>
-          </div>
+              </div>
+           </div>
+           <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+        </div>
 
-          <div className="flex-1 overflow-y-auto p-8 pt-4 custom-scrollbar space-y-8 relative z-10">
+        <div className="admin-modal-body">
+          <div className="space-y-8 py-2">
             {/* Quick Status Bar */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {(() => {
                 const config = getStatusConfig(reg.payment_status || reg.status);
                 const Icon = config.icon || CheckCircle2;
@@ -120,7 +118,7 @@ function DetalhesModal({
               )}
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00', icon: Ticket },
                 { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR')}` : '—', icon: Star, highlight: !!reg.discountAmount },
@@ -140,16 +138,16 @@ function DetalhesModal({
             </div>
 
             {/* Activities Section */}
-            <div className="glass-card p-6 border-white/5 rounded-[2rem] bg-white/[0.01]">
+            <div className="p-6 border border-white/5 rounded-[2rem] bg-white/[0.01]">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h4 className="text-sm font-black text-white italic uppercase tracking-tight">Atividades e Sessões</h4>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">PROGRAMAÇÃO PERSONALIZADA</p>
+                  <p className="text-[10px] text-gray-700 font-black uppercase tracking-widest">PROGRAMAÇÃO PERSONALIZADA</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-[9px] text-teal-400 hover:text-white hover:bg-teal-500/10 font-bold px-4 uppercase rounded-xl"
+                  className="h-8 text-[9px] text-teal-400 hover:text-white hover:bg-teal-500/10 font-bold px-4 uppercase rounded-xl border border-teal-500/20"
                   onClick={() => {
                     const novo = prompt('Insira os nomes das sessões (separados por vírgula):', reg.cursosSelecionados?.join(', ') || '');
                     if (novo !== null) {
@@ -164,31 +162,31 @@ function DetalhesModal({
               {reg.cursosSelecionados && reg.cursosSelecionados.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {reg.cursosSelecionados.map((c, i) => (
-                    <Badge key={i} className="bg-teal-500/10 text-teal-400 border-none px-3 py-1.5 font-black text-[10px] rounded-lg">
-                      {c.toUpperCase()}
+                    <Badge key={i} className="bg-white/5 text-gray-500 border-none px-3 py-1.5 font-black text-[10px] rounded-lg lowercase first-letter:uppercase">
+                      {c}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <div className="py-4 border-2 border-dashed border-white/5 rounded-2xl flex items-center justify-center">
-                  <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest italic">Nenhuma atividade selecionada</p>
+                <div className="py-6 border-2 border-dashed border-white/5 rounded-2xl flex items-center justify-center">
+                  <p className="text-gray-800 text-[10px] font-black uppercase tracking-widest italic">Nenhuma atividade selecionada</p>
                 </div>
               )}
             </div>
 
             {/* Actions Grid */}
             <div className="space-y-4">
-               <h4 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.2em] px-2">Ações Estratégicas</h4>
-               <div className="grid grid-cols-2 gap-3">
+               <h4 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.2em] px-2">Ações Administrativas</h4>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Button
                     onClick={() => {
                       onClose();
                       (window as any).dispatchAccreditation(reg);
                     }}
-                    className="col-span-2 bg-teal-500 hover:bg-teal-600 text-white font-black py-8 h-auto rounded-[1.5rem] flex flex-col items-center justify-center gap-2 shadow-glow-teal border-none transition-all hover:scale-[1.01]"
+                    className="md:col-span-2 bg-teal-500 hover:bg-teal-600 text-white font-black py-8 h-auto rounded-[1.5rem] flex flex-col items-center justify-center gap-2 shadow-glow-teal border-none transition-all hover:scale-[1.01]"
                   >
                     <QrCode className="h-6 w-6" />
-                    <span className="text-[10px] uppercase tracking-widest">REALIZAR CREDENCIAMENTO PREMIUM</span>
+                    <span className="text-[10px] uppercase tracking-widest">REALIZAR CREDENCIAMENTO</span>
                   </Button>
 
                   <Button
@@ -216,13 +214,23 @@ function DetalhesModal({
                 className="text-red-500/30 hover:text-red-500 hover:bg-red-500/10 font-black text-[9px] uppercase tracking-widest px-8"
               >
                 <Trash2 className="h-3 w-3 mr-2" />
-                DANGER: EXCLUIR PERMANENTEMENTE
+                EXCLUIR REGISTRO PERMANENTEMENTE
               </Button>
             </div>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+
+        <div className="admin-modal-footer">
+          <Button 
+            variant="ghost" 
+            onClick={onClose}
+            className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+          >
+            FECHAR
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

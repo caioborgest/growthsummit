@@ -241,26 +241,34 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[98vw] sm:max-w-4xl h-[92dvh] sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden bg-dark-100/95 backdrop-blur-3xl border-white/10 p-0 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[1.5rem] sm:rounded-[2.5rem]">
-                <div className="bg-dark-100/50 backdrop-blur-md pb-3 pt-4 sm:pb-6 sm:pt-6 px-4 sm:px-10 border-b border-white/5 z-20 shadow-lg flex-shrink-0">
-                    <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <DialogContent className="admin-modal-content max-w-4xl bg-dark-100 border-none p-0 overflow-hidden shadow-2xl">
+                <div className="admin-modal-header flex-col items-stretch gap-6 py-8">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <DialogTitle className="text-lg sm:text-2xl font-black text-white tracking-tight leading-tight">
+                            <DialogTitle className="text-2xl font-black text-white tracking-tighter italic uppercase leading-none">
                                 Inscrição <span className="text-brand-orange-coral">{selectedProject?.name || 'Evento'}</span>
                             </DialogTitle>
                             <DialogDescription className="sr-only">
                                 Inscrição para {selectedProject?.name || 'Growth Experience'}.
                             </DialogDescription>
+                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-2 italic">
+                                Siga os passos para garantir sua vaga no maior evento de 2026
+                            </p>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleClose} className="rounded-full h-10 w-10">
-                            <X className="h-5 w-5" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleClose}
+                            className="h-12 w-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5"
+                        >
+                            <X className="h-6 w-6" />
                         </Button>
                     </div>
 
-                    <div className="flex items-center justify-between relative px-2 sm:px-6">
-                        <div className="absolute top-4 sm:top-5 left-8 right-8 h-[1px] sm:h-[2px] bg-white/5 -z-10" />
+                    <div className="flex items-center justify-between relative px-6">
+                        <div className="absolute top-5 left-8 right-8 h-[2px] bg-white/5 -z-10" />
                         <div
-                            className="absolute top-4 sm:top-5 left-8 h-[1px] sm:h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_10px_rgba(255,112,67,0.5)]"
+                            className="absolute top-5 left-8 h-[2px] bg-brand-orange-coral transition-all duration-500 -z-10 shadow-[0_0_20px_rgba(255,112,67,0.5)]"
                             style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
@@ -270,18 +278,18 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             const isCompleted = step < currentStep;
 
                             return (
-                                <div key={step} className="flex flex-col items-center gap-2 relative">
+                                <div key={step} className="flex flex-col items-center gap-3 relative">
                                     <div
-                                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 border-2 ${isCompleted
-                                            ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                                        className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black transition-all duration-300 border-2 ${isCompleted
+                                            ? 'bg-green-500 border-green-500 text-white shadow-glow-sm'
                                             : isActive
-                                                ? 'bg-brand-orange-coral border-brand-orange-coral text-white scale-110 shadow-[0_0_20px_rgba(255,112,67,0.4)]'
-                                                : 'bg-dark-200 border-white/10 text-gray-500'
+                                                ? 'bg-brand-orange-coral border-brand-orange-coral text-white scale-110 shadow-glow-orange'
+                                                : 'bg-white/5 border-white/10 text-gray-700'
                                             }`}
                                     >
-                                        {isCompleted ? <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" /> : <span className="text-[10px] sm:text-sm">{step}</span>}
+                                        {isCompleted ? <CheckCircle className="h-5 w-5" /> : <span className="text-sm italic">{step}</span>}
                                     </div>
-                                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider transition-colors ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-600'} hidden sm:block`}>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${isActive ? 'text-brand-orange-coral' : isCompleted ? 'text-green-500' : 'text-gray-700'} hidden md:block`}>
                                         {label}
                                     </span>
                                 </div>
@@ -290,8 +298,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
                 </div>
 
-                <div ref={scrollContainerRef} className="flex-1 px-4 pt-6 pb-24 sm:px-12 sm:pb-10 sm:pt-8 overflow-y-auto ios-scroll scrollbar-hide">
-                    <div className="max-w-3xl mx-auto w-full">
+                <div ref={scrollContainerRef} className="admin-modal-body bg-dark-100/50">
+                    <div className="max-w-3xl mx-auto w-full py-2">
                         {renderStep()}
                     </div>
                 </div>

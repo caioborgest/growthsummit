@@ -18,6 +18,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useCoupons } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import type { Coupon } from '@/types';
@@ -423,37 +429,35 @@ export default function AdminCupons() {
             </div>
 
             {/* Modal Novo/Editar */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="glass-card max-w-xl w-full p-0 overflow-hidden shadow-2xl border-teal-500/20">
-                        <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh]">
-                            <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30 shrink-0">
-                                <div>
-                                    <h2 className="text-xl font-bold text-white">
-                                        {editingCoupon ? 'Editar Parceria / Cupom' : 'Nova Parceria / Cupom'}
-                                    </h2>
-                                    <p className="text-gray-400 text-xs mt-1">Configure as regras de desconto e vigência.</p>
-                                </div>
-                                <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500">
-                                    <XCircle className="h-5 w-5" />
-                                </Button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                        <div className="admin-modal-header">
+                            <div>
+                                <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                                    {editingCoupon ? 'Editar' : 'Novo'} <span className="text-brand-orange-coral">Cupom</span>
+                                </DialogTitle>
+                                <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                                    Configure as regras de desconto e vigência para parcerias
+                                </DialogDescription>
                             </div>
+                        </div>
 
-                            <div className="form-container-scrollable p-6 space-y-5 flex-1">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-1">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Código do Voucher</label>
+                        <div className="admin-modal-body">
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Código do Voucher</label>
                                         <Input
                                             required
                                             placeholder="EX: GROWTH100"
                                             value={formData.code}
                                             onChange={e => setFormData({ ...formData, code: e.target.value })}
-                                            className="bg-dark-100 border-dark-300 text-white uppercase font-black"
+                                            className="h-12 bg-dark-100 border-white/5 text-white uppercase font-black"
                                         />
-                                        <p className="text-[10px] text-gray-500 mt-1">O código que o usuário digitará.</p>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Desconto (%)</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Desconto (%)</label>
                                         <div className="relative">
                                             <Input
                                                 type="number"
@@ -462,114 +466,110 @@ export default function AdminCupons() {
                                                 required
                                                 value={formData.discountPercentage}
                                                 onChange={e => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
-                                                className="bg-dark-100 border-dark-300 text-white pl-4 pr-10"
+                                                className="h-12 bg-dark-100 border-white/5 text-white pl-4 pr-10"
                                             />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-1">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Tipo de Convênio</label>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo de Convênio</label>
                                         <select
                                             value={formData.referralType}
                                             onChange={e => setFormData({ ...formData, referralType: e.target.value as Coupon['referralType'] })}
-                                            className="w-full h-11 px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                            className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
                                         >
                                             {Object.entries(typeConfig).map(([key, config]) => (
                                                 <option key={key} value={key}>{config.label}</option>
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Limite de Usos</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Limite de Usos</label>
                                         <Input
                                             type="number"
                                             placeholder="Infinito"
                                             value={formData.usageLimit}
                                             onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
-                                            className="bg-dark-100 border-dark-300 text-white"
+                                            className="h-12 bg-dark-100 border-white/5 text-white"
                                         />
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Parceiro / Origem</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome do Parceiro / Origem</label>
                                     <Input
                                         required
                                         placeholder="Ex: Secretaria de Desenvolvimento / Nome do Influencer"
                                         value={formData.referralName}
                                         onChange={e => setFormData({ ...formData, referralName: e.target.value })}
-                                        className="bg-dark-100 border-dark-300 text-white"
+                                        className="h-12 bg-dark-100 border-white/5 text-white"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Data de Vencimento</label>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Data de Vencimento</label>
                                         <div className="relative">
                                             <Input
                                                 type="date"
                                                 value={formData.expiresAt}
                                                 onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
-                                                className="bg-dark-100 border-dark-300 text-white pl-10"
+                                                className="h-12 bg-dark-100 border-white/5 text-white pl-10"
                                             />
                                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                         </div>
                                     </div>
-                                    <div className="col-span-2 sm:col-span-1 flex items-end">
-                                        <div className="flex items-center gap-3 bg-dark-100 border border-dark-300 rounded-lg h-11 px-4 w-full">
+                                    <div className="flex items-end">
+                                        <div className="flex items-center gap-3 bg-dark-100 border border-white/5 rounded-xl h-12 px-4 w-full">
                                             <input
                                                 type="checkbox"
                                                 id="ativo_modal"
                                                 checked={formData.isActive}
                                                 onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                                className="w-5 h-5 rounded border-dark-300 bg-dark-200 text-teal-500 focus:ring-teal-500"
+                                                className="w-5 h-5 rounded border-white/10 bg-dark-200 text-brand-orange-coral focus:ring-brand-orange-coral"
                                             />
-                                            <label htmlFor="ativo_modal" className="text-sm font-bold text-gray-300 cursor-pointer select-none">
-                                                Cupom Habilitado
+                                            <label htmlFor="ativo_modal" className="text-[10px] font-black uppercase text-gray-500 tracking-widest cursor-pointer select-none mt-0.5">
+                                                Habilitado
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Observações Internas</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Observações Internas</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        className="w-full bg-dark-100 border border-white/5 rounded-xl p-4 text-white text-sm min-h-[100px] focus:outline-none focus:border-brand-orange-coral/50 transition-all resize-none"
                                         placeholder="Detalhes sobre a parceria, contrato ou finalidade deste cupom..."
                                     />
-                                    <div className="flex items-center gap-2 mt-2 text-gray-500">
-                                        <FileText className="h-3.5 w-3.5" />
-                                        <span className="text-[10px]">As observações não são visíveis para o usuário final.</span>
-                                    </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="p-6 border-t border-dark-300 bg-dark-300/10 flex gap-4 shrink-0">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 border-dark-300 text-gray-400 hover:bg-dark-300 hover:text-white"
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? 'Processando...' : editingCoupon ? 'Salvar Alterações' : 'Gerar Cupom'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        <div className="admin-modal-footer">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Processando...' : editingCoupon ? 'Salvar Alterações' : 'Gerar Cupom'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -11,14 +11,18 @@ import {
   X,
   Download,
   CheckCircle2,
-  Clock
+  Clock,
+  Shield,
+  Settings as SettingsIcon,
+  ChevronDown,
+  ChevronUp,
+  Type,
+  Search,
+  Loader2
 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,181 +118,210 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0c0e12] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <DialogHeader className="border-b border-white/5 pb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
-                Equipe: <span className="text-brand-orange-coral">{partner.name}</span>
-              </DialogTitle>
-              <DialogDescription className="text-gray-500">
-                Gerencie os membros da equipe que terão acesso ao evento.
-              </DialogDescription>
-            </div>
-            {!isAddMode && (
+      <DialogContent className="admin-modal-content max-w-2xl bg-[#0c0e12] border-none p-0 overflow-hidden shadow-2xl">
+        <div className="admin-modal-header">
+          <div>
+            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+              <Users className="h-7 w-7 text-brand-orange-coral" />
+              Equipe: <span className="text-brand-orange-coral">{partner.name}</span>
+            </h3>
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+              {isAddMode ? 'Cadastrar novo colaborador' : selectedMemberForQR ? 'Visualização de Credencial' : 'Gerencie os membros da equipe'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {!isAddMode && !selectedMemberForQR && (
               <Button
                 onClick={() => setIsAddMode(true)}
-                className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-6 rounded-xl"
+                className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-10 px-6 rounded-xl text-[10px] uppercase tracking-widest"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Adicionar Membro
+                ADICIONAR
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
           </div>
-        </DialogHeader>
+        </div>
 
-        {isAddMode ? (
-          <form onSubmit={handleSubmit} className="space-y-6 py-6 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Nome Completo *</Label>
-                <Input
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-white/5 border-white/10 shadow-inner"
-                  placeholder="Nome do colaborador"
-                />
+        <div className="admin-modal-body">
+          {selectedMemberForQR ? (
+            <div className="flex flex-col items-center justify-center gap-8 py-10 animate-in fade-in zoom-in-95 duration-300">
+               <div className="p-8 bg-white rounded-[3rem] shadow-2xl shadow-brand-orange-coral/20 border-8 border-white/5">
+                <img src={qrCodeDataUrl} alt="QR Code" className="w-56 h-56 object-contain" />
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Cargo / Função *</Label>
-                <Input
-                  required
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="bg-white/5 border-white/10 shadow-inner"
-                  placeholder="Ex: Supervisor, Staff, Montagem"
-                />
+              
+              <div className="text-center space-y-2">
+                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">{selectedMemberForQR?.name}</h3>
+                <p className="text-xs font-bold text-brand-orange-coral uppercase tracking-[0.3em]">{selectedMemberForQR?.role}</p>
+                <div className="pt-4">
+                   <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] mb-2">CÓDIGO DE ACESSO</p>
+                   <p className="text-white font-mono text-xl bg-white/5 px-6 py-2 rounded-xl border border-white/10">{selectedMemberForQR?.qrCode?.split('|').pop()}</p>
+                </div>
               </div>
             </div>
+          ) : isAddMode ? (
+            <form id="add-member-form" onSubmit={handleSubmit} className="space-y-8 py-4 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Nome Completo *</Label>
+                  <Input
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="bg-white/5 border-white/10 h-12 text-white font-bold"
+                    placeholder="Nome do colaborador"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Cargo / Função *</Label>
+                  <Input
+                    required
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="bg-white/5 border-white/10 h-12 text-white font-bold"
+                    placeholder="Ex: Supervisor, Staff"
+                  />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">E-mail</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-white/5 border-white/10 shadow-inner"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3 md:col-span-1">
+                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">E-mail</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="bg-white/5 border-white/10 h-12 text-white"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Telefone</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="bg-white/5 border-white/10 h-12 text-white"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">CPF / Doc</Label>
+                  <Input
+                    value={formData.cpf}
+                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                    className="bg-white/5 border-white/10 h-12 text-white"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">Telefone</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="bg-white/5 border-white/10 shadow-inner"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-gray-500">CPF (Para credenciamento)</Label>
-                <Input
-                  value={formData.cpf}
-                  onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
-                  className="bg-white/5 border-white/10 shadow-inner"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
-              <Button type="button" variant="ghost" onClick={() => setIsAddMode(false)} className="text-gray-500 font-bold">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 rounded-xl">
-                {isLoading ? 'Salvando...' : 'Confirmar Adição'}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div className="py-6 min-h-[300px]">
-            {teamMembers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center opacity-30 border-2 border-dashed border-white/5 rounded-3xl">
-                <UserPlus className="h-12 w-12 mb-4" />
-                <p className="text-lg font-black uppercase tracking-tighter">Nenhum membro cadastrado</p>
-                <p className="text-sm font-medium">Adicione membros para gerar os QR Codes de acesso.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all flex items-center gap-4 group shadow-lg">
-                    <div className="w-12 h-12 rounded-xl bg-brand-orange-coral/10 text-brand-orange-coral flex items-center justify-center font-black">
-                      {member.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-white truncate">{member.name}</h4>
-                        <Badge variant="outline" className="text-[9px] py-0 h-4 border-white/10 text-gray-400">
-                          {member.role}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-3 mt-1 opacity-60">
-                        <span className="text-[10px] flex items-center gap-1"><Mail className="h-3 w-3" /> {member.email || 'n/a'}</span>
-                        <span className="text-[10px] flex items-center gap-1"><CreditCard className="h-3 w-3" /> {member.cpf || 'n/a'}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => generateQR(member)}
-                        className="w-9 h-9 border border-white/10 rounded-lg hover:bg-white/5 text-brand-orange-coral"
-                      >
-                        <QrCode className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDelete(member.id)}
-                        className="w-9 h-9 border border-white/10 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+            </form>
+          ) : (
+            <div className="space-y-4 py-2">
+              {teamMembers.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center gap-4 bg-white/[0.01] rounded-[2.5rem] border border-dashed border-white/5">
+                  <Users className="h-12 w-12 text-gray-700" />
+                  <div>
+                    <p className="text-white font-bold italic uppercase tracking-tight">Nenhum membro cadastrado</p>
+                    <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1">Adicione colaboradores para esta empresa.</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* QR Code Viewer Modal */}
-        <Dialog open={!!selectedMemberForQR} onOpenChange={() => setSelectedMemberForQR(null)}>
-          <DialogContent className="bg-white text-black max-w-sm p-8 rounded-[2rem] overflow-hidden border-none text-center">
-            <DialogHeader className="sr-only">
-              <DialogTitle>QR Code Credencial</DialogTitle>
-              <DialogDescription>Visualização do QR Code de acesso para {selectedMemberForQR?.name}</DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-full flex justify-between items-center px-2">
-                <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" className="h-6" alt="Logo" />
-                <Badge className="bg-black text-white border-none py-1 px-3 text-[10px] font-black italic">CREDENCIAL PARCEIRO</Badge>
-              </div>
-              
-              <div className="w-full aspect-square border-4 border-black p-4 rounded-3xl bg-white shadow-xl">
-                <img src={qrCodeDataUrl} alt="QR Code" className="w-full h-full object-contain" />
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-black italic uppercase tracking-tighter">{selectedMemberForQR?.name}</h3>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">{selectedMemberForQR?.role}</p>
-                <p className="text-[10px] font-black text-brand-orange-coral mt-4 uppercase">Growth Experience 2026</p>
-              </div>
-
-              <div className="w-full flex flex-col gap-2 pt-4">
-                <Button onClick={downloadQR} className="w-full bg-black text-white hover:bg-gray-900 font-bold rounded-2xl h-12 shadow-lg">
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar QR Code
-                </Button>
-                <Button variant="ghost" onClick={() => setSelectedMemberForQR(null)} className="text-gray-400 text-xs font-bold">
-                  Sair
-                </Button>
-              </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3">
+                  {teamMembers.map((member) => (
+                    <div key={member.id} className="p-5 rounded-[1.5rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all flex items-center justify-between group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 text-brand-orange-coral flex items-center justify-center font-black italic border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">
+                          {member.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-black italic uppercase tracking-tight text-white">{member.name}</h4>
+                            <Badge className="bg-white/5 text-gray-500 border-none text-[8px] font-black uppercase h-4 px-2 tracking-widest">
+                              {member.role}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[9px] font-black uppercase text-gray-700 flex items-center gap-1"><Mail className="h-3 w-3" /> {member.email || '—'}</span>
+                            <span className="text-[9px] font-black uppercase text-gray-700 flex items-center gap-1"><CreditCard className="h-3 w-3" /> {member.cpf || '—'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => generateQR(member)}
+                          className="w-10 h-10 bg-teal-500/10 text-teal-400 hover:bg-teal-500 hover:text-white rounded-xl border border-teal-500/20 transition-all"
+                        >
+                          <QrCode className="h-5 w-5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDelete(member.id)}
+                          className="w-10 h-10 bg-red-500/10 text-red-500/50 hover:text-white hover:bg-red-500 rounded-xl border border-red-500/20 transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {/* Design elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/10 rounded-full blur-3xl -z-10" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-teal-coral/10 rounded-full blur-3xl -z-10" />
-          </DialogContent>
-        </Dialog>
+          )}
+        </div>
+
+        <div className="admin-modal-footer">
+          {selectedMemberForQR ? (
+            <>
+              <Button 
+                variant="ghost" 
+                onClick={() => setSelectedMemberForQR(null)} 
+                className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+              >
+                VOLTAR
+              </Button>
+              <Button 
+                onClick={downloadQR}
+                className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal flex items-center gap-2"
+              >
+                <Download className="h-5 w-5" />
+                BAIXAR QR CODE
+              </Button>
+            </>
+          ) : isAddMode ? (
+            <>
+              <Button 
+                variant="ghost" 
+                onClick={() => setIsAddMode(false)}
+                className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+              >
+                CANCELAR
+              </Button>
+              <Button 
+                type="submit"
+                form="add-member-form"
+                disabled={isLoading}
+                className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black px-10 h-12 rounded-xl shadow-xl shadow-brand-orange-coral/20"
+              >
+                {isLoading ? <Loader2 className="animate-spin h-5 w-5" /> : 'CONFIRMAR CADASTRO'}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="ghost" 
+              onClick={onClose}
+              className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+            >
+              FECHAR PAINEL
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

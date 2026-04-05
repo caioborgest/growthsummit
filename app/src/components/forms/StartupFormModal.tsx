@@ -6,6 +6,12 @@ import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 interface StartupFormModalProps {
     isOpen: boolean;
@@ -248,391 +254,368 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-xl w-full p-4 sm:p-6 max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                    aria-label="Fechar"
-                >
-                    <X className="h-6 w-6" />
-                </button>
-
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="admin-modal-content max-w-xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
                 {/* Success State */}
                 {isSuccess ? (
-                    <div className="text-center py-8">
-                        <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="h-8 w-8 text-teal-400" />
+                    <div className="text-center py-20 px-6">
+                        <div className="w-20 h-20 rounded-3xl bg-teal-500/20 flex items-center justify-center mx-auto mb-6 shadow-glow-teal border border-teal-500/30">
+                            <CheckCircle className="h-10 w-10 text-teal-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">Inscrição Enviada!</h3>
-                        <p className="text-gray-400">
-                            Sua startup foi inscrita na Arena Pitch. Estamos te redirecionando para a sua área...
+                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Inscrição <span className="text-teal-500">Confirmada!</span></h3>
+                        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed max-w-sm mx-auto">
+                            Sua startup foi inscrita com sucesso na Arena Pitch. <br/>Aguarde o redirecionamento...
                         </p>
                     </div>
                 ) : (
                     <>
-                        {/* Header */}
-                        <div className="mb-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                                    <Rocket className="h-5 w-5 sm:h-6 sm:w-6 text-orange-400" />
+                        <div className="admin-modal-header">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center border border-brand-orange-coral/30 shadow-glow-orange">
+                                    <Rocket className="h-6 w-6 text-brand-orange-coral" />
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">Expo StartUp</h2>
-                                    <p className="text-xs sm:text-gray-400">Inscreva sua startup</p>
+                                    <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-1">
+                                        Expo <span className="text-brand-orange-coral">StartUp</span>
+                                    </DialogTitle>
+                                    <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">
+                                        Arena Pitch 2026 • Inscrição de Expositores
+                                    </DialogDescription>
                                 </div>
                             </div>
-                            <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                                <p className="text-sm text-orange-400">
-                                    <strong>Investimento:</strong> R$ 999,00
-                                </p>
-                                <p className="text-xs text-orange-400/80 mt-1">
-                                    Inclui: Exposição + Arena Pitch + 2 Ingressos Noturnos
-                                </p>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onClose}
+                                className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                            >
+                                <X className="h-6 w-6" />
+                            </Button>
+                        </div>
+
+                        <div className="admin-modal-body bg-dark-200">
+                            <div className="space-y-10 py-6">
+                                {/* Promo Card */}
+                                <div className="p-6 rounded-[2rem] bg-brand-orange-coral/5 border-2 border-brand-orange-coral/20 shadow-inner group">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange-coral italic">Pacote de Exposição</p>
+                                        <p className="text-2xl font-black text-white italic tracking-tighter italic uppercase underline decoration-brand-orange-coral/30 decoration-4 underline-offset-4">R$ 999,00</p>
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-bold leading-relaxed uppercase tracking-wider">
+                                        Inclui: Stand na Expo + Pitch na Arena Principal + 2 Ingressos Full Pass (Acesso Total)
+                                    </p>
+                                </div>
+
+                                <form id="startup-form" onSubmit={handleSubmit} className="space-y-10 pb-10">
+                                    {/* Seção: Informações do Fundador */}
+                                    <div className="space-y-6">
+                                        <h3 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.3em] px-2 italic flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                                            Perfil do Fundador
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</label>
+                                                <input
+                                                    type="text"
+                                                    name="founder_name"
+                                                    value={formData.founder_name}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                    placeholder="Seu nome completo"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Email Corporativo *</label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                    placeholder="exemplo@startup.com"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">WhatsApp direto *</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                    placeholder="(00) 00000-0000"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Senha de Acesso *</label>
+                                                <input
+                                                    type="password"
+                                                    name="senha"
+                                                    value={formData.senha}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                    placeholder="Mínimo 6 caracteres"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Confirmar Senha *</label>
+                                                <input
+                                                    type="password"
+                                                    name="confirmarSenha"
+                                                    value={formData.confirmarSenha}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                    placeholder="Repita sua senha"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Seção: Informações da Startup */}
+                                    <div className="space-y-6">
+                                        <h3 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.3em] px-2 italic flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral" />
+                                            Pitch & Business
+                                        </h3>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Startup *</label>
+                                                <input
+                                                    type="text"
+                                                    name="startup_name"
+                                                    value={formData.startup_name}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/30 appearance-none px-4"
+                                                    placeholder="Nome comercial"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Vertical de Atuação *</label>
+                                                <select
+                                                    name="setor"
+                                                    value={formData.setor}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/10 border border-brand-orange-coral/20 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 appearance-none px-4"
+                                                >
+                                                    <option value="" className="bg-dark-100">Selecione...</option>
+                                                    {setores.map(setor => (
+                                                        <option key={setor} value={setor} className="bg-dark-100">{setor}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Estágio de Maturação *</label>
+                                                <select
+                                                    name="estagio"
+                                                    value={formData.estagio}
+                                                    onChange={handleChange}
+                                                    required
+                                                    className="w-full h-12 bg-white/10 border border-brand-orange-coral/20 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 appearance-none px-4"
+                                                >
+                                                    <option value="" className="bg-dark-100">Selecione...</option>
+                                                    {estagios.map(estagio => (
+                                                        <option key={estagio.value} value={estagio.value} className="bg-dark-100">
+                                                            {estagio.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Elevator Pitch *</label>
+                                                <textarea
+                                                    name="startup_description"
+                                                    value={formData.startup_description}
+                                                    onChange={handleChange}
+                                                    required
+                                                    maxLength={500}
+                                                    rows={3}
+                                                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/30 appearance-none resize-none"
+                                                    placeholder="Descreva sua startup como se estivéssemos num elevador..."
+                                                />
+                                                <div className="flex justify-end pr-2">
+                                                    <span className="text-[9px] font-black uppercase text-gray-700 tracking-widest">
+                                                        {formData.startup_description.length}/500
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Seção: Pitch Detalhado */}
+                                    <div className="space-y-6">
+                                        <h3 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.3em] px-2 italic flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                            O Problema e a Solução
+                                        </h3>
+                                        <div className="space-y-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual é a "dor" que você resolve? *</label>
+                                                <textarea
+                                                    name="problema"
+                                                    value={formData.problema}
+                                                    onChange={handleChange}
+                                                    required
+                                                    maxLength={300}
+                                                    rows={2}
+                                                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/30 appearance-none resize-none"
+                                                    placeholder="Seja direto no problema..."
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Como você cura essa dor? *</label>
+                                                <textarea
+                                                    name="solucao"
+                                                    value={formData.solucao}
+                                                    onChange={handleChange}
+                                                    required
+                                                    maxLength={300}
+                                                    rows={2}
+                                                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/30 appearance-none resize-none"
+                                                    placeholder="Sua solução e valor entregue..."
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Unique Selling Proposition (Diferencial) *</label>
+                                                <textarea
+                                                    name="diferencial"
+                                                    value={formData.diferencial}
+                                                    onChange={handleChange}
+                                                    required
+                                                    maxLength={300}
+                                                    rows={2}
+                                                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/30 appearance-none resize-none"
+                                                    placeholder="O que te faz único no mercado..."
+                                                />
+                                            </div>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">MRR / Faturamento Atual (R$)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="faturamento_mensal"
+                                                        value={formData.faturamento_mensal}
+                                                        onChange={handleChange}
+                                                        className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Investimento Alvo (R$)</label>
+                                                    <input
+                                                        type="number"
+                                                        name="investimento_buscado"
+                                                        value={formData.investimento_buscado}
+                                                        onChange={handleChange}
+                                                        className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Seção: Documentos */}
+                                    <div className="space-y-6">
+                                        <h3 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.3em] px-2 italic flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                            Links e Media (Opcional)
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Pitch Deck (Drive/Dropbox)</label>
+                                                <input
+                                                    type="url"
+                                                    name="pitch_deck_url"
+                                                    value={formData.pitch_deck_url}
+                                                    onChange={handleChange}
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-blue-500/50 appearance-none px-4"
+                                                    placeholder="https://suapresentacao.com"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Video Pitch (YouTube/Vimeo)</label>
+                                                <input
+                                                    type="url"
+                                                    name="video_pitch_url"
+                                                    value={formData.video_pitch_url}
+                                                    onChange={handleChange}
+                                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-red-500/50 appearance-none px-4"
+                                                    placeholder="https://youtube.com/..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* LGPD Consentimento */}
+                                    <div className="bg-dark-100/50 p-6 rounded-[1.5rem] border border-white/5">
+                                        <div className="flex items-start gap-4">
+                                            <input
+                                                id="lgpdConsent"
+                                                type="checkbox"
+                                                name="lgpdConsent"
+                                                checked={formData.lgpdConsent}
+                                                onChange={e => setFormData({ ...formData, lgpdConsent: e.target.checked })}
+                                                className="mt-1 h-5 w-5 bg-dark-300 border-white/10 rounded text-brand-orange-coral focus:ring-brand-orange-coral cursor-pointer"
+                                            />
+                                            <label htmlFor="lgpdConsent" className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-relaxed">
+                                                Concordo com a <a href="/lgpd" target="_blank" className="text-white underline hover:text-brand-orange-coral transition-colors">POLÍTICA DE TRATAMENTO DE DADOS (LGPD)</a> PARA ESTE EVENTO.
+                                            </label>
+                                        </div>
+                                        {fieldErrors.lgpdConsent && (
+                                            <p className="text-red-400 text-[10px] font-black uppercase italic mt-3">{fieldErrors.lgpdConsent}</p>
+                                        )}
+                                    </div>
+
+                                    {error && (
+                                        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <AlertCircle className="h-5 w-5 shrink-0" />
+                                            <span>{error}</span>
+                                        </div>
+                                    )}
+                                </form>
                             </div>
                         </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Seção: Informações do Fundador */}
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-4 border-b border-dark-300 pb-2">
-                                    Informações do Fundador
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Nome Completo *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="founder_name"
-                                            value={formData.founder_name}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="Seu nome completo"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Email *
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="seu@email.com"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Telefone/WhatsApp *
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            name="telefone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="(00) 00000-0000"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Senha *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="senha"
-                                            value={formData.senha}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="Crie uma senha segura"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Confirmar Senha *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="confirmarSenha"
-                                            value={formData.confirmarSenha}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="Confirme sua senha"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Seção: Informações da Startup */}
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-4 border-b border-dark-300 pb-2">
-                                    Informações da Startup
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Nome da Startup *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="startup_name"
-                                            value={formData.startup_name}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="Nome da sua startup"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Setor *
-                                        </label>
-                                        <select
-                                            name="setor"
-                                            value={formData.setor}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                        >
-                                            <option value="">Selecione o setor</option>
-                                            {setores.map(setor => (
-                                                <option key={setor} value={setor}>{setor}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Estágio *
-                                        </label>
-                                        <select
-                                            name="estagio"
-                                            value={formData.estagio}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                        >
-                                            <option value="">Selecione o estágio</option>
-                                            {estagios.map(estagio => (
-                                                <option key={estagio.value} value={estagio.value}>
-                                                    {estagio.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Descrição da Startup * (máx. 500 caracteres)
-                                        </label>
-                                        <textarea
-                                            name="startup_description"
-                                            value={formData.startup_description}
-                                            onChange={handleChange}
-                                            required
-                                            maxLength={500}
-                                            rows={3}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-                                            placeholder="Descreva sua startup em poucas palavras..."
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {formData.startup_description.length}/500 caracteres
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Seção: Pitch */}
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-4 border-b border-dark-300 pb-2">
-                                    Seu Pitch
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Qual problema você resolve? * (máx. 300 caracteres)
-                                        </label>
-                                        <textarea
-                                            name="problema"
-                                            value={formData.problema}
-                                            onChange={handleChange}
-                                            required
-                                            maxLength={300}
-                                            rows={2}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-                                            placeholder="Descreva o problema que sua startup resolve..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Qual é a sua solução? * (máx. 300 caracteres)
-                                        </label>
-                                        <textarea
-                                            name="solucao"
-                                            value={formData.solucao}
-                                            onChange={handleChange}
-                                            required
-                                            maxLength={300}
-                                            rows={2}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-                                            placeholder="Como sua startup resolve esse problema..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Qual seu diferencial? * (máx. 300 caracteres)
-                                        </label>
-                                        <textarea
-                                            name="diferencial"
-                                            value={formData.diferencial}
-                                            onChange={handleChange}
-                                            required
-                                            maxLength={300}
-                                            rows={2}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
-                                            placeholder="O que te diferencia da concorrência..."
-                                        />
-                                    </div>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Faturamento Mensal (R$)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                name="faturamento_mensal"
-                                                value={formData.faturamento_mensal}
-                                                onChange={handleChange}
-                                                step="0.01"
-                                                min="0"
-                                                className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                Investimento Buscado (R$)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                name="investimento_buscado"
-                                                value={formData.investimento_buscado}
-                                                onChange={handleChange}
-                                                step="0.01"
-                                                min="0"
-                                                className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Seção: Documentos */}
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-4 border-b border-dark-300 pb-2">
-                                    Documentos (Opcional)
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Link do Pitch Deck (Google Drive, Dropbox, etc.)
-                                        </label>
-                                        <input
-                                            type="url"
-                                            name="pitch_deck_url"
-                                            value={formData.pitch_deck_url}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            Link do Vídeo Pitch (YouTube, Vimeo, etc.)
-                                        </label>
-                                        <input
-                                            type="url"
-                                            name="video_pitch_url"
-                                            value={formData.video_pitch_url}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* LGPD Consentimento */}
-                            <div className="flex items-start space-x-2">
-                                <input
-                                    id="lgpdConsent"
-                                    type="checkbox"
-                                    name="lgpdConsent"
-                                    checked={formData.lgpdConsent}
-                                    onChange={e => setFormData({ ...formData, lgpdConsent: e.target.checked })}
-                                    className="mt-1 h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                                />
-                                <label htmlFor="lgpdConsent" className="text-xs text-gray-300">
-                                    Concordo com a <a href="/lgpd" target="_blank" className="underline">política de tratamento de dados (LGPD)</a>
-                                </label>
-                            </div>
-                            {fieldErrors.lgpdConsent && (
-                                <p className="text-red-400 text-xs">{fieldErrors.lgpdConsent}</p>
-                            )}
-
-                            {error && (
-                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <AlertCircle className="h-5 w-5 shrink-0" />
-                                    <span>{error}</span>
-                                </div>
-                            )}
-
-                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={onClose}
-                                    className="order-2 sm:order-1 border-dark-300 text-gray-300 hover:text-white h-12 sm:h-10"
-                                    disabled={isSubmitting}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="order-1 sm:order-2 flex-1 bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 font-bold"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            Enviando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Rocket className="h-4 w-4 mr-2" />
-                                            Inscrever Startup
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </form>
-
-                        <p className="text-xs text-gray-500 text-center mt-4">
-                            Ao se inscrever, você concorda com nossos termos de uso e política de privacidade.
-                        </p>
+                        <div className="admin-modal-footer">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={onClose}
+                                className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                                disabled={isSubmitting}
+                            >
+                                CANCELAR
+                            </Button>
+                            <Button
+                                form="startup-form"
+                                type="submit"
+                                className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 h-12 rounded-xl shadow-glow-orange border-none uppercase flex items-center justify-center gap-2"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        PROCESSANDO...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Rocket className="h-5 w-5" />
+                                        CONFIRMAR INSCRIÇÃO
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

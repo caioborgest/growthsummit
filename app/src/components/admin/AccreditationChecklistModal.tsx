@@ -8,7 +8,8 @@ import {
     Calendar,
     User,
     Building2,
-    Rocket
+    Rocket,
+    X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -126,125 +127,154 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-[#0c0e12] border-white/10 text-white max-w-md">
-                <DialogHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+            <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                <div className="admin-modal-header">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-2xl bg-white/5 border border-white/10 shadow-inner group-hover:scale-110 transition-transform">
                             {getRoleIcon()}
                         </div>
-                        <Badge variant="outline" className="uppercase font-black border-brand-orange-coral/30 text-brand-orange-coral">
-                            {role}
-                        </Badge>
-                    </div>
-                    <DialogTitle className="text-2xl font-black uppercase tracking-tighter">
-                        Checklist de Credenciamento
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-400">
-                        Confirme a entrega de materiais e entrada no evento.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className="py-6 space-y-6">
-                    {/* User Info Card */}
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                        <p className="text-white font-bold text-lg leading-tight">{(entity as any).name || (entity as any).nome || 'Sem Nome'}</p>
-                        <p className="text-gray-500 text-sm">{(entity as any).email}</p>
-                        <div className="mt-2 flex items-center gap-2">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">ID:</span>
-                            <span className="font-mono text-[10px] text-gray-400">{entity.id.slice(0, 8)}...</span>
+                        <div>
+                            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
+                                <span className="text-brand-orange-coral">Checklist</span> de Acesso
+                            </h3>
+                            <Badge variant="outline" className="uppercase font-black border-brand-orange-coral/30 text-brand-orange-coral text-[8px] tracking-widest px-2 py-0 h-4">
+                                {role}
+                            </Badge>
                         </div>
                     </div>
-
-                    {/* Step Options */}
-                    <div className="space-y-3">
-                        {/* Step 1: Entrance */}
-                        <button
-                            onClick={() => setEntranceConfirmed(!entranceConfirmed)}
-                            className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                                entranceConfirmed 
-                                ? 'bg-green-500/10 border-green-500/50 text-green-400' 
-                                : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/10'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className={`h-6 w-6 ${entranceConfirmed ? 'text-green-400' : 'text-gray-600'}`} />
-                                <div className="text-left">
-                                    <p className="font-bold">Confirmar Entrada</p>
-                                    <p className="text-[10px] uppercase opacity-60">Entrada física no evento</p>
-                                </div>
-                            </div>
-                            {entranceConfirmed && <Badge className="bg-green-500 text-white">OK</Badge>}
-                        </button>
-
-                        {/* Step 2: Badge */}
-                        <button
-                            onClick={() => setBadgeDelivered(!badgeDelivered)}
-                            className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                                badgeDelivered 
-                                ? 'bg-brand-orange-coral/10 border-brand-orange-coral/50 text-brand-orange-coral' 
-                                : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/10'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Contact className={`h-6 w-6 ${badgeDelivered ? 'text-brand-orange-coral' : 'text-gray-600'}`} />
-                                <div className="text-left">
-                                    <p className="font-bold">Entrega de Crachá</p>
-                                    <p className="text-[10px] uppercase opacity-60">Identificação física</p>
-                                </div>
-                            </div>
-                            {badgeDelivered && <Badge className="bg-brand-orange-coral text-white">ENTREGUE</Badge>}
-                        </button>
-
-                        {/* Step 3: Kit */}
-                        <button
-                            onClick={() => setKitDelivered(!kitDelivered)}
-                            className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
-                                kitDelivered 
-                                ? 'bg-teal-500/10 border-teal-500/50 text-teal-400' 
-                                : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/10'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Package className={`h-6 w-6 ${kitDelivered ? 'text-teal-400' : 'text-gray-600'}`} />
-                                <div className="text-left">
-                                    <p className="font-bold">Entrega de Kit</p>
-                                    <p className="text-[10px] uppercase opacity-60">Materiais promocionais</p>
-                                </div>
-                            </div>
-                            {kitDelivered && <Badge className="bg-teal-500 text-white">ENTREGUE</Badge>}
-                        </button>
-                    </div>
-
-                    {!entranceConfirmed && (
-                        <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-2">
-                            <AlertCircle className="h-4 w-4 text-orange-400 shrink-0 mt-0.5" />
-                            <p className="text-[11px] text-orange-200/80">
-                                Recomendado: Confirme a entrada para gerar o log de presença antes de entregar materiais.
-                            </p>
-                        </div>
-                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                    >
+                        <X className="h-6 w-6" />
+                    </Button>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <div className="admin-modal-body bg-dark-200">
+                    <div className="py-4 space-y-8">
+                        {/* User Info Card */}
+                        <div className="p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 shadow-inner">
+                            <p className="text-white font-black italic text-xl leading-tight uppercase">{(entity as any).name || (entity as any).nome || 'Sem Nome'}</p>
+                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">{(entity as any).email}</p>
+                            <div className="mt-4 flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">Identificador:</span>
+                                <span className="font-mono text-[10px] text-teal-500 font-bold">{entity.id.slice(0, 12)}...</span>
+                            </div>
+                        </div>
+
+                        {/* Step Options */}
+                        <div className="space-y-4">
+                            <h4 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.2em] px-2 italic">Validação de Credenciais</h4>
+                            
+                            {/* Step 1: Entrance */}
+                            <button
+                                onClick={() => setEntranceConfirmed(!entranceConfirmed)}
+                                className={`w-full flex items-center justify-between p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${
+                                    entranceConfirmed 
+                                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                                    : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10'
+                                }`}
+                            >
+                                <div className="flex items-center gap-4 text-left">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${entranceConfirmed ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-white/5 border-white/10'}`}>
+                                        <CheckCircle2 className={`h-6 w-6 ${entranceConfirmed ? 'text-emerald-400' : 'text-gray-700'}`} />
+                                    </div>
+                                    <div>
+                                        <p className="font-black italic uppercase tracking-tight text-sm">Confirmar Entrada</p>
+                                        <p className="text-[9px] font-black uppercase opacity-60 tracking-widest leading-none mt-1">Check-in físico no evento</p>
+                                    </div>
+                                </div>
+                                {entranceConfirmed && (
+                                    <div className="bg-emerald-500 h-6 px-3 rounded-lg flex items-center justify-center shadow-glow-sm">
+                                        <span className="text-white text-[9px] font-black italic">✓ OK</span>
+                                    </div>
+                                )}
+                            </button>
+
+                            {/* Step 2: Badge */}
+                            <button
+                                onClick={() => setBadgeDelivered(!badgeDelivered)}
+                                className={`w-full flex items-center justify-between p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${
+                                    badgeDelivered 
+                                    ? 'bg-brand-orange-coral/10 border-brand-orange-coral/30 text-brand-orange-coral' 
+                                    : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10'
+                                }`}
+                            >
+                                <div className="flex items-center gap-4 text-left">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${badgeDelivered ? 'bg-brand-orange-coral/20 border-brand-orange-coral/30' : 'bg-white/5 border-white/10'}`}>
+                                        <Contact className={`h-6 w-6 ${badgeDelivered ? 'text-brand-orange-coral' : 'text-gray-700'}`} />
+                                    </div>
+                                    <div>
+                                        <p className="font-black italic uppercase tracking-tight text-sm">Entrega de Crachá</p>
+                                        <p className="text-[9px] font-black uppercase opacity-60 tracking-widest leading-none mt-1">Identificação visual premium</p>
+                                    </div>
+                                </div>
+                                {badgeDelivered && (
+                                    <div className="bg-brand-orange-coral h-6 px-3 rounded-lg flex items-center justify-center shadow-glow-orange">
+                                        <span className="text-white text-[9px] font-black italic">✓ ENTREGUE</span>
+                                    </div>
+                                )}
+                            </button>
+
+                            {/* Step 3: Kit */}
+                            <button
+                                onClick={() => setKitDelivered(!kitDelivered)}
+                                className={`w-full flex items-center justify-between p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${
+                                    kitDelivered 
+                                    ? 'bg-teal-500/10 border-teal-500/30 text-teal-400' 
+                                    : 'bg-white/5 border-white/5 text-gray-600 hover:border-white/10'
+                                }`}
+                            >
+                                <div className="flex items-center gap-4 text-left">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${kitDelivered ? 'bg-teal-500/20 border-teal-500/30' : 'bg-white/5 border-white/10'}`}>
+                                        <Package className={`h-6 w-6 ${kitDelivered ? 'text-teal-400' : 'text-gray-700'}`} />
+                                    </div>
+                                    <div>
+                                        <p className="font-black italic uppercase tracking-tight text-sm">Entrega de Kit</p>
+                                        <p className="text-[9px] font-black uppercase opacity-60 tracking-widest leading-none mt-1">Materiais e experiências</p>
+                                    </div>
+                                </div>
+                                {kitDelivered && (
+                                    <div className="bg-teal-500 h-6 px-3 rounded-lg flex items-center justify-center shadow-glow-teal">
+                                        <span className="text-white text-[9px] font-black italic">✓ ENTREGUE</span>
+                                    </div>
+                                )}
+                            </button>
+                        </div>
+
+                        {!entranceConfirmed && (
+                            <div className="p-4 rounded-2xl bg-brand-orange-coral/5 border border-brand-orange-coral/10 flex gap-3 shadow-inner">
+                                <AlertCircle className="h-5 w-5 text-brand-orange-coral shrink-0 mt-0.5" />
+                                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-relaxed">
+                                    AVISO: CONFIRME A ENTRADA PARA GERAR O REGISTRO DE PRESENÇA ANTES DE ENTREGAR OS MATERIAIS.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="admin-modal-footer">
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white"
+                        className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
                     >
-                        Cancelar
+                        CANCELAR
                     </Button>
                     <Button
                         onClick={handleAccreditation}
                         disabled={isLoading || !entranceConfirmed}
-                        className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-8 rounded-xl min-w-[160px]"
+                        className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 h-12 rounded-xl shadow-glow-orange border-none uppercase flex items-center gap-2"
                     >
                         {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
-                            'FINALIZAR'
+                            'FINALIZAR ACREDITAÇÃO'
                         )}
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

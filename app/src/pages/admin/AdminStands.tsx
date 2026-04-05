@@ -783,105 +783,108 @@ export default function AdminStands() {
                 </div>
             )}
 
+            {/* Modal de Criação/Edição */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="glass-card max-w-xl w-full p-0 overflow-hidden shadow-2xl border-orange-500/20">
-                        <div className="p-6 border-b border-dark-300 flex justify-between items-center bg-dark-300/30">
+                <div className="admin-modal-overlay">
+                    <div className="admin-modal-content">
+                        <div className="admin-modal-header">
                             <div>
-                                <h2 className="text-xl font-bold text-white">
-                                    {editingStand ? 'Editar Stand' : 'Novo Stand'}
+                                <h2 className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
+                                    {editingStand ? 'Editar Stand' : 'Novo Stand de Experiência'}
                                 </h2>
-                                <p className="text-gray-400 text-xs mt-1">Configure o ponto de visitação para gamificação.</p>
+                                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">Configuração de gamificação e visibilidade</p>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500">
-                                <XCircle className="h-5 w-5" />
+                            <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                                <XCircle className="h-6 w-6" />
                             </Button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Stand</label>
+                        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                            <div className="admin-modal-body">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Stand</label>
+                                        <Input
+                                            required
+                                            placeholder="Ex: Coca-Cola Experience"
+                                            value={formData.name}
+                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                            className="bg-dark-100 border-dark-300 text-white"
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Localização / Número</label>
+                                        <Input
+                                            placeholder="Ex: Pavilhão A - Stand 04"
+                                            value={formData.location}
+                                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                            className="bg-dark-100 border-dark-300 text-white"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">URL do Logotipo / Imagem</label>
                                     <Input
-                                        required
-                                        placeholder="Ex: Coca-Cola Experience"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="https://exemplo.com/logo.png"
+                                        value={formData.logoUrl}
+                                        onChange={e => setFormData({ ...formData, logoUrl: e.target.value })}
                                         className="bg-dark-100 border-dark-300 text-white"
                                     />
                                 </div>
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Localização / Número</label>
-                                    <Input
-                                        placeholder="Ex: Pavilhão A - Stand 04"
-                                        value={formData.location}
-                                        onChange={e => setFormData({ ...formData, location: e.target.value })}
-                                        className="bg-dark-100 border-dark-300 text-white"
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Expositor Responsável (Geração de Leads)</label>
+                                    <select
+                                        value={`${formData.ownerType}|${formData.ownerId}`}
+                                        onChange={(e) => {
+                                            const [type, id] = e.target.value.split('|');
+                                            setFormData({ 
+                                                ...formData, 
+                                                ownerType: (type as 'startup' | 'company' | 'sponsor') || '', 
+                                                ownerId: id || '' 
+                                            });
+                                        }}
+                                        className="w-full bg-dark-100 border border-dark-300 rounded-lg p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                    >
+                                        <option value="|">Nenhum (Apenas Gamificação)</option>
+                                        <optgroup label="Startups">
+                                            {startups.map(s => (
+                                                <option key={s.id} value={`startup|${s.id}`}>{s.name} (Startup)</option>
+                                            ))}
+                                        </optgroup>
+                                        <optgroup label="Empresas B2B">
+                                            {companies.map(c => (
+                                                <option key={c.id} value={`company|${c.id}`}>{c.name} (B2B)</option>
+                                            ))}
+                                        </optgroup>
+                                    </select>
+                                    <p className="text-[9px] text-gray-500 mt-1 font-medium">Ao vincular um expositor, ele receberá os dados dos visitantes em tempo real.</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Descrição Curta</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                        placeholder="O que o visitante encontrará neste stand?"
                                     />
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">URL do Logotipo / Imagem</label>
-                                <Input
-                                    placeholder="https://exemplo.com/logo.png"
-                                    value={formData.logoUrl}
-                                    onChange={e => setFormData({ ...formData, logoUrl: e.target.value })}
-                                    className="bg-dark-100 border-dark-300 text-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Expositor Responsável (Geração de Leads)</label>
-                                <select
-                                    value={`${formData.ownerType}|${formData.ownerId}`}
-                                    onChange={(e) => {
-                                        const [type, id] = e.target.value.split('|');
-                                        setFormData({ 
-                                            ...formData, 
-                                            ownerType: (type as 'startup' | 'company' | 'sponsor') || '', 
-                                            ownerId: id || '' 
-                                        });
-                                    }}
-                                    className="w-full bg-dark-100 border border-dark-300 rounded-lg p-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                >
-                                    <option value="|">Nenhum (Apenas Gamificação)</option>
-                                    <optgroup label="Startups">
-                                        {startups.map(s => (
-                                            <option key={s.id} value={`startup|${s.id}`}>{s.name} (Startup)</option>
-                                        ))}
-                                    </optgroup>
-                                    <optgroup label="Empresas B2B">
-                                        {companies.map(c => (
-                                            <option key={c.id} value={`company|${c.id}`}>{c.name} (B2B)</option>
-                                        ))}
-                                    </optgroup>
-                                </select>
-                                <p className="text-[9px] text-gray-500 mt-1 font-medium">Ao vincular um expositor, ele receberá os dados dos visitantes em tempo real.</p>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Descrição Curta</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-dark-100 border border-dark-300 rounded-lg p-4 text-white text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                    placeholder="O que o visitante encontrará neste stand?"
-                                />
-                            </div>
-
-                            <div className="flex gap-4 pt-4">
+                            <div className="admin-modal-footer">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 border-dark-300 text-gray-400 hover:bg-dark-300 hover:text-white"
+                                    className="border-dark-300 text-gray-400 hover:bg-dark-300 hover:text-white"
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     type="submit"
-                                    className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold"
+                                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? 'Processando...' : editingStand ? 'Salvar Alterações' : 'Cadastrar Stand'}

@@ -23,7 +23,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
@@ -319,66 +318,92 @@ export function AdminB2B() {
                   <Plus className="h-4 w-4 mr-2" /> NOVA REUNIÃO
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2rem] max-w-xl shadow-2xl backdrop-blur-xl">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase">Agendar <span className="text-teal-500">Reunião B2B</span></DialogTitle>
-                  <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
-                    Defina as empresas e o horário para a nova rodada de negócios.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateMeeting} className="space-y-6 py-4">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Empresa Âncora (Compradora) *</Label>
-                    <select
-                      required
-                      value={meetingFormData.companyAnchorId}
-                      onChange={e => setMeetingFormData({ ...meetingFormData, companyAnchorId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
-                    >
-                      <option value="">Selecione a empresa âncora</option>
-                      {companies.filter(c => c.type === 'anchor').map(c => (
-                        <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
-                      ))}
-                    </select>
+              <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+                <div className="admin-modal-header">
+                  <div>
+                    <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                      Agendar <span className="text-teal-500">Reunião B2B</span>
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                      Defina as empresas e o horário para a nova rodada de negócios
+                    </DialogDescription>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Fornecedor (Vendedor) *</Label>
-                    <select
-                      required
-                      value={meetingFormData.companyVendorId}
-                      onChange={e => setMeetingFormData({ ...meetingFormData, companyVendorId: e.target.value })}
-                      className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 appearance-none px-4"
-                    >
-                      <option value="">Selecione o fornecedor</option>
-                      {companies.filter(c => c.type === 'vendor').map(c => (
-                        <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Data e Hora *</Label>
-                      <Input
-                        required
-                        type="datetime-local"
-                        value={meetingFormData.scheduledAt}
-                        onChange={e => setMeetingFormData({ ...meetingFormData, scheduledAt: e.target.value })}
-                        className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                      />
+                </div>
+
+                <form onSubmit={handleCreateMeeting} className="flex flex-col min-h-0 overflow-hidden">
+                  <div className="admin-modal-body">
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Empresa Âncora (Compradora) *</label>
+                        <select
+                          required
+                          value={meetingFormData.companyAnchorId}
+                          onChange={e => setMeetingFormData({ ...meetingFormData, companyAnchorId: e.target.value })}
+                          className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-teal-500/50 transition-all appearance-none"
+                        >
+                          <option value="">Selecione a empresa âncora</option>
+                          {companies.filter(c => c.type === 'anchor').map(c => (
+                            <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Fornecedor (Vendedor) *</label>
+                        <select
+                          required
+                          value={meetingFormData.companyVendorId}
+                          onChange={e => setMeetingFormData({ ...meetingFormData, companyVendorId: e.target.value })}
+                          className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                        >
+                          <option value="">Selecione o fornecedor</option>
+                          {companies.filter(c => c.type === 'vendor').map(c => (
+                            <option key={c.id} value={c.id}>{c.companyName || c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Data e Hora *</label>
+                          <Input
+                            required
+                            type="datetime-local"
+                            value={meetingFormData.scheduledAt}
+                            onChange={e => setMeetingFormData({ ...meetingFormData, scheduledAt: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mesa / Local</label>
+                          <Input
+                            value={meetingFormData.tableNumber}
+                            onChange={e => setMeetingFormData({ ...meetingFormData, tableNumber: e.target.value })}
+                            placeholder="Ex: Mesa 05"
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mesa / Local</Label>
-                      <Input
-                        value={meetingFormData.tableNumber}
-                        onChange={e => setMeetingFormData({ ...meetingFormData, tableNumber: e.target.value })}
-                        placeholder="Ex: Mesa 05"
-                        className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                      />
-                    </div>
                   </div>
-                  <Button type="submit" disabled={isMeetingLoading} className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
-                    {isMeetingLoading ? 'AGENDANDO...' : 'CONFIRMAR AGENDAMENTO'}
-                  </Button>
+
+                  <div className="admin-modal-footer">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setIsMeetingModalOpen(false)} 
+                      className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={isMeetingLoading} 
+                      className="flex-1 h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase tracking-widest text-[10px]"
+                    >
+                      {isMeetingLoading ? 'Agendando...' : 'Confirmar Agendamento'}
+                    </Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
@@ -389,108 +414,128 @@ export function AdminB2B() {
                   <Plus className="h-4 w-4 mr-2" /> NOVA EMPRESA
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-dark-200 border-dark-300 text-white rounded-[2.5rem] shadow-2xl backdrop-blur-xl max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase">Cadastrar <span className="text-teal-500">Nova Empresa</span></DialogTitle>
-                  <DialogDescription className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">
-                    Preencha os dados do representante e da empresa para participação no B2B.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateCompany} className="space-y-8 py-6">
-                  {/* Seção: Representante */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                       <User className="h-5 w-5 text-teal-500" />
-                       <h3 className="text-xs font-black text-white uppercase tracking-widest italic">Representante</h3>
+              <DialogContent className="admin-modal-content p-0 border-none max-w-4xl">
+                <div className="admin-modal-header">
+                  <div>
+                    <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                      Cadastrar <span className="text-teal-500">Nova Empresa</span>
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                      Preencha os dados do representante e da empresa para participação no B2B
+                    </DialogDescription>
+                  </div>
+                </div>
+
+                <form onSubmit={handleCreateCompany} className="flex flex-col min-h-0 overflow-hidden">
+                  <div className="admin-modal-body">
+                    {/* Seção: Representante */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3 border-b border-white/5 pb-3">
+                         <User className="h-4 w-4 text-teal-400" />
+                         <h3 className="text-[10px] font-black text-white uppercase tracking-widest italic leading-none">Representante</h3>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2 space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</label>
+                          <Input
+                            required
+                            value={companyFormData.representative_name}
+                            onChange={e => setCompanyFormData({ ...companyFormData, representative_name: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo *</label>
+                          <Input
+                            required
+                            value={companyFormData.role_title}
+                            onChange={e => setCompanyFormData({ ...companyFormData, role_title: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                            placeholder="Ex: CEO, Diretor"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Email Corporativo *</label>
+                          <Input
+                            type="email"
+                            required
+                            value={companyFormData.email}
+                            onChange={e => setCompanyFormData({ ...companyFormData, email: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2 space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</Label>
-                        <Input
-                          required
-                          value={companyFormData.representative_name}
-                          onChange={e => setCompanyFormData({ ...companyFormData, representative_name: e.target.value })}
-                          className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50 placeholder:text-gray-700"
-                        />
+
+                    {/* Seção: Empresa */}
+                    <div className="space-y-6 pt-8 mt-8 border-t border-white/5">
+                      <div className="flex items-center gap-3 border-b border-white/5 pb-3">
+                         <Building2 className="h-4 w-4 text-brand-orange-coral" />
+                         <h3 className="text-[10px] font-black text-white uppercase tracking-widest italic leading-none">Informações da Empresa</h3>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo *</Label>
-                        <Input
-                          required
-                          value={companyFormData.role_title}
-                          onChange={e => setCompanyFormData({ ...companyFormData, role_title: e.target.value })}
-                          className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                          placeholder="Ex: CEO, Diretor"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Email Corporativo *</Label>
-                        <Input
-                          type="email"
-                          required
-                          value={companyFormData.email}
-                          onChange={e => setCompanyFormData({ ...companyFormData, email: e.target.value })}
-                          className="h-12 bg-dark-100 border-white/5 focus:border-teal-500/50"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2 space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Fantasia da Empresa *</label>
+                          <Input
+                            required
+                            value={companyFormData.company_name}
+                            onChange={e => setCompanyFormData({ ...companyFormData, company_name: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">CNPJ</label>
+                          <Input
+                            value={companyFormData.cnpj}
+                            onChange={e => setCompanyFormData({ ...companyFormData, cnpj: e.target.value })}
+                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Setor de Atuação *</label>
+                          <select
+                            required
+                            value={companyFormData.setor}
+                            onChange={e => setCompanyFormData({ ...companyFormData, setor: e.target.value })}
+                            className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                          >
+                            <option value="">Selecione o setor</option>
+                            {['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Indústria', 'Serviços', 'Construção', 'Agronegócio', 'Alimentação', 'Logística', 'Consultoria', 'Marketing', 'Financeiro', 'Outro'].map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo B2B Participativo</label>
+                          <select
+                            value={companyFormData.type}
+                            onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as 'anchor' | 'vendor' })}
+                            className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-teal-500/50 transition-all appearance-none"
+                          >
+                            <option value="vendor">Fornecedor (Vendedor)</option>
+                            <option value="anchor">Âncora (Comprador)</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Seção: Empresa */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 border-b border-white/5 pb-3">
-                       <Building2 className="h-5 w-5 text-brand-orange-coral" />
-                       <h3 className="text-xs font-black text-white uppercase tracking-widest italic">Informações da Empresa</h3>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2 space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Fantasia da Empresa *</Label>
-                        <Input
-                          required
-                          value={companyFormData.company_name}
-                          onChange={e => setCompanyFormData({ ...companyFormData, company_name: e.target.value })}
-                          className="h-12 bg-dark-100 border-white/5 focus:border-brand-orange-coral/50"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">CNPJ</Label>
-                        <Input
-                          value={companyFormData.cnpj}
-                          onChange={e => setCompanyFormData({ ...companyFormData, cnpj: e.target.value })}
-                          className="h-12 bg-dark-100 border-white/5 focus:border-brand-orange-coral/50"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Setor de Atuação *</Label>
-                        <select
-                          required
-                          value={companyFormData.setor}
-                          onChange={e => setCompanyFormData({ ...companyFormData, setor: e.target.value })}
-                          className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-brand-orange-coral/50 px-4"
-                        >
-                          <option value="">Selecione o setor</option>
-                          {['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Indústria', 'Serviços', 'Construção', 'Agronegócio', 'Alimentação', 'Logística', 'Consultoria', 'Marketing', 'Financeiro', 'Outro'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo B2B Participativo</Label>
-                        <select
-                          value={companyFormData.type}
-                          onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as 'anchor' | 'vendor' })}
-                          className="w-full h-12 bg-dark-100 border border-white/5 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 px-4"
-                        >
-                          <option value="vendor">Fornecedor (Vendedor)</option>
-                          <option value="anchor">Âncora (Comprador)</option>
-                        </select>
-                      </div>
-                    </div>
+                  <div className="admin-modal-footer">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={() => setIsCompanyModalOpen(false)} 
+                      className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="flex-1 h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase tracking-widest text-[10px]"
+                    >
+                      Finalizar Cadastro Corporativo
+                    </Button>
                   </div>
-
-                  <Button type="submit" className="w-full h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all">
-                    FINALIZAR CADASTRO CORPORATIVO
-                  </Button>
                 </form>
               </DialogContent>
             </Dialog>

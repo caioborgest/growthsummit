@@ -3,6 +3,13 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, CheckCircle, Trophy, Building2, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
@@ -186,51 +193,50 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
     };
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md">
-            <div className="glass-card max-w-xl w-full max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border-brand-orange-coral/20 rounded-2xl sm:rounded-3xl">
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-white transition-colors z-10 p-2"
-                >
-                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                </button>
-
-                <div className="p-4 sm:p-8">
-                    {isSuccess ? (
-                        <div className="text-center py-10 sm:py-12">
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                                <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-400" />
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4 leading-tight">Inscrição Enviada! 🎉</h2>
-                            <p className="text-sm sm:text-lg text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-                                Estamos te redirecionando para o **WhatsApp oficial** para gerarmos o seu **QR Code de Pagamento**.<br /><br />
-                                Após a confirmação do Pix, nosso sistema gerará um **Cupom Exclusivo** para que seus colaboradores possam se inscrever no site sem custo adicional.
-                            </p>
-                            <Button onClick={onClose} className="bg-brand-orange-coral text-white px-8 h-12">
-                                Voltar ao Site
-                            </Button>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+                {isSuccess ? (
+                    <div className="p-8 text-center py-12">
+                        <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="h-10 sm:h-12 w-10 sm:w-12 text-green-400" />
                         </div>
-                    ) : (
-                        <>
-                            <div className="mb-6 sm:mb-8">
-                                <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                                    <Trophy className="h-3 w-3 mr-2" />
+                        <DialogTitle className="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight uppercase italic">
+                            Inscrição Enviada! 🎉
+                        </DialogTitle>
+                        <p className="text-sm sm:text-base text-gray-400 mb-8 leading-relaxed">
+                            Estamos te redirecionando para o **WhatsApp oficial** para gerarmos o seu **QR Code de Pagamento**.<br /><br />
+                            Após a confirmação do Pix, nosso sistema gerará um **Cupom Exclusivo** para que seus colaboradores possam se inscrever no site sem custo adicional.
+                        </p>
+                        <Button onClick={onClose} className="bg-brand-orange-coral hover:bg-brand-orange-intense text-white px-12 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-glow-orange">
+                            Voltar ao Site
+                        </Button>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                        <div className="admin-modal-header">
+                            <div className="pr-8">
+                                <Badge className="mb-2 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 border py-0 text-[8px] font-black uppercase">
+                                    <Trophy className="h-2 w-2 mr-1" />
                                     {editingData ? 'Editar Registro' : 'Voucher Corporativo'}
                                 </Badge>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 leading-tight">
+                                <DialogTitle className="text-xl sm:text-2xl font-black text-white leading-none uppercase italic">
                                     {editingData ? `Editar ${formData.nomeEmpresa}` : 'Inscrição em Lote (Equipe)'}
-                                </h2>
-                                <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Garante desconto de 30% para sua equipe atingir o próximo nível.</p>
+                                </DialogTitle>
+                                <DialogDescription className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                                    Garante desconto de 30% para sua equipe atingir o próximo nível
+                                </DialogDescription>
                             </div>
+                        </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="admin-modal-body">
+                            <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Empresa</label>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Empresa</label>
                                     <div className="relative">
-                                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                        <input
+                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                        <Input
                                             required
-                                            className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                            className="h-12 pl-12 bg-dark-100 border-white/5 text-white font-bold"
                                             value={formData.nomeEmpresa}
                                             onChange={e => setFormData({ ...formData, nomeEmpresa: e.target.value })}
                                             placeholder="Nome da sua empresa"
@@ -238,16 +244,16 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Vagas para Noite</label>
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Vagas para Noite</label>
                                         <div className="relative">
-                                            <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
+                                            <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <Input
                                                 required
                                                 type="number"
                                                 min="1"
-                                                className="w-full pl-10 pr-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base font-bold"
+                                                className="h-12 pl-12 bg-dark-100 border-white/5 text-white font-black"
                                                 value={formData.quantidadeNoite}
                                                 onChange={e => {
                                                     const val = e.target.value;
@@ -268,28 +274,28 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                                     </div>
 
                                     <div className="space-y-2">
-                                        <div className="flex justify-between items-end mb-2">
-                                            <label className="text-sm font-medium text-gray-300">Resumo do Lote</label>
+                                        <div className="flex justify-between items-end mb-1 px-1">
+                                            <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Resumo do Lote</label>
                                             {parseInt(formData.quantidadeNoite) >= 5 && (
-                                                <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[8px] animate-pulse">
+                                                <Badge className="bg-green-500/10 text-green-500 border-none px-2 py-0 text-[8px] font-black uppercase animate-pulse">
                                                     -30% OFF
                                                 </Badge>
                                             )}
                                         </div>
-                                        <div className="bg-dark-300/50 p-3 rounded-xl border border-white/5 space-y-1">
-                                            <div className="flex justify-between text-[10px] text-gray-500">
+                                        <div className="bg-dark-100 p-4 rounded-xl border border-white/5 space-y-1">
+                                            <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase">
                                                 <span>Subtotal:</span>
                                                 <span>{( (parseInt(formData.quantidadeNoite) || 0) * 179.99 ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                             </div>
                                             {parseInt(formData.quantidadeNoite) >= 5 && (
-                                                <div className="flex justify-between text-[10px] text-green-500/70">
-                                                    <span>Desconto Lote (30%):</span>
+                                                <div className="flex justify-between text-[10px] text-green-400 font-bold uppercase">
+                                                    <span>Desconto Lote:</span>
                                                     <span>-{( (parseInt(formData.quantidadeNoite) || 0) * 179.99 * 0.3 ).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
                                                 </div>
                                             )}
-                                            <div className="flex justify-between items-center pt-1 border-t border-white/5">
-                                                <span className="text-[10px] font-bold text-white uppercase">Total Final:</span>
-                                                <span className="text-sm font-black text-brand-orange-coral tracking-tight">
+                                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Total Final:</span>
+                                                <span className="text-lg font-black text-brand-orange-coral tracking-tight">
                                                     {(parseFloat(formData.amount) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                 </span>
                                             </div>
@@ -297,22 +303,22 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-white/5">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">Responsável</label>
-                                        <input
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Coordenador / Responsável</label>
+                                        <Input
                                             required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                                             value={formData.nomeResponsavel}
                                             onChange={e => setFormData({ ...formData, nomeResponsavel: e.target.value })}
                                             placeholder="Nome completo"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-300">WhatsApp</label>
-                                        <input
+                                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">WhatsApp direto</label>
+                                        <Input
                                             required
-                                            className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none text-sm sm:text-base"
+                                            className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                                             value={formData.phone}
                                             onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                             placeholder="(00) 00000-0000"
@@ -321,11 +327,11 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Email Corporativo</label>
-                                    <input
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Email Corporativo</label>
+                                    <Input
                                         required
                                         type="email"
-                                        className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none"
+                                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                                         placeholder="seu@empresa.com.br"
@@ -333,45 +339,61 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">Observações / Objetivos</label>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Observações / Objetivos</label>
                                     <textarea
                                         rows={3}
-                                        className="w-full px-4 py-3 bg-dark-200 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-brand-orange-coral outline-none resize-none"
+                                        className="w-full px-4 py-3 bg-dark-100 border border-white/5 rounded-xl text-white font-medium focus:outline-none focus:border-brand-orange-coral/50 transition-all resize-none text-sm"
                                         value={formData.objetivo}
                                         onChange={e => setFormData({ ...formData, objetivo: e.target.value })}
                                         placeholder="Motivo da inscrição ou dúvidas..."
                                     />
                                 </div>
 
-                                <div className="bg-brand-orange-coral/10 p-4 rounded-xl border border-brand-orange-coral/20 flex gap-3">
-                                    <Trophy className="h-5 w-5 text-brand-orange-coral flex-shrink-0 mt-1" />
-                                    <p className="text-xs text-gray-300 leading-relaxed">
+                                <div className="bg-brand-orange-coral/5 p-4 rounded-xl border border-brand-orange-coral/10 flex gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-brand-orange-coral/10 flex items-center justify-center shrink-0">
+                                        <Trophy className="h-5 w-5 text-brand-orange-coral" />
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 leading-relaxed italic">
                                         Empresas que inscrevem equipes acima de **5 pessoas** para a **programação paga**, ganham **30% de desconto** imediato e concorrem ao prêmio oficial. A empresa com maior engajamento total (Dia + Noite) ganha o troféu **"Melhor empresa incentivadora da educação empreendedora"**.
                                     </p>
                                 </div>
 
                                 {error && (
-                                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold uppercase tracking-widest text-center">
                                         {error}
                                     </div>
                                 )}
+                            </div>
+                        </div>
 
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl shadow-glow-orange"
+                        <div className="admin-modal-footer">
+                            {!isAdmin && (
+                                <Button 
+                                    type="button" 
+                                    variant="ghost" 
+                                    onClick={onClose}
+                                    className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
                                 >
-                                    {isSubmitting ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        editingData ? 'Salvar Alterações' : 'Finalizar Inscrição de Equipe'
-                                    )}
+                                    Cancelar
                                 </Button>
-                            </form>
-                        </>
-                    )}
-                </div>
-            </div>
-        </div>
+                            )}
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    editingData ? 'Salvar Alterações' : 'Finalizar Inscrição de Equipe'
+                                )}
+                            </Button>
+                        </div>
+                    </form>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
     );
 }

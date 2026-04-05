@@ -21,7 +21,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
@@ -235,227 +234,243 @@ export function AdminStartups() {
             <Trophy className="h-4 w-4 mr-2" />
             {showLeaderboard ? 'Ver Lista' : 'Ver Leaderboard'}
           </Button>
-          <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Nova Startup</DialogTitle>
-              <DialogDescription>
-                Cadastre os dados da startup, fundadores e informações de pitch para o evento.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-6 py-4">
-              {/* Seção: Informações do Fundador */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Informações do Fundador</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Label>Nome Completo *</Label>
-                    <Input
-                      required
-                      value={formData.founder_name}
-                      onChange={e => setFormData({ ...formData, founder_name: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="Nome do fundador"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email *</Label>
-                    <Input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="email@startup.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Telefone/WhatsApp *</Label>
-                    <Input
-                      required
-                      value={formData.phone}
-                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="(00) 00000-0000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Senha para Conta</Label>
-                    <Input
-                      type="password"
-                      value={formData.senha}
-                      onChange={e => setFormData({ ...formData, senha: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="Crie uma senha"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Confirmar Senha</Label>
-                    <Input
-                      type="password"
-                      value={formData.confirmarSenha}
-                      onChange={e => setFormData({ ...formData, confirmarSenha: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="Confirme a senha"
-                    />
-                  </div>
-                </div>
+          <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
+            <div className="admin-modal-header">
+              <div>
+                <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                  Adicionar Nova <span className="text-brand-orange-coral">Startup</span>
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                  Cadastre os dados da startup, fundadores e informações para o evento
+                </DialogDescription>
               </div>
+            </div>
 
-              {/* Seção: Informações da Startup */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Informações da Startup</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Nome da Startup *</Label>
-                    <Input
-                      required
-                      value={formData.startup_name}
-                      onChange={e => setFormData({ ...formData, startup_name: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Setor *</Label>
-                    <select
-                      value={formData.setor}
-                      onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      required
-                    >
-                      <option value="">Selecione o setor</option>
-                      {['Tecnologia', 'Saúde', 'Educação', 'Fintech', 'E-commerce', 'Agronegócio', 'Logística', 'Marketing', 'Alimentação', 'Serviços', 'Outro'].map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Estágio *</Label>
-                    <select
-                      value={formData.estagio}
-                      onChange={e => setFormData({ ...formData, estagio: e.target.value as any })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                      required
-                    >
-                      <option value="ideia">Ideia (ainda não validada)</option>
-                      <option value="mvp">MVP (produto mínimo viável)</option>
-                      <option value="validacao">Validação (primeiros clientes)</option>
-                      <option value="tracao">Tração (crescimento consistente)</option>
-                      <option value="escala">Escala (expansão acelerada)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Pacote Expo</Label>
-                    <select
-                      value={formData.packageType}
-                      onChange={e => setFormData({ ...formData, packageType: e.target.value as 'expo' | 'pitch' })}
-                      className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                    >
-                      <option value="expo">Apenas Exposição</option>
-                      <option value="pitch">Exposição + Arena Pitch</option>
-                    </select>
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>Descrição da Startup * (máx. 500 caracteres)</Label>
-                    <Textarea
-                      required
-                      maxLength={500}
-                      value={formData.startup_description}
-                      onChange={e => setFormData({ ...formData, startup_description: e.target.value })}
-                      className="bg-dark-100 border-dark-300 min-h-[100px]"
-                      placeholder="Descreva sua startup..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Seção: Pitch */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Pitch Details</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Qual problema você resolve? *</Label>
-                    <Textarea
-                      required
-                      value={formData.problema}
-                      onChange={e => setFormData({ ...formData, problema: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Qual é a sua solução? *</Label>
-                    <Textarea
-                      required
-                      value={formData.solucao}
-                      onChange={e => setFormData({ ...formData, solucao: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Qual seu diferencial? *</Label>
-                    <Textarea
-                      required
-                      value={formData.diferencial}
-                      onChange={e => setFormData({ ...formData, diferencial: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Faturamento Mensal (R$)</Label>
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+              <div className="admin-modal-body">
+                {/* Seção: Informações do Fundador */}
+                <div className="space-y-6">
+                  <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Informações do Fundador</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</label>
                       <Input
-                        type="number"
-                        value={formData.faturamento_mensal}
-                        onChange={e => setFormData({ ...formData, faturamento_mensal: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                        placeholder="0.00"
+                        required
+                        value={formData.founder_name}
+                        onChange={e => setFormData({ ...formData, founder_name: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="Nome do fundador"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Investimento Buscado (R$)</Label>
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Email *</label>
                       <Input
-                        type="number"
-                        value={formData.investimento_buscado}
-                        onChange={e => setFormData({ ...formData, investimento_buscado: e.target.value })}
-                        className="bg-dark-100 border-dark-300"
-                        placeholder="0.00"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="email@startup.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Telefone/WhatsApp *</label>
+                      <Input
+                        required
+                        value={formData.phone}
+                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="(00) 00000-0000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Senha para Conta</label>
+                      <Input
+                        type="password"
+                        value={formData.senha}
+                        onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="Crie uma senha"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Confirmar Senha</label>
+                      <Input
+                        type="password"
+                        value={formData.confirmarSenha}
+                        onChange={e => setFormData({ ...formData, confirmarSenha: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="Confirme a senha"
                       />
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Seção: Documentos */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white border-b border-dark-300 pb-2">Documentos & Links</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 space-y-2">
-                    <Label>Link do Pitch Deck</Label>
-                    <Input
-                      type="url"
-                      value={formData.pitch_deck_url}
-                      onChange={e => setFormData({ ...formData, pitch_deck_url: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="https://..."
-                    />
+                {/* Seção: Informações da Startup */}
+                <div className="space-y-6 pt-8 mt-8 border-t border-white/5">
+                  <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Informações da Startup</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Startup *</label>
+                      <Input
+                        required
+                        value={formData.startup_name}
+                        onChange={e => setFormData({ ...formData, startup_name: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Setor *</label>
+                      <select
+                        value={formData.setor}
+                        onChange={e => setFormData({ ...formData, setor: e.target.value })}
+                        className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                        required
+                      >
+                        <option value="">Selecione o setor</option>
+                        {['Tecnologia', 'Saúde', 'Educação', 'Fintech', 'E-commerce', 'Agronegócio', 'Logística', 'Marketing', 'Alimentação', 'Serviços', 'Outro'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Estágio *</label>
+                      <select
+                        value={formData.estagio}
+                        onChange={e => setFormData({ ...formData, estagio: e.target.value as any })}
+                        className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                        required
+                      >
+                        <option value="ideia">Ideia (ainda não validada)</option>
+                        <option value="mvp">MVP (produto mínimo viável)</option>
+                        <option value="validacao">Validação (primeiros clientes)</option>
+                        <option value="tracao">Tração (crescimento consistente)</option>
+                        <option value="escala">Escala (expansão acelerada)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Pacote Expo</label>
+                      <select
+                        value={formData.packageType}
+                        onChange={e => setFormData({ ...formData, packageType: e.target.value as 'expo' | 'pitch' })}
+                        className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                      >
+                        <option value="expo">Apenas Exposição</option>
+                        <option value="pitch">Exposição + Arena Pitch</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Descrição (máx. 500 caracteres) *</label>
+                      <Textarea
+                        required
+                        maxLength={500}
+                        value={formData.startup_description}
+                        onChange={e => setFormData({ ...formData, startup_description: e.target.value })}
+                        className="bg-dark-100 border-white/5 text-white font-medium min-h-[100px] resize-none"
+                        placeholder="Descreva sua startup..."
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>Link do Vídeo Pitch</Label>
-                    <Input
-                      type="url"
-                      value={formData.video_pitch_url}
-                      onChange={e => setFormData({ ...formData, video_pitch_url: e.target.value })}
-                      className="bg-dark-100 border-dark-300"
-                      placeholder="https://..."
-                    />
+                </div>
+
+                {/* Seção: Pitch */}
+                <div className="space-y-6 pt-8 mt-8 border-t border-white/5">
+                  <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Pitch Details</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual problema você resolve? *</label>
+                      <Textarea
+                        required
+                        value={formData.problema}
+                        onChange={e => setFormData({ ...formData, problema: e.target.value })}
+                        className="bg-dark-100 border-white/5 text-white font-medium resize-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual é a sua solução? *</label>
+                      <Textarea
+                        required
+                        value={formData.solucao}
+                        onChange={e => setFormData({ ...formData, solucao: e.target.value })}
+                        className="bg-dark-100 border-white/5 text-white font-medium resize-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual seu diferencial? *</label>
+                      <Textarea
+                        required
+                        value={formData.diferencial}
+                        onChange={e => setFormData({ ...formData, diferencial: e.target.value })}
+                        className="bg-dark-100 border-white/5 text-white font-medium resize-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Faturamento Mensal (R$)</label>
+                        <Input
+                          type="number"
+                          value={formData.faturamento_mensal}
+                          onChange={e => setFormData({ ...formData, faturamento_mensal: e.target.value })}
+                          className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Investimento Buscado (R$)</label>
+                        <Input
+                          type="number"
+                          value={formData.investimento_buscado}
+                          onChange={e => setFormData({ ...formData, investimento_buscado: e.target.value })}
+                          className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção: Documentos */}
+                <div className="space-y-6 pt-8 mt-8 border-t border-white/5">
+                  <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Documentos & Links</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link do Pitch Deck</label>
+                      <Input
+                        type="url"
+                        value={formData.pitch_deck_url}
+                        onChange={e => setFormData({ ...formData, pitch_deck_url: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link do Vídeo Pitch</label>
+                      <Input
+                        type="url"
+                        value={formData.video_pitch_url}
+                        onChange={e => setFormData({ ...formData, video_pitch_url: e.target.value })}
+                        className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                        placeholder="https://..."
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-dark-300">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+              <div className="admin-modal-footer">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                >
                   {isLoading ? 'Adicionando...' : 'Adicionar Startup'}
                 </Button>
               </div>

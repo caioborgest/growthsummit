@@ -19,7 +19,8 @@ import {
     Ticket,
     ShoppingCart,
     Filter,
-    Users
+    Users,
+    X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -250,90 +251,115 @@ export default function AdminUsuarios() {
                     </Button>
                     <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-teal-500 hover:bg-teal-600 text-white" onClick={() => setIsCreateDialogOpen(true)}>
-                                <UserPlus className="h-4 w-4 mr-2" />
-                                Adicionar Membro
+                            <Button className="bg-teal-500 hover:bg-teal-600 text-white font-black h-14 px-8 rounded-2xl text-[10px] uppercase tracking-widest shadow-glow-teal flex items-center gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                                <UserPlus className="h-5 w-5" />
+                                ADICIONAR MEMBRO
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-md">
-                            <DialogHeader>
-                                <DialogTitle>Adicionar Novo Membro</DialogTitle>
-                                <DialogDescription className="text-gray-400">
-                                    Cadastre um novo membro da equipe ou administrador.
-                                </DialogDescription>
-                            </DialogHeader>
+                        <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                            <div className="admin-modal-header">
+                                <div>
+                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                                        <UserPlus className="h-7 w-7 text-teal-500" />
+                                        Novo <span className="text-teal-500">Membro</span>
+                                    </h3>
+                                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                                        Equipe interna ou parceiro estratégico
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsCreateDialogOpen(false)}
+                                    className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                                >
+                                    <X className="h-6 w-6" />
+                                </Button>
+                            </div>
 
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="create-name">Nome Completo *</Label>
-                                    <Input
-                                        id="create-name"
-                                        value={newUserData.name}
-                                        onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
-                                        className="bg-dark-300 border-dark-400 text-white"
-                                        placeholder="Ex: João Silva"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="create-email">E-mail *</Label>
-                                    <Input
-                                        id="create-email"
-                                        type="email"
-                                        value={newUserData.email}
-                                        onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                                        className="bg-dark-300 border-dark-400 text-white"
-                                        placeholder="email@exemplo.com"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="create-password">Senha Provisória</Label>
-                                    <Input
-                                        id="create-password"
-                                        type="password"
-                                        value={newUserData.password}
-                                        onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                                        className="bg-dark-300 border-dark-400 text-white"
-                                        placeholder="Deixe em branco para 'Growth@2026'"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="create-role">Cargo Principal</Label>
-                                    <select
-                                        id="create-role"
-                                        value={newUserData.role}
-                                        onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value as User['role'] })}
-                                        className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
-                                    >
-                                        <option value="staff">Staff</option>
-                                        <option value="admin">Administrador</option>
-                                        <option value="mentor">Mentor</option>
-                                        <option value="speaker">Palestrante</option>
-                                        <option value="sponsor">Patrocinador</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="create-dept">Departamento</Label>
-                                    <select
-                                        id="create-dept"
-                                        value={newUserData.department}
-                                        onChange={(e) => setNewUserData({ ...newUserData, department: e.target.value })}
-                                        className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
-                                    >
-                                        <option value="">Nenhum / Geral</option>
-                                        {Object.entries(departmentLabels).map(([val, label]) => (
-                                            <option key={val} value={val}>{label}</option>
-                                        ))}
-                                    </select>
+                            <div className="admin-modal-body">
+                                <div className="space-y-6 py-4">
+                                    <div className="space-y-3">
+                                        <Label htmlFor="create-name" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</Label>
+                                        <Input
+                                            id="create-name"
+                                            value={newUserData.name}
+                                            onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+                                            className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                                            placeholder="Ex: João Silva"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label htmlFor="create-email" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">E-mail Corporativo *</Label>
+                                        <Input
+                                            id="create-email"
+                                            type="email"
+                                            value={newUserData.email}
+                                            onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                                            className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                                            placeholder="email@exemplo.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label htmlFor="create-password" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Senha Provisória</Label>
+                                        <Input
+                                            id="create-password"
+                                            type="password"
+                                            value={newUserData.password}
+                                            onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                                            className="h-12 bg-white/5 border-white/10 text-white font-bold"
+                                            placeholder="Deixe em branco para 'Growth@2026'"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <Label htmlFor="create-role" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo Principal</Label>
+                                            <select
+                                                id="create-role"
+                                                value={newUserData.role}
+                                                onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value as User['role'] })}
+                                                className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                            >
+                                                <option value="staff">Staff</option>
+                                                <option value="admin">Administrador</option>
+                                                <option value="mentor">Mentor</option>
+                                                <option value="speaker">Palestrante</option>
+                                                <option value="sponsor">Patrocinador</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label htmlFor="create-dept" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Departamento</Label>
+                                            <select
+                                                id="create-dept"
+                                                value={newUserData.department}
+                                                onChange={(e) => setNewUserData({ ...newUserData, department: e.target.value })}
+                                                className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                            >
+                                                <option value="">Nenhum / Geral</option>
+                                                {Object.entries(departmentLabels).map(([val, label]) => (
+                                                    <option key={val} value={val}>{label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="border-dark-400 text-white">
-                                    Cancelar
+
+                            <div className="admin-modal-footer">
+                                <Button 
+                                    variant="ghost" 
+                                    onClick={() => setIsCreateDialogOpen(false)}
+                                    className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                                >
+                                    CANCELAR
                                 </Button>
-                                <Button onClick={handleCreate} className="bg-teal-500 hover:bg-teal-600 text-white">
-                                    Adicionar Membro
+                                <Button 
+                                    onClick={handleCreate} 
+                                    className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none uppercase"
+                                >
+                                    CRIAR MEMBRO
                                 </Button>
-                            </DialogFooter>
+                            </div>
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -542,70 +568,93 @@ export default function AdminUsuarios() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="bg-dark-200 border-dark-300 text-white max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Editar Acesso de Usuário</DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                            Altere as responsabilidades e níveis de acesso de {editingUser?.name}.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="role">Cargo Principal</Label>
-                            <select
-                                id="role"
-                                value={editingUser?.role || ''}
-                                onChange={(e) => setEditingUser(prev => prev ? { ...prev, role: e.target.value as User['role'] } : null)}
-                                className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
-                            >
-                                <option value="staff">Staff</option>
-                                <option value="admin">Administrador</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="speaker">Palestrante</option>
-                                <option value="sponsor">Patrocinador</option>
-                            </select>
+                <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                    <div className="admin-modal-header">
+                        <div>
+                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                                <Edit2 className="h-7 w-7 text-teal-500" />
+                                Editar <span className="text-teal-500">Acesso</span>
+                            </h3>
+                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                                Usuário: {editingUser?.name}
+                            </p>
                         </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsEditDialogOpen(false)}
+                            className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                        >
+                            <X className="h-6 w-6" />
+                        </Button>
+                    </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="department">Departamento / Área</Label>
-                            <select
-                                id="department"
-                                value={editingUser?.department || ''}
-                                onChange={(e) => setEditingUser(prev => prev ? { ...prev, department: e.target.value } : null)}
-                                className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
-                            >
-                                <option value="">Nenhum / Geral</option>
-                                {Object.entries(departmentLabels).map(([val, label]) => (
-                                    <option key={val} value={val}>{label}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className="admin-modal-body">
+                        <div className="space-y-6 py-4">
+                            <div className="space-y-3">
+                                <Label htmlFor="role" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo Principal</Label>
+                                <select
+                                    id="role"
+                                    value={editingUser?.role || ''}
+                                    onChange={(e) => setEditingUser(prev => prev ? { ...prev, role: e.target.value as User['role'] } : null)}
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                >
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Administrador</option>
+                                    <option value="mentor">Mentor</option>
+                                    <option value="speaker">Palestrante</option>
+                                    <option value="sponsor">Patrocinador</option>
+                                </select>
+                            </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="staffRole">Nível de Responsabilidade</Label>
-                            <select
-                                id="staffRole"
-                                value={editingUser?.staffRole || ''}
-                                onChange={(e) => setEditingUser(prev => prev ? { ...prev, staffRole: e.target.value } : null)}
-                                className="w-full bg-dark-300 border border-dark-400 rounded-lg p-2 text-white"
-                            >
-                                <option value="">Selecione...</option>
-                                {Object.entries(staffRoleLabels).map(([val, label]) => (
-                                    <option key={val} value={val}>{label}</option>
-                                ))}
-                            </select>
+                            <div className="space-y-3">
+                                <Label htmlFor="department" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Departamento / Área</Label>
+                                <select
+                                    id="department"
+                                    value={editingUser?.department || ''}
+                                    onChange={(e) => setEditingUser(prev => prev ? { ...prev, department: e.target.value } : null)}
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                >
+                                    <option value="">Nenhum / Geral</option>
+                                    {Object.entries(departmentLabels).map(([val, label]) => (
+                                        <option key={val} value={val}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label htmlFor="staffRole" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nível de Responsabilidade</Label>
+                                <select
+                                    id="staffRole"
+                                    value={editingUser?.staffRole || ''}
+                                    onChange={(e) => setEditingUser(prev => prev ? { ...prev, staffRole: e.target.value } : null)}
+                                    className="w-full h-12 bg-white/5 border border-white/10 rounded-xl text-white font-bold outline-none focus:border-teal-500/50 appearance-none px-4"
+                                >
+                                    <option value="">Selecione...</option>
+                                    {Object.entries(staffRoleLabels).map(([val, label]) => (
+                                        <option key={val} value={val}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="border-dark-400 text-white">
-                            Cancelar
+                    <div className="admin-modal-footer">
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => setIsEditDialogOpen(false)}
+                            className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                        >
+                            CANCELAR
                         </Button>
-                        <Button onClick={handleUpdate} className="bg-teal-500 hover:bg-teal-600 text-white" disabled={isLoading}>
-                            Salvar Alterações
+                        <Button 
+                            onClick={handleUpdate} 
+                            disabled={isLoading}
+                            className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none uppercase"
+                        >
+                            SALVAR ALTERAÇÕES
                         </Button>
-                    </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 

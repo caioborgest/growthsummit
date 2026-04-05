@@ -7,14 +7,11 @@ import {
   Trash2,
   Users,
   QrCode,
-  ExternalLink,
   Building2,
   Phone,
   Mail,
   Zap,
-  Filter,
-  CheckCircle2,
-  Clock
+  Filter
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,9 +21,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { usePartners, useSponsors, useStands, usePartnerTeam } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
@@ -332,19 +327,21 @@ export default function AdminParceiros() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-[#0c0e12] border-white/10 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
-              {editingPartner ? 'Editar' : 'Novo'} <span className="text-brand-orange-coral">Parceiro</span>
-            </DialogTitle>
-            <DialogDescription className="text-gray-500">
-              Configure os detalhes da empresa parceira para gestão de acesso.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
+                {editingPartner ? 'Editar' : 'Novo'} <span className="text-brand-orange-coral">Parceiro</span>
+              </DialogTitle>
+              <DialogDescription className="text-gray-500">
+                Configure os detalhes da empresa parceira para gestão de acesso.
+              </DialogDescription>
+            </div>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 pt-4">
-            <div className="form-container-scrollable space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+            <div className="admin-modal-body">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase text-gray-500">Nome da Empresa *</Label>
                   <Input
@@ -366,7 +363,7 @@ export default function AdminParceiros() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase text-gray-500">Tipo de Parceiro</Label>
                   <select
@@ -393,7 +390,7 @@ export default function AdminParceiros() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/5">
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase text-brand-orange-coral">Código de Auto-Inscrição</Label>
                   <div className="flex gap-2">
@@ -438,7 +435,7 @@ export default function AdminParceiros() {
                     className="bg-white/5 border-white/10"
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     type="email"
                     placeholder="E-mail"
@@ -455,9 +452,9 @@ export default function AdminParceiros() {
                 </div>
               </div>
 
-                <div className="space-y-4 pt-4 border-t border-white/5">
+              <div className="space-y-4 pt-4 border-t border-white/5">
                 <Label className="text-xs font-black uppercase text-gray-400 tracking-widest block">Informações Adicionais</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-gray-600">Website</Label>
                     <Input
@@ -482,7 +479,7 @@ export default function AdminParceiros() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm min-h-[80px]"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm min-h-[80px]"
                     placeholder="Breve descrição da empresa..."
                   />
                 </div>
@@ -500,7 +497,7 @@ export default function AdminParceiros() {
 
               <div className="space-y-4 pt-4 border-t border-white/5">
                 <Label className="text-xs font-black uppercase text-gray-500 tracking-widest block">Vínculos (Opcional)</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-gray-600">Patrocinador Vinculado</Label>
                     <select
@@ -529,10 +526,9 @@ export default function AdminParceiros() {
                   </div>
                 </div>
               </div>
-              <div className="ios-form-padding h-2" />
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-white/5 bg-[#0c0e12]">
+            <div className="admin-modal-footer">
               <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-gray-500">
                 Cancelar
               </Button>

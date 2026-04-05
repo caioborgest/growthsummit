@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
@@ -171,100 +170,124 @@ export default function AdminPatrocinadores() {
               <Plus className="h-4 w-4 mr-2" />
               Novo Patrocinador
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-dark-200 border-dark-300 text-white">
-            <DialogHeader>
-            <DialogTitle>{editingSponsor ? 'Editar Patrocinador' : 'Adicionar Novo Patrocinador'}</DialogTitle>
-              <DialogDescription>
-                Informe os detalhes da empresa e contato para o novo patrocínio.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome da Empresa *</Label>
+          </DialogTrigge          <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
+            <div className="admin-modal-header">
+              <div>
+                <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                  {editingSponsor ? 'Editar' : 'Adicionar'} <span className="text-brand-orange-coral">Patrocinador</span>
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
+                  Informe os detalhes da empresa e contato para o patrocínio
+                </DialogDescription>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+              <div className="admin-modal-body">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Empresa *</label>
+                    <Input
+                      required
+                      value={formData.companyName}
+                      onChange={e => setFormData({ ...formData, companyName: e.target.value })}
+                      className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nível de Cota</label>
+                    <select
+                      value={formData.level}
+                      onChange={e => setFormData({ ...formData, level: e.target.value as 'bronze' | 'silver' | 'gold' | 'diamond' })}
+                      className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                    >
+                      <option value="bronze">Bronze</option>
+                      <option value="silver">Prata</option>
+                      <option value="gold">Ouro</option>
+                      <option value="diamond">Diamante</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Investimento (R$)</label>
+                    <Input
+                      type="number"
+                      value={formData.investment}
+                      onChange={e => setFormData({ ...formData, investment: Number(e.target.value) })}
+                      className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Status Atual</label>
+                    <select
+                      value={formData.status}
+                      onChange={e => setFormData({ ...formData, status: e.target.value as 'prospect' | 'negotiation' | 'closed' | 'cancelled' })}
+                      className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                    >
+                      <option value="prospect">Prospect</option>
+                      <option value="negotiation">Negociação</option>
+                      <option value="closed">Fechado</option>
+                      <option value="cancelled">Cancelado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-white/5">
+                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Responsável Interno / Contato *</label>
                   <Input
                     required
-                    value={formData.companyName}
-                    onChange={e => setFormData({ ...formData, companyName: e.target.value })}
-                    className="bg-dark-100 border-dark-300"
+                    value={formData.contactName}
+                    onChange={e => setFormData({ ...formData, contactName: e.target.value })}
+                    className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                    placeholder="Nome do PI ou responsável"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Nível</Label>
-                  <select
-                    value={formData.level}
-                    onChange={e => setFormData({ ...formData, level: e.target.value as 'bronze' | 'silver' | 'gold' | 'diamond' })}
-                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="bronze">Bronze</option>
-                    <option value="silver">Prata</option>
-                    <option value="gold">Ouro</option>
-                    <option value="diamond">Diamante</option>
-                  </select>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">E-mail de Contato</label>
+                    <Input
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
+                      className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      placeholder="financeiro@empresa.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">WhatsApp / Telefone</label>
+                    <Input
+                      value={formData.contactPhone}
+                      onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
+                      className="h-12 bg-dark-100 border-white/5 text-white font-bold"
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Valor do Investimento</Label>
-                  <Input
-                    type="number"
-                    value={formData.investment}
-                    onChange={e => setFormData({ ...formData, investment: Number(e.target.value) })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <select
-                    value={formData.status}
-                    onChange={e => setFormData({ ...formData, status: e.target.value as 'prospect' | 'negotiation' | 'closed' | 'cancelled' })}
-                    className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
-                  >
-                    <option value="prospect">Prospect</option>
-                    <option value="negotiation">Negociação</option>
-                    <option value="closed">Fechado</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Nome do Contato *</Label>
-                <Input
-                  required
-                  value={formData.contactName}
-                  onChange={e => setFormData({ ...formData, contactName: e.target.value })}
-                  className="bg-dark-100 border-dark-300"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Telefone</Label>
-                  <Input
-                    value={formData.contactPhone}
-                    onChange={e => setFormData({ ...formData, contactPhone: e.target.value })}
-                    className="bg-dark-100 border-dark-300"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-dark-300">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="border-dark-300 text-gray-400">
+
+              <div className="admin-modal-footer">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                >
                   Cancelar
                 </Button>
-                  <Button type="submit" disabled={isLoading} className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-8">
-                    {isLoading ? 'Salvando...' : editingSponsor ? 'Salvar Alterações' : 'Adicionar Patrocinador'}
-                  </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                >
+                  {isLoading ? 'Salvando...' : editingSponsor ? 'Salvar Alterações' : 'Confirmar Patrocínio'}
+                </Button>
               </div>
             </form>
           </DialogContent>
+Content>
         </Dialog>
       </div>
 
