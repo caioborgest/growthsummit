@@ -58,31 +58,31 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
             // Validate as Corporate Batch (Company Voucher)
             const { data: batchData } = await (supabase
                 .from('company_registration_batches') as any)
-                .select('id,voucher_code,total_slots,used_slots,ticket_type,payment_status')
+                .select('id,voucher_code,total_slots:vacancy_count,used_slots:used_vacancies,ticket_type,payment_status')
                 .eq('voucher_code', cupom.trim().toUpperCase())
                 .maybeSingle();
 
             if (batchData) {
-                const batch = batchData as unknown as RegistrationBatch;
-                const isPaid = batch.paymentStatus === 'paid' || (batchData as any).payment_status === 'pago';
-                const used = batch.usedSlots ?? (batchData as any).used_slots ?? 0;
-                const total = batch.totalSlots ?? (batchData as any).total_slots ?? 0;
+                const batch = batchData as any;
+                const isPaid = batch.payment_status === 'paid' || batch.payment_status === 'pago';
+                const used = batch.used_slots || 0;
+                const total = batch.total_slots || 0;
 
                 if (!isPaid) {
-                    setError('Payment for this batch is pending. Please contact your company administrator.');
+                    setError('O pagamento deste lote está pendente. Por favor, contate o administrador da sua empresa.');
                     return;
                 }
                 if (used >= total && total > 0) {
-                    setError('All spots for this batch have already been used.');
+                    setError('Todas as vagas deste lote já foram utilizadas.');
                     return;
                 }
                 setCupomAplicado(true);
                 onUpdate?.({
                     lectureDiscount: 100,
                     lectureCoupon: cupom.trim().toUpperCase(),
-                    lecturePartnerType: 'Corporate Batch',
+                    lecturePartnerType: 'Lote Corporativo',
                     batchId: batch.id,
-                    companyVoucher: batch.voucherCode || (batchData as any).voucher_code
+                    companyVoucher: batch.voucher_code
                 });
                 return;
             }

@@ -46,7 +46,7 @@ export default function AdminBatches() {
         responsibleEmail: '',
         contactEmail: '',
         voucherCode: '',
-        maxSlots: 5,
+        total_slots: 5,
         ticketType: 'pro' as 'morning' | 'pro' | 'vip',
         price: 0,
         active: true,
@@ -95,7 +95,7 @@ export default function AdminBatches() {
     const handleQtyChange = (qty: number) => {
         setFormData({
             ...formData,
-            maxSlots: qty,
+            total_slots: qty,
             price: calculateTotal(qty)
         });
     };
@@ -119,9 +119,10 @@ export default function AdminBatches() {
                 await create({
                     ...formData,
                     projectId: projectId || '',
-                    usedSlots: 0,
-                    voucherCode: (formData.voucherCode || '').toUpperCase()
-                });
+                    used_slots: 0,
+                    voucherCode: (formData.voucherCode || '').toUpperCase(),
+                    updatedAt: new Date().toISOString()
+                } as any);
                 toast.success('Lote corporativo criado com sucesso!');
             }
             setIsModalOpen(false);
@@ -142,7 +143,7 @@ export default function AdminBatches() {
             responsibleEmail: '',
             contactEmail: '',
             voucherCode: '',
-            maxSlots: 5,
+            total_slots: 5,
             ticketType: 'pro',
             price: calculateTotal(5),
             active: true,
@@ -161,7 +162,7 @@ export default function AdminBatches() {
             responsibleEmail: batch.responsibleEmail || '',
             contactEmail: batch.contactEmail,
             voucherCode: batch.voucherCode,
-            maxSlots: batch.maxSlots,
+            total_slots: batch.total_slots,
             ticketType: batch.ticketType as any,
             price: batch.price,
             active: batch.active !== undefined ? batch.active : true,
@@ -215,8 +216,8 @@ export default function AdminBatches() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total de Lotes', value: batches.length, icon: Building2, color: 'blue' },
-                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.maxSlots, 0), icon: Users, color: 'emerald' },
-                    { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.usedSlots, 0), icon: Ticket, color: 'orange' },
+                    { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.total_slots, 0), icon: Users, color: 'emerald' },
+                    { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.used_slots, 0), icon: Ticket, color: 'orange' },
                     { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago').reduce((sum, b) => sum + Number(b.price), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card p-6 border-l-4 border-brand-orange-coral shadow-lg">
@@ -267,13 +268,13 @@ export default function AdminBatches() {
                                     <td className="px-6 py-5" data-label="Vagas">
                                         <div className="space-y-1.5 w-full lg:w-32">
                                             <div className="flex justify-between text-[10px] text-gray-500 font-black uppercase tracking-widest">
-                                                <span>{batch.usedSlots} / {batch.maxSlots}</span>
-                                                <span className="text-brand-orange-coral">{Math.round((batch.usedSlots / Math.max(1, batch.maxSlots)) * 100)}%</span>
+                                                <span>{batch.used_slots} / {batch.total_slots}</span>
+                                                <span className="text-brand-orange-coral">{Math.round((batch.used_slots / Math.max(1, batch.total_slots)) * 100)}%</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                                 <div
                                                     className="h-full bg-brand-orange-coral shadow-[0_0_8px_rgba(255,112,67,0.4)]"
-                                                    style={{ width: `${(batch.usedSlots / Math.max(1, batch.maxSlots)) * 100}%` }}
+                                                    style={{ width: `${(batch.used_slots / Math.max(1, batch.total_slots)) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -427,7 +428,7 @@ export default function AdminBatches() {
                                         <Input
                                             type="number"
                                             min="1"
-                                            value={formData.maxSlots}
+                                            value={formData.total_slots}
                                             onChange={e => handleQtyChange(Number(e.target.value))}
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
                                             placeholder="Ex: 10"

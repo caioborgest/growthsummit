@@ -580,8 +580,8 @@ export interface RegistrationBatch {
   responsibleEmail?: string;
   contactEmail: string;
   voucherCode: string;
-  maxSlots: number;
-  usedSlots: number;
+  total_slots: number;
+  used_slots: number;
   ticketType: string;
   price: number;
   active: boolean;

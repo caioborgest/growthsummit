@@ -100,7 +100,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
 
             let lotQuery = supabase
                 .from('company_registration_batches')
-                .select('id,project_id,company_name,voucher_code,total_slots,used_slots,ticket_type,payment_status')
+                .select('id,project_id,name:company_name,voucher_code,total_slots:vacancy_count,used_slots:used_vacancies,ticket_type,payment_status')
                 .eq('voucher_code', cleanCodigo);
             
             if (isUuid) {
@@ -120,13 +120,13 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                     setCodigoValidado(true);
                     setBatchId(lot.id);
                     setCompanyVoucher(lot.voucher_code);
-                    setReferralName(lot.company_name);
+                    setReferralName((lot as any).name);
                     setReferralType('empresa');
                     setSocialDiscount(100);
                     if (onUpdate) {
                         onUpdate({ 
                             code: cleanCodigo,
-                            referralName: lot.company_name, 
+                            referralName: (lot as any).name, 
                             socialDiscount: 100, 
                             batchId: (lot as any).id, 
                             companyVoucher: lot.voucher_code,
