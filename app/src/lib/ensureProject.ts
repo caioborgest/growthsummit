@@ -12,82 +12,33 @@ type ProjectRow = Database['public']['Tables']['projects']['Row'];
  */
 export async function ensureProject(projectConfig: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Project | null> {
     try {
-        // 1. Try to find by slug
+        // 1. Try to find by slug or by id if provided
         const projCols = 'id,name,slug,type,description,short_description,location,city,state,country,address,start_date,end_date,status,banner,logo,primary_color,secondary_color,max_registrations,max_mentors,max_startups,max_companies,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,goal_registrations,goal_revenue,target_registrations,target_revenue,created_at,updated_at';
-        const { data: existing, error: fetchError } = await (supabase.from('projects') as any)
-            .select(projCols)
-            .eq('slug', projectConfig.slug)
-            .maybeSingle();
+        
+        const query = (supabase.from('projects') as any).select(projCols);
+        
+        if (projectConfig.id) {
+            query.eq('id', projectConfig.id);
+        } else {
+            query.eq('slug', projectConfig.slug);
+        }
 
-        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is just 'no rows' which is fine
-            // Se for um erro de cancelamento (AbortError), ignoramos silenciosamente
+        const { data: existing, error: fetchError } = await query.maybeSingle();
+
+        if (fetchError && fetchError.code !== 'PGRST116') {
             if (fetchError.message?.includes('aborted') || fetchError.name === 'AbortError') {
-                logger.debug(`[ensureProject] Fetch aborted for ${projectConfig.slug} (expected during navigation/HMR)`);
                 return null;
             }
-            logger.warn(`[ensureProject] Potential issue fetching project ${projectConfig.slug}:`, { error: fetchError.message });
+            logger.warn(`[ensureProject] Potential issue fetching project ${projectConfig.slug || projectConfig.id}:`, { error: fetchError.message });
         }
 
-        // 2. Only attempt UPSERT if we have a session or if we are in development
-        // This prevents 401 errors for anonymous users who shouldn't be creating projects anyway
-        const { data: { session } } = await supabase.auth.getSession();
-        const userRole = session?.user?.user_metadata?.role || session?.user?.app_metadata?.role;
-        const isAdmin = userRole === 'admin';
-
-        if (session) {
-            logger.debug(`[ensureProject] Session found. User: ${session.user.email}, Role: ${userRole}, isAdmin: ${isAdmin}`);
-        }
-
-        // 2. Se já existe, retorna o existente (independente de ser admin ou não)
         if (existing) {
             return rowToProject(existing as ProjectRow);
         }
 
-        // 3. Se NÃO existe e NÃO é admin, não tenta criar (evita 403)
-        if (!isAdmin) {
-            logger.warn(`[ensureProject] Project ${projectConfig.slug} not found and user is not admin. Skipping creation.`);
-            return null;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const projectDataToUpsert: any = {
-            ...mapToSupabaseFormat(projectConfig),
-            updated_at: new Date().toISOString(),
-        };
-
-        if (existing) {
-            // Update if exists to ensure settings are in sync with code config
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            projectDataToUpsert.id = (existing as any).id;
-        }
-
-
-        // 2. Create if doesn't exist
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: created, error: createError } = await (supabase.from('projects') as any)
-            .upsert(projectDataToUpsert, { onConflict: 'slug' })
-            .select()
-            .single();
-
-        if (createError) {
-            if (createError.message?.includes('aborted') || createError.name === 'AbortError') {
-                return null;
-            }
-            logger.warn(`[ensureProject] Failed to create project ${projectConfig.slug}:`, { error: createError.message });
-
-            // Final attempt to fetch (race condition check)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: retry } = await (supabase.from('projects') as any)
-                .select(projCols)
-                .eq('slug', projectConfig.slug)
-                .maybeSingle();
-
-            return retry ? rowToProject(retry as ProjectRow) : null;
-        }
-
-        return created ? rowToProject(created as ProjectRow) : null;
+        logger.debug(`[ensureProject] Project not found: ${projectConfig.slug || projectConfig.id}`);
+        return null;
     } catch (err: any) {
-        // Ignorar AbortError no catch block também
         if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
             return null;
         }
@@ -96,60 +47,7 @@ export async function ensureProject(projectConfig: Omit<Project, 'id' | 'created
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapToSupabaseFormat(p: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): any {
-    const s = p.settings || {};
-    const tp = s.ticketPrices || {};
 
-    return {
-        ...(p.id ? { id: p.id } : {}),
-        name: p.name,
-        slug: p.slug,
-        type: p.type,
-        description: p.description || null,
-        short_description: p.shortDescription || null,
-        location: p.location || null,
-        city: p.city || null,
-        state: p.state || null,
-        country: p.country || 'BR',
-        address: p.address || p.location || null,
-        start_date: p.startDate || null,
-        end_date: p.endDate || null,
-        status: p.status || 'active',
-        primary_color: p.primaryColor || '#FE4C38',
-        secondary_color: p.secondaryColor || '#FF6B35',
-        max_registrations: s.maxRegistrations || null,
-        max_mentors: s.maxMentors || null,
-        max_startups: s.maxStartups || null,
-        max_companies: s.maxCompanies || null,
-        enable_b2b: s.enableB2B ?? false,
-        enable_mentoring: s.enableMentoring ?? false,
-        enable_startups: s.enableStartups ?? false,
-        enable_check_in: s.enableCheckIn ?? true,
-        ticket_price_standard: Math.round((tp.standard || 0) * 100),
-        ticket_price_pro: Math.round((tp.pro || 0) * 100),
-        ticket_price_vip: Math.round((tp.vip || 0) * 100),
-        target_registrations: s.goalRegistrations || s.targetRegistrations || 500,
-        target_revenue: s.goalRevenue || s.targetRevenue || 0,
-        goal_registrations: s.goalRegistrations || s.targetRegistrations || 500,
-        goal_revenue: s.goalRevenue || s.targetRevenue || 0,
-        settings: {
-            maxRegistrations: s.maxRegistrations,
-            maxMentors: s.maxMentors,
-            maxStartups: s.maxStartups,
-            maxCompanies: s.maxCompanies,
-            enableB2B: s.enableB2B ?? false,
-            enableMentoring: s.enableMentoring ?? false,
-            enableStartups: s.enableStartups ?? false,
-            enableCheckIn: s.enableCheckIn ?? true,
-            ticketPrices: tp,
-            goalRegistrations: s.goalRegistrations || s.targetRegistrations,
-            goalRevenue: s.goalRevenue || s.targetRevenue,
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-    };
-}
 
 
 function rowToProject(row: ProjectRow): Project {
