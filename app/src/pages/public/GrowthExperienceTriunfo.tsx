@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Project, Session } from '@/types';
 import {
   Building2,
@@ -281,10 +282,15 @@ export function GrowthExperienceTriunfo() {
               <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
                 O EVENTO
               </Badge>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
-                Acelere seu Crescimento com quem <span className="text-gradient">faz na prática</span>
-              </h2>
-              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+              <motion.h2 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl sm:text-5xl lg:text-7xl font-black text-white mb-6 leading-[0.9] italic uppercase tracking-tighter"
+              >
+                Acelere seu Crescimento com quem <span className="text-brand-orange-coral">faz na prática</span>
+              </motion.h2>
+              <p className="text-xl text-gray-500 mb-8 leading-relaxed font-medium">
                 No dia 16 de abril, Triunfo recebe uma noite inteira dedicada a palestras, talk shows e exposição de marcas. Um encontro estratégico para empreendedores e gestores que movimentam a economia do Sertão do Pajeú.
               </p>
 
@@ -293,15 +299,19 @@ export function GrowthExperienceTriunfo() {
                   { icon: TrendingUp, title: 'Palestras Magnas', desc: '5 grandes nomes no palco principal' },
                   { icon: Zap, title: 'Networking VIP', desc: 'Conexões de alto nível com decisores' }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex gap-4 group">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-orange-coral/10 flex items-center justify-center group-hover:bg-brand-orange-coral group-hover:scale-110 transition-all duration-300">
-                      <item.icon className="h-6 w-6 text-brand-orange-coral group-hover:text-white transition-colors" />
+                  <motion.div 
+                    key={idx} 
+                    whileHover={{ x: 10 }}
+                    className="flex gap-5 group p-4 rounded-3xl hover:bg-white/5 transition-all border border-transparent hover:border-white/5"
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center group-hover:bg-brand-orange-coral group-hover:scale-110 shadow-glow-sm transition-all duration-300">
+                      <item.icon className="h-7 w-7 text-brand-orange-coral group-hover:text-white transition-colors" />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold mb-1 group-hover:text-brand-orange-coral transition-colors">{item.title}</h4>
-                      <p className="text-sm text-gray-400">{item.desc}</p>
+                      <h4 className="text-white font-black text-lg uppercase italic tracking-tight mb-1 group-hover:text-brand-orange-coral transition-colors">{item.title}</h4>
+                      <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">{item.desc}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -340,14 +350,18 @@ export function GrowthExperienceTriunfo() {
           style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-16 animate-fade-in-up gap-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-20 animate-fade-in-up gap-6 text-center md:text-left">
             <div>
-              <Badge className="mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1">
+              <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-5 py-1.5 font-black text-[10px] tracking-[0.2em] uppercase">
                 KEYNOTES
               </Badge>
-              <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4 leading-tight">Protagonistas do <span className="text-gradient">Sucesso</span></h2>
+              <h2 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white mb-4 leading-[0.85] italic uppercase tracking-tighter">
+                Protagonistas <br /> do <span className="text-brand-orange-coral">Sucesso</span>
+              </h2>
             </div>
-            <SectionShare sectionId="palestrantes" title="Palestras Magnas - Growth Experience" />
+            <div className="bg-white/5 p-4 rounded-3xl border border-white/10 backdrop-blur-md">
+              <SectionShare sectionId="palestrantes" title="Palestras Magnas - Growth Experience" />
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto mb-16 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -390,15 +404,16 @@ export function GrowthExperienceTriunfo() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-brand-orange-coral/5 to-transparent pointer-events-none" />
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <Badge className="mb-4 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-4 py-1 font-black text-[10px] uppercase tracking-[0.2em]">
+          <div className="text-center mb-24 animate-fade-in-up">
+            <Badge className="mb-6 bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/30 px-5 py-2 font-black text-[10px] uppercase tracking-[0.3em] rounded-full">
               EXPERIÊNCIA NOTURNA
             </Badge>
-            <h2 className="text-4xl sm:text-6xl font-black text-white italic uppercase tracking-tighter mb-4">
-              Grade de <span className="text-brand-orange-coral">Programação</span>
+            <h2 className="text-5xl sm:text-8xl font-black text-white italic uppercase tracking-tighter mb-6 leading-none">
+              Grade de <br /> <span className="text-brand-orange-coral">Programação</span>
             </h2>
-            <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed">
-              UMA NOITE INTEIRA DE CONTEÚDO E NETWORKING NO SERTÃO DO PAJEÚ
+            <div className="w-20 h-1.5 bg-brand-orange-coral mx-auto mb-6 rounded-full" />
+            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.25em] leading-relaxed max-w-lg mx-auto">
+              UMA NOITE INTEIRA DE CONTEÚDO E NETWORKING NO CORAÇÃO DO SERTÃO DO PAJEÚ
             </p>
           </div>
           
@@ -419,33 +434,43 @@ export function GrowthExperienceTriunfo() {
               }
 
               return displaySessions.map((s) => (
-                <div key={s.id} className="flex gap-6 items-start group">
+                <motion.div 
+                  key={s.id} 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="flex gap-8 items-start group relative"
+                >
                   <div className="flex flex-col items-center">
-                    <div className="w-24 text-brand-orange-coral font-black text-2xl italic tracking-tighter text-right pr-4 border-r-2 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all">
-                      {s.startTime?.match(/(\d{2}:\d{2})/)?.[0] || '00:00'}
+                    <div className="w-32 text-brand-orange-coral font-black text-3xl italic tracking-tighter text-right pr-6 border-r-4 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all duration-500">
+                      {s.startTime?.match(/(\d{2}:\d{2})/)?.[0] || '17:00'}
                     </div>
-                    <div className="w-px h-16 bg-white/5 group-last:hidden" />
+                    <div className="w-1 h-24 bg-gradient-to-b from-brand-orange-coral/20 to-transparent group-last:hidden" />
                   </div>
-                  <div className="glass-card border-white/5 p-8 rounded-[2rem] flex-1 hover:border-brand-orange-coral/30 hover:bg-white/[0.03] transition-all duration-500 group-hover:translate-x-2">
-                     <div className="flex items-center justify-between mb-2">
-                       <h4 className="text-white font-black text-xl italic uppercase group-hover:text-brand-orange-coral transition-colors">{s.title}</h4>
-                       {s.type && <Badge className="bg-white/5 text-gray-500 border-none font-black text-[8px] tracking-widest">{s.type}</Badge>}
+                  <div className="glass-card border-white/5 p-8 sm:p-10 rounded-[2.5rem] flex-1 hover:border-brand-orange-coral/40 hover:bg-white/[0.04] transition-all duration-500 group-hover:translate-x-3 shadow-2xl relative overflow-hidden">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all" />
+                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 relative z-10">
+                       <h4 className="text-white font-black text-2xl italic uppercase group-hover:text-brand-orange-coral transition-colors leading-none">{s.title}</h4>
+                       {s.type && <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 font-black text-[9px] tracking-[0.2em] uppercase px-3 py-1 w-fit">{s.type}</Badge>}
                      </div>
-                     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-4">{s.description}</p>
-                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-3 w-3 text-brand-orange-coral/60" />
-                          <span className="text-white/40 font-black text-[9px] uppercase tracking-widest">{s.room || 'Auditório Principal'}</span>
+                     <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-6 leading-relaxed max-w-2xl relative z-10">{s.description}</p>
+                     <div className="flex flex-wrap items-center gap-6 relative z-10">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                            <Building2 className="h-3.5 w-3.5 text-brand-orange-coral" />
+                          </div>
+                          <span className="text-white/60 font-black text-[10px] uppercase tracking-widest">{s.room || 'Auditório Principal'}</span>
                         </div>
                         {s.speakers && s.speakers.length > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Mic2 className="h-3 w-3 text-brand-orange-coral/60" />
-                            <span className="text-white/40 font-black text-[9px] uppercase tracking-widest">{s.speakers.join(', ')}</span>
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 rounded-lg bg-white/5 border border-white/5">
+                              <Mic2 className="h-3.5 w-3.5 text-brand-orange-coral" />
+                            </div>
+                            <span className="text-white/60 font-black text-[10px] uppercase tracking-widest">{s.speakers.join(', ')}</span>
                           </div>
                         )}
                      </div>
-                  </div>
-                </div>
+                  </motion.div>
               ));
             })()}
           </div>
