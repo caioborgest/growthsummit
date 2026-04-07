@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, X } from 'lucide-react';
+import { CheckCircle, X, Loader2 } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 import type { DadosInscricao } from './inscricao-steps/inscricaoTypes';
 import { Step1SelecionarCursos } from './inscricao-steps/Step1SelecionarCursos';
 import { Step2DadosPessoais } from './inscricao-steps/Step2DadosPessoais';
@@ -13,6 +14,8 @@ import { Step5PagamentoPix } from './inscricao-steps/Step5PagamentoPix';
 import { Step6DownloadApp } from './inscricao-steps/Step6DownloadApp';
 import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 import { useSessions } from '@/hooks/useData';
+import { registrationService, type RegistrationParams } from '@/services/registrationService';
+import { EVENT_CONFIG } from '@/config/eventConfig';
 
 const DRAFT_KEY = 'inscricao_form_draft_v2';
 
@@ -27,6 +30,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     const [currentStep, setCurrentStep] = useState(1);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [registrationError, setRegistrationError] = useState<string | null>(null);
     const [dados, setDados] = useState<DadosInscricao>({
         cursosSelecionados: [],
         name: '',
@@ -63,15 +68,83 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
     };
 
     const nextStep = (force = false) => {
-        if (isProcessing && !force) return;
+        if ((isProcessing || isRegistering) && !force) return;
         if (currentStep < totalSteps) {
             setCurrentStep(prev => prev + 1);
         }
         setTimeout(() => setIsProcessing(false), 300);
     };
 
+    const handlePerformRegistration = useCallback(async (currentDados: DadosInscricao) => {
+        // Idempotency: avoid duplicate registration
+        if (currentDados.registrationId) {
+            logger.info('[Modal] Registration already exists:', currentDados.registrationId);
+            return currentDados.registrationId;
+        }
+
+        setIsRegistering(true);
+        setRegistrationError(null);
+
+        try {
+            // Consolidated Amount Calculation (Base + Upgrade)
+            const basePrice = EVENT_CONFIG.proPrice || 179.99;
+            const discountPercent = Math.max(currentDados.lectureDiscount || 0, currentDados.socialDiscount || 0);
+            const finalAmount = basePrice * (1 - discountPercent / 100);
+
+            const registrationParams: RegistrationParams = {
+                projectId: selectedProject?.id || '',
+                userId: '', 
+                name: currentDados.name,
+                email: currentDados.email.trim().toLowerCase(),
+                phone: currentDados.phone,
+                cpf: currentDados.cpf,
+                sessionIds: currentDados.cursosSelecionados || [],
+                registrationType: currentDados.registrationType || 'standard',
+                paidAmount: finalAmount,
+                paymentStatus: (finalAmount <= 0) ? 'paid' : 'pending',
+                batchId: currentDados.batchId || null,
+                companyVoucher: currentDados.companyVoucher || null,
+                status: (finalAmount <= 0) ? 'active' : 'pending',
+                eventName: selectedProject?.name || 'Growth Experience',
+                palestrasNoturnas: currentDados.buyLectures,
+                socialCode: currentDados.code || null,
+                palestraCode: currentDados.lectureCoupon || null,
+                partnerId: currentDados.partnerId || null,
+                partnerAccessCode: currentDados.partnerAccessCode || null,
+                referralType: currentDados.referralType || 'nenhum',
+                referralName: (currentDados.referralName || currentDados.code)?.trim() || null,
+                appInstalled: false
+            };
+
+            logger.info('[Modal] Performing centralized registration...', { amount: finalAmount });
+            
+            const result = await registrationService.registerWithSlots(registrationParams);
+            
+            if (!result || result.error) {
+                throw new Error(result?.error || 'Erro ao processar inscrição.');
+            }
+
+            const regId = result.registration_id;
+            updateDados({ 
+                registrationId: regId,
+                paymentStatus: (finalAmount <= 0) ? 'pago' : 'pendente',
+                valorFinal: finalAmount
+            });
+
+            return regId;
+        } catch (err: any) {
+            const msg = err.message || 'Erro crítico no registro.';
+            logger.error('[Modal] Registration performance error:', err);
+            setRegistrationError(msg);
+            toast.error(msg);
+            return null;
+        } finally {
+            setIsRegistering(false);
+        }
+    }, [selectedProject?.id, selectedProject?.name]);
+
     const prevStep = () => {
-        if (isProcessing) return;
+        if (isProcessing || isRegistering) return;
         
         let targetStep = currentStep - 1;
 
@@ -150,19 +223,28 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         updateDados(updates);
     }, [selectedProject?.id, allSessions?.length]);
 
-    // Smart logic for skipping steps
+    // Smart logic for skipping steps and triggering registration
     useEffect(() => {
+        const isFree = (dados.valorFinal !== undefined && dados.valorFinal <= 0) || (dados.socialDiscount === 100);
+
         // Skip Step 4 (Offer) if already bought or fixed package
         if (currentStep === 4 && dados.buyLectures) {
             nextStep(true);
+            return;
         }
         
+        // Trigger Registration before Step 5 (or Step 6 if free)
+        if (currentStep === 5 || (currentStep === 6 && isFree)) {
+            if (!dados.registrationId && !isRegistering && !registrationError) {
+                handlePerformRegistration(dados);
+            }
+        }
+
         // Skip Step 5 (Payment) if total is zero or already paid
-        const isFree = (dados.valorFinal !== undefined && dados.valorFinal <= 0) || (dados.socialDiscount === 100);
         if (currentStep === 5 && (dados.paymentStatus === 'pago' || isFree)) {
             nextStep(true);
         }
-    }, [currentStep, dados.buyLectures, dados.paymentStatus, dados.valorFinal, dados.socialDiscount]);
+    }, [currentStep, dados.buyLectures, dados.paymentStatus, dados.valorFinal, dados.socialDiscount, dados.registrationId, isRegistering, registrationError, handlePerformRegistration]);
 
     const clearDraft = () => {
         localStorage.removeItem(DRAFT_KEY);
@@ -298,7 +380,21 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
                 </div>
 
-                <div ref={scrollContainerRef} className="admin-modal-body bg-dark-100/50">
+                <div ref={scrollContainerRef} className="admin-modal-body bg-dark-100/50 relative">
+                    {isRegistering && (
+                        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-dark-100/80 backdrop-blur-sm animate-in fade-in duration-300">
+                            <div className="bg-dark-200 p-8 rounded-[2.5rem] border border-white/10 shadow-glow-orange flex flex-col items-center gap-6 scale-90 sm:scale-100">
+                                <div className="relative">
+                                    <div className="absolute -inset-4 bg-brand-orange-coral/20 rounded-full blur-xl animate-pulse" />
+                                    <Loader2 className="h-12 w-12 text-brand-orange-coral animate-spin relative" />
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <p className="text-xl font-black text-white italic uppercase tracking-tighter">Preparando seu Acesso</p>
+                                    <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Garantindo sua vaga no sistema...</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className="max-w-3xl mx-auto w-full py-2">
                         {renderStep()}
                     </div>

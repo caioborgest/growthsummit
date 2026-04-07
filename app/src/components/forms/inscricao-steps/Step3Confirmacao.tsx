@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, User, Mail, Phone, BookOpen, Loader2, AlertCircle, Award, Landmark, Contact } from 'lucide-react';
+import { CheckCircle, User, Mail, Phone, BookOpen, AlertCircle, Award, Landmark, Contact } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById, type TipoAtividade } from '@/data/programacao';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
-import { registrationService, type RegistrationParams } from '@/services/registrationService';
-import { logger } from '@/lib/logger';
 import { EVENT_CONFIG } from '@/config/eventConfig';
 
 interface Step3ConfirmacaoProps {
@@ -18,10 +16,7 @@ interface Step3ConfirmacaoProps {
 }
 
 export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Step3ConfirmacaoProps) {
-    const [loading, setLoading] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState('');
-    const { projectId, selectedProject } = useProject();
+    const { selectedProject } = useProject();
     const { data: sessions } = useSessions();
 
     // Dynamic price calculation based on Batches and Categories
@@ -52,7 +47,6 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
     const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
     const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
     const valorFormatado = valorFinal.toFixed(2);
-    const valorPagoTotal = dados.buyLectures ? valorFinal : 0;
 
     // Get current batch/category name for summary
     const getTicketLabel = () => {
@@ -109,91 +103,9 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         })
         .filter(Boolean);
 
-    // Get detailed info from first selected activity
-    const primeiraAtividade = cursosSelecionados[0];
-    const tipoAtividade = primeiraAtividade?.tipo || (sessions.find(s => s.id === dados.cursosSelecionados[0])?.type) || null;
-    const salaAtividade = primeiraAtividade?.local || '';
-    const horarioAtividade = primeiraAtividade?.horario_inicio || '';
-    const nivelAtividade = primeiraAtividade?.nivel || '';
-
-    const handleConfirmar = async () => {
-        if (isProcessing || isSoldOut) return;
-        setIsProcessing(true);
-        setLoading(true);
-        setError('');
-
-        const cleanEmail = dados.email.trim().toLowerCase();
-
-        try {
-            // PHASE 0: Server-side validation of personal data
-            const validation = await registrationService.validateInscricaoData(dados.name, dados.email, dados.phone);
-            if (!validation.valid) {
-                throw new Error(validation.errorMessage || 'Dados inválidos.');
-            }
-
-            // PHASE 2: Calculate value
-            const paymentStatus = (dados.buyLectures && valorPagoTotal > 0) ? 'pendente' : 'pago';
-
-            const cleanProjectId = registrationService.isValidUUID(selectedProject?.id) ? selectedProject?.id : (registrationService.isValidUUID(projectId) ? projectId : null);
-
-            // PHASE 3: Atomic registration via Service Layer
-            const sessionIds = (dados.cursosSelecionados || [])
-                .filter((id: any) => registrationService.isValidUUID(id));
-            
-            const registrationParams: RegistrationParams = {
-                projectId: cleanProjectId,
-                userId: null,
-                name: dados.name,
-                email: cleanEmail,
-                phone: dados.phone,
-                cpf: dados.cpf,
-                sessionIds: sessionIds.length > 0 ? sessionIds : [],
-                registrationType: 'standard',
-                paidAmount: valorPagoTotal,
-                paymentStatus,
-                status: paymentStatus === 'pago' ? 'ativo' : 'pendente',
-                eventName: selectedProject?.name || 'Growth Experience',
-                palestrasNoturnas: dados.buyLectures ?? false,
-                tipoAtividade: dados.selectedActivityType || null,
-                salaAtividade: dados.activityRoom || null,
-                horarioAtividade: dados.activitySchedule || null,
-                nivelAtividade: dados.activityLevel || null,
-                referralType: dados.referralType || 'nenhum',
-                referralName: dados.referralName || null,
-                socialCode: dados.code || null,
-                palestraCode: dados.lectureCoupon || null,
-                batchId: registrationService.isValidUUID(dados.batchId) ? dados.batchId : null,
-                companyVoucher: dados.companyVoucher,
-                partnerAccessCode: dados.partnerAccessCode || null,
-            };
-
-            logger.debug('[Step3Confirmacao] Sending early registration payload:', registrationParams);
-
-            const rpcResult = await registrationService.registerWithSlots(registrationParams);
-
-            if (!rpcResult?.success) {
-                if (rpcResult?.error === 'SESSION_FULL') {
-                    throw new Error(`Vagas esgotadas para: ${rpcResult.full_sessions?.join(', ') || 'atividade selecionada'}. Por favor, escolha outra atividade.`);
-                } else if (rpcResult?.error === 'ALREADY_REGISTERED') {
-                    throw new Error('Este e-mail já está inscrito neste evento.');
-                } else {
-                    throw new Error(rpcResult?.message || 'Erro ao processar inscrição.');
-                }
-            }
-
-            const finalRegistrationId = rpcResult.registration_id || null;
-
-            onConfirmar('', finalRegistrationId || '', paymentStatus);
-            onUpdate?.({ valorFinal: valorFinal });
-
-        } catch (err: unknown) {
-            const error = err as Error;
-            logger.error('Critical error in registration:', error);
-            setError(error.message || 'Erro ao processar inscrição. Por favor, tente novamente.');
-        } finally {
-            setLoading(false);
-            setIsProcessing(false);
-        }
+    const handleConfirmar = () => {
+        if (isSoldOut) return;
+        onConfirmar('', '', 'pending');
     };
 
     return (
@@ -410,28 +322,17 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 </div>
             </Card>
 
-            {error && (
-                <Card className="glass-card p-4 border-red-500/30 bg-red-500/10">
-                    <div className="flex items-center gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                        <p className="text-red-400 text-sm">{error}</p>
-                    </div>
-                </Card>
-            )}
-
             <div className="form-actions flex gap-2">
-                <button type="button" onClick={onVoltar} disabled={loading} className="btn-form-back">
+                <button type="button" onClick={onVoltar} className="btn-form-back">
                     Voltar
                 </button>
                 <button
                     type="button"
                     onClick={handleConfirmar}
-                    disabled={loading || isSoldOut}
+                    disabled={isSoldOut}
                     className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-40 grayscale-[0.8] cursor-not-allowed border-red-500/30' : ''}`}
                 >
-                    {loading ? (
-                        <><Loader2 className="h-5 w-5 animate-spin" />Confirmando...</>
-                    ) : isSoldOut ? (
+                    {isSoldOut ? (
                         <div className="flex items-center justify-center gap-2">
                              <AlertCircle className="h-5 w-5 text-red-500 animate-pulse" />
                              <span className="font-black text-red-500 uppercase tracking-widest text-[10px] sm:text-xs">Lote Esgotado</span>
