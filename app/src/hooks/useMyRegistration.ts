@@ -36,9 +36,8 @@ export interface MyRegistration {
 // No longer needs specialized tables per project, as everything is now in the unified 'registrations' table
 const PRIMARY_TABLE = 'registrations';
 
-function mapRow(row: Record<string, any>): MyRegistration {
+function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): MyRegistration {
     // Rely on row data directly or profile join
-    const profile = row.profiles || {};
     const name = row.name || row.nome || profile.name;
     const phone = row.phone || row.telefone || profile.phone;
     const email = profile.email; // email is not in registrations
@@ -94,7 +93,7 @@ export function useMyRegistration() {
 
         try {
             // Field selection without join on auth.users (Standard compliant)
-            const selectFields = '*, profiles(name, phone)';
+            const selectFields = '*';
 
             // 1) Find the project if not provided
             let targetProjectId = projectId;
@@ -131,7 +130,23 @@ export function useMyRegistration() {
             );
 
             if (err) throw err;
-            setRegistration(data ? mapRow(data) : null);
+            
+            let registrationData = data ? mapRow(data) : null;
+
+            // 3) Fetch profile separately as FK join is not available
+            if (registrationData && user.id) {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('name, phone, email, avatar_url')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+                
+                if (profileData) {
+                    registrationData = mapRow(data, profileData);
+                }
+            }
+
+            setRegistration(registrationData);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Erro ao buscar inscrição';
             logger.error('[useMyRegistration]', err);

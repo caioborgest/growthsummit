@@ -829,11 +829,24 @@ export function useMentors() {
 }
 
 export function useMentoringSessions() {
-  return useData<MentoringSession>([], 'mentoring_sessions');
+  return {
+    data: [] as MentoringSession[],
+    isLoading: false,
+    error: null,
+    refetch: async () => {},
+    update: async () => {},
+    create: async () => {},
+    remove: async () => {},
+  };
 }
 
 export function useMentoringWaitlist() { 
-  return useData<MentoringWaitlist>([], 'mentoring_waitlist'); 
+  return {
+    data: [] as MentoringWaitlist[],
+    isLoading: false,
+    error: null,
+    refetch: async () => {},
+  };
 }
 
 export function useUsers(filters?: Record<string, any>) {
