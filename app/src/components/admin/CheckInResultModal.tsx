@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import type { Registration } from '@/types';
 
 interface CheckInResultModalProps {
-    result: 'success' | 'error' | 'duplicate' | null;
+    result: 'success' | 'error' | 'duplicate' | 'exit' | null;
     registration: Registration | null;
     onClose: () => void;
     autoCloseMs?: number;
@@ -15,7 +15,7 @@ export function CheckInResultModal({
     result,
     registration,
     onClose,
-    autoCloseMs = 4000
+    autoCloseMs = 1500
 }: CheckInResultModalProps) {
     useEffect(() => {
         if (result && autoCloseMs > 0) {
@@ -26,7 +26,8 @@ export function CheckInResultModal({
 
     if (!result) return null;
 
-    const isSuccess = result === 'success';
+    const isSuccess = result === 'success' || result === 'exit';
+    const isExit = result === 'exit';
     const isDuplicate = result === 'duplicate';
     const isError = result === 'error';
 
@@ -34,21 +35,25 @@ export function CheckInResultModal({
         <AnimatePresence>
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                    className={`w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border ${isSuccess
-                            ? 'bg-green-500/10 border-green-500/30'
-                            : 'bg-red-500/10 border-red-500/30'
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ type: "spring", damping: 15, stiffness: 300 }}
+                    className={`w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl border ${isExit 
+                             ? 'bg-amber-500/10 border-amber-500/30'
+                             : isSuccess
+                             ? 'bg-green-500/10 border-green-500/30'
+                             : 'bg-red-500/10 border-red-500/30'
                         }`}
                 >
                     {/* Header/Status Icon */}
-                    <div className={`py-12 flex flex-col items-center justify-center ${isSuccess ? 'bg-green-500' : 'bg-red-500'
+                    <div className={`py-10 flex flex-col items-center justify-center ${
+                           isExit ? 'bg-amber-500' : isSuccess ? 'bg-green-500' : 'bg-red-500'
                         }`}>
                         <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+                            initial={{ scale: 0, rotate: -45 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.05 }}
                         >
                             {isSuccess ? (
                                 <CheckCircle className="h-32 w-32 text-white" />
@@ -56,8 +61,8 @@ export function CheckInResultModal({
                                 <XCircle className="h-32 w-32 text-white" />
                             )}
                         </motion.div>
-                        <h2 className="text-white text-3xl font-black mt-6 tracking-tighter uppercase italic">
-                            {isSuccess ? 'Check-in Realizado!' : isDuplicate ? 'Ingresso já Utilizado' : 'Erro no Scanner'}
+                        <h2 className="text-white text-3xl font-black mt-6 tracking-tighter uppercase italic px-6 text-center">
+                            {isExit ? 'SAÍDA REGISTRADA' : isSuccess ? 'Check-in Realizado!' : isDuplicate ? 'Ingresso já Utilizado' : 'Erro no Scanner'}
                         </h2>
                     </div>
 

@@ -1,164 +1,122 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
-  QrCode,
-  Search,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  Calendar,
-  Filter,
-  Building2,
-  Rocket,
-  User,
-  Camera,
-  AlertCircle,
-  XCircle
+  Search, 
+  Camera, 
+  CheckCircle2, 
+  XCircle, 
+  Users, 
+  Ticket, 
+  Clock, 
+  ChevronRight, 
+  AlertCircle, 
+  RefreshCcw, 
+  ArrowRight,
+  LogOut,
+  LogIn
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from '@/components/ui/badge';
+import { useProject } from '@/contexts/ProjectContext';
+import { useData } from '@/hooks/useData';
 import { Button } from '@/components/ui/button';
-import { useRegistrations, useCheckIns, useSessions, useCheckInsAtividades, useMentors, useCompanies, useStartups } from '@/hooks/useData';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { QRScanner } from '@/components/app/QRScanner';
-import type { Registration } from '@/types';
-import type { QRData } from '@/lib/qrUtils';
+import { parseQRString, QRData } from '@/lib/qrUtils';
+import { toggleCheckInRegistrationAtomic } from '@/lib/checkInAtomic';
+import { supabase } from '@/lib/supabase';
 import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
-import { CertificateService } from '@/lib/certificateService';
-import { useProject } from '@/contexts/ProjectContext';
-import { checkInRegistrationAtomic } from '@/lib/checkInAtomic';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Registration, Mentor, Company, Startup } from '@/types';
 
-export function AdminCheckIn() {
-  const { user } = useAuth();
+export default function AdminCheckIn() {
   const { selectedProject } = useProject();
-  const { data: mentors } = useMentors();
-  const { data: companies } = useCompanies();
-  const { data: startups } = useStartups();
-  const { data: registrations, update, refetch } = useRegistrations();
-  const { data: checkIns, create: createEventCheckIn } = useCheckIns();
-  const { data: sessions } = useSessions();
-  const { data: sessionAttendance, create: createSessionAttendance } = useCheckInsAtividades();
-
-  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isScanning, setIsScanning] = useState(searchParams.get('scan') === 'true');
+  const [isScanning, setIsScanning] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
-
-  const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | null>(null);
+  const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | 'exit' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
-
+  
+  // Checklist Modal States
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup'>('participant');
 
-  const selectedSession = useMemo(() =>
-    sessions.find(s => s.id === selectedSessionId),
-    [sessions, selectedSessionId]
-  );
+  // Fetch Data
+  const { data: registrations, isLoading: loadingReg, refetch: refetchReg } = useData<Registration>([], 'registrations', { realtime: true });
+  const { data: mentors, isLoading: loadingMentors } = useData<Mentor>([], 'mentors');
+  const { data: companies, isLoading: loadingCompanies } = useData<Company>([], 'companies');
+  const { data: startups, isLoading: loadingStartups } = useData<Startup>([], 'startups');
+  const { data: checkIns, refetch: refetchCheckIns } = useData<any>([], 'check_ins');
+  const { data: sessionAttendance, refetch: refetchAttendance } = useData<any>([], 'activity_attendance');
+  const { data: sessions } = useData<any>([], 'sessions');
 
-  const triggerVibrate = (type: 'success' | 'error') => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        if (type === 'success') {
-          navigator.vibrate(200);
-        } else {
-          navigator.vibrate([100, 50, 100]);
-        }
-      }
-    } catch { /* silent */ }
+  const refetch = useCallback(() => {
+    refetchReg();
+    refetchCheckIns();
+    refetchAttendance();
+  }, [refetchReg, refetchCheckIns, refetchAttendance]);
+
+  // Filters
+  const filteredRegistrations = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return registrations.filter(r => 
+      (r.name || '').toLowerCase().includes(q) || 
+      (r.email || '').toLowerCase().includes(q) || 
+      (r.ticketNumber || '').toLowerCase().includes(q)
+    );
+  }, [registrations, searchQuery]);
+
+  const checkInsToday = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return checkIns.filter((c: any) => (c.timestamp || c.checkInAt || '').startsWith(today)).length;
+  }, [checkIns]);
+
+  const triggerVibrate = (type: 'success' | 'warning' | 'error') => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      if (type === 'success') window.navigator.vibrate([100]);
+      if (type === 'warning') window.navigator.vibrate([100, 50, 100]);
+      if (type === 'error') window.navigator.vibrate([300, 100, 300]);
+    }
   };
 
-  const handleManualCheckIn = useCallback(async (registration: Registration) => {
+  const handleManualCheckIn = useCallback(async (registration: Registration, action: 'check-in' | 'check-out' = 'check-in') => {
+    if (!selectedProject?.id) return;
+    
+    setResultRegistration(registration);
+    
+    // Optimistic UI state
+    const isExit = action === 'check-out';
+    
     try {
-      if (selectedSessionId === 'all') {
-        if (registration.checkedIn) {
-          setScanResult('duplicate');
-          setResultRegistration(registration);
-          triggerVibrate('error');
-          return;
-        }
+      const res = await toggleCheckInRegistrationAtomic({
+        registrationId: registration.id,
+        projectId: selectedProject.id,
+        action: action,
+        userId: registration.userId,
+        ticketNumber: registration.ticketNumber,
+        operatorId: user?.id,
+        method: 'manual'
+      });
 
-        const atomic = await checkInRegistrationAtomic({
-          registrationId: registration.id,
-          projectId: registration.projectId,
-          userId: registration.userId,
-          ticketNumber: registration.ticketNumber,
-          operatorId: user?.id,
-          location: 'Entrada Principal',
-          method: 'manual',
-        });
-
-        if (!atomic.ok) {
-          if (atomic.duplicate) {
-            setScanResult('duplicate');
-            setResultRegistration(registration);
-            triggerVibrate('error');
-            toast.info('Participante já credenciado.');
-            return;
-          }
-          throw new Error(atomic.message);
-        }
-
-        await refetch?.(true);
-
-        // Emitir certificado de participação no evento e notificar
-        if (selectedProject) {
-            CertificateService.issueEventCertificate(
-                { id: registration.userId, name: registration.nome || registration.name },
-                selectedProject,
-                registration.id
-            );
-        }
-
-        toast.success(`Check-in GERAL realizado: ${registration.ticketNumber}`);
+      if (res.ok) {
+        setScanResult(isExit ? 'exit' : 'success');
+        triggerVibrate(isExit ? 'warning' : 'success');
+        refetch();
       } else {
-        const alreadyAttending = sessionAttendance.some(
-          a => a.sessionId === selectedSessionId && (a.registrationId === registration.id || a.userId === registration.userId)
-        );
-
-        if (alreadyAttending) {
-          setScanResult('duplicate');
-          setResultRegistration(registration);
-          triggerVibrate('error');
-          toast.info(`Já possui presença registrada em: ${selectedSession?.title}`);
-          return;
-        }
-
-        await createSessionAttendance({
-          projectId: registration.projectId,
-          sessionId: selectedSessionId,
-          registrationId: registration.id,
-          userId: registration.userId,
-          checkInAt: new Date().toISOString(),
-          checkInType: 'manual',
-          operatorId: user?.id
-        });
-
-        // Tentar emitir certificado da atividade e notificar
-        if (selectedProject && selectedSession) {
-            CertificateService.checkAndIssueSessionCertificate(
-                { id: registration.userId, name: registration.nome || registration.name },
-                selectedProject,
-                selectedSession,
-                registration.id
-            );
-        }
-
-        toast.success(`Presença registrada em: ${selectedSession?.title}`);
+        setScanResult(res.duplicate ? 'duplicate' : 'error');
+        triggerVibrate('error');
+        if (!res.duplicate) toast.error(res.message);
       }
-
-      triggerVibrate('success');
-      setSearchQuery('');
-    } catch (err: unknown) {
-      const error = err as Error;
+    } catch (err) {
+      console.error('Erro no check-in/out manual:', err);
       setScanResult('error');
       triggerVibrate('error');
-      toast.error(`Erro ao realizar check-in: ${error.message || 'Erro desconhecido'}`);
+      toast.error('Erro ao processar solicitação.');
     }
-  }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id, selectedProject, refetch]);
+  }, [selectedProject?.id, user?.id, refetch]);
 
   const handleScannerSuccess = useCallback(async (res: QRData | null, raw?: string) => {
     if (!res && !raw) return;
@@ -229,7 +187,9 @@ export function AdminCheckIn() {
                 registrationType: reg.ticket_type || reg.registration_type
            } as any;
 
-           await handleManualCheckIn(mapped);
+           // Auto-toggle based on current state
+           const action = mapped.checkedIn ? 'check-out' : 'check-in';
+           await handleManualCheckIn(mapped, action);
            toast.dismiss('fetch-reg');
         } else {
           setScanResult('error');
@@ -252,10 +212,10 @@ export function AdminCheckIn() {
         setScanResult('error');
         return;
       }
-      await handleManualCheckIn(registration);
+      // Auto-toggle based on current state
+      const action = registration.checkedIn ? 'check-out' : 'check-in';
+      await handleManualCheckIn(registration, action);
     }
-    
-    // NOTE: We do NOT set setIsScanning(false) here to allow continuous scanning for registrations
   }, [registrations, mentors, companies, startups, handleManualCheckIn, selectedProject?.id]);
 
   const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup') => {
@@ -264,311 +224,147 @@ export function AdminCheckIn() {
     setIsChecklistOpen(true);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      const exactMatch = registrations.find(r =>
-        (r.id === searchQuery || r.ticketNumber === searchQuery)
-      );
-      if (exactMatch) {
-        handleManualCheckIn(exactMatch);
-      }
-    }
-  };
-
-  const checkedInCount = registrations.filter(r => r.checkedIn).length;
-  const totalRegistrations = registrations.length;
-
-  const unifiedResults = useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    if (!query) return [];
-
-    const results: any[] = [];
-
-    registrations.filter(r => 
-      r.id.toLowerCase().includes(query) ||
-      (r.nome || r.name || '').toLowerCase().includes(query) ||
-      (r.email || '').toLowerCase().includes(query) ||
-      r.ticketNumber.toLowerCase().includes(query)
-    ).forEach(r => results.push({ ...r, _role: 'participant', _name: r.nome || r.name }));
-
-    mentors.filter(m => 
-      m.id.toLowerCase().includes(query) ||
-      (m.name || '').toLowerCase().includes(query) ||
-      (m.email || '').toLowerCase().includes(query)
-    ).forEach(m => results.push({ ...m, _role: 'mentor', _name: m.name }));
-
-    startups.filter(s => 
-      s.id.toLowerCase().includes(query) ||
-      (s.name || '').toLowerCase().includes(query) ||
-      (s.email || '').toLowerCase().includes(query)
-    ).forEach(s => results.push({ ...s, _role: 'startup', _name: s.name }));
-
-    companies.filter(c => 
-      c.id.toLowerCase().includes(query) ||
-      (c.name || '').toLowerCase().includes(query) ||
-      (c.contactEmail || '').toLowerCase().includes(query)
-    ).forEach(c => results.push({ ...c, _role: 'company', _name: c.name }));
-
-    return results;
-  }, [searchQuery, registrations, mentors, startups, companies]);
-
-  const today = new Date().toLocaleDateString('en-CA');
-  const checkInsToday = checkIns.filter(c =>
-    new Date(c.timestamp).toLocaleDateString('en-CA') === today
-  ).length;
+  const selectedSession = useMemo(() => 
+    sessions.find((s: any) => s.id === selectedSessionId), 
+  [sessions, selectedSessionId]);
 
   return (
-    <div className="space-y-10 py-6 animate-in fade-in duration-700">
-      {scanResult && (
-        <CheckInResultModal
-          result={scanResult}
-          registration={resultRegistration}
-          onClose={() => {
-            setScanResult(null);
-            setResultRegistration(null);
-          }}
-        />
-      )}
+    <div className="min-h-screen bg-[#0c0e12] p-6 lg:p-12 space-y-12 pb-32">
+      {/* Result Modal */}
+      <CheckInResultModal
+        result={scanResult}
+        registration={resultRegistration}
+        onClose={() => setScanResult(null)}
+      />
 
-      {isChecklistOpen && (
-        <AccreditationChecklistModal
-          isOpen={isChecklistOpen}
-          onClose={() => {
-            setIsChecklistOpen(false);
-            setSelectedEntity(null);
-          }}
-          entity={selectedEntity}
-          role={selectedRole}
-          onSuccess={() => {}}
-        />
-      )}
+      {/* Checklist Modal */}
+      <AccreditationChecklistModal
+        isOpen={isChecklistOpen}
+        onClose={() => setIsChecklistOpen(false)}
+        entity={selectedEntity}
+        role={selectedRole}
+        projectId={selectedProject?.id || ''}
+      />
 
-      {/* Premium Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
-            CONTROLE DE <span className="text-brand-orange-coral">ACESSO</span>
-          </h1>
-          <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
-            Acreditação e Monitoramento de Fluxo em Tempo Real
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] backdrop-blur-xl h-14 pr-6">
-          <div className="w-12 h-12 rounded-[1.5rem] bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 shrink-0 ml-1">
-            <QrCode className="h-6 w-6 text-brand-orange-coral" />
-          </div>
-          <div className="min-w-[120px]">
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Modo Ativo</p>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-black text-xs italic uppercase">
-                {selectedSessionId === 'all' ? 'Check-in Geral' : 'Sessão Específica'}
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="relative">
+          <div className="absolute -top-6 -left-6 w-24 h-24 bg-brand-orange-coral/10 rounded-full blur-3xl" />
+          <div className="relative">
+            <h1 className="text-4xl lg:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+              Acreditação <br />
+              <span className="text-brand-orange-coral text-stroke-white">Terminal</span>
+            </h1>
+            <div className="flex items-center gap-3 mt-4">
+              <Badge className="bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 px-3 py-1 font-black text-[10px] tracking-widest uppercase">
+                ADMIN MODE
+              </Badge>
+              <div className="h-1 w-1 rounded-full bg-gray-700" />
+              <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                {selectedProject?.name || 'Growth Experience'}
               </span>
-              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-glow-emerald" />
             </div>
           </div>
-          <div className="h-8 w-px bg-white/5 mx-2" />
-          
-          <div className="relative group">
-            <select
-              value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(e.target.value)}
-              className="bg-transparent text-[10px] font-black text-teal-400 uppercase tracking-widest focus:outline-none pr-8 pl-4 appearance-none cursor-pointer hover:text-white transition-colors"
-            >
-              <option value="all">TODOS OS ACESSOS</option>
-              {sessions.map(s => (
-                <option key={s.id} value={s.id}>{s.title.toUpperCase()}</option>
-              ))}
-            </select>
-            <Calendar className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-teal-400 pointer-events-none group-hover:text-white transition-colors" />
+        </div>
+
+        <div className="flex items-center bg-white/5 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+          <Button
+            variant={selectedSessionId === 'all' ? 'default' : 'ghost'}
+            className={`${selectedSessionId === 'all' ? 'bg-brand-orange-coral' : 'text-gray-400'} rounded-full px-8 font-black text-[10px] uppercase tracking-widest h-12`}
+            onClick={() => setSelectedSessionId('all')}
+          >
+            Geral
+          </Button>
+          <div className="px-4">
+             <select 
+               className="bg-transparent text-white font-black text-[10px] uppercase tracking-widest focus:outline-none border-none cursor-pointer pr-8"
+               value={selectedSessionId}
+               onChange={(e) => setSelectedSessionId(e.target.value)}
+             >
+               <option value="all" className="bg-[#0c0e12]">Filtrar por Sessão</option>
+               {sessions.map((s: any) => (
+                 <option key={s.id} value={s.id} className="bg-[#0c0e12]">{s.title}</option>
+               ))}
+             </select>
           </div>
         </div>
       </div>
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <Clock className="h-6 w-6 text-brand-orange-coral" />
-            </div>
-            <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none font-black text-[9px] tracking-widest uppercase">Hoje</Badge>
-          </div>
-          <div className="relative z-10">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Check-ins Hoje</p>
-            <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">{checkInsToday}</p>
-          </div>
-        </div>
-
-        <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <User className="h-6 w-6 text-teal-400" />
-            </div>
-            <Badge className="bg-teal-500/10 text-teal-400 border-none font-black text-[9px] tracking-widest uppercase">Participantes</Badge>
-          </div>
-          <div className="relative z-10">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Total Acreditado</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">{checkedInCount}</p>
-              <p className="text-sm font-black text-gray-700 italic">/ {totalRegistrations}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <CheckCircle2 className="h-6 w-6 text-blue-400" />
-            </div>
-            <Badge className="bg-blue-500/10 text-blue-400 border-none font-black text-[9px] tracking-widest uppercase">VIP & Staff</Badge>
-          </div>
-          <div className="relative z-10">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Especiais</p>
-            <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">
-              {checkIns.filter(c => 
-                (c.checkInType && c.checkInType !== 'event') || 
-                (c.ticketNumber || '').startsWith('ROLE_')
-              ).length}
-            </p>
-          </div>
-        </div>
-
-        <div className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group">
-          <div className="flex items-center justify-between mb-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-              <TrendingUp className="h-6 w-6 text-purple-400" />
-            </div>
-            <Badge className="bg-purple-500/10 text-purple-400 border-none font-black text-[9px] tracking-widest uppercase">Performance</Badge>
-          </div>
-          <div className="relative z-10">
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">Taxa de Chegada</p>
-            <p className="text-4xl font-black text-white tracking-tighter tabular-nums italic">
-              {totalRegistrations > 0 ? Math.round((checkedInCount / totalRegistrations) * 100) : 0}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {selectedSession && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-8 border-teal-500/20 bg-teal-500/5 rounded-[2.5rem] relative overflow-hidden group"
-        >
-          <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-            <div className="w-20 h-20 rounded-3xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 group-hover:rotate-12 transition-transform duration-500">
-              <Filter className="h-10 w-10 text-teal-400" />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <Badge className="mb-3 bg-teal-500 text-white font-black text-[10px] tracking-widest italic px-4 py-1">CHECK-IN DE ATIVIDADE ATIVO</Badge>
-              <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">{selectedSession.title}</h3>
-              <p className="text-gray-500 font-black text-[10px] uppercase tracking-widest mt-1">SALA: {selectedSession.room.toUpperCase()} • {selectedSession.startTime} - {selectedSession.endTime}</p>
-            </div>
-            <div className="flex flex-col items-center md:items-end shrink-0">
-              <p className="text-gray-700 text-[10px] font-black uppercase tracking-widest mb-1">Presenças Atuais</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-5xl font-black text-teal-400 italic tabular-nums leading-none">
-                  {sessionAttendance.filter(a => (a.sessionId || a.session_id) === selectedSessionId).length}
-                </p>
-                {selectedSession.maxCapacity > 0 && (
-                  <p className="text-xl font-black text-gray-700 italic tabular-nums"> / {selectedSession.maxCapacity}</p>
-                )}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 shrink-0"
-              onClick={() => setSelectedSessionId('all')}
-            >
-              <XCircle className="h-6 w-6" />
-            </Button>
-          </div>
-          {/* Animated Capacity Bar */}
-          {selectedSession.maxCapacity > 0 && (
-            <div className="mt-8 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-               <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${(sessionAttendance.filter(a => (a.sessionId || a.session_id) === selectedSessionId).length / selectedSession.maxCapacity) * 100}%` }}
-                className="h-full bg-teal-500 shadow-glow-teal"
-               />
-            </div>
-          )}
-        </motion.div>
-      )}
-
-      <div className="grid lg:grid-cols-2 gap-10">
-        <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-8 relative z-10">
-            <div>
-              <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Busca Inteligente</h2>
-              <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">LOCALIZAÇÃO RÁPIDA DE REGISTROS</p>
-            </div>
-            <Search className="h-6 w-6 text-teal-400 opacity-20" />
+      <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+        {/* Search Panel */}
+        <div className="glass-card p-10 border-white/5 rounded-[3rem] relative overflow-hidden flex flex-col">
+          <div className="relative mb-8">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-brand-orange-coral" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="NOME, E-MAIL OU CÓDIGO DO INGRESSO..."
+              className="bg-white/5 border-white/10 h-20 pl-16 pr-8 rounded-[1.5rem] font-black text-white italic placeholder:text-gray-700 focus:border-brand-orange-coral/50 transition-all text-lg uppercase tracking-tight"
+            />
           </div>
 
-          <div className="relative mb-8 z-10">
-             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
-             <input
-               autoFocus
-               type="text"
-               placeholder="Nome, e-mail ou número do ticket..."
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-               onKeyDown={handleKeyDown}
-               className="w-full h-16 pl-16 pr-8 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-teal-500 transition-all placeholder:text-gray-700 placeholder:italic placeholder:font-black"
-             />
-          </div>
-
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
-            {searchQuery ? (
-              unifiedResults.length > 0 ? (
-                unifiedResults.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="p-5 bg-white/[0.02] border border-white/5 rounded-[1.5rem] flex items-center justify-between hover:bg-white/[0.04] transition-all group"
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar max-h-[500px]">
+            {searchQuery.trim() ? (
+              filteredRegistrations.length > 0 ? (
+                filteredRegistrations.map(reg => (
+                  <div 
+                    key={reg.id} 
+                    className={`p-6 rounded-[2rem] border transition-all flex items-center justify-between group relative overflow-hidden ${
+                      reg.checkedIn 
+                        ? 'bg-emerald-500/5 border-emerald-500/20' 
+                        : 'bg-white/5 border-white/5 hover:border-brand-orange-coral/30 hover:bg-white/10'
+                    }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
-                        {item._role === 'participant' && <User className="h-6 w-6 text-teal-400" />}
-                        {item._role === 'mentor' && <User className="h-6 w-6 text-blue-400" />}
-                        {item._role === 'company' && <Building2 className="h-6 w-6 text-purple-400" />}
-                        {item._role === 'startup' && <Rocket className="h-6 w-6 text-brand-orange-coral" />}
+                    <div className="flex items-center gap-6 relative z-10">
+                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0 border transition-transform group-hover:scale-110 ${
+                        reg.checkedIn 
+                        ? 'bg-emerald-500/20 border-emerald-500/30' 
+                        : 'bg-brand-orange-coral/10 border-brand-orange-coral/20'
+                      }`}>
+                         {reg.checkedIn ? (
+                           <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+                         ) : (
+                           <Ticket className="h-8 w-8 text-brand-orange-coral" />
+                         )}
                       </div>
                       <div>
-                        <div className="flex items-center gap-3 mb-1">
-                           <p className="text-white text-sm font-black italic uppercase tracking-tight">{item._name || 'Sem nome'}</p>
-                          <Badge className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border-none ${
-                            item._role === 'participant' ? 'bg-teal-500/10 text-teal-400' :
-                            item._role === 'mentor' ? 'bg-blue-500/10 text-blue-400' :
-                            item._role === 'startup' ? 'bg-brand-orange-coral/10 text-brand-orange-coral' :
-                            'bg-purple-500/10 text-purple-400'
-                          }`}>
-                            {item._role}
-                          </Badge>
+                        <h3 className="text-white font-black italic text-xl uppercase tracking-tighter leading-tight">{reg.name}</h3>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{reg.ticketNumber}</span>
+                          <div className="h-1 w-1 rounded-full bg-gray-700" />
+                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{reg.registrationType}</span>
                         </div>
-                        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest line-clamp-1 truncate max-w-[150px]">
-                          {item.ticketNumber || (item.email || item.contactEmail)}
-                        </p>
-                        {item._role === 'participant' && item.payment_status === 'pendente' && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <AlertCircle className="h-2.5 w-2.5 text-red-400" />
-                            <span className="text-red-400 text-[8px] font-black uppercase tracking-widest">Pagamento Pendente</span>
-                          </div>
-                        )}
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black text-[9px] uppercase tracking-widest px-6 rounded-xl h-10 shadow-glow-orange"
-                      onClick={() => handleEntitySelection(item, item._role)}
-                    >
-                      ACREDITAR
-                    </Button>
-                  </motion.div>
+
+                    <div className="flex items-center gap-3 relative z-10">
+                      {reg.checkedIn ? (
+                        <div className="flex flex-col items-end gap-2">
+                           <Badge className="bg-emerald-500/10 text-emerald-400 border-none px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase">
+                             PRESENTADO
+                           </Badge>
+                           <Button
+                              onClick={() => handleManualCheckIn(reg, 'check-out')}
+                              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-500/20"
+                           >
+                             <LogOut className="h-3 w-3" />
+                             Registrar Saída
+                           </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          disabled={loadingReg}
+                          onClick={() => handleManualCheckIn(reg, 'check-in')}
+                          className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-orange-coral/20 active:scale-95 transition-transform flex items-center gap-3"
+                        >
+                          Check-in <LogIn className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Gradient background decoration */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all" />
+                  </div>
                 ))
               ) : (
                 <div className="py-20 text-center opacity-20">
@@ -639,7 +435,7 @@ export function AdminCheckIn() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-          {[...(selectedSessionId === 'all' ? checkIns : sessionAttendance.filter(a => (a.sessionId || a.session_id) === selectedSessionId))]
+          {[...(selectedSessionId === 'all' ? checkIns : sessionAttendance.filter((a: any) => (a.sessionId || a.session_id) === selectedSessionId))]
             .sort((a, b) => new Date(b.timestamp || b.checkInAt).getTime() - new Date(a.timestamp || a.checkInAt).getTime())
             .slice(0, 9)
             .map((item, idx) => {
