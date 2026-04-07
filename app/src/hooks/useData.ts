@@ -71,13 +71,13 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
   // Specific mappings for Growth Experience projects (ge-*)
   if (isGE) {
     switch (entity) {
-      case 'registrations': return 'registrations';
+      case 'registrations': return 'growth_experience_registrations';
       case 'startups': return 'arena_pitch_startups';
       case 'companies': return 'b2b_business_rounds';
       case 'mentoring_sessions': return 'mentoring_sessions';
-      case 'mentors': return 'mentors';
+      case 'mentors': return 'growth_experience_mentors';
       case 'mentoring_waitlist': return 'mentoring_waitlist';
-      case 'sessions': return 'sessions';
+      case 'sessions': return 'event_schedule';
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_chat_messages': return 'b2b_chat_messages';

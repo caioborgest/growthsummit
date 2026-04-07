@@ -35,7 +35,9 @@ import {
   useStands,
   useStandCheckIns,
   useCertificates,
-  usePartnerTeam
+  usePartnerTeam,
+  useB2BMeetings,
+  useStartups
 } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
