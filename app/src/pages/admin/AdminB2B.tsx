@@ -17,7 +17,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import {
   Dialog,
@@ -87,7 +86,7 @@ export function AdminB2B() {
     linkedin_url: '',
 
     // Objetivos
-    interest_type: 'vender' as 'comprar' | 'vender' | 'parceria' | 'todos',
+    interest_type: 'sell' as 'buy' | 'sell' | 'partnership' | 'all',
     interest_areas: '',
     objectives_description: '',
     type: 'vendor' as 'anchor' | 'vendor',
@@ -216,7 +215,7 @@ export function AdminB2B() {
       produtos_servicos: '',
       site_url: '',
       linkedin_url: '',
-      interest_type: 'vender',
+      interest_type: 'sell',
       interest_areas: '',
       objectives_description: '',
       type: 'vendor',
@@ -500,20 +499,49 @@ export function AdminB2B() {
                             className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
                           >
                             <option value="">Selecione o setor</option>
-                            {['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Indústria', 'Serviços', 'Construção', 'Agronegócio', 'Alimentação', 'Logística', 'Consultoria', 'Marketing', 'Financeiro', 'Outro'].map(s => (
-                              <option key={s} value={s}>{s}</option>
+                            {[
+                              { v: 'technology', l: 'Tecnologia' },
+                              { v: 'health', l: 'Saúde' },
+                              { v: 'education', l: 'Educação' },
+                              { v: 'retail', l: 'Varejo' },
+                              { v: 'industry', l: 'Indústria' },
+                              { v: 'services', l: 'Serviços' },
+                              { v: 'construction', l: 'Construção' },
+                              { v: 'agribusiness', l: 'Agronegócio' },
+                              { v: 'food', l: 'Alimentação' },
+                              { v: 'logistics', l: 'Logística' },
+                              { v: 'consulting', l: 'Consultoria' },
+                              { v: 'marketing', l: 'Marketing' },
+                              { v: 'finance', l: 'Financeiro' },
+                              { v: 'other', l: 'Outro' }
+                            ].map(s => (
+                              <option key={s.v} value={s.v}>{s.l}</option>
                             ))}
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo B2B Participativo</label>
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Objetivo B2B *</label>
+                          <select
+                            required
+                            value={companyFormData.interest_type}
+                            onChange={e => setCompanyFormData({ ...companyFormData, interest_type: e.target.value as any })}
+                            className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
+                          >
+                            <option value="sell">Vender (Fornecer)</option>
+                            <option value="buy">Comprar (Âncora)</option>
+                            <option value="partnership">Parceria</option>
+                            <option value="all">Todos</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Tipo de Registro *</label>
                           <select
                             value={companyFormData.type}
                             onChange={e => setCompanyFormData({ ...companyFormData, type: e.target.value as 'anchor' | 'vendor' })}
                             className="w-full h-12 px-4 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-teal-500/50 transition-all appearance-none"
                           >
-                            <option value="vendor">Fornecedor (Vendedor)</option>
-                            <option value="anchor">Âncora (Comprador)</option>
+                            <option value="vendor">Operador (Fornecedor)</option>
+                            <option value="anchor">Comprador (Âncora)</option>
                           </select>
                         </div>
                       </div>

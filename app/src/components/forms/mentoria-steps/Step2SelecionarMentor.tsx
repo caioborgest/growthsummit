@@ -36,12 +36,14 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
     );
 
     // Group available slots by date
-    const slotsByDate: Record<string, string[]> = {};
+    const slotsByDate: Record<string, {time: string, id: string}[]> = {};
     availableSessionsForMentor.forEach(s => {
         const dateKey = new Date(s.scheduledAt).toISOString().split('T')[0];
         const timeKey = new Date(s.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         if (!slotsByDate[dateKey]) slotsByDate[dateKey] = [];
-        if (!slotsByDate[dateKey].includes(timeKey)) slotsByDate[dateKey].push(timeKey);
+        if (!slotsByDate[dateKey].some(item => item.time === timeKey)) {
+          slotsByDate[dateKey].push({ time: timeKey, id: s.id });
+        }
     });
 
     const dates = Object.keys(slotsByDate).sort();
@@ -50,8 +52,8 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
         async function fetchMentores() {
             try {
                 const { data, error } = await supabase
-                    .from('growth_experience_mentors')
-                    .select('id,project_id,user_id,nome,email,empresa,role_title,specialties,bio,photo_url,status,years_experience,max_mentorings')
+                    .from('mentors')
+                    .select('id,project_id,user_id,name,email,company,role_title,specialties,bio,photo_url,status,years_experience,max_mentorings')
                     .eq('project_id', projectId as any)
                     .in('status', ['aprovado', 'approved']);
 
@@ -74,9 +76,9 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                         id: m.id,
                         projectId: m.project_id,
                         userId: m.user_id,
-                        name: m.nome,
+                        name: m.name,
                         email: m.email,
-                        company: m.empresa,
+                        company: m.company,
                         position: m.role_title,
                         specialties: Array.isArray(specs) ? specs : [],
                         bio: m.bio,
@@ -149,13 +151,14 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                             const isSelected = tempMentorId === mentor.id;
                             
                             // Calcular avaliação média
+                            // Calcular avaliação média usando menteeRating
                             const mentorCompletedSessions = (allSessions || []).filter(s => 
                                 s.mentorId === mentor.id && 
                                 s.status === 'completed' && 
-                                s.feedback?.avaliacaoMentoria
+                                s.menteeRating !== null
                             );
                             
-                            const totalRating = mentorCompletedSessions.reduce((acc, s) => acc + (s.feedback?.avaliacaoMentoria || 0), 0);
+                            const totalRating = mentorCompletedSessions.reduce((acc, s) => acc + (s.menteeRating || 0), 0);
                             const avgRating = mentorCompletedSessions.length > 0 ? (totalRating / mentorCompletedSessions.length).toFixed(1) : null;
 
                             return (
@@ -228,18 +231,18 @@ export function Step2SelecionarMentor({ area, mentorSelecionadoId, slotSeleciona
                                                 {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', weekday: 'short' }).toUpperCase()}
                                             </p>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {slotsByDate[date].sort().map(time => {
-                                                    const isSelected = selectedFullSlot?.slotId === time && selectedFullSlot?.date === date;
+                                                {slotsByDate[date].sort((a,b) => a.time.localeCompare(b.time)).map(item => {
+                                                    const isSelected = selectedFullSlot?.slotId === item.id;
                                                     return (
                                                         <button
-                                                            key={`${date}-${time}`}
-                                                            onClick={() => setSelectedFullSlot({ slotId: time, date })}
+                                                            key={item.id}
+                                                            onClick={() => setSelectedFullSlot({ slotId: item.id, date })}
                                                             className={`px-3 py-2.5 rounded-xl text-[10px] font-black transition-all border ${isSelected
                                                                 ? 'bg-brand-orange-coral text-white border-brand-orange-coral shadow-glow-orange/20'
                                                                 : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10'
                                                                 }`}
                                                         >
-                                                            {time}
+                                                            {item.time}
                                                         </button>
                                                     );
                                                 })}

@@ -71,13 +71,13 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
   // Specific mappings for Growth Experience projects (ge-*)
   if (isGE) {
     switch (entity) {
-      case 'registrations': return 'growth_experience_registrations';
+      case 'registrations': return 'registrations';
       case 'startups': return 'arena_pitch_startups';
       case 'companies': return 'b2b_business_rounds';
-      case 'mentoring_sessions': return 'scheduled_mentorings';
-      case 'mentors': return 'growth_experience_mentors';
+      case 'mentoring_sessions': return 'mentoring_sessions';
+      case 'mentors': return 'mentors';
       case 'mentoring_waitlist': return 'mentoring_waitlist';
-      case 'sessions': return 'event_schedule';
+      case 'sessions': return 'sessions';
       case 'b2b_meetings': return 'b2b_meetings';
       case 'b2b_matches': return 'b2b_matches';
       case 'b2b_chat_messages': return 'b2b_chat_messages';
@@ -344,7 +344,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
       return 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,invested_amount,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,rated_at';
+      return 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentee_rating,rated_at';
     }
     if (entity === 'b2b_meetings') {
       // Remover company_a_id se estiver dando erro (pode ser company_a_id ou name_a em versões diferentes)

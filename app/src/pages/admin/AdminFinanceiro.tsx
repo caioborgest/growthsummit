@@ -168,20 +168,16 @@ export function AdminFinanceiro() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   const paidRegistrations = registrations.filter(r => 
-    r.payment_status === 'pago' || 
     r.payment_status === 'paid' || 
-    (r as any).paymentStatus === 'pago' ||
     (r as any).paymentStatus === 'paid' ||
-    r.status === 'paid' ||
-    r.status === 'pago' ||
-    r.status === 'ativo'
+    r.status === 'paid'
   );
   const paidRegistrationsCount = paidRegistrations.length;
   
   // Somar receita de inscrições individuais + Lotes Corporativos (Equipes)
   const individualRevenue = paidRegistrations.reduce((sum, r) => sum + (r.paid_amount || r.amount || 0), 0);
   const batchRevenue = (batches || [])
-    .filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago')
+    .filter(b => b.paymentStatus === 'paid')
     .reduce((sum, b) => sum + (Number(b.price) || 0), 0);
     
   const registrationRevenue = individualRevenue + batchRevenue;
@@ -190,7 +186,7 @@ export function AdminFinanceiro() {
     .reduce((sum, r) => sum + (r.discountAmount || 0), 0);
 
   const incentiveCompanyRevenue = (companies || [])
-    .filter(c => c.status === 'approved' || c.status === 'aprovado')
+    .filter(c => c.status === 'approved')
     .reduce((sum: number, c: EmpresaIncentivadora) => sum + (c.amount || 0), 0);
 
   const totalIncome = baseIncome + registrationRevenue + incentiveCompanyRevenue;

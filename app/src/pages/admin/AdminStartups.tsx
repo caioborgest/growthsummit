@@ -15,7 +15,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -40,6 +39,7 @@ const statusColors: Record<string, string> = {
 const stageLabels: Record<string, string> = {
   idea: 'Ideia',
   mvp: 'MVP',
+  validation: 'Validação',
   traction: 'Tração',
   scale: 'Scale',
 };
@@ -53,28 +53,28 @@ export function AdminStartups() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     // Fundador
-    founder_name: '',
+    founderName: '',
     email: '',
     phone: '',
-    senha: '',
-    confirmarSenha: '',
+    password: '',
+    confirmPassword: '',
 
     // Startup
-    startup_name: '',
-    startup_description: '',
-    setor: '',
-    estagio: 'mvp' as 'ideia' | 'mvp' | 'validacao' | 'tracao' | 'escala',
+    startupName: '',
+    startupDescription: '',
+    sector: '',
+    stage: 'mvp' as 'idea' | 'mvp' | 'validation' | 'traction' | 'scale',
 
     // Pitch
-    problema: '',
-    solucao: '',
-    diferencial: '',
-    faturamento_mensal: '',
-    investimento_buscado: '',
+    problem: '',
+    solution: '',
+    differential: '',
+    monthlyRevenue: '',
+    soughtInvestment: '',
 
     // URLs
-    pitch_deck_url: '',
-    video_pitch_url: '',
+    pitchDeckUrl: '',
+    videoPitchUrl: '',
     packageType: 'expo' as 'expo' | 'pitch'
   });
 
@@ -94,7 +94,7 @@ export function AdminStartups() {
     if (isSuperAdminFounder) return false;
 
     const matchesSearch =
-      (startup.startup_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (startup.startupName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.sector?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       (startup.foundingTeam?.[0]?.name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || startup.status === statusFilter;
@@ -104,34 +104,34 @@ export function AdminStartups() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!formData.startup_name || !formData.founder_name || !formData.email) {
+      if (!formData.startupName || !formData.founderName || !formData.email) {
         toast.error('Preencha os campos obrigatórios');
         return;
       }
 
-      if (formData.senha && formData.senha !== formData.confirmarSenha) {
+      if (formData.password && formData.password !== formData.confirmPassword) {
         toast.error('As senhas não coincidem');
         return;
       }
 
       await create({
         projectId: projectId || '',
-        startupName: formData.startup_name,
-        sector: formData.setor,
-        startupDescription: formData.startup_description,
-        stage: formData.estagio,
+        startupName: formData.startupName,
+        sector: formData.sector,
+        startupDescription: formData.startupDescription,
+        stage: formData.stage,
         status: 'approved',
-        foundingTeam: [{ name: formData.founder_name, role: 'Founder', email: formData.email, phone: formData.phone }],
+        foundingTeam: [{ name: formData.founderName, role: 'Founder', email: formData.email, phone: formData.phone }],
         packageType: formData.packageType,
         // Informações completas do Pitch
         metadata: {
-          problem: formData.problema,
-          solution: formData.solucao,
-          differential: formData.diferencial,
-          monthlyRevenue: formData.faturamento_mensal,
-          soughtInvestment: formData.investimento_buscado,
-          pitchDeckUrl: formData.pitch_deck_url,
-          videoPitchUrl: formData.video_pitch_url,
+          problem: formData.problem,
+          solution: formData.solution,
+          differential: formData.differential,
+          monthlyRevenue: formData.monthlyRevenue,
+          soughtInvestment: formData.soughtInvestment,
+          pitchDeckUrl: formData.pitchDeckUrl,
+          videoPitchUrl: formData.videoPitchUrl,
           founderEmail: formData.email,
           founderPhone: formData.phone
         }
@@ -148,22 +148,22 @@ export function AdminStartups() {
 
   const resetForm = () => {
     setFormData({
-      founder_name: '',
+      founderName: '',
       email: '',
       phone: '',
-      senha: '',
-      confirmarSenha: '',
-      startup_name: '',
-      startup_description: '',
-      setor: '',
-      estagio: 'mvp',
-      problema: '',
-      solucao: '',
-      diferencial: '',
-      faturamento_mensal: '',
-      investimento_buscado: '',
-      pitch_deck_url: '',
-      video_pitch_url: '',
+      password: '',
+      confirmPassword: '',
+      startupName: '',
+      startupDescription: '',
+      sector: '',
+      stage: 'mvp',
+      problem: '',
+      solution: '',
+      differential: '',
+      monthlyRevenue: '',
+      soughtInvestment: '',
+      pitchDeckUrl: '',
+      videoPitchUrl: '',
       packageType: 'expo'
     });
   };
@@ -256,8 +256,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</label>
                       <Input
                         required
-                        value={formData.founder_name}
-                        onChange={e => setFormData({ ...formData, founder_name: e.target.value })}
+                        value={formData.founderName}
+                        onChange={e => setFormData({ ...formData, founderName: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                         placeholder="Nome do fundador"
                       />
@@ -287,8 +287,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Senha para Conta</label>
                       <Input
                         type="password"
-                        value={formData.senha}
-                        onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                         placeholder="Crie uma senha"
                       />
@@ -297,8 +297,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Confirmar Senha</label>
                       <Input
                         type="password"
-                        value={formData.confirmarSenha}
-                        onChange={e => setFormData({ ...formData, confirmarSenha: e.target.value })}
+                        value={formData.confirmPassword}
+                        onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                         placeholder="Confirme a senha"
                       />
@@ -314,38 +314,50 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Startup *</label>
                       <Input
                         required
-                        value={formData.startup_name}
-                        onChange={e => setFormData({ ...formData, startup_name: e.target.value })}
+                        value={formData.startupName}
+                        onChange={e => setFormData({ ...formData, startupName: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Setor *</label>
                       <select
-                        value={formData.setor}
-                        onChange={e => setFormData({ ...formData, setor: e.target.value })}
+                        value={formData.sector}
+                        onChange={e => setFormData({ ...formData, sector: e.target.value })}
                         className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
                         required
                       >
                         <option value="">Selecione o setor</option>
-                        {['Tecnologia', 'Saúde', 'Educação', 'Fintech', 'E-commerce', 'Agronegócio', 'Logística', 'Marketing', 'Alimentação', 'Serviços', 'Outro'].map(s => (
-                          <option key={s} value={s}>{s}</option>
+                        {[
+                          { v: 'technology', l: 'Tecnologia' },
+                          { v: 'health', l: 'Saúde' },
+                          { v: 'education', l: 'Educação' },
+                          { v: 'fintech', l: 'Fintech' },
+                          { v: 'ecommerce', l: 'E-commerce' },
+                          { v: 'agribusiness', l: 'Agronegócio' },
+                          { v: 'logistics', l: 'Logística' },
+                          { v: 'marketing', l: 'Marketing' },
+                          { v: 'food', l: 'Alimentação' },
+                          { v: 'services', l: 'Serviços' },
+                          { v: 'other', l: 'Outro' }
+                        ].map(s => (
+                          <option key={s.v} value={s.v}>{s.l}</option>
                         ))}
                       </select>
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Estágio *</label>
                       <select
-                        value={formData.estagio}
-                        onChange={e => setFormData({ ...formData, estagio: e.target.value as any })}
+                        value={formData.stage}
+                        onChange={e => setFormData({ ...formData, stage: e.target.value as any })}
                         className="w-full h-12 px-4 py-2 bg-dark-100 border border-white/5 rounded-xl text-white font-bold text-sm focus:outline-none focus:border-brand-orange-coral/50 transition-all appearance-none"
                         required
                       >
-                        <option value="ideia">Ideia (ainda não validada)</option>
+                        <option value="idea">Ideia (ainda não validada)</option>
                         <option value="mvp">MVP (produto mínimo viável)</option>
-                        <option value="validacao">Validação (primeiros clientes)</option>
-                        <option value="tracao">Tração (crescimento consistente)</option>
-                        <option value="escala">Escala (expansão acelerada)</option>
+                        <option value="validation">Validação (primeiros clientes)</option>
+                        <option value="traction">Tração (crescimento consistente)</option>
+                        <option value="scale">Escala (expansão acelerada)</option>
                       </select>
                     </div>
                     <div className="space-y-2">
@@ -364,8 +376,8 @@ export function AdminStartups() {
                       <Textarea
                         required
                         maxLength={500}
-                        value={formData.startup_description}
-                        onChange={e => setFormData({ ...formData, startup_description: e.target.value })}
+                        value={formData.startupDescription}
+                        onChange={e => setFormData({ ...formData, startupDescription: e.target.value })}
                         className="bg-dark-100 border-white/5 text-white font-medium min-h-[100px] resize-none"
                         placeholder="Descreva sua startup..."
                       />
@@ -381,8 +393,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual problema você resolve? *</label>
                       <Textarea
                         required
-                        value={formData.problema}
-                        onChange={e => setFormData({ ...formData, problema: e.target.value })}
+                        value={formData.problem}
+                        onChange={e => setFormData({ ...formData, problem: e.target.value })}
                         className="bg-dark-100 border-white/5 text-white font-medium resize-none"
                       />
                     </div>
@@ -390,8 +402,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual é a sua solução? *</label>
                       <Textarea
                         required
-                        value={formData.solucao}
-                        onChange={e => setFormData({ ...formData, solucao: e.target.value })}
+                        value={formData.solution}
+                        onChange={e => setFormData({ ...formData, solution: e.target.value })}
                         className="bg-dark-100 border-white/5 text-white font-medium resize-none"
                       />
                     </div>
@@ -399,8 +411,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Qual seu diferencial? *</label>
                       <Textarea
                         required
-                        value={formData.diferencial}
-                        onChange={e => setFormData({ ...formData, diferencial: e.target.value })}
+                        value={formData.differential}
+                        onChange={e => setFormData({ ...formData, differential: e.target.value })}
                         className="bg-dark-100 border-white/5 text-white font-medium resize-none"
                       />
                     </div>
@@ -409,8 +421,8 @@ export function AdminStartups() {
                         <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Faturamento Mensal (R$)</label>
                         <Input
                           type="number"
-                          value={formData.faturamento_mensal}
-                          onChange={e => setFormData({ ...formData, faturamento_mensal: e.target.value })}
+                          value={formData.monthlyRevenue}
+                          onChange={e => setFormData({ ...formData, monthlyRevenue: e.target.value })}
                           className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                           placeholder="0.00"
                         />
@@ -419,8 +431,8 @@ export function AdminStartups() {
                         <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Investimento Buscado (R$)</label>
                         <Input
                           type="number"
-                          value={formData.investimento_buscado}
-                          onChange={e => setFormData({ ...formData, investimento_buscado: e.target.value })}
+                          value={formData.soughtInvestment}
+                          onChange={e => setFormData({ ...formData, soughtInvestment: e.target.value })}
                           className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                           placeholder="0.00"
                         />
@@ -437,8 +449,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link do Pitch Deck</label>
                       <Input
                         type="url"
-                        value={formData.pitch_deck_url}
-                        onChange={e => setFormData({ ...formData, pitch_deck_url: e.target.value })}
+                        value={formData.pitchDeckUrl}
+                        onChange={e => setFormData({ ...formData, pitchDeckUrl: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                         placeholder="https://..."
                       />
@@ -447,8 +459,8 @@ export function AdminStartups() {
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Link do Vídeo Pitch</label>
                       <Input
                         type="url"
-                        value={formData.video_pitch_url}
-                        onChange={e => setFormData({ ...formData, video_pitch_url: e.target.value })}
+                        value={formData.videoPitchUrl}
+                        onChange={e => setFormData({ ...formData, videoPitchUrl: e.target.value })}
                         className="h-12 bg-dark-100 border-white/5 text-white font-bold"
                         placeholder="https://..."
                       />
@@ -547,9 +559,9 @@ export function AdminStartups() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-white mb-1">{startup.startup_name || (startup as any).startupName}</h3>
+              <h3 className="text-lg font-semibold text-white mb-1">{startup.startupName}</h3>
               <p className="text-teal-400 text-sm mb-1">{startup.sector}</p>
-              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startup_description || (startup as any).startupDescription}</p>
+              <p className="text-gray-400 text-sm mb-4 line-clamp-2">{startup.startupDescription}</p>
 
               {/* Metrics */}
               {startup.metrics && (

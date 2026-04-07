@@ -84,7 +84,7 @@ export const raffleService = {
   async getParticipants(raffleId: string) {
     const { data, error } = await supabase
       .from('raffle_participants')
-      .select('*, growth_experience_registrations(id, nome, email)')
+      .select('*, growth_experience_registrations(id, name, email)')
       .eq('raffle_id' as any, raffleId);
     if (error) throw error;
     return data;

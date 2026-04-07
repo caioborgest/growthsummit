@@ -185,32 +185,87 @@ export const registrationService = {
      * Lists registrations by project and optional filters
      */
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
-        let query: any = supabase.from('growth_experience_registrations' as any);
+        let query: any = supabase.from('registrations');
         
-        query = query.select('id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,event_name,app_installed');
+        // Select fields from registrations and join with users for contact info
+        query = query.select(`
+            id,
+            project_id,
+            user_id,
+            ticket_number,
+            status,
+            payment_status,
+            final_amount,
+            checked_in,
+            check_in_at,
+            created_at,
+            ticket_type,
+            qr_code,
+            users (
+                name,
+                email,
+                phone
+            )
+        `);
+        
         query = query.eq('project_id', projectId);
 
-        if (filters.email) query = query.eq('email', filters.email);
+        if (filters.email) query = query.eq('users.email', filters.email);
         if (filters.status) query = query.eq('status', filters.status);
 
         const { data, error } = await query;
         if (error) throw error;
-        return data as any[];
+        
+        // Flatten data to maintain compatibility with existing components
+        return (data as any[]).map(reg => ({
+            ...reg,
+            name: reg.users?.name,
+            email: reg.users?.email,
+            phone: reg.users?.phone,
+            paid_amount: reg.final_amount // Map final_amount to paid_amount for compatibility
+        }));
     },
 
     /**
      * Gets a registration by ID
      */
     async getById(id: string) {
-        const query: any = supabase.from('growth_experience_registrations' as any);
-        
-        const { data, error } = await query
-            .select('id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,selected_courses,night_lectures,registration_type,qr_code,qr_code_data,event_name,app_installed')
+        const { data, error } = await supabase
+            .from('registrations')
+            .select(`
+                id,
+                project_id,
+                user_id,
+                ticket_number,
+                status,
+                payment_status,
+                final_amount,
+                checked_in,
+                check_in_at,
+                created_at,
+                ticket_type,
+                qr_code,
+                qr_code_data,
+                users (
+                    name,
+                    email,
+                    phone
+                )
+            `)
             .eq('id', id)
             .single();
             
         if (error) throw error;
-        return data;
+
+        // Flatten data
+        const reg = data as any;
+        return {
+            ...reg,
+            name: reg.users?.name,
+            email: reg.users?.email,
+            phone: reg.users?.phone,
+            paid_amount: reg.final_amount
+        };
     },
     isValidUUID(id: any): id is string {
         return (

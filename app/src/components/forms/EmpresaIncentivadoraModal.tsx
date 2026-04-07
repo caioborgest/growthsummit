@@ -42,13 +42,13 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
     useEffect(() => {
         if (editingData) {
             setFormData({
-                nomeResponsavel: editingData.nomeResponsavel || '',
+                nomeResponsavel: editingData.responsibleName || '',
                 email: editingData.email || '',
-                phone: editingData.phone || editingData.phone || '',
-                nomeEmpresa: editingData.nomeEmpresa || '',
-                quantidadeNoite: String(editingData.quantidadeNoite || '0'),
+                phone: editingData.phone || '',
+                nomeEmpresa: editingData.companyName || '',
+                quantidadeNoite: String(editingData.nightQuantity || '0'),
                 objetivo: editingData.objetivo || '',
-                amount: String(editingData.amount || editingData.valorInvestido || '0')
+                amount: String(editingData.investedAmount || '0')
             });
         } else {
             clearDraft();
@@ -132,19 +132,19 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                 night_quantity: parseInt(formData.quantidadeNoite) || 0,
                 objetivo: formData.objetivo,
                 invested_amount: parseFloat(formData.amount) || 0,
-                status: isAdmin ? (editingData?.status || 'aprovado') : 'pendente'
+                status: isAdmin ? (editingData?.status || 'approved') : 'pending'
             };
 
             if (editingData?.id) {
                 const { error: dbError } = await (supabase as any)
-                    .from('incentive_company_registrations')
+                    .from('empresas_incentivadoras')
                     .update(dbData)
                     .eq('id', editingData.id);
                 if (dbError) throw dbError;
                 logger.info('Empresa atualizada com sucesso');
             } else {
                 const { error: dbError } = await (supabase as any)
-                    .from('incentive_company_registrations')
+                    .from('empresas_incentivadoras')
                     .insert([dbData]);
                 if (dbError) throw dbError;
                 logger.info('Nova empresa inserida com sucesso');

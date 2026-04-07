@@ -38,15 +38,15 @@ const typeLabels: Record<string, string> = {
 };
 
 const categoryLabels: Record<string, string> = {
-  permuta: 'Permuta',
-  investimento: 'Investimento',
-  misto: 'Misto',
+  barter: 'Permuta',
+  investment: 'Investimento',
+  mixed: 'Misto',
 };
 
 const categoryColors: Record<string, string> = {
-  permuta: 'bg-blue-500/20 text-blue-400 border-blue-500/20',
-  investimento: 'bg-green-500/20 text-green-400 border-green-500/20',
-  misto: 'bg-purple-500/20 text-purple-400 border-purple-500/20',
+  barter: 'bg-blue-500/20 text-blue-400 border-blue-500/20',
+  investment: 'bg-green-500/20 text-green-400 border-green-500/20',
+  mixed: 'bg-purple-500/20 text-purple-400 border-purple-500/20',
 };
 
 export default function AdminParceiros() {
@@ -68,7 +68,7 @@ export default function AdminParceiros() {
     name: '',
     cnpj: '',
     type: 'institutional' as any,
-    category: 'permuta' as any,
+    category: 'barter' as any,
     contactName: '',
     contactEmail: '',
     contactPhone: '',
@@ -100,7 +100,7 @@ export default function AdminParceiros() {
         name: partner.name || '',
         cnpj: partner.cnpj || '',
         type: partner.type || 'institutional',
-        category: partner.category || 'permuta',
+        category: partner.category || 'barter',
         contactName: partner.contactName || '',
         contactEmail: partner.contactEmail || '',
         contactPhone: partner.contactPhone || '',
@@ -120,7 +120,7 @@ export default function AdminParceiros() {
         name: '',
         cnpj: '',
         type: 'institutional',
-        category: 'permuta',
+        category: 'barter',
         contactName: '',
         contactEmail: '',
         contactPhone: '',
@@ -174,9 +174,9 @@ export default function AdminParceiros() {
 
   const stats = useMemo(() => ({
     total: partners.length,
-    permuta: partners.filter(p => p.category === 'permuta').length,
-    investimento: partners.filter(p => p.category === 'investimento').length,
-    misto: partners.filter(p => p.category === 'misto').length,
+    barter: partners.filter(p => p.category === 'barter').length,
+    investment: partners.filter(p => p.category === 'investment').length,
+    mixed: partners.filter(p => p.category === 'mixed').length,
   }), [partners]);
 
   return (
@@ -191,9 +191,9 @@ export default function AdminParceiros() {
         <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total', value: stats.total, icon: Handshake, color: 'orange' },
-            { label: 'Permuta', value: stats.permuta, icon: Zap, color: 'blue' },
-            { label: 'Investimento', value: stats.investimento, icon: Building2, color: 'green' },
-            { label: 'Misto', value: stats.misto, icon: Filter, color: 'purple' },
+            { label: 'Permuta', value: stats.barter, icon: Zap, color: 'blue' },
+            { label: 'Investimento', value: stats.investment, icon: Building2, color: 'green' },
+            { label: 'Misto', value: stats.mixed, icon: Filter, color: 'purple' },
           ].map((stat, i) => (
             <div key={i} className="glass-card p-4 flex items-center gap-4 border-white/5">
               <div className={`p-2 rounded-xl bg-brand-${stat.color}-coral/10 text-brand-${stat.color}-coral`}>

@@ -231,7 +231,7 @@ export default function AdminBatches() {
                     { label: 'Total de Lotes', value: batches.length, icon: Building2, color: 'blue' },
                     { label: 'Vagas Vendidas', value: batches.reduce((sum, b) => sum + b.total_slots, 0), icon: Users, color: 'emerald' },
                     { label: 'Vagas Utilizadas', value: batches.reduce((sum, b) => sum + b.used_slots, 0), icon: Ticket, color: 'orange' },
-                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago').reduce((sum, b) => sum + Number(b.price), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
+                    { label: 'Receita Equipes', value: `R$ ${batches.filter(b => b.paymentStatus === 'paid').reduce((sum, b) => sum + Number(b.price), 0).toLocaleString()}`, icon: TrendingDown, color: 'purple' },
                 ].map((stat, i) => (
                     <div key={i} className="glass-card p-6 border-l-4 border-brand-orange-coral shadow-lg">
                         <div className="flex items-start justify-between">
@@ -297,13 +297,12 @@ export default function AdminBatches() {
                                     </td>
                                     <td className="px-6 py-5" data-label="Status">
                                         <Badge className={`font-black text-[10px] uppercase tracking-widest px-3 py-1 ${
-                                            (batch.paymentStatus === 'paid' || batch.paymentStatus === 'pago') ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                (batch.paymentStatus === 'pending' || batch.paymentStatus === 'pendente') ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
-                                                    'bg-red-500/10 text-red-500 border-red-500/20'
+                                            batch.paymentStatus === 'paid' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                            batch.paymentStatus === 'cancelled' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                         }`}>
-                                            {(batch.paymentStatus === 'paid' || batch.paymentStatus === 'pago' ? 'PAGO' : 
-                                              batch.paymentStatus === 'pending' || batch.paymentStatus === 'pendente' ? 'PENDENTE' : 
-                                              'CANCELADO')}
+                                            {batch.paymentStatus === 'paid' ? 'Paid' : 
+                                             batch.paymentStatus === 'cancelled' ? 'Cancelled' : 'Pending'}
                                         </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-right">

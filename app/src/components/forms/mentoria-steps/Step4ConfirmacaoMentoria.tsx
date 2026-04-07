@@ -19,10 +19,10 @@ interface Step4ConfirmacaoMentoriaProps {
 
 interface Mentor {
     id: string;
-    nome: string;
+    name: string;
     photo_url?: string;
     email?: string;
-    empresa?: string;
+    company?: string;
     role_title?: string;
 }
 
@@ -38,8 +38,8 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
         async function fetchMentor() {
             try {
                 const { data, error } = await supabase
-                    .from('growth_experience_mentors')
-                    .select('id,nome,email,empresa,role_title,specialties,bio,photo_url')
+                    .from('mentors')
+                    .select('id,name,email,company,role_title,specialties,bio,photo_url')
                     .eq('id', dados.mentorId)
                     .single();
 
@@ -139,14 +139,14 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 scheduled_date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
             }
 
-            const mentoriasTable = supabase.from('scheduled_mentorings' as any) as any;
+            const mentoriasTable = supabase.from('mentoring_sessions' as any) as any;
 
             // 1. First, check if there's an existing available slot (mentor habilitou esse horário)
             const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
             const { data: existingSlots } = await mentoriasTable
                 .select('id')
                 .eq('mentor_id', dados.mentorId)
-                .eq('mentoring_date', scheduled_date.toISOString())
+                .eq('scheduled_at', scheduled_date.toISOString())
                 .or(`mentee_id.is.null,mentee_id.eq.${PLACEHOLDER_ID}`)
                 .eq('status', 'scheduled')
                 .limit(1);
@@ -159,15 +159,10 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                 mentoriaResult = await mentoriasTable
                     .update({
                         mentee_id: userId || null,
-                        mentee_name: dados.name,
-                        mentee_email: dados.email,
-                        mentee_phone: dados.phone,
                         topic_of_interest: dados.area,
                         notes: dados.problemDescription,
-                        startup_name: dados.businessName,
-                        setor: dados.businessStage,
                         status: 'scheduled',
-                        duracao: 20
+                        duration: 20
                     })
                     .eq('id', slotToUpdate)
                     .select();
@@ -178,16 +173,11 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                         project_id: projectId,
                         mentee_id: userId || null,
                         mentor_id: dados.mentorId,
-                        mentee_name: dados.name,
-                        mentee_email: dados.email,
-                        mentee_phone: dados.phone,
                         topic_of_interest: dados.area,
                         notes: dados.problemDescription,
-                        mentoring_date: scheduled_date.toISOString(),
-                        startup_name: dados.businessName,
-                        setor: dados.businessStage,
+                        scheduled_at: scheduled_date.toISOString(),
                         status: 'scheduled',
-                        duracao: 20
+                        duration: 20
                     })
                     .select();
             }
@@ -203,10 +193,11 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                   html: `
                     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                       <h1 style="color: #ff7043;">Novo Agendamento Confirmado!</h1>
-                      <p>Olá, <strong>${mentor.nome}</strong>!</p>
+                      <p>Olá, <strong>${mentor.name}</strong>!</p>
                       <p>Um novo participante agendou uma mentoria com você.</p>
                       <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 25px 0;">
                         <p style="margin: 0 0 10px 0;"><strong>Participante:</strong> ${dados.name}</p>
+                        <p style="margin: 0 0 10px 0;"><strong>Empresa:</strong> ${dados.businessName}</p>
                         <p style="margin: 0 0 10px 0;"><strong>Data:</strong> ${scheduled_date.toLocaleDateString('pt-BR')}</p>
                         <p style="margin: 0 0 10px 0;"><strong>Hora:</strong> ${timeSlotLabel}</p>
                         <p style="margin: 0;"><strong>Tipo:</strong> Participante</p>
@@ -300,7 +291,7 @@ export function Step4ConfirmacaoMentoria({ dados, onConfirmar, onVoltar }: Step4
                                 )}
                             </div>
                             <div>
-                                <p className="text-white font-black text-lg sm:text-xl tracking-tight leading-none mb-1">{mentor?.nome}</p>
+                                <p className="text-white font-black text-lg sm:text-xl tracking-tight leading-none mb-1">{mentor?.name}</p>
                                 <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-brand-orange-coral/20 uppercase text-[9px] font-black">{dados.area}</Badge>
                             </div>
                         </div>

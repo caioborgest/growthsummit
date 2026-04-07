@@ -68,21 +68,21 @@ export function AdminMentorias() {
     const active = sessions.filter(s => {
       const start = new Date(s.scheduledAt);
       const end = new Date(start.getTime() + (s.duration || 20) * 60000);
-      return now >= start && now <= end && (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId;
+      return now >= start && now <= end && s.status === 'scheduled' && s.menteeId;
     }).length;
 
     return {
       total: sessions.length,
-      scheduled: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && s.menteeId && s.menteeId !== PLACEHOLDER_ID).length,
-      available: sessions.filter(s => (s.status === 'scheduled' || s.status === 'agendado') && (!s.menteeId || s.menteeId === PLACEHOLDER_ID)).length,
-      pending: sessions.filter(s => s.status === 'pendente' || s.status === 'pending').length,
-      completed: sessions.filter(s => s.status === 'completed' || s.status === 'concluído' || s.status === 'concluido').length,
+      scheduled: sessions.filter(s => s.status === 'scheduled' && s.menteeId && s.menteeId !== PLACEHOLDER_ID).length,
+      available: sessions.filter(s => s.status === 'scheduled' && (!s.menteeId || s.menteeId === PLACEHOLDER_ID)).length,
+      pending: sessions.filter(s => s.status === 'pending').length,
+      completed: sessions.filter(s => s.status === 'completed').length,
       active,
       waitlist: waitlist.filter(w => w.status === 'pending').length,
       avgRating: sessions
-        .filter(s => s.mentoringRating || s.feedback?.avaliacaoMentoria)
-        .reduce((acc, s) => acc + (s.mentoringRating || s.feedback?.avaliacaoMentoria || 0), 0) /
-        (sessions.filter(s => s.mentoringRating || s.feedback?.avaliacaoMentoria).length || 1),
+        .filter(s => s.menteeRating || s.feedback?.mentoringRating)
+        .reduce((acc, s) => acc + (s.menteeRating || s.feedback?.mentoringRating || 0), 0) /
+        (sessions.filter(s => s.menteeRating || s.feedback?.mentoringRating).length || 1),
     };
   }, [sessions, waitlist]);
 
@@ -594,9 +594,9 @@ export function AdminMentorias() {
                       </td>
                       <td className="p-6" data-label="Avalia.">
                         <div className="flex lg:justify-center">
-                           {(session.mentoringRating || session.feedback?.avaliacaoMentoria) ? (
+                           {(session.menteeRating || session.feedback?.mentoringRating) ? (
                              <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded-lg border border-yellow-500/20">
-                               <span className="font-black text-xs">{session.mentoringRating || session.feedback?.avaliacaoMentoria}</span>
+                               <span className="font-black text-xs">{session.menteeRating || session.feedback?.mentoringRating}</span>
                                <Star className="h-3 w-3 fill-yellow-500" />
                              </div>
                            ) : <span className="text-gray-700">-</span>}

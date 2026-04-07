@@ -124,7 +124,7 @@ export default function AdminSorteio() {
     let counter = 0;
     const interval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * participants.length);
-      setScrollingName(participants[randomIndex].nome || 'Sorteando...');
+      setScrollingName(participants[randomIndex].name || 'Sorteando...');
       counter++;
       
       if (counter > 30) {
@@ -227,7 +227,7 @@ export default function AdminSorteio() {
                 {raffle.status === 'completed' && (
                     <div className="flex-1 bg-teal-500/10 rounded-xl p-3 border border-teal-500/20">
                         <p className="text-[8px] font-black text-teal-500 uppercase tracking-widest mb-1">🏅 GANHADOR</p>
-                        <p className="text-white font-bold text-xs truncate">{(inscricoes.find(i => i.id === raffle.winnerRegistrationId) as any)?.nome || 'ID: ' + raffle.winnerRegistrationId?.slice(0,8)}</p>
+                        <p className="text-white font-bold text-xs truncate">{(inscricoes.find(i => i.id === raffle.winnerRegistrationId) as any)?.name || 'ID: ' + raffle.winnerRegistrationId?.slice(0,8)}</p>
                     </div>
                 )}
                 <Button 

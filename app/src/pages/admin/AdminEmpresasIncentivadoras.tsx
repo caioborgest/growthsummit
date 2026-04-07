@@ -25,9 +25,6 @@ const statusColors: Record<string, string> = {
     approved: 'bg-green-500/20 text-green-400',
     pending: 'bg-yellow-500/20 text-yellow-400',
     rejected: 'bg-red-500/20 text-red-400',
-    aprovado: 'bg-green-500/20 text-green-400', // Backward compatibility
-    pendente: 'bg-yellow-500/20 text-yellow-400',
-    rejeitado: 'bg-red-500/20 text-red-400',
 };
 
 export default function AdminEmpresasIncentivadoras() {
@@ -52,18 +49,18 @@ export default function AdminEmpresasIncentivadoras() {
 
         const q = searchQuery.toLowerCase();
         return (
-            (emp.nomeEmpresa?.toLowerCase() || '').includes(q) ||
-            (emp.nomeResponsavel?.toLowerCase() || '').includes(q) ||
+            (emp.companyName?.toLowerCase() || '').includes(q) ||
+            (emp.responsibleName?.toLowerCase() || '').includes(q) ||
             (emp.email?.toLowerCase() || '').includes(q)
         );
     });
 
     // Calcular Ranking (Apenas aprovados)
     const ranking = [...(empresas || [])]
-        .filter(emp => (emp.status as string) === 'approved' || (emp.status as string) === 'aprovado')
+        .filter(emp => (emp.status as string) === 'approved')
         .map(emp => ({
             ...emp,
-            score: (emp.quantidadeDia || 0) + (emp.quantidadeNoite || 0)
+            score: (emp.dayQuantity || 0) + (emp.nightQuantity || 0)
         }))
         .sort((a, b) => b.score - a.score)
         .slice(0, 3);
@@ -144,7 +141,7 @@ export default function AdminEmpresasIncentivadoras() {
                                     {index + 1}º
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-white truncate">{emp.nomeEmpresa}</h4>
+                                    <h4 className="font-bold text-white truncate">{emp.companyName}</h4>
                                     <p className="text-xs text-gray-400 flex items-center gap-1">
                                         <TrendingUp className="h-3 w-3 text-teal-400" />
                                         {emp.score} pontos totais
@@ -203,33 +200,33 @@ export default function AdminEmpresasIncentivadoras() {
                         </div>
 
                         <div>
-                            <h3 className="text-xl font-bold text-white mb-1">{emp.nomeEmpresa}</h3>
+                            <h3 className="text-xl font-bold text-white mb-1">{emp.companyName}</h3>
                             <div className="grid grid-cols-2 gap-2 mt-3">
                                 <div className="bg-teal-500/5 rounded-lg p-2 border border-teal-500/10">
                                     <p className="text-[10px] uppercase font-black text-teal-400/60 leading-none mb-1">Dia</p>
-                                    <p className="text-lg font-bold text-white leading-none">{emp.quantidadeDia || 0}</p>
+                                    <p className="text-lg font-bold text-white leading-none">{emp.dayQuantity || 0}</p>
                                 </div>
                                 <div className="bg-brand-orange-coral/5 rounded-lg p-2 border border-brand-orange-coral/10">
                                     <p className="text-[10px] uppercase font-black text-brand-orange-coral/60 leading-none mb-1">Noite</p>
-                                    <p className="text-lg font-bold text-white leading-none">{emp.quantidadeNoite || 0}</p>
+                                    <p className="text-lg font-bold text-white leading-none">{emp.nightQuantity || 0}</p>
                                 </div>
                             </div>
                             <div className="bg-teal-500/10 rounded-lg p-3 border border-teal-500/20 mt-2">
                                 <p className="text-[10px] uppercase font-black text-teal-400 mb-1 leading-none">Investimento</p>
                                 <p className="text-xl font-bold text-white leading-none">
-                                    {(emp.amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                    {(emp.investedAmount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                 </p>
                             </div>
                             <p className="text-gray-500 text-[10px] uppercase font-black tracking-widest mt-3 flex items-center">
                                 <Users className="h-3 w-3 mr-1 text-teal-400" />
-                                Engajamento Total: {(emp.quantidadeDia || 0) + (emp.quantidadeNoite || 0)}
+                                Engajamento Total: {(emp.dayQuantity || 0) + (emp.nightQuantity || 0)}
                             </p>
                         </div>
 
                         <div className="space-y-2 py-4 border-y border-white/5">
                             <div className="flex items-center text-sm text-gray-300">
                                 <Building2 className="h-4 w-4 mr-3 text-brand-orange-coral" />
-                                <span>{emp.nomeResponsavel}</span>
+                                <span>{emp.responsibleName}</span>
                             </div>
                             <div className="flex items-center text-sm text-gray-300">
                                 <Mail className="h-4 w-4 mr-3 text-brand-orange-coral" />
@@ -247,7 +244,7 @@ export default function AdminEmpresasIncentivadoras() {
                         </div>
 
                         <div className="flex gap-2 pt-4">
-                            {((emp.status as string) === 'pendente' || (emp.status as string) === 'pending') && (
+                            {(emp.status as string) === 'pending' && (
                                 <>
                                     <Button
                                         size="sm"

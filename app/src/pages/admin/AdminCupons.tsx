@@ -29,14 +29,14 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
 const typeConfig: Record<Coupon['referralType'], { label: string; color: string }> = {
-    promocional: { label: 'Promocional', color: 'bg-blue-500/20 text-blue-400' },
-    empresa: { label: 'Empresa / Equipe', color: 'bg-teal-500/20 text-teal-400' },
-    prefeitura: { label: 'Prefeitura', color: 'bg-orange-500/20 text-orange-400' },
-    politico: { label: 'Liderança Política', color: 'bg-purple-500/20 text-purple-400' },
-    influenciador: { label: 'Influenciador', color: 'bg-pink-500/20 text-pink-400' },
-    associacao: { label: 'Associação', color: 'bg-yellow-500/20 text-yellow-500' },
-    instituicao: { label: 'Instituição', color: 'bg-indigo-500/20 text-indigo-400' },
-    outro: { label: 'Outro', color: 'bg-gray-500/20 text-gray-400' },
+    promotional: { label: 'Promocional', color: 'bg-blue-500/20 text-blue-400' },
+    company: { label: 'Empresa / Equipe', color: 'bg-teal-500/20 text-teal-400' },
+    government: { label: 'Government', color: 'bg-orange-500/20 text-orange-400' },
+    political: { label: 'Liderança Política', color: 'bg-purple-500/20 text-purple-400' },
+    influencer: { label: 'Influenciador', color: 'bg-pink-500/20 text-pink-400' },
+    association: { label: 'Associação', color: 'bg-yellow-500/20 text-yellow-500' },
+    institution: { label: 'Instituição', color: 'bg-indigo-500/20 text-indigo-400' },
+    other: { label: 'Outro', color: 'bg-gray-500/20 text-gray-400' },
 };
 
 export default function AdminCupons() {
@@ -50,7 +50,7 @@ export default function AdminCupons() {
 
     const [formData, setFormData] = useState({
         code: '',
-        referralType: 'promocional' as Coupon['referralType'],
+        referralType: 'promotional' as Coupon['referralType'],
         referralName: '',
         discountPercentage: 100,
         usageLimit: '',
@@ -138,7 +138,7 @@ export default function AdminCupons() {
         setEditingCoupon(null);
         setFormData({
             code: '',
-            referralType: 'promocional',
+            referralType: 'promotional',
             referralName: '',
             discountPercentage: 100,
             usageLimit: '',

@@ -1,4 +1,4 @@
-import { Users, Sparkles, CheckCircle2, Star, MapPin, Calendar, Clock, AlertCircle, MessageSquare, Search } from 'lucide-react';
+import { Sparkles, CheckCircle2, Star, MapPin, Calendar, Clock, AlertCircle, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -54,15 +54,15 @@ export function MentorshipSection({
                             <div key={mentorship.id} className="glass-card p-6 border-l-4 border-brand-orange-coral">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 uppercase font-black text-white flex items-center justify-center text-xl">
-                                            {mentorship.mentorAvatar ? (
-                                                <img src={mentorship.mentorAvatar} alt={mentorship.mentorName} className="w-full h-full object-cover" />
+                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 uppercase font-black text-white flex items-center justify-center text-xl border border-white/5 shadow-2xl">
+                                            {mentorship.mentors?.photoUrl ? (
+                                                <img src={mentorship.mentors.photoUrl} alt={mentorship.mentors?.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                mentorship.mentorName?.substring(0, 2)
+                                                (mentorship.mentors?.name || 'M')?.substring(0, 2)
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className="font-black text-white uppercase tracking-tight">{mentorship.mentorName}</h4>
+                                            <h4 className="font-black text-white uppercase tracking-tight">{mentorship.mentors?.name || 'Mentor'}</h4>
                                             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{mentorship.topicOfInterest || 'Mentoria Estratégica'}</p>
                                         </div>
                                     </div>
@@ -132,15 +132,15 @@ export function MentorshipSection({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-black text-white">
-                                            {slot.mentorAvatar ? (
-                                                <img src={slot.mentorAvatar} alt={slot.mentorName} className="w-full h-full object-cover" />
+                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-black text-white border border-white/5">
+                                            {slot.mentors?.photoUrl ? (
+                                                <img src={slot.mentors.photoUrl} alt={slot.mentors?.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                slot.mentorName?.substring(0, 2)
+                                                (slot.mentors?.name || 'M')?.substring(0, 2)
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-white text-sm uppercase tracking-tight">{slot.mentorName}</h4>
+                                            <h4 className="font-bold text-white text-sm uppercase tracking-tight">{slot.mentors?.name || 'Mentor Disponível'}</h4>
                                             <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest">Especialista</p>
                                         </div>
                                     </div>
@@ -192,13 +192,13 @@ export function MentorshipSection({
                                 <div className="flex items-center gap-4">
                                     <CheckCircle2 className={`h-5 w-5 ${m.status === 'completed' ? 'text-teal-400' : 'text-gray-600'}`} />
                                     <div>
-                                        <h4 className="text-sm font-bold text-white uppercase tracking-tight">{m.mentorName}</h4>
+                                        <h4 className="text-sm font-bold text-white uppercase tracking-tight">{m.mentors?.name || 'Mentor'}</h4>
                                         <p className="text-[10px] text-gray-500 uppercase font-black">{new Date(m.scheduledAt).toLocaleDateString('pt-BR')}</p>
                                     </div>
                                 </div>
-                                {m.status === 'completed' && !m.feedback ? (
+                                {m.status === 'completed' && !m.menteeRating ? (
                                     <Button 
-                                        onClick={() => setRatingModal({ isOpen: true, mentorshipId: m.id, mentorName: m.mentorName })}
+                                        onClick={() => setRatingModal({ isOpen: true, mentorshipId: m.id, mentorName: m.mentors?.name || 'Mentor' })}
                                         className="h-8 px-4 bg-teal-500 hover:bg-teal-600 text-dark-500 font-black text-[9px] rounded-lg"
                                     >
                                         AVALIAR
@@ -206,7 +206,7 @@ export function MentorshipSection({
                                 ) : (
                                     <div className="flex gap-1 text-teal-400">
                                         {[1, 2, 3, 4, 5].map(s => (
-                                            <Star key={s} className={`h-3 w-3 ${m.feedback?.rating >= s ? 'fill-current' : 'opacity-20'}`} />
+                                            <Star key={s} className={`h-3 w-3 ${m.menteeRating >= s ? 'fill-current' : 'opacity-20'}`} />
                                         ))}
                                     </div>
                                 )}

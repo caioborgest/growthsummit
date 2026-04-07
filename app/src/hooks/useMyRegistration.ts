@@ -33,55 +33,49 @@ export interface MyRegistration {
     checkInTime?: string;
 }
 
-const GE_TABLES: Record<string, string> = {
-    'growth-experience-triunfo': 'growth_experience_registrations',
-    'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'growth_experience_registrations',
-    'ge-petrolina-2026': 'growth_experience_registrations',
-    'b2c3d4e5-f6a7-8901-bcde-f12345678901': 'growth_experience_registrations',
-};
+// No longer needs specialized tables per project, as everything is now in the unified 'registrations' table
+const PRIMARY_TABLE = 'registrations';
 
-function getTable(projectId: string): string {
-    return GE_TABLES[projectId] || 'growth_experience_registrations';
-}
+function mapRow(row: Record<string, any>): MyRegistration {
+    // If it's a join result, the user data is in row.users
+    const userData = row.users || {};
+    const name = userData.name || row.name || row.nome;
+    const email = userData.email || row.email;
+    const phone = userData.phone || row.phone || row.telefone;
 
-function mapRow(row: Record<string, unknown>): MyRegistration {
-    const isProType = (row['registration_type'] as string || '').toLowerCase() === 'pro' || (row['registration_type'] as string || '').toLowerCase() === 'vip';
-    const statusPagamento = (row['payment_status'] as string || '').toLowerCase();
-    const st = (row['status'] as string || '').toLowerCase();
+    const ticketType = (row.ticket_type as string || '').toLowerCase();
+    const isProType = ticketType === 'pro' || ticketType === 'vip';
+    const statusPagamento = (row.payment_status as string || '').toLowerCase();
+    const st = (row.status as string || '').toLowerCase();
     
     // Determine if actually paid
     const isActuallyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
                           st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado' ||
-                          (row['is_paid'] === true);
+                          (row.is_paid === true);
 
     return {
-        id: row['id'] as string,
-        userId: (row['user_id'] as string) || undefined,
-        email: (row['email'] as string) || undefined,
-        nome: (row['name'] as string) || (row['nome'] as string) || undefined,
-        name: (row['name'] as string) || (row['nome'] as string) || undefined,
-        phone: (row['phone'] as string) || (row['telefone'] as string) || undefined,
-        tipoInscricao: (row['registration_type'] as string) || undefined,
-        ticketType: (row['registration_type'] as string) || undefined,
-        status: (row['status'] as string) || undefined,
-        statusPagamento: (row['payment_status'] as string) || undefined,
-        // Pro if explicitly true OR if it's a Pro ticket and it's paid
-        palestrasNoturnas: Array.isArray(row['night_lectures'])
-            ? row['night_lectures'].length > 0
-            : Boolean(row['night_lectures']) || 
-              (isProType && isActuallyPaid) || 
-              ((row['project_id'] === 'growth-experience-triunfo' || row['project_id'] === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') && isActuallyPaid),
-        cursosSelecionados: Array.isArray(row['selected_courses'])
-            ? (row['selected_courses'] as string[])
+        id: row.id as string,
+        userId: (row.user_id as string) || undefined,
+        email: email || undefined,
+        nome: name || undefined,
+        name: name || undefined,
+        phone: phone || undefined,
+        tipoInscricao: row.ticket_type as string || undefined,
+        ticketType: row.ticket_type as string || undefined,
+        status: row.status as string || undefined,
+        statusPagamento: row.payment_status as string || undefined,
+        palestrasNoturnas: Boolean(row.night_lectures) || (isProType && isActuallyPaid),
+        cursosSelecionados: Array.isArray(row.selected_courses)
+            ? (row.selected_courses as string[])
             : [],
-        valorPago: (row['paid_amount'] as number) || 0,
-        amount: (row['paid_amount'] as number) || 0,
-        projectId: (row['project_id'] as string) || undefined,
-        createdAt: (row['created_at'] as string) || undefined,
+        valorPago: (row.final_amount as number) || (row.paid_amount as number) || 0,
+        amount: (row.final_amount as number) || (row.amount as number) || 0,
+        projectId: (row.project_id as string) || undefined,
+        createdAt: (row.created_at as string) || undefined,
         isPaid: isActuallyPaid,
-        photo: (row['photo_url'] as string) || (row['photo_url'] as string) || undefined,
-        checkedIn: Boolean(row['checked_in']),
-        checkInTime: (row['check_in_at'] as string) || undefined,
+        photo: (row.photo_url as string) || undefined,
+        checkedIn: Boolean(row.checked_in),
+        checkInTime: (row.check_in_at as string) || undefined,
     };
 }
 
@@ -99,31 +93,21 @@ export function useMyRegistration() {
         setError(null);
 
         try {
-            // Se não tiver projectId, tenta descobrir o projeto mais recente do usuário
+            // Field selection with join on users
+            const selectFields = '*, users(name, email, phone)';
+
+            // 1) Find the project if not provided
             let targetProjectId = projectId;
-            
             if (!targetProjectId) {
                 const { data: latestReg } = await supabase
-                    .from('growth_experience_registrations')
+                    .from(PRIMARY_TABLE)
                     .select('project_id')
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
                 
-                if (latestReg) {
-                    targetProjectId = latestReg.project_id;
-                } else {
-                    // Tenta por email
-                    const { data: emailReg } = await supabase
-                        .from('growth_experience_registrations')
-                        .select('project_id')
-                        .eq('email', user.email)
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-                    if (emailReg) targetProjectId = emailReg.project_id;
-                }
+                if (latestReg) targetProjectId = latestReg.project_id;
             }
 
             if (!targetProjectId) {
@@ -131,49 +115,40 @@ export function useMyRegistration() {
                 return;
             }
 
-            const table = getTable(targetProjectId);
-            const fields = 'id,project_id,user_id,name,email,phone,registration_type,status,payment_status,paid_amount,night_lectures,selected_courses,created_at';
-
-            // 1) Tenta por user_id
-            let { data, error: err } = (await withTimeout(
+            // 2) Try fetch by user_id
+            let { data, error: err } = await withTimeout(
                 async (signal) => {
-                    const q = (supabase.from(table as never).select(fields) as any)
+                    return await supabase
+                        .from(PRIMARY_TABLE)
+                        .select(selectFields)
                         .eq('project_id', targetProjectId)
                         .eq('user_id', user.id)
-                        .maybeSingle();
-                    return await (q as any).abortSignal(signal);
+                        .maybeSingle()
+                        .abortSignal(signal);
                 },
                 10000,
-                'FetchMyRegistration_userId'
-            )) as { data: any; error: any };
+                'FetchMyRegistration'
+            );
 
-            // 2) Fallback por email
+            // 3) Fallback by email (only if user profile has email)
             if (!data && user.email) {
-                const result = (await withTimeout(
-                    async (signal) => {
-                        const q = (supabase.from(table as never).select(fields) as any)
-                            .eq('project_id', targetProjectId)
-                            .eq('email', user.email)
-                            .maybeSingle();
-                        return await (q as any).abortSignal(signal);
-                    },
-                    10000,
-                    'FetchMyRegistration_email'
-                )) as { data: any; error: any };
-                data = result.data;
-                err = result.error;
-
-                // Se encontrou por email mas sem user_id, vincular
-                if (data && !(data as any).user_id) {
-                    await (supabase.from(table as never) as any)
-                        .update({ user_id: user.id })
-                        .eq('id', (data as any).id)
-                        .catch(() => { });
+                const { data: emailData, error: emailErr } = await supabase
+                    .from(PRIMARY_TABLE)
+                    .select(selectFields)
+                    .eq('project_id', targetProjectId)
+                    .match({ email: user.email }) // Note: might need another join or direct field if stored in registrations
+                    .maybeSingle();
+                
+                if (emailData) {
+                    data = emailData;
+                    err = emailErr;
+                    // Link if found
+                    await supabase.from(PRIMARY_TABLE).update({ user_id: user.id }).eq('id', data.id).catch(() => {});
                 }
             }
 
             if (err) throw err;
-            setRegistration(data ? mapRow(data as Record<string, unknown>) : null);
+            setRegistration(data ? mapRow(data) : null);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Erro ao buscar inscrição';
             logger.error('[useMyRegistration]', err);
@@ -209,7 +184,6 @@ export function useMyRegistration() {
     useEffect(() => {
         if (!user || !projectId || !registration?.id) return;
 
-        const table = getTable(projectId);
         const channelName = `my_registration_${registration.id}`;
         
         const channel = supabase.channel(channelName)
@@ -218,7 +192,7 @@ export function useMyRegistration() {
                 {
                     event: 'UPDATE',
                     schema: 'public',
-                    table: table,
+                    table: PRIMARY_TABLE,
                     filter: `id=eq.${registration.id}`
                 },
                 (payload) => {
@@ -251,8 +225,7 @@ export function useMyRegistration() {
     /** Atualiza os cursos selecionados */
     const updateCursos = useCallback(async (cursoIds: string[]) => {
         if (!registration?.id || !projectId) return;
-        const table = getTable(projectId);
-        const { error } = await (supabase.from(table as never) as any)
+        const { error } = await supabase.from(PRIMARY_TABLE)
             .update({ selected_courses: cursoIds })
             .eq('id', registration.id);
         if (error) throw error;
@@ -263,12 +236,9 @@ export function useMyRegistration() {
     const checkInEntrada = useCallback(async () => {
         if (!registration?.id || !projectId || !user) return;
         
-        const table = getTable(projectId);
-
         try {
-            // 1. Atualizar registro principal para marcar como presente
-            // Tentamos os dois nomes possíveis para a coluna para maior segurança
-            await (supabase.from(table as never) as any).update({
+            // 1. Update main registration
+            await supabase.from(PRIMARY_TABLE).update({
                 checked_in: true,
                 check_in_at: new Date().toISOString()
             }).eq('id', registration.id);

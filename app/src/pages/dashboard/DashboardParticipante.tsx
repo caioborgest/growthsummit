@@ -87,6 +87,8 @@ export function DashboardParticipante() {
   const { data: standCheckIns } = useStandCheckIns();
   const { data: certificates, isLoading: loadingCerts, refetch: refetchCerts } = useCertificates();
   const { data: partnerTeamData } = usePartnerTeam();
+  const { data: b2bMeetings } = useB2BMeetings();
+  const { data: startups } = useStartups();
   const { refetch: refetchNotifications } = useNotifications();
   
   // State
@@ -143,6 +145,33 @@ export function DashboardParticipante() {
         return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
     return { label: 'PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
   }, [registration, isActuallyPaid]);
+
+  // Mentoring Logic
+  const mySessions = useMemo(() => 
+    (myMentorships || []).filter(m => m.menteeId === user?.id),
+    [myMentorships, user?.id]
+  );
+
+  const availableSlots = useMemo(() => 
+    (myMentorships || []).filter(m => 
+      m.status === 'available' || 
+      (!m.menteeId || m.menteeId === '00000000-0000-0000-0000-000000000000')
+    ),
+    [myMentorships]
+  );
+
+  // B2B Logic (meetings where user's registration is involved)
+  const myB2BMeetings = useMemo(() => {
+    if (!b2bMeetings || !registration) return [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return b2bMeetings.filter((m: any) => m.companyAId === registration.id || m.companyBId === registration.id);
+  }, [b2bMeetings, registration]);
+
+  // Startup Logic
+  const myStartup = useMemo(() => {
+    if (!startups || !user) return null;
+    return startups.find(s => s.userId === user.id);
+  }, [startups, user]);
 
   // Next Activity Logic
   const nextActivity = useMemo(() => {
@@ -522,11 +551,25 @@ export function DashboardParticipante() {
         }
         return (
           <MentorshipSection 
-            myMentorships={myMentorships}
-            availableSlots={[]} 
-            handleCancelMentoring={() => {}}
-            handleBookMentoring={() => {}}
-            handleJoinWaitlist={() => {}}
+            myMentorships={mySessions}
+            availableSlots={availableSlots} 
+            handleCancelMentoring={async (id) => {
+                await updateMentorship(id, { status: 'cancelled' } as any);
+                toast.success('Agendamento cancelado.');
+            }}
+            handleBookMentoring={async (slotId, topic) => {
+                if (!user) return;
+                await updateMentorship(slotId, { 
+                    menteeId: user.id, 
+                    menteeName: user.name,
+                    menteeEmail: user.email,
+                    menteePhone: (user as any).phone,
+                    topicOfInterest: topic,
+                    status: 'scheduled' 
+                } as any);
+                toast.success('Mentoria agendada com sucesso!');
+            }}
+            handleJoinWaitlist={() => toast.info('Funcionalidade sendo processada pela organização.')}
             setRatingModal={setRatingModal}
             setIsMentoriaModalOpen={setIsMentoriaModalOpen}
           />
@@ -668,21 +711,18 @@ export function DashboardParticipante() {
 
       <AnimatePresence>
         {ratingModal.isOpen && (
-            <MentorRatingModal 
+           <MentorRatingModal 
                 isOpen={ratingModal.isOpen}
                 onClose={() => setRatingModal({ ...ratingModal, isOpen: false })}
                 mentorName={ratingModal.mentorName}
                 sessionId={ratingModal.mentorshipId}
                 onSubmit={async (sid, val, ind) => {
                     await updateMentorship(sid, {
-                        feedback: {
-                            rating: val,
-                            avaliacaoMentoria: val,
-                            indicacaoMentor: ind,
-                            comment: 'Avaliado via Dashboard',
-                            avaliadoEm: new Date().toISOString()
-                        }
-                    });
+                        menteeRating: val,
+                        menteeComment: `Rating: ${val}/5. Recommendation: ${ind}/5. Avaliado via PWA.`,
+                        status: 'completed',
+                        ratedAt: new Date().toISOString()
+                    } as any);
                     toast.success('Avaliação enviada!');
                 }}
             />

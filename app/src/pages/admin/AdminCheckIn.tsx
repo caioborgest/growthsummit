@@ -198,22 +198,30 @@ export function AdminCheckIn() {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       (async () => {
         try {
-          const tableName = selectedProject?.id ? 'growth_experience_registrations' : 'registrations';
-          let query = (supabase as any).from(tableName as any).select('*').eq('id', res.id);
-          
-          if (selectedProject?.id) {
-            query = query.eq('project_id', selectedProject.id);
-          }
-
-          const { data, error } = await query.maybeSingle();
+          const tableName = 'registrations';
+          // Join with users to get name, email, phone
+          const { data, error } = await supabase
+            .from(tableName)
+            .select('*, users(name, email, phone)')
+            .eq('id', res.id)
+            .maybeSingle();
 
           if (data && !error) {
-             const mapped = Object.entries(data).reduce((acc: any, [key, val]) => {
-                  const camelKey = key.replace(/(_[a-z])/g, group => group.toUpperCase().replace('_', ''));
-                  acc[camelKey] = val;
-                  return acc;
-              }, {} as Record<string, unknown>);
-             handleManualCheckIn(mapped as unknown as Registration);
+             const reg = data as any;
+             const mapped: Registration = {
+                  ...reg,
+                  name: reg.users?.name || reg.name || reg.nome,
+                  email: reg.users?.email || reg.email,
+                  phone: reg.users?.phone || reg.phone || reg.telefone,
+                  projectId: reg.project_id,
+                  userId: reg.user_id,
+                  ticketNumber: reg.ticket_number,
+                  checkedIn: reg.checked_in,
+                  checkInAt: reg.check_in_at,
+                  registrationType: reg.ticket_type || reg.registration_type
+             } as any;
+
+             handleManualCheckIn(mapped);
              toast.dismiss('fetch-reg');
           } else {
             setScanResult('error');
@@ -222,7 +230,7 @@ export function AdminCheckIn() {
             toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
           }
         } catch (err) {
-          logger.error('Erro ao buscar registro no scanner:', err);
+          console.error('Erro ao buscar registro no scanner:', err);
           toast.error('Erro de conexão ao buscar registro.', { id: 'fetch-reg' });
         }
       })();

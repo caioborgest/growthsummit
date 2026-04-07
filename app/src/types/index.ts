@@ -189,16 +189,16 @@ export interface Mentor {
   name: string;
   email: string;
   phone?: string;
-  photo?: string;
+  photoUrl?: string;
   bio: string;
   specialties: string[];
   tracks: string[];
   yearsExperience: number;
   company: string;
   roleTitle: string;
-  linkedin?: string;
+  linkedinUrl?: string;
   status: 'pending' | 'approved' | 'rejected';
-  maxMentories: number;
+  maxMentorings: number;
   createdAt: string;
 }
 
@@ -223,7 +223,7 @@ export interface Company {
   status: 'pending' | 'approved' | 'rejected';
   packageType?: 'anchor' | 'vendor';
   maxMeetings: number;
-  interestType?: 'comprar' | 'vender' | 'parceria' | 'todos' | string;
+  interestType?: 'buy' | 'sell' | 'partnership' | 'all' | 'comprar' | 'vender' | 'parceria' | 'todos' | string;
   interestAreas?: string;
   objectives?: string; // From DB 'objectives_description'
   companySize?: string; // From DB 'porte'
@@ -288,7 +288,7 @@ export interface Startup {
   cnpj?: string;
   description: string;
   sector: string;
-  stage: 'idea' | 'mvp' | 'traction' | 'scale' | string;
+  stage: 'idea' | 'mvp' | 'validation' | 'traction' | 'scale' | 'ideia' | 'validacao' | 'tracao' | 'escala' | string;
   website?: string;
   siteUrl?: string;
   logo?: string;
@@ -326,6 +326,8 @@ export interface Startup {
 export interface TeamMember {
   name: string;
   role: string;
+  email?: string;
+  phone?: string;
   linkedin?: string;
 }
 
@@ -545,7 +547,7 @@ export interface Coupon {
   id: string;
   projectId: string;
   code: string;
-  referralType: 'prefeitura' | 'politico' | 'empresa' | 'promocional' | 'influenciador' | 'associacao' | 'instituicao' | 'outro';
+  referralType: 'government' | 'political' | 'company' | 'promotional' | 'influencer' | 'association' | 'institution' | 'other';
   referralName: string;
   discountPercentage: number;
   isActive: boolean;
@@ -559,16 +561,16 @@ export interface Coupon {
 export interface EmpresaIncentivadora {
   id: string;
   projectId: string;
-  nomeResponsavel: string;
+  responsibleName: string;
   email: string;
   phone: string;
-  nomeEmpresa: string;
-  quantidadeEquipe: number;
-  quantidadeDia: number;
-  quantidadeNoite: number;
-  objetivo: string;
+  companyName: string;
+  teamQuantity: number;
+  dayQuantity: number;
+  nightQuantity: number;
+  objective: string;
   amount: number;
-  status: 'pending' | 'approved' | 'rejected' | 'ativo' | 'cancelado' | 'aprovado' | 'pendente' | 'rejeitado';
+  status: 'pending' | 'approved' | 'rejected' | string;
   createdAt: string;
 }
 
@@ -586,7 +588,7 @@ export interface RegistrationBatch {
   ticketType: string;
   price: number;
   active: boolean;
-  paymentStatus: 'pending' | 'paid' | 'cancelled' | 'pago' | 'pendente' | 'cancelado';
+  paymentStatus: 'pending' | 'paid' | 'cancelled' | string;
   notes?: string;
   expiresAt?: string;
   createdAt: string;
@@ -609,14 +611,17 @@ export interface MentoringSession {
   notes?: string;
   startupName?: string;
   sector?: string;
+  menteeRating?: number;
+  ratedAt?: string;
   feedback?: {
     rating: number;
     comment: string;
     /** 1-5 — "Como você avalia a mentoria realizada?" */
-    avaliacaoMentoria?: number;
+    mentoringRating?: number;
     /** 1-5 — "Quanto você indicaria este mentor a um empresário?" */
-    indicacaoMentor?: number;
-    avaliadoEm?: string;
+    mentorRecommendation?: number;
+    /** ISO Date — "Avaliado em" */
+    ratedAt?: string;
   };
   threeSteps?: string[];
   createdAt: string;

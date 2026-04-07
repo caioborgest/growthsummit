@@ -49,20 +49,14 @@ const ESPECIALIDADES = areasMentoria;
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-500/20 text-green-400',
-  aprovado: 'bg-green-500/20 text-green-400',
   pending: 'bg-yellow-500/20 text-yellow-400',
-  pendente: 'bg-yellow-500/20 text-yellow-400',
   rejected: 'bg-red-500/20 text-red-400',
-  rejeitado: 'bg-red-500/20 text-red-400',
 };
 
 const statusLabels: Record<string, string> = {
   approved: 'Aprovado',
-  aprovado: 'Aprovado',
   pending: 'Pendente',
-  pendente: 'Pendente',
   rejected: 'Rejeitado',
-  rejeitado: 'Rejeitado',
 };
 
 // ── Modal de Detalhes do Mentor ─────────────────────────────────
@@ -91,8 +85,8 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
         <div className="admin-modal-body">
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
             <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-orange-coral/20">
-              {mentor.photo ? (
-                <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover rounded-3xl" />
+              {mentor.photoUrl ? (
+                <img src={mentor.photoUrl} alt={mentor.name} className="w-full h-full object-cover rounded-3xl" />
               ) : (
                 mentor.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
               )}
@@ -126,9 +120,9 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
                     <span className="text-sm">{mentor.phone}</span>
                   </div>
                 )}
-                {mentor.linkedin && (
+                {mentor.linkedinUrl && (
                   <a
-                    href={mentor.linkedin.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`}
+                    href={mentor.linkedinUrl.startsWith('http') ? mentor.linkedinUrl : `https://${mentor.linkedinUrl}`}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center text-teal-400 hover:text-teal-300 transition-colors"
@@ -149,7 +143,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
                 </div>
                 <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
                   <p className="text-[9px] text-gray-500 uppercase font-black mb-1">Capacidade</p>
-                  <p className="text-white font-bold">{mentor.maxMentories || 0} slots</p>
+                  <p className="text-white font-bold">{mentor.maxMentorings || 0} slots</p>
                 </div>
               </div>
             </div>
@@ -274,11 +268,11 @@ function MentorEditModal({ mentor, onClose, onSave }: {
     company: mentor.company || '',
     roleTitle: mentor.roleTitle || '',
     bio: mentor.bio || '',
-    linkedin: mentor.linkedin || '',
+    linkedinUrl: mentor.linkedinUrl || '',
     yearsExperience: mentor.yearsExperience || 0,
-    maxMentories: mentor.maxMentories || 5,
+    maxMentorings: mentor.maxMentorings || 5,
     specialties: (mentor.specialties || []) as string[],
-    photoPreview: mentor.photo || '',
+    photoPreview: mentor.photoUrl || '',
     photoFile: null as File | null,
   });
 
@@ -306,7 +300,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
     if (isSaving) return;
     setIsSaving(true);
     try {
-      let photoUrl = mentor.photo || '';
+      let photoUrl = mentor.photoUrl || '';
 
       if (form.photoFile) {
         setIsUploading(true);
@@ -327,11 +321,11 @@ function MentorEditModal({ mentor, onClose, onSave }: {
         company: form.company,
         role_title: form.roleTitle,
         bio: form.bio,
-        linkedin: form.linkedin,
+        linkedin_url: form.linkedinUrl,
         yearsExperience: Number(form.yearsExperience),
-        maxMentories: Number(form.maxMentories),
+        max_mentorings: form.maxMentorings,
         specialties: form.specialties,
-        photo: photoUrl,
+        photo_url: photoUrl,
       });
 
       toast.success('Mentor atualizado com sucesso!');
@@ -406,7 +400,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">LinkedIn</label>
-                    <Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="linkedin.com/in/..." />
+                    <Input value={form.linkedinUrl} onChange={e => setForm(p => ({ ...p, linkedinUrl: e.target.value }))} className="bg-dark-100 border-dark-300 h-11" placeholder="linkedin.com/in/..." />
                   </div>
                 </div>
               </div>
@@ -430,7 +424,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Capacidade de Mentorias</label>
-                    <Input type="number" min={1} max={50} value={form.maxMentories} onChange={e => setForm(p => ({ ...p, maxMentories: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300 h-11" />
+                    <Input type="number" min={1} max={50} value={form.maxMentorings} onChange={e => setForm(p => ({ ...p, maxMentorings: parseInt(e.target.value) || 1 }))} className="bg-dark-100 border-dark-300 h-11" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -515,13 +509,13 @@ export function AdminMentores() {
     roleTitle: '',
     bio: '',
     specialties: [] as string[],
-    linkedin: '',
+    linkedinUrl: '',
     password: '',
     confirmPassword: '',
-    photo: null as File | null,
+    photoFile: null as File | null,
     photoPreview: '',
     yearsExperience: 5,
-    maxMentories: 10
+    maxMentorings: 10
   });
 
 
@@ -622,10 +616,10 @@ export function AdminMentores() {
         role_title: formData.roleTitle,
         bio: formData.bio,
         yearsExperience: formData.yearsExperience,
-        maxMentories: formData.maxMentories,
+        maxMentorings: formData.maxMentorings,
         specialties: formData.specialties,
-        linkedin: formData.linkedin,
-        photo: photoUrl,
+        linkedinUrl: formData.linkedinUrl,
+        photoUrl: photoUrl,
         status: 'approved',
         projectId: projectId || 'manual',
       } as any);
