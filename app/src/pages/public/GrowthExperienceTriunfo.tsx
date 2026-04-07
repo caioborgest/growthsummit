@@ -470,7 +470,8 @@ export function GrowthExperienceTriunfo() {
                           </div>
                         )}
                      </div>
-                  </motion.div>
+                  </div>
+                </motion.div>
               ));
             })()}
           </div>
