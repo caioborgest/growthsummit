@@ -550,7 +550,7 @@ export function GrowthExperienceTriunfo() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent" />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
