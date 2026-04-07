@@ -150,11 +150,6 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                 logger.info('Nova empresa inserida com sucesso');
             }
 
-            if (dbError) {
-                logger.error('Erro ao salvar no banco (Empresa):', dbError);
-                throw dbError;
-            }
-
             const qtdNoite = parseInt(formData.quantidadeNoite) || 0;
             const valorTotal = parseFloat(formData.amount) || 0;
             const valorFormatado = valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -393,7 +388,5 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                 )}
             </DialogContent>
         </Dialog>
-    );
-}
     );
 }
