@@ -58,9 +58,9 @@ function mapRow(row: Record<string, unknown>): MyRegistration {
         id: row['id'] as string,
         userId: (row['user_id'] as string) || undefined,
         email: (row['email'] as string) || undefined,
-        nome: (row['nome'] as string) || (row['name'] as string) || undefined,
-        name: (row['nome'] as string) || (row['name'] as string) || undefined,
-        phone: (row['telefone'] as string) || undefined,
+        nome: (row['name'] as string) || (row['nome'] as string) || undefined,
+        name: (row['name'] as string) || (row['nome'] as string) || undefined,
+        phone: (row['phone'] as string) || (row['telefone'] as string) || undefined,
         tipoInscricao: (row['registration_type'] as string) || undefined,
         ticketType: (row['registration_type'] as string) || undefined,
         status: (row['status'] as string) || undefined,
@@ -132,7 +132,7 @@ export function useMyRegistration() {
             }
 
             const table = getTable(targetProjectId);
-            const fields = 'id,project_id,user_id,nome,email,telefone,registration_type,status,payment_status,paid_amount,night_lectures,selected_courses,created_at';
+            const fields = 'id,project_id,user_id,name,email,phone,registration_type,status,payment_status,paid_amount,night_lectures,selected_courses,created_at';
 
             // 1) Tenta por user_id
             let { data, error: err } = (await withTimeout(

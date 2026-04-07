@@ -341,10 +341,10 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
       return 'id,project_id,user_id,name,email,phone,company,role_title,specialties,bio,linkedin_url,photo_url,status,created_at,years_experience,max_mentorings';
     }
     if (entity === 'empresas_incentivadoras') {
-      return 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,paid_amount,created_at';
+      return 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,invested_amount,created_at';
     }
     if (entity === 'mentoring_sessions') {
-      return 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,mentor_indication,rated_at';
+      return 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,rated_at';
     }
     if (entity === 'b2b_meetings') {
       // Remover company_a_id se estiver dando erro (pode ser company_a_id ou name_a em versões diferentes)
@@ -370,7 +370,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   const fields: Record<string, string> = {
     registrations: 'id,project_id,user_id,registration_type,status,ticket_number,qr_code,paid_amount,payment_method,payment_date,event_name,app_installed,checked_in,check_in_at,created_at',
     mentors: 'id,project_id,user_id,name,email,phone,company,role_title,specialties,tracks,years_experience,status,max_mentorings,photo_url,created_at',
-    mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,mentor_indication,rated_at',
+    mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,rated_at',
     mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',
     companies: 'id,project_id,user_id,name,sector,description,contact_name,contact_email,status,package_type,logo_url,interest_type,interest_areas,created_at,company_name,responsible_name',
     startups: 'id,project_id,user_id,name,sector,stage,status,package_type,created_at,company_name,description,responsible_name',
@@ -384,7 +384,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     b2b_meetings: 'id,project_id,status,scheduled_at,duration_minutes,table_number,created_at',
     b2b_swipes: 'id,project_id,from_company_id,to_company_id,status,created_at',
     b2b_matches: 'id,project_id,status,created_at',
-    empresas_incentivadoras: 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,paid_amount,created_at',
+    empresas_incentivadoras: 'id,project_id,responsible_name,email,phone,company_name,team_quantity,day_quantity,night_quantity,objetivo,status,invested_amount,created_at',
     users: 'id,email,name,role,phone,avatar_url,created_at',
     speakers: 'id,project_id,name,role,company,bio,image,linkedin,twitter,website,track,is_featured,order_index',
     sponsor_deliverables: 'id,sponsor_id,item,description,status,deadline,completed_at,notes',
