@@ -1,4 +1,4 @@
-import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { QrCode, Calendar as CalendarIcon, Sun, Moon, MapPin, CheckCircle2, ChevronRight, Zap, Presentation, Users, BookOpen, Rocket, Mic2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -87,6 +87,17 @@ export function AgendaSection({
 
     const SessionCard = ({ item, color = '#14b8a6', delay = 0 }: { item: AgendaSession, color?: string, delay?: number }) => {
         const isCheckedIn = (isTriunfo && myRegistration?.checkedIn) || activityCheckIns.some(c => c.sessionId === item.id && c.registrationId === myRegistration?.id);
+        
+        const getSessionIcon = (type?: string) => {
+            const t = (type || '').toLowerCase();
+            if (t.includes('palestra')) return <Presentation className="h-3 w-3" />;
+            if (t.includes('painel')) return <Users className="h-3 w-3" />;
+            if (t.includes('workshop')) return <BookOpen className="h-3 w-3" />;
+            if (t.includes('pitch')) return <Rocket className="h-3 w-3" />;
+            if (t.includes('networking')) return <Zap className="h-3 w-3" />;
+            return <Mic2 className="h-3 w-3" />;
+        };
+
         return (
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -120,8 +131,9 @@ export function AgendaSection({
                             <span className="text-[8px] sm:text-[9px] text-foreground/40 font-black uppercase tracking-wider flex items-center gap-1">
                                 <MapPin className="h-2.5 w-2.5" />{item.room || item.local || 'Auditório Principal'}
                             </span>
-                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full flex items-center gap-1.5"
                                 style={{ background: `${color}15`, color }}>
+                                {getSessionIcon(item.type || item.tipo)}
                                 {item.type || item.tipo || 'PALESTRA'}
                             </span>
                         </div>

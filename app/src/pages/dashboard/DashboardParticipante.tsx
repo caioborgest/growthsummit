@@ -13,7 +13,13 @@ import {
   Rocket,
   BookOpen,
   Shield,
-  Bell as BellIcon
+  Bell as BellIcon,
+  TrendingUp, 
+  Share2, 
+  ChevronRight, 
+  Presentation, 
+  Users, 
+  Mic2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -42,6 +48,7 @@ import { BottomNavigation } from './components/shared/BottomNavigation';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { QuickActions } from './components/shared/QuickActions';
 import { NextActivityCard } from './components/shared/NextActivityCard';
+import { Badge } from '@/components/ui/badge';
 
 // Dashboard Sections
 import { TicketSection } from './components/TicketSection';
@@ -392,15 +399,26 @@ export function DashboardParticipante() {
               </motion.div>
             )}
 
+            {/* Próxima Atividade */}
             {nextActivity && (
-              <NextActivityCard 
-                title={nextActivity.title}
-                subtitle={nextActivity.type || 'Programação'}
-                time={nextActivity.startTime || '--:--'}
-                duration="--"
-                isConfirmed={false}
-                onClick={() => setActiveTab('agenda')}
-              />
+                <div className="animate-fade-in-up-delayed p-4 sm:p-6 pb-2">
+                    <NextActivityCard
+                        title={nextActivity.title || nextActivity.titulo}
+                        subtitle={nextActivity.room || nextActivity.local || 'Auditório Principal'}
+                        time={nextActivity.startTime || nextActivity.horario_inicio}
+                        duration="60 min"
+                        isConfirmed={activityCheckIns?.some(c => c.sessionId === nextActivity.id)}
+                        onClick={() => setActiveTab('agenda')}
+                        icon={(() => {
+                            const t = (nextActivity.type || nextActivity.tipo || '').toLowerCase();
+                            if (t.includes('palestra')) return Presentation;
+                            if (t.includes('painel')) return Users;
+                            if (t.includes('workshop')) return BookOpen;
+                            if (t.includes('pitch')) return Rocket;
+                            return Mic2;
+                        })()}
+                    />
+                </div>
             )}
 
             <QuickActions 

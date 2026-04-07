@@ -377,7 +377,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
     sponsors: 'id,project_id,company_name,contact_name,contact_email,level,investment,status,created_at',
     transactions: 'id,project_id,type,category,description,reference_person,amount,date,status,related_id,related_type,created_at',
     check_ins: 'id,project_id,registration_id,user_id,timestamp,location,method',
-    sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count,image',
+    sessions: 'id,project_id,title,description,type,track,day,start_time,end_time,room,max_capacity,registered_count',
     leads: 'id,project_id,startup_id,visitor_name,visitor_email,interest_level,created_at',
     projects: 'id,name,slug,type,description,location,city,state,start_date,start_time,end_date,end_time,status,created_at,updated_at,short_description,goal_revenue,goal_sponsorship,goal_registrations,target_revenue,target_registrations,settings,ticket_tiers,enable_b2b,enable_mentoring,enable_startups,enable_check_in,ticket_price_standard,ticket_price_pro,ticket_price_vip,max_registrations,max_mentors,max_startups,max_companies,primary_color',
     cupons: 'id,project_id,code,referral_type,referral_name,discount_percentage,is_active,usage_limit,current_usage,description,expires_at,created_at',

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Bell, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Bell, Clock, CheckCircle2, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
@@ -10,6 +9,7 @@ interface NextActivityCardProps {
     duration: string;
     isConfirmed?: boolean;
     onClick?: () => void;
+    icon?: LucideIcon;
 }
 
 export function NextActivityCard({
@@ -18,7 +18,8 @@ export function NextActivityCard({
     time,
     duration,
     isConfirmed = false,
-    onClick
+    onClick,
+    icon: Icon = Bell
 }: NextActivityCardProps) {
     return (
         <motion.div
@@ -52,7 +53,7 @@ export function NextActivityCard({
                                 animate={{ scale: [1, 1.2, 1] }}
                                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                             >
-                                <Bell className="h-3.5 w-3.5" />
+                                <Icon className="h-3.5 w-3.5" />
                             </motion.div>
                             <span className="font-black text-[9px] uppercase tracking-[0.25em]">Próxima Atividade</span>
                         </div>
