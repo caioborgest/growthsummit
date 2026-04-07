@@ -72,7 +72,7 @@ const getTableName = (projectId: string | undefined, entity: string, slug?: stri
   // Specific mappings for Growth Experience projects (ge-*)
   if (isGE) {
     switch (entity) {
-      case 'registrations': return 'growth_experience_registrations';
+      case 'registrations': return 'registrations';
       case 'startups': return 'arena_pitch_startups';
       case 'companies': return 'b2b_business_rounds';
       case 'mentoring_sessions': return 'mentoring_sessions';
@@ -139,8 +139,30 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
 
   // Cross-entity specific logic
   if (item.project_id) result.projectId = item.project_id;
-  if (item.user_id) result.userId = item.user_id;
-  if (item.company_name) result.companyName = item.company_name;
+  if (item.participant_id) result.userId = item.participant_id; // Mapping participant_id to legacy userId prop
+  else if (item.user_id) result.userId = item.user_id;
+  
+  // Flatten profiles data if present (common for registrations and other participant-linked entities)
+  if (item.profiles) {
+    const p = item.profiles;
+    if (p.name && !result.name) result.name = p.name;
+    if (p.email && !result.email) result.email = p.email;
+    if (p.phone && !result.phone) result.phone = p.phone;
+    if (p.avatar_url && !result.photo) result.photo = p.avatar_url;
+  }
+
+  // Handle registration specific legacy field mapping
+  if (entityName === 'registrations' || entityName === 'growth_experience_registrations') {
+    if (item.final_amount !== undefined) {
+      result.amount = item.final_amount;
+      result.paid_amount = item.final_amount;
+      result.paidAmount = item.final_amount;
+    }
+    if (item.ticket_type) {
+      result.registrationType = item.ticket_type;
+      result.ticketType = item.ticket_type;
+    }
+  }
   if (entityName === 'registration_batches') {
     result.name = item.name || item.company_name;
     result.companyName = item.company_name || item.name;
@@ -287,6 +309,13 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     };
   }
 
+  // Registration specific mapping
+  if (entity === 'registrations') {
+    if (data.userId) result.participant_id = data.userId;
+    // Remove email from the payload as per user request (table doesn't have it)
+    delete result.email;
+  }
+
   // Project isolation
   if (!isGlobalEntity(entity) && projectId) {
     result.project_id = projectId;
@@ -369,7 +398,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   }
 
   const fields: Record<string, string> = {
-    registrations: 'id,project_id,user_id,registration_type,status,ticket_number,qr_code,paid_amount,payment_method,payment_date,event_name,app_installed,checked_in,check_in_at,created_at',
+    registrations: 'id,project_id,participant_id,ticket_number,status,payment_status,final_amount,checked_in,check_in_at,created_at,ticket_type,qr_code',
     mentors: 'id,project_id,user_id,name,email,phone,company,role_title,specialties,tracks,years_experience,status,max_mentorings,photo_url,created_at',
     mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,rated_at',
     mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',
@@ -726,7 +755,7 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
   useEffect(() => {
     if (!options?.realtime || !projectId) return;
 
-    const tableName = getTableName(projectId || undefined, entityName, selectedProject?.slug);
+    const tableName = entityName === 'registrations' ? 'registrations' : getTableName(projectId || undefined, entityName, selectedProject?.slug);
     
     // logger.debug(`[useData:${entityName}] Ativando Realtime para ${tableName}`);
     const channel = supabase

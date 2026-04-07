@@ -199,10 +199,10 @@ export function AdminCheckIn() {
       (async () => {
         try {
           const tableName = 'registrations';
-          // Join with users to get name, email, phone
+          // Join with profiles to get name, email, phone
           const { data, error } = await supabase
             .from(tableName)
-            .select('*, users(name, email, phone)')
+            .select('*, profiles(name, email, phone)')
             .eq('id', res.id)
             .maybeSingle();
 
@@ -210,11 +210,11 @@ export function AdminCheckIn() {
              const reg = data as any;
              const mapped: Registration = {
                   ...reg,
-                  name: reg.users?.name || reg.name || reg.nome,
-                  email: reg.users?.email || reg.email,
-                  phone: reg.users?.phone || reg.phone || reg.telefone,
+                  name: reg.profiles?.name || reg.name || reg.nome,
+                  email: reg.profiles?.email || reg.email,
+                  phone: reg.profiles?.phone || reg.phone || reg.telefone,
                   projectId: reg.project_id,
-                  userId: reg.user_id,
+                  userId: reg.participant_id, // Map participant_id to userId prop
                   ticketNumber: reg.ticket_number,
                   checkedIn: reg.checked_in,
                   checkInAt: reg.check_in_at,

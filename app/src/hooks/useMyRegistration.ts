@@ -37,11 +37,11 @@ export interface MyRegistration {
 const PRIMARY_TABLE = 'registrations';
 
 function mapRow(row: Record<string, any>): MyRegistration {
-    // If it's a join result, the user data is in row.users
-    const userData = row.users || {};
-    const name = userData.name || row.name || row.nome;
-    const email = userData.email || row.email;
-    const phone = userData.phone || row.phone || row.telefone;
+    // Rely on row data directly or profile join
+    const profile = row.profiles || {};
+    const name = row.name || row.nome || profile.name;
+    const phone = row.phone || row.telefone || profile.phone;
+    const email = profile.email; // email is not in registrations
 
     const ticketType = (row.ticket_type as string || '').toLowerCase();
     const isProType = ticketType === 'pro' || ticketType === 'vip';
@@ -55,7 +55,7 @@ function mapRow(row: Record<string, any>): MyRegistration {
 
     return {
         id: row.id as string,
-        userId: (row.user_id as string) || undefined,
+        userId: (row.participant_id as string) || undefined,
         email: email || undefined,
         nome: name || undefined,
         name: name || undefined,
@@ -93,8 +93,8 @@ export function useMyRegistration() {
         setError(null);
 
         try {
-            // Field selection with join on users
-            const selectFields = '*, users(name, email, phone)';
+            // Field selection without join on auth.users (Standard compliant)
+            const selectFields = '*, profiles(name, phone)';
 
             // 1) Find the project if not provided
             let targetProjectId = projectId;
@@ -102,12 +102,12 @@ export function useMyRegistration() {
                 const { data: latestReg } = await supabase
                     .from(PRIMARY_TABLE)
                     .select('project_id')
-                    .eq('user_id', user.id)
+                    .eq('participant_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
                 
-                if (latestReg) targetProjectId = latestReg.project_id;
+                if (latestReg) targetProjectId = (latestReg as any).project_id;
             }
 
             if (!targetProjectId) {
@@ -115,37 +115,20 @@ export function useMyRegistration() {
                 return;
             }
 
-            // 2) Try fetch by user_id
-            let { data, error: err } = await withTimeout(
+            // 2) Fetch by participant_id (the new standard PK link)
+            const { data, error: err } = await withTimeout(
                 async (signal) => {
                     return await supabase
                         .from(PRIMARY_TABLE)
                         .select(selectFields)
                         .eq('project_id', targetProjectId)
-                        .eq('user_id', user.id)
+                        .eq('participant_id', user.id)
                         .maybeSingle()
                         .abortSignal(signal);
                 },
                 10000,
                 'FetchMyRegistration'
             );
-
-            // 3) Fallback by email (only if user profile has email)
-            if (!data && user.email) {
-                const { data: emailData, error: emailErr } = await supabase
-                    .from(PRIMARY_TABLE)
-                    .select(selectFields)
-                    .eq('project_id', targetProjectId)
-                    .match({ email: user.email }) // Note: might need another join or direct field if stored in registrations
-                    .maybeSingle();
-                
-                if (emailData) {
-                    data = emailData;
-                    err = emailErr;
-                    // Link if found
-                    await supabase.from(PRIMARY_TABLE).update({ user_id: user.id }).eq('id', data.id).catch(() => {});
-                }
-            }
 
             if (err) throw err;
             setRegistration(data ? mapRow(data) : null);
@@ -247,7 +230,7 @@ export function useMyRegistration() {
             await (supabase.from('check_ins' as never) as any).insert({
                 project_id: projectId,
                 registration_id: registration.id,
-                user_id: user.id,
+                participant_id: user.id, // Consistent with new naming
                 user_name: registration.nome || user.name,
                 ticket_number: registration.id.split('-')[0].toUpperCase(),
                 timestamp: new Date().toISOString(),

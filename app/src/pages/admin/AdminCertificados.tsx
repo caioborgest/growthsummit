@@ -113,7 +113,7 @@ export function AdminCertificados() {
         try {
             const { data, error } = await supabase
                 .from('certificates' as any)
-                .select('*, registration:growth_experience_registrations(nome, email)')
+                .select('*, registrations(profiles(name, email))')
                 .eq('project_id', selectedProject.id)
                 .order('issue_date', { ascending: false });
 
@@ -188,7 +188,7 @@ export function AdminCertificados() {
 
             // Preparar dados do template
             const certData: any = {
-                userName: cert.registration?.nome || 'Participante',
+                userName: cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante',
                 eventName: template.subtitle || selectedProject?.name || 'Growth Experience',
                 eventCity: selectedProject?.city || 'Brasil',
                 date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
@@ -292,12 +292,17 @@ export function AdminCertificados() {
             return;
         }
 
-        const toastId = toast.loading(`Enviando e-mail para ${cert.registration.nome}...`);
+        const toastId = toast.loading(`Enviando e-mail para ${cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante'}...`);
         try {
             const validateUrl = `${window.location.origin}/validar/${cert.code}`;
+            const recipientEmail = cert.registrations?.profiles?.email || cert.registration?.email;
+            if (!recipientEmail) {
+                toast.error('E-mail não encontrado.');
+                return;
+            }
             const res = await emailService.sendCertificate(
-                cert.registration.email,
-                cert.registration.nome,
+                recipientEmail,
+                cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante',
                 cert.activity_name,
                 cert.code,
                 validateUrl
@@ -370,7 +375,7 @@ export function AdminCertificados() {
             const selectedCerts = certificates.filter(c => selectedItems.includes(c.id));
             const promises = selectedCerts.map(cert => {
                 return notificationService.send({
-                    userId: (cert as any).user_id || cert.registration_id,
+                    userId: (cert as any).participant_id || (cert as any).user_id || cert.registration_id,
                     projectId: cert.project_id,
                     title: '🎓 Certificado Disponível',
                     message: `Seu certificado de "${cert.activity_name}" foi emitido. Veja em seu painel!`,
@@ -466,7 +471,7 @@ export function AdminCertificados() {
 
     const filteredCertificates = useMemo(() => {
         return certificates.filter(c =>
-            c.registration?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.registrations?.profiles?.name || c.registration?.nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.activity_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.code?.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -568,9 +573,9 @@ export function AdminCertificados() {
                                                         <User className="h-5 w-5 text-brand-orange-coral" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-white font-bold text-sm tracking-tight">{cert.registration?.nome || 'Inscrito'}</p>
+                                                        <p className="text-white font-bold text-sm tracking-tight">{cert.registrations?.profiles?.name || cert.registration?.nome || 'Inscrito'}</p>
                                                         <p className="text-gray-500 text-[10px] uppercase font-black tracking-tighter truncate max-w-[150px]">
-                                                            {cert.registration?.email}
+                                                            {cert.registrations?.profiles?.email || cert.registration?.email}
                                                         </p>
                                                     </div>
                                                 </div>

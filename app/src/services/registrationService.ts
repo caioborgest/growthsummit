@@ -94,7 +94,7 @@ export const registrationService = {
 
         const payload = {
             p_project_id: cleanProjectId,
-            p_user_id: cleanUserId || null,
+            p_participant_id: cleanUserId || null,
             p_name: params.name || '',
             p_email: (params.email || '').trim().toLowerCase(),
             p_phone: params.phone || '',
@@ -123,7 +123,7 @@ export const registrationService = {
 
         logger.info('[registrationService] Executing RPC register_participant_with_slots:', {
             project: payload.p_project_id,
-            user: payload.p_user_id,
+            participant: payload.p_participant_id,
             sessions: payload.p_session_ids.length,
             batch: payload.p_batch_id,
             type: payload.p_registration_type
@@ -191,7 +191,7 @@ export const registrationService = {
         query = query.select(`
             id,
             project_id,
-            user_id,
+            participant_id,
             ticket_number,
             status,
             payment_status,
@@ -201,16 +201,14 @@ export const registrationService = {
             created_at,
             ticket_type,
             qr_code,
-            users (
+            profiles (
                 name,
-                email,
                 phone
             )
         `);
         
         query = query.eq('project_id', projectId);
 
-        if (filters.email) query = query.eq('users.email', filters.email);
         if (filters.status) query = query.eq('status', filters.status);
 
         const { data, error } = await query;
@@ -219,9 +217,8 @@ export const registrationService = {
         // Flatten data to maintain compatibility with existing components
         return (data as any[]).map(reg => ({
             ...reg,
-            name: reg.users?.name,
-            email: reg.users?.email,
-            phone: reg.users?.phone,
+            name: reg.profiles?.name,
+            phone: reg.profiles?.phone,
             paid_amount: reg.final_amount // Map final_amount to paid_amount for compatibility
         }));
     },
@@ -235,7 +232,7 @@ export const registrationService = {
             .select(`
                 id,
                 project_id,
-                user_id,
+                participant_id,
                 ticket_number,
                 status,
                 payment_status,
@@ -246,9 +243,8 @@ export const registrationService = {
                 ticket_type,
                 qr_code,
                 qr_code_data,
-                users (
+                profiles (
                     name,
-                    email,
                     phone
                 )
             `)
@@ -261,9 +257,8 @@ export const registrationService = {
         const reg = data as any;
         return {
             ...reg,
-            name: reg.users?.name,
-            email: reg.users?.email,
-            phone: reg.users?.phone,
+            name: reg.profiles?.name,
+            phone: reg.profiles?.phone,
             paid_amount: reg.final_amount
         };
     },

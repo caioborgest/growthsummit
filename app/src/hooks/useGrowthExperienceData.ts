@@ -99,7 +99,7 @@ export function useInscricoesTriunfo() {
         try {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
-                .from('growth_experience_registrations')
+                .from('registrations')
                 .select('*')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
