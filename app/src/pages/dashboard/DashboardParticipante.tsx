@@ -138,14 +138,14 @@ export function DashboardParticipante() {
   }, [registration]);
   
   const statusFinanceiro = useMemo(() => {
-    if (!registration) return { label: 'NÃO LOCALIZADO', color: 'bg-red-500/20 text-red-500' };
+    if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
     const reg = registration as { status?: string; statusPagamento?: string };
-    if (isActuallyPaid) return { label: 'PAGO', color: 'bg-green-500/20 text-green-400' };
+    if (isActuallyPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
     if (reg.status === 'cancelled' || reg.status === 'cancelado') 
-        return { label: 'CANCELADO', color: 'bg-red-500/20 text-red-400' };
+        return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
     if (reg.statusPagamento === 'pendente' || reg.status === 'pendente') 
-        return { label: 'AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
-    return { label: 'PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
+        return { label: '⏳ AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
+    return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
   }, [registration, isActuallyPaid]);
 
   // Mentoring Logic

@@ -104,7 +104,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 paymentStatus: (finalAmount <= 0) ? 'paid' : 'pending',
                 batchId: currentDados.batchId || null,
                 companyVoucher: currentDados.companyVoucher || null,
-                status: (finalAmount <= 0) ? 'active' : 'pending',
+                status: (finalAmount <= 0) ? 'paid' : 'pending',
                 eventName: selectedProject?.name || 'Growth Experience',
                 palestrasNoturnas: currentDados.buyLectures,
                 socialCode: currentDados.code || null,
