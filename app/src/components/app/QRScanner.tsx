@@ -21,6 +21,17 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const [selectedCameraId, setSelectedCameraId] = useState<string>('');
     const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
+    const stopScanner = async () => {
+        if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+            try {
+                await html5QrCodeRef.current.stop();
+                html5QrCodeRef.current.clear();
+            } catch (err) {
+                console.warn("Error stopping scanner:", err);
+            }
+        }
+    };
+
     const startScanner = async (html5QrCode: any, cameraIdOrConfig: any) => {
         try {
             await html5QrCode.start(
@@ -37,6 +48,9 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     const parsed = parseQRString(decodedText);
                     if (parsed || decodedText) {
                         try {
+                            // Do not stop if we want continuous scanning, 
+                            // but usually for a single success we stop.
+                            // The AdminCheckIn controller will decide if it stays open.
                             await html5QrCode.stop();
                         } catch (e) { /* silent */ }
                         setIsScanning(false);
@@ -56,58 +70,61 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
     useEffect(() => {
         let isMounted = true;
+        let scannerInstance: any = null;
 
-        import('html5-qrcode').then(async ({ Html5Qrcode }) => {
-            if (!isMounted) return;
-            
+        const initScanner = async () => {
             try {
-                const devices = await Html5Qrcode.getCameras();
+                const { Html5Qrcode } = await import('html5-qrcode');
+                if (!isMounted) return;
+
+                const devices = await Html5Qrcode.getCameras().catch(() => []);
                 if (isMounted && devices && devices.length > 0) {
                     setCameras(devices.map(d => ({ id: d.id, label: d.label })));
-                    // Prioritize back camera if found
-                    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira'));
+                    const backCamera = devices.find(d => 
+                        d.label.toLowerCase().includes('back') || 
+                        d.label.toLowerCase().includes('traseira') ||
+                        d.label.toLowerCase().includes('environment')
+                    );
                     setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
                 }
-            } catch (err) {
-                console.error("Error getting cameras:", err);
-            }
 
-            setIsLoading(false);
-            
-            setTimeout(async () => {
+                setIsLoading(false);
+
+                // Short delay to ensure DOM is ready
+                await new Promise(resolve => setTimeout(resolve, 250));
                 if (!isMounted) return;
-                const html5QrCode = new Html5Qrcode(readerId.current);
-                html5QrCodeRef.current = html5QrCode;
+
+                scannerInstance = new Html5Qrcode(readerId.current);
+                html5QrCodeRef.current = scannerInstance;
 
                 const config = selectedCameraId ? selectedCameraId : { facingMode: "environment" };
-                const success = await startScanner(html5QrCode, config);
+                const success = await startScanner(scannerInstance, config);
                 
                 if (!success && isMounted) {
-                    setError('Não foi possível iniciar a câmera. Verifique as permissões.');
+                    setError('Não foi possível acessar a câmera. Verifique as permissões do navegador ou PWA.');
                 }
-            }, 300);
-        }).catch(() => {
-            if (isMounted) {
-                setError('Biblioteca de scanner não disponível.');
-                setIsLoading(false);
+            } catch (err) {
+                if (isMounted) {
+                    console.error("Scanner init error:", err);
+                    setError('Erro ao carregar o módulo de câmera.');
+                    setIsLoading(false);
+                }
             }
-        });
+        };
+
+        initScanner();
 
         return () => {
             isMounted = false;
-            if (html5QrCodeRef.current?.isScanning) {
-                html5QrCodeRef.current.stop().catch(() => { });
-            }
+            stopScanner();
         };
-    }, [onSuccess]);
+    }, []); // Only run once on mount
 
     const handleCameraChange = async (cameraId: string) => {
         setSelectedCameraId(cameraId);
         if (html5QrCodeRef.current) {
             try {
-                if (html5QrCodeRef.current.isScanning) {
-                    await html5QrCodeRef.current.stop();
-                }
+                await stopScanner();
                 await startScanner(html5QrCodeRef.current, cameraId);
             } catch (err) {
                 toast.error("Erro ao trocar de câmera.");

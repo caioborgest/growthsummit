@@ -160,92 +160,102 @@ export function AdminCheckIn() {
     }
   }, [update, createEventCheckIn, createSessionAttendance, selectedSessionId, sessionAttendance, selectedSession, user?.id, selectedProject, refetch]);
 
-  const handleScannerSuccess = useCallback((res: QRData | null) => {
-    if (!res) return;
+  const handleScannerSuccess = useCallback(async (res: QRData | null, raw?: string) => {
+    if (!res && !raw) return;
 
-    if (['mentor', 'company', 'startup', 'registration'].includes(res.type)) {
+    // Use raw if res is null (generic scan)
+    const effectiveId = res?.id || raw;
+    const effectiveType = res?.type || 'registration';
+
+    if (['mentor', 'company', 'startup'].includes(effectiveType)) {
       let entity: any = null;
       let role: any = 'participant';
 
-      if (res.type === 'mentor') {
-        entity = mentors.find(m => m.id === res.id);
+      if (effectiveType === 'mentor') {
+        entity = mentors.find(m => m.id === effectiveId);
         role = 'mentor';
-      } else if (res.type === 'company') {
-        entity = companies.find(c => c.id === res.id);
+      } else if (effectiveType === 'company') {
+        entity = companies.find(c => c.id === effectiveId);
         role = 'company';
-      } else if (res.type === 'startup') {
-        entity = startups.find(s => s.id === res.id);
+      } else if (effectiveType === 'startup') {
+        entity = startups.find(s => s.id === effectiveId);
         role = 'startup';
-      } else {
-        entity = registrations.find(r => r.id === res.id);
-        role = 'participant';
       }
 
       if (entity) {
         setSelectedEntity(entity);
         setSelectedRole(role);
         setIsChecklistOpen(true);
+        // We close scanner for checklist-based entities as they need manual intervention
+        setIsScanning(false);
       } else {
         toast.error('Entidade não encontrada no sistema.');
       }
-      setIsScanning(false);
       return;
     }
 
-    const registration = registrations.find(r => r.id === res.id);
+    // Standard Registration flow - STAY ACTIVE
+    const registration = registrations.find(r => r.id === effectiveId);
     
-    if (!registration && res.type === 'registration') {
+    if (!registration) {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
-      (async () => {
-        try {
-          const tableName = 'registrations';
-          // Join with profiles to get name, email, phone
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('*, profiles(name, email, phone)')
-            .eq('id', res.id)
-            .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('registrations')
+          .select('*, profiles(name, email, phone)')
+          .eq('id', effectiveId)
+          .maybeSingle();
 
-          if (data && !error) {
-             const reg = data as any;
-             const mapped: Registration = {
-                  ...reg,
-                  name: reg.profiles?.name || reg.name || reg.nome,
-                  email: reg.profiles?.email || reg.email,
-                  phone: reg.profiles?.phone || reg.phone || reg.telefone,
-                  projectId: reg.project_id,
-                  userId: reg.participant_id, // Map participant_id to userId prop
-                  ticketNumber: reg.ticket_number,
-                  checkedIn: reg.checked_in,
-                  checkInAt: reg.check_in_at,
-                  registrationType: reg.ticket_type || reg.registration_type
-             } as any;
+        if (data && !error) {
+           const reg = data as any;
+           // Validate project_id if scanner is in general mode or session mode
+           if (selectedProject?.id && reg.project_id !== selectedProject.id) {
+             toast.error('Este ingresso pertence a outro evento.', { id: 'fetch-reg' });
+             triggerVibrate('error');
+             setScanResult('error');
+             return;
+           }
 
-             handleManualCheckIn(mapped);
-             toast.dismiss('fetch-reg');
-          } else {
-            setScanResult('error');
-            setResultRegistration(null);
-            triggerVibrate('error');
-            toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
-          }
-        } catch (err) {
-          console.error('Erro ao buscar registro no scanner:', err);
-          toast.error('Erro de conexão ao buscar registro.', { id: 'fetch-reg' });
+           const mapped: Registration = {
+                ...reg,
+                name: reg.profiles?.name || reg.name || reg.nome,
+                email: reg.profiles?.email || reg.email,
+                phone: reg.profiles?.phone || reg.phone || reg.telefone,
+                projectId: reg.project_id,
+                userId: reg.participant_id,
+                ticketNumber: reg.ticket_number,
+                checkedIn: reg.checked_in,
+                checkInAt: reg.check_in_at,
+                registrationType: reg.ticket_type || reg.registration_type
+           } as any;
+
+           await handleManualCheckIn(mapped);
+           toast.dismiss('fetch-reg');
+        } else {
+          setScanResult('error');
+          triggerVibrate('error');
+          toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
         }
-      })();
+      } catch (err) {
+        console.error('Erro ao buscar registro no scanner:', err);
+        toast.error('Erro de conexão ao buscar registro.', { id: 'fetch-reg' });
+        setScanResult('error');
+      }
       return;
     }
 
     if (registration) {
-      handleManualCheckIn(registration);
-    } else {
-      setScanResult('error');
-      setResultRegistration(null);
-      triggerVibrate('error');
-      toast.error('Ingresso não encontrado no sistema.');
+      // Validate project_id
+      if (selectedProject?.id && registration.projectId !== selectedProject.id) {
+        toast.error('Ingresso de outro evento.');
+        triggerVibrate('error');
+        setScanResult('error');
+        return;
+      }
+      await handleManualCheckIn(registration);
     }
-    setIsScanning(false);
+    
+    // NOTE: We do NOT set setIsScanning(false) here to allow continuous scanning for registrations
   }, [registrations, mentors, companies, startups, handleManualCheckIn, selectedProject?.id]);
 
   const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup') => {

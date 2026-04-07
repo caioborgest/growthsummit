@@ -25,7 +25,7 @@ export function TicketSection({
 
     const isPro = myRegistration?.palestrasNoturnas;
     const qrValue = myRegistration?.id 
-        ? generateQRString('registration', myRegistration.projectId || selectedProject?.id || '', myRegistration.id)
+        ? generateQRString('registration', myRegistration.projectId || selectedProject?.id || '', myRegistration.id, myRegistration.participant_id || user?.id)
         : 'sem-id';
 
     return (

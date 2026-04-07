@@ -8,19 +8,26 @@ export interface QRData {
     type: QRType;
     projectId: string;
     id: string; // registrationId or sessionId
+    participantId?: string;
     timestamp: string;
+    checksum?: string;
 }
 
 /**
  * Generates a string to be embedded in a QR code
+ * The value is now a structured JSON string with ID, Project, Participant and Checksum
  */
-export function generateQRString(type: QRType, projectId: string, id: string): string {
+export function generateQRString(type: QRType, projectId: string, id: string, participantId?: string): string {
     const data: QRData = {
         type,
         projectId,
         id,
+        participantId,
         timestamp: new Date().toISOString()
     };
+
+    // Calculate a simple checksum for validation
+    data.checksum = btoa(`${id}-${projectId}-${participantId || 'anon'}`).substring(0, 8);
 
     // We use a prefix to identify our dynamic QR codes
     return `GS_EVENT:${btoa(JSON.stringify(data))}`;
@@ -68,14 +75,14 @@ export function parseQRString(qrString: string): QRData | null {
                     };
                 case 'GE-MENTORING':
                     return {
-                        type: 'mentor', // or mentoria session? usually refers to mentor in scan contexts
+                        type: 'mentor', 
                         projectId: '',
                         id: parts[1],
                         timestamp: new Date().toISOString()
                     };
                 case 'GE-STAND':
                     return {
-                        type: 'sponsor', // or company/startup depending on context
+                        type: 'sponsor', 
                         projectId: '',
                         id: parts[1],
                         timestamp: new Date().toISOString()
@@ -88,7 +95,7 @@ export function parseQRString(qrString: string): QRData | null {
         }
     }
 
-    // 3. Fallback: Raw UUID-like IDs (often used in PWA TicketSection)
+    // 3. Fallback: Raw UUID-like IDs (often used in PWA TicketSection or legacy)
     if (qrString.length >= 32 && /^[0-9a-fA-F-]{32,36}$/.test(qrString)) {
         return {
             type: 'registration',
