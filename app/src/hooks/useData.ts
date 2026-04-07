@@ -27,8 +27,9 @@ import { STATUS_MAPPING } from '@/lib/constants';
 const isGEProject = (projectId: string | undefined, slug?: string): boolean => {
   if (!projectId && !slug) return false;
   
-  // 1. Fixed UUID detection (Triunfo)
-  if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890') return true;
+  // 1. Fixed UUID detection (Triunfo & Petrolina/Standard)
+  if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' || 
+      projectId === '94ef1840-1ce4-4f6d-a31b-1b0232f13fe9') return true;
 
   // 1. Slug-based detection (direct slug or projectId acting as slug)
   const identifier = (slug || projectId || '').toLowerCase();
@@ -1137,6 +1138,14 @@ export function useSupportQualityStats() {
   }, [tickets, allMessages]);
 
   return stats;
+}
+
+export function useB2BMeetings() {
+  return useData<B2BMeeting>([], 'b2b_meetings');
+}
+
+export function useStartups() {
+  return useData<Startup>([], 'startups');
 }
 
 

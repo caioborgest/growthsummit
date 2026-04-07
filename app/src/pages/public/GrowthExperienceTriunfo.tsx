@@ -483,51 +483,67 @@ export function GrowthExperienceTriunfo() {
 
         <div id="premio-empresa" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-fade-in-up">
-              <div className="flex items-center justify-between mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 backdrop-blur-sm">
-                  <Trophy className="h-5 w-5 animate-pulse" />
-                  <span className="text-xs font-black uppercase tracking-[0.2em]">Premiação Exclusiva</span>
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="animate-fade-in-up"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-brand-orange-coral/10 text-brand-orange-coral border border-brand-orange-coral/20 backdrop-blur-xl shadow-glow-sm">
+                  <Trophy className="h-5 w-5 animate-bounce" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em]">Premiação Exclusiva</span>
                 </div>
                 <SectionShare sectionId="premio-empresa" title="Prêmio Empresa Incentivadora - Growth Experience" />
               </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
-                Garante o Futuro da sua <span className="text-gradient underline decoration-brand-orange-coral/30 underline-offset-8">Equipe</span>
+              <h2 className="text-4xl sm:text-6xl font-black text-white mb-8 leading-[0.9] italic uppercase tracking-tighter">
+                Garante o Futuro <br /> da sua <span className="text-brand-orange-coral">Equipe</span>
               </h2>
-              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-500 mb-10 leading-relaxed font-medium">
                 Empresas que investem na capacitação de suas equipes são os verdadeiros motores do desenvolvimento local.
                 Ao realizar a **Inscrição em Lote**, sua empresa garante descontos exclusivos e compete automaticamente ao prêmio de "Melhor Empresa Incentivadora ao Empreendedorismo".
               </p>
 
-              <div className="space-y-4 mb-10">
+              <div className="space-y-4 mb-12">
                 {[
                   { text: '30% de Desconto para grupos acima de 5 pessoas', icon: CheckCircle },
                   { text: 'Homenagem no Palco durante a premiação noturna', icon: CheckCircle },
                   { text: 'Selo Digital "Empresa Incentivadora" para suas redes', icon: CheckCircle }
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors group">
-                    <item.icon className="h-6 w-6 text-brand-orange-coral mt-0.5 group-hover:scale-110 transition-transform" />
-                    <p className="text-gray-300 text-lg leading-snug">{item.text}</p>
-                  </div>
+                  <motion.div 
+                    key={i} 
+                    whileHover={{ x: 10 }}
+                    className="flex items-start gap-5 p-5 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-brand-orange-coral/30 hover:bg-white/[0.04] transition-all group"
+                  >
+                    <div className="p-2 rounded-lg bg-brand-orange-coral/10 group-hover:bg-brand-orange-coral transition-all">
+                      <item.icon className="h-6 w-6 text-brand-orange-coral group-hover:text-white transition-transform" />
+                    </div>
+                    <p className="text-white/80 text-lg font-bold leading-snug group-hover:text-white transition-colors">{item.text}</p>
+                  </motion.div>
                 ))}
               </div>
 
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-white text-dark font-black px-10 py-7 rounded-2xl shadow-xl hover:bg-brand-orange-coral hover:text-white transition-all duration-300 h-auto group"
+                className="w-full sm:w-auto bg-white text-dark font-black px-12 py-8 rounded-[2rem] shadow-2xl hover:bg-brand-orange-coral hover:text-white transition-all duration-500 h-auto group text-lg"
                 onClick={() => handleOpenModal('empresa')}
               >
                 Inscrição em Lote / Equipe
-                <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-4 h-6 w-6 group-hover:translate-x-2 transition-transform" />
               </Button>
-            </div>
+            </motion.div>
 
-            <div className="relative animate-fade-in-up lg:ml-8" style={{ animationDelay: '0.3s' }}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-brand-orange-gradient rounded-[2.5rem] blur opacity-20" />
-              <div className="aspect-square lg:aspect-video rounded-[2rem] overflow-hidden border-2 border-white/10 shadow-2xl relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative lg:ml-12"
+            >
+              <div className="absolute -inset-4 bg-gradient-to-r from-brand-orange-coral to-brand-orange-intense rounded-[3rem] blur-3xl opacity-20 animate-pulse" />
+              <div className="aspect-square lg:aspect-[4/3] rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-2xl relative group">
                 <img
                   src={getStorageUrl('event-images', 'espaco/gxexperience-noite.png')}
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-110"
                   alt="Homenagem e Premiação"
                   loading="lazy"
                 />
