@@ -1140,12 +1140,4 @@ export function useSupportQualityStats() {
   return stats;
 }
 
-export function useB2BMeetings() {
-  return useData<B2BMeeting>([], 'b2b_meetings');
-}
-
-export function useStartups() {
-  return useData<Startup>([], 'startups');
-}
-
 
