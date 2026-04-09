@@ -243,23 +243,55 @@ export function DashboardParticipante() {
         throw new Error('QR Code inválido para este tipo de check-in');
     }
 
-    if (!registration) throw new Error('Inscrição não encontrada');
+    if (!registration && !myPartnerMembership) throw new Error('Credencial não encontrada');
 
-    // Special logic for Growth Experience projects: entry validates all
-    const isGE = selectedProject?.type === 'growth_experience' || 
-                 selectedProject?.slug?.startsWith('ge-') || 
-                 selectedProject?.slug?.startsWith('growth-') ||
-                 selectedProject?.slug?.includes('triunfo') ||
-                 selectedProject?.slug?.includes('petrolina');
+    const timestamp = new Date().toISOString();
 
-    if (isGE && (qrData.type === 'registration' || qrData.type === 'entry')) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // 1. Partner Self Check-In Logic
+    if (myPartnerMembership && (qrData.type === 'registration' || qrData.type === 'entry' || qrData.type === 'ticket')) {
+        // Update partner table
+        await (supabase as any).from('partner_team_members').update({
+            checked_in: true,
+            check_in_time: timestamp
+        }).eq('id', myPartnerMembership.id);
+
+        // Log to unified check_ins
+        await (supabase as any).from('check_ins').insert({
+            project_id: selectedProject?.id,
+            user_id: user?.id,
+            ticket_number: myPartnerMembership.qrCode || `PARTNER_${myPartnerMembership.id.slice(0, 8)}`,
+            timestamp: timestamp,
+            location: 'Self Check-In (PWA)',
+            method: 'qrcode',
+            check_in_type: 'partner',
+            notes: `Self check-in via PWA - ${myPartnerMembership.name}`
+        });
+
+        toast.success(`Check-in realizado! Bem-vindo ao ${selectedProject.name}.`);
+        setIsCheckInModalOpen(false);
+        return;
+    }
+
+    // 2. Participant Self Check-In Logic
+    if (registration && (qrData.type === 'registration' || qrData.type === 'entry')) {
         const { error: entryErr } = await (supabase as any).from('registrations').update({
             checked_in: true,
-            check_in_at: new Date().toISOString()
+            check_in_at: timestamp
         }).eq('id', registration.id);
 
         if (entryErr) throw entryErr;
+
+        // Log to unified check_ins
+        await (supabase as any).from('check_ins').insert({
+            project_id: selectedProject?.id,
+            registration_id: registration.id,
+            user_id: user?.id,
+            ticket_number: registration.ticketNumber,
+            timestamp: timestamp,
+            location: 'Self Check-In (PWA)',
+            method: 'qrcode',
+            check_in_type: 'registration'
+        });
 
         // Emitir certificado de evento
         CertificateService.issueEventCertificate(
@@ -273,43 +305,36 @@ export function DashboardParticipante() {
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from('registrations').update({ 
-        checked_in: true, 
-        check_in_at: new Date().toISOString() 
-    }).eq('id', registration.id);
+    // 3. Activity Check-In (Sessions)
+    if (qrData.type === 'session') {
+        const { error: activityError } = await supabase.from('activity_check_ins').insert({
+            project_id: selectedProject?.id,
+            session_id: qrData.id,
+            registration_id: registration?.id || null,
+            user_id: user?.id,
+            check_in_at: timestamp,
+            check_in_type: 'qr'
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
-    if (error) throw error;
+        if (activityError) throw activityError;
 
-    // Call RPC or direct insert for activities
-    const { error: activityError } = await supabase.from('activity_check_ins').insert({
-        project_id: selectedProject?.id,
-        session_id: qrData.id,
-        registration_id: registration.id,
-        user_id: user?.id,
-        check_in_at: new Date().toISOString(),
-        check_in_type: 'qr'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
-
-    if (activityError) throw activityError;
-
-    // Emitir certificado via Service
-    if (selectedProject && registration) {
-        // Find the activity/session object to pass to the service
-        const sessionObj = (allSessions || []).find(s => s.id === qrData.id);
-        if (sessionObj) {
-            CertificateService.checkAndIssueSessionCertificate(
-                { id: user?.id || '', name: user?.name || '' },
-                selectedProject,
-                sessionObj,
-                registration.id
-            );
+        // Emitir certificado via Service
+        if (selectedProject && registration) {
+            const sessionObj = (allSessions || []).find(s => s.id === qrData.id);
+            if (sessionObj) {
+                CertificateService.checkAndIssueSessionCertificate(
+                    { id: user?.id || '', name: user?.name || '' },
+                    selectedProject,
+                    sessionObj,
+                    registration.id
+                );
+            }
         }
-    }
 
-    toast.success('Check-in realizado com sucesso!');
-    setIsCheckInModalOpen(false);
+        toast.success('Check-in na atividade realizado!');
+        setIsCheckInModalOpen(false);
+    }
   };
 
   // Render Section based on activeTab
@@ -362,12 +387,22 @@ export function DashboardParticipante() {
                     <p className="text-lg font-black text-white leading-tight uppercase tracking-tighter">
                       {myPartnerMembership.role || 'Integrante'}
                     </p>
-                    <button 
-                      onClick={() => setActiveTab('ingresso')}
-                      className="text-brand-orange-coral font-black text-[10px] uppercase tracking-widest mt-2 flex items-center gap-1 hover:gap-2 transition-all"
-                    >
-                      Ver Credencial Completa <span className="text-lg leading-none">→</span>
-                    </button>
+                    <div className="flex items-center gap-4 mt-3">
+                      <button 
+                        onClick={() => setActiveTab('ingresso')}
+                        className="text-brand-orange-coral font-black text-[10px] uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all"
+                      >
+                        Ver Ticket <span className="text-lg leading-none">→</span>
+                      </button>
+                      {!myPartnerMembership.checkedIn && (
+                        <button 
+                          onClick={() => setIsCheckInModalOpen(true)}
+                          className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] uppercase tracking-widest h-8 px-4 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                        >
+                          Fazer Check-In
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>

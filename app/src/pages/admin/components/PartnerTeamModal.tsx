@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePartnerTeam } from '@/hooks/useData';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { generateQRString } from '@/lib/qrUtils';
 import QRCode from 'qrcode';
 
 interface PartnerTeamModalProps {
@@ -59,7 +60,11 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const qrCode = `GE-PARTNER|${partner.id}|${Date.now()}`;
+      // Create a temporary ID placeholder or wait for the record to be created for the final ID
+      // However, we need the member ID for the QR. Standard flow: create -> then generate QR.
+      // We will generate the QR on-the-fly when viewing it, using the member.id.
+      // So here we just set a legacy placeholder for DB compatibility or leave empty.
+      const qrCodeLegacy = `GE-PARTNER|LOGGED|${Date.now()}`;
       await create({
         ...formData,
         partnerId: partner.id,
@@ -90,7 +95,10 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
 
   const generateQR = async (member: any) => {
     try {
-      const url = await QRCode.toDataURL(member.qrCode, {
+      // Use the unified GS_EVENT format for new generations
+      const qrString = generateQRString('partner', partner.projectId, member.id);
+      
+      const url = await QRCode.toDataURL(qrString, {
         width: 400,
         margin: 2,
         color: {

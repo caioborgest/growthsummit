@@ -42,7 +42,7 @@ export default function AdminCheckIn() {
   // Checklist Modal States
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
-  const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup'>('participant');
+  const [selectedRole, setSelectedRole] = useState<'participant' | 'mentor' | 'company' | 'startup' | 'partner'>('participant');
 
   // Fetch Data
   const { data: registrations, isLoading: loadingReg, refetch: refetchReg } = useData<Registration>([], 'registrations', { realtime: true });
@@ -52,6 +52,7 @@ export default function AdminCheckIn() {
   const { data: checkIns, refetch: refetchCheckIns } = useData<any>([], 'check_ins');
   const { data: sessionAttendance, refetch: refetchAttendance } = useData<any>([], 'activity_attendance');
   const { data: sessions } = useData<any>([], 'sessions');
+  const { data: partnerTeamMembers } = useData<any>([], 'partner_team_members');
 
   const refetch = useCallback(() => {
     refetchReg();
@@ -123,10 +124,9 @@ export default function AdminCheckIn() {
     if (!res && !raw) return;
 
     // Use raw if res is null (generic scan)
-    const effectiveId = res?.id || raw;
     const effectiveType = res?.type || 'registration';
 
-    if (['mentor', 'company', 'startup'].includes(effectiveType)) {
+    if (['mentor', 'company', 'startup', 'partner', 'exhibitor', 'sponsor'].includes(effectiveType)) {
       let entity: any = null;
       let role: any = 'participant';
 
@@ -139,6 +139,17 @@ export default function AdminCheckIn() {
       } else if (effectiveType === 'startup') {
         entity = startups.find(s => s.id === effectiveId);
         role = 'startup';
+      } else if (effectiveType === 'partner' || effectiveType === 'exhibitor') {
+        entity = partnerTeamMembers.find((m: any) => m.id === effectiveId);
+        role = 'partner';
+        
+        // Project ID validation for partners
+        if (entity && selectedProject?.id && entity.projectId !== selectedProject.id) {
+            toast.error('Colaborador pertence a outro evento.');
+            triggerVibrate('error');
+            setScanResult('error');
+            return;
+        }
       }
 
       if (entity) {
@@ -218,9 +229,9 @@ export default function AdminCheckIn() {
       const action = registration.checkedIn ? 'check-out' : 'check-in';
       await handleManualCheckIn(registration, action);
     }
-  }, [registrations, mentors, companies, startups, handleManualCheckIn, selectedProject?.id]);
+  }, [registrations, mentors, companies, startups, partnerTeamMembers, handleManualCheckIn, selectedProject?.id]);
 
-  const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup') => {
+  const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup' | 'partner') => {
     setSelectedEntity(entity);
     setSelectedRole(role);
     setIsChecklistOpen(true);

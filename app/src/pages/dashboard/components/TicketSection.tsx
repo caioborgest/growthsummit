@@ -40,7 +40,9 @@ export function TicketSection({
 
     const qrValue = myRegistration?.id 
         ? generateQRString('registration', myRegistration.projectId || selectedProject?.id || '', myRegistration.id, myRegistration.participant_id || user?.id)
-        : 'sem-id';
+        : (isPartner && user?.id 
+            ? generateQRString('partner', selectedProject?.id || '', user.id) // Fallback to user ID for partner role
+            : 'sem-id');
 
     return (
         <div className="space-y-6 pb-8">
@@ -87,7 +89,7 @@ export function TicketSection({
                             {[
                                 { label: 'Participante', value: myRegistration?.nome || user?.name || '—' },
                                 { label: 'Evento', value: selectedProject?.name || 'Growth Experience 2026' },
-                                { label: 'Tipo', value: ticketTypeLabel },
+                                { label: 'Papel', value: isPartner ? 'Parceiro / Expositor' : ticketTypeLabel },
                             ].map(({ label, value }) => (
                                 <div key={label} className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                                     <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{label}</span>

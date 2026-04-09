@@ -23,21 +23,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useCheckIns } from '@/hooks/useData';
-import type { Registration, Mentor, Company, Startup } from '@/types';
-import { CertificateService } from '@/lib/certificateService';
 import { useProject } from '@/contexts/ProjectContext';
+import { supabase } from '@/lib/supabase';
+import type { Registration, Mentor, Company, Startup, PartnerTeamMember } from '@/types';
+import { CertificateService } from '@/lib/certificateService';
 
-type Entity = Registration | Mentor | Company | Startup;
+type Entity = Registration | Mentor | Company | Startup | PartnerTeamMember;
 
 interface AccreditationChecklistModalProps {
     isOpen: boolean;
     onClose: () => void;
     entity: Entity | null;
-    role: 'participant' | 'mentor' | 'company' | 'startup';
+    role: 'participant' | 'mentor' | 'company' | 'startup' | 'partner';
+    projectId: string;
     onSuccess: () => void;
 }
 
-export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onSuccess }: AccreditationChecklistModalProps) {
+export function AccreditationChecklistModal({ isOpen, onClose, entity, role, projectId, onSuccess }: AccreditationChecklistModalProps) {
     const { user } = useAuth();
     const { selectedProject } = useProject();
     const { data: checkIns, create: createCheckIn } = useCheckIns();
@@ -80,18 +82,32 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
 
         setIsLoading(true);
         try {
+            const timestamp = new Date().toISOString();
+            
+            // 1. Unified Check-In Log
             await createCheckIn({
-                projectId: entity.projectId,
+                projectId: entity.projectId || projectId,
                 registrationId: getRegistrationId() as string, 
                 userId: getUserId(),
-                ticketNumber: (entity as Registration).ticketNumber || `ROLE_${role.toUpperCase()}`,
-                timestamp: new Date().toISOString(),
+                ticketNumber: (entity as Registration).ticketNumber || (entity as any).qrCode || `ROLE_${role.toUpperCase()}`,
+                timestamp: timestamp,
                 location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
                 method: 'manual',
-                checkInType: role, // Store the role in the new column
+                checkInType: role,
                 notes: `Accreditation for ${role}: ${entity.name || (entity as any).nome}`,
                 operatorId: user?.id
             } as any);
+
+            // 2. Role-specific updates
+            if (role === 'partner') {
+                await supabase
+                    .from('partner_team_members')
+                    .update({ 
+                        checked_in: true, 
+                        check_in_time: timestamp 
+                    })
+                    .eq('id', entity.id);
+            }
 
             // Emitir certificado se for participante e for entrada geral
             if (role === 'participant' && selectedProject) {
@@ -102,7 +118,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                 );
             }
 
-            toast.success('Credenciamento atualizado com sucesso!');
+            toast.success(`Credenciamento de ${role} atualizado!`);
             onSuccess();
             onClose();
         } catch (error) {
@@ -120,6 +136,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
             case 'mentor': return <User className="h-5 w-5 text-blue-400" />;
             case 'company': return <Building2 className="h-5 w-5 text-purple-400" />;
             case 'startup': return <Rocket className="h-5 w-5 text-teal-400" />;
+            case 'partner': return <Building2 className="h-5 w-5 text-emerald-400" />;
             default: return <Calendar className="h-5 w-5 text-brand-orange-coral" />;
         }
     };

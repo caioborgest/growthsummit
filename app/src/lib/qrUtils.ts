@@ -2,7 +2,7 @@
  * Utility to generate QR Code data for various event entities
  */
 
-export type QRType = 'registration' | 'session' | 'checkin' | 'feedback' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'entry' | 'ticket';
+export type QRType = 'registration' | 'session' | 'checkin' | 'feedback' | 'mentor' | 'company' | 'startup' | 'sponsor' | 'entry' | 'ticket' | 'partner' | 'exhibitor';
 
 export interface QRData {
     type: QRType;
@@ -71,6 +71,13 @@ export function parseQRString(qrString: string): QRData | null {
                         type: 'session',
                         projectId: '',
                         id: parts[1], // sessionId
+                        timestamp: new Date().toISOString()
+                    };
+                case 'GE-PARTNER':
+                    return {
+                        type: 'partner',
+                        projectId: '', // Legacy format doesn't have it
+                        id: parts[1], // partner_team_member_id
                         timestamp: new Date().toISOString()
                     };
                 case 'GE-MENTORING':
