@@ -135,7 +135,7 @@ export function useInscricoesTriunfo() {
         try {
             const { error: updateError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('growth_experience_registrations') as any)
+                .from('registrations') as any)
                 .update({ status, updated_at: new Date().toISOString() })
                 .eq('id', id);
 
@@ -153,7 +153,7 @@ export function useInscricoesTriunfo() {
         try {
             const { error: deleteError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('growth_experience_registrations') as any)
+                .from('registrations') as any)
                 .delete()
                 .eq('id', id);
 

@@ -84,7 +84,7 @@ export class CertificateService {
             // 6. Send Automated Email
             if (registrationId) {
                 const { data: reg } = await supabase
-                    .from('growth_experience_registrations')
+                    .from('registrations')
                     .select('nome, email')
                     .eq('id', registrationId)
                     .maybeSingle();
@@ -163,7 +163,7 @@ export class CertificateService {
             // 6. Send Automated Email
             if (registrationId) {
                 const { data: reg } = await supabase
-                    .from('growth_experience_registrations')
+                    .from('registrations')
                     .select('nome, email')
                     .eq('id', registrationId)
                     .maybeSingle();

@@ -231,12 +231,25 @@ export function AgendaSection({
 
                         {nightSessions.length > 0 ? (
                             nightSessions.map((s, i) => <SessionCard key={i} item={s} color="#ff7043" delay={i * 0.06} />)
+                        ) : isTriunfo ? (
+                            <div className="space-y-3">
+                                {[
+                                    { id: 't1', title: 'Credenciamento e Exposição', type: 'CHECK-IN', startTime: '17:00', endTime: '18:00', room: 'Espaço Parque', color: '#ff7043' },
+                                    { id: 't2', title: 'Gestão e Liderança: O Próximo Nível', type: 'PALESTRA', startTime: '18:15', endTime: '19:15', room: 'Auditório', color: '#ff7043' },
+                                    { id: 't3', title: 'Talk Show: Do Sertão para o Mundo', type: 'TALK SHOW', startTime: '19:15', endTime: '20:30', room: 'Auditório', color: '#ff7043' },
+                                    { id: 't4', title: 'Liderança Jurídica e Estratégica', type: 'PALESTRA', startTime: '20:30', endTime: '21:30', room: 'Auditório', color: '#ff7043' },
+                                    { id: 't5', title: 'Gestão para Escalar: Resultados', type: 'PALESTRA', startTime: '21:30', endTime: '22:30', room: 'Auditório', color: '#ff7043' },
+                                    { id: 't6', title: 'Networking VIP e Encerramento', type: 'SOCIAL', startTime: '22:30', endTime: '23:30', room: 'Lounge VIP', color: '#ff7043' }
+                                ].map((s, i) => (
+                                    <SessionCard key={i} item={s as any} color="#ff7043" delay={i * 0.06} />
+                                ))}
+                            </div>
                         ) : (
                             <div className="p-8 text-center rounded-[2rem] border border-dashed" style={{ background: 'var(--surface-1)', borderColor: 'var(--border-subtle)' }}>
                                 <Zap className="h-8 w-8 mx-auto mb-3 text-brand-orange-coral/30" />
-                                <p className="text-foreground/40 text-sm mb-4">A programação oficial do Growth Experience Triunfo está sendo finalizada.</p>
+                                <p className="text-foreground/40 text-sm mb-4">A programação oficial está sendo finalizada.</p>
                                 <p className="text-[10px] text-foreground/20 font-bold uppercase tracking-widest leading-relaxed">
-                                    O evento acontece dia 16/04 às 17h no Espaço Parque.<br/>Fique atento às notificações do App.
+                                    Fique atento às notificações do App.
                                 </p>
                             </div>
                         )}

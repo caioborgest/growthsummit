@@ -164,7 +164,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   }
 
   // Handle registration specific legacy field mapping
-  if (entityName === 'registrations' || entityName === 'growth_experience_registrations') {
+  if (entityName === 'registrations' || entityName === 'registrations') {
     if (item.final_amount !== undefined) {
       result.amount = item.final_amount;
       result.paid_amount = item.final_amount;

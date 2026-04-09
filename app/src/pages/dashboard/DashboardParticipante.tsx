@@ -120,45 +120,41 @@ export function DashboardParticipante() {
     navigate('/login');
   };
 
-  // Financial Status Logic
-  const isActuallyPaid = useMemo(() => {
-    if (!registration) return false;
-    
-    // Corporate check
-    if (registration.companyRegistrationBatches) {
-      return true; // If it's corporate, we consider it paid or handled by the company
-    }
+    // Partner logic
+    const isPartner = useMemo(() => {
+        const ticketType = (registration?.ticketType || '').toLowerCase();
+        return !!myPartnerMembership || ticketType.includes('partner') || ticketType.includes('expositor');
+    }, [myPartnerMembership, registration?.ticketType]);
 
-    const reg = registration as { 
-      status?: string; 
-      paymentStatus?: string; 
-      payment_status?: string; 
-      amount?: number 
-    };
-    const status = (reg.status || reg.paymentStatus || reg.payment_status || '').toLowerCase();
-    const isPaidStatus = ['pago', 'paid', 'confirmado', 'ativo', 'active'].includes(status);
-    return isPaidStatus || reg.amount === 0;
-  }, [registration]);
-  
-  const statusFinanceiro = useMemo(() => {
-    if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
-    
-    // Corporate logic
-    if (registration.companyRegistrationBatches) {
-      return { 
-        label: `✅ Pago pela empresa · ${registration.companyRegistrationBatches.company_name}`, 
-        color: 'bg-green-500/20 text-green-400' 
-      };
-    }
+    const statusFinanceiro = useMemo(() => {
+        if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
+        
+        // Requirement: Partner should not see payment status
+        if (isPartner) return null;
 
-    const reg = registration as { status?: string; statusPagamento?: string };
-    if (isActuallyPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
-    if (reg.status === 'cancelled' || reg.status === 'cancelado') 
-        return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
-    if (reg.statusPagamento === 'pendente' || reg.status === 'pendente') 
-        return { label: '⏳ AGUARDANDO', color: 'bg-yellow-500/20 text-yellow-500' };
-    return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
-  }, [registration, isActuallyPaid]);
+        // Corporate logic
+        if (registration.companyRegistrationBatches) {
+          const batchStatus = registration.companyRegistrationBatches.payment_status?.toLowerCase();
+          if (batchStatus === 'paid' || batchStatus === 'pago') {
+            return { 
+              label: `✅ Pago pela empresa · ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
+              color: 'bg-green-500/20 text-green-400' 
+            };
+          }
+          return { 
+            label: `⏳ Aguardando Empresa · ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
+            color: 'bg-yellow-500/20 text-yellow-500' 
+          };
+        }
+
+        if (isActuallyPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
+        
+        const reg = registration as { status?: string };
+        if (reg.status === 'cancelled' || reg.status === 'cancelado') 
+            return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
+        
+        return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
+    }, [registration, isActuallyPaid, isPartner]);
 
   // Mentoring Logic
   const mySessions = useMemo(() => 
@@ -258,7 +254,7 @@ export function DashboardParticipante() {
 
     if (isGE && (qrData.type === 'registration' || qrData.type === 'entry')) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: entryErr } = await (supabase as any).from('growth_experience_registrations').update({
+        const { error: entryErr } = await (supabase as any).from('registrations').update({
             checked_in: true,
             check_in_at: new Date().toISOString()
         }).eq('id', registration.id);
@@ -278,7 +274,7 @@ export function DashboardParticipante() {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from('growth_experience_registrations').update({ 
+    const { error } = await (supabase as any).from('registrations').update({ 
         checked_in: true, 
         check_in_at: new Date().toISOString() 
     }).eq('id', registration.id);
@@ -493,6 +489,7 @@ export function DashboardParticipante() {
             selectedProject={selectedProject} 
             statusFinanceiro={statusFinanceiro}
             isActuallyPaid={isActuallyPaid}
+            isPartner={isPartner}
             generateTicketPDF={generateTicketPDF}
             setShowCheckInModal={setIsCheckInModalOpen}
             setShowUpgradeModal={() => toast.info('Funcionalidade disponível em breve diretamente com a equipe.')}

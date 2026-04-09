@@ -41,7 +41,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             if (!dados.registrationId || isConfirmed) return;
 
             const { data } = await supabase
-                .from('growth_experience_registrations')
+                .from('registrations')
                 .select('payment_status')
                 .eq('id', dados.registrationId)
                 .single();
@@ -73,11 +73,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleStripe = () => {
-        const STRIPE_LINK = EVENT_CONFIG.stripePaymentLink;
-        window.open(STRIPE_LINK, '_blank');
-        toast.info("Link do Stripe aberto. O acesso será liberado após a confirmação do cartão.");
-    };
+
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -157,15 +153,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                         Voltar
                     </button>
                 )}
-                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={handleStripe}
-                        className="btn-form-primary !bg-gradient-to-r !from-blue-600 !to-blue-700 !shadow-[0_6px_24px_rgba(37,99,235,0.4)]"
-                    >
-                        <Landmark className="h-5 w-5 hidden sm:block" />
-                        CARTÃO (ATÉ 12X)
-                    </button>
+                <div className="flex-1">
                     <button
                         type="button"
                         onClick={onContinuar}

@@ -61,7 +61,7 @@ export function useProjectStatsQuery(id: string) {
       if (error) {
         // Fallback se a RPC não existir
         const { count: inscriptions } = await (supabase
-          .from('growth_experience_registrations' as any)
+          .from('registrations' as any)
           .select('*', { count: 'exact', head: true })
           .eq('project_id', id));
           

@@ -54,10 +54,18 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
     const statusPagamento = (row.payment_status as string || '').toLowerCase();
     const st = (row.status as string || '').toLowerCase();
     
-    // Determine if actually paid
-    const isActuallyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
+    // Determine if actually paid (individual or corporate batch status)
+    const batchStatus = (row.company_registration_batches?.payment_status as string || '').toLowerCase();
+    
+    // 1. Explicit payment on individual registration
+    const isDirectlyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
                           st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado' ||
                           (row.is_paid === true);
+    
+    // 2. Paid via corporate batch (voucher code)
+    const isPaidViaBatch = batchStatus === 'paid' || batchStatus === 'pago';
+
+    const isActuallyPaid = isDirectlyPaid || isPaidViaBatch;
 
     return {
         id: row.id as string,

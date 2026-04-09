@@ -42,6 +42,76 @@ import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 
 
 
+// ── Sessões de Fallback (Programação Noturna) ──
+const FALLBACK_SESSIONS: Session[] = [
+  {
+    id: 'f1',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Credenciamento e Exposição de Marcas',
+    description: 'Networking e conexões estratégicas no Coração de Triunfo.',
+    type: 'checkin',
+    startTime: '17:00',
+    endTime: '18:00',
+    room: 'Espaço Parque',
+    speakers: ['Staff Growth']
+  },
+  {
+    id: 'f2',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Gestão e Liderança: O Próximo Nível',
+    description: 'Palestra Magna sobre como liderar em tempos de I.A. e incertezas.',
+    type: 'palestra',
+    startTime: '18:15',
+    endTime: '19:15',
+    room: 'Salão Principal',
+    speakers: ['Jerônimo Freire']
+  },
+  {
+    id: 'f3',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Talk Show: Do Sertão para o Mundo',
+    description: 'Casos reais de empreendedores que escalaram seus negócios.',
+    type: 'talkshow',
+    startTime: '19:15',
+    endTime: '20:30',
+    room: 'Palco Principal',
+    speakers: ['Leandro Batista', 'João Daniel']
+  },
+  {
+    id: 'f4',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Liderança Jurídica e Estratégica',
+    description: 'Redução de riscos e engajamento jurídico para empresas em crescimento.',
+    type: 'palestra',
+    startTime: '20:30',
+    endTime: '21:30',
+    room: 'Salão Principal',
+    speakers: ['Dra. Carolinne Castro']
+  },
+  {
+    id: 'f5',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Gestão para Escalar: Resultados Reais',
+    description: 'Como equilibrar processos e o fator humano na aceleração de negócios.',
+    type: 'palestra',
+    startTime: '21:30',
+    endTime: '22:30',
+    room: 'Salão Principal',
+    speakers: ['Vanylton Matias']
+  },
+  {
+    id: 'f6',
+    projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    title: 'Networking VIP e Encerramento',
+    description: 'Momento final de conexões e celebração do ecossistema GX.',
+    type: 'social',
+    startTime: '22:30',
+    endTime: '23:30',
+    room: 'Lounge VIP',
+    speakers: ['Staff Growth']
+  }
+];
+
 // Main Component
 export function GrowthExperienceTriunfo() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -146,11 +216,11 @@ export function GrowthExperienceTriunfo() {
     try {
       const project = await ensureProject({
         id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-        name: 'Growth Experience Triunfo-PE 2026',
+        name: 'Growth Experience Triunfo - Pocket Edition (Noturno)',
         slug: 'growth-experience-triunfo',
         type: 'growth_experience',
-        description: 'GX Growth Experience Triunfo – Noite de Palestras e Negócios. Programação especial das 17h às 23h em 16 de abril de 2026 no Espaço Parque. Palestras, talk shows e networking.',
-        shortDescription: 'Edição Triunfo-PE',
+        description: 'Uma edição exclusiva focada em conexões de alto nível no Sertão do Pajeú. Programação especial das 17h às 23h em 16 de abril de 2026 no Espaço Parque. Palestras magnas, talk shows e networking estratégico.',
+        shortDescription: 'Edição Noturna | Triunfo-PE',
         location: 'Espaço Parque',
         city: 'Triunfo',
         state: 'PE',
@@ -419,9 +489,10 @@ export function GrowthExperienceTriunfo() {
           
           <div className="space-y-6">
             {(() => {
-              const displaySessions = (allSessions || [])
-                .filter(s => s.projectId === currentProject?.id)
-                .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+              const filtered = (allSessions || []).filter(s => s.projectId === currentProject?.id);
+              const displaySessions = filtered.length > 0
+                ? filtered.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+                : FALLBACK_SESSIONS;
 
               if (displaySessions.length === 0) {
                 return (

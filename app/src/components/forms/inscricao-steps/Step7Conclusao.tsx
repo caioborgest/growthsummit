@@ -46,7 +46,7 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
 
                     // 3. Link Registration
                     await (supabase
-                        .from('growth_experience_registrations') as any)
+                        .from('registrations') as any)
                         .update({ user_id: userId })
                         .eq('id', dados.registrationId);
                     

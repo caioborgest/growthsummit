@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { safeStorage } from '@/utils/safeStorage';
-import { Project } from '@/types';
+import type { Project } from '@/types';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
 

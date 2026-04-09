@@ -42,7 +42,7 @@ export function AdminGrowthExperienceTriunfo() {
         
         if (activeTab === 'inscricoes') {
             activeData = inscricoes;
-            filename = 'growth_experience_registrations.csv';
+            filename = 'registrations.csv';
         } else if (activeTab === 'startups') {
             activeData = startups;
             filename = 'arena_pitch_startups.csv';

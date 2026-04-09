@@ -19,7 +19,7 @@ export function useRegistrationsQuery(filters?: Record<string, any>) {
   return useQuery({
     queryKey: registrationKeys.list(filters),
     queryFn: async () => {
-      let query: any = supabase.from('growth_experience_registrations' as any).select('*');
+      let query: any = supabase.from('registrations' as any).select('*');
       
       if (filters?.email) query = query.eq('email', filters.email);
       if (filters?.status) query = query.eq('status', filters.status);
@@ -41,7 +41,7 @@ export function useMyRegistrationsQuery() {
       if (!user) return [];
 
       const { data, error } = await (supabase
-        .from('growth_experience_registrations' as any)
+        .from('registrations' as any)
         .select('*')
         .eq('user_id', user.id));
 
@@ -57,7 +57,7 @@ export function useRegistrationQuery(id: string) {
     queryKey: registrationKeys.detail(id),
     queryFn: async () => {
       const { data, error } = await (supabase
-        .from('growth_experience_registrations' as any)
+        .from('registrations' as any)
         .select('*')
         .eq('id', id)
         .single());
@@ -75,7 +75,7 @@ export function useRegistrationQRQuery(id: string) {
     queryKey: registrationKeys.qrCode(id),
     queryFn: async () => {
       const { data, error } = await (supabase
-        .from('growth_experience_registrations' as any)
+        .from('registrations' as any)
         .select('id, ticket_number, qr_code')
         .eq('id', id)
         .single());
@@ -120,7 +120,7 @@ export function useRegistrationsMutation() {
   const verifyPaymentMutation = useMutation({
     mutationFn: async (registrationId: string) => {
       const { data, error } = await (supabase
-        .from('growth_experience_registrations' as any)
+        .from('registrations' as any)
         .select('payment_status')
         .eq('id', registrationId)
         .single());
@@ -137,7 +137,7 @@ export function useRegistrationsMutation() {
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await (supabase
-        .from('growth_experience_registrations' as any)
+        .from('registrations' as any)
         .update({ status: 'cancelled' })
         .eq('id', id));
 

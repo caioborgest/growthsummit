@@ -99,68 +99,29 @@ interface UserDBMetadata {
   two_factor_enabled?: boolean;
 }
 
-// Configuração de admin via variáveis de ambiente (nunca hardcoded)
-const ADMIN_DOMAINS = (import.meta.env.VITE_ADMIN_DOMAINS || '').split(',').map((d: string) => d.trim().toLowerCase()).filter(Boolean);
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').map((e: string) => e.trim().toLowerCase()).filter(Boolean);
-
-function isAdminEmail(email?: string): boolean {
-  if (!email) return false;
-  const lowerEmail = email.toLowerCase().trim();
-  // Verificar se o email está na lista de admin emails (configurado via VITE_ADMIN_EMAILS)
-  if (ADMIN_EMAILS.includes(lowerEmail)) return true;
-  // Verificar se o domínio do email está na lista de admin domains
-  return ADMIN_DOMAINS.some(domain => lowerEmail.endsWith(`@${domain}`));
-}
-
-// Converter SupabaseUser para User
+// mapSupabaseUserToUser converts Supabase Auth user to internal User type
 function mapSupabaseUserToUser(supabaseUser: SupabaseUser, metadata?: UserDBMetadata): User {
-  // 1. PRIORIDADE MÁXIMA: Identificar se é Admin por qualquer fonte de email disponível
-  // Tentamos o email da sessão (Auth), do banco (Metadata) ou do JWT (user_metadata)
-  const candidateEmail = (supabaseUser.email || metadata?.email || supabaseUser.user_metadata?.email || '').toLowerCase().trim();
-  
-  const isSuperAdmin = isAdminEmail(candidateEmail);
-
-  if (isSuperAdmin) {
-    const role = 'admin';
-    logger.debug('[Auth] Super admin identificado:', { email: candidateEmail, source: metadata ? 'db' : 'auth' });
-    
-    return {
-      id: supabaseUser.id,
-      email: candidateEmail || supabaseUser.email || '',
-      name: metadata?.name || supabaseUser.user_metadata?.name || candidateEmail.split('@')[0] || 'Super Admin',
-      role,
-      avatar: metadata?.avatar_url || supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatar || undefined,
-      phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
-      department: metadata?.department || undefined,
-      staffRole: metadata?.staff_role || undefined,
-      permissions: metadata?.permissions || ['*'], // Super admins têm todas as permissões
-      createdAt: supabaseUser.created_at,
-      twoFactorEnabled: metadata?.two_factor_enabled || false,
-    };
-  }
-
-  // 2. Para outros usuários: Prioridade: Metadata do DB > Metadata do JWT > default
+  // Use metadata role (from DB) first, fallback specifically to JWT user_metadata role, finally default to 'participant'
   let rawRole = (metadata?.role || supabaseUser.user_metadata?.role || '').toLowerCase().trim();
 
-  // Fallback final
+  // Normalize role names
   if (!rawRole) rawRole = 'participant';
-
-  // Se o role vindo for 'superadmin', mapeamos para 'admin' para consistência interna do app
   if (rawRole === 'superadmin') rawRole = 'admin';
   if (rawRole === 'empresa') rawRole = 'company';
 
   const role = ROLE_MAPPING[rawRole] || rawRole;
+  const email = (supabaseUser.email || metadata?.email || supabaseUser.user_metadata?.email || '').toLowerCase().trim();
 
   return {
     id: supabaseUser.id,
-    email: supabaseUser.email || '',
-    name: metadata?.name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
+    email: email,
+    name: metadata?.name || supabaseUser.user_metadata?.name || email.split('@')[0] || 'Usuário',
     role,
     avatar: metadata?.avatar_url || supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatar || undefined,
     phone: metadata?.phone || supabaseUser.user_metadata?.phone || undefined,
     department: metadata?.department || undefined,
     staffRole: metadata?.staff_role || undefined,
-    permissions: metadata?.permissions || [],
+    permissions: metadata?.permissions || (role === 'admin' ? ['*'] : []),
     createdAt: supabaseUser.created_at,
     twoFactorEnabled: metadata?.two_factor_enabled || false,
   };

@@ -12,6 +12,7 @@ interface TicketSectionProps {
     selectedProject: any;
     statusFinanceiro: any;
     isActuallyPaid: boolean;
+    isPartner?: boolean;
     generateTicketPDF: (reg: any, projectName: string) => Promise<void>;
     setShowCheckInModal: (show: boolean) => void;
     setShowUpgradeModal: (show: boolean) => void;
@@ -20,7 +21,7 @@ interface TicketSectionProps {
 
 export function TicketSection({
     myRegistration, user, selectedProject, statusFinanceiro,
-    isActuallyPaid, generateTicketPDF, setShowCheckInModal, setShowUpgradeModal, onRefresh
+    isActuallyPaid, isPartner, generateTicketPDF, setShowCheckInModal, setShowUpgradeModal, onRefresh
 }: TicketSectionProps) {
 
     const isCorporate = !!myRegistration?.companyRegistrationBatches;
@@ -102,29 +103,40 @@ export function TicketSection({
                                     </span>
                                 </div>
                             )}
+
+                            {!isCorporate && myRegistration?.couponCode && (
+                                <div className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                                    <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Cupom / Promo</span>
+                                    <span className="text-brand-orange-coral font-black text-xs text-right uppercase italic">
+                                        {myRegistration.couponCode}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Payment status */}
-                        <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
-                            <div className="flex items-center gap-2">
-                                <CreditCard className="h-4 w-4 text-foreground/40" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground/50">Pagamento</span>
+                        {/* Payment status - Hidden for partners */}
+                        {!isPartner && statusFinanceiro && (
+                            <div className="flex items-center justify-between p-3.5 rounded-2xl" style={{ background: 'var(--surface-1)', border: '1px solid var(--border-subtle)' }}>
+                                <div className="flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4 text-foreground/40" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/50">Pagamento</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        className={`${statusFinanceiro?.color || ''} text-[9px] font-black px-2.5 py-1 cursor-pointer hover:scale-105 active:scale-95 transition-all border-none`}
+                                        onClick={onRefresh}
+                                        title="Clique para atualizar"
+                                    >
+                                        {statusFinanceiro?.label || 'Verificando...'}
+                                    </Badge>
+                                    {onRefresh && (
+                                        <button onClick={onRefresh} className="text-foreground/30 hover:text-foreground/70 transition-colors">
+                                            <RefreshCw className="h-3.5 w-3.5" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Badge
-                                    className={`${statusFinanceiro?.color || ''} text-[9px] font-black px-2.5 py-1 cursor-pointer hover:scale-105 active:scale-95 transition-all border-none`}
-                                    onClick={onRefresh}
-                                    title="Clique para atualizar"
-                                >
-                                    {statusFinanceiro?.label || 'Verificando...'}
-                                </Badge>
-                                {onRefresh && (
-                                    <button onClick={onRefresh} className="text-foreground/30 hover:text-foreground/70 transition-colors">
-                                        <RefreshCw className="h-3.5 w-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
+                        )}
 
                         {isPro && isActuallyPaid && (
                             <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>

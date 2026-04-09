@@ -651,7 +651,7 @@ export type Database = {
           },
         ]
       }
-      growth_experience_registrations: {
+      registrations: {
         Row: {
           app_instalado: boolean | null
           lecture_code: string | null
@@ -735,14 +735,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "growth_experience_registrations_project_id_fkey"
+            foreignKeyName: "registrations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "growth_experience_registrations_user_id_fkey"
+            foreignKeyName: "registrations_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
