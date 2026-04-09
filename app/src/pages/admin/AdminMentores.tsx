@@ -29,7 +29,6 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -249,7 +248,6 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
               </Button>
             </div>
           )}
-        </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -491,8 +489,6 @@ function MentorEditModal({ mentor, onClose, onSave }: {
             </Button>
           </div>
         </form>
-          </div>
-        </form>
       </DialogContent>
     </Dialog>
   );
@@ -500,7 +496,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
 
 export function AdminMentores() {
   const { projectId } = useProject();
-  const { data: mentors, create, update, remove, isLoading } = useMentors();
+  const { data: mentors, create, update, remove } = useMentors();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -595,8 +591,8 @@ export function AdminMentores() {
 
       // ── STEP 2: Upload da Foto
       let photoUrl = '';
-      if (formData.photo) {
-        const file = formData.photo;
+      if (formData.photoFile) {
+        const file = formData.photoFile;
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `mentores/${fileName}`;
@@ -654,13 +650,13 @@ export function AdminMentores() {
       roleTitle: '',
       bio: '',
       specialties: [],
-      linkedin: '',
+      linkedinUrl: '',
       password: '',
       confirmPassword: '',
-      photo: null,
+      photoFile: null,
       photoPreview: '',
       yearsExperience: 5,
-      maxMentories: 10
+      maxMentorings: 10
     });
   };
 
@@ -812,7 +808,7 @@ export function AdminMentores() {
                   Adicionar <span className="text-brand-orange-coral">Novo Mentor</span>
                 </DialogTitle>
                 <DialogDescription className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-none">
-                  Criação de perfil e conta de acesso automático
+                  Criação de perfil e conta de acesso automático • Passo {currentStep} de 3
                 </DialogDescription>
               </div>
               <Button
@@ -825,28 +821,15 @@ export function AdminMentores() {
               </Button>
             </div>
 
-            <div className="admin-modal-body p-0" ref={scrollContainerRef}>
-              <form onSubmit={handleCreate} className="min-h-0">
-            {/* Progress Bar */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
-              <div
-                className="h-full bg-brand-orange-coral transition-all duration-500"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
-              />
-            </div>
-
-            <div className="admin-modal-header">
-              <div>
-                <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase">
-                  Novo <span className="text-brand-orange-coral">Mentor</span>
-                </DialogTitle>
-                <DialogDescription className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">
-                  Passo {currentStep} de 3 • Sincronizado com o site
-                </DialogDescription>
-              </div>
-            </div>
-
             <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+              {/* Progress Bar */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-[60]">
+                <div
+                  className="h-full bg-brand-orange-coral transition-all duration-500"
+                  style={{ width: `${(currentStep / 3) * 100}%` }}
+                />
+              </div>
+
               <div ref={scrollContainerRef} className="admin-modal-body">
                 {currentStep === 1 && (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -870,7 +853,7 @@ export function AdminMentores() {
                               if (file) {
                                 setFormData({
                                   ...formData,
-                                  photo: file,
+                                  photoFile: file,
                                   photoPreview: URL.createObjectURL(file)
                                 });
                               }
@@ -997,8 +980,8 @@ export function AdminMentores() {
                         <Input
                           type="number"
                           min="1"
-                          value={formData.maxMentories}
-                          onChange={e => setFormData({ ...formData, maxMentories: parseInt(e.target.value) || 0 })}
+                          value={formData.maxMentorings}
+                          onChange={e => setFormData({ ...formData, maxMentorings: parseInt(e.target.value) || 0 })}
                           className="bg-dark-100 border-dark-300 h-10"
                         />
                       </div>
@@ -1029,8 +1012,8 @@ export function AdminMentores() {
                         <Linkedin className="h-3 w-3 text-blue-400" /> LinkedIn
                       </label>
                       <Input
-                        value={formData.linkedin}
-                        onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                        value={formData.linkedinUrl}
+                        onChange={e => setFormData({ ...formData, linkedinUrl: e.target.value })}
                         placeholder="https://linkedin.com/in/perfil"
                         className="bg-dark-100 border-dark-300 h-11"
                       />
@@ -1121,7 +1104,7 @@ export function AdminMentores() {
                   <img src={mentor.photo} alt={mentor.name} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-white font-bold text-lg">
-                    {mentor.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                    {mentor.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                   </span>
                 )}
               </div>
@@ -1138,7 +1121,7 @@ export function AdminMentores() {
             </div>
 
             <h3 className="text-lg font-semibold text-white mb-1">{mentor.name}</h3>
-            <p className="text-teal-400 text-sm mb-1">{mentor.position}</p>
+            <p className="text-teal-400 text-sm mb-1">{mentor.roleTitle}</p>
             <p className="text-gray-400 text-sm mb-4">{mentor.company}</p>
 
             <div className="space-y-2 mb-4">
@@ -1158,14 +1141,14 @@ export function AdminMentores() {
               </div>
               <div className="flex items-center text-sm text-gray-400">
                 <Calendar className="h-4 w-4 mr-2" />
-                {mentor.maxMentories} mentorias disponíveis
+                {mentor.maxMentorings} mentorias disponíveis
               </div>
             </div>
 
             <div className="mb-4">
               <p className="text-gray-400 text-sm mb-2">Especialidades:</p>
               <div className="flex flex-wrap gap-2">
-                {mentor.specialties?.map((spec, i) => (
+                {mentor.specialties?.map((spec: string, i: number) => (
                   <Badge key={i} className="bg-dark-300 text-gray-300">
                     {spec}
                   </Badge>
@@ -1201,8 +1184,8 @@ export function AdminMentores() {
                   ) : (
                     <DropdownMenuItem
                       onClick={() => {
-                        const link = mentor.linkedin?.startsWith('http') ? mentor.linkedin : `https://${mentor.linkedin}`;
-                        if (mentor.linkedin) window.open(link, '_blank');
+                        const link = mentor.linkedinUrl?.startsWith('http') ? mentor.linkedinUrl : `https://${mentor.linkedinUrl}`;
+                        if (mentor.linkedinUrl) window.open(link, '_blank');
                         else toast.error('LinkedIn não cadastrado');
                       }}
                       className="flex items-center gap-2 cursor-pointer hover:bg-white/5 rounded-lg"
