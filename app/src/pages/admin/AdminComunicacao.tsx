@@ -1068,7 +1068,6 @@ export default function AdminComunicacao() {
 
       {/* Preview Modal */}
       <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
-      <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
         <DialogContent className="admin-modal-content max-w-2xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
           <div className="admin-modal-header p-8 pb-4">
             <div>
