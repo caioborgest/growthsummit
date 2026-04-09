@@ -148,7 +148,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
 
             const { error: insError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .from('registrations') as any).insert({
+                .from('growth_experience_registrations') as any).insert({
                     project_id: projectId,
                     user_id: userId || null,
                     name: formData.nome,

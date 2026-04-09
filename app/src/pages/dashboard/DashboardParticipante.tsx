@@ -274,7 +274,7 @@ export function DashboardParticipante() {
 
     // 2. Participant Self Check-In Logic
     if (registration && (qrData.type === 'registration' || qrData.type === 'entry')) {
-        const { error: entryErr } = await (supabase as any).from('registrations').update({
+        const { error: entryErr } = await (supabase as any).from('growth_experience_registrations').update({
             checked_in: true,
             check_in_at: timestamp
         }).eq('id', registration.id);

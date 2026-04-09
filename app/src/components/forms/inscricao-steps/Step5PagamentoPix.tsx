@@ -41,7 +41,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
             if (!dados.registrationId || isConfirmed) return;
 
             const { data } = await supabase
-                .from('registrations')
+                .from('growth_experience_registrations')
                 .select('payment_status')
                 .eq('id', dados.registrationId)
                 .single();

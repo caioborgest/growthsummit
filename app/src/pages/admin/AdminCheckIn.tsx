@@ -171,8 +171,8 @@ export default function AdminCheckIn() {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       try {
         const { data, error } = await supabase
-          .from('registrations')
-          .select('*, profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!registrations_participant_id_fkey(name, email)')
+          .from('growth_experience_registrations')
+          .select('*, profiles:profiles!growth_experience_registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!growth_experience_registrations_participant_id_fkey(name, email)')
           .eq('id', effectiveId)
           .maybeSingle();
 

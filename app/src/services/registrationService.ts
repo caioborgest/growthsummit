@@ -94,7 +94,7 @@ export const registrationService = {
 
         const payload = {
             p_project_id: cleanProjectId,
-            p_participant_id: cleanUserId || null,
+            p_user_id: cleanUserId || null,
             p_name: params.name || '',
             p_email: (params.email || '').trim().toLowerCase(),
             p_phone: params.phone || '',
@@ -123,7 +123,7 @@ export const registrationService = {
 
         logger.info('[registrationService] Executing RPC register_participant_with_slots:', {
             project: payload.p_project_id,
-            participant: payload.p_participant_id,
+            user: payload.p_user_id,
             sessions: payload.p_session_ids.length,
             batch: payload.p_batch_id,
             type: payload.p_registration_type
@@ -185,7 +185,7 @@ export const registrationService = {
      * Lists registrations by project and optional filters
      */
     async listByProject(projectId: string, filters: { email?: string; status?: string } = {}) {
-        let query: any = supabase.from('registrations');
+        let query: any = supabase.from('growth_experience_registrations');
         
         // Select fields from registrations and join with users for contact info
         query = query.select(`
@@ -201,8 +201,8 @@ export const registrationService = {
             created_at,
             ticket_type,
             qr_code,
-            profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role),
-            users:users!registrations_participant_id_fkey(name, email)
+            profiles:profiles!growth_experience_registrations_participant_id_fkey(user_id, phone, company, city, state, role),
+            users:users!growth_experience_registrations_participant_id_fkey(name, email)
         `);
         
         query = query.eq('project_id', projectId);
@@ -228,7 +228,7 @@ export const registrationService = {
      */
     async getById(id: string) {
         const { data, error } = await supabase
-            .from('registrations')
+            .from('growth_experience_registrations')
             .select(`
                 id,
                 project_id,
@@ -243,8 +243,8 @@ export const registrationService = {
                 ticket_type,
                 qr_code,
                 qr_code_data,
-                profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role),
-                users:users!registrations_participant_id_fkey(name, email)
+                profiles:profiles!growth_experience_registrations_participant_id_fkey(user_id, phone, company, city, state, role),
+                users:users!growth_experience_registrations_participant_id_fkey(name, email)
             `)
             .eq('id', id)
             .single();
