@@ -100,12 +100,23 @@ export function useInscricoesTriunfo() {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
                 .from('registrations')
-                .select('*')
+                .select('*, profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!registrations_participant_id_fkey(name, email)')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
-            setData(inscricoes || []);
+            
+            // Map the joined data to the flat interface
+            const mappedData = (inscricoes || []).map((reg: any) => ({
+                ...reg,
+                nome: reg.users?.name || reg.profiles?.name || reg.name || reg.nome,
+                email: reg.users?.email || reg.profiles?.email || reg.email,
+                phone: reg.profiles?.phone || reg.phone || reg.telefone,
+                empresa: reg.profiles?.company || reg.company,
+                paid_amount: reg.final_amount || reg.paid_amount,
+            }));
+
+            setData(mappedData);
             setError(null);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Erro desconhecido';

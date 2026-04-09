@@ -18,8 +18,10 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      lockAcquireTimeout: 10000,
     },
+    realtime: {
+      params: { eventsPerSecond: 2 }
+    }
   }
 );
 

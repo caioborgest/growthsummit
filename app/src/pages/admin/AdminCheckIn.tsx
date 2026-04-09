@@ -160,7 +160,7 @@ export default function AdminCheckIn() {
       try {
         const { data, error } = await supabase
           .from('registrations')
-          .select('*, profiles(name, email, phone)')
+          .select('*, profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!registrations_participant_id_fkey(name, email)')
           .eq('id', effectiveId)
           .maybeSingle();
 
@@ -176,9 +176,10 @@ export default function AdminCheckIn() {
 
            const mapped: Registration = {
                 ...reg,
-                name: reg.profiles?.name || reg.name || reg.nome,
-                email: reg.profiles?.email || reg.email,
+                name: reg.users?.name || reg.profiles?.name || reg.name || reg.nome,
+                email: reg.users?.email || reg.profiles?.email || reg.email,
                 phone: reg.profiles?.phone || reg.phone || reg.telefone,
+                company: reg.profiles?.company || reg.company,
                 projectId: reg.project_id,
                 userId: reg.participant_id,
                 ticketNumber: reg.ticket_number,

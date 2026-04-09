@@ -144,11 +144,23 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
   
   // Flatten profiles data if present (common for registrations and other participant-linked entities)
   if (item.profiles) {
-    const p = item.profiles;
+    const p = item.profiles as any;
     if (p.name && !result.name) result.name = p.name;
     if (p.email && !result.email) result.email = p.email;
     if (p.phone && !result.phone) result.phone = p.phone;
+    if (p.company && !result.company) result.company = p.company;
+    if (p.city && !result.city) result.city = p.city;
+    if (p.state && !result.state) result.state = p.state;
+    if (p.role && !result.role) result.role = p.role;
     if (p.avatar_url && !result.photo) result.photo = p.avatar_url;
+  }
+
+  // Flatten users data if joined separately (for name/email from auth.users mirror)
+  if (item.users) {
+    const u = item.users as any;
+    if (u.name && !result.name) result.name = u.name;
+    if (u.email && !result.email) result.email = u.email;
+    if (u.avatar_url && !result.photo) result.photo = u.avatar_url;
   }
 
   // Handle registration specific legacy field mapping
@@ -364,7 +376,10 @@ function invalidateCache(projectId: string | undefined, entityName: string) {
 function getSelectFields(entity: string, projectId?: string, slug?: string): string {
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
-    if (entity === 'registrations' || entity === 'sessions' || entity === 'companies' || entity === 'startups') {
+    if (entity === 'registrations') {
+      return 'id,status,created_at,final_amount,participant_id,ticket_number,ticket_type,checked_in,check_in_at,qr_code,palestras_noturnas,cursos_selecionados,profiles:profiles!registrations_participant_id_fkey(user_id,phone,company,city,state,role),users:users!registrations_participant_id_fkey(name,email)';
+    }
+    if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';
     }
     if (entity === 'mentors') {

@@ -201,10 +201,8 @@ export const registrationService = {
             created_at,
             ticket_type,
             qr_code,
-            profiles (
-                name,
-                phone
-            )
+            profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role),
+            users:users!registrations_participant_id_fkey(name, email)
         `);
         
         query = query.eq('project_id', projectId);
@@ -217,8 +215,10 @@ export const registrationService = {
         // Flatten data to maintain compatibility with existing components
         return (data as any[]).map(reg => ({
             ...reg,
-            name: reg.profiles?.name,
-            phone: reg.profiles?.phone,
+            name: reg.users?.name || reg.profiles?.name || reg.name,
+            email: reg.users?.email || reg.profiles?.email || reg.email,
+            phone: reg.profiles?.phone || reg.phone,
+            company: reg.profiles?.company || reg.company,
             paid_amount: reg.final_amount // Map final_amount to paid_amount for compatibility
         }));
     },
@@ -243,10 +243,8 @@ export const registrationService = {
                 ticket_type,
                 qr_code,
                 qr_code_data,
-                profiles (
-                    name,
-                    phone
-                )
+                profiles:profiles!registrations_participant_id_fkey(user_id, phone, company, city, state, role),
+                users:users!registrations_participant_id_fkey(name, email)
             `)
             .eq('id', id)
             .single();
@@ -257,8 +255,10 @@ export const registrationService = {
         const reg = data as any;
         return {
             ...reg,
-            name: reg.profiles?.name,
-            phone: reg.profiles?.phone,
+            name: reg.users?.name || reg.profiles?.name || reg.name,
+            email: reg.users?.email || reg.profiles?.email || reg.email,
+            phone: reg.profiles?.phone || reg.phone,
+            company: reg.profiles?.company || reg.company,
             paid_amount: reg.final_amount
         };
     },

@@ -307,13 +307,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Log de Erro na tabela Auditoria
         logAuditEvent('login_failed', undefined, { email, error: error.message } as any);
 
-        // Log na tabela de Tentativas de Login
-        (supabase.from('login_attempts') as any).insert({
-          email,
-          ip_address: ip,
-          success: false,
-          attempted_at: new Date().toISOString()
-        }).then(({ error: err }: any) => { if (err) logger.debug('Silent login fail log (RLS):', err.message); });
+        // Log na tabela de Tentativas de Login (silencioso)
+        try {
+          (supabase.from('login_attempts') as any).insert({
+            email,
+            ip_address: ip,
+            success: false,
+            attempted_at: new Date().toISOString()
+          }).then(({ error: err }: any) => { 
+            if (err) logger.debug('Silent login fail log (RLS):', err.message); 
+          });
+        } catch (e) {
+          logger.warn('Erro ao registrar log de falha:', e);
+        }
 
         throw error;
       }
@@ -321,14 +327,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user && data.session) {
         rateLimiter.clearAttempts(email);
 
-        // Registrar Sucesso
-        (supabase.from('login_attempts') as any).insert({
-          user_id: data.user.id,
-          email,
-          ip_address: ip,
-          success: true,
-          attempted_at: new Date().toISOString()
-        }).then(({ error: err }: any) => { if (err) logger.debug('Silent login success log (RLS):', err.message); });
+        // Registrar Sucesso (silencioso)
+        try {
+          (supabase.from('login_attempts') as any).insert({
+            user_id: data.user.id,
+            email,
+            ip_address: ip,
+            success: true,
+            attempted_at: new Date().toISOString()
+          }).then(({ error: err }: any) => { 
+            if (err) logger.debug('Silent login success log (RLS):', err.message); 
+          });
+        } catch (e) {
+          logger.warn('Erro ao registrar log de sucesso:', e);
+        }
 
         // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
         // para garantir que o retorno da função tenha o usuário atualizado
@@ -383,7 +395,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: 'https://www.gxexperience.site/auth/callback' },
       });
       if (error) throw error;
       logAuditEvent('otp_sent', undefined, { email });
@@ -590,7 +602,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.info(`🔔 Auth State Change: ${event}`, { userId });
 
       if (isMountedRef.current) {
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' && !currentSession) {
           // Limpar imediatamente para evitar loop de redirecionamento
           isSyncingRef.current = false;
           lastSyncedSessionIdRef.current = null;
@@ -598,6 +610,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
           setIsLoading(false);
           logAuditEvent('logout_forced', userId); // só loga signout inesperado
+        } else if (event === 'TOKEN_REFRESH_FAILED' as any) {
+          logger.warn('Sessão expirada ou falha na renovação. Verifique sua conexão.');
+          // Não limpamos o estado aqui para evitar logout forçado imediato em falhas de rede
         } else if (event === 'TOKEN_REFRESHED') {
           if (currentSession) setSession(currentSession);
         } else if (currentSession) {

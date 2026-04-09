@@ -182,7 +182,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
                   try {
                     const { error } = await supabase.auth.signInWithOtp({
                       email: mentor.email,
-                      options: { emailRedirectTo: `${window.location.origin}/login` }
+                      options: { emailRedirectTo: 'https://www.gxexperience.site/auth/callback' }
                     });
                     if (error) throw error;
                     toast.success('Link mágico enviado com sucesso para o e-mail do mentor!');
