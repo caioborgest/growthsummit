@@ -65,20 +65,20 @@ function DetalhesModal({
   return (
     <Dialog open={!!reg} onOpenChange={onClose}>
       <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
-        <div className="admin-modal-header">
+        <div className="admin-modal-header p-8 pb-4">
            <div className="flex items-center gap-5">
               <div className="w-16 h-16 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">
                 <User className="h-8 w-8 text-brand-orange-coral" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
+                <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
                   {reg.name || 'Participante'}
-                </h3>
-                <div className="flex items-center gap-2">
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-none flex items-center gap-2">
                   <Badge className="bg-white/5 text-gray-500 border-none font-black text-[8px] uppercase tracking-widest">{reg.ticketNumber}</Badge>
                   <div className="w-1 h-1 rounded-full bg-gray-800" />
-                  <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-none">{reg.email}</p>
-                </div>
+                  <span>{reg.email}</span>
+                </DialogDescription>
               </div>
            </div>
            <Button
@@ -91,7 +91,7 @@ function DetalhesModal({
             </Button>
         </div>
 
-        <div className="admin-modal-body">
+        <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
           <div className="space-y-8 py-2">
             {/* Quick Status Bar */}
             <div className="flex flex-wrap items-center gap-3">
@@ -221,11 +221,11 @@ function DetalhesModal({
           </div>
         </div>
 
-        <div className="admin-modal-footer">
+        <div className="admin-modal-footer p-8 pt-0">
           <Button 
             variant="ghost" 
             onClick={onClose}
-            className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+            className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5 w-full sm:w-auto"
           >
             FECHAR
           </Button>

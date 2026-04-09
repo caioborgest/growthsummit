@@ -31,6 +31,13 @@ export interface MyRegistration {
     photo?: string;
     checkedIn?: boolean;
     checkInTime?: string;
+    couponCode?: string;
+    companyRegistrationBatches?: {
+        company_name: string;
+        ticket_type: string;
+        batch_name: string;
+        payment_status: string;
+    };
 }
 
 // No longer needs specialized tables per project, as everything is now in the unified 'registrations' table
@@ -75,6 +82,8 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         photo: (row.photo_url as string) || undefined,
         checkedIn: Boolean(row.checked_in),
         checkInTime: (row.check_in_at as string) || undefined,
+        couponCode: row.coupon_code || undefined,
+        companyRegistrationBatches: row.company_registration_batches || undefined,
     };
 }
 
@@ -92,9 +101,6 @@ export function useMyRegistration() {
         setError(null);
 
         try {
-            // Field selection without join on auth.users (Standard compliant)
-            const selectFields = '*';
-
             // 1) Find the project if not provided
             let targetProjectId = projectId;
             if (!targetProjectId) {
@@ -106,7 +112,7 @@ export function useMyRegistration() {
                     .limit(1)
                     .maybeSingle();
                 
-                if (latestReg) targetProjectId = (latestReg as any).project_id;
+                if (latestReg) targetProjectId = (latestReg as { project_id: string }).project_id;
             }
 
             if (!targetProjectId) {
@@ -119,7 +125,15 @@ export function useMyRegistration() {
                 async (signal) => {
                     return await supabase
                         .from(PRIMARY_TABLE)
-                        .select(selectFields)
+                        .select(`
+                            *,
+                            company_registration_batches!registrations_coupon_code_fkey (
+                                company_name,
+                                ticket_type,
+                                batch_name,
+                                payment_status
+                            )
+                        `)
                         .eq('project_id', targetProjectId)
                         .eq('participant_id', user.id)
                         .maybeSingle()
@@ -242,7 +256,7 @@ export function useMyRegistration() {
             }).eq('id', registration.id);
 
             // 2. Registrar no log de check_ins
-            await (supabase.from('check_ins' as never) as any).insert({
+            await (supabase.from('check_ins') as any).insert({
                 project_id: projectId,
                 registration_id: registration.id,
                 participant_id: user.id, // Consistent with new naming

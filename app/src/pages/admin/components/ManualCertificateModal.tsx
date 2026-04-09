@@ -126,10 +126,10 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
       <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
         <div className="admin-modal-header">
           <div>
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+            <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
               <Award className="h-7 w-7 text-brand-orange-coral" />
               Emissão <span className="text-brand-orange-coral">Personalizada</span>
-            </h3>
+            </DialogTitle>
             <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
               Configure e emita um certificado exclusivo para o participante.
             </p>

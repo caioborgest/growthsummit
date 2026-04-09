@@ -20,7 +20,7 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
     },
     realtime: {
-      params: { eventsPerSecond: 2 }
+      params: { eventsPerSecond: 10 }
     }
   }
 );

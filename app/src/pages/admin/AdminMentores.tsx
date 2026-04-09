@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,14 +69,16 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-content max-w-2xl">
+    <Dialog open={!!mentor} onOpenChange={onClose}>
+      <DialogContent className="admin-modal-content max-w-2xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
         <div className="admin-modal-header">
           <div>
-            <h2 className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
+            <DialogTitle className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
               Perfil do <span className="text-brand-orange-coral">Mentor</span>
-            </h2>
-            <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">Detalhes e gestão de candidatura</p>
+            </DialogTitle>
+            <DialogDescription className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">
+              Detalhes e gestão de candidatura para {mentor.name}
+            </DialogDescription>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <XCircle className="h-6 w-6" />
@@ -247,8 +250,9 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
             </div>
           )}
         </div>
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -340,15 +344,17 @@ function MentorEditModal({ mentor, onClose, onSave }: {
   };
 
   return (
-    <div className="admin-modal-overlay">
-      <div className="admin-modal-content max-w-2xl">
+    <Dialog open={!!mentor} onOpenChange={onClose}>
+      <DialogContent className="admin-modal-content max-w-2xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
         <div className="admin-modal-header">
           <div>
-            <h2 className="text-xl font-black text-white flex items-center gap-3">
+            <DialogTitle className="text-xl font-black text-white flex items-center gap-3">
               <Pencil className="h-5 w-5 text-brand-orange-coral" />
               Editar <span className="text-brand-orange-coral">Mentor</span>
-            </h2>
-            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">{mentor.name}</p>
+            </DialogTitle>
+            <DialogDescription className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+              Editando perfil de {mentor.name}
+            </DialogDescription>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <XCircle className="h-6 w-6" />
@@ -485,8 +491,10 @@ function MentorEditModal({ mentor, onClose, onSave }: {
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -796,8 +804,29 @@ export function AdminMentores() {
             </Button>
           </DialogTrigger>
           <DialogContent
-            className="admin-modal-content p-0 border-none max-w-xl"
+            className="admin-modal-content p-0 border-none max-w-xl bg-[#0F172A] overflow-hidden shadow-2xl"
           >
+            <div className="admin-modal-header">
+              <div>
+                <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
+                  Adicionar <span className="text-brand-orange-coral">Novo Mentor</span>
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 text-[9px] font-black uppercase tracking-widest leading-none">
+                  Criação de perfil e conta de acesso automático
+                </DialogDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsModalOpen(false)}
+                className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+              >
+                <XCircle className="h-6 w-6" />
+              </Button>
+            </div>
+
+            <div className="admin-modal-body p-0" ref={scrollContainerRef}>
+              <form onSubmit={handleCreate} className="min-h-0">
             {/* Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-20">
               <div

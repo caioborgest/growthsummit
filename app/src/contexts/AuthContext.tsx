@@ -242,21 +242,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 4. Buscar metadados enriquecidos no banco em background
     try {
-      const { data: userData, error: fetchError } = (await withTimeout(
+      const { data: userData, error: fetchError } = await withTimeout(
         async (signal) => {
-          const q = supabase
+          const { data, error } = await supabase
             .from('users')
             .select('id,name,email,role,avatar_url,phone')
             .eq('id', currentSession.user.id)
-            .maybeSingle();
-          return await (q as any).abortSignal(signal);
+            .maybeSingle()
+            .abortSignal(signal);
+          return { data, error };
         },
         5000,
         'AuthMetadataFetch'
-      )) as { data: UserDBMetadata | null; error: any };
+      );
 
       if (fetchError) {
-        logger.warn(`DB metadata fetch failed (User: ${currentSession.user.id}):`, fetchError.message);
+        logger.warn(`DB metadata fetch failed (User: ${currentSession.user.id}):`, { error: fetchError });
       }
 
       const finalUser = mapSupabaseUserToUser(currentSession.user, (userData as UserDBMetadata) || undefined);
@@ -272,7 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (err?.message?.includes('TIMEOUT_EXCEEDED')) {
         logger.error(`❌ ⚠️ TIMEOUT RLS DETECTADO: Usando dados do JWT como fallback. O banco de dados está travando ao ler a tabela 'users'.`);
       } else {
-        logger.warn('Erro silencioso na sincronização de metadados:', err);
+        logger.warn('Erro silencioso na sincronização de metadados:', { error: err });
       }
     } finally {
       setIsLoading(false);
@@ -304,21 +305,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         rateLimiter.recordAttempt(email);
 
-        // Log de Erro na tabela Auditoria
-        logAuditEvent('login_failed', undefined, { email, error: error.message } as any);
+        // Log de Erro na tabela Auditoria (Nunca deve travar o fluxo principal)
+        try {
+           logAuditEvent('login_failed', undefined, { email, error: error.message });
+        } catch (e) {
+           logger.debug('Audit log failed silently:', e);
+        }
 
         // Log na tabela de Tentativas de Login (silencioso)
         try {
-          (supabase.from('login_attempts') as any).insert({
+          supabase.from('login_attempts').insert({
             email,
             ip_address: ip,
             success: false,
             attempted_at: new Date().toISOString()
-          }).then(({ error: err }: any) => { 
-            if (err) logger.debug('Silent login fail log (RLS):', err.message); 
+          }).then(({ error: err }) => { 
+            if (err) logger.debug('Silent login fail log (RLS):', { error: err.message }); 
           });
         } catch (e) {
-          logger.warn('Erro ao registrar log de falha:', e);
+          logger.warn('Erro ao registrar log de falha:', { error: e });
         }
 
         throw error;
@@ -329,31 +334,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Registrar Sucesso (silencioso)
         try {
-          (supabase.from('login_attempts') as any).insert({
+          supabase.from('login_attempts').insert({
             user_id: data.user.id,
             email,
             ip_address: ip,
             success: true,
             attempted_at: new Date().toISOString()
-          }).then(({ error: err }: any) => { 
-            if (err) logger.debug('Silent login success log (RLS):', err.message); 
+          }).then(({ error: err }) => { 
+            if (err) logger.debug('Silent login success log (RLS):', { error: err.message }); 
           });
         } catch (e) {
-          logger.warn('Erro ao registrar log de sucesso:', e);
+          logger.warn('Erro ao registrar log de sucesso:', { error: e });
         }
 
         // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
         // para garantir que o retorno da função tenha o usuário atualizado
         let userData: UserDBMetadata | null = null;
         try {
-          const { data: ud } = (await withTimeout(
+          const { data: ud } = await withTimeout(
             async (signal) => {
-              const q = supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle();
-              return await (q as any).abortSignal(signal);
+              const { data: result } = await supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle().abortSignal(signal);
+              return { data: result };
             },
             3000
-          )) as { data: UserDBMetadata | null };
-          userData = ud;
+          );
+          userData = ud as UserDBMetadata;
         } catch (e) {
           logger.warn('DB metadata fetch failed during login:', { error: String(e) });
         }
@@ -465,18 +470,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (updates.department) dbUpdates.department = updates.department;
 
     if (Object.keys(dbUpdates).length > 0) {
-      const { error: dbError } = await (supabase.from('users') as any)
+      const { error: dbError } = await supabase.from('users')
         .update(dbUpdates)
         .eq('id', user.id);
 
       if (dbError) {
-        logger.warn('Erro ao atualizar tabela users (ignorado pois Auth funcionou):', dbError.message);
+        logger.warn('Erro ao atualizar tabela users (ignorado pois Auth funcionou):', { error: dbError.message });
       }
 
       // 2.1 Se for mentor, sincronizar com growth_experience_mentors
       if (user.role === 'mentor') {
-        const mentorUpdates: any = {};
-        if (updates.name) mentorUpdates.nome = updates.name;
+        const mentorUpdates: Record<string, any> = {};
+        if (updates.name) mentorUpdates.name = updates.name;
         if (updates.avatar) mentorUpdates.photo_url = updates.avatar;
 
         if (Object.keys(mentorUpdates).length > 0) {
@@ -611,8 +616,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
           logAuditEvent('logout_forced', userId); // só loga signout inesperado
         } else if (event === 'TOKEN_REFRESH_FAILED' as any) {
-          logger.warn('Sessão expirada ou falha na renovação. Verifique sua conexão.');
-          // Não limpamos o estado aqui para evitar logout forçado imediato em falhas de rede
+          logger.warn('Sessão expirada ou falha na renovação de token em background.');
+          // Não redirecionar forçadamente para não quebrar a SPA em quedas de rede oscilantes
+          // Mas mostrar um aviso de que a sessão pode estar instável
+          toast.error('Instabilidade na sessão. Seu acesso pode expirar em breve.', { 
+            description: 'Se notar problemas ao salvar dados, salve seu trabalho e tente fazer login novamente.',
+            duration: 10000
+          });
         } else if (event === 'TOKEN_REFRESHED') {
           if (currentSession) setSession(currentSession);
         } else if (currentSession) {

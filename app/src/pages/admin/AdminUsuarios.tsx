@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { createAuthUserWithoutSession } from '@/lib/auth-helpers';
 import { useNavigate } from 'react-router-dom';
+import { useProject } from '@/contexts/ProjectContext';
 import { exportToCSV } from '@/utils/csv';
 import {
     DropdownMenu,
@@ -40,12 +41,10 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogHeader,
     DialogTitle,
-    DialogFooter,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Label } from '@/components/ui/label';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
 import { useCheckIns } from '@/hooks/useData';
@@ -97,12 +96,19 @@ const roleColors: Record<string, string> = {
     participant: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
 };
 
+const INTERNAL_ROLES = ['admin', 'staff', 'mentor', 'sponsor', 'company', 'startup'];
+
 export default function AdminUsuarios() {
     const navigate = useNavigate();
+    const { projectId } = useProject();
+    
+    // Memoize the filters object to ensure it's stable across renders
+    const userFilters = useMemo(() => ({ 
+        role: INTERNAL_ROLES 
+    }), [projectId]);
+
     // Filter by roles to avoid full table scans on 'users'
-    const { data: users, create, update, remove, isLoading } = useUsers({ 
-        role: ['admin', 'staff', 'mentor', 'sponsor', 'company', 'startup'] 
-    });
+    const { data: users, create, update, remove, isLoading } = useUsers(userFilters);
     const { data: checkIns } = useCheckIns();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
@@ -262,10 +268,10 @@ export default function AdminUsuarios() {
                         <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
                             <div className="admin-modal-header">
                                 <div>
-                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
-                                        <UserPlus className="h-7 w-7 text-teal-500" />
-                                        Novo <span className="text-teal-500">Membro</span>
-                                    </h3>
+                                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                                    <UserPlus className="h-7 w-7 text-teal-500" />
+                                    Novo <span className="text-teal-500">Membro</span>
+                                </DialogTitle>
                                     <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
                                         Equipe interna ou parceiro estratégico
                                     </p>
@@ -574,10 +580,10 @@ export default function AdminUsuarios() {
                 <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
                     <div className="admin-modal-header">
                         <div>
-                            <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
-                                <Edit2 className="h-7 w-7 text-teal-500" />
-                                Editar <span className="text-teal-500">Acesso</span>
-                            </h3>
+                        <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                            <Edit2 className="h-7 w-7 text-teal-500" />
+                            Editar <span className="text-teal-500">Acesso</span>
+                        </DialogTitle>
                             <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
                                 Usuário: {editingUser?.name}
                             </p>

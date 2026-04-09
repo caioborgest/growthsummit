@@ -408,16 +408,16 @@ export default function AdminComunicacao() {
                   <Plus className="h-4 w-4 mr-2" /> NOVO TEMPLATE
                 </Button>
               </DialogTrigger>
-              <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
-                <div className="admin-modal-header">
+              <DialogContent className="admin-modal-content max-w-2xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
+                <div className="admin-modal-header p-8 pb-4">
                   <div>
-                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
                       <Plus className="h-7 w-7 text-teal-500" />
                       Criar <span className="text-teal-500">Novo Template</span>
-                    </h3>
-                    <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
                       Modelos de comunicação para e-mail ou push
-                    </p>
+                    </DialogDescription>
                   </div>
                   <Button
                     variant="ghost"
@@ -429,7 +429,7 @@ export default function AdminComunicacao() {
                   </Button>
                 </div>
 
-                <div className="admin-modal-body">
+                <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
                   <form id="template-form" onSubmit={handleCreateTemplate} className="space-y-6 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
@@ -486,7 +486,7 @@ export default function AdminComunicacao() {
                   </form>
                 </div>
 
-                <div className="admin-modal-footer">
+                <div className="admin-modal-footer p-8 pt-0 flex gap-4">
                   <Button 
                     variant="ghost" 
                     onClick={() => setIsTemplateModalOpen(false)}
@@ -497,7 +497,7 @@ export default function AdminComunicacao() {
                   <Button 
                     type="submit"
                     form="template-form"
-                    className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
+                    className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
                   >
                     CRIAR TEMPLATE
                   </Button>
@@ -513,16 +513,16 @@ export default function AdminComunicacao() {
                     <Plus className="h-4 w-4 mr-2" /> NOVA CAMPANHA
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="admin-modal-content max-w-xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
-                  <div className="admin-modal-header">
+                 <DialogContent className="admin-modal-content max-w-xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
+                  <div className="admin-modal-header p-8 pb-4">
                     <div>
-                      <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+                      <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
                         <BarChart3 className="h-7 w-7 text-teal-400" />
                         Lançar <span className="text-teal-400">Nova Campanha</span>
-                      </h3>
-                      <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+                      </DialogTitle>
+                      <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
                         Disparo em massa para público segmentado
-                      </p>
+                      </DialogDescription>
                     </div>
                     <Button
                       variant="ghost"
@@ -534,7 +534,7 @@ export default function AdminComunicacao() {
                     </Button>
                   </div>
 
-                  <div className="admin-modal-body">
+                  <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
                     <form id="campaign-form" onSubmit={handleCreateCampaign} className="space-y-6 py-4">
                       <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Campanha *</Label>
@@ -592,7 +592,7 @@ export default function AdminComunicacao() {
                     </form>
                   </div>
 
-                  <div className="admin-modal-footer">
+                   <div className="admin-modal-footer p-8 pt-0 flex gap-4">
                     <Button 
                       variant="ghost" 
                       onClick={() => setIsCampaignModalOpen(false)}
@@ -603,7 +603,7 @@ export default function AdminComunicacao() {
                     <Button 
                       type="submit"
                       form="campaign-form"
-                      className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
+                      className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
                     >
                       AGENDAR DISPARO
                     </Button>
@@ -1068,16 +1068,17 @@ export default function AdminComunicacao() {
 
       {/* Preview Modal */}
       <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
-        <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
-          <div className="admin-modal-header">
+      <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+        <DialogContent className="admin-modal-content max-w-2xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
+          <div className="admin-modal-header p-8 pb-4">
             <div>
-              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
+              <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white flex items-center gap-3">
                 <Eye className="h-7 w-7 text-teal-500" />
                 Visualizar <span className="text-teal-500">Template</span>
-              </h3>
-              <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
+              </DialogTitle>
+              <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
                 Modelo: {selectedTemplate?.name}
-              </p>
+              </DialogDescription>
             </div>
             <Button
               variant="ghost"
@@ -1089,7 +1090,7 @@ export default function AdminComunicacao() {
             </Button>
           </div>
 
-          <div className="admin-modal-body">
+          <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
             <div className="space-y-8 py-4">
               <div className="space-y-3">
                 <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Assunto do E-mail</Label>
@@ -1106,7 +1107,7 @@ export default function AdminComunicacao() {
             </div>
           </div>
 
-          <div className="admin-modal-footer">
+          <div className="admin-modal-footer p-8 pt-0 flex gap-4">
             <Button 
               variant="ghost" 
               onClick={() => setIsPreviewModalOpen(false)} 
@@ -1115,7 +1116,7 @@ export default function AdminComunicacao() {
               FECHAR
             </Button>
             <Button
-              className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none flex items-center gap-2"
+              className="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none flex items-center justify-center gap-2"
               onClick={() => {
                 setComposeData({
                   ...composeData,

@@ -267,17 +267,28 @@ export default function AdminProjetos() {
           </DialogTrigger>
 
 
-          <DialogContent className="bg-[#0F172A] border-white/5 text-white sm:max-w-[1440px] h-fit max-h-[90vh] rounded-[3rem] p-0 overflow-hidden flex flex-col">
-            <div className="p-10 pb-0">
-              <DialogHeader>
-                <DialogTitle>{editingProject ? 'Editar Projeto' : 'Novo Projeto'}</DialogTitle>
-                <DialogDescription className="sr-only">
-                  Formulário para configuração técnica e visual do projeto/evento.
+          <DialogContent className="admin-modal-content sm:max-w-7xl bg-[#0F172A] border-none p-0 overflow-hidden shadow-2xl">
+            <div className="admin-modal-header p-10 pb-6 border-none">
+              <div className="flex flex-col gap-1">
+                <DialogTitle className="text-4xl font-black text-white italic uppercase tracking-tighter leading-none">
+                  {editingProject ? 'Configurar' : 'Novo'} <span className="text-brand-orange-coral">Projeto</span>
+                </DialogTitle>
+                <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mt-1">
+                  Parâmetros técnicos, visuais e de precificação estratégica
                 </DialogDescription>
-              </DialogHeader>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsDialogOpen(false)}
+                className="h-14 w-14 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5"
+              >
+                <X className="h-8 w-8" />
+              </Button>
             </div>
             
-            <div className="flex-1 overflow-hidden p-10 pt-4 flex flex-col">
+            <div className="admin-modal-body flex-1 overflow-hidden p-0 flex flex-col">
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-10 pt-0">
               <Tabs defaultValue="geral" className="w-full">
 
                 <TabsList className="bg-[#0F172A] border border-white/5 mb-8 flex flex-wrap h-auto p-1.5 rounded-[1.5rem] gap-1">
@@ -1132,23 +1143,24 @@ export default function AdminProjetos() {
                 </div>
               </Tabs>
 
-
-              <div className="flex justify-end gap-3 pt-8 mt-6 border-t border-white/5">
-                <Button 
-                    variant="ghost" 
-                    onClick={() => setIsDialogOpen(false)} 
-                    className="h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#475569] hover:text-white hover:bg-white/5 transition-all"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={editingProject ? handleUpdate : handleCreate}
-                  disabled={isLoading}
-                  className="h-14 px-10 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white shadow-glow-teal transition-all font-black uppercase text-[11px] tracking-widest border-none"
-                >
-                  {isLoading ? 'SALVANDO...' : editingProject ? 'Atualizar' : 'Criar Projeto'}
-                </Button>
               </div>
+            </div>
+
+            <div className="admin-modal-footer p-10 py-6 border-t border-white/5">
+              <Button 
+                  variant="ghost" 
+                  onClick={() => setIsDialogOpen(false)} 
+                  className="h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#475569] hover:text-white hover:bg-white/5 transition-all"
+              >
+                DESCARTAR
+              </Button>
+              <Button
+                onClick={editingProject ? handleUpdate : handleCreate}
+                disabled={isLoading}
+                className="h-14 px-12 rounded-2xl bg-teal-500 hover:bg-teal-400 text-white shadow-glow-teal transition-all font-black uppercase text-[11px] tracking-widest border-none"
+              >
+                {isLoading ? 'SALVANDO...' : (editingProject ? 'SALVAR ALTERAÇÕES' : 'LANÇAR PROJETO')}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

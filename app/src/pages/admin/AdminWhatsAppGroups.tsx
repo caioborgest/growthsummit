@@ -30,6 +30,7 @@ import {
   DialogFooter,
   DialogDescription
 } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
   Select,
   SelectContent,
@@ -579,15 +580,25 @@ export function AdminWhatsAppGroups() {
 
       {/* Create Group Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Criar Novo Grupo WhatsApp</DialogTitle>
-            <DialogDescription className="text-[#94A3B8]">
-              Preencha os dados abaixo para criar um novo grupo de comunicação para o evento.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="admin-modal-content max-w-2xl bg-[#1E293B] border-none p-0 overflow-hidden shadow-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-xl font-bold text-white">Criar Novo Grupo WhatsApp</DialogTitle>
+              <DialogDescription className="text-[#94A3B8] text-xs">
+                Preencha os dados abaixo para criar um novo grupo de comunicação para o evento.
+              </DialogDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCreateDialogOpen(false)}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
 
-          <div className="space-y-6 py-4">
+          <div className="admin-modal-body">
             <div className="space-y-2">
               <label className="text-sm text-[#94A3B8]">Nome do Grupo *</label>
               <Input
@@ -687,36 +698,48 @@ export function AdminWhatsAppGroups() {
             </div>
           </div>
 
-          <DialogFooter>
+          </div>
+
+          <div className="admin-modal-footer">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setIsCreateDialogOpen(false)}
-              className="border-[#334155] text-white hover:bg-[#334155]"
+              className="border-white/10 text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleCreateGroup}
               disabled={!newGroup.group_name}
-              className="bg-gradient-to-r from-[#21808D] to-[#2A9D8F] hover:from-[#1a6a73] hover:to-[#21808D]"
+              className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
             >
               <Plus className="w-4 h-4 mr-2" />
               Criar Grupo
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
       {/* Edit Group Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Editar Grupo WhatsApp</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Altere as configurações do grupo "{editingGroup?.group_name}".
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="admin-modal-content max-w-2xl bg-[#1E293B] border-none p-0 overflow-hidden shadow-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-xl font-bold text-white">Editar Grupo WhatsApp</DialogTitle>
+              <DialogDescription className="text-gray-400 text-xs">
+                Altere as configurações do grupo "{editingGroup?.group_name}".
+              </DialogDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditDialogOpen(false)}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
 
-          <div className="space-y-6 py-4">
+          <div className="admin-modal-body">
             <div className="space-y-2">
               <label className="text-sm text-[#94A3B8]">Nome do Grupo *</label>
               <Input
@@ -800,35 +823,45 @@ export function AdminWhatsAppGroups() {
             </div>
           </div>
 
-          <DialogFooter>
+          <div className="admin-modal-footer">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setIsEditDialogOpen(false)}
-              className="border-[#334155] text-white hover:bg-[#334155]"
+              className="border-white/10 text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleUpdateGroup}
               disabled={groupsLoading}
-              className="bg-teal-500 hover:bg-teal-600 text-white"
+              className="bg-teal-500 hover:bg-teal-600 text-white font-black px-10 h-12 rounded-xl shadow-glow-teal border-none"
             >
               Salvar Alterações
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* QR Code Dialog */}
       <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
-        <DialogContent className="bg-[#1E293B] border-[#334155] text-white max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">QR Code do Grupo</DialogTitle>
-            <DialogDescription className="text-[#94A3B8]">
-              Escaneie ou baixe o código para compartilhar o acesso ao grupo.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center justify-center p-6 space-y-4">
+        <DialogContent className="admin-modal-content max-w-sm bg-[#1E293B] border-none p-0 overflow-hidden shadow-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-xl font-bold text-white">QR Code do Grupo</DialogTitle>
+              <DialogDescription className="text-[#94A3B8] text-xs">
+                Escaneie ou baixe o código para compartilhar o acesso ao grupo.
+              </DialogDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsQRDialogOpen(false)}
+              className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+          <div className="admin-modal-body flex flex-col items-center justify-center p-6 space-y-4">
             <div className="bg-white p-4 rounded-xl">
               <img 
                 src={selectedGroupForQR?.qr_code_url} 

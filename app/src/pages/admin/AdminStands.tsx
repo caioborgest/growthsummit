@@ -14,9 +14,17 @@ import {
     Download,
     CheckCircle2,
     XCircle,
+    X,
     AlertCircle,
     Trophy
 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -785,23 +793,25 @@ export default function AdminStands() {
             )}
 
             {/* Modal de Criação/Edição */}
-            {isModalOpen && (
-                <div className="admin-modal-overlay">
-                    <div className="admin-modal-content">
-                        <div className="admin-modal-header">
-                            <div>
-                                <h2 className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
-                                    {editingStand ? 'Editar Stand' : 'Novo Stand de Experiência'}
-                                </h2>
-                                <p className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">Configuração de gamificação e visibilidade</p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
-                                <XCircle className="h-6 w-6" />
-                            </Button>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
+                    <div className="admin-modal-header">
+                        <div>
+                            <DialogTitle className="text-xl font-black text-white italic tracking-tight uppercase leading-none">
+                                {editingStand ? 'Editar Stand' : 'Novo Stand de Experiência'}
+                            </DialogTitle>
+                            <DialogDescription className="text-gray-500 text-[9px] font-bold uppercase tracking-widest mt-1">
+                                Configuração de gamificação e visibilidade
+                            </DialogDescription>
                         </div>
+                        <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                            <X className="h-6 w-6" />
+                        </Button>
+                    </div>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-                            <div className="admin-modal-body">
+                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                        <div className="admin-modal-body">
+                            <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="col-span-2">
                                         <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Nome do Stand</label>
@@ -873,33 +883,38 @@ export default function AdminStands() {
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="admin-modal-footer">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="border-dark-300 text-gray-400 hover:bg-dark-300 hover:text-white"
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? 'Processando...' : editingStand ? 'Salvar Alterações' : 'Cadastrar Stand'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        <div className="admin-modal-footer">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsModalOpen(false)}
+                                className="border-dark-300 text-gray-400 hover:bg-dark-300 hover:text-white"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Processando...' : editingStand ? 'Salvar Alterações' : 'Cadastrar Stand'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             {/* Modal QR Code */}
-            {selectedStandForQR && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in zoom-in-95 duration-200">
-                    <div className="bg-white rounded-[2.5rem] max-w-sm w-full p-8 text-center space-y-6">
+            <Dialog open={!!selectedStandForQR} onOpenChange={(open) => !open && setSelectedStandForQR(null)}>
+                <DialogContent className="admin-modal-content p-0 border-none max-w-sm bg-white overflow-hidden">
+                    <VisuallyHidden.Root>
+                        <DialogTitle>QR Code do Stand</DialogTitle>
+                        <DialogDescription>Visualize e baixe o QR Code para este stand</DialogDescription>
+                    </VisuallyHidden.Root>
+                    
+                    <div className="p-8 text-center space-y-6">
                         <div className="flex justify-between items-center text-dark-500 mb-2">
                             <Store className="h-6 w-6 text-orange-500" />
                             <Button variant="ghost" size="sm" onClick={() => setSelectedStandForQR(null)} className="h-8 w-8 p-0 rounded-full">
@@ -908,12 +923,12 @@ export default function AdminStands() {
                         </div>
                         
                         <div className="space-y-1">
-                            <h3 className="text-2xl font-black text-dark-500 uppercase tracking-tight">{selectedStandForQR.name}</h3>
-                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">{selectedStandForQR.location || 'Local não definido'}</p>
+                            <h3 className="text-2xl font-black text-dark-500 uppercase tracking-tight">{selectedStandForQR?.name}</h3>
+                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">{selectedStandForQR?.location || 'Local não definido'}</p>
                         </div>
 
                         <div className="bg-gray-50 p-6 rounded-[2rem] border-2 border-dashed border-gray-200 flex items-center justify-center">
-                            <img src={qrCodeDataUrl} alt="QR Code Stand" className="w-full h-auto rounded-xl" />
+                            {qrCodeDataUrl && <img src={qrCodeDataUrl} alt="QR Code Stand" className="w-full h-auto rounded-xl" />}
                         </div>
 
                         <div className="space-y-3">
@@ -929,8 +944,8 @@ export default function AdminStands() {
                             </p>
                         </div>
                     </div>
-                </div>
-            )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

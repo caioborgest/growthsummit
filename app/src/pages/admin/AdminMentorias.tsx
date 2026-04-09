@@ -176,10 +176,10 @@ export function AdminMentorias() {
                 <Calendar className="h-4 w-4 mr-2" /> AGENDAR SESSÃO
               </Button>
             </DialogTrigger>
-            <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
-              <div className="admin-modal-header">
+            <DialogContent className="admin-modal-content p-0 border-none max-w-xl bg-[#0F172A] overflow-hidden shadow-2xl">
+              <div className="admin-modal-header p-8 pb-4">
                 <div>
-                  <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase leading-none">
+                  <DialogTitle className="text-2xl font-black italic tracking-tighter uppercase leading-none text-white">
                     Nova <span className="text-brand-orange-coral">Mentoria</span>
                   </DialogTitle>
                   <DialogDescription className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">
@@ -189,7 +189,7 @@ export function AdminMentorias() {
               </div>
 
               <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
-                <div className="admin-modal-body">
+                <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Mentor Responsável</label>
@@ -254,11 +254,11 @@ export function AdminMentorias() {
                   </div>
                 </div>
 
-                <div className="admin-modal-footer">
-                  <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-gray-500">
-                    Cancelar
+                <div className="admin-modal-footer p-8 pt-0 flex gap-4">
+                  <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5">
+                    CANCELAR
                   </Button>
-                  <Button type="submit" className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-8">
+                  <Button type="submit" className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-8 h-12 rounded-xl shadow-glow-orange border-none transition-all">
                     CONFIRMAR AGENDAMENTO
                   </Button>
                 </div>
@@ -471,10 +471,10 @@ export function AdminMentorias() {
                                 DIRECIONAR PARA MENTOR
                              </Button>
                           </DialogTrigger>
-                          <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
-                            <div className="admin-modal-header">
+                          <DialogContent className="admin-modal-content p-0 border-none max-w-xl bg-[#0F172A] overflow-hidden shadow-2xl">
+                            <div className="admin-modal-header p-8 pb-4">
                                <div>
-                                  <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                                  <DialogTitle className="text-xl font-black italic uppercase leading-none text-white">
                                      Vincular <span className="text-brand-orange-coral">Mentor</span>
                                   </DialogTitle>
                                   <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
@@ -483,7 +483,7 @@ export function AdminMentorias() {
                                </div>
                             </div>
 
-                            <div className="admin-modal-body">
+                            <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
                                <div className="space-y-6">
                                   <div className="bg-dark-300/50 p-5 rounded-3xl border border-white/5 relative">
                                      <p className="text-[10px] text-brand-orange-coral font-black uppercase tracking-[0.2em] mb-2">Desafio do Participante</p>
@@ -500,9 +500,9 @@ export function AdminMentorias() {
                                </div>
                             </div>
 
-                            <div className="admin-modal-footer">
+                            <div className="admin-modal-footer p-8 pt-0">
                                <Button
-                                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                                  className="w-full h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange border-none transition-all uppercase tracking-widest text-[10px]"
                                   onClick={async () => {
                                      await updateWaitlist(item.id, { status: 'redirected' });
                                      

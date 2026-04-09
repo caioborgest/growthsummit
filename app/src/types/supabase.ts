@@ -14,6 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      login_attempts: {
+        Row: {
+          id: string
+          email: string
+          ip_address: string | null
+          success: boolean
+          attempted_at: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          email: string
+          ip_address?: string | null
+          success: boolean
+          attempted_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          email?: string
+          ip_address?: string | null
+          success?: boolean
+          attempted_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      growth_experience_mentors: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string | null
+          name: string
+          email: string
+          phone: string | null
+          company: string | null
+          role_title: string | null
+          specialties: string[] | null
+          tracks: string[] | null
+          years_experience: number | null
+          status: string
+          max_mentorings: number | null
+          photo_url: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id?: string | null
+          name: string
+          email: string
+          phone?: string | null
+          company?: string | null
+          role_title?: string | null
+          specialties?: string[] | null
+          tracks?: string[] | null
+          years_experience?: number | null
+          status?: string
+          max_mentorings?: number | null
+          photo_url?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string | null
+          name?: string
+          email?: string
+          phone?: string | null
+          company?: string | null
+          role_title?: string | null
+          specialties?: string[] | null
+          tracks?: string[] | null
+          years_experience?: number | null
+          status?: string
+          max_mentorings?: number | null
+          photo_url?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_experience_mentors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "growth_experience_mentors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       activity_logs: {
         Row: {
           action: string

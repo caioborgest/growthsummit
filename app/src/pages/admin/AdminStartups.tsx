@@ -21,8 +21,10 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogHeader
 } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useStartups, useLeads } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
@@ -234,20 +236,28 @@ export function AdminStartups() {
             <Trophy className="h-4 w-4 mr-2" />
             {showLeaderboard ? 'Ver Lista' : 'Ver Leaderboard'}
           </Button>
-          <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
-            <div className="admin-modal-header">
+          <DialogContent className="admin-modal-content p-0 border-none max-w-2xl bg-[#0F172A] overflow-hidden shadow-2xl">
+            <div className="admin-modal-header p-8 pb-4">
               <div>
-                <DialogTitle className="text-xl font-black italic uppercase leading-none">
+                <DialogTitle className="text-xl font-black italic uppercase leading-none text-white">
                   Adicionar Nova <span className="text-brand-orange-coral">Startup</span>
                 </DialogTitle>
                 <DialogDescription className="text-gray-500 uppercase text-[9px] font-bold tracking-widest mt-1">
                   Cadastre os dados da startup, fundadores e informações para o evento
                 </DialogDescription>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsModalOpen(false)}
+                className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+              >
+                <XCircle className="h-6 w-6" />
+              </Button>
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
-              <div className="admin-modal-body">
+              <div className="admin-modal-body p-8 pt-4">
                 {/* Seção: Informações do Fundador */}
                 <div className="space-y-6">
                   <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Informações do Fundador</h3>
@@ -469,19 +479,21 @@ export function AdminStartups() {
                 </div>
               </div>
 
-              <div className="admin-modal-footer">
+              </div>
+
+              <div className="admin-modal-footer p-8 pt-0 flex gap-4">
                 <Button 
                   type="button" 
                   variant="ghost" 
                   onClick={() => setIsModalOpen(false)} 
-                  className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
+                  className="text-gray-500 font-bold uppercase text-[10px] tracking-widest h-14"
                 >
                   Cancelar
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={isLoading} 
-                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
+                  className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px] border-none"
                 >
                   {isLoading ? 'Adicionando...' : 'Adicionar Startup'}
                 </Button>

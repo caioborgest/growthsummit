@@ -23,7 +23,20 @@ export function TicketSection({
     isActuallyPaid, generateTicketPDF, setShowCheckInModal, setShowUpgradeModal, onRefresh
 }: TicketSectionProps) {
 
-    const isPro = myRegistration?.palestrasNoturnas;
+    const isCorporate = !!myRegistration?.companyRegistrationBatches;
+    const corporateData = myRegistration?.companyRegistrationBatches;
+    
+    // Logic for ticket type
+    const rawTicketType = isCorporate 
+        ? corporateData.ticket_type 
+        : myRegistration?.ticketType;
+    
+    const isPro = (rawTicketType?.toLowerCase() === 'pro' || rawTicketType?.toLowerCase() === 'vip' || myRegistration?.palestrasNoturnas);
+
+    const ticketTypeLabel = isPro 
+        ? 'Passaporte Night + Morning' 
+        : (selectedProject?.slug?.includes('triunfo') ? 'Passaporte Individual' : 'Free Morning (Manhã)');
+
     const qrValue = myRegistration?.id 
         ? generateQRString('registration', myRegistration.projectId || selectedProject?.id || '', myRegistration.id, myRegistration.participant_id || user?.id)
         : 'sem-id';
@@ -73,13 +86,22 @@ export function TicketSection({
                             {[
                                 { label: 'Participante', value: myRegistration?.nome || user?.name || '—' },
                                 { label: 'Evento', value: selectedProject?.name || 'Growth Experience 2026' },
-                                { label: 'Tipo', value: isPro ? 'Passaporte Night + Morning' : (selectedProject?.slug?.includes('triunfo') ? 'Passaporte Individual' : 'Free Morning (Manhã)') },
+                                { label: 'Tipo', value: ticketTypeLabel },
                             ].map(({ label, value }) => (
                                 <div key={label} className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                                     <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{label}</span>
                                     <span className="text-foreground font-black text-xs text-right max-w-[60%] truncate">{value}</span>
                                 </div>
                             ))}
+
+                            {isCorporate && (
+                                <div className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                                    <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Empresa</span>
+                                    <span className="text-foreground font-black text-xs text-right max-w-[60%] truncate">
+                                        {corporateData?.company_name}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Payment status */}

@@ -11,7 +11,13 @@ import {
   X,
   Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTransactions, useRegistrations, useProjects, useEmpresasIncentivadoras, useRegistrationBatches } from '@/hooks/useData';
@@ -703,114 +709,116 @@ export function AdminFinanceiro() {
         </div>
       )}
 
-      {/* Modals */}
-      <AnimatePresence>
-        {showGoalModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="glass-card max-w-md w-full p-10 border-white/10 rounded-[2.5rem] shadow-2xl relative"
-            >
-              <div className="mb-8">
-                <h3 className="text-2xl font-black text-white italic uppercase tracking-tight">Metas Financeiras</h3>
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Sincronizado com o Planejamento</p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Receita (R$)</label>
-                  <input
-                    type="number"
-                    value={tempGoals.revenue}
-                    onChange={(e) => setTempGoals({ ...tempGoals, revenue: Number(e.target.value) })}
-                    className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-teal-500 transition-all tabular-nums"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Patrocínio (R$)</label>
-                  <input
-                    type="number"
-                    value={tempGoals.sponsorship}
-                    onChange={(e) => setTempGoals({ ...tempGoals, sponsorship: Number(e.target.value) })}
-                    className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-blue-500 transition-all tabular-nums"
-                  />
-                </div>
-
-                <div className="p-6 bg-white/[0.03] rounded-[1.5rem] border border-white/5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] italic">Calculadora de Tickets</p>
-                    <Zap className="h-3 w-3 text-teal-400 fill-teal-400/20" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Qtd Esperada</label>
-                      <input
-                        type="number"
-                        placeholder="Ex: 300"
-                        value={calcQty === 0 ? '' : calcQty}
-                        onChange={(e) => setCalcQty(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Ticket Avg (R$)</label>
-                      <input
-                        type="number"
-                        placeholder="Ex: 497"
-                        value={calcPrice === 0 ? '' : calcPrice}
-                        onChange={(e) => setCalcPrice(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                    <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Total Estimado:</span>
-                    <span className="text-sm font-black text-white italic">R$ {calcTotal.toLocaleString('pt-BR')}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-10">
-                <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowGoalModal(false)}>CANCELAR</Button>
-                <Button className="flex-1 bg-brand-orange-coral text-white shadow-glow-orange" onClick={handleUpdateGoals}>SALVAR</Button>
-              </div>
-            </motion.div>
+      {/* Edit Goals Modal */}
+      <Dialog open={showGoalModal} onOpenChange={setShowGoalModal}>
+        <DialogContent className="admin-modal-content p-0 border-none max-w-md">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tight">
+                Metas Financeiras
+              </DialogTitle>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Sincronizado com o Planejamento</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowGoalModal(false)} className="text-gray-500 hover:text-white rounded-full">
+              <X className="h-6 w-6" />
+            </Button>
           </div>
-        )}
 
-        {showTransactionModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="glass-card max-w-2xl w-full p-10 border-white/10 rounded-[3rem] shadow-2xl relative"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">Novo <span className="text-brand-orange-coral">Lançamento</span></h3>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Registrar entrada ou saída de caixa</p>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => setShowTransactionModal(false)} className="text-gray-500 hover:text-white rounded-full">
-                  <X className="h-6 w-6" />
-                </Button>
+          <div className="admin-modal-body">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Receita (R$)</label>
+                <input
+                  type="number"
+                  value={tempGoals.revenue}
+                  onChange={(e) => setTempGoals({ ...tempGoals, revenue: Number(e.target.value) })}
+                  className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-teal-500 transition-all tabular-nums"
+                />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Meta de Patrocínio (R$)</label>
+                <input
+                  type="number"
+                  value={tempGoals.sponsorship}
+                  onChange={(e) => setTempGoals({ ...tempGoals, sponsorship: Number(e.target.value) })}
+                  className="w-full px-5 py-4 bg-white/[0.02] border border-white/5 rounded-2xl text-white font-black italic focus:outline-none focus:border-blue-500 transition-all tabular-nums"
+                />
+              </div>
+
+              <div className="p-6 bg-white/[0.03] rounded-[1.5rem] border border-white/5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black text-teal-400 uppercase tracking-[0.2em] italic">Calculadora de Tickets</p>
+                  <Zap className="h-3 w-3 text-teal-400 fill-teal-400/20" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Qtd Esperada</label>
+                    <input
+                      type="number"
+                      placeholder="Ex: 300"
+                      value={calcQty === 0 ? '' : calcQty}
+                      onChange={(e) => setCalcQty(Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Ticket Avg (R$)</label>
+                    <input
+                      type="number"
+                      placeholder="Ex: 497"
+                      value={calcPrice === 0 ? '' : calcPrice}
+                      onChange={(e) => setCalcPrice(Number(e.target.value))}
+                      className="w-full px-3 py-2 bg-dark-400 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 font-bold"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                  <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Total Estimado:</span>
+                  <span className="text-sm font-black text-white italic">R$ {calcTotal.toLocaleString('pt-BR')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-modal-footer">
+            <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowGoalModal(false)}>CANCELAR</Button>
+            <Button className="flex-1 bg-brand-orange-coral text-white shadow-glow-orange" onClick={handleUpdateGoals}>SALVAR</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Transaction Modal */}
+      <Dialog open={showTransactionModal} onOpenChange={setShowTransactionModal}>
+        <DialogContent className="admin-modal-content p-0 border-none max-w-2xl">
+          <div className="admin-modal-header">
+            <div>
+              <DialogTitle className="text-3xl font-black text-white italic uppercase tracking-tighter">
+                Novo <span className="text-brand-orange-coral">Lançamento</span>
+              </DialogTitle>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Registrar entrada ou saída de caixa</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowTransactionModal(false)} className="text-gray-500 hover:text-white rounded-full">
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); handleCreateTransaction(); }} className="flex flex-col min-h-0 overflow-hidden">
+            <div className="admin-modal-body">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic ml-1">Tipo de Movimentação</label>
                     <div className="flex p-1 bg-black/40 rounded-2xl border border-white/5">
                       <button 
+                        type="button"
                         onClick={() => setNewTransaction({ ...newTransaction, type: 'income', category: 'Inscrições' })}
                         className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newTransaction.type === 'income' ? 'bg-emerald-500 text-white shadow-glow-emerald' : 'text-gray-500 hover:text-white'}`}
                       >
                         Receita
                       </button>
                       <button 
+                        type="button"
                         onClick={() => setNewTransaction({ ...newTransaction, type: 'expense', category: 'Venue & Locação' })}
                         className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newTransaction.type === 'expense' ? 'bg-red-500 text-white shadow-glow-red' : 'text-gray-500 hover:text-white'}`}
                       >
@@ -884,21 +892,21 @@ export function AdminFinanceiro() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex gap-4 mt-12 pt-8 border-t border-white/5">
-                <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowTransactionModal(false)}>CANCELAR</Button>
-                <Button
-                  disabled={isTransactionLoading}
-                  className="flex-[2] bg-brand-orange-coral text-white shadow-glow-orange h-14"
-                  onClick={handleCreateTransaction}
-                >
-                  {isTransactionLoading ? 'PROCESSANDO...' : 'CONFIRMAR LANCAMENTO'}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            <div className="admin-modal-footer">
+              <Button variant="ghost" className="flex-1 text-gray-500" onClick={() => setShowTransactionModal(false)}>CANCELAR</Button>
+              <Button
+                type="submit"
+                disabled={isTransactionLoading}
+                className="flex-[2] bg-brand-orange-coral text-white shadow-glow-orange h-14"
+              >
+                {isTransactionLoading ? 'PROCESSANDO...' : 'CONFIRMAR LANCAMENTO'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

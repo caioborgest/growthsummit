@@ -14,9 +14,6 @@ import {
   BookOpen,
   Shield,
   Bell as BellIcon,
-  TrendingUp, 
-  Share2, 
-  ChevronRight, 
   Presentation, 
   Users, 
   Mic2
@@ -126,6 +123,12 @@ export function DashboardParticipante() {
   // Financial Status Logic
   const isActuallyPaid = useMemo(() => {
     if (!registration) return false;
+    
+    // Corporate check
+    if (registration.companyRegistrationBatches) {
+      return true; // If it's corporate, we consider it paid or handled by the company
+    }
+
     const reg = registration as { 
       status?: string; 
       paymentStatus?: string; 
@@ -139,6 +142,15 @@ export function DashboardParticipante() {
   
   const statusFinanceiro = useMemo(() => {
     if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
+    
+    // Corporate logic
+    if (registration.companyRegistrationBatches) {
+      return { 
+        label: `✅ Pago pela empresa · ${registration.companyRegistrationBatches.company_name}`, 
+        color: 'bg-green-500/20 text-green-400' 
+      };
+    }
+
     const reg = registration as { status?: string; statusPagamento?: string };
     if (isActuallyPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
     if (reg.status === 'cancelled' || reg.status === 'cancelado') 
@@ -161,19 +173,6 @@ export function DashboardParticipante() {
     ),
     [myMentorships]
   );
-
-  // B2B Logic (meetings where user's registration is involved)
-  const myB2BMeetings = useMemo(() => {
-    if (!b2bMeetings || !registration) return [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return b2bMeetings.filter((m: any) => m.companyAId === registration.id || m.companyBId === registration.id);
-  }, [b2bMeetings, registration]);
-
-  // Startup Logic
-  const myStartup = useMemo(() => {
-    if (!startups || !user) return null;
-    return startups.find(s => s.userId === user.id);
-  }, [startups, user]);
 
   // Next Activity Logic
   const nextActivity = useMemo(() => {
@@ -672,7 +671,13 @@ export function DashboardParticipante() {
           userAvatar={registration?.photo || user?.avatar}
           projectName={selectedProject?.name || 'GX 2026'}
           roleLabel="PARTICIPANTE"
-          isPro={Boolean(registration?.ticketType === 'pro' || registration?.ticketType === 'vip' || registration?.palestrasNoturnas)}
+          isPro={Boolean(
+            (registration?.companyRegistrationBatches?.ticket_type?.toLowerCase() === 'pro' || 
+             registration?.companyRegistrationBatches?.ticket_type?.toLowerCase() === 'vip') ||
+            registration?.ticketType?.toLowerCase() === 'pro' || 
+            registration?.ticketType?.toLowerCase() === 'vip' || 
+            registration?.palestrasNoturnas
+          )}
           notifications={notifications}
           onLogout={handleLogout}
           onNotificationRead={async (id) => { await handleMarkAsRead(id); }}

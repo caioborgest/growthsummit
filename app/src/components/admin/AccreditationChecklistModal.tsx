@@ -15,11 +15,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogFooter,
 } from '@/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -97,7 +96,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
             // Emitir certificado se for participante e for entrada geral
             if (role === 'participant' && selectedProject) {
                 CertificateService.issueEventCertificate(
-                    { id: entity.userId, name: (entity as Registration).nome || (entity as Registration).name },
+                    { id: getUserId(), name: (entity as Registration).nome || (entity as Registration).name || 'Participante' },
                     selectedProject,
                     entity.id
                 );
@@ -128,15 +127,20 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
-                <div className="admin-modal-header">
+                <div className="admin-modal-header p-8 pb-4">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-2xl bg-white/5 border border-white/10 shadow-inner group-hover:scale-110 transition-transform">
                             {getRoleIcon()}
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
+                            <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-2">
                                 <span className="text-brand-orange-coral">Checklist</span> de Acesso
-                            </h3>
+                            </DialogTitle>
+                            <VisuallyHidden.Root>
+                                <DialogDescription>
+                                    Validar entrada, crachá e kit do participante
+                                </DialogDescription>
+                            </VisuallyHidden.Root>
                             <Badge variant="outline" className="uppercase font-black border-brand-orange-coral/30 text-brand-orange-coral text-[8px] tracking-widest px-2 py-0 h-4">
                                 {role}
                             </Badge>
@@ -152,7 +156,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                     </Button>
                 </div>
 
-                <div className="admin-modal-body bg-dark-200">
+                <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar bg-dark-200">
                     <div className="py-4 space-y-8">
                         {/* User Info Card */}
                         <div className="p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 shadow-inner">
@@ -255,7 +259,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                     </div>
                 </div>
 
-                <div className="admin-modal-footer">
+                <div className="admin-modal-footer p-8 pt-0 flex gap-4">
                     <Button
                         variant="ghost"
                         onClick={onClose}
@@ -266,7 +270,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, onS
                     <Button
                         onClick={handleAccreditation}
                         disabled={isLoading || !entranceConfirmed}
-                        className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 h-12 rounded-xl shadow-glow-orange border-none uppercase flex items-center gap-2"
+                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 h-12 rounded-xl shadow-glow-orange border-none uppercase flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
