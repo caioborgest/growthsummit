@@ -287,8 +287,7 @@ export default function AdminProjetos() {
               </Button>
             </div>
             
-            <div className="admin-modal-body flex-1 overflow-hidden p-0 flex flex-col">
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-10 pt-0">
+            <div className="admin-modal-body">
               <Tabs defaultValue="geral" className="w-full">
 
                 <TabsList className="bg-[#0F172A] border border-white/5 mb-8 flex flex-wrap h-auto p-1.5 rounded-[1.5rem] gap-1">
@@ -300,7 +299,7 @@ export default function AdminProjetos() {
                 </TabsList>
 
 
-                <div className="form-container-scrollable flex-1">
+                <div className="form-container-scrollable">
                   <TabsContent value="geral" className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-2 duration-500 pb-10">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-10 bg-black/40 border border-white/5 rounded-[3rem]">
                     <div className="space-y-3">
@@ -1142,22 +1141,20 @@ export default function AdminProjetos() {
                 </TabsContent>
                 </div>
               </Tabs>
-
-              </div>
             </div>
 
-            <div className="admin-modal-footer p-10 py-6 border-t border-white/5">
+            <div className="admin-modal-footer">
               <Button 
                   variant="ghost" 
                   onClick={() => setIsDialogOpen(false)} 
-                  className="h-14 px-8 rounded-2xl text-[11px] font-black uppercase tracking-widest text-[#475569] hover:text-white hover:bg-white/5 transition-all"
+                  className="text-gray-500 font-black uppercase text-[10px] tracking-widest"
               >
                 DESCARTAR
               </Button>
               <Button
                 onClick={editingProject ? handleUpdate : handleCreate}
                 disabled={isLoading}
-                className="h-14 px-12 rounded-2xl bg-teal-500 hover:bg-teal-400 text-white shadow-glow-teal transition-all font-black uppercase text-[11px] tracking-widest border-none"
+                className="flex-1 h-14 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-glow-teal transition-all uppercase tracking-widest text-[10px]"
               >
                 {isLoading ? 'SALVANDO...' : (editingProject ? 'SALVAR ALTERAÇÕES' : 'LANÇAR PROJETO')}
               </Button>

@@ -21,10 +21,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogTrigger,
-  DialogHeader
+  DialogTrigger
 } from '@/components/ui/dialog';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { useStartups, useLeads } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { toast } from 'sonner';
@@ -477,8 +475,6 @@ export function AdminStartups() {
                     </div>
                   </div>
                 </div>
-              </div>
-
               </div>
 
               <div className="admin-modal-footer p-8 pt-0 flex gap-4">

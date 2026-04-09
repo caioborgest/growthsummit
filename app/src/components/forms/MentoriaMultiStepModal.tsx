@@ -164,23 +164,28 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto overflow-x-hidden bg-dark-100 border-white/10 p-4 sm:p-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[2.5rem] custom-scrollbar">
-                <div className="sr-only">
-                    <DialogTitle>Solicitação de Mentoria</DialogTitle>
-                    <DialogDescription>Formulário de agendamento de mentoria em múltiplas etapas.</DialogDescription>
-                </div>
-                <div className="sticky top-0 bg-dark-100/95 backdrop-blur-2xl pb-8 border-b border-white/5 mb-10 z-30 -mx-4 sm:-mx-10 px-4 sm:px-10 pt-2 text-center">
+            <DialogContent className="admin-modal-content max-w-4xl bg-dark-100 border-none p-0 overflow-hidden shadow-2xl">
+                <div className="admin-modal-header flex-col items-center gap-2 py-8 relative">
                     <button
                         onClick={handleClose}
-                        className="absolute right-6 top-4 p-2 rounded-xl bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-all z-40"
+                        className="absolute right-6 top-6 p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all z-40"
                         aria-label="Fechar"
                     >
                         <X className="h-6 w-6" />
                     </button>
-                    <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">Mentoria <span className="text-brand-orange-coral">EXPERIENCE</span></DialogTitle>
-                    <p className="text-gray-500 text-xs font-medium tracking-widest mt-2 uppercase">Growth Experience 2026 · 20min Spots</p>
+                    <DialogTitle className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic uppercase leading-none">
+                        Mentoria <span className="text-brand-orange-coral">EXPERIENCE</span>
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">
+                        Growth Experience 2026 · 20min Spots
+                    </DialogDescription>
                 </div>
-                <div className="relative z-10 px-0 sm:px-2">{renderStep()}</div>
+
+                <div className="admin-modal-body bg-dark-100/30">
+                    <div className="max-w-3xl mx-auto w-full py-4">
+                        {renderStep()}
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );

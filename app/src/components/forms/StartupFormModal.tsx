@@ -589,7 +589,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                 type="button"
                                 variant="ghost"
                                 onClick={onClose}
-                                className="text-gray-400 hover:text-white font-bold h-12 px-8 rounded-xl border border-white/5"
+                                className="text-gray-500 font-bold uppercase text-[10px] tracking-widest"
                                 disabled={isSubmitting}
                             >
                                 CANCELAR
@@ -597,17 +597,17 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                             <Button
                                 form="startup-form"
                                 type="submit"
-                                className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-10 h-12 rounded-xl shadow-glow-orange border-none uppercase flex items-center justify-center gap-2"
+                                className="flex-1 h-14 bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black rounded-2xl shadow-glow-orange transition-all uppercase tracking-widest text-[10px]"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
                                         PROCESSANDO...
                                     </>
                                 ) : (
                                     <>
-                                        <Rocket className="h-5 w-5" />
+                                        <Rocket className="h-5 w-5 mr-2" />
                                         CONFIRMAR INSCRIÇÃO
                                     </>
                                 )}
