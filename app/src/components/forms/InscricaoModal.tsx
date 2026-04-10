@@ -223,7 +223,6 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     };
 
     return (
-    return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
 
