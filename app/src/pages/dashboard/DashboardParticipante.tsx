@@ -35,6 +35,7 @@ import {
 } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { CertificateService } from '@/lib/certificateService';
+import { useMyRegistration } from '@/hooks/useMyRegistration';
 
 // UI Components
 import { PremiumHeader } from './components/shared/PremiumHeader';

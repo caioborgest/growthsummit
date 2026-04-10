@@ -263,7 +263,7 @@ export const registrationService = {
             email: reg.email || reg.profiles?.email || reg.users?.email,
             phone: reg.phone || reg.profiles?.phone,
             company: reg.empresa || reg.profiles?.company,
-            paid_amount: reg.final_amount
+            paid_amount: reg.paid_amount
         };
     },
     isValidUUID(id: any): id is string {

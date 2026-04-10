@@ -82,8 +82,8 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         cursosSelecionados: Array.isArray(row.selected_courses)
             ? (row.selected_courses as string[])
             : [],
-        valorPago: (row.final_amount as number) || (row.paid_amount as number) || 0,
-        amount: (row.final_amount as number) || (row.amount as number) || 0,
+        valorPago: (row.paid_amount as number) || (row.final_amount as number) || 0,
+        amount: (row.paid_amount as number) || (row.amount as number) || (row.final_amount as number) || 0,
         projectId: (row.project_id as string) || undefined,
         createdAt: (row.created_at as string) || undefined,
         isPaid: isActuallyPaid,
