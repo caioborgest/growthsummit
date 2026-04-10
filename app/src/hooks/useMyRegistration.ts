@@ -40,8 +40,30 @@ export interface MyRegistration {
     };
 }
 
-// No longer needs specialized tables per project, as everything is now in the unified 'registrations' table
-const PRIMARY_TABLE = 'registrations';
+// Helper to identify Growth Experience projects
+const isGEProject = (projectId: string | undefined): boolean => {
+    if (!projectId) return false;
+    // Standard GE UUIDs
+    if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' || 
+        projectId === '94ef1840-1ce4-4f6d-a31b-1b0232f13fe9') return true;
+    
+    // Check localStorage for current project slug
+    try {
+        const selected = localStorage.getItem('selectedProject');
+        if (selected) {
+            const p = JSON.parse(selected);
+            if (p.id === projectId || p.slug === projectId) {
+                const slug = (p.slug || '').toLowerCase();
+                return slug.startsWith('ge-') || slug.startsWith('growth-') || slug.includes('triunfo') || slug.includes('petrolina');
+            }
+        }
+    } catch { /* ignore */ }
+    return false;
+};
+
+const getPrimaryTable = (projectId: string | undefined) => {
+    return isGEProject(projectId) ? 'growth_experience_registrations' : 'registrations';
+};
 
 function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): MyRegistration {
     // Rely on row data directly or profile join
@@ -128,11 +150,13 @@ export function useMyRegistration() {
                 return;
             }
 
-            // 2) Fetch by participant_id (the new standard PK link)
+            const currentTable = getPrimaryTable(targetProjectId);
+
+            // 2) Fetch by participant_id (new standard) or user_id (fallback)
             const { data, error: err } = await withTimeout(
                 async (signal) => {
-                    return await supabase
-                        .from(PRIMARY_TABLE)
+                    const query = supabase
+                        .from(currentTable)
                         .select(`
                             *,
                             company_registration_batches (
@@ -141,9 +165,20 @@ export function useMyRegistration() {
                                 batch_name,
                                 payment_status
                             )
-                        `)
-                        .eq('project_id', targetProjectId)
-                        .eq('participant_id', user.id)
+                        `);
+                    
+                    // Apply filters
+                    query.eq('project_id', targetProjectId);
+                    
+                    if (currentTable === 'growth_experience_registrations') {
+                        // GE table uses user_id for the link to profiles/auth
+                        query.eq('user_id', user.id);
+                    } else {
+                        // Legacy/Hybrid uses participant_id or user_id
+                        query.or(`participant_id.eq.${user.id},user_id.eq.${user.id}`);
+                    }
+
+                    return await query
                         .maybeSingle()
                         .abortSignal(signal);
                 },
@@ -212,7 +247,7 @@ export function useMyRegistration() {
                 {
                     event: 'UPDATE',
                     schema: 'public',
-                    table: PRIMARY_TABLE,
+                    table: getPrimaryTable(projectId),
                     filter: `id=eq.${registration.id}`
                 },
                 (payload) => {
@@ -242,10 +277,10 @@ export function useMyRegistration() {
         };
     }, [user, projectId, registration?.id]);
 
-    /** Atualiza os cursos selecionados */
     const updateCursos = useCallback(async (cursoIds: string[]) => {
         if (!registration?.id || !projectId) return;
-        const { error } = await supabase.from(PRIMARY_TABLE)
+        const currentTable = getPrimaryTable(projectId);
+        const { error } = await supabase.from(currentTable)
             .update({ selected_courses: cursoIds })
             .eq('id', registration.id);
         if (error) throw error;
@@ -256,9 +291,10 @@ export function useMyRegistration() {
     const checkInEntrada = useCallback(async () => {
         if (!registration?.id || !projectId || !user) return;
         
-        try {
+            const currentTable = getPrimaryTable(projectId);
+
             // 1. Update main registration
-            await supabase.from(PRIMARY_TABLE).update({
+            await supabase.from(currentTable).update({
                 checked_in: true,
                 check_in_at: new Date().toISOString()
             }).eq('id', registration.id);
