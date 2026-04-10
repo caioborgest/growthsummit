@@ -64,7 +64,7 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
 
             if (batchData) {
                 const batch = batchData as any;
-                const isPaid = batch.payment_status === 'paid' || batch.payment_status === 'pago';
+                const isPaid = batch.payment_status === 'paid';
                 const used = batch.used_slots || 0;
                 const total = batch.total_slots || 0;
 

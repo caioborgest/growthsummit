@@ -185,7 +185,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                 investimento_buscado: formData.investimento_buscado ? parseFloat(formData.investimento_buscado) : null,
                 pitch_deck_url: formData.pitch_deck_url || null,
                 video_pitch_url: formData.video_pitch_url || null,
-                status: 'pendente',
+                status: 'pending',
             };
 
             // Salvar no Supabase

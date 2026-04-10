@@ -165,8 +165,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                     registration_type: tipo,
                     event_name: eventoNome,
                     paid_amount: valorFinal,
-                    payment_status: valorFinal === 0 ? 'pago' : 'pendente',
-                    status: 'ativo',
+                    payment_status: valorFinal === 0 ? 'paid' : 'pending',
+                    status: 'active',
                     social_code: formData.code || null
                 });
 

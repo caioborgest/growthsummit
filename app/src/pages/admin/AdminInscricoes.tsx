@@ -191,10 +191,10 @@ function DetalhesModal({
 
                   <Button
                     onClick={() => onUpdateStatus(reg.id, 'paid')}
-                    disabled={['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())}
+                    disabled={['paid', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())}
                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
                   >
-                    {['pago', 'paid', 'ativo', 'active'].includes((reg.payment_status || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
+                    {['paid', 'active'].includes((reg.payment_status || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
                   </Button>
 
                   <Button
@@ -293,7 +293,7 @@ export default function AdminInscricoes() {
       const updates: any = typeof status === 'object' ? status : { status };
 
       // Normalização de status para o padrão Growth Experience (Inglês)
-      if (status === 'paid' || status === 'pago' || status === 'free' || status === 'ativo' || status === 'active') {
+      if (status === 'paid' || status === 'free' || status === 'active') {
         updates.payment_status = 'paid';
         updates.status = 'active';
       }
@@ -327,12 +327,12 @@ export default function AdminInscricoes() {
       }
 
       // Registro financeiro para confirmações de pagamento
-      if (['paid', 'free', 'pago', 'ativo'].includes(status)) {
+      if (['paid', 'free', 'active'].includes(status)) {
         try {
           let finalAmount = registration.amount || 0;
           
           // Caso especial: Night Experience sem valor definido
-          if (['paid', 'pago', 'ativo'].includes(status) && finalAmount === 0 && registration.palestrasNoturnas) {
+          if (['paid', 'active'].includes(status) && finalAmount === 0 && registration.palestrasNoturnas) {
             finalAmount = 179.90;
             await update(id, { amount: finalAmount } as any);
             updates.amount = finalAmount;
@@ -351,7 +351,7 @@ export default function AdminInscricoes() {
               date: new Date().toISOString()
             } as any);
             toast.success('Lançamento financeiro atualizado');
-          } else if (!['pago', 'paid', 'ativo'].includes(String(oldStatus).toLowerCase())) {
+          } else if (!['paid', 'active'].includes(String(oldStatus).toLowerCase())) {
             await createTransaction({
               projectId: registration.projectId || '',
               type: 'income',
@@ -423,8 +423,8 @@ export default function AdminInscricoes() {
       (reg.name?.toLowerCase() || '').includes(q) ||
       (reg.email?.toLowerCase() || '').includes(q);
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'pago' && ['paid', 'active', 'ativo', 'pago'].includes((reg.status || '').toLowerCase())) ||
-                         (statusFilter === 'pendente' && ['pending', 'pendente', 'waiting'].includes((reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'paid' && ['paid', 'active'].includes((reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pending' && ['pending', 'waiting'].includes((reg.status || '').toLowerCase())) ||
                          reg.status === statusFilter;
     const matchesNight =
       nightFilter === 'all' ||
@@ -568,7 +568,7 @@ export default function AdminInscricoes() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Total Geral', value: registrations.length, icon: User, color: 'text-white' },
-          { label: 'Confirmados', value: registrations.filter(r => ['paid', 'active', 'pago', 'ativo'].includes(r.status?.toLowerCase())).length, icon: CheckCircle2, color: 'text-emerald-400' },
+          { label: 'Confirmados', value: registrations.filter(r => ['paid', 'active'].includes(r.status?.toLowerCase())).length, icon: CheckCircle2, color: 'text-emerald-400' },
           { label: 'Night Exp.', value: registrations.filter(r => r.palestrasNoturnas).length, icon: Moon, color: 'text-[#FF7043]' },
           { label: 'Acreditados', value: registrations.filter(r => r.checkedIn).length, icon: QrCode, color: 'text-teal-400' },
         ].map((stat, i) => (
@@ -614,8 +614,8 @@ export default function AdminInscricoes() {
                className="bg-transparent text-[10px] font-black text-teal-400 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer"
              >
                <option value="all">TODOS STATUS</option>
-               <option value="pago">CONFIRMADO</option>
-               <option value="pendente">PENDENTE</option>
+               <option value="paid">CONFIRMADO</option>
+               <option value="pending">PENDENTE</option>
                <option value="cancelled">CANCELADO</option>
              </select>
           </div>

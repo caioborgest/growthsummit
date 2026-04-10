@@ -20,7 +20,7 @@ export const UI_COLORS = {
   }
 };
 
-export type StatusType = 'paid' | 'pending' | 'cancelled' | 'refunded' | 'active' | 'pago' | 'pendente' | 'ativo' | 'free' | 'gratis';
+export type StatusType = 'paid' | 'pending' | 'cancelled' | 'refunded' | 'active' | 'free' | 'gratis';
 
 /**
  * Mapeia qualquer variação de status para uma cor e label consistente.

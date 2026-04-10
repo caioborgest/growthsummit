@@ -96,8 +96,8 @@ export function PetrolinaRegistrationForm() {
                 sessionIds: [], // Petrolina ainda não tem sessões específicas no seletor
                 registrationType: 'standard',
                 eventName: selectedProject?.name || 'Growth Experience Petrolina',
-                paymentStatus: 'pago',
-                status: 'ativo',
+                paymentStatus: 'paid',
+                status: 'active',
                 extraData: {
                     empresa: formData.empresa,
                     numero_colaboradores: formData.colaboradores,

@@ -241,10 +241,10 @@ export function AdminRelatorios() {
     totalReceita: (() => {
       const transIncome = filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
       const regIncome = filteredRegistrations
-        .filter(r => r.status === 'ativo' || r.status === 'pago' || r.status === 'paid' || (r as any).payment_status === 'pago' || (r as any).paymentStatus === 'pago')
+        .filter(r => r.status === 'active' || r.status === 'paid' || (r as any).payment_status === 'paid' || (r as any).paymentStatus === 'paid')
         .reduce((sum, r) => sum + (r.paid_amount || r.amount || 0), 0);
       const batchIncome = (batches || [])
-        .filter(b => b.statusPagamento === 'paid' || b.statusPagamento === 'pago')
+        .filter(b => b.statusPagamento === 'paid')
         .reduce((sum, b) => sum + (Number(b.valorTotal) || 0), 0);
       return transIncome + regIncome + batchIncome;
     })(),
@@ -283,9 +283,9 @@ export function AdminRelatorios() {
               className="w-full px-4 py-2 bg-dark-100 border border-dark-300 rounded-lg text-white"
             >
               <option value="all">Todos</option>
-              <option value="pago">Pago</option>
-              <option value="pendente">Pendente</option>
-              <option value="cancelado">Cancelado</option>
+              <option value="paid">Pago</option>
+              <option value="pending">Pendente</option>
+              <option value="cancelled">Cancelado</option>
             </select>
           </div>
           <Button variant="outline" className="border-teal-500/50 text-teal-400 hover:bg-teal-500/10" onClick={() => toast.success('Filtros aplicados')}>

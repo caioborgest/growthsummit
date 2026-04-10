@@ -154,12 +154,12 @@ export interface Registration {
   role_title?: string;
   whatsapp?: string;
   ticketType: 'standard' | 'pro' | 'vip' | string;
-  status: 'pending' | 'paid' | 'cancelled' | 'refunded' | 'pago' | 'ativo' | 'error' | string;
+  status: 'pending' | 'paid' | 'cancelled' | 'refunded' | 'active' | 'error' | string;
   qrCode: string;
   ticketNumber: string;
   amount: number;
   paidAmount?: number;
-  paymentStatus?: 'pending' | 'paid' | 'cancelled' | 'error' | 'pago' | 'pendente' | string;
+  paymentStatus?: 'pending' | 'paid' | 'cancelled' | 'error' | string;
   paymentMethod?: string;
   paymentDate?: string;
   createdAt: string;

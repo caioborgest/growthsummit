@@ -67,8 +67,8 @@ export function DashboardEquipe({ batches }: DashboardEquipeProps) {
                                 <div className="flex justify-between items-start mb-4">
                                     <h3 className="text-xl font-bold text-white leading-tight">{batch.nomeEmpresa}</h3>
                                     <Badge className={
-                                        batch.statusPagamento === 'pago' ? 'bg-green-500/20 text-green-400' :
-                                            batch.statusPagamento === 'pendente' ? 'bg-orange-500/20 text-orange-400' : 'bg-red-500/20 text-red-400'
+                                        batch.statusPagamento === 'paid' ? 'bg-green-500/20 text-green-400' :
+                                            batch.statusPagamento === 'pending' ? 'bg-orange-500/20 text-orange-400' : 'bg-red-500/20 text-red-400'
                                     }>
                                         {batch.statusPagamento.toUpperCase()}
                                     </Badge>
@@ -144,7 +144,7 @@ export function DashboardEquipe({ batches }: DashboardEquipeProps) {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400 text-xs">Status do Pagamento</span>
-                                        <Badge className={selectedBatch.statusPagamento === 'pago' ? "bg-green-500/20 text-green-400 border-none" : "bg-orange-500/20 text-orange-400 border-none"}>
+                                        <Badge className={selectedBatch.statusPagamento === 'paid' ? "bg-green-500/20 text-green-400 border-none" : "bg-orange-500/20 text-orange-400 border-none"}>
                                             {selectedBatch.statusPagamento}
                                         </Badge>
                                     </div>

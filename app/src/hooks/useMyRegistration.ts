@@ -44,9 +44,9 @@ export interface MyRegistration {
 const isGEProject = (projectId: string | undefined): boolean => {
     if (!projectId) return false;
     // Standard GE UUIDs
-    if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' || 
+    if (projectId === 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' ||
         projectId === '94ef1840-1ce4-4f6d-a31b-1b0232f13fe9') return true;
-    
+
     // Check localStorage for current project slug
     try {
         const selected = localStorage.getItem('selectedProject');
@@ -75,17 +75,17 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
     const isProType = ticketType === 'pro' || ticketType === 'vip';
     const statusPagamento = (row.payment_status as string || '').toLowerCase();
     const st = (row.status as string || '').toLowerCase();
-    
+
     // Determine if actually paid (individual or corporate batch status)
     const batchStatus = (row.company_registration_batches?.payment_status as string || '').toLowerCase();
-    
+
     // 1. Explicit payment on individual registration
-    const isDirectlyPaid = statusPagamento === 'pago' || statusPagamento === 'paid' || 
-                          st === 'pago' || st === 'paid' || st === 'ativo' || st === 'confirmado' ||
-                          (row.is_paid === true);
-    
+    const isDirectlyPaid = statusPagamento === 'paid' ||
+        st === 'paid' || st === 'active' || st === 'confirmado' ||
+        (row.is_paid === true);
+
     // 2. Paid via corporate batch (voucher code)
-    const isPaidViaBatch = batchStatus === 'paid' || batchStatus === 'pago';
+    const isPaidViaBatch = batchStatus === 'paid';
 
     const isActuallyPaid = isDirectlyPaid || isPaidViaBatch;
 
@@ -141,7 +141,7 @@ export function useMyRegistration() {
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
-                
+
                 if (latestReg) targetProjectId = (latestReg as { project_id: string }).project_id;
             }
 
@@ -166,10 +166,10 @@ export function useMyRegistration() {
                                 payment_status
                             )
                         `);
-                    
+
                     // Apply filters
                     query.eq('project_id', targetProjectId);
-                    
+
                     if (currentTable === 'growth_experience_registrations') {
                         // GE table uses user_id for the link to profiles/auth
                         query.eq('user_id', user.id);
@@ -187,7 +187,7 @@ export function useMyRegistration() {
             );
 
             if (err) throw err;
-            
+
             let registrationData = data ? mapRow(data) : null;
 
             // 3) Fetch profile separately as FK join is not available
@@ -197,7 +197,7 @@ export function useMyRegistration() {
                     .select('name, phone, email, avatar_url')
                     .eq('user_id', user.id)
                     .maybeSingle();
-                
+
                 if (profileData) {
                     registrationData = mapRow(data, profileData);
                 }
@@ -221,7 +221,7 @@ export function useMyRegistration() {
             setRegistration(null);
             return;
         }
-        
+
         // Refetch inicial
         fetchRegistration();
 
@@ -240,7 +240,7 @@ export function useMyRegistration() {
         if (!user || !projectId || !registration?.id) return;
 
         const channelName = `my_registration_${registration.id}`;
-        
+
         const channel = supabase.channel(channelName)
             .on(
                 'postgres_changes',
@@ -290,7 +290,8 @@ export function useMyRegistration() {
     /** Marca check-in de entrada */
     const checkInEntrada = useCallback(async () => {
         if (!registration?.id || !projectId || !user) return;
-        
+
+        try {
             const currentTable = getPrimaryTable(projectId);
 
             // 1. Update main registration
@@ -314,10 +315,10 @@ export function useMyRegistration() {
             // 3. Atualizar estado local
             setRegistration(prev => prev ? { ...prev, checkedIn: true, checkInTime: new Date().toISOString() } : prev);
         } catch (err) {
-            logger.error('[useMyRegistration] Erro no checkInEntrada:', err);
-            throw err;
-        }
-    }, [registration, projectId, user]);
+        logger.error('[useMyRegistration] Erro no checkInEntrada:', err);
+        throw err;
+    }
+}, [registration, projectId, user]);
 
-    return { registration, isLoading, error, refetch: fetchRegistration, updateCursos, checkInEntrada };
+return { registration, isLoading, error, refetch: fetchRegistration, updateCursos, checkInEntrada };
 }

@@ -356,7 +356,7 @@ export function AdminGrowthExperienceTriunfo() {
                                         </td>
                                         <td className="p-6">
                                             <Badge className={`font-black uppercase text-[8px] tracking-widest ${
-                                                item.payment_status === 'pago' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'
+                                                item.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'
                                             }`}>
                                                 {item.payment_status}
                                             </Badge>

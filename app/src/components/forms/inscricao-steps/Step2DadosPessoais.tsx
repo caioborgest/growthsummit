@@ -112,7 +112,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
             if (error) throw error;
 
             if (lot) {
-                const isPaid = lot.payment_status === 'pago' || lot.payment_status === 'paid';
+                const isPaid = lot.payment_status === 'paid';
                 if (lot.used_slots >= lot.total_slots || !isPaid) {
                     setErrors(prev => ({ ...prev, code: 'Voucher inválido, limite excedido ou pagamento pendente' }));
                     setCodigoValidado(false);

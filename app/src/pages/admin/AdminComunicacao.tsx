@@ -182,10 +182,10 @@ export default function AdminComunicacao() {
         const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id);
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'paid') {
-        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'pago');
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'paid');
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'pending') {
-        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'pendente');
+        const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('payment_status', 'pending');
         recipientsData = (data || []).map((item: any) => ({ email: item.email, name: item.nome || item.name }));
       } else if (composeData.recipients === 'vip') {
         const { data } = await (supabase.from('growth_experience_registrations').select('email, nome, registration_type') as any).eq('project_id', selectedProject.id).eq('registration_type', 'vip');

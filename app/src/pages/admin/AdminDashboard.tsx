@@ -185,15 +185,13 @@ export function AdminDashboard() {
     const totalRevenue = isGE
       ? (registrations
         .filter(r => 
-          r.status === 'ativo' || 
-          r.status === 'pago' || 
+          r.status === 'active' || 
           r.status === 'paid' || 
-          (r as any).payment_status === 'pago' ||
-          (r as any).paymentStatus === 'pago'
+          (r as any).payment_status === 'paid'
         )
         .reduce((sum, r) => sum + (r.amount || 0), 0) +
         (batches || [])
-          .filter(b => b.paymentStatus === 'paid' || b.paymentStatus === 'pago')
+          .filter(b => b.paymentStatus === 'paid')
           .reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0))
       : transactions
         .filter(t => t.type === 'income' && t.status === 'completed')

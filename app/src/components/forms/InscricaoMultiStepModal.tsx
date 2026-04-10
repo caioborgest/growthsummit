@@ -127,7 +127,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             const regId = result.registration_id;
             updateDados({ 
                 registrationId: regId,
-                paymentStatus: (finalAmount <= 0) ? 'pago' : 'pendente',
+                paymentStatus: (finalAmount <= 0) ? 'paid' : 'pending',
                 valorFinal: finalAmount
             });
 
@@ -154,7 +154,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
         
         // Skip Payment step backwards if free
-        if (targetStep === 5 && (dados.paymentStatus === 'pago' || (dados.valorFinal || 0) <= 0)) {
+        if (targetStep === 5 && (dados.paymentStatus === 'paid' || (dados.valorFinal || 0) <= 0)) {
             targetStep = (dados.buyLectures) ? 3 : 4;
         }
 
@@ -241,7 +241,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         }
 
         // Skip Step 5 (Payment) if total is zero or already paid
-        if (currentStep === 5 && (dados.paymentStatus === 'pago' || isFree)) {
+        if (currentStep === 5 && (dados.paymentStatus === 'paid' || isFree)) {
             nextStep(true);
         }
     }, [currentStep, dados.buyLectures, dados.paymentStatus, dados.valorFinal, dados.socialDiscount, dados.registrationId, isRegistering, registrationError, handlePerformRegistration]);

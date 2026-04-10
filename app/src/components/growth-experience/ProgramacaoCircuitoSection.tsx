@@ -32,7 +32,7 @@ export function ProgramacaoCircuitoSection({ onInscricao }: ProgramacaoCircuitoS
         if (!user || !registrations || !selectedProject) return false;
         const currentReg = (registrations || []).find(r => r.projectId === selectedProject.id);
         // O acesso à noite é confirmado se a inscrição existe, o pagamento está confirmado e o campo palestrasNoturnas é true
-        const isConfirmed = currentReg?.status === 'confirmed' || currentReg?.status === 'paid' || currentReg?.status === 'pago' || currentReg?.status === 'ativo';
+        const isConfirmed = currentReg?.status === 'confirmed' || currentReg?.status === 'paid' || currentReg?.status === 'active';
         return isConfirmed && currentReg?.palestrasNoturnas === true;
     }, [user, registrations, selectedProject]);
 

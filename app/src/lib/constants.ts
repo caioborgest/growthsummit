@@ -55,7 +55,8 @@ export const STATUS_MAPPING: Record<string, string> = {
   'expired': 'expired',
   'no_show': 'no_show',
   'completed': 'completed',
-  'scheduled': 'scheduled'
+  'scheduled': 'scheduled',
+  'active': 'active'
 };
 
 /**
@@ -73,5 +74,6 @@ export const STATUS_LABELS: Record<string, string> = {
   expired: 'Expirado',
   no_show: 'Não Compareceu',
   completed: 'Concluído',
-  scheduled: 'Agendado'
+  scheduled: 'Agendado',
+  active: 'Ativo'
 };

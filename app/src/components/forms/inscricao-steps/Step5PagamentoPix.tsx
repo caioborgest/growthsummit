@@ -46,7 +46,7 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
                 .eq('id', dados.registrationId)
                 .single();
 
-            if ((data as any)?.payment_status === 'pago' || (data as any)?.payment_status === 'paid') {
+            if ((data as any)?.payment_status === 'paid') {
                 setIsConfirmed(true);
                 if (pollingInterval.current) {
                     clearInterval(pollingInterval.current);

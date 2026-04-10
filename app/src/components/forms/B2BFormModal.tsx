@@ -233,7 +233,7 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                     interest_areas: formData.interest_areas,
                     objectives_description: formData.objectives_description,
                     logo_url: logoUrl || null,
-                    status: 'pendente'
+                    status: 'pending'
                 }]);
 
             if (dbError) {

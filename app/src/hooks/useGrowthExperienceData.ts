@@ -14,8 +14,8 @@ export interface InscricaoTriunfo {
     registration_type: 'palestra' | 'mentor' | 'cursos';
     evento: string;
     paid_amount: number;
-    payment_status: 'pendente' | 'pago' | 'processando' | 'erro';
-    status: 'ativo' | 'cancelado' | 'pendente';
+    payment_status: 'pending' | 'paid' | 'processing' | 'error' | 'refunded';
+    status: 'active' | 'cancelled' | 'pending';
     stripe_payment_intent_id: string | null;
     stripe_session_id: string | null;
     stripe_payment_status: string | null;
@@ -45,7 +45,7 @@ export interface StartupArenaPitch {
     pitch_deck_url: string | null;
     video_pitch_url: string | null;
     // Status
-    status: 'pendente' | 'aprovado' | 'rejeitado';
+    status: 'pending' | 'approved' | 'rejected';
     pontuacao: number | null;
     feedback: string | null;
     created_at: string;
@@ -76,7 +76,7 @@ export interface EmpresaB2B {
     interest_areas: string[];
     objectives_description: string;
     // Status
-    status: 'pendente' | 'aprovado' | 'rejeitado';
+    status: 'pending' | 'approved' | 'rejected';
     created_at: string;
     updated_at: string;
     aprovado_at: string | null;
@@ -227,7 +227,7 @@ export function useStartupsArenaPitch() {
 
             if (pontuacao !== undefined) updateData.pontuacao = pontuacao;
             if (feedback !== undefined) updateData.feedback = feedback;
-            if (status !== 'pendente') updateData.avaliado_at = new Date().toISOString();
+            if (status !== 'pending') updateData.avaliado_at = new Date().toISOString();
 
             const { error: updateError } = await (supabase
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -316,7 +316,7 @@ export function useEmpresasB2B() {
                 updated_at: new Date().toISOString(),
             };
 
-            if (status === 'aprovado') {
+            if (status === 'approved') {
                 updateData.aprovado_at = new Date().toISOString();
             }
 
@@ -375,30 +375,30 @@ export function useGrowthExperienceStats() {
     const stats = {
         // Inscrições
         totalInscricoes: inscricoes.length,
-        inscricoesPagas: inscricoes.filter(i => i.payment_status === 'pago').length,
-        inscricoesPendentes: inscricoes.filter(i => i.payment_status === 'pendente').length,
+        inscricoesPagas: inscricoes.filter(i => i.payment_status === 'paid').length,
+        inscricoesPendentes: inscricoes.filter(i => i.payment_status === 'pending').length,
         inscricoesPalestra: inscricoes.filter(i => i.registration_type === 'palestra').length,
         inscricoesMentor: inscricoes.filter(i => i.registration_type === 'mentor').length,
         inscricoesCursos: inscricoes.filter(i => i.registration_type === 'cursos').length,
 
         // Startups
         totalStartups: startups.length,
-        startupsAprovadas: startups.filter(s => s.status === 'aprovado').length,
-        startupsPendentes: startups.filter(s => s.status === 'pendente').length,
-        startupsRejeitadas: startups.filter(s => s.status === 'rejeitado').length,
+        startupsAprovadas: startups.filter(s => s.status === 'approved').length,
+        startupsPendentes: startups.filter(s => s.status === 'pending').length,
+        startupsRejeitadas: startups.filter(s => s.status === 'rejected').length,
 
         // Empresas B2B
         totalEmpresasB2B: empresasB2B.length,
-        empresasAprovadas: empresasB2B.filter(e => e.status === 'aprovado').length,
-        empresasPendentes: empresasB2B.filter(e => e.status === 'pendente').length,
-        empresasRejeitadas: empresasB2B.filter(e => e.status === 'rejeitado').length,
+        empresasAprovadas: empresasB2B.filter(e => e.status === 'approved').length,
+        empresasPendentes: empresasB2B.filter(e => e.status === 'pending').length,
+        empresasRejeitadas: empresasB2B.filter(e => e.status === 'rejected').length,
 
         // Receita
         receitaTotal: inscricoes
-            .filter(i => i.payment_status === 'pago')
+            .filter(i => i.payment_status === 'paid')
             .reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0),
         receitaPendente: inscricoes
-            .filter(i => i.payment_status === 'pendente' && i.registration_type === 'palestra')
+            .filter(i => i.payment_status === 'pending' && i.registration_type === 'palestra')
             .reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0),
     };
 

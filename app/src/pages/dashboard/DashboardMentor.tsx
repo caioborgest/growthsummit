@@ -57,7 +57,7 @@ export default function DashboardMentor() {
   // Filter sessions for this mentor
   const mentorSessions = sessions?.filter(s => s.mentorId === mentorData?.id) || [];
 
-  const pendingRequests = mentorSessions.filter(s => s.status === 'pending' || (s.status as string) === 'pendente');
+  const pendingRequests = mentorSessions.filter(s => s.status === 'pending');
   const upcomingSessions = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && s.menteeId);
   const availableSlots = mentorSessions.filter(s => (s.status === 'scheduled' || (s.status as string) === 'agendado') && !s.menteeId);
   

@@ -139,7 +139,7 @@ export function DashboardParticipante() {
         // Corporate logic
         if (registration.companyRegistrationBatches) {
           const batchStatus = registration.companyRegistrationBatches.payment_status?.toLowerCase();
-          if (batchStatus === 'paid' || batchStatus === 'pago') {
+          if (batchStatus === 'paid') {
             return { 
               label: `✅ Pago pela empresa · ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
               color: 'bg-green-500/20 text-green-400' 

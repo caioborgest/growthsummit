@@ -300,7 +300,8 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
   if (entity === 'registration_batches') {
     const rawStatus = String(data.paymentStatus || 'pending').toLowerCase();
     const status = (rawStatus === 'paid' || rawStatus === 'pago') ? 'paid' : 
-                   (rawStatus === 'pending' || rawStatus === 'pendente') ? 'pending' : 'cancelled';
+                   (rawStatus === 'pending' || rawStatus === 'pendente') ? 'pending' : 
+                   (rawStatus === 'active' || rawStatus === 'ativo') ? 'active' : 'cancelled';
     
     return {
       project_id: projectId,

@@ -14,7 +14,7 @@ export const safeStorage = {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      logger.warn(`Erro ao acessar localStorage.getItem('${key}'):`, error);
+      logger.warn(`Erro ao acessar localStorage.getItem('${key}'):`, { error });
       return null;
     }
   },
@@ -27,7 +27,7 @@ export const safeStorage = {
       localStorage.setItem(key, value);
       return true;
     } catch (error) {
-      logger.warn(`Erro ao acessar localStorage.setItem('${key}'):`, error);
+      logger.warn(`Erro ao acessar localStorage.setItem('${key}'):`, { error });
       return false;
     }
   },
@@ -40,7 +40,7 @@ export const safeStorage = {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      logger.warn(`Erro ao acessar localStorage.removeItem('${key}'):`, error);
+      logger.warn(`Erro ao acessar localStorage.removeItem('${key}'):`, { error });
       return false;
     }
   },
@@ -53,7 +53,7 @@ export const safeStorage = {
       localStorage.clear();
       return true;
     } catch (error) {
-      logger.warn('Erro ao acessar localStorage.clear():', error);
+      logger.warn('Erro ao acessar localStorage.clear():', { error });
       return false;
     }
   }
