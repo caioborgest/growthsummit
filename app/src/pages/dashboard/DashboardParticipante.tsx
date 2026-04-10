@@ -150,14 +150,14 @@ export function DashboardParticipante() {
           };
         }
 
-        if (isActuallyPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
+        if (registration?.isPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
         
         const reg = registration as { status?: string };
         if (reg.status === 'cancelled' || reg.status === 'cancelado') 
             return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
         
         return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
-    }, [registration, isActuallyPaid, isPartner]);
+    }, [registration, isPartner]);
 
   // Mentoring Logic
   const mySessions = useMemo(() => 
