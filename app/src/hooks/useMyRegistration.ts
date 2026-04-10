@@ -10,6 +10,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/promiseUtils';
 
+const PRIMARY_TABLE = 'growth_experience_registrations';
+
 export interface MyRegistration {
     id: string;
     userId?: string;

@@ -1,0 +1,864 @@
+﻿src/api/client.ts(1,85): error TS2307: Cannot find module 'axios' or its corresponding type declarations.
+src/api/client.ts(15,4): error TS7006: Parameter 'config' implicitly has an 'any' type.
+src/api/client.ts(31,4): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/api/client.ts(38,4): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/components/admin/AccreditationChecklistModal.tsx(104,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"partner_team_members"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"partner_team_members"' is not assignable to parameter of type 'never'.
+src/components/admin/AccreditationChecklistModal.tsx(106,25): error TS2353: Object literal may only specify known properties, and 'checked_in' does not exist in type '{ id?: string | undefined; email?: string | undefined; ip_address?: string | null | undefined; success?: boolean | undefined; attempted_at?: string | undefined; user_id?: string | null | undefined; } | ... 24 more ... | { ...; }'.
+src/components/admin/CheckInResultModal.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/admin/CheckInResultModal.tsx(2,53): error TS6133: 'X' is declared but its value is never read.
+src/components/admin/CheckInResultModal.tsx(32,11): error TS6133: 'isError' is declared but its value is never read.
+src/components/admin/GroupMembersDialog.tsx(2,57): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/components/admin/GroupMembersDialog.tsx(15,1): error TS6192: All imports in import declaration are unused.
+src/components/admin/GroupMembersDialog.tsx(49,5): error TS6133: 'refetch' is declared but its value is never read.
+src/components/admin/PitchLeaderboard.tsx(2,10): error TS6133: 'Trophy' is declared but its value is never read.
+src/components/admin/PitchLeaderboard.tsx(2,36): error TS6133: 'Award' is declared but its value is never read.
+src/components/admin/PitchLeaderboard.tsx(4,1): error TS6133: 'Badge' is declared but its value is never read.
+src/components/admin/PitchLeaderboard.tsx(35,36): error TS2339: Property 'startupName' does not exist on type 'Startup'.
+src/components/admin/ScoreStartupModal.tsx(2,37): error TS6133: 'X' is declared but its value is never read.
+src/components/admin/ScoreStartupModal.tsx(27,27): error TS6133: 'existingScores' is declared but its value is never read.
+src/components/admin/ScoreStartupModal.tsx(98,38): error TS2339: Property 'startupName' does not exist on type 'Startup'.
+src/components/admin/SetupWizard.tsx(125,7): error TS2304: Cannot find name 'logger'.
+src/components/app/ExitIntentPopup.tsx(48,9): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type '{ nome: string; email: string; interesses?: string[] | undefined; source?: string | undefined; project_id?: string | undefined; }'.
+src/components/app/NewsletterSection.tsx(41,9): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type '{ nome: string; email: string; interesses?: string[] | undefined; source?: string | undefined; project_id?: string | undefined; }'.
+src/components/forms/B2BFormModal.tsx(2,1): error TS6133: 'toast' is declared but its value is never read.
+src/components/forms/B2BFormModal.tsx(73,63): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/components/forms/EmpresaIncentivadoraModal.tsx(3,10): error TS6133: 'X' is declared but its value is never read.
+src/components/forms/EmpresaIncentivadoraModal.tsx(110,17): error TS2578: Unused '@ts-expect-error' directive.
+src/components/forms/inscricao-steps/Step1SelecionarCursos.tsx(36,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"event_schedule"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"event_schedule"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step1SelecionarCursos.tsx(42,29): error TS2345: Argument of type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to parameter of type 'SetStateAction<Session[]>'.
+  Type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to type 'Session[]'.
+    Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; }' is not assignable to type 'Session'.
+      Property 'title' is missing in type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }' but required in type 'Session'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(2,1): error TS6192: All imports in import declaration are unused.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(16,7): error TS6133: 'PAJEU_CITIES' is declared but its value is never read.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(99,110): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(102,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"company_registration_batches"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"company_registration_batches"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(107,54): error TS2345: Argument of type 'string | null' is not assignable to parameter of type '{}'.
+  Type 'null' is not assignable to type '{}'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(115,36): error TS2339: Property 'payment_status' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'payment_status' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(115,69): error TS2339: Property 'payment_status' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'payment_status' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(116,25): error TS2339: Property 'used_slots' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'used_slots' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(116,43): error TS2339: Property 'total_slots' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'total_slots' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(121,36): error TS2339: Property 'id' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'id' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(122,43): error TS2339: Property 'voucher_code' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'voucher_code' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(123,41): error TS2339: Property 'name' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'name' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(129,47): error TS2339: Property 'name' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'name' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(132,49): error TS2339: Property 'voucher_code' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'voucher_code' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(191,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(196,60): error TS2345: Argument of type 'string | null' is not assignable to parameter of type '{}'.
+  Type 'null' is not assignable to type '{}'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(205,47): error TS2339: Property 'expires_at' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'expires_at' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(205,80): error TS2339: Property 'expires_at' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'expires_at' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(207,48): error TS2339: Property 'usage_limit' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'usage_limit' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(207,74): error TS2339: Property 'current_usage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'current_usage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(207,102): error TS2339: Property 'usage_limit' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'usage_limit' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(209,33): error TS2339: Property 'is_active' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'is_active' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(214,50): error TS2339: Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(215,48): error TS2339: Property 'referral_type' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'referral_type' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(220,56): error TS2339: Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(221,54): error TS2339: Property 'referral_type' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'referral_type' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(225,65): error TS2339: Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'."> | SelectQueryError<"column 'project_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'discount_percentage' does not exist on type 'SelectQueryError<"column 'project_id' does not exist on 'users'.">'.
+src/components/forms/inscricao-steps/Step2DadosPessoais.tsx(229,72): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LogContext'.
+src/components/forms/inscricao-steps/Step3Confirmacao.tsx(1,1): error TS6133: 'useState' is declared but its value is never read.
+src/components/forms/inscricao-steps/Step3Confirmacao.tsx(18,66): error TS6133: 'onUpdate' is declared but its value is never read.
+src/components/forms/inscricao-steps/Step4OfertaPalestras.tsx(6,1): error TS6133: 'RegistrationBatch' is declared but its value is never read.
+src/components/forms/inscricao-steps/Step4OfertaPalestras.tsx(34,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step4OfertaPalestras.tsx(60,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"company_registration_batches"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"company_registration_batches"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step5PagamentoPix.tsx(9,5): error TS6133: 'Landmark' is declared but its value is never read.
+src/components/forms/inscricao-steps/Step5PagamentoPix.tsx(44,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/components/forms/inscricao-steps/Step7Conclusao.tsx(49,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/components/forms/InscricaoModal.tsx(51,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"social_partnership_coupons"' is not assignable to parameter of type 'never'.
+src/components/forms/InscricaoModal.tsx(158,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/components/forms/InscricaoMultiStepModal.tsx(81,65): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LogContext'.
+src/components/forms/InscricaoMultiStepModal.tsx(184,66): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/components/forms/MentorFormModal.tsx(5,1): error TS6133: 'Badge' is declared but its value is never read.
+src/components/forms/MentorFormModal.tsx(18,54): error TS2304: Cannot find name 'MentorFormModalProps'.
+src/components/forms/MentorFormModal.tsx(52,44): error TS2304: Cannot find name 'DRAFT_KEY'.
+src/components/forms/MentorFormModal.tsx(63,59): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/components/forms/MentorFormModal.tsx(81,34): error TS2304: Cannot find name 'DRAFT_KEY'.
+src/components/forms/MentorFormModal.tsx(85,11): error TS6133: 'clearDraft' is declared but its value is never read.
+src/components/forms/MentorFormModal.tsx(86,33): error TS2304: Cannot find name 'DRAFT_KEY'.
+src/components/forms/MentorFormModal.tsx(207,66): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LogContext'.
+src/components/forms/MentorFormModal.tsx(226,103): error TS2345: Argument of type 'PostgrestError' is not assignable to parameter of type 'LogContext'.
+  Index signature for type 'string' is missing in type 'PostgrestError'.
+src/components/forms/MentorFormModal.tsx(228,63): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/components/forms/MentorFormModal.tsx(256,37): error TS2304: Cannot find name 'DRAFT_KEY'.
+src/components/forms/MentorFormModal.tsx(471,54): error TS2304: Cannot find name 'ESPECIALIDADES'.
+src/components/forms/MentorFormModal.tsx(471,73): error TS7006: Parameter 'esp' implicitly has an 'any' type.
+src/components/forms/mentoria-steps/Step2SelecionarMentor.tsx(21,68): error TS6133: 'slotSelecionadoId' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step2SelecionarMentor.tsx(174,49): error TS2339: Property 'photo' does not exist on type 'Mentor'.
+src/components/forms/mentoria-steps/Step2SelecionarMentor.tsx(175,62): error TS2339: Property 'photo' does not exist on type 'Mentor'.
+src/components/forms/mentoria-steps/Step4ConfirmacaoMentoria.tsx(47,27): error TS2352: Conversion of type 'SelectQueryError<"column 'photo_url' does not exist on 'mentors'.">' to type 'Mentor' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Mentor': id, name
+src/components/forms/mentoria-steps/Step4ConfirmacaoMentoria.tsx(94,110): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LogContext'.
+src/components/forms/mentoria-steps/Step4ConfirmacaoMentoria.tsx(285,53): error TS2339: Property 'nome' does not exist on type 'Mentor'.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(1,1): error TS6133: 'useEffect' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(5,23): error TS6133: 'Home' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(5,29): error TS6133: 'Smartphone' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(5,41): error TS6133: 'Mail' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(6,1): error TS6133: 'toast' is declared but its value is never read.
+src/components/forms/mentoria-steps/Step5ConclusaoMentoria.tsx(15,11): error TS6133: 'selectedProject' is declared but its value is never read.
+src/components/forms/StartupFormModal.tsx(66,70): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/components/forms/StartupFormModal.tsx(200,37): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type 'never'.
+src/components/growth-experience/HeroSectionRefined.tsx(4,1): error TS6133: 'Badge' is declared but its value is never read.
+src/components/growth-experience/MentorCard.tsx(4,13): error TS6133: 'User' is declared but its value is never read.
+src/components/growth-experience/MentorCard.tsx(4,35): error TS6133: 'Phone' is declared but its value is never read.
+src/components/growth-experience/MentorCard.tsx(8,5): error TS6133: 'DialogHeader' is declared but its value is never read.
+src/components/growth-experience/ProgramacaoTabs.tsx(125,15): error TS6133: 'eventMin' is declared but its value is never read.
+src/components/layout/Layout.tsx(70,29): error TS2339: Property 'id' does not exist on type 'string | number'.
+  Property 'id' does not exist on type 'string'.
+src/components/layout/Layout.tsx(93,33): error TS2339: Property 'id' does not exist on type 'string | number'.
+  Property 'id' does not exist on type 'string'.
+src/components/marketing/PopupManager.tsx(32,41): error TS2339: Property 'target_pages' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">'.
+  Property 'target_pages' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type">'.
+src/components/marketing/PopupManager.tsx(32,59): error TS2339: Property 'target_pages' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">'.
+  Property 'target_pages' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type">'.
+src/components/marketing/PopupManager.tsx(37,29): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/marketing/PopupManager.tsx(41,30): error TS2339: Property 'show_after_seconds' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">'.
+  Property 'show_after_seconds' does not exist on type 'SelectQueryError<"Invalid Relationships cannot infer result type">'.
+src/components/profile/ProfileModal.tsx(61,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type 'never'.
+src/components/profile/ProfileModal.tsx(65,21): error TS2345: Argument of type '(SelectQueryError<"column 'user_id' does not exist on 'users'."> | SelectQueryError<"column 'user_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>)[]' is not assignable to parameter of type 'SetStateAction<{ id: string; consent_type: string; granted_at: string; revoked_at: string | null; }[]>'.
+  Type '(SelectQueryError<"column 'user_id' does not exist on 'users'."> | SelectQueryError<"column 'user_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>)[]' is not assignable to type '{ id: string; consent_type: string; granted_at: string; revoked_at: string | null; }[]'.
+    Type 'SelectQueryError<"column 'user_id' does not exist on 'users'."> | SelectQueryError<"column 'user_id' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>' is not assignable to type '{ id: string; consent_type: string; granted_at: string; revoked_at: string | null; }'.
+      Type '{ error: true; } & String' is missing the following properties from type '{ id: string; consent_type: string; granted_at: string; revoked_at: string | null; }': id, consent_type, granted_at, revoked_at
+src/components/profile/ProfileModal.tsx(70,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"user_consents"' is not assignable to parameter of type 'never'.
+src/components/profile/ProfileModal.tsx(71,23): error TS2353: Object literal may only specify known properties, and 'revoked_at' does not exist in type '{ id?: string | undefined; email?: string | undefined; ip_address?: string | null | undefined; success?: boolean | undefined; attempted_at?: string | undefined; user_id?: string | null | undefined; } | ... 24 more ... | { ...; }'.
+src/components/profile/ProfileModal.tsx(80,33): error TS2339: Property 'phone' does not exist on type 'Profile'.
+src/components/profile/ProfileModal.tsx(145,17): error TS2353: Object literal may only specify known properties, and 'phone' does not exist in type 'Partial<Profile>'.
+src/components/security/TwoFactorAuth.tsx(7,42): error TS6133: 'QrCode' is declared but its value is never read.
+src/components/social/SocialShare.tsx(12,43): error TS6133: 'description' is declared but its value is never read.
+src/contexts/AuthContext.tsx(213,14): error TS2339: Property 'abortSignal' does not exist on type 'PostgrestBuilder<{ PostgrestVersion: "14.4"; }, SelectQueryError<"column 'avatar_url' does not exist on 'users'."> | null, false>'.
+src/contexts/AuthContext.tsx(317,152): error TS2339: Property 'abortSignal' does not exist on type 'PostgrestBuilder<{ PostgrestVersion: "14.4"; }, SelectQueryError<"column 'avatar_url' does not exist on 'users'."> | null, false>'.
+src/contexts/PWAContext.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/contexts/PWAContext.tsx(1,78): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/contexts/PWAContext.tsx(2,28): error TS2307: Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
+src/data/programacaoCircuito.ts(11,5): error TS6133: 'Mic' is declared but its value is never read.
+src/hooks/api/useProjects.ts(47,14): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type 'Project' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Project': id, name, slug, type, and 10 more.
+src/hooks/api/useProjects.ts(59,50): error TS2345: Argument of type '"get_project_stats"' is not assignable to parameter of type '"current_user_role" | "is_admin" | "register_participant_with_slots" | "apply_company_voucher" | "validate_registration_data"'.
+src/hooks/api/useProjects.ts(92,14): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type 'Project' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Project': id, name, slug, type, and 10 more.
+src/hooks/api/useProjects.ts(110,14): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type 'Project' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Project': id, name, slug, type, and 10 more.
+src/hooks/api/useProjects.ts(145,14): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type 'Project' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Project': id, name, slug, type, and 10 more.
+src/hooks/api/useRegistrations.ts(49,14): error TS2352: Conversion of type '(SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">)[]' to type 'Registration[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' is not comparable to type 'Registration'.
+    Type '{ error: true; } & String' is missing the following properties from type 'Registration': id, projectId, userId, ticketType, and 6 more.
+src/hooks/api/useRegistrations.ts(66,14): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type 'Registration' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ error: true; } & String' is missing the following properties from type 'Registration': id, projectId, userId, ticketType, and 6 more.
+src/hooks/api/useRegistrations.ts(84,19): error TS2352: Conversion of type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' to type '{ qr_code?: string | null | undefined; ticket_number?: string | null | undefined; id: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'id' is missing in type '{ error: true; } & String' but required in type '{ qr_code?: string | null | undefined; ticket_number?: string | null | undefined; id: string; }'.
+src/hooks/useGrowthExperienceData.ts(102,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/hooks/useGrowthExperienceData.ts(138,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/hooks/useGrowthExperienceData.ts(156,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/hooks/useGrowthExperienceData.ts(201,21): error TS2345: Argument of type '{ avaliado_at: string | null; created_at: string | null; startup_description: string | null; diferencial: string | null; estagio: string | null; faturamento_mensal: number | null; ... 14 more ...; video_pitch_url: string | null; }[]' is not assignable to parameter of type 'SetStateAction<StartupArenaPitch[]>'.
+  Type '{ avaliado_at: string | null; created_at: string | null; startup_description: string | null; diferencial: string | null; estagio: string | null; faturamento_mensal: number | null; ... 14 more ...; video_pitch_url: string | null; }[]' is not assignable to type 'StartupArenaPitch[]'.
+    Type '{ avaliado_at: string | null; created_at: string | null; startup_description: string | null; diferencial: string | null; estagio: string | null; faturamento_mensal: number | null; ... 14 more ...; video_pitch_url: string | null; }' is missing the following properties from type 'StartupArenaPitch': email, phone
+src/hooks/useGrowthExperienceData.ts(297,21): error TS2345: Argument of type '{ interest_areas: string | null; created_at: string | null; faturamento_anual: number | null; id: string; linkedin_url: string | null; logo_url: string | null; representative_name: string | null; ... 7 more ...; user_id: string | null; }[]' is not assignable to parameter of type 'SetStateAction<EmpresaB2B[]>'.
+  Type '{ interest_areas: string | null; created_at: string | null; faturamento_anual: number | null; id: string; linkedin_url: string | null; logo_url: string | null; representative_name: string | null; ... 7 more ...; user_id: string | null; }[]' is not assignable to type 'EmpresaB2B[]'.
+    Type '{ interest_areas: string | null; created_at: string | null; faturamento_anual: number | null; id: string; linkedin_url: string | null; logo_url: string | null; representative_name: string | null; ... 7 more ...; user_id: string | null; }' is missing the following properties from type 'EmpresaB2B': role_title, email, company_name, cnpj, and 6 more.
+src/hooks/useMyRegistration.ts(138,27): error TS2552: Cannot find name 'PRIMARY_TABLE'. Did you mean 'getPrimaryTable'?
+src/hooks/useMyRegistration.ts(159,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+      Type '"growth_experience_registrations"' is not assignable to type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'. Did you mean '"growth_experience_mentors"'?
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type 'never'.
+      Type '"registrations"' is not assignable to type 'never'.
+src/hooks/useMyRegistration.ts(183,26): error TS2339: Property 'abortSignal' does not exist on type 'PostgrestBuilder<{ PostgrestVersion: "14.4"; }, { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; company_registration_batches: SelectQueryError<...>; } | ... 675 more ... | null, false>'.
+src/hooks/useMyRegistration.ts(283,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+      Type '"growth_experience_registrations"' is not assignable to type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'. Did you mean '"growth_experience_mentors"'?
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type 'never'.
+      Type '"registrations"' is not assignable to type 'never'.
+src/hooks/useMyRegistration.ts(298,33): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+      Type '"growth_experience_registrations"' is not assignable to type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'. Did you mean '"growth_experience_mentors"'?
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"registrations" | "growth_experience_registrations"' is not assignable to parameter of type 'never'.
+      Type '"registrations"' is not assignable to type 'never'.
+src/hooks/useMyRegistration.ts(299,17): error TS2353: Object literal may only specify known properties, and 'checked_in' does not exist in type '{ id?: string | undefined; email?: string | undefined; ip_address?: string | null | undefined; success?: boolean | undefined; attempted_at?: string | undefined; user_id?: string | null | undefined; } | ... 24 more ... | { ...; }'.
+src/hooks/useProgramacaoTriunfo.ts(18,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"event_schedule"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"event_schedule"' is not assignable to parameter of type 'never'.
+src/lib/auth-audit.ts(60,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"audit_logs"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"audit_logs"' is not assignable to parameter of type 'never'.
+src/lib/certificateGenerator.ts(75,7): error TS6133: 'TIPO_PILL' is declared but its value is never read.
+src/lib/certificateGenerator.ts(318,9): error TS2322: Type 'URL' is not assignable to type 'string | void'.
+src/lib/certificateService.ts(23,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(36,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"activity_check_ins"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"activity_check_ins"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(52,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(87,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(92,26): error TS2339: Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(95,29): error TS2339: Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(96,29): error TS2339: Property 'nome' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'nome' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(122,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(133,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(166,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(171,26): error TS2339: Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(174,29): error TS2339: Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'email' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(175,29): error TS2339: Property 'nome' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'."> | SelectQueryError<"column 'nome' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'nome' does not exist on type 'SelectQueryError<"column 'nome' does not exist on 'users'.">'.
+src/lib/certificateService.ts(196,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/certificateService.ts(202,50): error TS2339: Property 'social_share_count' does not exist on type 'SelectQueryError<"column 'social_share_count' does not exist on 'users'."> | SelectQueryError<"column 'social_share_count' does not exist on 'projects'."> | ... 23 more ... | SelectQueryError<...>'.
+  Property 'social_share_count' does not exist on type 'SelectQueryError<"column 'social_share_count' does not exist on 'users'.">'.
+src/lib/certificateService.ts(204,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"certificates"' is not assignable to parameter of type 'never'.
+src/lib/checkInAtomic.ts(46,82): error TS2339: Property 'message' does not exist on type '{ success?: boolean | undefined; error?: string | undefined; action?: string | undefined; checked_in?: boolean | undefined; }'.
+src/lib/ensureGETriunfoProject.ts(16,6): error TS6196: 'ProjectInsert' is declared but never used.
+src/lib/ensureGETriunfoProject.ts(21,7): error TS6133: 'PROJECT_DATA' is declared but its value is never read.
+src/lib/ensureGETriunfoProject.ts(81,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/lib/ensureGETriunfoProject.ts(82,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/lib/mappers/companyMapper.ts(13,12): error TS2352: Conversion of type '{ id: string; projectId: string; userId: string; name: string; contactName: string; contactEmail: string; sector: string; description: string; status: string; phone: string; cnpj: string; ... 12 more ...; createdAt: string; }' to type 'Company' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; projectId: string; userId: string; name: string; contactName: string; contactEmail: string; sector: string; description: string; status: string; phone: string; cnpj: string; porte: string; ... 11 more ...; createdAt: string; }' is missing the following properties from type 'Company': companyName, type, contactPhone, maxMeetings
+src/lib/mappers/companyMapper.ts(56,14): error TS2339: Property 'phone' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(56,61): error TS2339: Property 'phone' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(58,14): error TS2339: Property 'porte' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(58,58): error TS2339: Property 'porte' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(59,14): error TS2339: Property 'faturamentoAnual' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(59,81): error TS2339: Property 'faturamentoAnual' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(60,14): error TS2339: Property 'numeroFuncionarios' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(60,85): error TS2339: Property 'numeroFuncionarios' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(61,14): error TS2551: Property 'produtosServicos' does not exist on type 'Partial<Company>'. Did you mean 'productsServices'?
+src/lib/mappers/companyMapper.ts(61,81): error TS2551: Property 'produtosServicos' does not exist on type 'Partial<Company>'. Did you mean 'productsServices'?
+src/lib/mappers/companyMapper.ts(62,14): error TS2339: Property 'siteUrl' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(62,63): error TS2339: Property 'siteUrl' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(63,14): error TS2339: Property 'linkedinUrl' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(63,71): error TS2339: Property 'linkedinUrl' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(65,14): error TS2339: Property 'tipoInteresse' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(65,74): error TS2339: Property 'tipoInteresse' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(66,14): error TS2339: Property 'areasInteresse' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(66,76): error TS2339: Property 'areasInteresse' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(67,14): error TS2339: Property 'descricaoObjetivos' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(67,88): error TS2339: Property 'descricaoObjetivos' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(68,14): error TS2339: Property 'role_title' does not exist on type 'Partial<Company>'.
+src/lib/mappers/companyMapper.ts(68,63): error TS2339: Property 'role_title' does not exist on type 'Partial<Company>'.
+src/lib/mappers/mentorMapper.ts(15,12): error TS2352: Conversion of type '{ id: string; projectId: string; userId: string; name: string; email: string; phone: string; company: string; position: string; specialties: string[]; bio: string; photo: string; linkedin: string; status: string; yearsExperience: number; maxMentories: number; createdAt: string; }' to type 'Mentor' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; projectId: string; userId: string; name: string; email: string; phone: string; company: string; position: string; specialties: string[]; bio: string; photo: string; linkedin: string; status: string; yearsExperience: number; maxMentories: number; createdAt: string; }' is missing the following properties from type 'Mentor': tracks, roleTitle, maxMentorings
+src/lib/mappers/mentorMapper.ts(52,18): error TS2339: Property 'position' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(52,65): error TS2339: Property 'position' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(54,18): error TS2339: Property 'photo' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(54,66): error TS2339: Property 'photo' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(55,18): error TS2339: Property 'linkedin' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(55,72): error TS2339: Property 'linkedin' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(61,18): error TS2339: Property 'position' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(61,68): error TS2339: Property 'position' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(63,18): error TS2339: Property 'photo' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(63,62): error TS2339: Property 'photo' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(64,18): error TS2339: Property 'linkedin' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/mentorMapper.ts(64,68): error TS2339: Property 'linkedin' does not exist on type 'Partial<Mentor>'.
+src/lib/mappers/registrationMapper.ts(70,18): error TS2339: Property 'company' does not exist on type 'Partial<Registration>'.
+src/lib/mappers/registrationMapper.ts(70,66): error TS2339: Property 'company' does not exist on type 'Partial<Registration>'.
+src/lib/mappers/registrationMapper.ts(80,18): error TS2339: Property 'company' does not exist on type 'Partial<Registration>'.
+src/lib/mappers/registrationMapper.ts(80,66): error TS2339: Property 'company' does not exist on type 'Partial<Registration>'.
+src/lib/newsletterService.ts(96,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"newsletter_leads"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"newsletter_leads"' is not assignable to parameter of type 'never'.
+src/lib/reports.ts(158,11): error TS6133: 'dateStr' is declared but its value is never read.
+src/lib/schemas/startup.ts(25,16): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: readonly ["ideia", "mvp", "tra├º├úo", "escala"], params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Object literal may only specify known properties, and 'errorMap' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; }'.
+  Overload 2 of 2, '(entries: Readonly<Record<string, EnumValue>>, params?: string | { error?: string | $ZodErrorMap<$ZodIssueInvalidValue<unknown>> | undefined; message?: string | undefined; } | undefined): ZodEnum<...>', gave the following error.
+    Argument of type 'string[]' is not assignable to parameter of type 'Readonly<Record<string, EnumValue>>'.
+      Index signature for type 'string' is missing in type 'string[]'.
+src/pages/admin/AdminB2B.tsx(229,44): error TS2345: Argument of type '"rpc_generate_b2b_schedule"' is not assignable to parameter of type '"current_user_role" | "is_admin" | "register_participant_with_slots" | "apply_company_voucher" | "validate_registration_data"'.
+src/pages/admin/AdminBatches.tsx(172,32): error TS2339: Property 'companyName' does not exist on type 'RegistrationBatch'.
+src/pages/admin/AdminCertificados.tsx(6,5): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/admin/AdminCertificados.tsx(121,29): error TS2345: Argument of type '(SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">)[]' is not assignable to parameter of type 'SetStateAction<Certificate[]>'.
+  Type '(SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">)[]' is not assignable to type 'Certificate[]'.
+    Type 'SelectQueryError<"Invalid Relationships cannot infer result type"> | SelectQueryError<"Invalid RelationName cannot infer result type">' is not assignable to type 'Certificate'.
+      Type '{ error: true; } & String' is missing the following properties from type 'Certificate': id, registration_id, project_id, activity_name, and 5 more.
+src/pages/admin/AdminCertificados.tsx(170,27): error TS2353: Object literal may only specify known properties, and 'metadata' does not exist in type '{ address?: string | null | undefined; banner?: string | null | undefined; city?: string | undefined; country?: string | null | undefined; created_at?: string | null | undefined; created_by?: string | ... 1 more ... | undefined; ... 28 more ...; updated_at?: string | ... 1 more ... | undefined; }'.
+src/pages/admin/AdminCertificados.tsx(191,32): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(191,60): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(295,68): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(298,41): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(298,70): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(305,22): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(474,16): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(576,122): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(578,67): error TS2551: Property 'registrations' does not exist on type 'Certificate'. Did you mean 'registration'?
+src/pages/admin/AdminCertificados.tsx(790,57): error TS2322: Type '"xs"' is not assignable to type '"icon" | "default" | "sm" | "lg" | "touch" | "icon-sm" | "icon-lg" | null | undefined'.
+src/pages/admin/AdminCheckIn.tsx(1,42): error TS6133: 'useEffect' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(6,3): error TS6133: 'Users' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(9,3): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(18,1): error TS6133: 'parseQRString' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(43,37): error TS6133: 'loadingMentors' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(44,39): error TS6133: 'loadingCompanies' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(45,38): error TS6133: 'loadingStartups' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(128,45): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(131,47): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(134,46): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(137,63): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(162,59): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(167,39): error TS2589: Type instantiation is excessively deep and possibly infinite.
+src/pages/admin/AdminCheckIn.tsx(168,17): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminCheckIn.tsx(170,21): error TS2304: Cannot find name 'effectiveId'.
+src/pages/admin/AdminCheckIn.tsx(228,9): error TS6133: 'handleEntitySelection' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(234,9): error TS6133: 'selectedSession' is declared but its value is never read.
+src/pages/admin/AdminCheckIn.tsx(248,8): error TS2741: Property 'onSuccess' is missing in type '{ isOpen: boolean; onClose: () => void; entity: any; role: "company" | "participant" | "mentor" | "startup" | "partner"; projectId: string; }' but required in type 'AccreditationChecklistModalProps'.
+src/pages/admin/AdminCheckIn.tsx(357,31): error TS2304: Cannot find name 'LogOut'.
+src/pages/admin/AdminCheckIn.tsx(367,37): error TS2304: Cannot find name 'LogIn'.
+src/pages/admin/AdminComunicacao.tsx(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+src/pages/admin/AdminComunicacao.tsx(23,3): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/admin/AdminComunicacao.tsx(42,15): error TS6196: 'EmailCampaign' is declared but never used.
+src/pages/admin/AdminComunicacao.tsx(147,9): error TS2353: Object literal may only specify known properties, and 'recipientsFilter' does not exist in type 'Omit<EmailCampaign, "id" | "createdAt">'.
+src/pages/admin/AdminComunicacao.tsx(182,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(185,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(188,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(191,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(212,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"partners"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"partners"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(215,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"partner_team_members"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"partner_team_members"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(219,55): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"stands"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"stands"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminComunicacao.tsx(256,32): error TS2339: Property 'nome' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(256,50): error TS2339: Property 'founder_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(256,76): error TS2339: Property 'representative_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(256,109): error TS2339: Property 'responsible_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(257,35): error TS2339: Property 'company_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(257,61): error TS2339: Property 'company_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(257,87): error TS2339: Property 'startup_name' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(258,34): error TS2339: Property 'registration_type' does not exist on type 'Recipient'.
+src/pages/admin/AdminComunicacao.tsx(308,28): error TS2339: Property 'recipients_filter' does not exist on type 'EmailCampaign'.
+src/pages/admin/AdminComunicacao.tsx(413,22): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(415,23): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(518,24): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(520,25): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(796,44): error TS2304: Cannot find name 'setCampaigns'.
+src/pages/admin/AdminComunicacao.tsx(1047,39): error TS2551: Property 'created_at' does not exist on type 'Notification'. Did you mean 'createdAt'?
+src/pages/admin/AdminComunicacao.tsx(1073,16): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(1075,17): error TS2304: Cannot find name 'DialogDescription'.
+src/pages/admin/AdminComunicacao.tsx(1098,48): error TS2304: Cannot find name 'initialEmailTemplates'.
+src/pages/admin/AdminComunicacao.tsx(1118,53): error TS2304: Cannot find name 'initialEmailTemplates'.
+src/pages/admin/AdminDashboard.tsx(197,47): error TS2339: Property 'totalAmount' does not exist on type 'RegistrationBatch'.
+src/pages/admin/AdminEmpresasIncentivadoras.tsx(217,43): error TS2339: Property 'investedAmount' does not exist on type 'EmpresaIncentivadora'.
+src/pages/admin/AdminEmpresasIncentivadoras.tsx(243,92): error TS2551: Property 'objetivo' does not exist on type 'EmpresaIncentivadora'. Did you mean 'objective'?
+src/pages/admin/AdminFinanceiro.tsx(20,1): error TS6133: 'VisuallyHidden' is declared but its value is never read.
+src/pages/admin/AdminFinanceiro.tsx(115,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/pages/admin/AdminFinanceiro.tsx(177,7): error TS2551: Property 'payment_status' does not exist on type 'Registration'. Did you mean 'paymentStatus'?
+src/pages/admin/AdminFinanceiro.tsx(184,75): error TS2551: Property 'paid_amount' does not exist on type 'Registration'. Did you mean 'paidAmount'?
+src/pages/admin/AdminInscricoes.tsx(98,52): error TS2551: Property 'payment_status' does not exist on type 'Registration'. Did you mean 'paymentStatus'?
+src/pages/admin/AdminInscricoes.tsx(194,95): error TS2551: Property 'payment_status' does not exist on type 'Registration'. Did you mean 'paymentStatus'?
+src/pages/admin/AdminInscricoes.tsx(197,72): error TS2551: Property 'payment_status' does not exist on type 'Registration'. Did you mean 'paymentStatus'?
+src/pages/admin/AdminInscricoes.tsx(247,9): error TS6133: '_unused' is declared but its value is never read.
+src/pages/admin/AdminInscricoes.tsx(399,30): error TS2345: Argument of type '"decrement_session_count"' is not assignable to parameter of type '"current_user_role" | "is_admin" | "register_participant_with_slots" | "apply_company_voucher" | "validate_registration_data"'.
+src/pages/admin/AdminInscricoes.tsx(744,64): error TS2551: Property 'payment_status' does not exist on type 'Registration'. Did you mean 'paymentStatus'?
+src/pages/admin/AdminInscricoes.tsx(826,10): error TS2741: Property 'projectId' is missing in type '{ isOpen: true; onClose: () => void; entity: Registration | null; role: "participant"; onSuccess: () => Promise<void>; }' but required in type 'AccreditationChecklistModalProps'.
+src/pages/admin/AdminIntegracoes.tsx(9,3): error TS6133: 'Monitor' is declared but its value is never read.
+src/pages/admin/AdminIntegracoes.tsx(90,9): error TS6133: 'projectSlug' is declared but its value is never read.
+src/pages/admin/AdminMentores.tsx(747,84): error TS2367: This comparison appears to be unintentional because the types '"approved" | "rejected"' and '"pendente"' have no overlap.
+src/pages/admin/AdminMentores.tsx(748,86): error TS2367: This comparison appears to be unintentional because the types '"pending" | "rejected"' and '"aprovado"' have no overlap.
+src/pages/admin/AdminMentores.tsx(1103,25): error TS2339: Property 'photo' does not exist on type 'Mentor'.
+src/pages/admin/AdminMentores.tsx(1104,36): error TS2339: Property 'photo' does not exist on type 'Mentor'.
+src/pages/admin/AdminMentorias.tsx(50,27): error TS2339: Property 'update' does not exist on type '{ data: MentoringWaitlist[]; isLoading: boolean; error: null; refetch: () => Promise<void>; }'.
+src/pages/admin/AdminMentorias.tsx(133,22): error TS2554: Expected 0 arguments, but got 2.
+src/pages/admin/AdminMentorias.tsx(141,22): error TS2554: Expected 0 arguments, but got 1.
+src/pages/admin/AdminMentorias.tsx(420,51): error TS2554: Expected 0 arguments, but got 2.
+src/pages/admin/AdminParceiros.tsx(177,34): error TS2367: This comparison appears to be unintentional because the types '"permuta" | "investimento" | "misto" | undefined' and '"barter"' have no overlap.
+src/pages/admin/AdminParceiros.tsx(178,38): error TS2367: This comparison appears to be unintentional because the types '"permuta" | "investimento" | "misto" | undefined' and '"investment"' have no overlap.
+src/pages/admin/AdminParceiros.tsx(179,33): error TS2367: This comparison appears to be unintentional because the types '"permuta" | "investimento" | "misto" | undefined' and '"mixed"' have no overlap.
+src/pages/admin/AdminPatrocinadores.tsx(14,1): error TS6133: 'Label' is declared but its value is never read.
+src/pages/admin/AdminPatrocinadores.tsx(64,9): error TS2353: Object literal may only specify known properties, and 'companyName' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(75,9): error TS2353: Object literal may only specify known properties, and 'companyName' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(100,21): error TS2339: Property 'companyName' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(100,46): error TS2339: Property 'contactName' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(193,39): error TS2339: Property 'companyName' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(194,65): error TS2353: Object literal may only specify known properties, and 'companyName' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(201,39): error TS2339: Property 'level' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(202,65): error TS2353: Object literal may only specify known properties, and 'level' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(218,39): error TS2339: Property 'investment' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(219,65): error TS2353: Object literal may only specify known properties, and 'investment' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(242,37): error TS2339: Property 'contactName' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(243,63): error TS2353: Object literal may only specify known properties, and 'contactName' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(254,39): error TS2339: Property 'contactEmail' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(255,65): error TS2353: Object literal may only specify known properties, and 'contactEmail' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPatrocinadores.tsx(263,39): error TS2339: Property 'contactPhone' does not exist on type '{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }'.
+src/pages/admin/AdminPatrocinadores.tsx(264,65): error TS2353: Object literal may only specify known properties, and 'contactPhone' does not exist in type 'SetStateAction<{ status: "cancelled" | "prospect" | "negotiation" | "closed"; }>'.
+src/pages/admin/AdminPopups.tsx(44,56): error TS2344: Type 'ProjectPopup' does not satisfy the constraint 'WithId'.
+  Property 'createdAt' is missing in type 'ProjectPopup' but required in type 'WithId'.
+src/pages/admin/AdminPopups.tsx(69,17): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminPopups.tsx(76,17): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminPopups.tsx(92,45): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminPopups.tsx(107,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"project_popups"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminProjectSchedule.tsx(11,3): error TS6133: 'LayoutGrid' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(12,3): error TS6133: 'QrCode' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(13,3): error TS6133: 'Printer' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(20,1): error TS6133: 'QRCode' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(24,3): error TS6133: 'DialogHeader' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(28,1): error TS6133: 'generateQRString' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(91,7): error TS6133: 'rooms' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(111,10): error TS6133: 'qrSession' is declared but its value is never read.
+src/pages/admin/AdminProjectSchedule.tsx(111,21): error TS6133: 'setQrSession' is declared but its value is never read.
+src/pages/admin/AdminProjetos.tsx(988,32): error TS2552: Cannot find name 'User'. Did you mean 'Users'?
+src/pages/admin/AdminRelatorios.tsx(245,38): error TS2551: Property 'paid_amount' does not exist on type 'Registration'. Did you mean 'paidAmount'?
+src/pages/admin/AdminRelatorios.tsx(247,24): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/admin/AdminRelatorios.tsx(247,56): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/admin/AdminRelatorios.tsx(248,45): error TS2339: Property 'valorTotal' does not exist on type 'RegistrationBatch'.
+src/pages/admin/AdminSecurity.tsx(76,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"audit_logs"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"audit_logs"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminSecurity.tsx(84,40): error TS2345: Argument of type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to parameter of type 'SetStateAction<AuditLog[]>'.
+  Type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to type 'AuditLog[]'.
+    Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; }' is not assignable to type 'AuditLog'.
+      Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }' is missing the following properties from type 'AuditLog': event, metadata, browser_agent, created_at
+src/pages/admin/AdminSecurity.tsx(92,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"security_suspicious_logins"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"security_suspicious_logins"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminSecurity.tsx(95,53): error TS2345: Argument of type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to parameter of type 'SetStateAction<SuspiciousLogin[]>'.
+  Type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to type 'SuspiciousLogin[]'.
+    Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; }' is not assignable to type 'SuspiciousLogin'.
+      Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }' is missing the following properties from type 'SuspiciousLogin': attempt_count, last_attempt, failed_attempts
+src/pages/admin/AdminSecurity.tsx(101,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"security_user_activity"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"security_user_activity"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminSecurity.tsx(105,47): error TS2345: Argument of type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to parameter of type 'SetStateAction<UserActivity[]>'.
+  Type '({ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; })[]' is not assignable to type 'UserActivity[]'.
+    Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; } | { id: string; project_id: string; user_id: string | null; name: string; ... 10 more ...; created_at: string | null; } | ... 23 more ... | { ...; }' is not assignable to type 'UserActivity'.
+      Type '{ id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }' is missing the following properties from type 'UserActivity': name, role, last_login_at, last_login_ip, and 3 more.
+src/pages/admin/AdminSecurity.tsx(115,28): error TS2322: Type 'SelectQueryError<"column 'two_factor_enabled' does not exist on 'users'.">[]' is not assignable to type '{ id: string; two_factor_enabled: boolean; }[]'.
+  Type '{ error: true; } & String' is missing the following properties from type '{ id: string; two_factor_enabled: boolean; }': id, two_factor_enabled
+src/pages/admin/AdminSecurity.tsx(121,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"active_sessions"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"active_sessions"' is not assignable to parameter of type 'never'.
+src/pages/admin/AdminSorteio.tsx(140,28): error TS2339: Property 'length' does not exist on type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+  Property 'length' does not exist on type 'number'.
+src/pages/admin/AdminSorteio.tsx(141,21): error TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+  Property '0' does not exist on type 'string | number | true | { [key: string]: Json | undefined; } | Json[]'.
+src/pages/admin/AdminStartups.tsx(97,16): error TS2339: Property 'startupName' does not exist on type 'Startup'.
+src/pages/admin/AdminStartups.tsx(570,78): error TS2339: Property 'startupName' does not exist on type 'Startup'.
+src/pages/admin/AdminStartups.tsx(572,79): error TS2339: Property 'startupDescription' does not exist on type 'Startup'.
+src/pages/admin/AdminUsuarios.tsx(256,116): error TS2345: Argument of type 'User[]' is not assignable to parameter of type 'Record<string, unknown>[]'.
+  Type 'User' is not assignable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'User'.
+src/pages/admin/AdminUsuarios.tsx(670,18): error TS2741: Property 'projectId' is missing in type '{ isOpen: true; onClose: () => void; entity: any; role: "company" | "participant" | "mentor" | "startup"; onSuccess: () => void; }' but required in type 'AccreditationChecklistModalProps'.
+src/pages/admin/components/ManualCertificateModal.tsx(129,14): error TS2304: Cannot find name 'DialogTitle'.
+src/pages/admin/components/ManualCertificateModal.tsx(132,15): error TS2304: Cannot find name 'DialogTitle'.
+src/pages/admin/components/PartnerTeamModal.tsx(3,3): error TS6133: 'Plus' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(8,3): error TS6133: 'Phone' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(10,3): error TS6133: 'Briefcase' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(13,3): error TS6133: 'CheckCircle2' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(14,3): error TS6133: 'Clock' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(15,3): error TS6133: 'Shield' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(16,15): error TS6133: 'SettingsIcon' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(17,3): error TS6133: 'ChevronDown' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(18,3): error TS6133: 'ChevronUp' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(19,3): error TS6133: 'Type' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(20,3): error TS6133: 'Search' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(67,13): error TS6133: 'qrCodeLegacy' is declared but its value is never read.
+src/pages/admin/components/PartnerTeamModal.tsx(72,9): error TS18004: No value exists in scope for the shorthand property 'qrCode'. Either declare one or provide an initializer.
+src/pages/admin/components/PartnerTeamModal.tsx(132,14): error TS2304: Cannot find name 'DialogTitle'.
+src/pages/admin/components/PartnerTeamModal.tsx(133,16): error TS2304: Cannot find name 'Users'.
+src/pages/admin/components/PartnerTeamModal.tsx(135,15): error TS2304: Cannot find name 'DialogTitle'.
+src/pages/admin/components/PartnerTeamModal.tsx(234,20): error TS2304: Cannot find name 'Users'.
+src/pages/auth/AuthCallback.tsx(58,92): error TS2345: Argument of type 'string' is not assignable to parameter of type 'LogContext'.
+src/pages/ComingSoon.tsx(97,39): error TS6133: 'variant' is declared but its value is never read.
+src/pages/dashboard/components/AgendaSection.tsx(50,5): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/dashboard/components/AgendaSection.tsx(89,59): error TS2339: Property 'checkedIn' does not exist on type '{ id: string; nome?: string | undefined; palestrasNoturnas?: boolean | undefined; }'.
+src/pages/dashboard/components/B2BScheduleModal.tsx(2,18): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/pages/dashboard/components/B2BScheduleModal.tsx(3,27): error TS6133: 'MapPin' is declared but its value is never read.
+src/pages/dashboard/components/B2BScheduleModal.tsx(3,38): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/dashboard/components/DashboardEquipe.tsx(1,20): error TS6133: 'useMemo' is declared but its value is never read.
+src/pages/dashboard/components/DashboardEquipe.tsx(5,10): error TS6133: 'FileText' is declared but its value is never read.
+src/pages/dashboard/components/DashboardEquipe.tsx(5,64): error TS6133: 'QrCode' is declared but its value is never read.
+src/pages/dashboard/components/DashboardEquipe.tsx(26,81): error TS2339: Property 'nomeEmpresa' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(68,103): error TS2339: Property 'nomeEmpresa' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(70,47): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(71,51): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(73,48): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(80,87): error TS2339: Property 'vagasUtilizadas' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(80,113): error TS2339: Property 'quantidadeVagas' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(85,85): error TS2339: Property 'vagasUtilizadas' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(85,109): error TS2339: Property 'quantidadeVagas' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(99,121): error TS2339: Property 'nomeEmpresa' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(100,102): error TS2339: Property 'nomeResponsavel' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(118,87): error TS2339: Property 'quantidadeVagas' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(143,107): error TS2339: Property 'valorTotal' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(147,73): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/DashboardEquipe.tsx(148,60): error TS2339: Property 'statusPagamento' does not exist on type 'RegistrationBatch'.
+src/pages/dashboard/components/NotificationsSection.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/components/ProfileForm.tsx(14,1): error TS6133: 'EVENT_CONFIG' is declared but its value is never read.
+src/pages/dashboard/components/ProfileForm.tsx(18,11): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/dashboard/components/ProfileForm.tsx(22,11): error TS6133: 'projectId' is declared but its value is never read.
+src/pages/dashboard/components/ProfileForm.tsx(51,36): error TS2339: Property 'roleTitle' does not exist on type 'Profile'.
+src/pages/dashboard/components/ProfileForm.tsx(60,45): error TS2551: Property 'maxMentories' does not exist on type 'Mentor'. Did you mean 'maxMentorings'?
+src/pages/dashboard/components/ProfileForm.tsx(80,21): error TS2353: Object literal may only specify known properties, and 'roleTitle' does not exist in type 'Partial<Profile>'.
+src/pages/dashboard/components/ProfileForm.tsx(90,86): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/pages/dashboard/components/SelfCheckInModal.tsx(14,60): error TS6133: 'registration' is declared but its value is never read.
+src/pages/dashboard/components/shared/LeadScanner.tsx(44,14): error TS6133: 'error' is declared but its value is never read.
+src/pages/dashboard/components/shared/PremiumBackground.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/components/shared/PremiumHeader.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/dashboard/components/shared/PremiumHeader.tsx(37,5): error TS6133: 'onGuideClick' is declared but its value is never read.
+src/pages/dashboard/components/shared/PremiumHeader.tsx(43,11): error TS6198: All destructured elements are unused.
+src/pages/dashboard/components/shared/QuickActions.tsx(2,61): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/pages/dashboard/components/shared/QuickActions.tsx(18,80): error TS6133: 'glowColor' is declared but its value is never read.
+src/pages/dashboard/components/SupportSection.tsx(30,32): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/dashboard/DashboardCompany.tsx(326,70): error TS2551: Property 'session_id' does not exist on type 'ActivityAttendance'. Did you mean 'sessionId'?
+src/pages/dashboard/DashboardCompany.tsx(326,106): error TS2551: Property 'registration_id' does not exist on type 'ActivityAttendance'. Did you mean 'registrationId'?
+src/pages/dashboard/DashboardCompany.tsx(384,46): error TS2339: Property 'tipoInteresse' does not exist on type 'Company'.
+src/pages/dashboard/DashboardCompany.tsx(385,47): error TS2339: Property 'tipoInteresse' does not exist on type 'Company'.
+src/pages/dashboard/DashboardCompany.tsx(565,116): error TS2339: Property 'tipoInteresse' does not exist on type 'Company'.
+src/pages/dashboard/DashboardCompany.tsx(631,94): error TS18048: 'companyData.name' is possibly 'undefined'.
+src/pages/dashboard/DashboardCompany.tsx(846,13): error TS2322: Type 'Company' is not assignable to type '{ id: string; name: string; logoUrl?: string | undefined; }'.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/pages/dashboard/DashboardCompany.tsx(851,11): error TS2322: Type '{ variant: string; activeTab: string; setActiveTab: Dispatch<SetStateAction<string>>; tabs: { id: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<...>>; label: string; }[]; }' is not assignable to type 'IntrinsicAttributes & BottomNavigationProps'.
+  Property 'variant' does not exist on type 'IntrinsicAttributes & BottomNavigationProps'.
+src/pages/dashboard/DashboardMentor.tsx(2,1): error TS6192: All imports in import declaration are unused.
+src/pages/dashboard/DashboardMentor.tsx(4,3): error TS6133: 'Users' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(4,20): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(4,40): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(4,49): error TS6133: 'MessageSquare' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(5,3): error TS6133: 'Phone' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(5,10): error TS6133: 'Mail' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(5,16): error TS6133: 'Plus' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(6,3): error TS6133: 'ShieldCheck' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(6,16): error TS6133: 'Building2' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(6,27): error TS6133: 'BarChart' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(7,9): error TS6133: 'Sun' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(7,14): error TS6133: 'Moon' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(7,20): error TS6133: 'Target' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(9,1): error TS6133: 'Badge' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(10,1): error TS6133: 'Button' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(11,1): error TS6133: 'Card' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(26,1): error TS6133: 'MENTORSHIP_TIME_SLOTS' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(33,38): error TS6133: 'updateMentorProfile' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(34,35): error TS6133: 'update' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(40,10): error TS6133: 'isEditingProfile' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(40,28): error TS6133: 'setIsEditingProfile' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(41,10): error TS6133: 'profileForm' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(48,24): error TS6133: 'setSelectedDate' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(60,9): error TS6133: 'pendingRequests' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(65,89): error TS2339: Property 'avaliacaoMentoria' does not exist on type '{ rating: number; comment: string; mentoringRating?: number | undefined; mentorRecommendation?: number | undefined; ratedAt?: string | undefined; }'.
+src/pages/dashboard/DashboardMentor.tsx(69,69): error TS2339: Property 'avaliacaoMentoria' does not exist on type '{ rating: number; comment: string; mentoringRating?: number | undefined; mentorRecommendation?: number | undefined; ratedAt?: string | undefined; }'.
+src/pages/dashboard/DashboardMentor.tsx(73,9): error TS6133: 'recommendationRate' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(75,64): error TS2339: Property 'indicacaoMentor' does not exist on type '{ rating: number; comment: string; mentoringRating?: number | undefined; mentorRecommendation?: number | undefined; ratedAt?: string | undefined; }'.
+src/pages/dashboard/DashboardMentor.tsx(93,9): error TS6133: 'toggleSlotAvailability' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(99,89): error TS2367: This comparison appears to be unintentional because the types '"completed" | "cancelled" | "pending" | "no_show"' and '"agendado"' have no overlap.
+src/pages/dashboard/DashboardMentor.tsx(105,22): error TS2554: Expected 0 arguments, but got 1.
+src/pages/dashboard/DashboardMentor.tsx(117,22): error TS2554: Expected 0 arguments, but got 1.
+src/pages/dashboard/DashboardMentor.tsx(138,9): error TS6133: 'getSlotStatus' is declared but its value is never read.
+src/pages/dashboard/DashboardMentor.tsx(166,8): error TS2741: Property 'onSupportClick' is missing in type '{ userName: string | undefined; userAvatar: any; projectName: string; roleLabel: string; notifications: Notification[]; onLogout: () => Promise<void>; onGuideClick: () => void; onNotificationRead: (id: string) => Promise<...>; }' but required in type 'PremiumHeaderProps'.
+src/pages/dashboard/DashboardMentor.tsx(168,33): error TS2339: Property 'photo' does not exist on type 'Mentor'.
+src/pages/dashboard/DashboardMentor.tsx(218,26): error TS2322: Type '{ role: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'role' does not exist on type 'IntrinsicAttributes'.
+src/pages/dashboard/DashboardMentor.tsx(242,14): error TS2741: Property 'onStartupClick' is missing in type '{ onB2BClick: () => void | Promise<void>; onMentoriaClick: () => void; }' but required in type 'QuickActionsProps'.
+src/pages/dashboard/DashboardMentor.tsx(260,9): error TS2322: Type '{ variant: string; activeTab: "sessions" | "home" | "profile" | "slots"; setActiveTab: (id: string) => void; tabs: { id: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<...>>; label: string; }[]; }' is not assignable to type 'IntrinsicAttributes & BottomNavigationProps'.
+  Property 'variant' does not exist on type 'IntrinsicAttributes & BottomNavigationProps'.
+src/pages/dashboard/DashboardParticipante.tsx(77,25): error TS6133: 'isLoading' is declared but its value is never read.
+src/pages/dashboard/DashboardParticipante.tsx(77,43): error TS6133: 'regError' is declared but its value is never read.
+src/pages/dashboard/DashboardParticipante.tsx(87,9): error TS6133: 'b2bMeetings' is declared but its value is never read.
+src/pages/dashboard/DashboardParticipante.tsx(88,9): error TS6133: 'startups' is declared but its value is never read.
+src/pages/dashboard/DashboardParticipante.tsx(144,60): error TS2339: Property 'company_name' does not exist on type 'MyRegistration'.
+src/pages/dashboard/DashboardParticipante.tsx(149,59): error TS2339: Property 'company_name' does not exist on type 'MyRegistration'.
+src/pages/dashboard/DashboardParticipante.tsx(171,7): error TS2367: This comparison appears to be unintentional because the types '"completed" | "cancelled" | "pending" | "scheduled" | "no_show"' and '"available"' have no overlap.
+src/pages/dashboard/DashboardParticipante.tsx(294,41): error TS2339: Property 'ticketNumber' does not exist on type 'MyRegistration'.
+src/pages/dashboard/DashboardParticipante.tsx(315,62): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"activity_check_ins"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"activity_check_ins"' is not assignable to parameter of type 'never'.
+src/pages/dashboard/DashboardParticipante.tsx(472,67): error TS2339: Property 'titulo' does not exist on type 'Session'.
+src/pages/dashboard/DashboardParticipante.tsx(473,69): error TS2339: Property 'local' does not exist on type 'Session'.
+src/pages/dashboard/DashboardParticipante.tsx(474,70): error TS2339: Property 'horario_inicio' does not exist on type 'Session'.
+src/pages/dashboard/DashboardParticipante.tsx(479,74): error TS2339: Property 'tipo' does not exist on type 'Session'.
+src/pages/dashboard/DashboardParticipante.tsx(480,64): error TS2304: Cannot find name 'Presentation'.
+src/pages/dashboard/DashboardParticipante.tsx(481,62): error TS2552: Cannot find name 'Users'. Did you mean 'user'?
+src/pages/dashboard/DashboardParticipante.tsx(484,36): error TS2304: Cannot find name 'Mic2'.
+src/pages/dashboard/DashboardParticipante.tsx(595,40): error TS2554: Expected 0 arguments, but got 2.
+src/pages/dashboard/DashboardParticipante.tsx(600,40): error TS2554: Expected 0 arguments, but got 2.
+src/pages/dashboard/DashboardParticipante.tsx(764,44): error TS2554: Expected 0 arguments, but got 2.
+src/pages/dashboard/DashboardSponsor.tsx(86,46): error TS6133: 'isLoadingDeliverables' is declared but its value is never read.
+src/pages/dashboard/DashboardSponsor.tsx(86,72): error TS2304: Cannot find name 'useSponsorDeliverables'.
+src/pages/dashboard/DashboardSponsor.tsx(309,68): error TS2551: Property 'session_id' does not exist on type 'ActivityAttendance'. Did you mean 'sessionId'?
+src/pages/dashboard/DashboardSponsor.tsx(309,104): error TS2551: Property 'registration_id' does not exist on type 'ActivityAttendance'. Did you mean 'registrationId'?
+src/pages/dashboard/DashboardSponsor.tsx(369,35): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/pages/dashboard/DashboardSponsor.tsx(370,33): error TS7006: Parameter 'deliverable' implicitly has an 'any' type.
+src/pages/dashboard/DashboardSponsor.tsx(431,42): error TS7006: Parameter 'deliverable' implicitly has an 'any' type.
+src/pages/dashboard/DashboardSponsor.tsx(868,9): error TS2322: Type '{ variant: string; activeTab: string; setActiveTab: Dispatch<SetStateAction<string>>; tabs: { id: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<...>>; label: string; }[]; }' is not assignable to type 'IntrinsicAttributes & BottomNavigationProps'.
+  Property 'variant' does not exist on type 'IntrinsicAttributes & BottomNavigationProps'.
+src/pages/dashboard/DashboardStartup.tsx(688,9): error TS2322: Type '{ variant: string; activeTab: string; setActiveTab: Dispatch<SetStateAction<string>>; tabs: { id: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<...>>; label: string; }[]; }' is not assignable to type 'IntrinsicAttributes & BottomNavigationProps'.
+  Property 'variant' does not exist on type 'IntrinsicAttributes & BottomNavigationProps'.
+src/pages/public/DynamicEventPage.tsx(245,19): error TS2322: Type '{ key: number; nome: string; cargo: string; descricao: string; tema: string; horario: string; foto: string; onInscricao: () => void; }' is not assignable to type 'IntrinsicAttributes & PalestranteCardProps'.
+  Property 'cargo' does not exist on type 'IntrinsicAttributes & PalestranteCardProps'.
+src/pages/public/GrowthExperience.tsx(32,1): error TS6133: 'NewsletterSection' is declared but its value is never read.
+src/pages/public/GrowthExperienceTriunfo.tsx(3,18): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/pages/public/GrowthExperienceTriunfo.tsx(52,5): error TS2322: Type '"checkin"' is not assignable to type '"startup" | "workshop" | "oficina" | "palestra" | "talk" | "panel" | "networking" | "circuito" | "curso" | "mentoria" | "b2b"'.
+src/pages/public/GrowthExperienceTriunfo.tsx(58,3): error TS2739: Type '{ id: string; projectId: string; title: string; description: string; type: "palestra"; startTime: string; endTime: string; room: string; speakers: string[]; }' is missing the following properties from type 'Session': category, registeredCount, createdAt
+src/pages/public/GrowthExperienceTriunfo.tsx(74,5): error TS2322: Type '"talkshow"' is not assignable to type '"startup" | "workshop" | "oficina" | "palestra" | "talk" | "panel" | "networking" | "circuito" | "curso" | "mentoria" | "b2b"'.
+src/pages/public/GrowthExperienceTriunfo.tsx(80,3): error TS2739: Type '{ id: string; projectId: string; title: string; description: string; type: "palestra"; startTime: string; endTime: string; room: string; speakers: string[]; }' is missing the following properties from type 'Session': category, registeredCount, createdAt
+src/pages/public/GrowthExperienceTriunfo.tsx(91,3): error TS2739: Type '{ id: string; projectId: string; title: string; description: string; type: "palestra"; startTime: string; endTime: string; room: string; speakers: string[]; }' is missing the following properties from type 'Session': category, registeredCount, createdAt
+src/pages/public/GrowthExperienceTriunfo.tsx(107,5): error TS2322: Type '"social"' is not assignable to type '"startup" | "workshop" | "oficina" | "palestra" | "talk" | "panel" | "networking" | "circuito" | "curso" | "mentoria" | "b2b"'.
+src/pages/public/Inscricoes.tsx(75,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string | null>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<string | null>'.
+src/pages/public/Programacao.tsx(93,9): error TS6133: 'projectId' is declared but its value is never read.
+src/pages/public/Programacao.tsx(120,9): error TS6133: 'days' is declared but its value is never read.
+src/services/raffleService.ts(2,1): error TS6133: 'RaffleWinner' is declared but its value is never read.
+src/services/raffleService.ts(2,15): error TS2305: Module '"@/types"' has no exported member 'RaffleWinner'.
+src/services/raffleService.ts(17,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type 'never'.
+src/services/raffleService.ts(40,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type 'never'.
+src/services/raffleService.ts(55,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"raffle_participants"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"raffle_participants"' is not assignable to parameter of type 'never'.
+src/services/raffleService.ts(56,8): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: { id?: string | undefined; email: string; ip_address?: string | null | undefined; success: boolean; attempted_at?: string | undefined; user_id?: string | null | undefined; } | { id?: string | undefined; ... 13 more ...; created_at?: string | ... 1 more ... | undefined; } | ... 23 more ... | { ...; }, options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type '{ raffle_id: string; registration_id: string; }[]' is not assignable to parameter of type '{ id?: string | undefined; email: string; ip_address?: string | null | undefined; success: boolean; attempted_at?: string | undefined; user_id?: string | null | undefined; } | { id?: string | undefined; ... 13 more ...; created_at?: string | ... 1 more ... | undefined; } | ... 23 more ... | { ...; }'.
+  Overload 2 of 2, '(values: ({ id?: string | undefined; email: string; ip_address?: string | null | undefined; success: boolean; attempted_at?: string | undefined; user_id?: string | null | undefined; } | { id?: string | undefined; ... 13 more ...; created_at?: string | ... 1 more ... | undefined; } | ... 23 more ... | { ...; })[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'raffle_id' does not exist in type '{ id?: string | undefined; email: string; ip_address?: string | null | undefined; success: boolean; attempted_at?: string | undefined; user_id?: string | null | undefined; } | { id?: string | undefined; ... 13 more ...; created_at?: string | ... 1 more ... | undefined; } | ... 23 more ... | { ...; }'.
+src/services/raffleService.ts(65,12): error TS2345: Argument of type '"draw_raffle_winner"' is not assignable to parameter of type '"current_user_role" | "is_admin" | "register_participant_with_slots" | "apply_company_voucher" | "validate_registration_data"'.
+src/services/raffleService.ts(72,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"raffles"' is not assignable to parameter of type 'never'.
+src/services/raffleService.ts(86,13): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"raffle_participants"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"raffle_participants"' is not assignable to parameter of type 'never'.
+src/services/registrationService.ts(188,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/services/registrationService.ts(233,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"growth_experience_registrations"' is not assignable to parameter of type 'never'.
+src/services/supportService.ts(34,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type 'never'.
+src/services/supportService.ts(49,39): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type 'never'.
+src/services/supportService.ts(65,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"support_tickets"' is not assignable to parameter of type 'never'.
+src/services/supportService.ts(82,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"support_ticket_messages"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"support_ticket_messages"' is not assignable to parameter of type 'never'.
+src/services/supportService.ts(104,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(relation: "users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"): PostgrestQueryBuilder<...>', gave the following error.
+    Argument of type '"support_ticket_messages"' is not assignable to parameter of type '"users" | "projects" | "companies" | "registrations" | "email_templates" | "startups" | "mentors" | "sessions" | "speakers" | "sponsors" | "login_attempts" | "growth_experience_mentors" | ... 13 more ... | "transactions"'.
+  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.4"; }, { Tables: { login_attempts: { Row: { id: string; email: string; ip_address: string | null; success: boolean; attempted_at: string; user_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 24 more ...; users: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
+    Argument of type '"support_ticket_messages"' is not assignable to parameter of type 'never'.
+src/types/supabase.ts(654,7): error TS2300: Duplicate identifier 'registrations'.
+src/types/supabase.ts(1260,7): error TS2300: Duplicate identifier 'registrations'.
+src/types/supabase.ts(1260,7): error TS2717: Subsequent property declarations must have the same type.  Property 'registrations' must be of type '{ Row: { app_instalado: boolean | null; lecture_code: string | null; social_code: string | null; created_at: string | null; lecture_coupon: string | null; selected_courses: string[] | null; ... 18 more ...; paid_amount: number | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }', but here has type '{ Row: { amount: number; check_in_at: string | null; check_in_by: string | null; check_in_count: number | null; check_in_location: string | null; checked_in: boolean | null; created_at: string | null; ... 17 more ...; user_id: string; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }'.
+src/utils/safeStorage.ts(17,70): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/utils/safeStorage.ts(30,70): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/utils/safeStorage.ts(43,73): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.
+src/utils/safeStorage.ts(56,60): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'LogContext | undefined'.

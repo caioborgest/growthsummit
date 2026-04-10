@@ -14,6 +14,15 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog';
+import { areasMentoria } from '@/data/mentores';
+
+const DRAFT_KEY = 'mentor_form_draft';
+const ESPECIALIDADES = areasMentoria;
+
+interface MentorFormModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
 export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [step, setStep] = useState(1);

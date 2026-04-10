@@ -6,7 +6,9 @@ import {
   Users, 
   Ticket, 
   Clock, 
-  ChevronRight
+  ChevronRight,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { useData } from '@/hooks/useData';
@@ -118,6 +120,7 @@ const AdminCheckIn = () => {
     if (!res && !raw) return;
 
     // Use raw if res is null (generic scan)
+    const effectiveId = res?.id || raw;
     const effectiveType = res?.type || 'registration';
 
     if (['mentor', 'company', 'startup', 'partner', 'exhibitor', 'sponsor'].includes(effectiveType)) {
