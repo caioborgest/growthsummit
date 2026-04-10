@@ -74,7 +74,8 @@ export function DashboardParticipante() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { selectedProject } = useProject();
-  const { registration, refetch: refetchReg } = useMyRegistration();
+  const { registration, isLoading, error: regError, refetch: refetchReg } = useMyRegistration();
+  const isActuallyPaid = !!registration?.isPaid;
   const { data: notificationsData } = useNotifications();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();

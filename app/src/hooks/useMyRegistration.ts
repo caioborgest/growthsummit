@@ -135,7 +135,7 @@ export function useMyRegistration() {
                         .from(PRIMARY_TABLE)
                         .select(`
                             *,
-                            company_registration_batches!registrations_coupon_code_fkey (
+                            company_registration_batches (
                                 company_name,
                                 ticket_type,
                                 batch_name,
