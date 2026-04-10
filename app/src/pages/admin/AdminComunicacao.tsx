@@ -31,9 +31,7 @@ import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogTrigger
 } from '@/components/ui/dialog';
 
@@ -52,9 +50,6 @@ interface Recipient {
   name: string;
 }
 
-const initialEmailTemplates: EmailTemplate[] = [];
-
-const initialEmailCampaigns: EmailCampaign[] = [];
 
 export default function AdminComunicacao() {
   const [activeTab, setActiveTab] = useState<'templates' | 'campaigns' | 'compose' | 'notifications'>('templates');
@@ -63,7 +58,7 @@ export default function AdminComunicacao() {
   const { data: users } = useUsers();
   const { data: registrations } = useRegistrations();
   const { data: notificationsList } = useNotifications();
-  const { data: templates, create: createTemplate, remove: removeTemplate } = useEmailTemplates();
+  const { data: templates, create: createTemplate } = useEmailTemplates();
   const { data: campaigns, create: createCampaign, update: updateCampaign } = useEmailCampaigns();
 
   const stats = useMemo(() => {
@@ -110,7 +105,7 @@ export default function AdminComunicacao() {
     actionUrl: ''
   });
 
-  const [selectedTemplate, setSelectedTemplate] = useState<typeof initialEmailTemplates[0] | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const handleCreateTemplate = async (e: React.FormEvent) => {
@@ -132,7 +127,7 @@ export default function AdminComunicacao() {
       toast.success('Template criado com sucesso!');
       setIsTemplateModalOpen(false);
       setTemplateFormData({ name: '', subject: '', category: 'Inscrições', body: '' });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao criar template no banco');
     }
   };
@@ -161,7 +156,7 @@ export default function AdminComunicacao() {
       toast.success('Campanha criada com sucesso!');
       setIsCampaignModalOpen(false);
       setCampaignFormData({ name: '', templateId: '', recipients: 'all' });
-    } catch (err) {
+    } catch {
       toast.error('Erro ao criar campanha no banco');
     }
   };

@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { 
-  X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Clock, AlertCircle, Plus, Edit, 
-  Trash2, Eye, Diamond, Award, ShieldCheck, Ticket, Layers, Users, CircleDollarSign, Info,
+  X, Calendar, MapPin, Settings as SettingsIcon, CheckCircle2, Plus, Edit, 
+  Trash2, Diamond, Award, ShieldCheck, Ticket, Layers, Users, CircleDollarSign, Info,
   Check, Rocket, Target, Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -28,13 +28,6 @@ const projectTypeLabels: Record<ProjectType, string> = {
   growth_festival: 'Growth Festival',
 };
 
-const projectStatusLabels: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
-  draft: { label: 'Rascunho', color: 'bg-gray-500', icon: Clock },
-  active: { label: 'Ativo', color: 'bg-green-500', icon: CheckCircle2 },
-  paused: { label: 'Pausado', color: 'bg-yellow-500', icon: AlertCircle },
-  completed: { label: 'Concluído', color: 'bg-blue-500', icon: CheckCircle2 },
-  cancelled: { label: 'Cancelado', color: 'bg-red-500', icon: AlertCircle },
-};
 
 const defaultSettings = {
   enableB2B: true,
@@ -165,8 +158,12 @@ export default function AdminProjetos() {
     if (editId && projects.length > 0 && !isDialogOpen) {
       const projectToEdit = projects.find(p => p.id === editId);
       if (projectToEdit) {
-        openEditDialog(projectToEdit);
-        setSearchParams({}, { replace: true });
+        // Defer to avoid "setState in effect" warning if synchronous
+        const timer = setTimeout(() => {
+          openEditDialog(projectToEdit);
+          setSearchParams({}, { replace: true });
+        }, 0);
+        return () => clearTimeout(timer);
       }
     }
   }, [editId, projects, isDialogOpen, setSearchParams]);

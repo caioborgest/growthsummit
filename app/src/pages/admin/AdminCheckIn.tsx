@@ -1,18 +1,12 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   Search, 
   Camera, 
   CheckCircle2, 
-  XCircle, 
   Users, 
   Ticket, 
   Clock, 
-  ChevronRight, 
-  AlertCircle, 
-  RefreshCcw, 
-  ArrowRight,
-  LogOut,
-  LogIn
+  ChevronRight
 } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { useData } from '@/hooks/useData';
@@ -118,7 +112,7 @@ export default function AdminCheckIn() {
       triggerVibrate('error');
       toast.error('Erro ao processar solicitação.');
     }
-  }, [selectedProject?.id, user?.id, refetch]);
+  }, [selectedProject, user, refetch]);
 
   const handleScannerSuccess = useCallback(async (res: QRData | null, raw?: string) => {
     if (!res && !raw) return;
@@ -229,7 +223,7 @@ export default function AdminCheckIn() {
       const action = registration.checkedIn ? 'check-out' : 'check-in';
       await handleManualCheckIn(registration, action);
     }
-  }, [registrations, mentors, companies, startups, partnerTeamMembers, handleManualCheckIn, selectedProject?.id]);
+  }, [registrations, mentors, companies, startups, partnerTeamMembers, handleManualCheckIn, selectedProject]);
 
   const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup' | 'partner') => {
     setSelectedEntity(entity);

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Raffle } from '@/types';
+import type { RaffleWinner } from '@/types';
 
 export const raffleService = {
   async createRaffle(data: any) {

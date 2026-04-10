@@ -156,7 +156,7 @@ export const useAuthStore = create<AuthState>()(
             user: mappedUser,
             isAuthenticated: true,
           });
-        } catch (error) {
+        } catch {
           set({
             user: null,
             isAuthenticated: false,

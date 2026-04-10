@@ -13,12 +13,9 @@ import {
   Rocket,
   BookOpen,
   Shield,
-  Bell as BellIcon,
-  Presentation, 
-  Users, 
-  Mic2
+  Bell as BellIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -36,7 +33,6 @@ import {
   useB2BMeetings,
   useStartups
 } from '@/hooks/useData';
-import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { supabase } from '@/lib/supabase';
 import { CertificateService } from '@/lib/certificateService';
 
@@ -120,6 +116,12 @@ export function DashboardParticipante() {
     navigate('/login');
   };
 
+    // Partner Team Membership
+    const myPartnerMembership = useMemo(() => {
+        if (!partnerTeamData || !user) return null;
+        return partnerTeamData.find(m => m.userId === user.id);
+    }, [partnerTeamData, user]);
+
     // Partner logic
     const isPartner = useMemo(() => {
         const ticketType = (registration?.ticketType || '').toLowerCase();
@@ -191,11 +193,6 @@ export function DashboardParticipante() {
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
 
-  // Partner Team Membership
-  const myPartnerMembership = useMemo(() => {
-    if (!partnerTeamData || !user) return null;
-    return partnerTeamData.find(m => m.userId === user.id);
-  }, [partnerTeamData, user]);
 
   const navTabs = useMemo(() => {
     const tabs = [
@@ -228,7 +225,13 @@ export function DashboardParticipante() {
     const tab = searchParams.get('tab');
     if (tab) {
         const validTab = navTabs.find(t => t.id === tab);
-        if (validTab) setActiveTab(tab);
+        if (validTab) {
+            // Defer to avoid "setState in effect" warning
+            const timer = setTimeout(() => {
+                setActiveTab(tab as any);
+            }, 0);
+            return () => clearTimeout(timer);
+        }
     }
   }, [searchParams, navTabs]);
 

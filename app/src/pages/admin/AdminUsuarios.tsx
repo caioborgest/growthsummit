@@ -44,7 +44,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Label } from '@/components/ui/label';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
 import { useCheckIns } from '@/hooks/useData';

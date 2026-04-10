@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Search,
   Download,
@@ -29,13 +29,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Tabs, 
-  TabsContent, 
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { getStatusConfig } from '@/lib/ui-constants';
 import { useRegistrations, useTransactions, useCheckIns, useSessions } from '@/hooks/useData';
@@ -53,13 +54,11 @@ function DetalhesModal({
   reg,
   onClose,
   onUpdateStatus,
-  onToggleCheckIn,
   onDelete
 }: {
   reg: Registration;
   onClose: () => void;
   onUpdateStatus: (id: string, status: string | any) => Promise<void>;
-  onToggleCheckIn: (id: string, current: boolean) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   return (
@@ -515,7 +514,6 @@ export default function AdminInscricoes() {
           reg={detalhes}
           onClose={() => setDetalhes(null)}
           onUpdateStatus={handleUpdateStatus}
-          onToggleCheckIn={async () => {}}
           onDelete={handleDeleteParticipant}
         />
       )}
