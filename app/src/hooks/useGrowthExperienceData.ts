@@ -113,7 +113,7 @@ export function useInscricoesTriunfo() {
                 email: reg.users?.email || reg.profiles?.email || reg.email,
                 phone: reg.profiles?.phone || reg.phone || reg.telefone,
                 empresa: reg.profiles?.company || reg.company,
-                paid_amount: reg.final_amount || reg.paid_amount,
+                paid_amount: reg.paid_amount || reg.final_amount,
             }));
 
             setData(mappedData);

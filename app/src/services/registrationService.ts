@@ -198,7 +198,7 @@ export const registrationService = {
             ticket_number,
             status,
             payment_status,
-            final_amount,
+            paid_amount,
             checked_in,
             check_in_at,
             created_at,
@@ -221,7 +221,7 @@ export const registrationService = {
             email: reg.email || reg.profiles?.email || reg.users?.email,
             phone: reg.phone || reg.profiles?.phone,
             company: reg.empresa || reg.profiles?.company,
-            paid_amount: reg.final_amount // Map final_amount to paid_amount for compatibility
+            paid_amount: reg.paid_amount || reg.final_amount // Map amount to paid_amount for compatibility
         }));
     },
 
@@ -241,7 +241,7 @@ export const registrationService = {
                 ticket_number,
                 status,
                 payment_status,
-                final_amount,
+                paid_amount,
                 checked_in,
                 check_in_at,
                 created_at,
