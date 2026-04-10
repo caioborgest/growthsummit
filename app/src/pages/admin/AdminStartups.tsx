@@ -255,7 +255,7 @@ export function AdminStartups() {
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
-              <div className="admin-modal-body p-8 pt-4">
+              <div className="admin-modal-body p-8 pt-4 overflow-y-auto custom-scrollbar">
                 {/* Seção: Informações do Fundador */}
                 <div className="space-y-6">
                   <h3 className="text-[10px] font-black uppercase text-brand-orange-coral tracking-widest border-b border-white/5 pb-2">Informações do Fundador</h3>

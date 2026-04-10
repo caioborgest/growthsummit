@@ -212,23 +212,24 @@
     padding: 10px;
   }
 
-  /* Custom Scrollbar */
+  /* Custom Scrollbar - More Visible & Premium */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
   }
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 112, 67, 0.35);
-    border-radius: 10px;
+    background: rgba(255, 112, 67, 0.5);
+    border-radius: 12px;
     border: 3px solid transparent;
     background-clip: padding-box;
+    transition: background 0.2s ease;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 112, 67, 0.6);
+    background: rgba(255, 112, 67, 0.8);
     border: 3px solid transparent;
     background-clip: padding-box;
   }
@@ -761,19 +762,21 @@
     }
   }
 
-  /* Custom scrollbar for admin modals */
+  /* Custom scrollbar for admin modals - Synchronized with global style */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 112, 67, 0.3);
+    background: rgba(255, 112, 67, 0.45);
     border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 112, 67, 0.5);
+    background: rgba(255, 112, 67, 0.7);
   }
 }
 

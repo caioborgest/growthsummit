@@ -84,7 +84,7 @@ function MentorDetailsModal({ mentor, onClose, onApprove, onReject, onDelete }: 
           </button>
         </div>
 
-        <div className="admin-modal-body">
+        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-white/5">
             <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-brand-orange-coral to-brand-orange-intense flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-brand-orange-coral/20">
               {mentor.photoUrl ? (
@@ -360,7 +360,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-          <div className="admin-modal-body">
+          <div className="admin-modal-body overflow-y-auto custom-scrollbar">
             <div className="flex flex-col items-center gap-4 mb-8">
               <div className="relative group">
                 <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-brand-orange-coral/20 to-brand-orange-intense/20 border-2 border-dashed border-brand-orange-coral/30 overflow-hidden flex items-center justify-center group-hover:border-brand-orange-coral/60 transition-all">
@@ -830,7 +830,7 @@ export function AdminMentores() {
                 />
               </div>
 
-              <div ref={scrollContainerRef} className="admin-modal-body">
+              <div ref={scrollContainerRef} className="admin-modal-body overflow-y-auto custom-scrollbar">
                 {currentStep === 1 && (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div className="flex flex-col items-center justify-center space-y-2 py-4 border-b border-white/5">

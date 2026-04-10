@@ -262,7 +262,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                         <div className="w-20 h-20 rounded-3xl bg-teal-500/20 flex items-center justify-center mx-auto mb-6 shadow-glow-teal border border-teal-500/30">
                             <CheckCircle className="h-10 w-10 text-teal-400" />
                         </div>
-                        <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Inscrição <span className="text-teal-500">Confirmada!</span></h3>
+                        <DialogTitle className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">Inscrição <span className="text-teal-500">Confirmada!</span></DialogTitle>
                         <p className="text-gray-500 text-sm font-bold uppercase tracking-widest leading-relaxed max-w-sm mx-auto">
                             Sua startup foi inscrita com sucesso na Arena Pitch. <br/>Aguarde o redirecionamento...
                         </p>

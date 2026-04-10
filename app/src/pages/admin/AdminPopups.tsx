@@ -262,7 +262,7 @@ export function AdminPopups() {
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex flex-col min-h-0 overflow-hidden">
-            <div className="admin-modal-body">
+            <div className="admin-modal-body overflow-y-auto custom-scrollbar">
               <div className="space-y-8">
                 {/* Bloco 1: Conteúdo */}
                 <div className="space-y-6">

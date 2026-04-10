@@ -24,7 +24,7 @@ import { AccreditationChecklistModal } from '@/components/admin/AccreditationChe
 import { useAuth } from '@/contexts/AuthContext';
 import type { Registration, Mentor, Company, Startup } from '@/types';
 
-export default function AdminCheckIn() {
+const AdminCheckIn = () => {
   const { selectedProject } = useProject();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -166,7 +166,7 @@ export default function AdminCheckIn() {
       try {
         const { data, error } = await supabase
           .from('growth_experience_registrations')
-          .select('*, profiles:profiles!growth_experience_registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!growth_experience_registrations_participant_id_fkey(name, email)')
+          .select('*, profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)')
           .eq('id', effectiveId)
           .maybeSingle();
 
@@ -483,4 +483,8 @@ export default function AdminCheckIn() {
       </div>
     </div>
   );
-}
+};
+
+AdminCheckIn.displayName = 'AdminCheckIn';
+
+export default AdminCheckIn;

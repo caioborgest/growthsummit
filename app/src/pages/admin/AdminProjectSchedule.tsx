@@ -321,7 +321,7 @@ export function AdminProjectSchedule() {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-            <div className="admin-modal-body">
+            <div className="admin-modal-body overflow-y-auto custom-scrollbar">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>

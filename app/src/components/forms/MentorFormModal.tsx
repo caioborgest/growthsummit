@@ -8,15 +8,12 @@ import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 import { mentorService } from '@/services/mentorService';
 
-interface MentorFormModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-import { areasMentoria } from '@/data/mentores';
-
-const ESPECIALIDADES = areasMentoria;
-const DRAFT_KEY = 'mentor_form_draft';
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     const [step, setStep] = useState(1);
@@ -280,29 +277,36 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md">
-            <div
-                ref={scrollContainerRef}
-                className="glass-card max-w-xl w-full max-h-[96vh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl"
-            >
-                {/* Progress Bar */}
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="admin-modal-content max-w-xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
                 {!isSuccess && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                        <div
-                            className="h-full bg-brand-orange-coral transition-all duration-500"
-                            style={{ width: `${(step / 3) * 100}%` }}
-                        />
+                     <div className="admin-modal-header">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-brand-orange-coral/20 flex items-center justify-center border border-brand-orange-coral/30 shadow-glow-orange">
+                                <Target className="h-6 w-6 text-brand-orange-coral" />
+                            </div>
+                            <div className="flex-1">
+                                <DialogTitle className="text-2xl font-black text-white italic uppercase tracking-tighter leading-none mb-1">
+                                    Módulo <span className="text-brand-orange-coral">Mentor</span>
+                                </DialogTitle>
+                                <DialogDescription className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">
+                                    Growth Experience 2026 • Candidatura
+                                </DialogDescription>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                        >
+                            <X className="h-6 w-6" />
+                        </Button>
                     </div>
                 )}
 
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-400 hover:text-white transition-colors z-10 p-2"
-                >
-                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                </button>
-
-                <div className="p-4 sm:p-8">
+                <div className="admin-modal-body bg-dark-200" ref={scrollContainerRef}>
+                    <div className="pt-2">
                     {isSuccess ? (
                         <div className="text-center py-12">
                             <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
@@ -319,13 +323,17 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                         </div>
                     ) : (
                         <>
-                            <div className="mb-6 sm:mb-8">
-                                <Badge className="mb-3 sm:mb-4 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30">
-                                    Módulo Mentor
-                                </Badge>
-                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Seja um Mentor</h2>
-                                <p className="text-sm sm:text-lg text-gray-400">Compartilhe conhecimento e impulsione negócios locais.</p>
+                        <div className="mb-0">
+                            <div className="flex items-center justify-between gap-4 mb-6">
+                                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                     <div
+                                        className="h-full bg-brand-orange-coral transition-all duration-500 shadow-glow-orange"
+                                        style={{ width: `${(step / 3) * 100}%` }}
+                                    />
+                                </div>
+                                <span className="text-[10px] font-black text-brand-orange-coral italic uppercase">Step 0{step}/03</span>
                             </div>
+                        </div>
 
                             <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">
                                 {error && (
@@ -545,36 +553,45 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                     </div>
                                 )}
 
-                                <div className="flex gap-4 pt-4">
-                                    {step > 1 && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={prevStep}
-                                            className="flex-1 border-white/10 text-gray-400 hover:bg-white/5"
-                                        >
-                                            Voltar
-                                        </Button>
-                                    )}
-                                    <Button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="flex-1 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-bold h-14 rounded-xl"
-                                    >
-                                        {isSubmitting ? (
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                        ) : step === 3 ? (
-                                            'Finalizar Candidatura'
-                                        ) : (
-                                            'Próximo Passo'
-                                        )}
-                                    </Button>
                                 </div>
                             </form>
                         </>
                     )}
                 </div>
-            </div>
-        </div>
+
+                {!isSuccess && (
+                    <div className="admin-modal-footer">
+                        <div className="flex gap-4 w-full">
+                            {step > 1 && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={prevStep}
+                                    className="flex-1 h-14 border-white/10 text-gray-500 hover:text-white font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    VOLTAR
+                                </Button>
+                            )}
+                            <Button
+                                onClick={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }}
+                                disabled={isSubmitting}
+                                className="flex-[2] bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-14 rounded-2xl shadow-glow-orange uppercase tracking-widest text-[10px]"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                        PROCESSANDO...
+                                    </>
+                                ) : step === 3 ? (
+                                    'FINALIZAR CANDIDATURA'
+                                ) : (
+                                    'PRÓXIMO PASSO'
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
     );
 }

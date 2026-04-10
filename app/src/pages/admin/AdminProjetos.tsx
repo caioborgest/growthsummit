@@ -284,7 +284,7 @@ export default function AdminProjetos() {
               </Button>
             </div>
             
-            <div className="admin-modal-body">
+            <div className="admin-modal-body overflow-y-auto custom-scrollbar">
               <Tabs defaultValue="geral" className="w-full">
 
                 <TabsList className="bg-[#0F172A] border border-white/5 mb-8 flex flex-wrap h-auto p-1.5 rounded-[1.5rem] gap-1">

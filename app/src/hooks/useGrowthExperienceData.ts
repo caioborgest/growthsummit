@@ -100,7 +100,7 @@ export function useInscricoesTriunfo() {
             setLoading(true);
             const { data: inscricoes, error: fetchError } = await supabase
                 .from('growth_experience_registrations')
-                .select('*, profiles:profiles!growth_experience_registrations_participant_id_fkey(user_id, phone, company, city, state, role), users:users!growth_experience_registrations_participant_id_fkey(name, email)')
+                .select('*, profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)')
                 .eq('project_id', projectId)
                 .order('created_at', { ascending: false });
 

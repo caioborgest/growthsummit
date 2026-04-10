@@ -810,7 +810,7 @@ export default function AdminStands() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-                        <div className="admin-modal-body">
+                        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="col-span-2">

@@ -184,7 +184,7 @@ export default function AdminPatrocinadores() {
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
-              <div className="admin-modal-body">
+              <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Empresa *</label>

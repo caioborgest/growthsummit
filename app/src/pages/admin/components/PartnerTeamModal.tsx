@@ -158,7 +158,7 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
           </div>
         </div>
 
-        <div className="admin-modal-body">
+        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
           {selectedMemberForQR ? (
             <div className="flex flex-col items-center justify-center gap-8 py-10 animate-in fade-in zoom-in-95 duration-300">
                <div className="p-8 bg-white rounded-[3rem] shadow-2xl shadow-brand-orange-coral/20 border-8 border-white/5">

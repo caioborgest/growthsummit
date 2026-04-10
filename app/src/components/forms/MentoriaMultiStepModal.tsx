@@ -181,7 +181,7 @@ export function MentoriaMultiStepModal({ isOpen, onClose, initialMentorId }: Men
                     </DialogDescription>
                 </div>
 
-                <div className="admin-modal-body bg-dark-100/30">
+                <div className="admin-modal-body bg-dark-100/30 overflow-y-auto custom-scrollbar">
                     <div className="max-w-3xl mx-auto w-full py-4">
                         {renderStep()}
                     </div>

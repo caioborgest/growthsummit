@@ -144,7 +144,7 @@ export function ManualCertificateModal({ isOpen, onClose, projectId, onSuccess }
           </Button>
         </div>
 
-        <div className="admin-modal-body">
+        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
           {/* Busca de Participante */}
           <div className="space-y-4">
             <label className="text-[10px] text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">

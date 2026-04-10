@@ -78,7 +78,7 @@ const TriumphSpeakers = [
   {
     name: "Jerônimo Freire",
     role: "Consultor e Mentor de Negócios",
-    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg"
   },
   {
     name: "Leandro Batista",
@@ -88,7 +88,7 @@ const TriumphSpeakers = [
   {
     name: "Carolinne Castro",
     role: "Advogada Empresarial",
-    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp"
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg"
   },
   {
     name: "João Daniel",

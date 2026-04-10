@@ -223,7 +223,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                             </div>
                         </div>
 
-                        <div className="admin-modal-body">
+                        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                             <div className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Empresa</label>

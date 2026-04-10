@@ -285,7 +285,7 @@ export default function AdminUsuarios() {
                                 </Button>
                             </div>
 
-                            <div className="admin-modal-body">
+                            <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                                 <div className="space-y-6 py-4">
                                     <div className="space-y-3">
                                         <Label htmlFor="create-name" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome Completo *</Label>
@@ -597,7 +597,7 @@ export default function AdminUsuarios() {
                         </Button>
                     </div>
 
-                    <div className="admin-modal-body">
+                    <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                         <div className="space-y-6 py-4">
                             <div className="space-y-3">
                                 <Label htmlFor="role" className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Cargo Principal</Label>

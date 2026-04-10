@@ -380,7 +380,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                     </div>
                 </div>
 
-                <div ref={scrollContainerRef} className="admin-modal-body bg-dark-100/50 relative">
+                <div ref={scrollContainerRef} className="admin-modal-body bg-dark-100/50 relative overflow-y-auto custom-scrollbar">
                     {isRegistering && (
                         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-dark-100/80 backdrop-blur-sm animate-in fade-in duration-300">
                             <div className="bg-dark-200 p-8 rounded-[2.5rem] border border-white/10 shadow-glow-orange flex flex-col items-center gap-6 scale-90 sm:scale-100">

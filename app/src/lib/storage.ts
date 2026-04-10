@@ -72,8 +72,8 @@ export const standImages = {
 export const palestrantesImages = {
     leandroBatista: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg',
     vanyltonMatias: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png',
-    carolinneCastro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg?format=webp',
-    jeronimoFreire: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg?format=webp',
+    carolinneCastro: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/carolinne-castro.jpeg',
+    jeronimoFreire: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg',
     joaoDaniel: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png',
     caioBorges: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/fff7192a-3479-4d82-b896-4b05fe081c6f-1774627071551.png',
     palestrantesJuntos: getStorageUrl('event-images', 'palestrantes/palestrantes-juntos.png'),

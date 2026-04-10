@@ -441,7 +441,7 @@ export default function AdminCupons() {
                             </div>
                         </div>
 
-                        <div className="admin-modal-body">
+                        <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">

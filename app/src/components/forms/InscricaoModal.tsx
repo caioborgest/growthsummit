@@ -7,6 +7,13 @@ import { logger } from '@/lib/logger';
 import { emailService } from '@/services/emailService';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+
 interface InscricaoModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -216,51 +223,62 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-md w-full p-4 sm:p-6 relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl max-h-[88dvh] sm:max-h-[90vh] overflow-y-auto">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                    aria-label="Fechar"
-                >
-                    <X className="h-6 w-6" />
-                </button>
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="admin-modal-content max-w-md bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
 
                 {/* Success State */}
                 {isSuccess ? (
-                    <div className="text-center py-8">
-                        <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="h-8 w-8 text-teal-400" />
+                    <div className="text-center py-12 px-8">
+                        <div className="w-20 h-20 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="h-10 w-10 text-teal-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">
-                            {tipo === 'palestra' ? 'Redirecionando para Pagamento!' : 'Inscrição Enviada!'}
-                        </h3>
-                        <p className="text-gray-400">
+                        <DialogTitle className="text-2xl font-bold text-white mb-2 uppercase italic tracking-tighter">
+                            {tipo === 'palestra' ? 'Redirecionando!' : 'Sucesso!'}
+                        </DialogTitle>
+                        <p className="text-gray-400 text-sm leading-relaxed">
                             {tipo === 'palestra'
-                                ? 'Você será redirecionado para o WhatsApp para finalizar o pagamento.'
-                                : 'Sua inscrição foi confirmada. Estamos te redirecionando para o login...'
+                                ? 'Finalize o seu pagamento no WhatsApp para garantir sua vaga.'
+                                : 'Sua inscrição foi confirmada com sucesso!'
                             }
                         </p>
                     </div>
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="mb-6">
-                            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2 leading-tight">{getTitulo()}</h2>
-                            <p className="text-xs sm:text-sm text-gray-400">{selectedProject?.name || 'Growth Experience'}</p>
-                            <div className="mt-3 inline-block px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-orange-500/20 border border-orange-500/30">
-                                <span className="text-orange-400 text-sm sm:text-base font-semibold">{getValor()}</span>
+                        <div className="admin-modal-header">
+                            <div className="flex-1">
+                                <DialogTitle className="text-xl sm:text-2xl font-bold text-white leading-tight uppercase italic tracking-tighter">
+                                    {getTitulo()}
+                                </DialogTitle>
+                                <DialogDescription className="text-[10px] text-gray-500 font-black uppercase tracking-widest italic mt-1">
+                                    {selectedProject?.name || 'Growth Experience 2026'}
+                                </DialogDescription>
                             </div>
-                            {tipo === 'palestra' && (
-                                <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2">
-                                    <MessageCircle className="h-5 w-5 text-green-400" />
-                                    <p className="text-sm text-green-400">
-                                        Pagamento via WhatsApp
-                                    </p>
-                                </div>
-                            )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onClose}
+                                className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                            >
+                                <X className="h-6 w-6" />
+                            </Button>
                         </div>
+
+                        <div className="admin-modal-body bg-dark-200">
+                            <div className="mb-6 flex flex-wrap gap-2">
+                                <div className="px-4 py-2 rounded-xl bg-brand-orange-coral/10 border border-brand-orange-coral/20">
+                                    <span className="text-brand-orange-coral text-sm font-black italic uppercase tracking-widest">{getValor()}</span>
+                                </div>
+                                {tipo === 'palestra' && (
+                                    <div className="px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                                        <MessageCircle className="h-4 w-4 text-green-400" />
+                                        <span className="text-[10px] text-green-400 font-black uppercase tracking-widest">
+                                            Pagamento WhatsApp
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -400,42 +418,40 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 </div>
                             )}
 
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={onClose}
-                                    className="flex-1 border-dark-300 text-gray-300 hover:text-white"
-                                    disabled={isSubmitting}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            Enviando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            {tipo === 'palestra' && getValor().includes('R$') && <MessageCircle className="h-4 w-4 mr-2" />}
-                                            {tipo === 'palestra' && getValor().includes('R$') ? 'Pagar via WhatsApp' : 'Confirmar Inscrição'}
-                                        </>
-                                    )}
-                                </Button>
                             </div>
                         </form>
 
-                        <p className="text-xs text-gray-500 text-center mt-4">
-                            Ao se inscrever, você concorda com nossos termos de uso e política de privacidade.
-                        </p>
+                        <div className="admin-modal-footer">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={onClose}
+                                className="flex-1 h-12 text-gray-500 font-black uppercase text-[10px] tracking-widest"
+                                disabled={isSubmitting}
+                            >
+                                CANCELAR
+                            </Button>
+                            <Button
+                                onClick={(e) => handleSubmit(e as any)}
+                                className="flex-[2] h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange uppercase tracking-widest text-[10px]"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                        ENVIANDO...
+                                    </>
+                                ) : (
+                                    <>
+                                        {tipo === 'palestra' && getValor().includes('R$') && <MessageCircle className="h-5 w-5 mr-2" />}
+                                        {tipo === 'palestra' && getValor().includes('R$') ? 'PAGAR WHATSAPP' : 'CONFIRMAR INSCRIÇÃO'}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
                     </>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

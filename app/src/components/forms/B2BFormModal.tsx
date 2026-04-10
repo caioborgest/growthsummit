@@ -7,6 +7,12 @@ import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { getOrCreateUser, waitForUserSync } from '@/lib/auth-helpers';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 interface B2BFormModalProps {
     isOpen: boolean;
@@ -295,16 +301,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm">
-            <div className="glass-card max-w-2xl w-full p-4 sm:p-6 max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 rounded-2xl sm:rounded-3xl">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                    aria-label="Fechar"
-                >
-                    <X className="h-6 w-6" />
-                </button>
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+                {/* Success State */}
 
                 {/* Success State */}
                 {isSuccess ? (
@@ -320,22 +319,31 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                 ) : (
                     <>
                         {/* Header */}
-                        <div className="mb-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                        <div className="admin-modal-header">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
                                     <Handshake className="h-5 w-5 sm:h-6 sm:w-6 text-teal-400" />
                                 </div>
                                 <div className="flex-1">
-                                    <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">Rodada de Negócios</h2>
-                                    <p className="text-xs sm:text-gray-400">Matchmaking B2B</p>
+                                    <DialogTitle className="text-xl sm:text-2xl font-bold text-white leading-tight uppercase italic tracking-tighter">
+                                        Rodada <span className="text-teal-500">de Negócios</span>
+                                    </DialogTitle>
+                                    <DialogDescription className="text-xs sm:text-gray-500 uppercase font-black tracking-widest italic">
+                                        Matchmaking B2B 2026
+                                    </DialogDescription>
                                 </div>
                             </div>
-                            <div className="mt-3 p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg">
-                                <p className="text-sm text-teal-400">
-                                    <strong>Gratuito</strong> - Networking qualificado com empresas da região
-                                </p>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onClose}
+                                className="h-10 w-10 rounded-xl text-gray-500 hover:text-white hover:bg-white/5"
+                            >
+                                <X className="h-6 w-6" />
+                            </Button>
                         </div>
+
+                        <div className="admin-modal-body bg-dark-200">
 
                         {/* Form */}
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -685,6 +693,9 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="admin-modal-footer">
 
                             {error && (
                                 <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -705,30 +716,26 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                 </Button>
                                 <Button
                                     type="submit"
-                                    className="order-1 sm:order-2 flex-1 bg-teal-500 hover:bg-teal-600 text-white h-12 sm:h-10 font-bold"
+                                    className="order-1 sm:order-2 flex-1 bg-teal-500 hover:bg-teal-600 text-white h-14 font-black rounded-2xl shadow-glow-teal uppercase tracking-widest text-[10px]"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (
                                         <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            Enviando...
+                                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                            PROCESSANDO...
                                         </>
                                     ) : (
                                         <>
-                                            <Handshake className="h-4 w-4 mr-2" />
-                                            Inscrever Empresa
+                                            <Handshake className="h-5 w-5 mr-2" />
+                                            INSCREVER EMPRESA
                                         </>
                                     )}
                                 </Button>
                             </div>
                         </form>
-
-                        <p className="text-xs text-gray-500 text-center mt-4">
-                            Ao se inscrever, você concorda com nossos termos de uso e política de privacidade.
-                        </p>
                     </>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

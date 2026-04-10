@@ -340,7 +340,7 @@ export default function AdminParceiros() {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
-            <div className="admin-modal-body">
+            <div className="admin-modal-body overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase text-gray-500">Nome da Empresa *</Label>
