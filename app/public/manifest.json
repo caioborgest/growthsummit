@@ -3,8 +3,7 @@
   "short_name": "GX 2026",
   "description": "Plataforma Oficial Growth Experience 2026 - O maior evento de Growth e IA do Sertão. Programação completa, ingressos e networking.",
   "id": "com.growthexperience.app",
-  "start_url": "/login",
-  "permissions": ["camera"],
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0c0e12",
   "theme_color": "#21808D",
@@ -14,30 +13,48 @@
   "dir": "ltr",
   "categories": [
     "business",
-    "education",
-    "productivity"
+    "education"
   ],
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/favicon.png",
+      "src": "favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
-      "src": "/pwa-icon.png",
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "pwa-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -51,7 +68,7 @@
       "url": "/minha-area",
       "icons": [
         {
-          "src": "/icons/icon-92x92.png",
+          "src": "icons/icon-92x92.png",
           "sizes": "92x92"
         }
       ]
@@ -63,7 +80,7 @@
       "url": "/programacao",
       "icons": [
         {
-          "src": "/icons/icon-92x92.png",
+          "src": "icons/icon-92x92.png",
           "sizes": "92x92"
         }
       ]

@@ -343,10 +343,8 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                             </Button>
                         </div>
 
-                        <div className="admin-modal-body bg-dark-200">
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+                            <div className="admin-modal-body bg-dark-200">
                             {/* Seção: Representante */}
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-4 border-b border-dark-300 pb-2">
@@ -732,10 +730,11 @@ export function B2BFormModal({ isOpen, onClose }: B2BFormModalProps) {
                                     )}
                                 </Button>
                             </div>
-                        </form>
-                    </>
-                )}
-            </DialogContent>
+                        </div>
+                    </form>
+                </>
+            )}
+        </DialogContent>
         </Dialog>
     );
 }

@@ -16,7 +16,7 @@ export default defineConfig({
       manifest: {
         id: 'com.growthexperience.app',
         name: 'Growth Experience 2026',
-        short_name: 'GE 2026',
+        short_name: 'GX 2026',
         description: 'Plataforma oficial do Growth Experience 2026 - O maior evento de Growth e IA do Sertão.',
         start_url: '/',
         theme_color: '#21808D',
@@ -26,26 +26,53 @@ export default defineConfig({
         categories: ['education', 'business', 'event'],
         icons: [
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
+            src: 'favicon.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
+            src: 'favicon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
+          },
+          {
+            src: 'icons/icon-72x72.png',
+            sizes: '72x72',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/icon-92x92.png',
+            sizes: '92x92',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/icon-128x128.png',
+            sizes: '128x128',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/icon-144x144.png',
+            sizes: '144x144',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/icon-152x152.png',
+            sizes: '152x152',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-icon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ],
         screenshots: [
           {
-            src: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growth_experience.png',
-            sizes: '512x512',
+            src: 'og-image.png',
+            sizes: '1200x630',
             type: 'image/png',
             form_factor: 'wide',
             label: 'Dashboard Growth Experience'

@@ -182,12 +182,12 @@ const AdminCheckIn = () => {
 
            const mapped: Registration = {
                 ...reg,
-                name: reg.users?.name || reg.profiles?.name || reg.name || reg.nome,
-                email: reg.users?.email || reg.profiles?.email || reg.email,
-                phone: reg.profiles?.phone || reg.phone || reg.telefone,
-                company: reg.profiles?.company || reg.company,
+                name: reg.name || reg.nome || reg.profiles?.name || reg.users?.name,
+                email: reg.email || reg.profiles?.email || reg.users?.email,
+                phone: reg.phone || reg.telefone || reg.profiles?.phone,
+                company: reg.empresa || reg.profiles?.company || reg.company,
                 projectId: reg.project_id,
-                userId: reg.participant_id,
+                userId: reg.user_id || reg.participant_id,
                 ticketNumber: reg.ticket_number,
                 checkedIn: reg.checked_in,
                 checkInAt: reg.check_in_at,

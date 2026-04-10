@@ -46,8 +46,8 @@ const PRIMARY_TABLE = 'registrations';
 function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): MyRegistration {
     // Rely on row data directly or profile join
     const name = row.name || row.nome || profile.name;
-    const phone = row.phone || row.telefone || profile.phone;
-    const email = profile.email; // email is not in registrations
+    const phone = row.phone || row.telefone || row.whatsapp || profile.phone;
+    const email = row.email || profile.email; // email is in registrations now
 
     const ticketType = (row.ticket_type as string || '').toLowerCase();
     const isProType = ticketType === 'pro' || ticketType === 'vip';
@@ -69,7 +69,7 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
 
     return {
         id: row.id as string,
-        userId: (row.participant_id as string) || undefined,
+        userId: (row.user_id as string) || (row.participant_id as string) || undefined,
         email: email || undefined,
         nome: name || undefined,
         name: name || undefined,
@@ -115,7 +115,7 @@ export function useMyRegistration() {
                 const { data: latestReg } = await supabase
                     .from(PRIMARY_TABLE)
                     .select('project_id')
-                    .eq('participant_id', user.id)
+                    .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
                     .maybeSingle();
@@ -267,7 +267,7 @@ export function useMyRegistration() {
             await (supabase.from('check_ins') as any).insert({
                 project_id: projectId,
                 registration_id: registration.id,
-                participant_id: user.id, // Consistent with new naming
+                user_id: user.id, // Consistent with new naming
                 user_name: registration.nome || user.name,
                 ticket_number: registration.id.split('-')[0].toUpperCase(),
                 timestamp: new Date().toISOString(),

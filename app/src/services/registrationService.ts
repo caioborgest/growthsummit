@@ -191,7 +191,10 @@ export const registrationService = {
         query = query.select(`
             id,
             project_id,
-            participant_id,
+            user_id,
+            name,
+            email,
+            phone,
             ticket_number,
             status,
             payment_status,
@@ -214,10 +217,10 @@ export const registrationService = {
         // Flatten data to maintain compatibility with existing components
         return (data as any[]).map(reg => ({
             ...reg,
-            name: reg.users?.name || reg.profiles?.name || reg.name,
-            email: reg.users?.email || reg.profiles?.email || reg.email,
-            phone: reg.profiles?.phone || reg.phone,
-            company: reg.profiles?.company || reg.company,
+            name: reg.name || reg.profiles?.name || reg.users?.name,
+            email: reg.email || reg.profiles?.email || reg.users?.email,
+            phone: reg.phone || reg.profiles?.phone,
+            company: reg.empresa || reg.profiles?.company,
             paid_amount: reg.final_amount // Map final_amount to paid_amount for compatibility
         }));
     },
@@ -231,7 +234,10 @@ export const registrationService = {
             .select(`
                 id,
                 project_id,
-                participant_id,
+                user_id,
+                name,
+                email,
+                phone,
                 ticket_number,
                 status,
                 payment_status,
@@ -253,10 +259,10 @@ export const registrationService = {
         const reg = data as any;
         return {
             ...reg,
-            name: reg.users?.name || reg.profiles?.name || reg.name,
-            email: reg.users?.email || reg.profiles?.email || reg.email,
-            phone: reg.profiles?.phone || reg.phone,
-            company: reg.profiles?.company || reg.company,
+            name: reg.name || reg.profiles?.name || reg.users?.name,
+            email: reg.email || reg.profiles?.email || reg.users?.email,
+            phone: reg.phone || reg.profiles?.phone,
+            company: reg.empresa || reg.profiles?.company,
             paid_amount: reg.final_amount
         };
     },

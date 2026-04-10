@@ -292,11 +292,10 @@ export default function AdminInscricoes() {
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
 
-      // Normalização de status para o padrão Growth Experience
-      if (status === 'paid' || status === 'pago' || status === 'free' || status === 'ativo') {
-        updates.payment_status = 'pago';
-        updates.paymentStatus = 'pago';
-        updates.status = 'ativo';
+      // Normalização de status para o padrão Growth Experience (Inglês)
+      if (status === 'paid' || status === 'pago' || status === 'free' || status === 'ativo' || status === 'active') {
+        updates.payment_status = 'paid';
+        updates.status = 'active';
       }
 
       if (status === 'free') {
@@ -424,8 +423,8 @@ export default function AdminInscricoes() {
       (reg.name?.toLowerCase() || '').includes(q) ||
       (reg.email?.toLowerCase() || '').includes(q);
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'pago' && ['pago', 'paid', 'ativo', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())) ||
-                         (statusFilter === 'pendente' && ['pendente', 'pending', 'waiting'].includes((reg.payment_status || reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pago' && ['paid', 'active', 'ativo', 'pago'].includes((reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pendente' && ['pending', 'pendente', 'waiting'].includes((reg.status || '').toLowerCase())) ||
                          reg.status === statusFilter;
     const matchesNight =
       nightFilter === 'all' ||
@@ -569,7 +568,7 @@ export default function AdminInscricoes() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Total Geral', value: registrations.length, icon: User, color: 'text-white' },
-          { label: 'Confirmados', value: registrations.filter(r => ['pago', 'paid'].includes(r.status)).length, icon: CheckCircle2, color: 'text-emerald-400' },
+          { label: 'Confirmados', value: registrations.filter(r => ['paid', 'active', 'pago', 'ativo'].includes(r.status?.toLowerCase())).length, icon: CheckCircle2, color: 'text-emerald-400' },
           { label: 'Night Exp.', value: registrations.filter(r => r.palestrasNoturnas).length, icon: Moon, color: 'text-[#FF7043]' },
           { label: 'Acreditados', value: registrations.filter(r => r.checkedIn).length, icon: QrCode, color: 'text-teal-400' },
         ].map((stat, i) => (

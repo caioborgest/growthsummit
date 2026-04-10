@@ -113,7 +113,7 @@ export function AdminCertificados() {
         try {
             const { data, error } = await supabase
                 .from('certificates' as any)
-                .select('*, registrations(profiles(name, email))')
+                .select('*, registrations:growth_experience_registrations(id, name, email, phone, user_id, profiles(name, email, phone))')
                 .eq('project_id', selectedProject.id)
                 .order('issue_date', { ascending: false });
 
@@ -188,7 +188,7 @@ export function AdminCertificados() {
 
             // Preparar dados do template
             const certData: any = {
-                userName: cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante',
+                userName: cert.registrations?.name || cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante',
                 eventName: template.subtitle || selectedProject?.name || 'Growth Experience',
                 eventCity: selectedProject?.city || 'Brasil',
                 date: new Date(cert.issue_date).toLocaleDateString('pt-BR'),
@@ -295,7 +295,7 @@ export function AdminCertificados() {
         const toastId = toast.loading(`Enviando e-mail para ${cert.registrations?.profiles?.name || cert.registration?.nome || 'Participante'}...`);
         try {
             const validateUrl = `${window.location.origin}/validar/${cert.code}`;
-            const recipientEmail = cert.registrations?.profiles?.email || cert.registration?.email;
+            const recipientEmail = cert.registrations?.email || cert.registrations?.profiles?.email || cert.registration?.email;
             if (!recipientEmail) {
                 toast.error('E-mail não encontrado.');
                 return;
@@ -375,7 +375,7 @@ export function AdminCertificados() {
             const selectedCerts = certificates.filter(c => selectedItems.includes(c.id));
             const promises = selectedCerts.map(cert => {
                 return notificationService.send({
-                    userId: (cert as any).participant_id || (cert as any).user_id || cert.registration_id,
+                    userId: (cert as any).user_id || (cert as any).participant_id || cert.registration_id,
                     projectId: cert.project_id,
                     title: '🎓 Certificado Disponível',
                     message: `Seu certificado de "${cert.activity_name}" foi emitido. Veja em seu painel!`,
