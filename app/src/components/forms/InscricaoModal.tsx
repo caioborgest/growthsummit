@@ -243,7 +243,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         </p>
                     </div>
                 ) : (
-                    <>
+                    <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                         {/* Header */}
                         <div className="admin-modal-header">
                             <div className="flex-1">
@@ -279,8 +279,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 )}
                             </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Form Body Content */}
+                        <div className="space-y-4">
                             <div>
                                 <label htmlFor="nome" className="block text-sm font-medium text-gray-300 mb-2">
                                     Nome Completo *
@@ -416,8 +416,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                     <p className="text-red-400 text-sm">{error}</p>
                                 </div>
                             )}
-
-                        </form>
+                        </div>
                     </div>
 
                         <div className="admin-modal-footer">
@@ -448,7 +447,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 )}
                             </Button>
                         </div>
-                    </>
+                    </form>
                 )}
             </DialogContent>
         </Dialog>
