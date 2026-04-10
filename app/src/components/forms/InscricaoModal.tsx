@@ -417,8 +417,8 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 </div>
                             )}
 
-                            </div>
                         </form>
+                    </div>
 
                         <div className="admin-modal-footer">
                             <Button
