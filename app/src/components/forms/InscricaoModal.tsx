@@ -264,7 +264,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                             </Button>
                         </div>
 
-                        <div className="admin-modal-body bg-dark-200">
+                        <div className="admin-modal-body bg-dark-200 custom-scrollbar">
                             <div className="mb-6 flex flex-wrap gap-2">
                                 <div className="px-4 py-2 rounded-xl bg-brand-orange-coral/10 border border-brand-orange-coral/20">
                                     <span className="text-brand-orange-coral text-sm font-black italic uppercase tracking-widest">{getValor()}</span>
@@ -279,145 +279,145 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 )}
                             </div>
 
-                        {/* Form Body Content */}
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="nome" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Nome Completo *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="nome"
-                                    name="nome"
-                                    value={formData.nome}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="Seu nome completo"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Email *
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="seu@email.com"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="telefone" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Telefone/WhatsApp *
-                                </label>
-                                <input
-                                    type="tel"
-                                    id="telefone"
-                                    name="telefone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="(00) 00000-0000"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="empresa" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Empresa (opcional)
-                                </label>
-                                <input
-                                    type="text"
-                                    id="empresa"
-                                    name="empresa"
-                                    value={formData.empresa}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="Nome da sua empresa"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="senha" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Senha *
-                                </label>
-                                <input
-                                    type="password"
-                                    id="senha"
-                                    name="senha"
-                                    value={formData.senha}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="Crie uma senha segura"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Confirmar Senha *
-                                </label>
-                                <input
-                                    type="password"
-                                    id="confirmarSenha"
-                                    name="confirmarSenha"
-                                    value={formData.confirmarSenha}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                                    placeholder="Confirme sua senha"
-                                />
-                            </div>
-
-                            {tipo === 'palestra' && (
-                                <div className="pt-2">
-                                    <label htmlFor="cupom" className="block text-sm font-medium text-gray-300 mb-2">
-                                        Possui um Código de Voucher ou Equipe?
+                            {/* Form Body Content */}
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="nome" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Nome Completo *
                                     </label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            id="cupom"
-                                            name="cupom"
-                                            value={formData.code}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setFormData({ ...formData, code: val });
-                                                if (val.length >= 3) handleValidarCupom(val);
-                                                else setCupomValido(null);
-                                            }}
-                                            className={`w-full px-4 py-3 bg-dark-200 border ${cupomValido ? 'border-green-500' : 'border-dark-300'} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all`}
-                                            placeholder="Ex: EQUIPE-123"
-                                        />
-                                        {validandoCupom && (
-                                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500 animate-spin" />
-                                        )}
+                                    <input
+                                        type="text"
+                                        id="nome"
+                                        name="nome"
+                                        value={formData.nome}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="Seu nome completo"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Email *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="seu@email.com"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Telefone/WhatsApp *
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="(00) 00000-0000"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="empresa" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Empresa (opcional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="empresa"
+                                        name="empresa"
+                                        value={formData.empresa}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="Nome da sua empresa"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="senha" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Senha *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="senha"
+                                        name="senha"
+                                        value={formData.senha}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="Crie uma senha segura"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="confirmarSenha" className="block text-sm font-medium text-gray-300 mb-2">
+                                        Confirmar Senha *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="confirmarSenha"
+                                        name="confirmarSenha"
+                                        value={formData.confirmarSenha}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full px-4 py-3 bg-dark-200 border border-dark-300 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                        placeholder="Confirme sua senha"
+                                    />
+                                </div>
+
+                                {tipo === 'palestra' && (
+                                    <div className="pt-2">
+                                        <label htmlFor="cupom" className="block text-sm font-medium text-gray-300 mb-2">
+                                            Possui um Código de Voucher ou Equipe?
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                id="cupom"
+                                                name="cupom"
+                                                value={formData.code}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setFormData({ ...formData, code: val });
+                                                    if (val.length >= 3) handleValidarCupom(val);
+                                                    else setCupomValido(null);
+                                                }}
+                                                className={`w-full px-4 py-3 bg-dark-200 border ${cupomValido ? 'border-green-500' : 'border-dark-300'} rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all`}
+                                                placeholder="Ex: EQUIPE-123"
+                                            />
+                                            {validandoCupom && (
+                                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-orange-500 animate-spin" />
+                                            )}
+                                            {cupomValido && (
+                                                <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
+                                            )}
+                                        </div>
                                         {cupomValido && (
-                                            <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
+                                            <p className="text-xs text-green-500 mt-2 font-medium">
+                                                Voucher aplicado: {cupomValido.porcentagem}% de desconto para {cupomValido.nome}
+                                            </p>
                                         )}
                                     </div>
-                                    {cupomValido && (
-                                        <p className="text-xs text-green-500 mt-2 font-medium">
-                                            Voucher aplicado: {cupomValido.porcentagem}% de desconto para {cupomValido.nome}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
+                                )}
 
-                            {error && (
-                                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                    <p className="text-red-400 text-sm">{error}</p>
-                                </div>
-                            )}
+                                {error && (
+                                    <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                                        <p className="text-red-400 text-sm">{error}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
                         <div className="admin-modal-footer">
                             <Button
@@ -430,7 +430,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                                 CANCELAR
                             </Button>
                             <Button
-                                onClick={(e) => handleSubmit(e as any)}
+                                type="submit"
                                 className="flex-[2] h-14 bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black rounded-2xl shadow-glow-orange uppercase tracking-widest text-[10px]"
                                 disabled={isSubmitting}
                             >
