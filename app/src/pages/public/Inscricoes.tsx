@@ -18,6 +18,7 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 import { InscricaoMultiStepModal } from '@/components/forms/InscricaoMultiStepModal';
 import { useProject } from '@/contexts/ProjectContext';
 import { ensureProject } from '@/lib/ensureProject';
+import { getStorageUrl } from '@/lib/storage';
 
 const trustBadges = [
   "Pagamento seguro",
@@ -34,7 +35,7 @@ const editions = [
     description: 'A Maior Exposição de Negócios do Sertão do Pajeú. Imersão completa em Growth e IA.',
     price: 0,
     proPrice: 179.99,
-    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
+    image: getStorageUrl('event-images', 'espaco/gxexperience-noite.png'),
     slug: 'growth-experience-triunfo',
     color: 'orange',
     tag: 'Edição Flagship',
@@ -53,7 +54,7 @@ const editions = [
     description: 'Edição Vale - Imersão intensiva de Growth e IA no Vale do São Francisco.',
     price: 0,
     proPrice: 179.99,
-    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg',
+    image: getStorageUrl('caretas-triunfo', 'petrolina.jpeg'),
     slug: 'ge-petrolina-pocket-edition-2026',
     color: 'teal',
     tag: 'Edição Vale',

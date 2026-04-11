@@ -55,7 +55,7 @@ export function HeroSectionRefined({ onCTAClick, project: propProject }: HeroSec
                 {isTriunfo && (
                     <div className="relative w-full h-full">
                         <img
-                            src={getStorageUrl('caretas-triunfo', 'caretas-triunfo.jpeg', { quality: 80, format: 'webp' })}
+                            src={getStorageUrl('caretas-triunfo', 'caretas-triunfo.jpeg')}
                             alt="Triunfo-PE"
                             className="w-full h-full object-cover object-center scale-110 animate-slow-zoom opacity-40 sm:opacity-60"
                             //@ts-ignore

@@ -17,6 +17,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { PetrolinaRegistrationForm } from '@/components/forms/PetrolinaRegistrationForm';
 import { ensureProject } from '@/lib/ensureProject';
 import { AppDownloadSection } from '@/components/app/AppDownloadSection';
+import { getStorageUrl } from '@/lib/storage';
 
 
 const conselheiros = [
@@ -140,7 +141,7 @@ export function GrowthExperiencePetrolina() {
 
                         <div className="relative">
                             <img
-                                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                                src={getStorageUrl('caretas-triunfo', 'petrolina.jpeg')}
                                 className="rounded-3xl shadow-2xl border border-white/5"
                                 alt="Petrolina-PE"
                             />

@@ -31,6 +31,7 @@ import { EdicaoAnteriorVideo } from '@/components/growth-experience/EdicaoAnteri
 import { WhatsAppButton } from '@/components/growth-experience/WhatsAppButton';
 import { NewsletterSection } from '@/components/app/NewsletterSection';
 import { EVENT_CONFIG } from '@/config/eventConfig';
+import { getStorageUrl } from '@/lib/storage';
 
 const benefits = [
   {
@@ -272,7 +273,7 @@ export function GrowthExperience() {
             <div className="relative">
               <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
                 <img
-                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/caretas-triunfo.jpeg"
+                  src={getStorageUrl('caretas-triunfo', 'caretas-triunfo.jpeg')}
                   alt="Experiência Triunfo"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -291,7 +292,7 @@ export function GrowthExperience() {
             <div className="order-2 lg:order-1 relative">
               <div className="aspect-[4/5] rounded-[2rem] bg-dark-100 border border-dark-300 overflow-hidden relative group">
                 <img
-                  src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/caretas-triunfo/petrolina.jpeg"
+                  src={getStorageUrl('caretas-triunfo', 'petrolina.jpeg')}
                   alt="Experiência Petrolina"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
