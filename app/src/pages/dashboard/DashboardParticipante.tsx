@@ -151,7 +151,8 @@ export function DashboardParticipante() {
           };
         }
 
-        if (registration?.isPaid) return { label: '✅ PAGO', color: 'bg-green-500/20 text-green-400' };
+        if (registration?.isFree) return { label: '✓ GRATUITO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
+        if (registration?.isPaid) return { label: '✓ PAGO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
         
         const reg = registration as { status?: string };
         if (reg.status === 'cancelled' || reg.status === 'cancelado') 

@@ -30,6 +30,7 @@ export interface MyRegistration {
     projectId?: string;
     createdAt?: string;
     isPaid?: boolean;
+    isFree?: boolean;
     photo?: string;
     checkedIn?: boolean;
     checkInTime?: string;
@@ -117,6 +118,7 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         projectId: (row.project_id as string) || undefined,
         createdAt: (row.created_at as string) || undefined,
         isPaid: isActuallyPaid,
+        isFree: isFreeOrCouponPaid,
         photo: (row.photo_url as string) || undefined,
         checkedIn: Boolean(row.checked_in),
         checkInTime: (row.check_in_at as string) || undefined,
