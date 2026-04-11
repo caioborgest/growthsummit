@@ -15,12 +15,19 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(() => {
+    if (typeof window === 'undefined') return null;
     try {
       const saved = safeStorage.getItem('selectedProject');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      // localStorage corrompido ou JSON inválido — limpar e iniciar sem projeto selecionado
-      safeStorage.removeItem('selectedProject');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Basic validation: must have id and name
+        if (parsed && typeof parsed === 'object' && parsed.id && parsed.name) {
+          return parsed;
+        }
+      }
+      return null;
+    } catch (e) {
+      logger.error('ProjectContext: Error restoring from storage:', e);
       return null;
     }
   });
@@ -63,19 +70,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 2. Persistência
-    if (selectedProject) {
-      // Pequena validação para evitar salvar slugs como 'id' por acidente (legado ou URL corrupta)
-      const isIdUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(selectedProject.id);
-      if (isIdUUID) {
-        safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
-      } else {
-        // Se o ID for slug, não salve — deixe a recuperação via URL buscar do Supabase novamente
-        logger.debug('ProjectContext: ID atual não é UUID, pulando persistência.');
-      }
-    } else if (!urlProjectId) {
-      // Só remove se não tiver projeto na URL também
-      safeStorage.removeItem('selectedProject');
+    // 2. Persistência de Longo Prazo
+    if (selectedProject && typeof selectedProject === 'object' && selectedProject.id) {
+      // Salva qualquer projeto válido (UUID ou Slug) para evitar perda de contexto
+      safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
     }
   }, [selectedProject, urlProjectId]);
 
