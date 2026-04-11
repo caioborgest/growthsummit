@@ -204,7 +204,7 @@ export const registrationService = {
             created_at,
             ticket_type,
             qr_code,
-            profiles!left:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+            profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
         `);
         
         query = query.eq('project_id', projectId);
@@ -248,7 +248,7 @@ export const registrationService = {
                 ticket_type,
                 qr_code,
                 qr_code_data,
-                profiles!left:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+                profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
             `)
             .eq('id', id)
             .single();

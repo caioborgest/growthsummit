@@ -95,7 +95,7 @@ const AdminB2B = lazyWithRetry(() => import('./pages/admin/AdminB2B'), 'AdminB2B
 const AdminStartups = lazyWithRetry(() => import('./pages/admin/AdminStartups'), 'AdminStartups');
 const AdminPatrocinadores = lazyWithRetry(() => import('./pages/admin/AdminPatrocinadores'));
 const AdminFinanceiro = lazyWithRetry(() => import('./pages/admin/AdminFinanceiro'), 'AdminFinanceiro');
-const AdminCheckIn = lazyWithRetry(() => import('./pages/admin/AdminCheckIn'), 'AdminCheckIn');
+const AdminCheckIn = lazyWithRetry(() => import('./pages/admin/AdminCheckIn'));
 const AdminComunicacao = lazyWithRetry(() => import('./pages/admin/AdminComunicacao'));
 const AdminRelatorios = lazyWithRetry(() => import('./pages/admin/AdminRelatorios'), 'AdminRelatorios');
 const AdminProjectSchedule = lazyWithRetry(() => import('./pages/admin/AdminProjectSchedule'), 'AdminProjectSchedule');
