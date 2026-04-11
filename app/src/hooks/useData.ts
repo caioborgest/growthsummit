@@ -381,7 +381,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
     if (entity === 'registrations') {
-      return 'id,status,created_at,amount:paid_amount,paid_amount,user_id,name,email,phone,ticket_number,ticket_type,checked_in,check_in_at,qr_code,palestras_noturnas,cursos_selecionados,profiles:profiles!growth_experience_registrations_user_id_fkey(user_id,name,email,phone,company,city,state,role)';
+      return 'id,status,created_at,amount:paid_amount,paid_amount,user_id,name,email,phone,ticket_number,ticket_type,checked_in,check_in_at,qr_code,palestras_noturnas,cursos_selecionados,profiles!left:profiles!growth_experience_registrations_user_id_fkey(user_id,name,email,phone,company,city,state,role)';
     }
     if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';

@@ -33,8 +33,31 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'error', 'INVALID_ACTION', 'message', 'Ação deve ser check-in ou check-out.');
     END IF;
 
+    -- Validate participation rules
+    DECLARE
+        v_status TEXT;
+        v_payment_status TEXT;
+    BEGIN
+        SELECT status, payment_status 
+        INTO v_status, v_payment_status
+        FROM public.growth_experience_registrations
+        WHERE id = p_registration_id AND project_id = p_project_id;
+
+        IF NOT FOUND THEN
+            RETURN jsonb_build_object('success', false, 'error', 'NOT_FOUND', 'message', 'Inscrição não encontrada.');
+        END IF;
+
+        IF v_status != 'active' AND p_action = 'check-in' THEN
+            RETURN jsonb_build_object('success', false, 'error', 'INVALID_STATUS', 'message', 'Inscrição não está ativa (Status: ' || COALESCE(v_status, 'N/A') || ').');
+        END IF;
+
+        IF v_payment_status != 'paid' AND p_action = 'check-in' THEN
+            RETURN jsonb_build_object('success', false, 'error', 'UNPAID', 'message', 'Inscrição não confirmada por falta de pagamento.');
+        END IF;
+    END;
+
     -- Update registration status
-    UPDATE public.registrations
+    UPDATE public.growth_experience_registrations
     SET checked_in = v_target_status,
         checked_in_at = CASE WHEN v_target_status THEN NOW() ELSE checked_in_at END,
         updated_at = NOW()

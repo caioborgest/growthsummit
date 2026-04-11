@@ -423,12 +423,12 @@ export default function AdminInscricoes() {
       (reg.name?.toLowerCase() || '').includes(q) ||
       (reg.email?.toLowerCase() || '').includes(q);
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'paid' && ['paid', 'active'].includes((reg.status || '').toLowerCase())) ||
-                         (statusFilter === 'pending' && ['pending', 'waiting'].includes((reg.status || '').toLowerCase())) ||
-                         reg.status === statusFilter;
+                         (statusFilter === 'paid' && ['paid', 'active', 'pago', 'confirmado'].includes((reg.status || '').toLowerCase())) ||
+                         (statusFilter === 'pending' && ['pending', 'waiting', 'pendente', 'aguardando'].includes((reg.status || '').toLowerCase())) ||
+                         (reg.status || '').toLowerCase() === statusFilter.toLowerCase();
     const matchesNight =
       nightFilter === 'all' ||
-      (nightFilter === 'sim' && reg.palestrasNoturnas) ||
+      (nightFilter === 'sim' && Boolean(reg.palestrasNoturnas)) ||
       (nightFilter === 'nao' && !reg.palestrasNoturnas);
     
     const isPartnerTeam = (reg as any).indicacaoTipo === 'parceiro' || (reg as any).referral_type === 'parceiro';

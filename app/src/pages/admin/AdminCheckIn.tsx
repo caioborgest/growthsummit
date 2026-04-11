@@ -24,7 +24,9 @@ import { supabase } from '@/lib/supabase';
 import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCheckInQueue } from '@/hooks/useCheckInQueue';
 import type { Registration, Mentor, Company, Startup } from '@/types';
+import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
 const AdminCheckIn = () => {
   const { selectedProject } = useProject();
@@ -34,6 +36,8 @@ const AdminCheckIn = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
   const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | 'exit' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
+  const [scanKey, setScanKey] = useState(0); 
+  const { pendingCount, isSyncing, addToQueue, syncQueue } = useCheckInQueue();
   
   // Checklist Modal States
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
@@ -88,6 +92,22 @@ const AdminCheckIn = () => {
     // Optimistic UI state
     const isExit = action === 'check-out';
     
+    // OFFLINE LOGIC
+    if (!navigator.onLine) {
+      addToQueue({
+        registrationId: registration.id,
+        projectId: selectedProject.id,
+        action: action,
+        userId: registration.userId,
+        ticketNumber: registration.ticketNumber,
+        operatorId: user?.id,
+        name: registration.name
+      });
+      setScanResult(isExit ? 'exit' : 'success');
+      triggerVibrate(isExit ? 'warning' : 'success');
+      return;
+    }
+
     try {
       const res = await toggleCheckInRegistrationAtomic({
         registrationId: registration.id,
@@ -110,11 +130,20 @@ const AdminCheckIn = () => {
       }
     } catch (err) {
       console.error('Erro no check-in/out manual:', err);
-      setScanResult('error');
-      triggerVibrate('error');
-      toast.error('Erro ao processar solicitação.');
+      // Fallback to queue if request fails due to network (even if navigator.onLine was true)
+      addToQueue({
+        registrationId: registration.id,
+        projectId: selectedProject.id,
+        action: action,
+        userId: registration.userId,
+        ticketNumber: registration.ticketNumber,
+        operatorId: user?.id,
+        name: registration.name
+      });
+      setScanResult(isExit ? 'exit' : 'success');
+      triggerVibrate(isExit ? 'warning' : 'success');
     }
-  }, [selectedProject, user, refetch]);
+  }, [selectedProject, user, refetch, addToQueue]);
 
   const handleScannerSuccess = useCallback(async (res: QRData | null, raw?: string) => {
     if (!res && !raw) return;
@@ -244,7 +273,10 @@ const AdminCheckIn = () => {
       <CheckInResultModal
         result={scanResult}
         registration={resultRegistration}
-        onClose={() => setScanResult(null)}
+        onClose={() => {
+          setScanResult(null);
+          if (isScanning) setScanKey(prev => prev + 1); // Auto-restart scanner
+        }}
       />
 
       {/* Checklist Modal */}
@@ -270,14 +302,33 @@ const AdminCheckIn = () => {
                 ADMIN MODE
               </Badge>
               <div className="h-1 w-1 rounded-full bg-gray-700" />
-              <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none">
-                {selectedProject?.name || 'Growth Experience'}
-              </span>
+              <div className="flex items-center gap-2">
+                {navigator.onLine ? (
+                  <Wifi className="h-3 w-3 text-emerald-500" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-red-500" />
+                )}
+                <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                  {selectedProject?.name || 'Growth Experience'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center bg-white/5 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          {pendingCount > 0 && (
+            <Button 
+              onClick={() => syncQueue()}
+              disabled={isSyncing}
+              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 rounded-full px-6 h-12 font-black text-[10px] uppercase tracking-widest flex items-center gap-3"
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              {pendingCount} Pendentes
+            </Button>
+          )}
+
+          <div className="flex items-center bg-white/5 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
           <Button
             variant={selectedSessionId === 'all' ? 'default' : 'ghost'}
             className={`${selectedSessionId === 'all' ? 'bg-brand-orange-coral' : 'text-gray-400'} rounded-full px-8 font-black text-[10px] uppercase tracking-widest h-12`}
@@ -423,6 +474,7 @@ const AdminCheckIn = () => {
               </div>
             ) : (
               <QRScanner
+                key={scanKey}
                 onSuccess={handleScannerSuccess}
                 onClose={() => setIsScanning(false)}
                 isInline={true}

@@ -15,7 +15,7 @@ export function CheckInResultModal({
     result,
     registration,
     onClose,
-    autoCloseMs = 1500
+    autoCloseMs = 1200
 }: CheckInResultModalProps) {
     useEffect(() => {
         if (result && autoCloseMs > 0) {

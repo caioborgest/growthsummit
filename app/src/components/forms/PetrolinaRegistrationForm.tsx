@@ -85,7 +85,38 @@ export function PetrolinaRegistrationForm() {
             // 2. Sincronização robusta (Para FK)
             await waitForUserSync(userId);
 
-            // 3. Inscrição via Service Layer (Centralizado)
+            // 3. Resolução de cupom/voucher para desconto dinâmico
+            let batchId: string | null = null;
+            let finalDiscount = 0;
+            let socialCode: string | null = null;
+
+            if (formData.cupom) {
+                const voucher = await registrationService.resolveVoucher(formData.cupom, selectedProject?.id || '');
+                if (voucher && voucher.isValid) {
+                    batchId = voucher.id;
+                    finalDiscount = voucher.discountPercentage;
+                    toast.success(`Voucher corporativo aplicado! ${finalDiscount}% de desconto.`);
+                } else {
+                    // Tentar como cupom social se não for voucher de lote
+                    const { data: coupon } = await (supabase as any)
+                        .from('social_partnership_coupons')
+                        .select('*')
+                        .eq('code', formData.cupom.toUpperCase())
+                        .eq('is_active', true)
+                        .maybeSingle();
+                    
+                    if (coupon) {
+                        finalDiscount = coupon.discount_percentage;
+                        socialCode = coupon.code;
+                        toast.success(`Cupom ${coupon.code} aplicado! ${finalDiscount}% de desconto.`);
+                    }
+                }
+            }
+
+            const basePrice = 179.99; // Preço Pro padrão
+            const finalAmount = Number((basePrice * (1 - finalDiscount / 100)).toFixed(2));
+
+            // 4. Inscrição via Service Layer (Centralizado)
             const rpcResult = await registrationService.registerWithSlots({
                 projectId: selectedProject?.id || '',
                 userId: userId || '',
@@ -93,17 +124,20 @@ export function PetrolinaRegistrationForm() {
                 email: formData.email,
                 phone: formData.whatsapp,
                 cpf: formData.cpf,
-                sessionIds: [], // Petrolina ainda não tem sessões específicas no seletor
-                registrationType: 'standard',
+                sessionIds: [], 
+                registrationType: 'pro', // Petrolina usa o tipo Pro por padrão para rede paga
                 eventName: selectedProject?.name || 'Growth Experience Petrolina',
-                paymentStatus: 'paid',
-                status: 'active',
+                paidAmount: finalAmount,
+                paymentStatus: finalAmount <= 0 ? 'paid' : 'pending',
+                batchId: batchId,
+                status: finalAmount <= 0 ? 'active' : 'pending',
                 extraData: {
                     empresa: formData.empresa,
                     numero_colaboradores: formData.colaboradores,
                     faturamento_anual: formData.faturamento
                 },
-                palestraCode: formData.cupom || null
+                socialCode: socialCode,
+                palestraCode: !socialCode ? formData.cupom || null : null
             });
 
             if (!rpcResult?.success) {

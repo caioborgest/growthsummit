@@ -204,7 +204,7 @@ export const registrationService = {
             created_at,
             ticket_type,
             qr_code,
-            profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+            profiles!left:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
         `);
         
         query = query.eq('project_id', projectId);
@@ -248,7 +248,7 @@ export const registrationService = {
                 ticket_type,
                 qr_code,
                 qr_code_data,
-                profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+                profiles!left:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
             `)
             .eq('id', id)
             .single();
@@ -266,6 +266,54 @@ export const registrationService = {
             paid_amount: reg.paid_amount
         };
     },
+    
+    /**
+     * Resolves a voucher code to its batch and applicable discount
+     */
+    async resolveVoucher(code: string, projectId: string) {
+        const cleanCode = code.trim().toUpperCase();
+        const { data, error } = await supabase
+            .from('company_registration_batches')
+            .select('*')
+            .eq('voucher_code', cleanCode)
+            .eq('project_id', projectId)
+            .maybeSingle();
+
+        if (error) {
+            logger.error('[registrationService] Error resolving voucher:', error);
+            throw error;
+        }
+
+        if (!data) return null;
+
+        const isPaid = data.payment_status === 'paid';
+        const hasSlots = data.used_slots < data.total_slots;
+
+        return {
+            ...data,
+            isValid: isPaid && hasSlots,
+            error: !isPaid ? 'Pagamento do lote pendente' : !hasSlots ? 'Limite de vagas do lote atingido' : null,
+            // Dynamic discount: 30% if it's a batch and not specifically overridden
+            discountPercentage: data.discount_percentage ?? 30 
+        };
+    },
+
+    /**
+     * Triggers the recalculation of coupon usage via RPC
+     */
+    async recalculateCouponUsage(projectId: string) {
+        try {
+            const { data, error } = await (supabase.rpc as any)('recalculate_coupon_usage', {
+                p_project_id: projectId
+            });
+            if (error) throw error;
+            return data;
+        } catch (err) {
+            logger.error('[registrationService] Failed to recalculate usage:', err);
+            throw err;
+        }
+    },
+
     isValidUUID(id: any): id is string {
         return (
             typeof id === 'string' &&

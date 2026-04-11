@@ -11,7 +11,8 @@ import {
     Users,
     Calendar,
     Filter,
-    TrendingUp
+    TrendingUp,
+    RefreshCcw
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import type { Coupon } from '@/types';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { registrationService } from '@/services/registrationService';
 
 const typeConfig: Record<Coupon['referralType'], { label: string; color: string }> = {
     promotional: { label: 'Promocional', color: 'bg-blue-500/20 text-blue-400' },
@@ -47,6 +49,7 @@ export default function AdminCupons() {
     const [typeFilter, setTypeFilter] = useState<Coupon['referralType'] | 'all'>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+    const [isRecalculating, setIsRecalculating] = useState(false);
 
     const [formData, setFormData] = useState({
         code: '',
@@ -182,10 +185,28 @@ export default function AdminCupons() {
             if (confirm('Tem certeza que deseja excluir este cupom?')) {
                 await remove(id);
                 toast.success('Cupom excluído com sucesso');
-                await refetch(true); // Force refetch from Supabase
+                await refetch(true);
             }
         } catch (err: any) {
             toast.error('Erro ao excluir cupom');
+        }
+    };
+    
+    const handleRecalculate = async () => {
+        if (!projectId) {
+            toast.error('Selecione um projeto primeiro');
+            return;
+        }
+        setIsRecalculating(true);
+        try {
+            const result = await registrationService.recalculateCouponUsage(projectId);
+            toast.success(`Uso recalculado! ${result?.updated || 0} cupons atualizados.`);
+            await refetch(true);
+        } catch (err: any) {
+            toast.error('Erro ao recalcular uso.');
+            logger.error('Recalculate error:', err);
+        } finally {
+            setIsRecalculating(false);
         }
     };
 
@@ -228,16 +249,27 @@ export default function AdminCupons() {
                         </select>
                     </div>
                 </div>
-                <Button
-                    onClick={() => {
-                        resetForm();
-                        setIsModalOpen(true);
-                    }}
-                    className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-glow-teal"
-                >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Cupom
-                </Button>
+                <div className="flex items-center gap-3">
+                    <Button
+                        onClick={handleRecalculate}
+                        disabled={isRecalculating}
+                        variant="outline"
+                        className="bg-transparent border-teal-500/20 text-teal-400 hover:bg-teal-500/10"
+                    >
+                        <RefreshCcw className={`h-4 w-4 mr-2 ${isRecalculating ? 'animate-spin' : ''}`} />
+                        {isRecalculating ? 'Recalculando...' : 'Recalcular Uso'}
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            resetForm();
+                            setIsModalOpen(true);
+                        }}
+                        className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-glow-teal"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo Cupom
+                    </Button>
+                </div>
             </div>
 
             {/* Stats Summary */}

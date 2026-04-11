@@ -96,45 +96,32 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         logger.debug('[Step2] Validating code:', { cleanCodigo, project: projectId });
 
         try {
-            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+            const voucher = await registrationService.resolveVoucher(cleanCodigo, projectId);
 
-            let lotQuery = supabase
-                .from('company_registration_batches')
-                .select('id,project_id,name,voucher_code,total_slots,used_slots,ticket_type,payment_status')
-                .eq('voucher_code', cleanCodigo);
-            
-            if (isUuid) {
-                lotQuery = lotQuery.eq('project_id', projectId);
-            }
-
-            const { data: lot, error } = await lotQuery.maybeSingle();
-
-            if (error) throw error;
-
-            if (lot) {
-                const isPaid = lot.payment_status === 'paid';
-                if (lot.used_slots >= lot.total_slots || !isPaid) {
-                    setErrors(prev => ({ ...prev, code: 'Voucher inválido, limite excedido ou pagamento pendente' }));
+            if (voucher) {
+                if (!voucher.isValid) {
+                    setErrors(prev => ({ ...prev, code: voucher.error || 'Voucher inválido' }));
                     setCodigoValidado(false);
                 } else {
+                    const discount = voucher.discountPercentage || 0;
                     setCodigoValidado(true);
-                    setBatchId(lot.id);
-                    setCompanyVoucher(lot.voucher_code);
-                    setReferralName(lot.name);
+                    setBatchId(voucher.id);
+                    setCompanyVoucher(voucher.voucher_code);
+                    setReferralName(voucher.name);
                     setReferralType('empresa');
-                    setSocialDiscount(100);
+                    setSocialDiscount(discount);
                     if (onUpdate) {
                         onUpdate({ 
                             code: cleanCodigo,
-                            referralName: lot.name, 
-                            socialDiscount: 100, 
-                            batchId: (lot as any).id, 
-                            companyVoucher: lot.voucher_code,
-                            registrationType: ((lot as any).ticket_type || 'pro') as any,
+                            referralName: voucher.name, 
+                            socialDiscount: discount, 
+                            batchId: voucher.id, 
+                            companyVoucher: voucher.voucher_code,
+                            registrationType: (voucher.ticket_type || 'pro') as any,
                             referralType: 'empresa'
                         });
                     }
-                    toast.success('Voucher corporativo validado!');
+                    toast.success(`Voucher corporativo validado! (-${discount}%)`);
                 }
                 return;
             }
