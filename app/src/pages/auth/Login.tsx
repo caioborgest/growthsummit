@@ -106,7 +106,7 @@ export function Login() {
   // ── OTP Enviado ─────────────────────────────────────────────────────────
   if (otpSent) {
     return (
-      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
+      <div className="h-screen w-full flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 30% 20%, rgba(255,112,67,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(255,64,53,0.08) 0%, transparent 60%)' }} />
         {particles.map((p, i) => <FloatingParticle key={i} {...p} />)}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-sm text-center">
@@ -126,7 +126,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
+    <div className="h-screen w-full flex items-center justify-center p-4 overflow-hidden relative" style={{ background: '#0c0e12' }}>
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 20% 20%, rgba(255,112,67,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(255,64,53,0.1) 0%, transparent 55%), radial-gradient(ellipse at 80% 10%, rgba(255,133,73,0.08) 0%, transparent 45%)' }} />
@@ -135,11 +135,15 @@ export function Login() {
         {particles.map((p, i) => <FloatingParticle key={i} {...p} />)}
       </div>
 
-      <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6">
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-4 sm:gap-6">
         {/* Logo */}
         <motion.div initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} className="text-center">
-          <Link to="/" className="inline-flex items-center justify-center flex-col gap-3">
-            <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png" alt="Growth Experience" className="h-20 w-auto drop-shadow-[0_0_15px_rgba(255,112,67,0.3)] hover:scale-105 transition-transform" />
+          <Link to="/" className="inline-flex items-center justify-center flex-col gap-2">
+            <img 
+              src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png" 
+              alt="Growth Experience" 
+              className="h-12 sm:h-14 w-auto drop-shadow-[0_0_15px_rgba(255,112,67,0.3)] hover:scale-105 transition-transform" 
+            />
           </Link>
         </motion.div>
 

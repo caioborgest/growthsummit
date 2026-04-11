@@ -350,8 +350,9 @@ const AdminCheckIn = () => {
           </div>
         </div>
       </div>
+    </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+    <div className="grid lg:grid-cols-2 gap-8 items-stretch">
         {/* Search Panel */}
         <div className="glass-card p-10 border-white/5 rounded-[3rem] relative overflow-hidden flex flex-col">
           <div className="relative mb-8">
