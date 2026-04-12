@@ -105,7 +105,7 @@ export function ExitIntentPopup() {
                 Baixe gratuitamente o nosso **Guia de Growth 2026** e hackeie seu faturamento em 12 meses.
               </p>
 
-              <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+              <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto custom-scrollbar">
                 <div className="relative group">
                    <div className="absolute left-6 top-1/2 -translate-y-1/2">
                       <Send className="h-4 w-4 text-gray-500 group-focus-within:text-brand-orange-coral transition-colors" />

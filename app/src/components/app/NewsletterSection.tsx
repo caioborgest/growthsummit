@@ -172,7 +172,7 @@ export function NewsletterSection() {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-brand-orange-coral to-teal-500 rounded-[3.5rem] blur opacity-20 group-hover:opacity-40 transition-opacity duration-1000" />
                 <div className="relative glass-card p-8 sm:p-12 border-white/5 rounded-[3rem] shadow-2xl overflow-hidden">
-                  <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+                  <form onSubmit={handleSubmit} className="space-y-8 relative z-10 custom-scrollbar">
                      <div className="space-y-3">
                        <label className="text-[10px] font-black uppercase text-gray-500 tracking-[0.3em] px-1 flex items-center gap-2">
                           <Zap className="h-3 w-3 text-brand-orange-coral" />

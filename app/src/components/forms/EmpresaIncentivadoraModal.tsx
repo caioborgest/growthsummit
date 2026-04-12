@@ -207,7 +207,7 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
                         </Button>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                         <div className="admin-modal-header">
                             <div className="pr-8">
                                 <Badge className="mb-2 bg-brand-orange-coral/20 text-brand-orange-coral border-brand-orange-coral/30 border py-0 text-[8px] font-black uppercase">

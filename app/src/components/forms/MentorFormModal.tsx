@@ -344,7 +344,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                                     </div>
                                 </div>
 
-                                <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6">
+                                <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); nextStep(); }} className="space-y-6 custom-scrollbar">
                                     {error && (
                                         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <AlertCircle className="h-5 w-5 shrink-0" />

@@ -254,7 +254,7 @@ export function AdminStartups() {
               </Button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
               <div className="admin-modal-body p-8 pt-4 overflow-y-auto custom-scrollbar">
                 {/* Seção: Informações do Fundador */}
                 <div className="space-y-6">

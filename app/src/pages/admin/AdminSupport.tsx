@@ -386,7 +386,7 @@ export default function AdminSupport() {
 
                   {/* Reply Area */}
                   {selectedTicket.status !== 'closed' ? (
-                    <form onSubmit={handleReply} className="p-6 bg-dark-200 border-t border-white/5">
+                    <form onSubmit={handleReply} className="p-6 bg-dark-200 border-t border-white/5 custom-scrollbar">
                       <div className="relative group">
                         <textarea 
                           required

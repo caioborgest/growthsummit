@@ -100,7 +100,7 @@ export function ScoreStartupModal({ isOpen, onClose, startup, projectId }: Score
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                     <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                         <div className="space-y-8">
                             <div className="space-y-6">

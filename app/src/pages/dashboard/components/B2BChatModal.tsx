@@ -111,7 +111,7 @@ export function B2BChatModal({ isOpen, onClose, matchId, otherCompany }: B2BChat
           </div>
         </ScrollArea>
 
-        <form onSubmit={handleSend} className="p-4 bg-dark-200 border-t border-dark-300">
+        <form onSubmit={handleSend} className="p-4 bg-dark-200 border-t border-dark-300 custom-scrollbar">
           <div className="flex items-center gap-2 bg-dark-300 p-2 rounded-2xl border border-white/5 focus-within:border-teal-500/50 transition-all">
             <button type="button" className="p-2 text-gray-500 hover:text-teal-400 transition-colors">
               <Smile className="h-5 w-5" />

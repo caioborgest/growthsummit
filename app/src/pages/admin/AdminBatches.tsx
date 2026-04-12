@@ -359,7 +359,7 @@ export default function AdminBatches() {
                             </Button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                             <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                                 {/* Seção Empresa */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

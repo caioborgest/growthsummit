@@ -461,7 +461,7 @@ export default function AdminCupons() {
             {/* Modal Novo/Editar */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="admin-modal-content p-0 border-none max-w-xl">
-                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                         <div className="admin-modal-header">
                             <div>
                                 <DialogTitle className="text-xl font-black italic uppercase leading-none">

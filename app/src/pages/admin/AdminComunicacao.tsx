@@ -426,7 +426,7 @@ export default function AdminComunicacao() {
                 </div>
 
                 <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
-                  <form id="template-form" onSubmit={handleCreateTemplate} className="space-y-6 py-4">
+                  <form id="template-form" onSubmit={handleCreateTemplate} className="space-y-6 py-4 custom-scrollbar">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome do Template *</Label>
@@ -531,7 +531,7 @@ export default function AdminComunicacao() {
                   </div>
 
                   <div className="admin-modal-body p-8 pt-4 flex-1 overflow-y-auto custom-scrollbar">
-                    <form id="campaign-form" onSubmit={handleCreateCampaign} className="space-y-6 py-4">
+                    <form id="campaign-form" onSubmit={handleCreateCampaign} className="space-y-6 py-4 custom-scrollbar">
                       <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest px-1">Nome da Campanha *</Label>
                         <Input

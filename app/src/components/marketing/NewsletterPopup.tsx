@@ -116,7 +116,7 @@ export function NewsletterPopup({ config, onClose }: NewsletterPopupProps) {
                   </div>
 
                   {config.type === 'newsletter' ? (
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 custom-scrollbar">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
                           placeholder="Seu nome"

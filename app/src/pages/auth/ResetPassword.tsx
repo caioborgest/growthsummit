@@ -107,7 +107,7 @@ export function ResetPassword() {
                                 </p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            <form onSubmit={handleSubmit} className="space-y-4 custom-scrollbar">
                                 <div className="space-y-2">
                                     <label className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">
                                         Nova Senha

@@ -329,7 +329,7 @@ export function AdminB2B() {
                   </div>
                 </div>
 
-                <form onSubmit={handleCreateMeeting} className="flex flex-col min-h-0 overflow-hidden">
+                <form onSubmit={handleCreateMeeting} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                   <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                     <div className="space-y-6">
                       <div className="space-y-2">
@@ -425,7 +425,7 @@ export function AdminB2B() {
                   </div>
                 </div>
 
-                <form onSubmit={handleCreateCompany} className="flex flex-col min-h-0 overflow-hidden">
+                <form onSubmit={handleCreateCompany} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
                   <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                     {/* Seção: Representante */}
                     <div className="space-y-6">

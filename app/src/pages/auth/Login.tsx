@@ -157,7 +157,7 @@ export function Login() {
             </div>
             <h1 className="text-xl font-bold text-white text-center mb-2">Verificação em 2 Etapas</h1>
             <p className="text-gray-400 text-center mb-6 text-sm">Digite o código de 6 dígitos do seu aplicativo autenticador.</p>
-            <form onSubmit={handleVerify2FA} className="space-y-5">
+            <form onSubmit={handleVerify2FA} className="space-y-5 custom-scrollbar">
               <Input
                 type="text" inputMode="numeric" placeholder="000 000" maxLength={6}
                 value={twoFactorCode} onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
@@ -237,7 +237,7 @@ export function Login() {
               </AnimatePresence>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-3 custom-scrollbar">
                 {/* Email */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">E-mail</label>

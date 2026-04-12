@@ -293,7 +293,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                             </Button>
                         </div>
 
-                        <div className="admin-modal-body bg-dark-200">
+                        <div className="admin-modal-body bg-dark-200 custom-scrollbar">
                             <div className="space-y-10 py-6">
                                 {/* Promo Card */}
                                 <div className="p-6 rounded-[2rem] bg-brand-orange-coral/5 border-2 border-brand-orange-coral/20 shadow-inner group">
@@ -306,7 +306,7 @@ export function StartupFormModal({ isOpen, onClose }: StartupFormModalProps) {
                                     </p>
                                 </div>
 
-                                <form id="startup-form" onSubmit={handleSubmit} className="space-y-10 pb-10">
+                                <form id="startup-form" onSubmit={handleSubmit} className="space-y-10 pb-10 custom-scrollbar">
                                     {/* Seção: Informações do Fundador */}
                                     <div className="space-y-6">
                                         <h3 className="text-[10px] text-gray-700 font-black uppercase tracking-[0.3em] px-2 italic flex items-center gap-2">

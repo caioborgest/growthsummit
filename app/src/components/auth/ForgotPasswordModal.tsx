@@ -55,7 +55,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                             </DialogDescription>
                         </DialogHeader>
 
-                        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+                        <form onSubmit={handleSubmit} className="space-y-6 pt-4 custom-scrollbar">
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-400 uppercase tracking-widest px-1">
                                     Seu Email

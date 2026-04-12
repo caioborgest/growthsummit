@@ -359,7 +359,7 @@ function MentorEditModal({ mentor, onClose, onSave }: {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
           <div className="admin-modal-body overflow-y-auto custom-scrollbar">
             <div className="flex flex-col items-center gap-4 mb-8">
               <div className="relative group">
@@ -821,7 +821,7 @@ export function AdminMentores() {
               </Button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
               {/* Progress Bar */}
               <div className="absolute top-0 left-0 w-full h-1 bg-white/5 z-[60]">
                 <div

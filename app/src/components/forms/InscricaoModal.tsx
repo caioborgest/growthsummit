@@ -243,7 +243,7 @@ export function InscricaoModal({ isOpen, onClose, tipo, eventoNome }: InscricaoM
                         </p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+                    <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden custom-scrollbar">
                         {/* Header */}
                         <div className="admin-modal-header">
                             <div className="flex-1">

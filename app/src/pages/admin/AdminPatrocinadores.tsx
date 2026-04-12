@@ -183,7 +183,7 @@ export default function AdminPatrocinadores() {
               </div>
             </div>
 
-            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden">
+            <form onSubmit={handleCreate} className="flex flex-col min-h-0 overflow-hidden custom-scrollbar">
               <div className="admin-modal-body overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">

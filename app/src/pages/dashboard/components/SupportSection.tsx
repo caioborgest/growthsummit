@@ -194,7 +194,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
           {isNewTicketOpen ? (
             <div className="glass-card p-4 sm:p-8 border-brand-orange-coral/20 animate-fade-in-up overflow-hidden">
               <h3 className="text-xl font-black text-white uppercase italic mb-6">Novo Atendimento</h3>
-              <form onSubmit={handleCreateTicket} className="space-y-6">
+              <form onSubmit={handleCreateTicket} className="space-y-6 custom-scrollbar">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest pl-1">Assunto / Título</label>
@@ -375,7 +375,7 @@ export function SupportSection({ navigate }: SupportSectionProps) {
                     </div>
 
                     {rating > 0 && (
-                      <form onSubmit={handleSubmitRating} className="w-full space-y-4 animate-in slide-in-from-top-4 duration-300">
+                      <form onSubmit={handleSubmitRating} className="w-full space-y-4 animate-in slide-in-from-top-4 duration-300 custom-scrollbar">
                         <textarea
                           value={feedback}
                           onChange={(e) => setFeedback(e.target.value)}

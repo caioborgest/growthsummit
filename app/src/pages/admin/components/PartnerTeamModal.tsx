@@ -176,7 +176,7 @@ export function PartnerTeamModal({ partner, onClose }: PartnerTeamModalProps) {
               </div>
             </div>
           ) : isAddMode ? (
-            <form id="add-member-form" onSubmit={handleSubmit} className="space-y-8 py-4 animate-in fade-in slide-in-from-top-4 duration-300">
+            <form id="add-member-form" onSubmit={handleSubmit} className="space-y-8 py-4 animate-in fade-in slide-in-from-top-4 duration-300 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Nome Completo *</Label>

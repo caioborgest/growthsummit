@@ -805,7 +805,7 @@ export function DashboardSponsor() {
                       <CardTitle className="text-white">Enviar Sugestão</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <form className="space-y-4">
+                      <form className="space-y-4 custom-scrollbar">
                         <div>
                           <label className="block text-sm text-gray-400 mb-2">Assunto</label>
                           <input
