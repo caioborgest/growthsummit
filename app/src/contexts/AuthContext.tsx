@@ -273,19 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
            logger.debug('Audit log failed silently:', e);
         }
 
-        // Log na tabela de Tentativas de Login (silencioso)
-        try {
-          supabase.from('login_attempts').insert({
-            email,
-            ip_address: ip,
-            success: false,
-            attempted_at: new Date().toISOString()
-          }).then(({ error: err }) => { 
-            if (err) logger.debug('Silent login fail log (RLS):', { error: err.message }); 
-          });
-        } catch (e) {
-          logger.warn('Erro ao registrar log de falha:', { error: e });
-        }
+
 
         throw error;
       }
@@ -293,20 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.user && data.session) {
         rateLimiter.clearAttempts(email);
 
-        // Registrar Sucesso (silencioso)
-        try {
-          supabase.from('login_attempts').insert({
-            user_id: data.user.id,
-            email,
-            ip_address: ip,
-            success: true,
-            attempted_at: new Date().toISOString()
-          }).then(({ error: err }) => { 
-            if (err) logger.debug('Silent login success log (RLS):', { error: err.message }); 
-          });
-        } catch (e) {
-          logger.warn('Erro ao registrar log de sucesso:', { error: e });
-        }
+
 
         // O listener onAuthStateChange será disparado, mas vamos atualizar manualmente aqui
         // para garantir que o retorno da função tenha o usuário atualizado

@@ -577,6 +577,8 @@ export default function AdminInscricoes() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
+            className="group p-5 sm:p-8 border border-white/5 rounded-[1.5rem] sm:rounded-[2rem] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all"
+          >
             <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
                 <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />

@@ -89,6 +89,24 @@ const AdminCheckIn = () => {
     
     setResultRegistration(registration);
     
+    // Validate status before check-in (not check-out)
+    if (action === 'check-in') {
+      const regStatus = (registration.status || '').toLowerCase();
+      const payStatus = ((registration as any).paymentStatus || (registration as any).payment_status || '').toLowerCase();
+      const isCancelled = regStatus === 'cancelled' || regStatus === 'cancelado';
+      if (isCancelled) {
+        toast.error('Inscrição CANCELADA. Não é possível realizar o check-in.');
+        triggerVibrate('error');
+        setScanResult('error');
+        return;
+      }
+      // Warn but allow for pending payments (operator discretion)
+      const isPendingPayment = payStatus === 'pending' || payStatus === 'pendente';
+      if (isPendingPayment && regStatus !== 'active') {
+        toast.warning('⚠️ Pagamento PENDENTE. Verifique antes de credenciar.', { duration: 5000 });
+      }
+    }
+    
     // Optimistic UI state
     const isExit = action === 'check-out';
     
@@ -223,7 +241,7 @@ const AdminCheckIn = () => {
                 ticketNumber: reg.ticket_number,
                 checkedIn: reg.checked_in,
                 checkInAt: reg.check_in_at,
-                registrationType: reg.ticket_type || reg.registration_type
+                registrationType: reg.registration_type || reg.ticket_type
            } as any;
 
            // Auto-toggle based on current state

@@ -172,9 +172,10 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
       result.paid_amount = item.final_amount;
       result.paidAmount = item.final_amount;
     }
-    if (item.ticket_type) {
-      result.registrationType = item.ticket_type;
-      result.ticketType = item.ticket_type;
+    if (item.registration_type || item.ticket_type) {
+      const regType = item.registration_type || item.ticket_type;
+      result.registrationType = regType;
+      result.ticketType = regType;
     }
   }
   if (entityName === 'registration_batches') {
@@ -381,7 +382,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
     if (entity === 'registrations') {
-      return 'id,status,created_at,amount:paid_amount,paid_amount,user_id,name,email,phone,ticket_number,ticket_type,checked_in,check_in_at,qr_code,palestras_noturnas,cursos_selecionados,profiles:profiles!growth_experience_registrations_user_id_fkey(user_id,name,email,phone,company,city,state,role)';
+      return 'id,status,created_at,amount:paid_amount,paid_amount,payment_status,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,profiles:profiles!growth_experience_registrations_user_id_fkey(user_id,name,email,phone,company,city,state,role)';
     }
     if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';
@@ -417,7 +418,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   }
 
   const fields: Record<string, string> = {
-    registrations: 'id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,ticket_type,qr_code',
+    registrations: 'id,project_id,user_id,name,email,phone,ticket_number,status,payment_status,paid_amount,checked_in,check_in_at,created_at,registration_type,qr_code',
     mentors: 'id,project_id,user_id,name,email,phone,company,role_title,specialties,tracks,years_experience,status,max_mentorings,photo_url,created_at',
     mentoring_sessions: 'id,project_id,mentee_id,mentor_id,mentee_name,mentee_email,mentee_phone,topic_of_interest,notes,status,created_at,start_date,duration,mentoring_rating,rated_at',
     mentoring_waitlist: 'id,project_id,registration_id,mentor_id,challenge,status,created_at,updated_at',

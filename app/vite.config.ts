@@ -43,8 +43,8 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: 'icons/icon-92x92.png',
-            sizes: '92x92',
+            src: 'icons/icon-96x96.png',
+            sizes: '96x96',
             type: 'image/png'
           },
           {

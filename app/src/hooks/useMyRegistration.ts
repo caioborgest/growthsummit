@@ -76,7 +76,7 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
     const phone = row.phone || row.telefone || row.whatsapp || profile.phone;
     const email = row.email || profile.email; // email is in registrations now
 
-    const ticketType = (row.ticket_type as string || '').toLowerCase();
+    const ticketType = ((row.registration_type || row.ticket_type) as string || '').toLowerCase();
     const isProType = ticketType === 'pro' || ticketType === 'vip';
     const statusPagamento = (row.payment_status as string || '').toLowerCase();
     const st = (row.status as string || '').toLowerCase();
@@ -105,8 +105,8 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         nome: name || undefined,
         name: name || undefined,
         phone: phone || undefined,
-        tipoInscricao: row.ticket_type as string || undefined,
-        ticketType: row.ticket_type as string || undefined,
+        tipoInscricao: (row.registration_type || row.ticket_type) as string || undefined,
+        ticketType: (row.registration_type || row.ticket_type) as string || undefined,
         status: row.status as string || undefined,
         statusPagamento: row.payment_status as string || undefined,
         palestrasNoturnas: Boolean(row.night_lectures) || (isProType && isActuallyPaid),

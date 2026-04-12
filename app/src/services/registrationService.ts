@@ -202,7 +202,7 @@ export const registrationService = {
             checked_in,
             check_in_at,
             created_at,
-            ticket_type,
+            registration_type,
             qr_code,
             profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
         `);
@@ -245,9 +245,8 @@ export const registrationService = {
                 checked_in,
                 check_in_at,
                 created_at,
-                ticket_type,
+                registration_type,
                 qr_code,
-                qr_code_data,
                 profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
             `)
             .eq('id', id)
