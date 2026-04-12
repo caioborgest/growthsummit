@@ -239,12 +239,14 @@ export function useMyRegistration() {
             if (registrationData && user.id) {
                 const { data: profileData } = await supabase
                     .from('profiles')
-                    .select('name, phone, email, avatar_url')
+                    .select('phone, company, position, city, state') // Only select valid columns from public.profiles
                     .eq('user_id', user.id)
                     .maybeSingle();
 
                 if (profileData) {
-                    registrationData = mapRow(data, profileData);
+                    // Update registration data with profile info if missing
+                    if (profileData.phone && !registrationData.phone) registrationData.phone = profileData.phone;
+                    if (profileData.company && !registrationData.company) registrationData.company = profileData.company;
                 }
             }
 

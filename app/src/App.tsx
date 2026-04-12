@@ -215,7 +215,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
       const timer = setTimeout(() => {
         console.warn('[ProtectedRoute] Loading state timed out! Redirecting to login for safety.');
         setHasTimedOut(true);
-      }, 5000); // 5s timeout
+      }, 10000); // Increased to 10s for better stability
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
