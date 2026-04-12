@@ -34,6 +34,9 @@ export async function getClientIP(): Promise<string> {
 const recentEvents = new Map<string, number>();
 const DEDUP_WINDOW_MS = 5000;
 
+let isLoggingOut = false;
+export const setLoggingOut = (val: boolean) => { isLoggingOut = val; };
+
 // Events that fire automatically on page load and don't need to be audited
 const SKIP_AUDIT_EVENTS = new Set([
     'INITIAL_SESSION',
@@ -42,8 +45,8 @@ const SKIP_AUDIT_EVENTS = new Set([
 ]);
 
 export function logAuditEvent(event: string, userId?: string, metadata?: unknown) {
-    // Skip noisy system events that fire on every page load
-    if (SKIP_AUDIT_EVENTS.has(event)) return;
+    // Skip if logout is in progress or common noisy events
+    if (isLoggingOut || SKIP_AUDIT_EVENTS.has(event)) return;
 
     // Deduplicate: skip if same event+user was logged in the last 5 seconds
     const dedupKey = `${event}:${userId || 'anon'}`;

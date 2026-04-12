@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import type { User } from '@/types';
 import { logger } from '@/lib/logger';
-import { logAuditEvent, getClientIP } from '@/lib/auth-audit';
+import { logAuditEvent, getClientIP, setLoggingOut } from '@/lib/auth-audit';
 import { withTimeout } from '@/lib/promiseUtils';
 import { toast } from 'sonner';
 
@@ -365,14 +365,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout
   const logout = useCallback(async () => {
     try {
-      if (user) logAuditEvent('logout', user.id);
-      await supabase.auth.signOut();
+      setLoggingOut(true); // Bloqueia auditoria durante o processo de saída
+      if (user) {
+        logAuditEvent('logout', user.id);
+      }
+      
+      // Logout global com tratamento silencioso de erros
+      // A falha no servidor (403) não deve impedir a limpeza local
+      await supabase.auth.signOut().catch(err => {
+        if (err.status !== 403) {
+            logger.debug('SignOut server-side note:', err.message);
+        }
+      });
+      
       setUser(null);
       setSession(null);
       safeStorage.removeItem(LAST_ACTIVITY_KEY);
     } catch (error: unknown) {
       logger.error('Logout error:', error);
-      throw error;
+    } finally {
+      // Pequeno delay antes de reativar para garantir que o redirecionamento ocorreu
+      setTimeout(() => setLoggingOut(false), 2000);
     }
   }, [user]);
 
