@@ -50,7 +50,7 @@ const AdminCheckIn = () => {
   const { data: companies, isLoading: loadingCompanies } = useData<Company>([], 'companies');
   const { data: startups, isLoading: loadingStartups } = useData<Startup>([], 'startups');
   const { data: checkIns, refetch: refetchCheckIns } = useData<any>([], 'check_ins');
-  const { data: sessionAttendance, refetch: refetchAttendance } = useData<any>([], 'activity_attendance');
+  const { data: sessionAttendance, refetch: refetchAttendance } = useData<any>([], 'activity_check_ins');
   const { data: sessions } = useData<any>([], 'sessions');
   const { data: partnerTeamMembers } = useData<any>([], 'partner_team_members');
 

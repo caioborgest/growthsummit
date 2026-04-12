@@ -17,7 +17,7 @@ import { useRegistrations } from '@/hooks/useData';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { emailService } from '@/services/emailService';
 import { notificationService } from '@/services/notificationService';

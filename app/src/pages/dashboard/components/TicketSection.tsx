@@ -158,7 +158,7 @@ export function TicketSection({
                     <div className="flex flex-col items-center gap-4 sm:pl-8 sm:border-l" style={{ borderColor: 'var(--border-subtle)' }}>
                         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">QR Code de Acesso</p>
                         <div className="relative p-4 rounded-3xl" style={{ background: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-                            <QRCode value={qrValue} size={180} level="M" />
+                            <QRCode value={qrValue} size={180} level="L" />
                             {/* Scanner animation */}
                             <div className="absolute left-4 right-4 h-0.5 rounded-full animate-scan-move"
                                 style={{ background: 'linear-gradient(90deg, transparent, rgba(255,112,67,0.8), transparent)' }} />

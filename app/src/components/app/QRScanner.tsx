@@ -34,23 +34,48 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
     const startScanner = async (html5QrCode: any, cameraIdOrConfig: any) => {
         try {
+            // Build advanced video constraints for autofocus + resolution
+            let cameraConfig = cameraIdOrConfig;
+            if (typeof cameraIdOrConfig === 'string') {
+                // Named camera ID — wrap with advanced constraints
+                cameraConfig = {
+                    deviceId: { exact: cameraIdOrConfig },
+                    advanced: [
+                        { focusMode: 'continuous' } as any,
+                        { zoom: 1.0 } as any
+                    ],
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                };
+            } else if (typeof cameraIdOrConfig === 'object' && cameraIdOrConfig.facingMode) {
+                // facingMode config — enhance with focus
+                cameraConfig = {
+                    facingMode: cameraIdOrConfig.facingMode,
+                    advanced: [
+                        { focusMode: 'continuous' } as any,
+                        { zoom: 1.0 } as any
+                    ],
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                };
+            }
+
             await html5QrCode.start(
-                cameraIdOrConfig,
+                cameraConfig,
                 {
-                    fps: 20,
+                    fps: 15,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
                         const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                        const qrboxSize = Math.floor(minEdgeSize * 0.7);
+                        const qrboxSize = Math.floor(minEdgeSize * 0.75);
                         return { width: qrboxSize, height: qrboxSize };
                     },
+                    aspectRatio: 1.0,
+                    disableFlip: false,
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
                     if (parsed || decodedText) {
                         try {
-                            // Do not stop if we want continuous scanning, 
-                            // but usually for a single success we stop.
-                            // The AdminCheckIn controller will decide if it stays open.
                             await html5QrCode.stop();
                         } catch (e) { /* silent */ }
                         setIsScanning(false);
@@ -61,10 +86,60 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 },
                 () => { } // silent scan failures
             );
+
+            // Try to enable torch/flashlight after camera starts
+            try {
+                const capabilities = html5QrCode.getRunningTrackCapabilities?.();
+                if (capabilities?.torch) {
+                    // Don't auto-enable, just note it's available
+                    console.debug('Torch available on this device');
+                }
+                // Apply continuous autofocus if supported
+                const track = html5QrCode.getRunningTrackSettings?.();
+                if (track) {
+                    const videoTrack = html5QrCode.getRunningTrack?.();
+                    if (videoTrack?.applyConstraints) {
+                        await videoTrack.applyConstraints({
+                            advanced: [{ focusMode: 'continuous' } as any]
+                        }).catch(() => { /* device doesn't support */ });
+                    }
+                }
+            } catch { /* capabilities API not available */ }
+
             return true;
         } catch (err) {
             console.error("Failed to start scanner:", err);
-            return false;
+            // Fallback: try without advanced constraints
+            try {
+                const fallbackConfig = typeof cameraIdOrConfig === 'string' 
+                    ? cameraIdOrConfig 
+                    : { facingMode: 'environment' };
+                await html5QrCode.start(
+                    fallbackConfig,
+                    {
+                        fps: 15,
+                        qrbox: (vw: number, vh: number) => {
+                            const s = Math.floor(Math.min(vw, vh) * 0.75);
+                            return { width: s, height: s };
+                        },
+                    },
+                    async (decodedText: string) => {
+                        const parsed = parseQRString(decodedText);
+                        if (parsed || decodedText) {
+                            try { await html5QrCode.stop(); } catch { /* */ }
+                            setIsScanning(false);
+                            onSuccess(parsed, decodedText);
+                        } else {
+                            toast.error("QR Code inválido.");
+                        }
+                    },
+                    () => { }
+                );
+                return true;
+            } catch (fallbackErr) {
+                console.error("Fallback scanner also failed:", fallbackErr);
+                return false;
+            }
         }
     };
 
