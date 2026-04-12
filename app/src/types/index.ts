@@ -591,6 +591,8 @@ export interface RegistrationBatch {
   paymentStatus: 'pending' | 'paid' | 'cancelled' | string;
   notes?: string;
   expiresAt?: string;
+  unit_price?: number;
+  discount_percentage?: number;
   createdAt: string;
   updatedAt: string;
 }

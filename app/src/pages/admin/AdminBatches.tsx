@@ -49,6 +49,8 @@ export default function AdminBatches() {
         voucherCode: '',
         total_slots: 5,
         ticketType: 'pro' as 'morning' | 'pro' | 'vip',
+        unit_price: 179.99,
+        discount_percentage: 0,
         price: 0,
         active: true,
         expiresAt: '',
@@ -85,20 +87,20 @@ export default function AdminBatches() {
         return matchesSearch && matchesStatus;
     });
 
-    const calculateTotal = (qty: number) => {
-        const unitPrice = 179.99;
+    const calculateTotal = (qty: number, unitPrice: number, discountPercentage: number) => {
         const subtotal = unitPrice * qty;
-        // 30% discount for 5 or more
-        const discount = qty >= 5 ? 0.3 : 0;
-        return Number((subtotal * (1 - discount)).toFixed(2));
+        const discountFactor = 1 - (discountPercentage / 100);
+        return Number((subtotal * discountFactor).toFixed(2));
     };
 
-    const handleQtyChange = (qty: number) => {
-        setFormData({
-            ...formData,
-            total_slots: qty,
-            price: calculateTotal(qty)
-        });
+    const handleValuesChange = (updates: Partial<{ total_slots: number; unit_price: number; discount_percentage: number }>) => {
+        const newData = { ...formData, ...updates };
+        const newTotal = calculateTotal(
+            newData.total_slots,
+            newData.unit_price,
+            newData.discount_percentage
+        );
+        setFormData({ ...newData, price: newTotal });
     };
 
     const generateVoucher = () => {
@@ -157,7 +159,9 @@ export default function AdminBatches() {
             voucherCode: '',
             total_slots: 5,
             ticketType: 'pro',
-            price: calculateTotal(5),
+            unit_price: 179.99,
+            discount_percentage: 0,
+            price: calculateTotal(5, 179.99, 0),
             active: true,
             expiresAt: '',
             paymentStatus: 'pending',
@@ -177,6 +181,8 @@ export default function AdminBatches() {
             voucherCode: batch.voucherCode,
             total_slots: batch.total_slots,
             ticketType: batch.ticketType as any,
+            unit_price: batch.unit_price || 179.99,
+            discount_percentage: batch.discount_percentage || 0,
             price: batch.price,
             active: batch.active !== undefined ? batch.active : true,
             expiresAt: batch.expiresAt || '',
@@ -450,15 +456,44 @@ export default function AdminBatches() {
                                             type="number"
                                             min="1"
                                             value={formData.total_slots}
-                                            onChange={e => handleQtyChange(Number(e.target.value))}
+                                            onChange={e => handleValuesChange({ total_slots: Number(e.target.value) })}
                                             className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
                                             placeholder="Ex: 10"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Total (R$)</Label>
-                                        <div className="bg-dark-100 border border-white/5 rounded-xl h-11 flex items-center px-4 text-white font-black text-lg">
-                                            R$ {formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor Unitário (R$)</Label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={formData.unit_price}
+                                            onChange={e => handleValuesChange({ unit_price: Number(e.target.value) })}
+                                            className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold"
+                                            placeholder="179.99"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Desconto (%)</Label>
+                                        <div className="relative">
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                value={formData.discount_percentage}
+                                                onChange={e => handleValuesChange({ discount_percentage: Number(e.target.value) })}
+                                                className="bg-dark-100 border-white/5 text-white h-11 rounded-xl font-bold pr-10"
+                                                placeholder="0"
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-black text-brand-orange-coral uppercase tracking-widest">Valor Total Calculado (R$)</Label>
+                                        <div className="bg-brand-orange-coral/5 border border-brand-orange-coral/20 rounded-xl h-11 flex items-center px-4 text-brand-orange-coral font-black text-xl shadow-inner">
+                                            R$ {formData.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
