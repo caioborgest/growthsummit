@@ -90,6 +90,10 @@ ALTER TABLE IF EXISTS public.users ADD COLUMN IF NOT EXISTS two_factor_enabled B
 -- Enable RLS on core tables
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.login_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.growth_experience_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.email_campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.email_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.users ENABLE ROW LEVEL SECURITY;
 
 -- Helper to apply Admin policy to any table
 DO $$
@@ -111,6 +115,10 @@ BEGIN
         
         -- Create broad Admin policy with fallback to profiles table
         IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = t) THEN
+            -- Ensure PostgreSQL permissions for authenticated users (who will be filtered by RLS)
+            EXECUTE format('GRANT ALL ON public.%I TO authenticated', t);
+            EXECUTE format('GRANT ALL ON public.%I TO service_role', t);
+            
             EXECUTE format('CREATE POLICY "Admin full access" ON public.%I FOR ALL USING (
                 public.is_admin() 
                 OR (SELECT role FROM public.profiles WHERE user_id = auth.uid()) IN (''admin'', ''staff'', ''superadmin'')
@@ -129,6 +137,9 @@ GRANT SELECT ON public.active_sessions TO authenticated;
 GRANT SELECT ON public.security_suspicious_logins TO authenticated;
 GRANT SELECT ON public.security_user_activity TO authenticated;
 GRANT SELECT ON public.users TO authenticated;
+GRANT ALL ON public.growth_experience_transactions TO authenticated;
+GRANT INSERT ON public.audit_logs TO anon;
+GRANT INSERT ON public.login_attempts TO anon;
 
 -- Refresh schema
 NOTIFY pgrst, 'reload schema';

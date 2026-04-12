@@ -73,7 +73,7 @@ const financialCategories = {
 
 
 export function AdminFinanceiro() {
-  const { data: transactions, create: createTransaction, isLoading: isTransactionLoading } = useTransactions();
+  const { data: transactions, create: createTransaction, update: updateTransaction, remove: removeTransaction, isLoading: isTransactionLoading } = useTransactions();
   const { data: registrations } = useRegistrations();
   const { data: batches } = useRegistrationBatches();
   const { update: updateProject } = useProjects();
@@ -84,6 +84,7 @@ export function AdminFinanceiro() {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [isUpdatingGoals, setIsUpdatingGoals] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
   const [newTransaction, setNewTransaction] = useState({
     type: 'expense' as 'income' | 'expense',
     description: '',
@@ -103,19 +104,27 @@ export function AdminFinanceiro() {
 
   const [tempGoals, setTempGoals] = useState(goals);
 
-  const handleCreateTransaction = async () => {
+  const handleSaveTransaction = async () => {
     if (!newTransaction.description || !newTransaction.amount) {
       toast.error('Preencha os campos obrigatórios');
       return;
     }
 
     try {
-      await createTransaction({
-        ...newTransaction,
-        projectId: selectedProject?.id
-      });
-      toast.success('Transação registrada com sucesso!');
+      if (editingTransactionId) {
+        await updateTransaction(editingTransactionId, {
+          ...newTransaction
+        });
+        toast.success('Transação atualizada com sucesso!');
+      } else {
+        await createTransaction({
+          ...newTransaction,
+          projectId: selectedProject?.id
+        });
+        toast.success('Transação registrada com sucesso!');
+      }
       setShowTransactionModal(false);
+      setEditingTransactionId(null);
       setNewTransaction({
         type: 'expense',
         description: '',
@@ -126,7 +135,31 @@ export function AdminFinanceiro() {
         status: 'completed'
       });
     } catch (err) {
-      toast.error('Erro ao registrar transação');
+      toast.error(`Erro ao ${editingTransactionId ? 'atualizar' : 'registrar'} transação`);
+    }
+  };
+
+  const handleEditTransaction = (transaction: any) => {
+    setEditingTransactionId(transaction.id);
+    setNewTransaction({
+      type: transaction.type,
+      description: transaction.description,
+      amount: transaction.amount,
+      category: transaction.category,
+      date: new Date(transaction.date).toISOString().split('T')[0],
+      reference_person: transaction.reference_person || '',
+      status: transaction.status
+    });
+    setShowTransactionModal(true);
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
+    try {
+      await removeTransaction(id);
+      toast.success('Transação excluída com sucesso!');
+    } catch (err) {
+      toast.error('Erro ao excluir transação');
     }
   };
 
@@ -251,7 +284,19 @@ export function AdminFinanceiro() {
           </div>
           <div className="h-8 w-px bg-white/5 mx-2" />
           <Button
-            onClick={() => setShowTransactionModal(true)}
+            onClick={() => {
+              setEditingTransactionId(null);
+              setNewTransaction({
+                type: 'expense',
+                description: '',
+                amount: 0,
+                category: 'Venue & Locação',
+                date: new Date().toISOString().split('T')[0],
+                reference_person: '',
+                status: 'completed'
+              });
+              setShowTransactionModal(true);
+            }}
             className="bg-brand-orange-coral text-white hover:bg-brand-orange-coral/90 rounded-2xl font-black text-[10px] uppercase tracking-widest px-6 shadow-glow-orange h-10"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -660,6 +705,7 @@ export function AdminFinanceiro() {
                     <th className="p-5 text-left text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Tipo</th>
                     <th className="p-5 text-right text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Valor</th>
                     <th className="p-5 text-center text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Status</th>
+                    <th className="p-5 text-right text-gray-700 font-black uppercase text-[10px] tracking-[0.25em] italic">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.02]">
@@ -699,6 +745,26 @@ export function AdminFinanceiro() {
                             </Badge>
                           );
                         })()}
+                      </td>
+                      <td className="p-5 text-right" data-label="Ações">
+                        <div className="flex items-center justify-end gap-2">
+                           <Button
+                             variant="ghost"
+                             size="icon"
+                             onClick={() => handleEditTransaction(transaction)}
+                             className="h-8 w-8 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-teal-500/20 transition-all border border-white/5"
+                           >
+                             <Zap className="h-3.5 w-3.5" />
+                           </Button>
+                           <Button
+                             variant="ghost"
+                             size="icon"
+                             onClick={() => handleDeleteTransaction(transaction.id)}
+                             className="h-8 w-8 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/20 transition-all border border-white/5"
+                           >
+                             <X className="h-3.5 w-3.5" />
+                           </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -794,7 +860,7 @@ export function AdminFinanceiro() {
           <div className="admin-modal-header">
             <div>
               <DialogTitle className="text-3xl font-black text-white italic uppercase tracking-tighter">
-                Novo <span className="text-brand-orange-coral">Lançamento</span>
+                {editingTransactionId ? 'Editar' : 'Novo'} <span className="text-brand-orange-coral">Lançamento</span>
               </DialogTitle>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1">Registrar entrada ou saída de caixa</p>
             </div>
@@ -803,7 +869,7 @@ export function AdminFinanceiro() {
             </Button>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateTransaction(); }} className="flex flex-col min-h-0 overflow-hidden">
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveTransaction(); }} className="flex flex-col min-h-0 overflow-hidden">
             <div className="admin-modal-body overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -901,7 +967,7 @@ export function AdminFinanceiro() {
                 disabled={isTransactionLoading}
                 className="flex-[2] bg-brand-orange-coral text-white shadow-glow-orange h-14"
               >
-                {isTransactionLoading ? 'PROCESSANDO...' : 'CONFIRMAR LANCAMENTO'}
+                {isTransactionLoading ? 'PROCESSANDO...' : editingTransactionId ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR LANCAMENTO'}
               </Button>
             </div>
           </form>
