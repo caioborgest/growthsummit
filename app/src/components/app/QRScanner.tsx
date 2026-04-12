@@ -16,9 +16,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const html5QrCodeRef = useRef<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [isScanning, setIsScanning] = useState(true);
-    const [isLoading, setIsLoading] = useState(true);
-    const [cameras, setCameras] = useState<{ id: string; label: string }[]>([]);
     const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+    const [isChangingCamera, setIsChangingCamera] = useState(false);
     const isTransitioning = useRef(false);
     const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -213,14 +212,28 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     }, []); // Only run once on mount
 
     const handleCameraChange = async (cameraId: string) => {
+        if (isChangingCamera || isTransitioning.current) return;
+        
+        setIsChangingCamera(true);
         setSelectedCameraId(cameraId);
+        
         if (html5QrCodeRef.current) {
             try {
+                // Force a clean stop
                 await stopScanner();
+                
+                // Essential delay to let hardware release
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 await startScanner(html5QrCodeRef.current, cameraId);
             } catch (err) {
+                console.error("Camera switch error:", err);
                 toast.error("Erro ao trocar de câmera.");
+            } finally {
+                setIsChangingCamera(false);
             }
+        } else {
+            setIsChangingCamera(false);
         }
     };
 
@@ -275,9 +288,10 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                         <Camera className="h-4 w-4 text-brand-orange-coral" />
                                     </div>
                                     <select 
-                                        className="bg-transparent text-foreground text-xs font-bold w-full focus:outline-none cursor-pointer pr-4"
+                                        className="bg-transparent text-foreground text-xs font-bold w-full focus:outline-none cursor-pointer pr-4 disabled:opacity-50"
                                         value={selectedCameraId}
                                         onChange={(e) => handleCameraChange(e.target.value)}
+                                        disabled={isChangingCamera}
                                     >
                                         {cameras.map(camera => (
                                             <option key={camera.id} value={camera.id} className="bg-card">

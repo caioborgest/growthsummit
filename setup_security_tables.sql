@@ -68,8 +68,18 @@ BEGIN
     END IF;
 END $$;
 
+
 -- ==========================================
--- 3. PERMISSIONS & RLS POLICIES
+-- 3. PLATFORM & CHECK-IN FIXES
+-- ==========================================
+
+-- Add missing check-in columns to growth_experience_registrations
+ALTER TABLE public.growth_experience_registrations ADD COLUMN IF NOT EXISTS checked_in BOOLEAN DEFAULT false;
+ALTER TABLE public.growth_experience_registrations ADD COLUMN IF NOT EXISTS checked_in_at TIMESTAMPTZ;
+
+
+-- ==========================================
+-- 4. PERMISSIONS & RLS POLICIES
 -- ==========================================
 
 -- Enable RLS on all relevant tables
@@ -95,6 +105,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP POLICY IF EXISTS "Admins can view audit logs" ON public.audit_logs;
 DROP POLICY IF EXISTS "Admins can view login attempts" ON public.login_attempts;
 DROP POLICY IF EXISTS "Admins can manage pitch scores" ON public.pitch_scores;
+DROP POLICY IF EXISTS "Judges can insert scores" ON public.pitch_scores;
 DROP POLICY IF EXISTS "Admins can manage email campaigns" ON public.email_campaigns;
 DROP POLICY IF EXISTS "Admins can view email templates" ON public.email_templates;
 
