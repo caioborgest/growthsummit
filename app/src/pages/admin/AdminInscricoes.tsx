@@ -520,7 +520,7 @@ export default function AdminInscricoes() {
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
+          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
             BASE DE <span className="text-brand-orange-coral">INSCRITOS</span>
           </h1>
           <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
@@ -528,22 +528,22 @@ export default function AdminInscricoes() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <Button
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-14 px-8 rounded-2xl text-[10px] uppercase tracking-widest shadow-glow-orange flex items-center gap-2"
+            className="flex-1 sm:flex-none bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-11 sm:h-14 px-4 sm:px-8 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] uppercase tracking-widest shadow-glow-orange flex items-center justify-center gap-2"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             NOVA INSCRIÇÃO
-          </Button>
+          </button>
 
           <Button
             variant="ghost"
             onClick={handleExport}
             disabled={exportingCSV}
-            className="h-14 w-14 rounded-2xl bg-white/5 text-gray-400 hover:text-white border border-white/5 flex items-center justify-center p-0"
+            className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-white/5 text-gray-400 hover:text-white border border-white/5 flex items-center justify-center p-0 shrink-0"
           >
-             {exportingCSV ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+             {exportingCSV ? <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" /> : <Download className="h-4 w-4 sm:h-5 sm:w-5" />}
           </Button>
         </div>
       </div>
@@ -565,7 +565,7 @@ export default function AdminInscricoes() {
       </Tabs>
 
       {/* Stats Grid Premium */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
           { label: 'Total Geral', value: registrations.length, icon: User, color: 'text-white' },
           { label: 'Confirmados', value: registrations.filter(r => ['paid', 'active'].includes(r.status?.toLowerCase())).length, icon: CheckCircle2, color: 'text-emerald-400' },
@@ -577,77 +577,75 @@ export default function AdminInscricoes() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="glass-card hover-card p-6 border-white/5 rounded-[2.5rem] relative overflow-hidden group"
-          >
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+            <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
+                <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color}`} />
               </div>
             </div>
             <div className="relative z-10">
-              <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{stat.label}</p>
-              <p className={`text-4xl font-black ${stat.color} tracking-tighter tabular-nums italic`}>{stat.value}</p>
+              <p className="text-gray-500 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{stat.label}</p>
+              <p className={`text-2xl sm:text-4xl font-black ${stat.color} tracking-tighter tabular-nums italic`}>{stat.value}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* Smart Filters Panel */}
-      <div className="glass-card p-4 border-white/5 rounded-[2rem] bg-white/[0.02] flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-full sm:min-w-[300px]">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-teal-500" />
+      <div className="glass-card p-3 sm:p-4 border-white/5 rounded-[1.5rem] sm:rounded-[2rem] bg-white/[0.02] flex flex-wrap items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 min-w-full lg:min-w-[300px]">
+          <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-teal-500" />
           <Input
             type="text"
             placeholder="BUSCAR PELO NOME, E-MAIL OU Nº DO TICKET..."
             value={searchQuery}
             onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            className="w-full h-14 pl-16 bg-black/20 border-white/5 rounded-xl text-white font-black italic focus:border-teal-500 transition-all placeholder:text-gray-700 placeholder:text-[10px]"
+            className="w-full h-11 sm:h-14 pl-12 sm:pl-16 bg-black/20 border-white/5 rounded-xl text-white font-black italic focus:border-teal-500 transition-all placeholder:text-gray-700 placeholder:text-[9px] sm:placeholder:text-[10px]"
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 h-14 px-6 bg-black/20 border border-white/5 rounded-xl">
-             <Filter className="h-4 w-4 text-teal-400" />
+        <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+          <div className="flex-1 lg:flex-none flex items-center gap-2 h-11 sm:h-14 px-4 sm:px-6 bg-black/20 border border-white/5 rounded-xl">
+             <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-teal-400" />
              <select
                value={statusFilter}
                onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-               className="bg-transparent text-[10px] font-black text-teal-400 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer"
+               className="bg-transparent text-[9px] sm:text-[10px] font-black text-teal-400 uppercase tracking-widest focus:outline-none appearance-none cursor-pointer flex-1"
              >
-               <option value="all">TODOS STATUS</option>
+               <option value="all">STATUS</option>
                <option value="paid">CONFIRMADO</option>
                <option value="pending">PENDENTE</option>
                <option value="cancelled">CANCELADO</option>
              </select>
           </div>
 
-          <div className="flex items-center gap-2 h-14 px-6 bg-black/20 border border-white/5 rounded-xl">
-             <Moon className="h-4 w-4 text-[#FF7043]" />
+          <div className="flex-1 lg:flex-none flex items-center gap-2 h-11 sm:h-14 px-4 sm:px-6 bg-black/20 border border-white/5 rounded-xl">
+             <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#FF7043]" />
              <select
                value={nightFilter}
                onChange={e => { setNightFilter(e.target.value); setCurrentPage(1); }}
-               className="bg-transparent text-[10px] font-black text-[#FF7043] uppercase tracking-widest focus:outline-none appearance-none cursor-pointer"
+               className="bg-transparent text-[9px] sm:text-[10px] font-black text-[#FF7043] uppercase tracking-widest focus:outline-none appearance-none cursor-pointer flex-1"
              >
-               <option value="all">TODOS ACESSOS</option>
-               <option value="sim">NIGHT EXP. ✓</option>
+               <option value="all">ACESSOS</option>
+               <option value="sim">NIGHT ✓</option>
                <option value="nao">SEM NIGHT</option>
              </select>
           </div>
         </div>
 
         {selectedItems.length > 0 && (
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 w-full lg:w-auto lg:ml-auto">
              <Button
                 variant="outline"
                 onClick={handleCopyEmails}
-                className="h-14 border-teal-500/20 text-teal-400 hover:bg-teal-500/10 font-black text-[9px] uppercase tracking-widest px-6"
+                className="flex-1 lg:flex-none h-11 sm:h-14 border-teal-500/20 text-teal-400 hover:bg-teal-500/10 font-black text-[9px] uppercase tracking-widest px-4 sm:px-6"
               >
-                <Mail className="h-4 w-4 mr-2" />
+                <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                 EMAILS ({selectedItems.length})
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setSelectedItems([])}
-                className="h-14 text-red-500/50 hover:text-red-400 font-black text-[9px] uppercase"
+                className="h-11 sm:h-14 text-red-500/50 hover:text-red-400 font-black text-[9px] uppercase px-4"
               >
                 LIMPAR
               </Button>

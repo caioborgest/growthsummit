@@ -184,24 +184,24 @@ export default function AdminParceiros() {
       {/* Header & Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-2">
-          <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">Gestão de <span className="text-brand-orange-coral">Parceiros</span></h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white italic tracking-tighter uppercase">Gestão de <span className="text-brand-orange-coral">Parceiros</span></h2>
           <p className="text-gray-500 font-medium text-xs tracking-widest uppercase">Controle de Empresas e Credenciamento</p>
         </div>
         
-        <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {[
             { label: 'Total', value: stats.total, icon: Handshake, color: 'orange' },
             { label: 'Permuta', value: stats.barter, icon: Zap, color: 'blue' },
             { label: 'Investimento', value: stats.investment, icon: Building2, color: 'green' },
             { label: 'Misto', value: stats.mixed, icon: Filter, color: 'purple' },
           ].map((stat, i) => (
-            <div key={i} className="glass-card p-4 flex items-center gap-4 border-white/5">
+            <div key={i} className="glass-card p-3 sm:p-4 flex items-center gap-3 sm:gap-4 border-white/5">
               <div className={`p-2 rounded-xl bg-brand-${stat.color}-coral/10 text-brand-${stat.color}-coral`}>
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                <p className="text-xl font-black text-white leading-none">{stat.value}</p>
+                <p className="text-lg sm:text-xl font-black text-white leading-none">{stat.value}</p>
               </div>
             </div>
           ))}
@@ -209,42 +209,44 @@ export default function AdminParceiros() {
       </div>
 
       {/* Actions & Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 border-white/5">
-        <div className="flex flex-1 w-full md:w-auto gap-4">
-          <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between glass-card p-3 sm:p-4 border-white/5">
+        <div className="flex flex-col sm:flex-row flex-1 w-full lg:w-auto gap-2 sm:gap-4">
+          <div className="relative flex-1 w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Buscar parceiro ou contato..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white"
+              className="pl-10 bg-white/5 border-white/10 text-white w-full"
             />
           </div>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-white/5 border border-white/10 text-white rounded-xl px-4 text-sm font-bold h-10 outline-none focus:ring-2 focus:ring-brand-orange-coral/50"
-          >
-            <option value="all">Filtro: Tipo</option>
-            {Object.entries(typeLabels).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
-          </select>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-white/5 border border-white/10 text-white rounded-xl px-4 text-sm font-bold h-10 outline-none focus:ring-2 focus:ring-brand-orange-coral/50"
-          >
-            <option value="all">Filtro: Categoria</option>
-            {Object.entries(categoryLabels).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
-          </select>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="flex-1 sm:flex-none bg-white/5 border border-white/10 text-white rounded-xl px-4 text-xs font-bold h-10 outline-none focus:ring-2 focus:ring-brand-orange-coral/50 appearance-none"
+            >
+              <option value="all">Filtro: Tipo</option>
+              {Object.entries(typeLabels).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="flex-1 sm:flex-none bg-white/5 border border-white/10 text-white rounded-xl px-4 text-xs font-bold h-10 outline-none focus:ring-2 focus:ring-brand-orange-coral/50 appearance-none"
+            >
+              <option value="all">Filtro: Categoria</option>
+              {Object.entries(categoryLabels).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <Button
           onClick={() => handleOpenModal()}
-          className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-6 rounded-xl shadow-lg shadow-brand-orange-coral/20"
+          className="w-full lg:w-auto bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black px-6 rounded-xl shadow-lg shadow-brand-orange-coral/20 shrink-0"
         >
           <Plus className="h-4 w-4 mr-2" />
           Novo Parceiro

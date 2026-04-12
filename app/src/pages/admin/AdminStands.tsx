@@ -292,25 +292,25 @@ export default function AdminStands() {
     return (
         <div className="space-y-6">
             {/* Tab Selector */}
-            <div className="flex gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit">
+            <div className="flex sm:inline-flex gap-1 sm:gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-full sm:w-auto overflow-x-auto custom-scrollbar no-scrollbar-mobile">
                 <Button
                     variant="ghost"
                     onClick={() => {
                         setActiveTab('stands');
                         setWinner(null);
                     }}
-                    className={`rounded-xl px-6 py-2 h-auto text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'stands' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
+                    className={`flex-1 sm:flex-none rounded-xl px-4 sm:px-6 py-2 h-9 sm:h-10 text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'stands' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
                 >
-                    Gerenciar Stands
+                    Gerenciar
                 </Button>
                 <Button
                     variant="ghost"
                     onClick={() => setActiveTab('sorteio')}
-                    className={`rounded-xl px-6 py-2 h-auto text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'sorteio' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
+                    className={`flex-1 sm:flex-none rounded-xl px-4 sm:px-6 py-2 h-9 sm:h-10 text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'sorteio' ? 'bg-orange-500 text-white shadow-glow-orange' : 'text-gray-500 hover:text-white'}`}
                 >
-                    Realizar Sorteio
+                    Sorteio
                     {eligibleParticipants.length > 0 && (
-                        <Badge className="ml-2 bg-white/20 text-white border-none py-0 px-1.5 text-[10px]">
+                        <Badge className="ml-1 sm:ml-2 bg-white/20 text-white border-none py-0 px-1 text-[8px] sm:text-[10px]">
                             {eligibleParticipants.length}
                         </Badge>
                     )}
@@ -318,10 +318,10 @@ export default function AdminStands() {
                 <Button
                     variant="ghost"
                     onClick={() => setActiveTab('monitoramento')}
-                    className={`rounded-xl px-6 py-2 h-auto text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'monitoramento' ? 'bg-teal-500 text-white shadow-glow-teal' : 'text-gray-500 hover:text-white'}`}
+                    className={`flex-1 sm:flex-none rounded-xl px-4 sm:px-6 py-2 h-9 sm:h-10 text-[9px] sm:text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'monitoramento' ? 'bg-teal-500 text-white shadow-glow-teal' : 'text-gray-500 hover:text-white'}`}
                 >
-                    Monitoramento
-                    <div className="ml-2 w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
+                    Live
+                    <div className="ml-1 sm:ml-2 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-400 rounded-full animate-pulse" />
                 </Button>
             </div>
 
@@ -329,15 +329,15 @@ export default function AdminStands() {
                 <>
                     {/* Header Actions */}
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                             <div className="relative flex-1 sm:min-w-[320px]">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                 <Input
                                     type="text"
                                     placeholder="Buscar por nome ou localização..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-12 w-full bg-dark-100 border-dark-300 text-white"
+                                    className="pl-11 h-11 sm:h-12 w-full bg-dark-100 border-dark-300 text-white text-sm"
                                 />
                             </div>
                         </div>
@@ -354,7 +354,7 @@ export default function AdminStands() {
                     </div>
 
                     {/* Stats Summary */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         {[
                             {
                                 label: 'Total de Stands',
@@ -385,15 +385,15 @@ export default function AdminStands() {
                                 detail: 'Média de visitas'
                             }
                         ].map((stat, i) => (
-                            <div key={i} className={`relative overflow-hidden glass-card p-6 border-l-4 border-${stat.color}-500 group hover:translate-y-[-4px] transition-all duration-300 shadow-lg shadow-black/20`}>
+                            <div key={i} className={`relative overflow-hidden glass-card p-4 sm:p-6 border-l-4 border-${stat.color}-500 group hover:translate-y-[-4px] transition-all duration-300 shadow-lg shadow-black/20`}>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                                        <p className="text-3xl font-black text-white tracking-tighter">{stat.value}</p>
-                                        <p className="text-gray-600 text-[10px] mt-1 font-medium">{stat.detail}</p>
+                                        <p className="text-gray-500 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                                        <p className="text-2xl sm:text-3xl font-black text-white tracking-tighter tabular-nums">{stat.value}</p>
+                                        <p className="text-gray-600 text-[8px] sm:text-[10px] mt-1 font-medium">{stat.detail}</p>
                                     </div>
-                                    <div className={`p-3 rounded-xl bg-${stat.color}-500/10 text-${stat.color}-400 group-hover:scale-110 transition-transform duration-500`}>
-                                        <stat.icon className="h-6 w-6" />
+                                    <div className={`p-2 sm:p-3 rounded-xl bg-${stat.color}-500/10 text-${stat.color}-400 group-hover:scale-110 transition-transform duration-500`}>
+                                        <stat.icon className="h-4 w-4 sm:h-6 sm:w-6" />
                                     </div>
                                 </div>
                             </div>
@@ -498,7 +498,7 @@ export default function AdminStands() {
                 <div className="grid lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
                     <div className="lg:col-span-2 space-y-8">
                         <div className="text-left space-y-2">
-                            <h2 className="text-4xl font-black text-white italic tracking-tighter uppercase">Sorteio <span className="text-orange-500">Gamificado</span></h2>
+                            <h2 className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase">Sorteio <span className="text-orange-500">Gamificado</span></h2>
                             <p className="text-gray-500 font-medium font-mono text-xs">CIRCUITO DE STANDS · ALGORITMO DE SELEÇÃO RANDÔMICA</p>
                         </div>
 

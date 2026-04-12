@@ -9,7 +9,7 @@ export interface QRData {
     projectId: string;
     id: string; // registrationId or sessionId
     participantId?: string;
-    timestamp: string;
+    timestamp?: string;
     checksum?: string;
 }
 
@@ -18,12 +18,11 @@ export interface QRData {
  * The value is now a structured JSON string with ID, Project, Participant and Checksum
  */
 export function generateQRString(type: QRType, projectId: string, id: string, participantId?: string): string {
-    const data: QRData = {
+    const data: Partial<QRData> = {
         type,
         projectId,
         id,
-        participantId,
-        timestamp: new Date().toISOString()
+        participantId
     };
 
     // Calculate a simple checksum for validation

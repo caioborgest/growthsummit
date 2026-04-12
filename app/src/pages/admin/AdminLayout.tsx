@@ -380,12 +380,12 @@ export function AdminLayout() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-background relative transition-colors duration-300 overflow-hidden">
         {/* Glass Header Refined */}
-        <header className="sticky top-0 z-30 bg-header backdrop-blur-xl border-b border-border-theme px-4 sm:px-8 py-3 sm:py-6 pt-[calc(var(--sat)+0.75rem)]">
+        <header className="sticky top-0 z-30 bg-header backdrop-blur-xl border-b border-border-theme px-3 sm:px-8 py-2 sm:py-4 pt-[calc(var(--sat)+0.75rem)]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 sm:gap-6">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
               >
                 <Menu className="h-6 w-6" />
               </button>
@@ -405,7 +405,7 @@ export function AdminLayout() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-4">
               {/* Quick Actions / Ver Site */}
               <div className="hidden md:flex items-center bg-white/5 border border-white/10 rounded-2xl p-1">
                 <Button
@@ -444,7 +444,7 @@ export function AdminLayout() {
               {/* Bell Notification */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="relative bg-muted/50 hover:bg-accent text-muted-foreground h-10 w-10 flex items-center justify-center rounded-2xl transition-all border border-border-theme group shadow-sm">
+                  <button className="relative bg-muted/50 hover:bg-accent text-muted-foreground h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-2xl transition-all border border-border-theme group shadow-sm">
                     <BellIcon className="h-5 w-5 group-hover:text-brand-orange-coral transition-colors" />
                     {notifications.filter(n => !n.read).length > 0 && (
                       <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-brand-orange-coral rounded-full border-2 border-background animate-pulse"></span>
@@ -511,9 +511,9 @@ export function AdminLayout() {
 
               {/* Project Status Badge — Enhanced Dual Contrast */}
               {selectedProject && (
-                <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-[#14B8A6] shadow-lg shadow-[#14B8A6]/5">
-                  <div className="w-2 h-2 rounded-full bg-[#14B8A6] animate-glow-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em]">{selectedProject.name}</span>
+                <div className="flex items-center gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-2xl bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-[#14B8A6] shadow-lg shadow-[#14B8A6]/5 max-w-[120px] sm:max-w-none">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-glow-pulse shrink-0" />
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] truncate">{selectedProject.name}</span>
                 </div>
               )}
 

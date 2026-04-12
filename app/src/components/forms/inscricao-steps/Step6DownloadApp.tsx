@@ -145,8 +145,8 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
                 <Card className="p-4 bg-white rounded-xl shadow-lg flex items-center gap-6">
                     <QRCode
                         value="https://www.growthsummit.site/login"
-                        size={100}
-                        level="H"
+                        size={140}
+                        level="M"
                     />
                     <div className="text-left">
                         <p className="text-black font-bold mb-1 flex items-center gap-2">

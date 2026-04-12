@@ -13,7 +13,10 @@ import {
   Rocket,
   BookOpen,
   Shield,
-  Bell as BellIcon
+  Bell as BellIcon,
+  Presentation,
+  Users,
+  Mic2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';

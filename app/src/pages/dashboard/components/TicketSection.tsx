@@ -157,13 +157,13 @@ export function TicketSection({
                     {/* Right: QR Code */}
                     <div className="flex flex-col items-center gap-4 sm:pl-8 sm:border-l" style={{ borderColor: 'var(--border-subtle)' }}>
                         <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40">QR Code de Acesso</p>
-                        <div className="relative p-3 rounded-2xl" style={{ background: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-                            <QRCode value={qrValue} size={140} level="H" />
+                        <div className="relative p-4 rounded-3xl" style={{ background: 'white', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                            <QRCode value={qrValue} size={180} level="M" />
                             {/* Scanner animation */}
-                            <div className="absolute left-3 right-3 h-0.5 rounded-full animate-scan-move"
+                            <div className="absolute left-4 right-4 h-0.5 rounded-full animate-scan-move"
                                 style={{ background: 'linear-gradient(90deg, transparent, rgba(255,112,67,0.8), transparent)' }} />
                         </div>
-                        <p className="text-[8px] font-black text-foreground/30 uppercase tracking-widest text-center max-w-[140px]">
+                        <p className="text-[8px] font-black text-foreground/30 uppercase tracking-widest text-center max-w-[160px]">
                             Apresente na entrada ou escanear nas atividades
                         </p>
                     </div>

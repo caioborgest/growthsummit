@@ -129,7 +129,7 @@ const StatCard = ({ title, value, target, progress, icon: Icon, trend, trendValu
 
       <div className="relative z-10">
         <h3 className="text-gray-500 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] mb-1 italic">{title}</h3>
-        <p className="text-2xl sm:text-4xl font-black text-white mb-4 sm:mb-6 tracking-tighter tabular-nums italic">{value}</p>
+        <p className="text-xl sm:text-4xl font-black text-white mb-4 sm:mb-6 tracking-tighter tabular-nums italic">{value}</p>
         
         <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-black uppercase mb-1.5 sm:mb-2 tracking-widest">
           <span className="text-gray-700 truncate mr-2">Meta: {target}</span>
@@ -349,33 +349,33 @@ export function AdminDashboard() {
       {/* Premium Welcome Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
+          <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
             PAINEL DE <span className="text-brand-orange-coral">CONTROLE</span>
           </h1>
-          <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">
+          <p className="text-gray-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
             Gerenciando o ecossistema <span className="text-white">{selectedProject?.name}</span>
           </p>
         </div>
         
-        <div className="flex items-center gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-[2rem] backdrop-blur-xl h-14 pr-6">
-          <div className="w-12 h-12 rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0 ml-1">
-            <Zap className="h-6 w-6 text-emerald-400 fill-emerald-400/20" />
+        <div className="flex items-center gap-2 sm:gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-2xl sm:rounded-[2rem] backdrop-blur-xl h-11 sm:h-14 pr-4 sm:pr-6">
+          <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-[1.5rem] bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0 ml-1">
+            <Zap className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400 fill-emerald-400/20" />
           </div>
           <div>
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Status Global</p>
-            <div className="flex items-center gap-2">
-              <span className="text-white font-black text-xs italic uppercase">Evento Ativo</span>
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-glow-emerald" />
+            <p className="text-[8px] sm:text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-0.5 sm:mb-1">Status Global</p>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-white font-black text-[10px] sm:text-xs italic uppercase">Ativo</span>
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse shadow-glow-emerald" />
             </div>
           </div>
-          <div className="h-8 w-px bg-white/5 mx-2" />
+          <div className="h-6 sm:h-8 w-px bg-white/5 mx-1.5 sm:mx-2" />
           <Link to={selectedProject?.id ? `/admin/projetos?edit=${selectedProject.id}` : "/admin/projetos"}>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[9px] uppercase tracking-widest px-4"
+              className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-4 h-8 sm:h-auto"
             >
-              CONFIGURAÇÃO DO PROJETO
+              CONFIG
             </Button>
           </Link>
         </div>
@@ -410,7 +410,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <StatCard
           title="Inscrições Público"
           value={stats.registrations.value.toLocaleString()}

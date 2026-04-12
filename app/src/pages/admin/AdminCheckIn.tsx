@@ -268,7 +268,7 @@ const AdminCheckIn = () => {
   [sessions, selectedSessionId]);
 
   return (
-    <div className="min-h-screen bg-[#0c0e12] p-6 lg:p-12 space-y-12 pb-32">
+    <div className="min-h-screen bg-[#0c0e12] p-4 lg:p-12 space-y-8 sm:space-y-12 pb-32">
       {/* Result Modal */}
       <CheckInResultModal
         result={scanResult}
@@ -293,7 +293,7 @@ const AdminCheckIn = () => {
         <div className="relative">
           <div className="absolute -top-6 -left-6 w-24 h-24 bg-brand-orange-coral/10 rounded-full blur-3xl" />
           <div className="relative">
-            <h1 className="text-4xl lg:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+            <h1 className="text-3xl lg:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
               Acreditação <br />
               <span className="text-brand-orange-coral text-stroke-white">Terminal</span>
             </h1>
@@ -352,16 +352,16 @@ const AdminCheckIn = () => {
       </div>
     </div>
 
-    <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+    <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
         {/* Search Panel */}
-        <div className="glass-card p-10 border-white/5 rounded-[3rem] relative overflow-hidden flex flex-col">
+        <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[3rem] relative overflow-hidden flex flex-col">
           <div className="relative mb-8">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-brand-orange-coral" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="NOME, E-MAIL OU CÓDIGO DO INGRESSO..."
-              className="bg-white/5 border-white/10 h-20 pl-16 pr-8 rounded-[1.5rem] font-black text-white italic placeholder:text-gray-700 focus:border-brand-orange-coral/50 transition-all text-lg uppercase tracking-tight"
+              placeholder="NOME, E-MAIL OU CÓDIGO..."
+              className="bg-white/5 border-white/10 h-14 sm:h-20 pl-14 sm:pl-16 pr-6 sm:pr-8 rounded-[1.25rem] sm:rounded-[1.5rem] font-black text-white italic placeholder:text-gray-700 focus:border-brand-orange-coral/50 transition-all text-base sm:text-lg uppercase tracking-tight"
             />
           </div>
 
@@ -444,11 +444,11 @@ const AdminCheckIn = () => {
         </div>
 
         {/* Scanner Terminal */}
-        <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-8 relative z-10">
+        <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between mb-6 sm:mb-8 relative z-10">
             <div>
-              <h2 className="text-2xl font-black text-brand-orange-coral italic uppercase tracking-tight">Terminal Scanner</h2>
-              <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">ACREDITAÇÃO POR QR CODE</p>
+              <h2 className="text-xl sm:text-2xl font-black text-brand-orange-coral italic uppercase tracking-tight">Terminal Scanner</h2>
+              <p className="text-[9px] sm:text-[10px] font-black text-gray-700 uppercase tracking-widest">ACREDITAÇÃO POR QR CODE</p>
             </div>
             <Camera className="h-6 w-6 text-brand-orange-coral opacity-20" />
           </div>
@@ -486,11 +486,11 @@ const AdminCheckIn = () => {
       </div>
 
       {/* Audit Log / Recent Activity */}
-      <div className="glass-card p-10 border-white/5 rounded-[2.5rem] relative overflow-hidden">
-        <div className="flex items-center justify-between mb-10 relative z-10">
+      <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden">
+        <div className="flex items-center justify-between mb-8 sm:mb-10 relative z-10">
           <div>
-            <h2 className="text-2xl font-black text-white italic uppercase tracking-tight">Log de Acreditação</h2>
-            <p className="text-[10px] font-black text-gray-700 uppercase tracking-widest">FEED DE ENTRADA EM TEMPO REAL</p>
+            <h2 className="text-xl sm:text-2xl font-black text-white italic uppercase tracking-tight">Log de Acreditação</h2>
+            <p className="text-[9px] sm:text-[10px] font-black text-gray-700 uppercase tracking-widest">FEED DE ENTRADA EM TEMPO REAL</p>
           </div>
           <Badge className="bg-teal-500/10 text-teal-400 border-none px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest">
             {checkInsToday} HOJE
