@@ -31,6 +31,7 @@ import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';

@@ -142,9 +142,18 @@ export function SecurityDashboard() {
                 failedLogins: recentLoginsData.filter(l => !l.success).length,
             });
 
-        } catch (error) {
-            logger.debug('Algumas tabelas de segurança estão indisponíveis.');
-            logger.error('Erro ao carregar dados de segurança:', error);
+        } catch (error: any) {
+            // Silently handle table missing errors to reduce console noise
+            const isTableMissing = error?.code === '42P01' || 
+                                 error?.message?.includes('does not exist') || 
+                                 error?.message?.includes('not found');
+            
+            if (isTableMissing) {
+                setTablesMissing(true);
+                logger.debug('Algumas tabelas de segurança ainda não foram criadas.');
+            } else {
+                logger.error('Erro ao carregar dados de segurança:', error);
+            }
         } finally {
             setLoading(false);
         }
