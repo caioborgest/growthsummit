@@ -314,7 +314,7 @@ export default function AdminSorteio() {
                 <DialogDescription className="text-gray-500 text-xs font-bold uppercase tracking-widest">Configure as regras e o tipo de sorteio</DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleCreateRaffle} className="space-y-6 mt-6">
+            <form onSubmit={handleCreateRaffle} className="space-y-6 mt-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
                 <div className="space-y-2">
                     <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Nome do Sorteio</Label>
                     <Input 

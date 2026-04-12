@@ -194,7 +194,7 @@ export function ProfileForm() {
     };
 
     return (
-        <form onSubmit={handleSave} className="space-y-8">
+        <form onSubmit={handleSave} className="space-y-8 custom-scrollbar">
             {/* Bio & Basic Info */}
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">

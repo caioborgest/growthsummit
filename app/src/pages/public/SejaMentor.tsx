@@ -251,7 +251,7 @@ export function SejaMentor() {
                 Candidate-se como Mentor
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 custom-scrollbar">
                 {/* Foto de Perfil */}
                 <div className="flex flex-col items-center justify-center space-y-4 py-4">
                   <div className="relative group">

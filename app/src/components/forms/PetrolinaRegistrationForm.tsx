@@ -175,7 +175,7 @@ export function PetrolinaRegistrationForm() {
     }
 
     return (
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6 custom-scrollbar" onSubmit={handleSubmit}>
             <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Nome Completo</label>
