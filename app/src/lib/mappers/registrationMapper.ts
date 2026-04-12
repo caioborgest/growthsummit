@@ -57,8 +57,8 @@ export function mapRegistrationToDB(data: Partial<Registration>, isTriunfo = fal
     if (data.userId !== undefined) result['user_id'] = data.userId;
     if (data.status !== undefined) result['status'] = data.status;
     if (data.ticketType !== undefined) {
-        result['ticket_type'] = data.ticketType;
-        if (isTriunfo) result['registration_type'] = data.ticketType;
+        result['registration_type'] = data.ticketType;
+        if (!isTriunfo) result['ticket_type'] = data.ticketType;
     }
     if (data.ticketNumber !== undefined) result['ticket_number'] = data.ticketNumber;
     if (data.qrCode !== undefined) result['qr_code'] = data.qrCode;
