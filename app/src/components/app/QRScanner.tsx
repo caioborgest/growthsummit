@@ -19,49 +19,48 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const [isLoading, setIsLoading] = useState(true);
     const [cameras, setCameras] = useState<{ id: string; label: string }[]>([]);
     const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+    const isTransitioning = useRef(false);
     const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
     const stopScanner = async () => {
+        if (isTransitioning.current) return;
         if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+            isTransitioning.current = true;
             try {
                 await html5QrCodeRef.current.stop();
                 html5QrCodeRef.current.clear();
             } catch (err) {
                 console.warn("Error stopping scanner:", err);
+            } finally {
+                isTransitioning.current = false;
             }
         }
     };
 
     const startScanner = async (html5QrCode: any, cameraIdOrConfig: any) => {
+        if (isTransitioning.current) return false;
+        isTransitioning.current = true;
+
         try {
-            // Build advanced video constraints for autofocus + resolution
-            let cameraConfig = cameraIdOrConfig;
-            if (typeof cameraIdOrConfig === 'string') {
-                // Named camera ID — wrap with advanced constraints
-                cameraConfig = {
-                    deviceId: { exact: cameraIdOrConfig },
-                    advanced: [
-                        { focusMode: 'continuous' } as any,
-                        { zoom: 1.0 } as any
-                    ],
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                };
-            } else if (typeof cameraIdOrConfig === 'object' && cameraIdOrConfig.facingMode) {
-                // facingMode config — enhance with focus
-                cameraConfig = {
-                    facingMode: cameraIdOrConfig.facingMode,
-                    advanced: [
-                        { focusMode: 'continuous' } as any,
-                        { zoom: 1.0 } as any
-                    ],
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                };
-            }
+            // Build advanced video constraints separately for the configuration object
+            const videoConstraints: any = {
+                advanced: [
+                    { focusMode: 'continuous' } as any,
+                    { zoom: 1.0 } as any
+                ],
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                aspectRatio: 1.0
+            };
+
+            // Ensure cameraIdOrConfig is either a simple string or a simple facingMode object
+            // to satisfy the library's strict "exactly 1 key" requirement for the first arg.
+            const cameraParam = typeof cameraIdOrConfig === 'string' 
+                ? cameraIdOrConfig 
+                : { facingMode: cameraIdOrConfig.facingMode || 'environment' };
 
             await html5QrCode.start(
-                cameraConfig,
+                cameraParam,
                 {
                     fps: 15,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
@@ -69,15 +68,21 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                         const qrboxSize = Math.floor(minEdgeSize * 0.75);
                         return { width: qrboxSize, height: qrboxSize };
                     },
-                    aspectRatio: 1.0,
+                    videoConstraints: videoConstraints, // Pass advanced constraints here
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
                     const parsed = parseQRString(decodedText);
                     if (parsed || decodedText) {
                         try {
-                            await html5QrCode.stop();
-                        } catch (e) { /* silent */ }
+                            if (!isTransitioning.current) {
+                                isTransitioning.current = true;
+                                await html5QrCode.stop();
+                                isTransitioning.current = false;
+                            }
+                        } catch (e) { 
+                            isTransitioning.current = false;
+                        }
                         setIsScanning(false);
                         onSuccess(parsed, decodedText);
                     } else {
@@ -91,10 +96,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             try {
                 const capabilities = html5QrCode.getRunningTrackCapabilities?.();
                 if (capabilities?.torch) {
-                    // Don't auto-enable, just note it's available
                     console.debug('Torch available on this device');
                 }
-                // Apply continuous autofocus if supported
                 const track = html5QrCode.getRunningTrackSettings?.();
                 if (track) {
                     const videoTrack = html5QrCode.getRunningTrack?.();
@@ -106,11 +109,17 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 }
             } catch { /* capabilities API not available */ }
 
+            isTransitioning.current = false;
             return true;
         } catch (err) {
             console.error("Failed to start scanner:", err);
-            // Fallback: try without advanced constraints
+            isTransitioning.current = false;
+            
+            // Fallback: try with minimal config
             try {
+                if (isTransitioning.current) return false;
+                isTransitioning.current = true;
+                
                 const fallbackConfig = typeof cameraIdOrConfig === 'string' 
                     ? cameraIdOrConfig 
                     : { facingMode: 'environment' };
@@ -126,7 +135,13 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     async (decodedText: string) => {
                         const parsed = parseQRString(decodedText);
                         if (parsed || decodedText) {
-                            try { await html5QrCode.stop(); } catch { /* */ }
+                            try { 
+                                isTransitioning.current = true;
+                                await html5QrCode.stop(); 
+                                isTransitioning.current = false;
+                            } catch { 
+                                isTransitioning.current = false;
+                            }
                             setIsScanning(false);
                             onSuccess(parsed, decodedText);
                         } else {
@@ -135,9 +150,11 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     },
                     () => { }
                 );
+                isTransitioning.current = false;
                 return true;
             } catch (fallbackErr) {
                 console.error("Fallback scanner also failed:", fallbackErr);
+                isTransitioning.current = false;
                 return false;
             }
         }
