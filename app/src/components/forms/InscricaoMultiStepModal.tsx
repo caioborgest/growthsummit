@@ -103,7 +103,14 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             // Consolidated Amount Calculation (Base + Upgrade)
             const basePrice = EVENT_CONFIG.proPrice || 179.99;
             const discountPercent = Math.max(currentDados.lectureDiscount || 0, currentDados.socialDiscount || 0);
-            const finalAmount = basePrice * (1 - discountPercent / 100);
+            
+            // Prioritize values from structured code validation if available
+            const finalAmount = currentDados.valorFinal !== undefined 
+                ? currentDados.valorFinal 
+                : basePrice * (1 - discountPercent / 100);
+
+            const finalPaymentStatus = currentDados.paymentStatus || (finalAmount <= 0 ? 'paid' : 'pending');
+            const finalStatus = currentDados.registrationStatus || (finalAmount <= 0 ? 'active' : 'pending');
 
             const registrationParams: RegistrationParams = {
                 projectId: selectedProject?.id || '',
@@ -115,10 +122,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 sessionIds: currentDados.cursosSelecionados || [],
                 registrationType: currentDados.registrationType || 'standard',
                 paidAmount: finalAmount,
-                paymentStatus: (finalAmount <= 0) ? 'paid' : 'pending',
+                paymentStatus: finalPaymentStatus as any,
                 batchId: currentDados.batchId || null,
                 companyVoucher: currentDados.companyVoucher || null,
-                status: (finalAmount <= 0) ? 'paid' : 'pending',
+                status: finalStatus as any,
                 eventName: selectedProject?.name || 'Growth Experience',
                 palestrasNoturnas: currentDados.buyLectures,
                 socialCode: currentDados.code || null,

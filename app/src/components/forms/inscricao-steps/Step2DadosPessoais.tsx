@@ -13,6 +13,8 @@ import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { registrationService } from '@/services/registrationService';
+import { EVENT_CONFIG } from '@/config/eventConfig';
+import { validateRegistrationCode } from '@/lib/validate-registration-code';
 
 const PAJEU_CITIES = [
     'SERRA TALHADA', 'AFOGADOS DA INGAZEIRA', 'SÃO JOSÉ DO EGITO', 'TRIUNFO',
@@ -98,127 +100,98 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
         logger.debug('[Step2] Validating code:', { cleanCodigo, project: projectId });
 
         try {
-            const voucher = await registrationService.resolveVoucher(cleanCodigo, projectId);
+            const result = await validateRegistrationCode(cleanCodigo, projectId, EVENT_CONFIG.proPrice);
 
-            if (voucher) {
-                if (!voucher.isValid) {
-                    setErrors(prev => ({ ...prev, code: voucher.error || 'Voucher inválido' }));
-                    setCodigoValidado(false);
-                } else {
-                    const discount = voucher.discountPercentage || 0;
-                    setCodigoValidado(true);
-                    setBatchId(voucher.id);
-                    setCompanyVoucher(voucher.voucher_code);
-                    setReferralName(voucher.name);
-                    setReferralType('empresa');
-                    setSocialDiscount(discount);
-                    if (onUpdate) {
-                        onUpdate({ 
-                            code: cleanCodigo,
-                            referralName: voucher.name, 
-                            socialDiscount: discount, 
-                            batchId: voucher.id, 
-                            companyVoucher: voucher.voucher_code,
-                            registrationType: (voucher.ticket_type || 'pro') as any,
-                            referralType: 'empresa'
-                        });
-                    }
-                    toast.success(`Voucher corporativo validado! (-${discount}%)`);
+            if (result.type === 'INVALID') {
+                // Tenta fallback para Parceiros (Antigo/Legado)
+                let partnerQuery = (supabase as any)
+                    .from('partners')
+                    .select('id, name, access_code, max_team_members')
+                    .eq('access_code', cleanCodigo)
+                    .eq('status', 'active');
+                
+                if (isUuid) {
+                    partnerQuery = partnerQuery.eq('project_id', projectId);
                 }
-                return;
-            }
 
-            let partnerQuery = (supabase as any)
-                .from('partners')
-                .select('id, name, access_code, max_team_members')
-                .eq('access_code', cleanCodigo)
-                .eq('status', 'active');
-            
-            if (isUuid) {
-                partnerQuery = partnerQuery.eq('project_id', projectId);
-            }
+                const { data: partner } = await partnerQuery.maybeSingle();
 
-            const { data: partner, error: partnerError } = await partnerQuery.maybeSingle();
+                if (partner) {
+                    const { data: usageData } = await (supabase as any).rpc('get_parceiro_equipe_usage', {
+                        p_partner_id: (partner as any).id,
+                    });
+                    const usedMembers = (usageData as { member_count?: number })?.member_count ?? 0;
+                    const limit = (usageData as { max_members?: number })?.max_members ?? partner.max_team_members ?? 10;
 
-            if (partnerError) logger.error('[Step2] Error fetching partner:', partnerError);
-
-            if (partner) {
-                const { data: usageData, error: usageErr } = await (supabase as any).rpc('get_parceiro_equipe_usage', {
-                    p_partner_id: (partner as any).id,
-                });
-                if (usageErr) logger.error('[Step2] Error counting team members:', usageErr);
-
-                const usedMembers = (usageData as { member_count?: number })?.member_count ?? 0;
-                const limit = (usageData as { max_members?: number })?.max_members ?? partner.max_team_members ?? 10;
-
-                if (usedMembers >= limit) {
-                    setErrors(prev => ({ ...prev, code: `Limite de equipe atingido para este parceiro (${limit})` }));
-                    setCodigoValidado(false);
-                } else {
-                    setCodigoValidado(true);
-                    setPartnerId(partner.id);
-                    setReferralName(partner.name);
-                    setReferralType('parceiro');
-                    setSocialDiscount(100);
-                    if (onUpdate) {
-                        onUpdate({ 
-                            code: cleanCodigo,
-                            partnerAccessCode: cleanCodigo,
-                            referralName: partner.name, 
-                            partnerId: partner.id, 
-                            socialDiscount: 100,
-                            registrationType: 'pro',
-                            referralType: 'parceiro'
-                        });
+                    if (usedMembers >= limit) {
+                        setErrors(prev => ({ ...prev, code: `Limite de equipe atingido para este parceiro (${limit})` }));
+                        setCodigoValidado(false);
+                    } else {
+                        setCodigoValidado(true);
+                        setPartnerId(partner.id);
+                        setReferralName(partner.name);
+                        setReferralType('parceiro');
+                        setSocialDiscount(100);
+                        if (onUpdate) {
+                            onUpdate({ 
+                                code: cleanCodigo,
+                                partnerAccessCode: cleanCodigo,
+                                referralName: partner.name, 
+                                partnerId: partner.id, 
+                                socialDiscount: 100,
+                                registrationType: 'pro',
+                                referralType: 'parceiro',
+                                valorFinal: 0,
+                                paymentStatus: 'paid',
+                                registrationStatus: 'active'
+                            });
+                        }
+                        toast.success('Código de parceiro validado!');
                     }
-                    toast.success('Código de parceiro validado!');
+                    return;
                 }
-                return;
-            }
 
-            let couponQuery = supabase
-                .from('social_partnership_coupons')
-                .select('id,project_id,code,discount_percentage,usage_limit,current_usage,is_active,expires_at,referral_type')
-                .eq('code', cleanCodigo);
-            
-            if (isUuid) {
-                couponQuery = couponQuery.eq('project_id', projectId);
-            }
-
-            const { data: couponData, error: couponError } = await couponQuery.maybeSingle();
-
-            if (couponError) throw couponError;
-
-            if (couponData) {
-                const now = new Date();
-                const expiryDate = couponData.expires_at ? new Date(couponData.expires_at) : null;
-                const isExpired = expiryDate && expiryDate < now;
-                const isOverLimit = couponData.usage_limit && couponData.current_usage >= couponData.usage_limit;
-
-                if (!couponData.is_active || isExpired || isOverLimit) {
-                    setErrors(prev => ({ ...prev, code: 'Cupom inativo, expirado ou com limite excedido' }));
-                    setCodigoValidado(false);
-                } else {
-                    setCodigoValidado(true);
-                    setSocialDiscount(couponData.discount_percentage);
-                    setReferralType(couponData.referral_type as any);
-                    setReferralName(cleanCodigo); // For coupons, referral name is usually the code
-                    if (onUpdate) {
-                        onUpdate({ 
-                            code: cleanCodigo, 
-                            socialDiscount: couponData.discount_percentage,
-                            referralType: couponData.referral_type as any,
-                            referralName: cleanCodigo
-                        });
-                    }
-                    toast.success(`Cupom validado! ${couponData.discount_percentage}% de desconto.`);
-                }
-                return;
-            } else {
-                logger.warn('[Step2] Code not found in any category:', cleanCodigo);
-                setErrors(prev => ({ ...prev, code: 'Código não encontrado. Verifique e tente novamente.' }));
+                setErrors(prev => ({ ...prev, code: result.message }));
                 setCodigoValidado(false);
+                return;
             }
+
+            // Sucesso na validação (Lote ou Cupom)
+            setCodigoValidado(true);
+            setSocialDiscount(result.type === 'COUPON' ? result.discountPercentage : 100);
+            setReferralName(result.type === 'BATCH' ? result.batchName : result.code);
+            setReferralType(result.type === 'BATCH' ? 'empresa' : (result as any).referralType);
+            
+            if (result.type === 'BATCH') {
+                setBatchId(result.batchId);
+                setCompanyVoucher(result.voucherCode);
+            }
+
+            if (onUpdate) {
+                const update: Partial<DadosInscricao> = {
+                    code: cleanCodigo,
+                    referralName: result.type === 'BATCH' ? result.batchName : result.code,
+                    socialDiscount: result.type === 'COUPON' ? result.discountPercentage : 100,
+                    valorFinal: result.finalAmount,
+                    paymentStatus: result.finalPaymentStatus,
+                    registrationStatus: result.finalStatus,
+                    referralType: result.type === 'BATCH' ? 'empresa' : (result as any).referralType,
+                };
+
+                if (result.type === 'BATCH') {
+                    update.batchId = result.batchId;
+                    update.companyVoucher = result.voucherCode;
+                    update.registrationType = 'pro';
+                }
+
+                onUpdate(update);
+            }
+
+            toast.success(result.type === 'BATCH' 
+                ? `Voucher corporativo validado! (Vagas: ${result.slotsAvailable})`
+                : `Cupom validado! ${result.discountPercentage}% de desconto.`
+            );
+
         } catch (err) {
             logger.error('[Step2] Critical error validating code:', err);
             setErrors(prev => ({ ...prev, code: 'Erro de conexão ao validar' }));
