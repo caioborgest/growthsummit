@@ -128,6 +128,7 @@ export const registrationService = {
             type: payload.p_registration_type
         });
 
+        console.debug('DEBUG - Registration Payload Keys:', Object.keys(payload));
         try {
             const { data, error } = await (supabase.rpc as any)(
                 'register_participant_with_slots',
