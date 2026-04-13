@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { CheckCircle, Star, ArrowRight, X, Loader2, Key } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { EVENT_CONFIG } from '@/config/eventConfig';
+import { validateRegistrationCode } from '@/lib/validate-registration-code';
 import type { DadosInscricao } from './inscricaoTypes';
 import type { RegistrationBatch } from '@/types';
 
@@ -19,9 +21,11 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
     const [error, setError] = useState('');
     const [cupomAplicado, setCupomAplicado] = useState(!!dados.lectureDiscount);
 
-    const valorOriginal = 179.99;
+    const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
     const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
-    const precoFinal = valorOriginal * (1 - descontoEfetivo / 100);
+    const precoFinal = dados.valorFinal !== undefined && dados.buyLectures
+        ? dados.valorFinal 
+        : valorOriginal * (1 - descontoEfetivo / 100);
 
     const handleValidarCupom = async () => {
         if (!cupom.trim()) return;
@@ -29,70 +33,34 @@ export function Step4OfertaPalestras({ dados, onComprar, onPular, onVoltar, onUp
         setError('');
 
         try {
-            // Validate as Social Coupon
-            const { data } = await (supabase
-                .from('social_partnership_coupons') as any)
-                .select('id,project_id,code,discount_percentage,usage_limit,current_usage,is_active,expires_at,referral_name,referral_type')
-                .eq('code', cupom.trim().toUpperCase())
-                .eq('is_active', true)
-                .maybeSingle();
+            const result = await validateRegistrationCode(cupom, dados.project_id || '', valorOriginal);
 
-            if (data) {
-                if (data.expires_at && new Date(data.expires_at) < new Date()) {
-                    setError('This code has expired');
-                    return;
-                }
-                if (data.usage_limit && data.current_usage >= data.usage_limit) {
-                    setError('Usage limit reached');
-                    return;
-                }
-                setCupomAplicado(true);
-                onUpdate?.({
-                    lectureDiscount: data.discount_percentage,
-                    lectureCoupon: cupom.trim().toUpperCase(),
-                    lecturePartnerType: data.referral_type
-                });
+            if (result.type === 'INVALID') {
+                setError(result.message);
+                setCupomAplicado(false);
+                onUpdate?.({ lectureDiscount: 0, lectureCoupon: '', batchId: undefined, companyVoucher: undefined });
                 return;
             }
 
-            // Validate as Corporate Batch (Company Voucher)
-            const { data: batchData } = await (supabase
-                .from('company_registration_batches') as any)
-                .select('id,voucher_code,total_slots,used_slots,ticket_type,payment_status')
-                .eq('voucher_code', cupom.trim().toUpperCase())
-                .maybeSingle();
+            setCupomAplicado(true);
+            const update: Partial<DadosInscricao> = {
+                lectureDiscount: result.type === 'COUPON' ? result.discountPercentage : 100,
+                lectureCoupon: cupom.trim().toUpperCase(),
+                lecturePartnerType: result.type === 'BATCH' ? 'Lote Corporativo' : (result as any).referralType,
+                valorFinal: result.finalAmount,
+                paymentStatus: result.finalPaymentStatus,
+                registrationStatus: result.finalStatus
+            };
 
-            if (batchData) {
-                const batch = batchData as any;
-                const isPaid = batch.payment_status === 'paid';
-                const used = batch.used_slots || 0;
-                const total = batch.total_slots || 0;
-
-                if (!isPaid) {
-                    setError('O pagamento deste lote está pendente. Por favor, contate o administrador da sua empresa.');
-                    return;
-                }
-                if (used >= total && total > 0) {
-                    setError('Todas as vagas deste lote já foram utilizadas.');
-                    return;
-                }
-                setCupomAplicado(true);
-                onUpdate?.({
-                    lectureDiscount: 100,
-                    lectureCoupon: cupom.trim().toUpperCase(),
-                    lecturePartnerType: 'Lote Corporativo',
-                    batchId: batch.id,
-                    companyVoucher: batch.voucher_code
-                });
-                return;
+            if (result.type === 'BATCH') {
+                update.batchId = result.batchId;
+                update.companyVoucher = result.voucherCode;
             }
 
-            setError('Invalid or inactive code');
-            setCupomAplicado(false);
-            onUpdate?.({ lectureDiscount: 0, lectureCoupon: '', batchId: undefined, companyVoucher: undefined });
+            onUpdate?.(update);
         } catch (err) {
             logger.error('Error validating lecture coupon:', err);
-            setError('Failed to validate code');
+            setError('Falha ao validar código');
         } finally {
             setIsValidating(false);
         }

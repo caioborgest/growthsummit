@@ -32,7 +32,9 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
     // Price calculation
     const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
     const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
-    const valorFinal = valorOriginal * (1 - descontoEfetivo / 100);
+    const valorFinal = dados.valorFinal !== undefined 
+        ? dados.valorFinal 
+        : valorOriginal * (1 - descontoEfetivo / 100);
     const valorFormatado = valorFinal.toFixed(2);
 
     useEffect(() => {
