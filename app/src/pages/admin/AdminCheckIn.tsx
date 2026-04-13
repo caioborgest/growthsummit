@@ -216,7 +216,7 @@ const AdminCheckIn = () => {
       try {
         const { data, error } = await supabase
           .from('growth_experience_registrations')
-          .select('*, profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)')
+          .select('*, profiles(user_id, name, email, phone, company, city, state, role)')
           .eq('id', effectiveId)
           .maybeSingle();
 

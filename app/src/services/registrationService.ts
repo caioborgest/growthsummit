@@ -204,7 +204,7 @@ export const registrationService = {
             created_at,
             registration_type,
             qr_code,
-            profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+            profiles(user_id, name, email, phone, company, city, state, role)
         `);
         
         query = query.eq('project_id', projectId);
@@ -247,7 +247,7 @@ export const registrationService = {
                 created_at,
                 registration_type,
                 qr_code,
-                profiles:profiles!growth_experience_registrations_user_id_fkey(user_id, name, email, phone, company, city, state, role)
+                profiles(user_id, name, email, phone, company, city, state, role)
             `)
             .eq('id', id)
             .single();
