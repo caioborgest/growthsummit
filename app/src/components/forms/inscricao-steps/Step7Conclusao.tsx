@@ -18,50 +18,11 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
     const [isFinalizing, setIsFinalizing] = useState(false);
     const [finalized, setFinalized] = useState(false);
 
-    // Finalize registration (Create user and link registration) only at the end
+    // No longer performing finalization here as it's handled atomically in the previous steps.
+    // This avoids issues with password-loss on refresh.
     useEffect(() => {
-        const finalize = async () => {
-            if (finalized || isFinalizing) return;
-            
-            // Finalize only if email, password, and a previous registration exist
-            if (!dados.email || !dados.password || !dados.registrationId) {
-                setFinalized(true);
-                return;
-            }
-
-            setIsFinalizing(true);
-            try {
-                // 1. Create/Get User
-                const { userId } = await getOrCreateUser({
-                    email: dados.email.trim().toLowerCase(),
-                    password: dados.password,
-                    name: dados.name,
-                    phone: dados.phone,
-                    role: 'participant',
-                });
-
-                if (userId) {
-                    // 2. Wait for basic sync
-                    await waitForUserSync(userId);
-
-                    // 3. Link Registration
-                    await (supabase
-                        .from('growth_experience_registrations') as any)
-                        .update({ user_id: userId })
-                        .eq('id', dados.registrationId);
-                    
-                    logger.info('Registration successfully linked to new user.');
-                }
-            } catch (err) {
-                logger.error('Error finalizing registration at step 7:', err);
-            } finally {
-                setIsFinalizing(false);
-                setFinalized(true);
-            }
-        };
-
-        finalize();
-    }, [dados, finalized, isFinalizing]);
+        setFinalized(true);
+    }, []);
 
     const handleConcluirEBaixar = async () => {
         if (isInstallable && !isStandalone) {

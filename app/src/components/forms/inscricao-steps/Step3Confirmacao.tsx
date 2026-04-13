@@ -10,7 +10,7 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
-    onConfirmar: (userId: string, inscricaoId: string, statusPagamento: string) => void;
+    onConfirmar: (userId: string, registrationId: string, statusPagamento: string) => void;
     onVoltar: () => void;
     onUpdate?: (novos: Partial<DadosInscricao>) => void;
 }

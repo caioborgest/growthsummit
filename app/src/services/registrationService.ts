@@ -319,5 +319,21 @@ export const registrationService = {
             id.length === 36 &&
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
         );
+    },
+
+    /**
+     * Updates the app_installed flag for a registration
+     */
+    async updateAppInstalled(registrationId: string) {
+        const { error } = await supabase
+            .from('growth_experience_registrations')
+            .update({ app_installed: true })
+            .eq('id', registrationId);
+
+        if (error) {
+            logger.error('[registrationService] Error updating app_installed:', error);
+            throw error;
+        }
+        return true;
     }
 };

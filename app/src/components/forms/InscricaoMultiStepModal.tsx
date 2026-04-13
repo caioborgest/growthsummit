@@ -201,7 +201,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 setDados(prev => ({ ...prev, ...parsed.data }));
                 const restoredStep = parsed.step || 1;
                 // Safety check: if step >= 4 (after registration), must have an ID
-                const safeStep = (restoredStep >= 4 && !parsed.data?.inscricaoId) ? 3 : restoredStep;
+                const safeStep = (restoredStep >= 4 && !parsed.data?.registrationId) ? 3 : restoredStep;
                 setCurrentStep(safeStep);
             } catch (e) {
                 logger.warn('Error loading registration draft:', e);
@@ -331,6 +331,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                         />;
             case 6:
                 return <Step6DownloadApp 
+                            registrationId={dados.registrationId}
                             onVoltar={prevStep} 
                             onContinuar={nextStep} 
                         />;

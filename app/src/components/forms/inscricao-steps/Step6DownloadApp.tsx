@@ -5,18 +5,27 @@ import { Smartphone, Zap, Shield, Share2, Chrome, QrCode as QrIcon, Download, Ar
 import QRCode from 'react-qr-code';
 import { usePWA } from '@/hooks/usePWA';
 import { toast } from 'sonner';
+import { registrationService } from '@/services/registrationService';
 
 interface Step6DownloadAppProps {
+    registrationId?: string;
     onContinuar: () => void;
     onVoltar?: () => void;
 }
 
-export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProps) {
+export function Step6DownloadApp({ registrationId, onContinuar, onVoltar }: Step6DownloadAppProps) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
     const { isInstallable, isStandalone, promptInstall } = usePWA();
 
     const handleDownload = async () => {
+        // Track installation in background
+        if (registrationId) {
+            registrationService.updateAppInstalled(registrationId).catch(err => 
+                logger.error('[Step6] Failed to track app install:', err)
+            );
+        }
+
         if (isInstallable && !isStandalone) {
             await promptInstall();
         } else if (isIOS) {
@@ -144,7 +153,7 @@ export function Step6DownloadApp({ onContinuar, onVoltar }: Step6DownloadAppProp
             <div className="hidden md:flex justify-center my-6">
                 <Card className="p-4 bg-white rounded-xl shadow-lg flex items-center gap-6">
                     <QRCode
-                        value="https://www.growthsummit.site/login"
+                        value={`${window.location.origin}/login`}
                         size={140}
                         level="M"
                     />
