@@ -53,10 +53,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         partnerAccessCode: '',
     });
 
-    const totalSteps = 7;
+    const totalSteps = 6;
 
     const handleClose = () => {
-        if (currentStep === 7) {
+        if (currentStep === 6) {
             onClose();
             clearDraft();
         } else {
@@ -211,7 +211,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     // Save draft
     useEffect(() => {
-        if (isOpen && currentStep < 7) {
+        if (isOpen && currentStep < totalSteps) {
             const draftData = {
                 data: { ...dados, password: '' },
                 step: currentStep,
@@ -248,7 +248,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     // Smart logic for skipping steps and triggering registration
     useEffect(() => {
-        const isFree = (dados.valorFinal !== undefined && dados.valorFinal <= 0) || (dados.socialDiscount === 100);
+        const isFree = (dados.socialDiscount === 100) || (dados.valorFinal !== undefined && dados.valorFinal <= 0);
 
         // Skip Step 4 (Offer) if already bought or fixed package
         if (currentStep === 4 && dados.buyLectures) {
@@ -330,12 +330,6 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             onVoltar={prevStep} 
                         />;
             case 6:
-                return <Step6DownloadApp 
-                            registrationId={dados.registrationId}
-                            onVoltar={prevStep} 
-                            onContinuar={nextStep} 
-                        />;
-            case 7:
                 return <Step7Conclusao 
                             dados={dados} 
                             onFechar={() => { clearDraft(); onClose(); }} 
@@ -378,7 +372,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                             style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`, maxWidth: 'calc(100% - 64px)' }}
                         />
 
-                        {['Programação', 'Dados', 'Confirmar', 'Oferta', 'Pagamento', 'App', 'Concluir'].map((label, index) => {
+                        {['Programação', 'Dados', 'Confirmar', 'Oferta', 'Pagamento', 'Concluir'].map((label, index) => {
                             const step = index + 1;
                             const isActive = step === currentStep;
                             const isCompleted = step < currentStep;
