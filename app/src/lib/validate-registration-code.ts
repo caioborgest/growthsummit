@@ -43,7 +43,7 @@ export async function validateRegistrationCode(
   // ── 1. Verificar LOTE corporativo (vaga garantida) ──────────────────────
   const { data: batch, error: batchError } = await supabase
     .from('company_registration_batches')
-    .select('id, name, voucher_code, payment_status, total_slots, used_slots, is_active')
+    .select('*')
     .eq('project_id', projectId)
     .ilike('voucher_code', normalizedCode)
     .eq('is_active', true)
@@ -53,17 +53,41 @@ export async function validateRegistrationCode(
     console.error('❌ [validateRegistrationCode] Erro ao buscar lote:', batchError);
   }
 
-  if (batch) {
-    // Lote inativo ou não pago
-    if (batch.payment_status !== 'paid') {
+  // ── 1.1 Fallback Lote Global (Se não achou no projeto) ──────────────────
+  let finalBatch = batch;
+  if (!finalBatch) {
+    const { data: globalBatch, error: globalBatchError } = await supabase
+      .from('company_registration_batches')
+      .select('*')
+      .ilike('voucher_code', normalizedCode)
+      .eq('is_active', true)
+      .eq('payment_status', 'paid')
+      .maybeSingle();
+
+    if (globalBatchError) {
+      console.error('❌ [validateRegistrationCode] Erro ao buscar lote global:', globalBatchError);
+    }
+    if (globalBatch) {
+      console.warn('[validateRegistrationCode] Lote encontrado via Global Fallback.');
+      finalBatch = globalBatch;
+    }
+  }
+
+  if (finalBatch) {
+    // Lote inativo ou não pago (Fallback seguro para nomes de coluna)
+    const paymentStatus = finalBatch.payment_status || finalBatch.status_pagamento || 'pending';
+    if (paymentStatus !== 'paid' && paymentStatus !== 'pago') {
       return {
         type: 'INVALID',
-        message: 'Este lote ainda não foi confirmado pelo organizador. Entre em contato.',
+        message: 'Este lote ainda não foi confirmado pelo organizador.',
       };
     }
 
-    // Lote esgotado
-    const slotsAvailable = (batch.total_slots || 0) - (batch.used_slots || 0);
+    // Lote esgotado (Defensivo)
+    const totalSlots = finalBatch.total_slots ?? finalBatch.quantidade_vagas ?? 0;
+    const usedSlots = finalBatch.used_slots ?? finalBatch.vagas_utilizadas ?? 0;
+    const slotsAvailable = totalSlots - usedSlots;
+
     if (slotsAvailable <= 0) {
       return {
         type: 'INVALID',
@@ -73,54 +97,21 @@ export async function validateRegistrationCode(
 
     return {
       type: 'BATCH',
-      batchId: batch.id,
-      batchName: batch.name,
-      voucherCode: batch.voucher_code,
-      paymentStatus: batch.payment_status as any,
+      batchId: finalBatch.id,
+      batchName: finalBatch.name,
+      voucherCode: finalBatch.voucher_code || finalBatch.codigo_voucher,
+      paymentStatus: 'paid',
       slotsAvailable,
-      finalAmount: 0,           // empresa já pagou — participante não paga
+      finalAmount: 0,
       finalPaymentStatus: 'paid',
-      finalStatus: 'active',    // já ativo, sem necessidade de confirmar
+      finalStatus: 'active',
     };
-  }
-
-  // ── 1.1 Fallback Lote Global (Se não achou no projeto) ──────────────────
-  if (!batch) {
-    const { data: globalBatch, error: globalBatchError } = await supabase
-      .from('company_registration_batches')
-      .select('id, name, voucher_code, payment_status, total_slots, used_slots, is_active')
-      .ilike('voucher_code', normalizedCode)
-      .eq('is_active', true)
-      .eq('payment_status', 'paid')
-      .maybeSingle();
-
-    if (globalBatchError) {
-      console.error('❌ [validateRegistrationCode] Erro ao buscar lote global:', globalBatchError);
-    }
-
-    if (globalBatch) {
-      console.warn('[validateRegistrationCode] Lote encontrado via Global Fallback (ID Projeto divergente).');
-      const slotsAvailable = (globalBatch.total_slots || 0) - (globalBatch.used_slots || 0);
-      if (slotsAvailable > 0) {
-        return {
-          type: 'BATCH',
-          batchId: globalBatch.id,
-          batchName: globalBatch.name,
-          voucherCode: globalBatch.voucher_code,
-          paymentStatus: 'paid',
-          slotsAvailable,
-          finalAmount: 0,
-          finalPaymentStatus: 'paid',
-          finalStatus: 'active',
-        };
-      }
-    }
   }
 
   // ── 2. Verificar CUPOM de desconto (secundário) ──────────────────────────
   const { data: coupon, error: couponError } = await supabase
     .from('social_partnership_coupons')
-    .select('id, code, discount_percentage, is_active, current_usage, usage_limit, end_date, referral_type')
+    .select('*')
     .eq('project_id', projectId)
     .ilike('code', normalizedCode)
     .eq('is_active', true)
@@ -135,7 +126,7 @@ export async function validateRegistrationCode(
   if (!finalCoupon) {
     const { data: globalCoupon, error: globalCouponError } = await supabase
       .from('social_partnership_coupons')
-      .select('id, code, discount_percentage, is_active, current_usage, usage_limit, end_date, referral_type')
+      .select('*')
       .ilike('code', normalizedCode)
       .eq('is_active', true)
       .maybeSingle();
@@ -143,25 +134,27 @@ export async function validateRegistrationCode(
     if (globalCouponError) {
       console.error('❌ [validateRegistrationCode] Erro ao buscar cupom global:', globalCouponError);
     }
-    
     if (globalCoupon) {
-      console.warn('[validateRegistrationCode] Cupom encontrado via Global Fallback (ID Projeto divergente).');
+      console.warn('[validateRegistrationCode] Cupom encontrado via Global Fallback.');
       finalCoupon = globalCoupon;
     }
   }
 
   if (finalCoupon) {
-    // Cupom expirado (Atenção: mapeado para end_date na DB)
-    if (finalCoupon.end_date && new Date(finalCoupon.end_date as string) < new Date()) {
+    // Cupom expirado (Defensivo: end_date ou vencimento ou expires_at)
+    const expirationDate = finalCoupon.end_date || finalCoupon.vencimento || finalCoupon.expires_at;
+    if (expirationDate && new Date(expirationDate as string) < new Date()) {
       return { type: 'INVALID', message: 'Este cupom está expirado.' };
     }
 
-    // Limite atingido
-    if (finalCoupon.usage_limit && (finalCoupon.current_usage || 0) >= finalCoupon.usage_limit) {
+    // Limite atingido (Defensivo)
+    const usageLimit = finalCoupon.usage_limit ?? finalCoupon.limite_uso ?? null;
+    const currentUsage = finalCoupon.current_usage ?? finalCoupon.uso_atual ?? 0;
+    if (usageLimit !== null && currentUsage >= usageLimit) {
       return { type: 'INVALID', message: 'Este cupom atingiu o limite de uso.' };
     }
 
-    const discount = finalCoupon.discount_percentage ?? 0;
+    const discount = finalCoupon.discount_percentage ?? finalCoupon.porcentagem_desconto ?? 0;
     const discountedAmount = baseAmount * (1 - discount / 100);
 
     return {
@@ -171,7 +164,7 @@ export async function validateRegistrationCode(
       discountPercentage: discount,
       referralType: finalCoupon.referral_type || 'promocional',
       finalAmount: Math.max(0, discountedAmount),
-      finalPaymentStatus: 'pending',  // ainda precisa passar pelo fluxo (mesmo que seja R$0 com 100%)
+      finalPaymentStatus: 'pending',
       finalStatus: 'pending',
     };
   }
