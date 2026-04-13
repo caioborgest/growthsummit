@@ -512,13 +512,13 @@ export function GrowthExperienceTriunfo() {
                   viewport={{ once: true }}
                   className="flex gap-8 items-start group relative"
                 >
-                  <div className="flex flex-col items-center">
-                    <div className="w-32 text-brand-orange-coral font-black text-3xl italic tracking-tighter text-right pr-6 border-r-4 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all duration-500">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-16 sm:w-32 text-brand-orange-coral font-black text-xl sm:text-3xl italic tracking-tighter text-right pr-3 sm:pr-6 border-r-2 sm:border-r-4 border-brand-orange-coral/20 group-hover:border-brand-orange-coral transition-all duration-500">
                       {s.startTime?.match(/(\d{2}:\d{2})/)?.[0] || '17:00'}
                     </div>
                     <div className="w-1 h-24 bg-gradient-to-b from-brand-orange-coral/20 to-transparent group-last:hidden" />
                   </div>
-                  <div className="glass-card border-white/5 p-8 sm:p-10 rounded-[2.5rem] flex-1 hover:border-brand-orange-coral/40 hover:bg-white/[0.04] transition-all duration-500 group-hover:translate-x-3 shadow-2xl relative overflow-hidden">
+                  <div className="glass-card border-white/5 p-5 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] flex-1 hover:border-brand-orange-coral/40 hover:bg-white/[0.04] transition-all duration-500 group-hover:translate-x-1 sm:group-hover:translate-x-3 shadow-2xl relative overflow-hidden">
                      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all" />
                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 relative z-10">
                        <h4 className="text-white font-black text-2xl italic uppercase group-hover:text-brand-orange-coral transition-colors leading-none">{s.title}</h4>

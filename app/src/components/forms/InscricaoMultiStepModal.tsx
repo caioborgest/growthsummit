@@ -16,6 +16,7 @@ import { Step7Conclusao } from './inscricao-steps/Step7Conclusao';
 import { useSessions } from '@/hooks/useData';
 import { registrationService, type RegistrationParams } from '@/services/registrationService';
 import { EVENT_CONFIG } from '@/config/eventConfig';
+import { getOrCreateUser } from '@/lib/auth-helpers';
 
 const DRAFT_KEY = 'inscricao_form_draft_v2';
 
@@ -86,6 +87,19 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
         setRegistrationError(null);
 
         try {
+            // ── STEP 1: Garantir que o usuário existe no Auth (Cria conta ou Autentica)
+            logger.info('[Modal] Garantindo conta de acesso para:', currentDados.email);
+            const authResult = await getOrCreateUser({
+                email: currentDados.email,
+                password: currentDados.password,
+                name: currentDados.name,
+                phone: currentDados.phone,
+                role: 'participant'
+            });
+
+            const userId = authResult.userId;
+            logger.info('[Modal] Auth garantido. ID:', userId, authResult.isNew ? '(Novo)' : '(Existente)');
+
             // Consolidated Amount Calculation (Base + Upgrade)
             const basePrice = EVENT_CONFIG.proPrice || 179.99;
             const discountPercent = Math.max(currentDados.lectureDiscount || 0, currentDados.socialDiscount || 0);
@@ -93,7 +107,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
             const registrationParams: RegistrationParams = {
                 projectId: selectedProject?.id || '',
-                userId: '', 
+                userId: userId, 
                 name: currentDados.name,
                 email: currentDados.email.trim().toLowerCase(),
                 phone: currentDados.phone,
@@ -126,6 +140,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
             const regId = result.registration_id;
             updateDados({ 
+                userId: userId,
                 registrationId: regId,
                 paymentStatus: (finalAmount <= 0) ? 'paid' : 'pending',
                 valorFinal: finalAmount

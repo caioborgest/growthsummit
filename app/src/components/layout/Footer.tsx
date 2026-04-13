@@ -43,9 +43,9 @@ export function Footer() {
     <footer className="bg-dark-200 border-t border-dark-300">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {/* Brand Column */}
-          <div className="col-span-2 md:col-span-3 lg:col-span-2">
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4 group">
               <img
                 src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png"
@@ -70,26 +70,35 @@ export function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-3">
-            <a
-              href={`mailto:${EVENT_CONFIG.email}`}
-              className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              {EVENT_CONFIG.email}
-            </a>
-            <a
-              href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              {EVENT_CONFIG.whatsapp.display}
-            </a>
-            <div className="flex items-start text-gray-400 text-sm">
-              <MapPin className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-              Boulevard Hotel, Juazeiro do Norte - CE
+          <div className="sm:col-span-2 md:col-span-1 lg:col-span-1 space-y-4">
+            <h4 className="text-white font-semibold mb-2">Contato</h4>
+            <div className="space-y-3">
+              <a
+                href={`mailto:${EVENT_CONFIG.email}`}
+                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-hover:bg-teal-500/10 transition-colors">
+                  <Mail className="h-4 w-4 text-teal-500" />
+                </div>
+                {EVENT_CONFIG.email}
+              </a>
+              <a
+                href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-hover:bg-teal-500/10 transition-colors">
+                  <Phone className="h-4 w-4 text-teal-500" />
+                </div>
+                {EVENT_CONFIG.whatsapp.display}
+              </a>
+              <div className="flex items-start text-gray-400 text-sm group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-teal-500/10 transition-colors">
+                  <MapPin className="h-4 w-4 text-teal-500" />
+                </div>
+                <span>Boulevard Hotel, Juazeiro do Norte - CE</span>
+              </div>
             </div>
           </div>
 

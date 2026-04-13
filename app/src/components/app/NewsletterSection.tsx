@@ -115,7 +115,7 @@ export function NewsletterSection() {
                     CONTEÚDO MASTER 2026
                   </motion.div>
                   
-                  <h2 className="text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9] lg:leading-[0.85]">
+                  <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter leading-[0.9] lg:leading-[0.85]">
                     ESTRATÉGIAS <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange-coral via-brand-orange-intense to-orange-400">QUE ESCALAM.</span>
                   </h2>
@@ -156,7 +156,7 @@ export function NewsletterSection() {
                    </div>
                 </div>
 
-                <div className="flex items-center gap-12 font-black text-[10px] uppercase tracking-widest text-gray-600">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-12 font-black text-[10px] uppercase tracking-widest text-gray-600">
                    <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-teal-500" />
                       LGPD Compliant

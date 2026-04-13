@@ -102,7 +102,10 @@ export function getPalestranteImage(nome: string): string {
         'Leandro Batista': palestrantesImages.leandroBatista,
         'Vanylton Matias': palestrantesImages.vanyltonMatias,
         'Carolinne Castro': palestrantesImages.carolinneCastro,
+        'Dra. Carolinne Castro': palestrantesImages.carolinneCastro,
+        'Dra. Caroline Castro': palestrantesImages.carolinneCastro,
         'Jeronimo Freire': palestrantesImages.jeronimoFreire,
+        'Jerônimo Freire': palestrantesImages.jeronimoFreire,
         'João Daniel': palestrantesImages.joaoDaniel,
         'Caio Borges': palestrantesImages.caioBorges,
     };
