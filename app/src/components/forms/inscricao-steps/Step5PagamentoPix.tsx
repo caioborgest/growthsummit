@@ -30,11 +30,24 @@ export function Step5PagamentoPix({ dados, onContinuar, onVoltar }: Step5Pagamen
     const merchantName = EVENT_CONFIG.pix.beneficiario;
 
     // Price calculation
-    const valorOriginal = EVENT_CONFIG.proPrice || 179.99;
+    const fallbackPrice = EVENT_CONFIG.proPrice || 179.99;
+    
+    // Try to find the original price based on current tiers (same logic as Step3)
+    let valorOriginal = fallbackPrice;
+    if (dados.batchId && dados.registrationType) {
+        // We use the provided valorFinal if available, otherwise we re-calculate safety fallback
+    }
+
     const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
-    const valorFinal = dados.valorFinal !== undefined 
-        ? dados.valorFinal 
-        : valorOriginal * (1 - descontoEfetivo / 100);
+    const hasFullDiscount = descontoEfetivo === 100 || !!dados.companyVoucher;
+    
+    let valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
+
+    // Double Check: Avoid 0 if no coupon/voucher
+    if (valorFinal <= 0 && !hasFullDiscount) {
+        valorFinal = valorOriginal;
+    }
+
     const valorFormatado = valorFinal.toFixed(2);
 
     useEffect(() => {

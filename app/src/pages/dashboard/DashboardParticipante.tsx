@@ -792,7 +792,7 @@ export function DashboardParticipante() {
           onNotificationsClick={() => setActiveTab('notificacoes')}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-32">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

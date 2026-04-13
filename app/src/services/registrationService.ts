@@ -117,7 +117,6 @@ export const registrationService = {
             p_extra_data: params.extraData || {},
             p_batch_id: cleanBatchId || null,
             p_company_voucher: params.companyVoucher || null,
-            p_partner_id: cleanPartnerId || null,
             p_app_installed: Boolean(params.appInstalled),
         };
 

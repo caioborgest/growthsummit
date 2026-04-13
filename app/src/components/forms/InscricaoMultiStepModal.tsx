@@ -101,16 +101,45 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             logger.info('[Modal] Auth garantido. ID:', userId, authResult.isNew ? '(Novo)' : '(Existente)');
 
             // Consolidated Amount Calculation (Base + Upgrade)
-            const basePrice = EVENT_CONFIG.proPrice || 179.99;
+            const fallbackPrice = EVENT_CONFIG.proPrice || 179.99;
+            let basePrice = fallbackPrice;
+
+            // Try to find the price based on the current batchId
+            if (currentDados.batchId && selectedProject?.settings?.ticketTiers) {
+                for (const tier of selectedProject.settings.ticketTiers) {
+                    const batch = tier.batches.find((b: any) => b.id === currentDados.batchId);
+                    if (batch) {
+                        basePrice = Number(batch.price) || fallbackPrice;
+                        break;
+                    }
+                }
+            }
+
             const discountPercent = Math.max(currentDados.lectureDiscount || 0, currentDados.socialDiscount || 0);
             
             // Prioritize values from structured code validation if available
-            const finalAmount = currentDados.valorFinal !== undefined 
+            // IMPORTANT: If valorFinal is 0 but there is no 100% discount, fallback to base calculation
+            const hasFullDiscount = discountPercent === 100 || currentDados.companyVoucher;
+            let finalAmount = currentDados.valorFinal !== undefined 
                 ? currentDados.valorFinal 
                 : basePrice * (1 - discountPercent / 100);
 
+            // Double Check: Prevent accidental 0 if no coupon/voucher
+            if (finalAmount <= 0 && !hasFullDiscount) {
+                logger.warn('[Modal] Price calculated as 0 without full discount. Falling back to basePrice.');
+                finalAmount = basePrice;
+            }
+
             const finalPaymentStatus = currentDados.paymentStatus || (finalAmount <= 0 ? 'paid' : 'pending');
             const finalStatus = currentDados.registrationStatus || (finalAmount <= 0 ? 'active' : 'pending');
+
+            logger.info('[Modal] Price calculation audit:', { 
+                basePrice, 
+                discountPercent, 
+                hasFullDiscount,
+                providedValorFinal: currentDados.valorFinal,
+                finalAmount 
+            });
 
             const registrationParams: RegistrationParams = {
                 projectId: selectedProject?.id || import.meta.env.VITE_GX_TRIUNFO_PROJECT_ID || '',

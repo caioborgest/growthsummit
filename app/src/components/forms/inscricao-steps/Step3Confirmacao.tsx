@@ -45,7 +45,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
 
     const valorOriginal = getActivePrice();
     const descontoEfetivo = Math.max(dados.lectureDiscount || 0, dados.socialDiscount || 0);
-    const valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
+    const hasFullDiscount = descontoEfetivo === 100 || !!dados.companyVoucher;
+    
+    let valorFinal = dados.valorFinal !== undefined ? dados.valorFinal : (valorOriginal * (1 - descontoEfetivo / 100));
+
+    // Double Check: Avoid 0 if no coupon/voucher
+    if (valorFinal <= 0 && !hasFullDiscount) {
+        valorFinal = valorOriginal;
+    }
+
     const valorFormatado = valorFinal.toFixed(2);
 
     // Get current batch/category name for summary
