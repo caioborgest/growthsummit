@@ -382,7 +382,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
     if (entity === 'registrations') {
-      return 'id,status,created_at,amount:paid_amount,paid_amount,payment_status,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,profiles:profiles!growth_experience_registrations_user_id_fkey(user_id,name,email,phone,company,city,state,role)';
+      return 'id,status,created_at,amount:paid_amount,paid_amount,payment_status,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,profiles(user_id,name,email,phone,company,city,state,role)';
     }
     if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';
@@ -839,19 +839,6 @@ export function useRegistrations() {
 
 export function useInscricoes() {
   return useRegistrations();
-}
-
-export function useMyRegistration() {
-  const { user } = useAuth();
-  const { projectId } = useProject();
-  const { data: registrations, isLoading, error, refetch } = useRegistrations();
-
-  const registration = useMemo(() => {
-    if (!user || !registrations || !projectId) return null;
-    return registrations.find(r => r.userId === user.id && r.projectId === projectId);
-  }, [user, registrations, projectId]);
-
-  return { registration, isLoading, error, refetch };
 }
 
 export function useMentors() {

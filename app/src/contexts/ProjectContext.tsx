@@ -3,6 +3,9 @@ import { safeStorage } from '@/utils/safeStorage';
 import type { Project } from '@/types';
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
+import { ensureProject } from '@/lib/ensureProject';
+
+const DEFAULT_PROJECT_ID = import.meta.env.VITE_GX_TRIUNFO_PROJECT_ID;
 
 interface ProjectContextType {
   selectedProject: Project | null;
@@ -74,6 +77,28 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (selectedProject && typeof selectedProject === 'object' && selectedProject.id) {
       // Salva qualquer projeto válido (UUID ou Slug) para evitar perda de contexto
       safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
+    }
+
+    // 3. Fallback: Se nado selecionado, forçar o projeto padrão do GX Triunfo
+    if (!selectedProject && !urlProjectId && DEFAULT_PROJECT_ID) {
+      (async () => {
+        try {
+          // ensureProject já cuida de buscar ou criar o projeto se necessário
+          // Aqui usamos apenas as informações básicas, o fetch cuidará do resto
+          const proj = await ensureProject({ 
+            id: DEFAULT_PROJECT_ID,
+            name: 'Growth Experience Triunfo',
+            slug: 'ge-triunfo-2026',
+            type: 'growth_experience',
+            status: 'active'
+          });
+          if (proj) {
+            setSelectedProject(proj);
+          }
+        } catch (err) {
+          logger.error('ProjectContext: Erro ao garantir projeto padrão:', err);
+        }
+      })();
     }
   }, [selectedProject, urlProjectId]);
 

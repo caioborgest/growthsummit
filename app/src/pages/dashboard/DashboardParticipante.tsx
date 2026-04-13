@@ -1,6 +1,5 @@
 // Force-recompile: 2026-04-05T15:31:30
 import { useState, useMemo, useEffect } from 'react';
-import { 
   QrCode, 
   Calendar, 
   Trophy, 
@@ -16,7 +15,11 @@ import {
   Bell as BellIcon,
   Presentation,
   Users,
-  Mic2
+  Mic2,
+  LogOut,
+  RefreshCcw,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -100,6 +103,67 @@ export function DashboardParticipante() {
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [ratingModal, setRatingModal] = useState({ isOpen: false, mentorshipId: '', mentorName: '' });
   const [searchParams] = useSearchParams();
+
+  // ── LOADING STATE ──────────────────────────────────────────────────────
+  if (isLoading && !registration) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
+        <PremiumBackground />
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10"
+        >
+            <Loader2 className="h-12 w-12 text-brand-orange-coral animate-spin mb-6 mx-auto" />
+            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Carregando Experiência</h2>
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Preparando seu acesso exclusivo...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ── ERROR / NOT FOUND STATE ──────────────────────────────────────────────
+  // If we finished loading and HAVE NO REGISTRATION AND NO PARTNER MEMBERSHIP
+  if (!isLoading && !registration && !partnerTeamData?.find(m => m.userId === user?.id)) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-8 text-center">
+        <PremiumBackground />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md w-full glass-card p-10 border-red-500/20 relative z-10"
+        >
+            <div className="w-20 h-20 rounded-[2rem] bg-red-500/10 flex items-center justify-center mx-auto mb-8 border border-red-500/20">
+                <AlertCircle className="h-10 w-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Inscrição Não Localizada</h2>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">
+                Não encontramos uma inscrição ativa vinculada ao seu e-mail (<b>{user?.email}</b>) para este projeto.
+            </p>
+            
+            <div className="space-y-3">
+                <button 
+                    onClick={() => refetchReg()}
+                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all active:scale-95"
+                >
+                    <RefreshCcw className="h-4 w-4" /> Tentar Novamente
+                </button>
+                <button 
+                    onClick={() => logout()}
+                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all active:scale-95"
+                >
+                    <LogOut className="h-4 w-4" /> Sair da Conta
+                </button>
+            </div>
+
+            <p className="mt-10 text-[9px] font-black text-gray-600 uppercase tracking-widest leading-relaxed">
+                Se você acabou de se inscrever, aguarde alguns segundos e tente novamente. <br/>
+                Caso o problema persista, procure o credenciamento presencial.
+            </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Notifications filtering
   const notifications = useMemo(() => 

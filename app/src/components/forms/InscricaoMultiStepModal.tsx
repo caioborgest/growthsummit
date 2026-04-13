@@ -113,7 +113,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             const finalStatus = currentDados.registrationStatus || (finalAmount <= 0 ? 'active' : 'pending');
 
             const registrationParams: RegistrationParams = {
-                projectId: selectedProject?.id || '',
+                projectId: selectedProject?.id || import.meta.env.VITE_GX_TRIUNFO_PROJECT_ID || '',
                 userId: userId, 
                 name: currentDados.name,
                 email: currentDados.email.trim().toLowerCase(),
