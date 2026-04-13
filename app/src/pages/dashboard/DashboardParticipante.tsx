@@ -239,6 +239,12 @@ export function DashboardParticipante() {
     }
   }, [searchParams, navTabs]);
 
+  // Notifications filtering
+  const notifications = useMemo(() => 
+    (notificationsData || []).filter(n => n.userId === user?.id),
+    [notificationsData, user?.id]
+  );
+
   // ── LOADING STATE ──────────────────────────────────────────────────────
   if (isLoading && !registration) {
     return (
