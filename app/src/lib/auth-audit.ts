@@ -68,44 +68,52 @@ export function logAuditEvent(event: string, userId?: string, metadata?: unknown
     }
     recentEvents.set(dedupKey, now);
 
-    // Fire and forget
+    // Fire and forget - COMPLETELY DEFENSIVE
     getClientIP().then(ip => {
-        supabase.from('audit_logs').insert({
-            event,
-            user_id: userId || null,
-            metadata: metadata || {},
-            ip_address: ip,
-            browser_agent: navigator.userAgent,
-            created_at: new Date().toISOString(),
-        }).then(({ error }) => {
-            if (error) {
-                // Determine if this is a "fatal" table error (doesn't exist, permission denied, etc)
-                const isTableMissing = error.message?.includes('does not exist') || 
-                                     error.message?.includes('not found') || 
-                                     error.code === 'PGRST116' || 
-                                     error.code === '42P01';
-                
-                const isPermissionError = error.code === '42501' || error.status === 403;
-                const isBadRequest = error.status === 400 || error.code === 'PGRST100';
-
-                if (isTableMissing || isPermissionError || isBadRequest) {
-                    if (!tableUnreachable) {
-                        logger.debug(`[audit] Logging suspended for ${RETRY_COOLDOWN_MS/1000}s due to: ${error.message}`);
+        try {
+            supabase.from('audit_logs').insert({
+                event,
+                user_id: userId || null,
+                metadata: metadata || {},
+                ip_address: ip,
+                browser_agent: navigator.userAgent,
+                created_at: new Date().toISOString(),
+            }).then(({ error }) => {
+                if (error) {
+                    // Determine if this is a "fatal" table error (doesn't exist, permission denied, etc)
+                    const isTableMissing = error.message?.includes('does not exist') || 
+                                         error.message?.includes('not found') || 
+                                         error.code === 'PGRST116' || 
+                                         error.code === '42P01';
+                    
+                    const isPermissionError = error.code === '42501' || error.status === 403;
+                    const isBadRequest = error.status === 400 || error.code === 'PGRST100';
+    
+                    if (isTableMissing || isPermissionError || isBadRequest) {
+                        if (!tableUnreachable) {
+                            logger.debug(`[audit] Logging suspended for ${RETRY_COOLDOWN_MS/1000}s due to service unavailability.`);
+                        }
+                        tableUnreachable = true;
+                        lastFailureTime = Date.now();
                     }
-                    tableUnreachable = true;
-                    lastFailureTime = Date.now();
+    
+                    // Silently ignore expected errors in production
+                    const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116', '42883'];
+                    if (!ignoredCodes.includes(error.code) && !isTableMissing && !isPermissionError) {
+                        logger.debug('[audit] Log failed silently:', error.message);
+                    }
+                } else {
+                    // Success: reset failure state
+                    tableUnreachable = false;
                 }
-
-                // Silently ignore expected errors in production
-                const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116', '42883'];
-                if (!ignoredCodes.includes(error.code) && !isTableMissing && !isPermissionError) {
-                    logger.debug('Auditoria info:', error.message);
-                }
-            } else {
-                // Success: reset failure state
-                tableUnreachable = false;
-            }
-        });
+            }).catch(e => {
+                // Network-level error: fail silently to avoid blocking caller
+                logger.debug('[audit] Network error during logging (silenced):', e);
+            });
+        } catch (e) {
+            // Unexpected error: fail silently
+            logger.debug('[audit] Unexpected error during log dispatch (silenced):', e);
+        }
     }).catch(() => {
         // Silently skip if IP fetch fails
     });
