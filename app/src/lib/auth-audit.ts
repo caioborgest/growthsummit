@@ -49,72 +49,71 @@ let tableUnreachable = false;
 let lastFailureTime = 0;
 const RETRY_COOLDOWN_MS = 60000; // 1 minute
 
-export function logAuditEvent(event: string, userId?: string, metadata?: unknown) {
-    // Skip if logout is in progress or common noisy events
-    if (isLoggingOut || SKIP_AUDIT_EVENTS.has(event)) return;
+export function logAuditEvent(event: string, userId?: string, metadata?: any) {
+    try {
+        // Skip if logout is in progress or common noisy events
+        if (isLoggingOut || SKIP_AUDIT_EVENTS.has(event)) return;
 
-    // Cooldown check: if table was recently unreachable, don't spam requests
-    const now = Date.now();
-    if (tableUnreachable && now - lastFailureTime < RETRY_COOLDOWN_MS) {
-        return;
-    }
-
-    // Deduplicate: skip if same event+user was logged in the last 5 seconds
-    const dedupKey = `${event}:${userId || 'anon'}`;
-    const lastLogged = recentEvents.get(dedupKey);
-    if (lastLogged && now - lastLogged < DEDUP_WINDOW_MS) {
-        logger.debug(`[audit] Skipping duplicate event: ${event}`);
-        return;
-    }
-    recentEvents.set(dedupKey, now);
-
-    // Fire and forget - COMPLETELY DEFENSIVE
-    getClientIP().then(ip => {
-        try {
-            supabase.from('audit_logs').insert({
-                event,
-                user_id: userId || null,
-                metadata: metadata || {},
-                ip_address: ip,
-                browser_agent: navigator.userAgent,
-                created_at: new Date().toISOString(),
-            }).then(({ error }) => {
-                if (error) {
-                    // Determine if this is a "fatal" table error (doesn't exist, permission denied, etc)
-                    const isTableMissing = error.message?.includes('does not exist') || 
-                                         error.message?.includes('not found') || 
-                                         error.code === 'PGRST116' || 
-                                         error.code === '42P01';
-                    
-                    const isPermissionError = error.code === '42501' || error.status === 403;
-                    const isBadRequest = error.status === 400 || error.code === 'PGRST100';
-    
-                    if (isTableMissing || isPermissionError || isBadRequest) {
-                        if (!tableUnreachable) {
-                            logger.debug(`[audit] Logging suspended for ${RETRY_COOLDOWN_MS/1000}s due to service unavailability.`);
-                        }
-                        tableUnreachable = true;
-                        lastFailureTime = Date.now();
-                    }
-    
-                    // Silently ignore expected errors in production
-                    const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116', '42883'];
-                    if (!ignoredCodes.includes(error.code) && !isTableMissing && !isPermissionError) {
-                        logger.debug('[audit] Log failed silently:', error.message);
-                    }
-                } else {
-                    // Success: reset failure state
-                    tableUnreachable = false;
-                }
-            }).catch(e => {
-                // Network-level error: fail silently to avoid blocking caller
-                logger.debug('[audit] Network error during logging (silenced):', e);
-            });
-        } catch (e) {
-            // Unexpected error: fail silently
-            logger.debug('[audit] Unexpected error during log dispatch (silenced):', e);
+        // Cooldown check: if table was recently unreachable, don't spam requests
+        const now = Date.now();
+        if (tableUnreachable && now - lastFailureTime < RETRY_COOLDOWN_MS) {
+            return;
         }
-    }).catch(() => {
-        // Silently skip if IP fetch fails
-    });
+
+        // Deduplicate: skip if same event+user was logged in the last 5 seconds
+        const dedupKey = `${event}:${userId || 'anon'}`;
+        const lastLogged = recentEvents.get(dedupKey);
+        if (lastLogged && now - lastLogged < DEDUP_WINDOW_MS) {
+            return;
+        }
+        recentEvents.set(dedupKey, now);
+
+        // Fire and forget - COMPLETELY DEFENSIVE
+        getClientIP().then(ip => {
+            // Mapping allowed fields based on database schema
+            const logData: any = {
+                action: event,
+                user_id: userId || null,
+                ip_address: ip,
+                user_agent: navigator.userAgent,
+                // Map metadata to details for safety, but also send as metadata if allowed
+                details: metadata || {},
+                metadata: metadata || {},
+                // Optional fields with fallbacks
+                status: (metadata as any)?.status || 'info',
+                email: (metadata as any)?.email || null,
+                project_id: (metadata as any)?.projectId || (metadata as any)?.project_id || null,
+                entity_type: (metadata as any)?.entityType || null,
+                entity_id: (metadata as any)?.entityId || null
+            };
+
+            // Remove any field that might be undefined to avoid Supabase errors
+            Object.keys(logData).forEach(key => {
+                if (logData[key] === undefined) delete logData[key];
+            });
+
+            supabase.from('audit_logs')
+                .insert(logData)
+                .then(({ error }) => {
+                    if (error) {
+                        const isTableMissing = error.code === '42P01' || error.message?.includes('does not exist');
+                        if (isTableMissing) {
+                            tableUnreachable = true;
+                            lastFailureTime = Date.now();
+                        }
+                        logger.debug('[audit] Log failed silently:', error.message);
+                    } else {
+                        tableUnreachable = false;
+                    }
+                })
+                .catch(() => {
+                    // Fail silently
+                });
+        }).catch(() => {
+            // Silently skip if IP fetch fails
+        });
+    } catch (err) {
+        // Audit logs MUST NEVER block the application
+        console.warn('[audit] Critical failure in logging system:', err);
+    }
 }
