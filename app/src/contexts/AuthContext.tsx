@@ -502,7 +502,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                     error.message?.toLowerCase().includes('refresh token');
           
           if (isRefreshTokenError) {
-            logger.info('Sessão anterior expirada. Usuário desconectado.');
+            logger.info('Sessão anterior expirada ou inválida. Limpando estado local.');
+            // Forçamos a limpeza local para evitar loops de refresh em background
+            supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            safeStorage.removeItem(LAST_ACTIVITY_KEY);
           } else {
             logger.error('Erro inicial getSession:', error.message);
           }
@@ -565,12 +568,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsLoading(false);
           logAuditEvent('logout_forced', userId); // só loga signout inesperado
         } else if (event === 'TOKEN_REFRESH_FAILED' as any) {
-          logger.warn('Sessão expirada ou falha na renovação de token em background.');
-          // Não redirecionar forçadamente para não quebrar a SPA em quedas de rede oscilantes
-          // Mas mostrar um aviso de que a sessão pode estar instável
-          toast.error('Instabilidade na sessão. Seu acesso pode expirar em breve.', { 
-            description: 'Se notar problemas ao salvar dados, salve seu trabalho e tente fazer login novamente.',
-            duration: 10000
+          logger.warn('Sessão expirada ou falha crítica na renovação de token.');
+          
+          // Se falhou o refresh, o estado local está dessincronizado.
+          // Limpamos para evitar que o app continue tentando usar um token morto.
+          setSession(null);
+          setUser(null);
+          setIsLoading(false);
+          supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+
+          toast.error('Sessão expirada.', { 
+            description: 'Sua sessão não pôde ser renovada. Por favor, faça login novamente para continuar.',
+            duration: 5000
           });
         } else if (event === 'TOKEN_REFRESHED') {
           if (currentSession) setSession(currentSession);

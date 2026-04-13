@@ -44,14 +44,24 @@ const SKIP_AUDIT_EVENTS = new Set([
     'TOKEN_REFRESHED',
 ]);
 
+// State for resilience
+let tableUnreachable = false;
+let lastFailureTime = 0;
+const RETRY_COOLDOWN_MS = 60000; // 1 minute
+
 export function logAuditEvent(event: string, userId?: string, metadata?: unknown) {
     // Skip if logout is in progress or common noisy events
     if (isLoggingOut || SKIP_AUDIT_EVENTS.has(event)) return;
 
+    // Cooldown check: if table was recently unreachable, don't spam requests
+    const now = Date.now();
+    if (tableUnreachable && now - lastFailureTime < RETRY_COOLDOWN_MS) {
+        return;
+    }
+
     // Deduplicate: skip if same event+user was logged in the last 5 seconds
     const dedupKey = `${event}:${userId || 'anon'}`;
     const lastLogged = recentEvents.get(dedupKey);
-    const now = Date.now();
     if (lastLogged && now - lastLogged < DEDUP_WINDOW_MS) {
         logger.debug(`[audit] Skipping duplicate event: ${event}`);
         return;
@@ -69,17 +79,31 @@ export function logAuditEvent(event: string, userId?: string, metadata?: unknown
             created_at: new Date().toISOString(),
         }).then(({ error }) => {
             if (error) {
-                // Ignorar 23503 (FK violation - user ainda não existe no DB público)
-                // Ignorar 42501 (RLS permission denied)
-                // Ignorar PGRST301 (schema cache outdated)
-                // Ignorar 42P01 (table does not exist - audit_logs pode não existir)
-                // Ignorar PGRST204/PGRST116 (404 - recurso não encontrado)
-                const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116'];
-                const msg = error.message || '';
-                const isTableMissing = msg.includes('does not exist') || msg.includes('not found') || msg.includes('404');
-                if (!ignoredCodes.includes(error.code) && !isTableMissing) {
+                // Determine if this is a "fatal" table error (doesn't exist, permission denied, etc)
+                const isTableMissing = error.message?.includes('does not exist') || 
+                                     error.message?.includes('not found') || 
+                                     error.code === 'PGRST116' || 
+                                     error.code === '42P01';
+                
+                const isPermissionError = error.code === '42501' || error.status === 403;
+                const isBadRequest = error.status === 400 || error.code === 'PGRST100';
+
+                if (isTableMissing || isPermissionError || isBadRequest) {
+                    if (!tableUnreachable) {
+                        logger.debug(`[audit] Logging suspended for ${RETRY_COOLDOWN_MS/1000}s due to: ${error.message}`);
+                    }
+                    tableUnreachable = true;
+                    lastFailureTime = Date.now();
+                }
+
+                // Silently ignore expected errors in production
+                const ignoredCodes = ['23503', '42501', 'PGRST301', '42P01', 'PGRST204', 'PGRST116', '42883'];
+                if (!ignoredCodes.includes(error.code) && !isTableMissing && !isPermissionError) {
                     logger.debug('Auditoria info:', error.message);
                 }
+            } else {
+                // Success: reset failure state
+                tableUnreachable = false;
             }
         });
     }).catch(() => {

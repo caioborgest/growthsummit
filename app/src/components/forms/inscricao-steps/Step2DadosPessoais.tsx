@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { registrationService } from '@/services/registrationService';
 
 const PAJEU_CITIES = [
     'SERRA TALHADA', 'AFOGADOS DA INGAZEIRA', 'SÃO JOSÉ DO EGITO', 'TRIUNFO',
@@ -48,6 +49,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     const [codigoValidado, setCodigoValidado] = useState(!!dados.code);
     const [partnerId, setPartnerId] = useState(dados.partnerId || '');
     const { projectId } = useProject();
+    const isUuid = registrationService.isValidUUID(projectId);
 
     const formatTelefone = (value: string) => {
         const numbers = value.replace(/\D/g, '');
