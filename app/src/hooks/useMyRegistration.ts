@@ -184,7 +184,7 @@ export function useMyRegistration() {
                         .from(currentTable)
                         .select(`
                             *,
-                            company_registration_batches (
+                            company_registration_batches!growth_experience_registrations_batch_id_fkey (
                                 company_name,
                                 ticket_type,
                                 batch_name,

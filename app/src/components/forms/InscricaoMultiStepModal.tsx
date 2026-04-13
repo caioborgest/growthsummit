@@ -128,7 +128,8 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 status: finalStatus as any,
                 eventName: selectedProject?.name || 'Growth Experience',
                 palestrasNoturnas: currentDados.buyLectures,
-                socialCode: currentDados.code || null,
+                // Somente envia como socialCode se NÃO for um lote corporativo
+                socialCode: !currentDados.batchId ? (currentDados.code || null) : null,
                 palestraCode: currentDados.lectureCoupon || null,
                 partnerId: currentDados.partnerId || null,
                 partnerAccessCode: currentDados.partnerAccessCode || null,
