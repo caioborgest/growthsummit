@@ -31,7 +31,8 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { LeadScanner } from './components/shared/LeadScanner';
-import { useSessions, useCheckInsAtividades, useMyRegistration } from '@/hooks/useData';
+import { useSessions, useCheckInsAtividades } from '@/hooks/useData';
+import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
 
