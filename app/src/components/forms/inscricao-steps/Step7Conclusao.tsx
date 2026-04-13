@@ -253,5 +253,3 @@ export function Step7Conclusao({ dados, onFechar }: Step7ConclusaoProps) {
         </div>
     );
 }
-   );
-}
