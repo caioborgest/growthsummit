@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/promiseUtils';
+import { registrationService } from '@/services/registrationService';
 
 const PRIMARY_TABLE = 'growth_experience_registrations';
 
@@ -177,61 +178,12 @@ export function useMyRegistration() {
 
             const currentTable = getPrimaryTable(targetProjectId);
 
-            // 2) Fetch by participant_id (new standard) or user_id (fallback)
-            const { data, error: err } = await withTimeout(
-                async (signal) => {
-                    const query = supabase
-                        .from(currentTable)
-                        .select(`
-                            *,
-                            company_registration_batches!growth_experience_registrations_batch_id_fkey (
-                                company_name,
-                                ticket_type,
-                                batch_name,
-                                payment_status
-                            )
-                        `);
-
-                    // Apply filters
-                    query.eq('project_id', targetProjectId);
-
-                    if (currentTable === 'growth_experience_registrations') {
-                        // GE table: Try user_id FIRST, then fallback to email if we have the user's email
-                        if (user.email) {
-                            query.or(`user_id.eq.${user.id},email.eq.${user.email}`);
-                        } else {
-                            query.eq('user_id', user.id);
-                        }
-                    } else {
-                        // Legacy/Hybrid: Try user_id, participant_id or email
-                        if (user.email) {
-                            query.or(`participant_id.eq.${user.id},user_id.eq.${user.id},email.eq.${user.email}`);
-                        } else {
-                            query.or(`participant_id.eq.${user.id},user_id.eq.${user.id}`);
-                        }
-                    }
-
-                    return await query
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle()
-                        .abortSignal(signal);
-                },
-                10000,
-                'FetchMyRegistration'
+            // 2) Fetch resiliently using the service (handles user_id, email fallback, and auto-linking)
+            const data = await registrationService.findAndLinkRegistration(
+                targetProjectId,
+                user.id,
+                user.email
             );
-
-            if (err) throw err;
-
-            // 3) Auto-Linking: If registration was found by email but missing user_id linkage
-            if (data && !data.user_id && user.id) {
-                logger.info(`[useMyRegistration] Linking user ${user.id} to registration ${data.id} via email match.`);
-                await supabase
-                    .from(currentTable)
-                    .update({ user_id: user.id } as any)
-                    .eq('id', data.id);
-                data.user_id = user.id; // Update local object
-            }
 
             let registrationData = data ? mapRow(data) : null;
 

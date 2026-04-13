@@ -25,6 +25,7 @@ import { CheckInResultModal } from '@/components/admin/CheckInResultModal';
 import { AccreditationChecklistModal } from '@/components/admin/AccreditationChecklistModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCheckInQueue } from '@/hooks/useCheckInQueue';
+import { registrationService } from '@/services/registrationService';
 import type { Registration, Mentor, Company, Startup } from '@/types';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
@@ -214,13 +215,15 @@ const AdminCheckIn = () => {
     if (!registration) {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       try {
-        const { data, error } = await supabase
-          .from('growth_experience_registrations')
-          .select('*, profiles(user_id, name, email, phone, company, city, state, role)')
-          .eq('id', effectiveId)
-          .maybeSingle();
+        // Use resilient lookup (handles case-insensitive email and auto-linking if userId is known)
+        // Here we don't have a userId if we only have an ID or email, but we pass what we have
+        const data = await registrationService.findAndLinkRegistration(
+          selectedProject.id,
+          undefined, // No userId known for anonymous terminal check-in
+          effectiveId // Might be email
+        );
 
-        if (data && !error) {
+        if (data) {
            const reg = data as any;
            // Validate project_id if scanner is in general mode or session mode
            if (selectedProject?.id && reg.project_id !== selectedProject.id) {

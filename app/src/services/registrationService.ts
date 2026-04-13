@@ -335,5 +335,61 @@ export const registrationService = {
             throw error;
         }
         return true;
+    },
+
+    /**
+     * Resiliently finds a registration by user_id or email (case-insensitive)
+     * and links the user_id if it was found via email fallback.
+     */
+    async findAndLinkRegistration(projectId: string, userId?: string, email?: string) {
+        if (!projectId) return null;
+
+        // 1. Try search by user_id first (the strongest link)
+        if (userId) {
+            const { data: byUser, error: errUser } = await supabase
+                .from('growth_experience_registrations')
+                .select('*')
+                .eq('project_id', projectId)
+                .eq('user_id', userId)
+                .in('status', ['active', 'pending', 'confirmed', 'pago'])
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (errUser) logger.error('[registrationService] Error finding by user_id:', errUser);
+            if (byUser) return byUser;
+        }
+
+        // 2. Fallback: Search by email (case-insensitive ILIKE)
+        if (email) {
+            const { data: byEmail, error: errEmail } = await supabase
+                .from('growth_experience_registrations')
+                .select('*')
+                .eq('project_id', projectId)
+                .ilike('email', email.trim())
+                .in('status', ['active', 'pending', 'confirmed', 'pago'])
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (errEmail) logger.error('[registrationService] Error finding by email fallback:', errEmail);
+            
+            if (byEmail) {
+                // If found by email but missing user_id (or different), link it now
+                if (userId && (!byEmail.user_id || byEmail.user_id !== userId)) {
+                    logger.info(`[registrationService] Linking user ${userId} to registration ${byEmail.id} via email match.`);
+                    const { error: updateErr } = await supabase
+                        .from('growth_experience_registrations')
+                        .update({ user_id: userId, updated_at: new Date().toISOString() })
+                        .eq('id', byEmail.id);
+                    
+                    if (updateErr) logger.error('[registrationService] Failed to link userId:', updateErr);
+                    else byEmail.user_id = userId; // Update local object
+                }
+                return byEmail;
+            }
+        }
+
+        return null;
     }
 };
