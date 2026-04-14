@@ -77,11 +77,106 @@ import { LeadScanner } from './components/shared/LeadScanner';
 import { generateTicketPDF } from '@/lib/reports';
 import { parseQRString } from '@/lib/qrUtils';
 
+import { PageLoader } from '@/components/ui/PageLoader';
+
+/**
+ * Componente principal que gerencia o estado de carregamento e as permissões.
+ * Faz o "guard" da inscrição antes de renderizar a visão complexa.
+ */
 export function DashboardParticipante() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { selectedProject } = useProject();
   const { registration, isLoading, error: regError, refetch: refetchReg } = useMyRegistration();
+  const { data: partnerTeamData } = usePartnerTeam();
+
+  // Verifica se o usuário é membro da equipe (Staff) de forma síncrona/rápida para o guard
+  const isStaffMember = !!(partnerTeamData && user && partnerTeamData.some(m => m.userId === user.id));
+
+  // 1. Guard de Carregamento
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
+        <PremiumBackground />
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10"
+        >
+            <Loader2 className="h-12 w-12 text-brand-orange-coral animate-spin mb-6 mx-auto" />
+            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Carregando Experiência</h2>
+            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Preparando seu acesso exclusivo...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // 2. Guard de Inscrição (Solicitado pelo usuário)
+  // Caso não tenha inscrição E não seja staff, mostramos o loader ou redirect (conforme sugestão)
+  if (!registration && !isStaffMember) {
+    // Mantemos a interface de "Inscrição Não Localizada" aqui ou PageLoader.
+    // O usuário sugeriu LoadingSpinner, então usaremos o visual de loading.
+    // Mas se o carregamento acabou e não achou nada, mostramos o erro amigável.
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-8 text-center">
+        <PremiumBackground />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md w-full glass-card p-10 border-red-500/20 relative z-10"
+        >
+            <div className="w-20 h-20 rounded-[2rem] bg-red-500/10 flex items-center justify-center mx-auto mb-8 border border-red-500/20">
+                <AlertCircle className="h-10 w-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Inscrição Não Localizada</h2>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">
+                Não encontramos uma inscrição ativa vinculada ao seu e-mail (<b>{user?.email}</b>) para este projeto.
+            </p>
+            
+            <div className="space-y-3">
+                <button 
+                    onClick={() => refetchReg()}
+                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all active:scale-95"
+                >
+                    <RefreshCcw className="h-4 w-4" /> Tentar Novamente
+                </button>
+                <button 
+                    onClick={() => { logout(); navigate('/login'); }}
+                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all active:scale-95"
+                >
+                    <LogOut className="h-4 w-4" /> Sair da Conta
+                </button>
+            </div>
+
+            <p className="mt-10 text-[9px] font-black text-gray-600 uppercase tracking-widest leading-relaxed">
+                Se você acabou de se inscrever, aguarde alguns segundos e tente novamente. <br/>
+                Caso o problema persista, procure o credenciamento presencial.
+            </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // 3. Renderiza a View Principal se passou pelos guards
+  return (
+    <DashboardView 
+      user={user}
+      registration={registration}
+      selectedProject={selectedProject}
+      partnerTeamData={partnerTeamData}
+      isStaffMember={isStaffMember}
+      logout={logout}
+      refetchReg={refetchReg}
+    />
+  );
+}
+
+/**
+ * Visão interna do Dashboard que contém todos os useMemo e lógica de abas.
+ * Só é montada quando 'registration' ou 'isStaffMember' estão prontos.
+ */
+function DashboardView({ user, registration, selectedProject, partnerTeamData, isStaffMember, logout, refetchReg }: any) {
+  const navigate = useNavigate();
   const isActuallyPaid = !!registration?.isPaid;
   const { data: notificationsData } = useNotifications();
   const { data: allSessions } = useSessions();
@@ -90,7 +185,6 @@ export function DashboardParticipante() {
   const { data: stands } = useStands();
   const { data: standCheckIns } = useStandCheckIns();
   const { data: certificates, isLoading: loadingCerts, refetch: refetchCerts } = useCertificates();
-  const { data: partnerTeamData } = usePartnerTeam();
   const { data: b2bMeetings } = useB2BMeetings();
   const { data: startups } = useStartups();
   const { refetch: refetchNotifications } = useNotifications();
@@ -122,7 +216,7 @@ export function DashboardParticipante() {
     // Partner Team Membership
     const myPartnerMembership = useMemo(() => {
         if (!partnerTeamData || !user) return null;
-        return partnerTeamData.find(m => m.userId === user.id);
+        return partnerTeamData.find((m: any) => m.userId === user.id);
     }, [partnerTeamData, user]);
 
     // Partner logic
@@ -164,12 +258,12 @@ export function DashboardParticipante() {
 
   // Mentoring Logic
   const mySessions = useMemo(() => 
-    (myMentorships || []).filter(m => m.menteeId === user?.id),
+    (myMentorships || []).filter((m: any) => m.menteeId === user?.id),
     [myMentorships, user?.id]
   );
 
   const availableSlots = useMemo(() => 
-    (myMentorships || []).filter(m => 
+    (myMentorships || []).filter((m: any) => 
       m.status === 'available' || 
       (!m.menteeId || m.menteeId === '00000000-0000-0000-0000-000000000000')
     ),
@@ -179,12 +273,12 @@ export function DashboardParticipante() {
   // Next Activity Logic
   const nextActivity = useMemo(() => {
     if (!allSessions || !activityCheckIns) return null;
-    const sorted = [...allSessions].sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
+    const sorted = [...allSessions].sort((a: any, b: any) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
     const now = new Date();
     const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     
-    return sorted.find(s => {
-      const isAlreadyCheckedIn = activityCheckIns?.some(c => c.sessionId === s.id && c.registrationId === registration?.id);
+    return sorted.find((s: any) => {
+      const isAlreadyCheckedIn = activityCheckIns?.some((c: any) => c.sessionId === s.id && c.registrationId === registration?.id);
       return !isAlreadyCheckedIn && (s.startTime || '00:00') >= currentTimeStr;
     }) || sorted[0];
   }, [allSessions, activityCheckIns, registration?.id]);
@@ -192,7 +286,7 @@ export function DashboardParticipante() {
   // Gamification Progress
   const standsVisited = useMemo(() => {
     if (!standCheckIns || !registration) return 0;
-    return standCheckIns.filter(c => c.registrationId === registration.id).length;
+    return standCheckIns.filter((c: any) => c.registrationId === registration.id).length;
   }, [standCheckIns, registration]);
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
@@ -241,70 +335,9 @@ export function DashboardParticipante() {
 
   // Notifications filtering
   const notifications = useMemo(() => 
-    (notificationsData || []).filter(n => n.userId === user?.id),
+    (notificationsData || []).filter((n: any) => n.userId === user?.id),
     [notificationsData, user?.id]
   );
-
-  // ── LOADING STATE ──────────────────────────────────────────────────────
-  if (isLoading && !registration) {
-    return (
-      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
-        <PremiumBackground />
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative z-10"
-        >
-            <Loader2 className="h-12 w-12 text-brand-orange-coral animate-spin mb-6 mx-auto" />
-            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Carregando Experiência</h2>
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Preparando seu acesso exclusivo...</p>
-        </motion.div>
-      </div>
-    );
-  }
-
-  // ── ERROR / NOT FOUND STATE ──────────────────────────────────────────────
-  // If we finished loading and HAVE NO REGISTRATION AND NO PARTNER MEMBERSHIP
-  if (!isLoading && !registration && !partnerTeamData?.find(m => m.userId === user?.id)) {
-    return (
-      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-8 text-center">
-        <PremiumBackground />
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-md w-full glass-card p-10 border-red-500/20 relative z-10"
-        >
-            <div className="w-20 h-20 rounded-[2rem] bg-red-500/10 flex items-center justify-center mx-auto mb-8 border border-red-500/20">
-                <AlertCircle className="h-10 w-10 text-red-500" />
-            </div>
-            <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Inscrição Não Localizada</h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                Não encontramos uma inscrição ativa vinculada ao seu e-mail (<b>{user?.email}</b>) para este projeto.
-            </p>
-            
-            <div className="space-y-3">
-                <button 
-                    onClick={() => refetchReg()}
-                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all active:scale-95"
-                >
-                    <RefreshCcw className="h-4 w-4" /> Tentar Novamente
-                </button>
-                <button 
-                    onClick={() => logout()}
-                    className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all active:scale-95"
-                >
-                    <LogOut className="h-4 w-4" /> Sair da Conta
-                </button>
-            </div>
-
-            <p className="mt-10 text-[9px] font-black text-gray-600 uppercase tracking-widest leading-relaxed">
-                Se você acabou de se inscrever, aguarde alguns segundos e tente novamente. <br/>
-                Caso o problema persista, procure o credenciamento presencial.
-            </p>
-        </motion.div>
-      </div>
-    );
-  }
 
   // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
@@ -395,7 +428,7 @@ export function DashboardParticipante() {
 
         // Emitir certificado via Service
         if (selectedProject && registration) {
-            const sessionObj = (allSessions || []).find(s => s.id === qrData.id);
+            const sessionObj = (allSessions || []).find((s: any) => s.id === qrData.id);
             if (sessionObj) {
                 CertificateService.checkAndIssueSessionCertificate(
                     { id: user?.id || '', name: user?.name || '' },
@@ -542,7 +575,7 @@ export function DashboardParticipante() {
                         subtitle={nextActivity.room || nextActivity.local || 'Auditório Principal'}
                         time={nextActivity.startTime || nextActivity.horario_inicio}
                         duration="60 min"
-                        isConfirmed={activityCheckIns?.some(c => c.sessionId === nextActivity.id)}
+                        isConfirmed={activityCheckIns?.some((c: any) => c.sessionId === nextActivity.id)}
                         onClick={() => setActiveTab('agenda')}
                         icon={(() => {
                             const t = (nextActivity.type || nextActivity.tipo || '').toLowerCase();
@@ -606,7 +639,7 @@ export function DashboardParticipante() {
           />
         );
       case 'agenda': {
-        const myCursos = (allSessions || []).filter(s => 
+        const myCursos = (allSessions || []).filter((s: any) => 
           ((registration as { cursosSelecionados?: string[] })?.cursosSelecionados || []).includes(s.id)
         );
 
@@ -624,7 +657,7 @@ export function DashboardParticipante() {
             navigate={navigate}
             selectedProject={selectedProject}
             allSessions={allSessions || []}
-            activityCheckIns={(activityCheckIns || []).map(c => ({
+            activityCheckIns={(activityCheckIns || []).map((c: any) => ({
                 sessionId: c.sessionId,
                 registrationId: c.registrationId || '',
                 checkInAt: c.checkInAt
@@ -660,11 +693,11 @@ export function DashboardParticipante() {
           <MentorshipSection 
             myMentorships={mySessions}
             availableSlots={availableSlots} 
-            handleCancelMentoring={async (id) => {
+            handleCancelMentoring={async (id: string) => {
                 await updateMentorship(id, { status: 'cancelled' } as any);
                 toast.success('Agendamento cancelado.');
             }}
-            handleBookMentoring={async (slotId, topic) => {
+            handleBookMentoring={async (slotId: string, topic: string) => {
                 if (!user) return;
                 await updateMentorship(slotId, { 
                     menteeId: user.id, 
@@ -724,7 +757,7 @@ export function DashboardParticipante() {
               <Rocket className="h-10 w-10 text-brand-orange-coral" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-white italic italic italic italic">Expo StartUp</h2>
+              <h2 className="text-2xl font-black text-white italic">Expo StartUp</h2>
               <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Apresente seu projeto na arena de inovação do Growth Experience.</p>
             </div>
             <button 
@@ -741,7 +774,7 @@ export function DashboardParticipante() {
             certificados={certificates} 
             loadingCerts={loadingCerts} 
             fetchCertificados={refetchCerts} 
-            onDownload={(cert) => {
+            onDownload={(cert: any) => {
               toast.info(`Iniciando download do certificado: ${cert.activityName || cert.activity_name}`);
               // Potential integration with PDF generation or direct URL
               if (cert.code) {
@@ -786,7 +819,7 @@ export function DashboardParticipante() {
           )}
           notifications={notifications}
           onLogout={handleLogout}
-          onNotificationRead={async (id) => { await handleMarkAsRead(id); }}
+          onNotificationRead={async (id: string) => { await handleMarkAsRead(id); }}
           onGuideClick={() => setActiveTab('guia')}
           onSupportClick={() => setActiveTab('suporte')}
           onNotificationsClick={() => setActiveTab('notificacoes')}
