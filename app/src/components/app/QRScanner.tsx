@@ -23,6 +23,19 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const isTransitioning = useRef(false);
     const readerId = useRef(`reader-${Math.random().toString(36).substr(2, 9)}`);
 
+    const waitForElement = (id: string, timeout = 2000): Promise<HTMLElement> => {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+            const check = () => {
+                const el = document.getElementById(id);
+                if (el) resolve(el);
+                else if (Date.now() - start > timeout) reject(new Error(`Element with id ${id} not found after ${timeout}ms`));
+                else setTimeout(check, 50);
+            };
+            check();
+        });
+    };
+
     const stopScanner = async () => {
         if (isTransitioning.current) return;
         if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
@@ -42,17 +55,15 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const startScanner = async (cameraIdOrConfig: any) => {
         if (isTransitioning.current) return false;
         
-        // Ensure we have a div to attach to
-        if (!document.getElementById(readerId.current)) {
-            console.error("[QRScanner] Reader DIV not found in DOM");
-            return false;
-        }
-
         isTransitioning.current = true;
-        setIsLoading(true);
+        // Don't set global isLoading(true) here as it might UNMOUNT the reader div again
+        // due to our conditional JSX. Instead, just track if the camera is starting.
 
         try {
-            // Re-instantiate the scanner for every start to ensure fresh state/hardware access
+            // 1. Wait for the DIV to be definitely present in the DOM
+            await waitForElement(readerId.current);
+
+            // 2. Re-instantiate the scanner for every start to ensure fresh state/hardware access
             const { Html5Qrcode } = await import('html5-qrcode');
             const scannerInstance = new Html5Qrcode(readerId.current);
             html5QrCodeRef.current = scannerInstance;
@@ -111,30 +122,29 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 () => { /* frame error silent */ }
             );
 
-            setIsLoading(false);
             isTransitioning.current = false;
             return true;
         } catch (err) {
             console.error("[QRScanner] Failed to start scanner:", err);
             isTransitioning.current = false;
-            setIsLoading(false);
             
             // Fallback: minimal attempt
             try {
-                isTransitioning.current = true;
                 const fallbackConfig = typeof cameraIdOrConfig === 'string' 
                     ? cameraIdOrConfig 
                     : { facingMode: 'environment' };
                 
-                await html5QrCodeRef.current.start(
-                    fallbackConfig,
-                    { fps: 15, qrbox: 250 },
-                    async (decodedText: string) => {
-                        const parsed = parseQRString(decodedText);
-                        onSuccess(parsed, decodedText);
-                    },
-                    () => { }
-                );
+                if (html5QrCodeRef.current) {
+                    await html5QrCodeRef.current.start(
+                        fallbackConfig,
+                        { fps: 15, qrbox: 250 },
+                        async (decodedText: string) => {
+                            const parsed = parseQRString(decodedText);
+                            onSuccess(parsed, decodedText);
+                        },
+                        () => { }
+                    );
+                }
                 isTransitioning.current = false;
                 return true;
             } catch {
@@ -165,9 +175,10 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     const initialId = backCamera ? backCamera.id : devices[0].id;
                     setSelectedCameraId(initialId);
                     
+                    // First set loading false to reveal the reader div in the DOM
                     setIsLoading(false);
-                    // Critical wait for DOM to be ready for the new ID
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // startScanner will internally wait for the DOM element to appear
                     if (isMounted) {
                         await startScanner(initialId);
                     }
@@ -205,9 +216,9 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             await stopScanner();
             
             // 2. Extra delay to let hardware and browser internal streams fully release
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 800));
             
-            // 3. Restart with new ID (startScanner now handles re-instantiation)
+            // 3. Restart with new ID (startScanner handles discovery and instantiation)
             await startScanner(cameraId);
         } catch (err) {
             console.error("[QRScanner] Camera switch failed:", err);
