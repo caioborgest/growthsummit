@@ -95,6 +95,12 @@ export function DashboardParticipante() {
 
   // 1. Guard de Carregamento
   if (isLoading) {
+    return <PageLoader />;
+  }
+
+  // 2. Guard de Dados (Inscrição / Perfil)
+  // Staff/Expositores podem acessar sem inscrição pessoal se forem membros da equipe
+  if (!user || (!registration && !isStaffMember)) {
     return (
       <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
         <PremiumBackground />

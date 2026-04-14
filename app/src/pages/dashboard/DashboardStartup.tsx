@@ -47,33 +47,93 @@ const stageLabels: Record<string, string> = {
   traction: 'Tração',
   scale: 'Scale',
 };
+import { PageLoader } from '@/components/ui/PageLoader';
 
+/**
+ * Gatekeeper component for Startup Dashboard.
+ * Ensures data is loaded and the user has a linked startup before rendering logic.
+ */
 export function DashboardStartup() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data: startups } = useStartups();
+  const { data: startups, isLoading: isLoadingStartups } = useStartups();
+  const { registration, isLoading: isLoadingReg } = useMyRegistration();
+  const navigate = useNavigate();
+
+  const isLoading = isLoadingStartups || isLoadingReg;
+
+  // 1. Loading Guard
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  // 2. Data/Role Guard
+  const startupData = startups.find(s => s.userId === user?.id);
+  if (!user || !registration || !startupData) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
+        <PremiumBackground />
+        <div className="relative z-10 glass-card p-8 max-w-md border-orange-500/20">
+          <QrCode className="h-16 w-16 text-orange-500 mx-auto mb-6 opacity-50" />
+          <h2 className="text-2xl font-black text-white mb-4 italic uppercase tracking-tight">Acesso Não Localizado</h2>
+          <p className="text-gray-400 mb-8 leading-relaxed">
+            Não identificamos uma Startup vinculada à sua conta de participante para este projeto.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 rounded-xl"
+              onClick={() => window.location.reload()}
+            >
+              Tentar Novamente
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-gray-500 hover:text-white"
+              onClick={() => { logout(); navigate('/login'); }}
+            >
+              Sair da Conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <StartupView 
+      user={user} 
+      registration={registration} 
+      startupData={startupData} 
+      logout={logout} 
+    />
+  );
+}
+
+/**
+ * Presentation component containing all hooks and UI.
+ */
+function StartupView({ user, registration, startupData, logout }: any) {
+  const navigate = useNavigate();
   const { data: leads, create: createLead } = useLeads();
   const { data: notificationsData } = useNotifications();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
-  const { registration } = useMyRegistration();
   const [activeTab, setActiveTab] = useState('home');
 
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const startupData = startups.find(s => s.userId === user?.id);
-  const startupLeads = startupData
-    ? leads.filter(l => l.startupId === startupData.id)
-    : [];
+  const startupLeads = useMemo(() => 
+    leads.filter(l => l.startupId === startupData.id),
+    [leads, startupData.id]
+  );
 
-  const stats = {
+  const stats = useMemo(() => ({
     totalLeads: startupLeads.length,
     highInterest: startupLeads.filter(l => l.interestLevel === 'high').length,
     mediumInterest: startupLeads.filter(l => l.interestLevel === 'medium').length,
     lowInterest: startupLeads.filter(l => l.interestLevel === 'low').length,
-  };
+  }), [startupLeads]);
 
   const notifications = useMemo(() =>
     (notificationsData || []).filter((n: { userId?: string }) => n.userId === user?.id),
@@ -105,23 +165,27 @@ export function DashboardStartup() {
 
   const handleScanSuccess = async (decodedText: string) => {
     try {
-      // O decodedText será o registration id (uuid) ou um JSON contendo o id
+      if (!decodedText) return;
+
       let registrationId = decodedText;
       
-      // Suporte ao formato padrão: GE - CHECKIN | UUID | EMAIL | TOKEN
       if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
         const parts = decodedText.split('|');
         if (parts.length > 1) {
           registrationId = parts[1].trim();
         }
       } else if (decodedText.startsWith('{')) {
-        const data = JSON.parse(decodedText);
-        registrationId = data.id || data.registrationId;
+        try {
+          const data = JSON.parse(decodedText);
+          registrationId = data.id || data.registrationId;
+        } catch (e) {
+          logger.error('Erro ao parsear JSON do Scanner:', e);
+          // Fallback se for um JSON quebrado mas formatado de outro jeito?
+        }
       }
 
       if (!registrationId || registrationId.length < 10) return;
 
-      // Procura primeiro localmente se esse lead já existe
       const alreadyScanned = startupLeads.some(l => l.registrationId === registrationId);
       if (alreadyScanned) {
         toast.info('Este participante já está na sua lista de leads.');
@@ -132,9 +196,9 @@ export function DashboardStartup() {
         projectId: startupData?.projectId,
         startupId: startupData?.id,
         registrationId: registrationId,
-        interestLevel: 'high', // Padrão
+        interestLevel: 'high',
         notes: 'Capturado via QR Code do Stand',
-        visitorName: 'Participante ' + registrationId.substring(0, 4), // Placeholder genérico, será atualizado pelo hook do DB
+        visitorName: 'Participante ' + registrationId.substring(0, 4),
       });
 
       toast.success('Lead capturado com sucesso!');
@@ -157,7 +221,7 @@ export function DashboardStartup() {
       doc.text('GROWTH EXPERIENCE 2026', 105, 40, { align: 'center' });
       
       doc.setFontSize(30);
-      doc.setTextColor(20, 184, 166); // Teal
+      doc.setTextColor(20, 184, 166); 
       doc.text(startupData.name.toUpperCase(), 105, 60, { align: 'center' });
       
       doc.setFillColor(255, 255, 255);
@@ -167,7 +231,7 @@ export function DashboardStartup() {
       doc.setFontSize(12);
       doc.text('ESCANEIE PARA CONHECER', 105, 195, { align: 'center' });
       
-      doc.setTextColor(255, 112, 67); // Orange
+      doc.setTextColor(255, 112, 67); 
       doc.setFontSize(16);
       doc.text(`STAND NO: ${startupData.standNumber || 'EXPO'}`, 105, 215, { align: 'center' });
       
@@ -205,9 +269,7 @@ export function DashboardStartup() {
             onStartupClick={() => setIsStartupModalOpen(true)}
           />
 
-          {/* Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8">
-            {/* Stats Grid */}
             {(activeTab === 'home' || activeTab === 'visao-geral') && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="glass-card p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20 hover:border-orange-500/40 transition-all group">
@@ -309,10 +371,8 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Visao Geral Tab */}
               <TabsContent value="visao-geral" className="mt-0">
                 <div className="grid lg:grid-cols-2 gap-6">
-                  {/* Company Info */}
                   <div className="glass-card p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">Informações da Startup</h3>
                     {startupData && (
@@ -330,7 +390,7 @@ export function DashboardStartup() {
                           <div>
                             <label className="block text-sm text-gray-400 mb-1">Estágio</label>
                             <Badge className="bg-orange-500/20 text-orange-400">
-                              {stageLabels[startupData.stage]}
+                              {stageLabels[startupData.stage] || startupData.stage}
                             </Badge>
                           </div>
                         </div>
@@ -367,7 +427,7 @@ export function DashboardStartup() {
                         <div>
                           <label className="block text-sm text-gray-400 mb-2">Equipe</label>
                           <div className="flex flex-wrap gap-2">
-                            {startupData.foundingTeam.map((member, i) => (
+                            {startupData.foundingTeam && startupData.foundingTeam.map((member: any, i: number) => (
                               <Badge key={i} className="bg-dark-300 text-gray-300">
                                 {member.name} - {member.role}
                               </Badge>
@@ -378,7 +438,6 @@ export function DashboardStartup() {
                     )}
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="glass-card p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">Ações Rápidas</h3>
                     <div className="space-y-3">
@@ -403,7 +462,6 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Leads Tab */}
               <TabsContent value="leads" className="mt-0">
                 <div className="glass-card p-6">
                   <div className="flex items-center justify-between mb-6">
@@ -462,18 +520,18 @@ export function DashboardStartup() {
                                </p>
                              </div>
                              <Button 
-                               size="sm" 
-                               variant="ghost" 
-                               className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 h-7 w-7 p-0 rounded-full"
-                               onClick={() => {
-                                 if (lead.visitorPhone) {
-                                   window.open(`https://wa.me/55${lead.visitorPhone.replace(/\D/g, '')}`, '_blank');
-                                 } else {
-                                   handleQuickMessage(lead.visitorEmail || '');
-                                 }
-                               }}
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 h-7 w-7 p-0 rounded-full"
+                                onClick={() => {
+                                  if (lead.visitorPhone) {
+                                    window.open(`https://wa.me/55${lead.visitorPhone.replace(/\D/g, '')}`, '_blank');
+                                  } else {
+                                    handleQuickMessage(lead.visitorEmail || '');
+                                  }
+                                }}
                              >
-                               {lead.visitorPhone ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                                {lead.visitorPhone ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
                              </Button>
                           </div>
                         </div>
@@ -560,7 +618,6 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Recursos Tab */}
               <TabsContent value="recursos" className="mt-0">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="glass-card p-6">
@@ -616,7 +673,6 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Investidores Tab */}
               <TabsContent value="investidores" className="mt-0">
                 <div className="glass-card p-8">
                   <div className="flex items-center justify-between mb-8">
@@ -634,11 +690,11 @@ export function DashboardStartup() {
                        <div key={i} className="group p-6 bg-dark-100 rounded-3xl border border-white/5 hover:border-orange-500/30 transition-all">
                          <div className="flex items-center gap-4 mb-6">
                             <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center font-black text-orange-500 text-lg">
-                              {inv.logo}
+                               {inv.logo}
                             </div>
                             <div>
-                              <p className="text-white font-black uppercase text-sm">{inv.name}</p>
-                              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{inv.stage}</p>
+                               <p className="text-white font-black uppercase text-sm">{inv.name}</p>
+                               <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{inv.stage}</p>
                             </div>
                          </div>
                          <div className="space-y-4">
@@ -647,7 +703,7 @@ export function DashboardStartup() {
                               <p className="text-white text-xs font-bold">{inv.sector}</p>
                             </div>
                             <Button className="w-full bg-orange-500/10 hover:bg-orange-500 text-orange-500 hover:text-white border border-orange-500/20 font-black text-[10px] tracking-widest py-3 rounded-xl transition-all">
-                              SOLICITAR REUNIÃO
+                               SOLICITAR REUNIÃO
                             </Button>
                          </div>
                        </div>
@@ -656,7 +712,6 @@ export function DashboardStartup() {
                 </div>
               </TabsContent>
 
-              {/* Perfil Tab */}
               <TabsContent value="perfil" className="mt-0">
                 <ProfileForm />
               </TabsContent>
@@ -696,6 +751,14 @@ export function DashboardStartup() {
           { id: 'stand', icon: QrCode, label: 'Stand' },
           { id: 'recursos', icon: FileText, label: 'Docs' },
           { id: 'perfil', icon: UserIcon, label: 'Perfil' },
+        ]}
+      />
+    </div>
+  );
+}
+
+export default DashboardStartup;
+fil' },
         ]}
       />
     </div>

@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSponsors, useLeads, useNotifications, useSessions, useCheckInsAtividades } from '@/hooks/useData';
+import { useSponsors, useLeads, useNotifications, useSessions, useCheckInsAtividades, useSponsorDeliverables } from '@/hooks/useData';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
 import { PwaDashboardHero } from './components/shared/DashboardHero';
 import { NextActivityCard } from './components/shared/NextActivityCard';
@@ -33,8 +33,7 @@ import { EVENT_CONFIG } from '@/config/eventConfig';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ProfileForm } from './components/ProfileForm';
-import { User as UserIcon, Users, QrCode } from 'lucide-react';
-
+import { User as UserIcon } from 'lucide-react';
 import { PremiumHeader } from './components/shared/PremiumHeader';
 import { PremiumBackground } from './components/shared/PremiumBackground';
 import { BottomNavigation } from './components/shared/BottomNavigation';
@@ -45,15 +44,75 @@ import { StartupFormModal } from '@/components/forms/StartupFormModal';
 import { LeadScanner } from './components/shared/LeadScanner';
 import { exportToCSV } from '@/utils/csv';
 import { supabase } from '@/lib/supabase';
+import { PageLoader } from '@/components/ui/PageLoader';
+import { logger } from '@/lib/logger';
 
+/**
+ * Gatekeeper component for Sponsor Dashboard.
+ */
 export function DashboardSponsor() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data: sponsors } = useSponsors();
+  const { data: sponsors, isLoading: isLoadingSponsors } = useSponsors();
+  const { registration, isLoading: isLoadingReg } = useMyRegistration();
+  const navigate = useNavigate();
+
+  const isLoading = isLoadingSponsors || isLoadingReg;
+
+  // 1. Loading Guard
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  // 2. Data/Role Guard
+  const sponsorData = sponsors.find(s => s.userId === user?.id);
+  if (!user || !registration || !sponsorData) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
+        <PremiumBackground />
+        <div className="relative z-10 glass-card p-8 max-w-md border-yellow-500/20">
+          <Gem className="h-16 w-16 text-yellow-500 mx-auto mb-6 opacity-50" />
+          <h2 className="text-2xl font-black text-white mb-4 italic uppercase tracking-tight">Acesso Não Localizado</h2>
+          <p className="text-gray-400 mb-8 leading-relaxed">
+            Não identificamos um Patrocinador vinculado à sua conta de participante para este projeto.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold h-12 rounded-xl"
+              onClick={() => window.location.reload()}
+            >
+              Tentar Novamente
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-gray-500 hover:text-white"
+              onClick={() => { logout(); navigate('/login'); }}
+            >
+              Sair da Conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <SponsorView 
+      user={user} 
+      registration={registration} 
+      sponsorData={sponsorData} 
+      logout={logout} 
+    />
+  );
+}
+
+/**
+ * Presentation component for Sponsor Dashboard.
+ */
+function SponsorView({ user, registration, sponsorData, logout }: any) {
+  const navigate = useNavigate();
   const { data: notificationsData } = useNotifications();
   const { data: allSessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
-  const { registration } = useMyRegistration();
   const [activeTab, setActiveTab] = useState('home');
 
   const notifications = useMemo(() =>
@@ -82,10 +141,7 @@ export function DashboardSponsor() {
   const [isB2BModalOpen, setIsB2BModalOpen] = useState(false);
   const [isStartupModalOpen, setIsStartupModalOpen] = useState(false);
 
-  // Encontrar patrocinador vinculado ao usuário logado
-  const sponsorData = sponsors.find(s => s.userId === user?.id) || sponsors[0];
-  const { data: deliverablesData, isLoading: isLoadingDeliverables } = useSponsorDeliverables(sponsorData?.id);
-
+  const { data: deliverablesData } = useSponsorDeliverables(sponsorData?.id);
   const deliverables = useMemo(() => deliverablesData || [], [deliverablesData]);
 
   const handleLogout = async () => {
@@ -93,14 +149,12 @@ export function DashboardSponsor() {
     navigate('/login');
   };
 
-  // Estatísticas e Leads
   const { data: leads, create: createLead } = useLeads();
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const sponsorLeads = useMemo(() => {
-    if (!sponsorData) return [];
     return leads.filter(l => l.sponsorId === sponsorData.id);
-  }, [leads, sponsorData]);
+  }, [leads, sponsorData.id]);
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -114,17 +168,21 @@ export function DashboardSponsor() {
 
   const handleScanSuccess = async (decodedText: string) => {
     try {
+      if (!decodedText) return;
       let registrationId = decodedText;
 
-      // Suporte ao formato padrão: GE - CHECKIN | UUID | EMAIL | TOKEN
       if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
         const parts = decodedText.split('|');
         if (parts.length > 1) {
           registrationId = parts[1].trim();
         }
       } else if (decodedText.startsWith('{')) {
-        const data = JSON.parse(decodedText);
-        registrationId = data.id || data.registrationId;
+        try {
+          const data = JSON.parse(decodedText);
+          registrationId = data.id || data.registrationId;
+        } catch (e) {
+          logger.error('Erro ao parsear JSON do Scanner (Sponsor):', e);
+        }
       }
 
       if (!registrationId || registrationId.length < 10) return;
@@ -140,7 +198,7 @@ export function DashboardSponsor() {
         sponsorId: sponsorData?.id,
         registrationId: registrationId,
         interestLevel: 'high',
-        notes: 'Capturado via QR Code do Stand',
+        notes: 'Capturado via QR Code do Stand (Patrocinador)',
         visitorName: 'Participante ' + registrationId.substring(0, 4),
       });
 
@@ -151,12 +209,12 @@ export function DashboardSponsor() {
     }
   };
 
-  const stats = {
+  const stats = useMemo(() => ({
     totalDeliverables: deliverables.length,
     completed: deliverables.filter((d: any) => d.status === 'completed').length,
     inProgress: deliverables.filter((d: any) => d.status === 'in_progress').length,
     pending: deliverables.filter((d: any) => d.status === 'pending').length,
-  };
+  }), [deliverables]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -184,7 +242,7 @@ export function DashboardSponsor() {
           notifications={notifications}
           onLogout={handleLogout}
           onGuideClick={() => navigate('/guia')}
-          onSupportClick={() => setActiveTab('suporte')}
+          onSupportClick={() => setActiveTab('contato')}
           onNotificationRead={handleMarkAsRead}
         />
 
@@ -194,9 +252,7 @@ export function DashboardSponsor() {
             onStartupClick={() => setIsStartupModalOpen(true)}
           />
 
-          {/* Stats Overview */}
           <div className="py-8">
-            {/* Stats Grid */}
             {(activeTab === 'home' || activeTab === 'overview') && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="glass-card p-5 bg-gradient-to-br from-dark-200 to-dark-300 border-yellow-500/10 hover:border-yellow-500/30 transition-all group">
@@ -232,63 +288,15 @@ export function DashboardSponsor() {
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="hidden md:grid w-full grid-cols-2 md:grid-cols-8 bg-dark-200 mb-8 p-1 h-auto min-h-[44px]">
-                <TabsTrigger
-                  value="home"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  Início
-                </TabsTrigger>
-                <TabsTrigger
-                  value="overview"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <Gem className="h-4 w-4 mr-1 md:mr-2" />
-                  Visão Geral
-                </TabsTrigger>
-                <TabsTrigger
-                  value="deliverables"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <FileCheck className="h-4 w-4 mr-1 md:mr-2" />
-                  Entregáveis
-                </TabsTrigger>
-                <TabsTrigger
-                  value="leads"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <Users className="h-4 w-4 mr-1 md:mr-2" />
-                  Leads
-                </TabsTrigger>
-                <TabsTrigger
-                  value="programacao"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <Calendar className="h-4 w-4 mr-1 md:mr-2" />
-                  Agenda
-                </TabsTrigger>
-                <TabsTrigger
-                  value="materiais"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <Download className="h-4 w-4 mr-1 md:mr-2" />
-                  Materiais
-                </TabsTrigger>
-                <TabsTrigger
-                  value="contato"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
-                  Contato
-                </TabsTrigger>
-                <TabsTrigger
-                  value="perfil"
-                  className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"
-                >
-                  <UserIcon className="h-4 w-4 mr-1 md:mr-2" />
-                  Perfil
-                </TabsTrigger>
+                <TabsTrigger value="home" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm">Início</TabsTrigger>
+                <TabsTrigger value="overview" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><Gem className="h-4 w-4 mr-1 md:mr-2" />Visão Geral</TabsTrigger>
+                <TabsTrigger value="deliverables" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><FileCheck className="h-4 w-4 mr-1 md:mr-2" />Entregáveis</TabsTrigger>
+                <TabsTrigger value="leads" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><Users className="h-4 w-4 mr-1 md:mr-2" />Leads</TabsTrigger>
+                <TabsTrigger value="programacao" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><Calendar className="h-4 w-4 mr-1 md:mr-2" />Agenda</TabsTrigger>
+                <TabsTrigger value="materiais" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><Download className="h-4 w-4 mr-1 md:mr-2" />Materiais</TabsTrigger>
+                <TabsTrigger value="contato" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><MessageSquare className="h-4 w-4 mr-1 md:mr-2" />Contato</TabsTrigger>
+                <TabsTrigger value="perfil" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white py-3 text-xs md:text-sm"><UserIcon className="h-4 w-4 mr-1 md:mr-2" />Perfil</TabsTrigger>
               </TabsList>
-
               <TabsContent value="home" className="mt-0 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <PwaDashboardHero 
                     eventName="Área do Patrocinador"
@@ -307,7 +315,7 @@ export function DashboardSponsor() {
                         subtitle={nextActivity.type || "Patrocinador Geral"}
                         time={nextActivity.startTime || "00:00"}
                         duration="20 min"
-                        isConfirmed={activityCheckIns?.some(c => c.session_id === nextActivity.id && c.registration_id === registration?.id)}
+                        isConfirmed={activityCheckIns?.some(c => c.sessionId === nextActivity.id && c.registrationId === registration?.id)}
                         onClick={() => setActiveTab('programacao')}
                     />
                 )}
@@ -324,10 +332,8 @@ export function DashboardSponsor() {
                 </div>
               </TabsContent>
 
-              {/* Overview Tab */}
               <TabsContent value="overview" className="mt-0 space-y-6">
                 <div className="grid lg:grid-cols-2 gap-6">
-                  {/* Benefícios do Patrocínio */}
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center">
@@ -356,7 +362,6 @@ export function DashboardSponsor() {
                     </CardContent>
                   </Card>
 
-                  {/* Próximos Passos */}
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center">
@@ -372,9 +377,11 @@ export function DashboardSponsor() {
                             <div key={deliverable.id} className="flex items-start p-3 bg-dark-100 rounded-lg">
                               <div className="flex-1">
                                 <p className="text-white font-medium">{deliverable.item}</p>
-                                <p className="text-gray-400 text-sm">Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}</p>
+                                <p className="text-gray-400 text-sm">
+                                  Prazo: {deliverable.deadline ? new Date(deliverable.deadline).toLocaleDateString('pt-BR') : 'A definir'}
+                                </p>
                                 {deliverable.notes && (
-                                  <p className="text-gray-500 text-sm mt-1">{deliverable.notes}</p>
+                                  <p className="text-gray-500 text-xs mt-1">{deliverable.notes}</p>
                                 )}
                               </div>
                               {getStatusBadge(deliverable.status)}
@@ -385,7 +392,6 @@ export function DashboardSponsor() {
                   </Card>
                 </div>
 
-                {/* Resumo do Investimento */}
                 <Card className="bg-dark-200 border-dark-300">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center">
@@ -421,7 +427,6 @@ export function DashboardSponsor() {
                 </Card>
               </TabsContent>
 
-              {/* Deliverables Tab */}
               <TabsContent value="deliverables" className="mt-0">
                 <Card className="bg-dark-200 border-dark-300">
                   <CardHeader>
@@ -436,39 +441,26 @@ export function DashboardSponsor() {
                               <p className="text-white font-medium">{deliverable.item}</p>
                               {getStatusBadge(deliverable.status)}
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <div className="flex items-center gap-4 text-xs text-gray-400">
                               <span className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1" />
-                                Prazo: {new Date(deliverable.deadline).toLocaleDateString('pt-BR')}
+                                <Calendar className="h-3 w-3 mr-1" />
+                                Prazo: {deliverable.deadline ? new Date(deliverable.deadline).toLocaleDateString('pt-BR') : 'Sem prazo'}
                               </span>
                               {deliverable.completedAt && (
                                 <span className="flex items-center text-green-400">
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Concluído em: {new Date(deliverable.completedAt).toLocaleDateString('pt-BR')}
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Concluído: {new Date(deliverable.completedAt).toLocaleDateString('pt-BR')}
                                 </span>
                               )}
                             </div>
-                            {deliverable.notes && (
-                              <p className="text-gray-500 text-sm mt-2">{deliverable.notes}</p>
-                            )}
                           </div>
-                          <div className="flex space-x-2">
-                            {deliverable.status === 'pending' && (
-                              <Button
-                                size="sm"
-                                className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                                onClick={() => toast.success('Upload iniciado')}
-                              >
-                                <Upload className="h-4 w-4 mr-1" />
+                          <div className="flex gap-2">
+                            {deliverable.status !== 'completed' && (
+                              <Button size="sm" variant="outline" className="border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/10">
+                                <Upload className="h-3 w-3 mr-1" />
                                 Enviar
                               </Button>
                             )}
-                             {deliverable.status === 'completed' && (
-                               <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => toast.info(`Preparando download de: ${deliverable.item}`)}>
-                                 <Download className="h-4 w-4 mr-1" />
-                                 Baixar
-                               </Button>
-                             )}
                           </div>
                         </div>
                       ))}
@@ -476,7 +468,7 @@ export function DashboardSponsor() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              {/* Leads Tab */}
+
               <TabsContent value="leads" className="mt-0 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="relative flex-1 max-w-md">
@@ -524,7 +516,7 @@ export function DashboardSponsor() {
                           <div>
                             <h4 className="text-white font-bold text-lg leading-tight">{lead.visitorName}</h4>
                             <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">
-                              {new Date(lead.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} • {new Date(lead.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              Capturado em: {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
                             </p>
                           </div>
                         </div>
@@ -533,52 +525,36 @@ export function DashboardSponsor() {
                           lead.interestLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20' :
                           'bg-gray-500/20 text-gray-400 border-white/5'
                         }>
-                          {lead.interestLevel.toUpperCase()}
+                          {(lead.interestLevel || 'low').toUpperCase()}
                         </Badge>
                       </div>
 
                       <div className="grid grid-cols-1 gap-3">
-                        {lead.visitorEmail && (
-                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
-                            <Mail className="h-4 w-4 text-yellow-500/50" />
-                            <span className="text-sm truncate">{lead.visitorEmail}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-3 text-gray-400">
+                          <Mail className="h-4 w-4 text-yellow-500/50" />
+                          <span className="text-sm truncate">{lead.visitorEmail || 'Sem email'}</span>
+                        </div>
                         {lead.visitorPhone && (
-                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
+                          <div className="flex items-center gap-3 text-gray-400">
                             <Phone className="h-4 w-4 text-yellow-500/50" />
                             <span className="text-sm">{lead.visitorPhone}</span>
                           </div>
                         )}
-                        {lead.visitorCpf && (
-                          <div className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors">
-                            <FileCheck className="h-4 w-4 text-yellow-500/50" />
-                            <span className="text-sm">CPF: {lead.visitorCpf}</span>
-                          </div>
-                        )}
                       </div>
 
-                      {lead.notes && (
-                        <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
-                          <p className="text-xs text-gray-500 leading-relaxed italic">
-                            "{lead.notes}"
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-3 mt-auto">
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-white/5 bg-dark-200 text-xs font-bold uppercase tracking-widest h-10 rounded-xl hover:bg-yellow-500/10 hover:text-yellow-500 transition-all"
-                          onClick={() => window.open(`https://wa.me/55${lead.visitorPhone?.replace(/\D/g, '')}`, '_blank')}
+                      <div className="flex gap-2 mt-auto pt-4 border-t border-white/5">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 h-10 rounded-xl border-white/5 text-[10px] font-black uppercase tracking-widest"
+                          onClick={() => lead.visitorPhone && window.open(`https://wa.me/55${lead.visitorPhone.replace(/\D/g, '')}`)}
                           disabled={!lead.visitorPhone}
                         >
                           WhatsApp
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-white/5 bg-dark-200 text-xs font-bold uppercase tracking-widest h-10 rounded-xl hover:bg-yellow-500/10 hover:text-yellow-500 transition-all"
-                          onClick={() => window.location.href = `mailto:${lead.visitorEmail}`}
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 h-10 rounded-xl border-white/5 text-[10px] font-black uppercase tracking-widest"
+                          onClick={() => window.open(`mailto:${lead.visitorEmail}`)}
                           disabled={!lead.visitorEmail}
                         >
                           E-mail
@@ -586,22 +562,9 @@ export function DashboardSponsor() {
                       </div>
                     </motion.div>
                   ))}
-
-                  {filteredLeads.length === 0 && (
-                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
-                      <div className="w-20 h-20 rounded-full bg-dark-200 flex items-center justify-center mb-6">
-                        <Users className="h-10 w-10 text-gray-500" />
-                      </div>
-                      <h4 className="text-white font-bold text-xl mb-2">Nenhum lead encontrado</h4>
-                      <p className="text-gray-500 max-w-sm">
-                        {searchTerm ? 'Nenhum participante corresponde aos filtros de busca.' : 'Você ainda não capturou nenhum lead. Comece escaneando os crachás dos participantes.'}
-                      </p>
-                    </div>
-                  )}
                 </div>
               </TabsContent>
 
-              {/* Programação Tab */}
               <TabsContent value="programacao" className="mt-0">
                 <div className="grid lg:grid-cols-2 gap-6">
                   <Card className="bg-dark-200 border-dark-300">
@@ -611,72 +574,12 @@ export function DashboardSponsor() {
                         Programação do Evento
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="p-4 bg-dark-100 rounded-lg border-l-4 border-yellow-500">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge className="bg-yellow-500/20 text-yellow-400">Seu Horário</Badge>
-                            <span className="text-gray-400 text-sm">21/05 - 09:00</span>
-                          </div>
-                          <p className="text-white font-semibold">Palestra: Growth na Prática</p>
-                          <p className="text-gray-400 text-sm">Palco Principal - 20 minutos</p>
-                        </div>
-
-                        <div className="p-4 bg-dark-100 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge className="bg-blue-500/20 text-blue-400">Montagem</Badge>
-                            <span className="text-gray-400 text-sm">20/05 - 14:00</span>
-                          </div>
-                          <p className="text-white font-semibold">Montagem do Stand</p>
-                          <p className="text-gray-400 text-sm">Área de Exposição</p>
-                        </div>
-
-                        <div className="p-4 bg-dark-100 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge className="bg-teal-500/20 text-teal-400">Networking</Badge>
-                            <span className="text-gray-400 text-sm">21/05 - 18:00</span>
-                          </div>
-                          <p className="text-white font-semibold">Coquetel de Abertura</p>
-                          <p className="text-gray-400 text-sm">Lounge VIP</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-dark-200 border-dark-300">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center">
-                        <MapPin className="h-5 w-5 mr-2 text-red-400" />
-                        Informações do Local
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <p className="text-gray-400 text-sm">Local</p>
-                          <p className="text-white font-medium">Boulevard Hotel & Convention</p>
-                          <p className="text-gray-400 text-sm">Rua São Pedro, 1200, Centro</p>
-                          <p className="text-gray-400 text-sm">Juazeiro do Norte - CE</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400 text-sm">Seu Stand</p>
-                          <p className="text-white font-medium text-lg">Stand 01 (6x4m)</p>
-                          <p className="text-gray-400 text-sm">Área Premium - Entrada principal</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400 text-sm">Credenciamento</p>
-                          <p className="text-white">A partir das 07:30 nos dias 21 e 22/05</p>
-                        </div>
-                      </div>
-                    </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              {/* Materiais Tab */}
               <TabsContent value="materiais" className="mt-0">
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Documentos */}
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center text-base">
@@ -684,29 +587,8 @@ export function DashboardSponsor() {
                         Documentos
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {[
-                          { name: 'Contrato de Patrocínio', type: 'PDF' },
-                          { name: 'Manual do Patrocinador', type: 'PDF' },
-                          { name: 'Guia de Montagem do Stand', type: 'PDF' },
-                          { name: 'Regras de Branding', type: 'PDF' },
-                        ].map((doc, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-                            <div className="flex items-center">
-                              <FileText className="h-5 w-5 text-yellow-400 mr-3" />
-                              <span className="text-white text-sm">{doc.name}</span>
-                            </div>
-                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate(`/em-breve/download-${doc.name.toLowerCase().replace(/\s+/g, '-')}`)}>
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
                   </Card>
 
-                  {/* Templates */}
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center text-base">
@@ -714,29 +596,8 @@ export function DashboardSponsor() {
                         Templates
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {[
-                          { name: 'Template Apresentação', type: 'PPT' },
-                          { name: 'Logo do Evento (vetor)', type: 'AI' },
-                          { name: 'Release para Imprensa', type: 'DOC' },
-                          { name: 'Lista de Participantes', type: 'XLS' },
-                        ].map((doc, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-dark-100 rounded-lg">
-                            <div className="flex items-center">
-                              <FileText className="h-5 w-5 text-teal-400 mr-3" />
-                              <span className="text-white text-sm">{doc.name}</span>
-                            </div>
-                            <Button size="sm" variant="outline" className="border-dark-300 text-gray-300" onClick={() => navigate(`/em-breve/download-${doc.name.toLowerCase().replace(/\s+/g, '-')}`)}>
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
                   </Card>
 
-                  {/* Links Úteis */}
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center text-base">
@@ -744,32 +605,10 @@ export function DashboardSponsor() {
                         Links Úteis
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                         {[
-                           { name: 'Site do Evento', url: 'https://growthsummit.com.br' },
-                           { name: 'Área de Imprensa', url: 'https://growthsummit.com.br/press' },
-                           { name: 'Resultados Anteriores', url: 'https://growthsummit.com.br/previous-results' },
-                           { name: 'Fotos do Evento', url: 'https://flickr.com/photos/growthsummit' },
-                         ].map((link, i) => (
-                           <a
-                             key={i}
-                             href={link.url}
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="flex items-center justify-between p-3 bg-dark-100 rounded-lg hover:bg-dark-300 transition-colors cursor-pointer"
-                           >
-                             <span className="text-yellow-400 text-sm">{link.name}</span>
-                             <ExternalLink className="h-4 w-4 text-gray-400" />
-                           </a>
-                         ))}
-                      </div>
-                    </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              {/* Contato Tab */}
               <TabsContent value="contato" className="mt-0">
                 <div className="grid lg:grid-cols-2 gap-6">
                   <Card className="bg-dark-200 border-dark-300">
@@ -777,35 +616,32 @@ export function DashboardSponsor() {
                       <CardTitle className="text-white">Contato do Evento</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <p className="text-gray-400 text-sm">Responsável pelo Patrocínio</p>
-                          <p className="text-white font-medium">Caio Borges</p>
-                          <p className="text-gray-400 text-sm">{EVENT_CONFIG.email}</p>
-                          <p className="text-gray-400 text-sm">{EVENT_CONFIG.whatsapp.display}</p>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">E-mail de Suporte</p>
+                            <p className="text-white font-bold">{EVENT_CONFIG.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">WhatsApp</p>
+                            <button 
+                              onClick={() => window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}`, '_blank')}
+                              className="text-white font-bold hover:text-yellow-400 transition-colors"
+                            >
+                              {EVENT_CONFIG.whatsapp.display}
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-gray-400 text-sm">Suporte Técnico</p>
-                          <p className="text-white font-medium">contato@growthsummit.site</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400 text-sm">WhatsApp</p>
-                          <button 
-                            onClick={() => window.open(`https://wa.me/${EVENT_CONFIG.whatsapp.number}`, '_blank')}
-                            className="text-white font-medium hover:text-yellow-400 transition-colors"
-                          >
-                            {EVENT_CONFIG.whatsapp.display}
-                          </button>
+                        <div className="pt-4 border-t border-white/5">
+                          <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Responsável Interno</p>
+                          <p className="text-white font-bold">Caio Borges</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-
                   <Card className="bg-dark-200 border-dark-300">
                     <CardHeader>
                       <CardTitle className="text-white">Enviar Sugestão</CardTitle>
                     </CardHeader>
-                    <CardContent>
                       <form className="space-y-4 custom-scrollbar">
                         <div>
                           <label className="block text-sm text-gray-400 mb-2">Assunto</label>

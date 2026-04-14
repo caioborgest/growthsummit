@@ -46,10 +46,70 @@ import type { B2BMatch, Company, B2BMeeting, B2BAppointmentTriunfo } from '@/typ
 import { logger } from '@/lib/logger';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Gatekeeper component for B2B Company Dashboard.
+ */
 export function DashboardCompany() {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data: companies, refetch: refetchCompanies } = useCompanies();
+  const { data: companies, isLoading: isLoadingCos } = useCompanies();
+  const { registration, isLoading: isLoadingReg } = useMyRegistration();
+  const navigate = useNavigate();
+
+  const isLoading = isLoadingCos || isLoadingReg;
+
+  // 1. Loading Guard
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  // 2. Data/Role Guard
+  const companyData = companies.find(c => c.userId === user?.id);
+  if (!user || !registration || !companyData) {
+    return (
+      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
+        <PremiumBackground />
+        <div className="relative z-10 glass-card p-8 max-w-md border-teal-500/20">
+          <Building2 className="h-16 w-16 text-teal-500 mx-auto mb-6 opacity-50" />
+          <h2 className="text-2xl font-black text-white mb-4 italic uppercase tracking-tight">Acesso Não Localizado</h2>
+          <p className="text-gray-400 mb-8 leading-relaxed">
+            Não identificamos uma Empresa B2B vinculada à sua conta de participante para este projeto.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button 
+              className="bg-teal-500 hover:bg-teal-600 text-white font-bold h-12 rounded-xl"
+              onClick={() => window.location.reload()}
+            >
+              Tentar Novamente
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-gray-500 hover:text-white"
+              onClick={() => { logout(); navigate('/login'); }}
+            >
+              Sair da Conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <CompanyView 
+      user={user} 
+      registration={registration} 
+      companyData={companyData} 
+      logout={logout} 
+      companies={companies}
+    />
+  );
+}
+
+/**
+ * Presentation component for B2B Company Dashboard.
+ */
+function CompanyView({ user, registration, companyData, logout, companies }: any) {
+  const navigate = useNavigate();
   const { data: discoveryCompaniesRaw, refetch: refetchDiscovery } = useB2BDiscoveryCompanies();
   const { data: meetings } = useB2BMeetings();
   const { data: notificationsData } = useNotifications();
@@ -70,7 +130,6 @@ export function DashboardCompany() {
   const { data: matches } = useB2BMatches();
   const { data: sessions } = useSessions();
   const { data: activityCheckIns } = useCheckInsAtividades();
-  const { registration } = useMyRegistration();
   const { data: leads, create: createLead } = useLeads();
   const [activeTab, setActiveTab] = useState('home');
 
@@ -83,13 +142,9 @@ export function DashboardCompany() {
 
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
-  const companyData = useMemo(() =>
-    companies.find(c => c.userId === user?.id),
-    [companies, user?.id]
-  );
-
   const handleScanSuccess = async (decodedText: string) => {
     try {
+      if (!decodedText) return;
       let registrationId = decodedText;
       
       if (decodedText.startsWith('GE - CHECKIN') || decodedText.startsWith('GE-CHECKIN')) {
@@ -98,8 +153,12 @@ export function DashboardCompany() {
           registrationId = parts[1].trim();
         }
       } else if (decodedText.startsWith('{')) {
-        const data = JSON.parse(decodedText);
-        registrationId = data.id || data.registrationId;
+        try {
+          const data = JSON.parse(decodedText);
+          registrationId = data.id || data.registrationId;
+        } catch (e) {
+          logger.error('Erro ao parsear JSON do Scanner (Company):', e);
+        }
       }
 
       if (!registrationId || registrationId.length < 10) return;
@@ -194,7 +253,7 @@ export function DashboardCompany() {
 
       setTimeout(() => {
         setSwipeDirection(null);
-        refetchCompanies();
+        // refetchCompanies(); // No longer in child
         refetchDiscovery();
       }, 300);
     } catch (err) {
