@@ -8,6 +8,7 @@
  * Nenhum outro arquivo precisa ser tocado.
  */
 import type { Registration } from '@/types';
+import { safeParseJsonArray } from '@/lib/dataUtils';
 
 type DbRow = Record<string, unknown>;
 
@@ -40,7 +41,7 @@ export function mapRegistrationFromDB(item: DbRow): Registration {
 
         // Campos específicos Triunfo
         palestrasNoturnas: (item['night_lectures'] ?? false) as boolean,
-        cursosSelecionados: (item['selected_courses'] ?? []) as string[],
+        cursosSelecionados: safeParseJsonArray(item['selected_courses']),
         couponCode: (item['lecture_coupon'] ?? undefined) as string | undefined,
         discountAmount: (item['lecture_discount_amount'] ?? 0) as number,
 

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { safeParseJsonArray, safeParseJsonObject } from '@/lib/dataUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import type {
   Registration, Mentor, MentoringSession, Company, B2BMeeting,
@@ -177,6 +178,27 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
       result.registrationType = regType;
       result.ticketType = regType;
     }
+    // Defensive parsing for selected_courses
+    result.selectedCourses = safeParseJsonArray(item.selected_courses);
+    result.cursosSelecionados = result.selectedCourses;
+  }
+  
+  if (entityName === 'companies') {
+    // Defensive parsing for interest_areas
+    result.interestAreas = safeParseJsonArray(item.interest_areas);
+  }
+
+  if (entityName === 'startups') {
+    // Defensive parsing for metrics if it exists (is an object)
+    if (item.metrics) {
+      result.metrics = safeParseJsonObject(item.metrics);
+    }
+  }
+
+  if (entityName === 'mentors') {
+    // Defensive parsing for arrays in mentors
+    result.specialties = safeParseJsonArray(item.specialties);
+    result.tracks = safeParseJsonArray(item.tracks);
   }
   if (entityName === 'registration_batches') {
     result.name = item.name || item.company_name;

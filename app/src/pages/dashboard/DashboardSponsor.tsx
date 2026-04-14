@@ -635,40 +635,40 @@ function SponsorView({ user, registration, sponsorData, logout }: any) {
                           <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Responsável Interno</p>
                           <p className="text-white font-bold">Caio Borges</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-dark-200 border-dark-300">
-                    <CardHeader>
-                      <CardTitle className="text-white">Enviar Sugestão</CardTitle>
-                    </CardHeader>
-                      <form className="space-y-4 custom-scrollbar">
-                        <div>
-                          <label className="block text-sm text-gray-400 mb-2">Assunto</label>
-                          <input
-                            type="text"
-                            className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
-                            placeholder="Sobre o que é sua sugestão?"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-400 mb-2">Mensagem</label>
-                          <textarea
-                            rows={4}
-                            className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
-                            placeholder="Descreva sua sugestão ou dúvida..."
-                          />
-                        </div>
-                        <Button
-                          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
-                          onClick={() => toast.success('Mensagem enviada com sucesso!')}
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Enviar Mensagem
-                        </Button>
-                      </form>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-dark-200 border-dark-300">
+                      <CardHeader>
+                        <CardTitle className="text-white">Enviar Sugestão</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <form className="space-y-4 custom-scrollbar">
+                          <div>
+                            <label className="block text-sm text-gray-400 mb-2">Assunto</label>
+                            <input
+                              type="text"
+                              className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
+                              placeholder="Sobre o que é sua sugestão?"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-400 mb-2">Mensagem</label>
+                            <textarea
+                              rows={4}
+                              className="w-full bg-dark-100 border border-dark-300 rounded-lg px-4 py-2 text-white focus:border-yellow-500 focus:outline-none"
+                              placeholder="Descreva sua sugestão ou dúvida..."
+                            />
+                          </div>
+                          <Button
+                            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white"
+                            onClick={() => toast.success('Mensagem enviada com sucesso!')}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Enviar Mensagem
+                          </Button>
+                        </form>
+                      </CardContent>
+                    </Card>
                 </div>
               </TabsContent>
 

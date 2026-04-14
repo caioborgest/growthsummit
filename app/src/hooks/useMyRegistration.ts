@@ -10,6 +10,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/promiseUtils';
 import { registrationService } from '@/services/registrationService';
+import { safeParseJsonArray } from '@/lib/dataUtils';
 
 const PRIMARY_TABLE = 'growth_experience_registrations';
 
@@ -111,9 +112,7 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         status: row.status as string || undefined,
         statusPagamento: row.payment_status as string || undefined,
         palestrasNoturnas: Boolean(row.night_lectures) || (isProType && isActuallyPaid),
-        cursosSelecionados: Array.isArray(row.selected_courses)
-            ? (row.selected_courses as string[])
-            : [],
+        cursosSelecionados: safeParseJsonArray(row.selected_courses),
         valorPago: (row.paid_amount as number) || (row.final_amount as number) || 0,
         amount: (row.paid_amount as number) || (row.amount as number) || (row.final_amount as number) || 0,
         projectId: (row.project_id as string) || undefined,

@@ -224,7 +224,7 @@ export interface Company {
   packageType?: 'anchor' | 'vendor';
   maxMeetings: number;
   interestType?: 'buy' | 'sell' | 'partnership' | 'all' | 'comprar' | 'vender' | 'parceria' | 'todos' | string;
-  interestAreas?: string;
+  interestAreas?: string[];
   objectives?: string; // From DB 'objectives_description'
   companySize?: string; // From DB 'porte'
   annualRevenue?: string; // From DB 'faturamento_anual'
