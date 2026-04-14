@@ -26,24 +26,37 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     const stopScanner = async () => {
         if (isTransitioning.current) return;
         if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+            console.debug("[QRScanner] Stopping current scanner instance...");
             isTransitioning.current = true;
             try {
                 await html5QrCodeRef.current.stop();
                 html5QrCodeRef.current.clear();
             } catch (err) {
-                console.warn("Error stopping scanner:", err);
+                console.warn("[QRScanner] Stop error (likely already stopped):", err);
             } finally {
                 isTransitioning.current = false;
             }
         }
     };
 
-    const startScanner = async (html5QrCode: any, cameraIdOrConfig: any) => {
+    const startScanner = async (cameraIdOrConfig: any) => {
         if (isTransitioning.current) return false;
+        
+        // Ensure we have a div to attach to
+        if (!document.getElementById(readerId.current)) {
+            console.error("[QRScanner] Reader DIV not found in DOM");
+            return false;
+        }
+
         isTransitioning.current = true;
+        setIsLoading(true);
 
         try {
-            // Build advanced video constraints separately for the configuration object
+            // Re-instantiate the scanner for every start to ensure fresh state/hardware access
+            const { Html5Qrcode } = await import('html5-qrcode');
+            const scannerInstance = new Html5Qrcode(readerId.current);
+            html5QrCodeRef.current = scannerInstance;
+
             const videoConstraints: any = {
                 advanced: [
                     { focusMode: 'continuous' } as any,
@@ -54,13 +67,13 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 aspectRatio: 1.0
             };
 
-            // Ensure cameraIdOrConfig is either a simple string or a simple facingMode object
-            // to satisfy the library's strict "exactly 1 key" requirement for the first arg.
             const cameraParam = typeof cameraIdOrConfig === 'string' 
                 ? cameraIdOrConfig 
                 : { facingMode: cameraIdOrConfig.facingMode || 'environment' };
 
-            await html5QrCode.start(
+            console.debug("[QRScanner] Starting camera with parameter:", cameraParam);
+
+            await scannerInstance.start(
                 cameraParam,
                 {
                     fps: 15,
@@ -69,7 +82,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                         const qrboxSize = Math.floor(minEdgeSize * 0.75);
                         return { width: qrboxSize, height: qrboxSize };
                     },
-                    videoConstraints: videoConstraints, // Pass advanced constraints here
+                    videoConstraints: videoConstraints,
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
@@ -79,98 +92,52 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                             try {
                                 if (!isTransitioning.current) {
                                     isTransitioning.current = true;
-                                    await html5QrCode.stop();
+                                    await scannerInstance.stop();
+                                    scannerInstance.clear();
                                     isTransitioning.current = false;
                                 }
                             } catch (e) { 
                                 isTransitioning.current = false;
-                                console.warn("Scanner stop warning (already stopped or busy):", e);
                             }
                             
-                            if (isMounted) {
-                                setIsScanning(false);
-                                // Wrap onSuccess in try-catch to prevent unhandled rejection in the library's context
-                                try {
-                                    onSuccess(parsed, decodedText);
-                                } catch (onSuccessErr) {
-                                    console.error("Error in scanner onSuccess callback:", onSuccessErr);
-                                }
-                            }
-                        } else {
-                            toast.error("QR Code inválido para este evento.");
+                            setIsScanning(false);
+                            onSuccess(parsed, decodedText);
                         }
                     } catch (err) {
-                        console.error("Scanner success handler failed:", err);
+                        console.error("[QRScanner] Success callback failed:", err);
                         isTransitioning.current = false;
                     }
                 },
-                (error) => { 
-                    // Silent fail for frame-by-frame decoding errors
-                }
+                () => { /* frame error silent */ }
             );
 
-            // Try to enable torch/flashlight after camera starts
-            try {
-                const capabilities = html5QrCode.getRunningTrackCapabilities?.();
-                if (capabilities?.torch) {
-                    console.debug('Torch available on this device');
-                }
-                const track = html5QrCode.getRunningTrackSettings?.();
-                if (track) {
-                    const videoTrack = html5QrCode.getRunningTrack?.();
-                    if (videoTrack?.applyConstraints) {
-                        await videoTrack.applyConstraints({
-                            advanced: [{ focusMode: 'continuous' } as any]
-                        }).catch(() => { /* device doesn't support */ });
-                    }
-                }
-            } catch { /* capabilities API not available */ }
-
+            setIsLoading(false);
             isTransitioning.current = false;
             return true;
         } catch (err) {
-            console.error("Failed to start scanner:", err);
+            console.error("[QRScanner] Failed to start scanner:", err);
             isTransitioning.current = false;
+            setIsLoading(false);
             
-            // Fallback: try with minimal config
+            // Fallback: minimal attempt
             try {
-                if (isTransitioning.current) return false;
                 isTransitioning.current = true;
-                
                 const fallbackConfig = typeof cameraIdOrConfig === 'string' 
                     ? cameraIdOrConfig 
                     : { facingMode: 'environment' };
-                await html5QrCode.start(
+                
+                await html5QrCodeRef.current.start(
                     fallbackConfig,
-                    {
-                        fps: 15,
-                        qrbox: (vw: number, vh: number) => {
-                            const s = Math.floor(Math.min(vw, vh) * 0.75);
-                            return { width: s, height: s };
-                        },
-                    },
+                    { fps: 15, qrbox: 250 },
                     async (decodedText: string) => {
                         const parsed = parseQRString(decodedText);
-                        if (parsed || decodedText) {
-                            try { 
-                                isTransitioning.current = true;
-                                await html5QrCode.stop(); 
-                                isTransitioning.current = false;
-                            } catch { 
-                                isTransitioning.current = false;
-                            }
-                            setIsScanning(false);
-                            onSuccess(parsed, decodedText);
-                        } else {
-                            toast.error("QR Code inválido.");
-                        }
+                        onSuccess(parsed, decodedText);
                     },
                     () => { }
                 );
                 isTransitioning.current = false;
                 return true;
-            } catch (fallbackErr) {
-                console.error("Fallback scanner also failed:", fallbackErr);
+            } catch {
                 isTransitioning.current = false;
                 return false;
             }
@@ -179,7 +146,6 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
     useEffect(() => {
         let isMounted = true;
-        let scannerInstance: any = null;
 
         const initScanner = async () => {
             try {
@@ -189,32 +155,29 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 const devices = await Html5Qrcode.getCameras().catch(() => []);
                 if (isMounted && devices && devices.length > 0) {
                     setCameras(devices.map(d => ({ id: d.id, label: d.label })));
+                    
                     const backCamera = devices.find(d => 
                         d.label.toLowerCase().includes('back') || 
                         d.label.toLowerCase().includes('traseira') ||
                         d.label.toLowerCase().includes('environment')
                     );
-                    setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
-                }
-
-                setIsLoading(false);
-
-                // Short delay to ensure DOM is ready
-                await new Promise(resolve => setTimeout(resolve, 250));
-                if (!isMounted) return;
-
-                scannerInstance = new Html5Qrcode(readerId.current);
-                html5QrCodeRef.current = scannerInstance;
-
-                const config = selectedCameraId ? selectedCameraId : { facingMode: "environment" };
-                const success = await startScanner(scannerInstance, config);
-                
-                if (!success && isMounted) {
-                    setError('Não foi possível acessar a câmera. Verifique as permissões do navegador ou PWA.');
+                    
+                    const initialId = backCamera ? backCamera.id : devices[0].id;
+                    setSelectedCameraId(initialId);
+                    
+                    setIsLoading(false);
+                    // Critical wait for DOM to be ready for the new ID
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    if (isMounted) {
+                        await startScanner(initialId);
+                    }
+                } else {
+                    setIsLoading(false);
+                    setError('Nenhuma câmera detectada no dispositivo.');
                 }
             } catch (err) {
                 if (isMounted) {
-                    console.error("Scanner init error:", err);
+                    console.error("[QRScanner] Init error:", err);
                     setError('Erro ao carregar o módulo de câmera.');
                     setIsLoading(false);
                 }
@@ -225,40 +188,31 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
         return () => {
             isMounted = false;
-            // Immediate flag reset for safety
             isTransitioning.current = false;
-            
-            // Non-blocking stop with error suppression
-            stopScanner().catch(e => {
-                if (!String(e).includes('not scanning')) {
-                  console.debug("Scanner cleanup notice:", e);
-                }
-            });
+            stopScanner().catch(() => {});
         };
-    }, []); // Only run once on mount
+    }, []);
 
     const handleCameraChange = async (cameraId: string) => {
         if (isChangingCamera || isTransitioning.current) return;
         
+        console.debug("[QRScanner] Changing camera to:", cameraId);
         setIsChangingCamera(true);
         setSelectedCameraId(cameraId);
         
-        if (html5QrCodeRef.current) {
-            try {
-                // Force a clean stop
-                await stopScanner();
-                
-                // Essential delay to let hardware release
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                await startScanner(html5QrCodeRef.current, cameraId);
-            } catch (err) {
-                console.error("Camera switch error:", err);
-                toast.error("Erro ao trocar de câmera.");
-            } finally {
-                setIsChangingCamera(false);
-            }
-        } else {
+        try {
+            // 1. Force a clean stop
+            await stopScanner();
+            
+            // 2. Extra delay to let hardware and browser internal streams fully release
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 3. Restart with new ID (startScanner now handles re-instantiation)
+            await startScanner(cameraId);
+        } catch (err) {
+            console.error("[QRScanner] Camera switch failed:", err);
+            toast.error("Erro ao trocar de câmera.");
+        } finally {
             setIsChangingCamera(false);
         }
     };
