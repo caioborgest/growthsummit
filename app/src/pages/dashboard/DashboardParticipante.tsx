@@ -88,38 +88,21 @@ export function DashboardParticipante() {
   const { user, logout } = useAuth();
   const { selectedProject } = useProject();
   const { registration, isLoading, error: regError, refetch: refetchReg } = useMyRegistration();
-  const { data: partnerTeamData } = usePartnerTeam();
+  const { data: partnerTeamData, isLoading: isPartnerLoading } = usePartnerTeam();
 
   // Verifica se o usuário é membro da equipe (Staff) de forma síncrona/rápida para o guard
   const isStaffMember = !!(partnerTeamData && user && partnerTeamData.some(m => m.userId === user.id));
 
-  // 1. Guard de Carregamento
-  if (isLoading) {
+  // 1. Guard de Carregamento (Aguarda inscrição e dados de equipe)
+  if (isLoading || isPartnerLoading) {
     return <PageLoader />;
   }
 
-  // 2. Guard de Dados (Inscrição / Perfil)
-  // Staff/Expositores podem acessar sem inscrição pessoal se forem membros da equipe
-  if (!user || (!registration && !isStaffMember)) {
-    return (
-      <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-6 text-center">
-        <PremiumBackground />
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative z-10"
-        >
-            <Loader2 className="h-12 w-12 text-brand-orange-coral animate-spin mb-6 mx-auto" />
-            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Carregando Experiência</h2>
-            <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Preparando seu acesso exclusivo...</p>
-        </motion.div>
-      </div>
-    );
-  }
-
   // 2. Guard de Inscrição (Solicitado pelo usuário)
-  // Caso não tenha inscrição E não seja staff, mostramos o loader ou redirect (conforme sugestão)
-  if (!registration && !isStaffMember) {
+  // 2. Guard Obrigatório de Inscrição (Solicitado pelo usuário)
+  // Sem esse guard, o componente tenta acessar registration.X em undefined/null.
+  // IMPORTANTE: Staff também deve ter um registro para acessar visão de participante.
+  if (!registration) {
     // Mantemos a interface de "Inscrição Não Localizada" aqui ou PageLoader.
     // O usuário sugeriu LoadingSpinner, então usaremos o visual de loading.
     // Mas se o carregamento acabou e não achou nada, mostramos o erro amigável.
@@ -238,7 +221,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         if (isPartner) return null;
 
         // Corporate logic
-        if (registration.companyRegistrationBatches) {
+        if (registration?.companyRegistrationBatches) {
           const batchStatus = registration.companyRegistrationBatches.payment_status?.toLowerCase();
           if (batchStatus === 'paid') {
             return { 

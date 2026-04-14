@@ -370,11 +370,11 @@ export const registrationService = {
                 .select('*')
                 .eq('project_id', projectId);
 
-            // Resilient lookup: try ID, Ticket Number, then Email
+            // Resilient lookup: try ID, Ticket Number, QR Code, then Email
             if (isUUID) {
                 fallbackQuery = fallbackQuery.or(`id.eq.${searchTerm},email.ilike.${searchTerm}`);
             } else {
-                fallbackQuery = fallbackQuery.or(`ticket_number.eq.${searchTerm},email.ilike.${searchTerm}`);
+                fallbackQuery = fallbackQuery.or(`ticket_number.eq.${searchTerm},qr_code.eq.${searchTerm},email.ilike.${searchTerm}`);
             }
 
             const { data: byFallback, error: errFallback } = await fallbackQuery
