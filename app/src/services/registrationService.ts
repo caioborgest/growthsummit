@@ -402,6 +402,40 @@ export const registrationService = {
             }
         }
 
+        // 3. Last resort: Search by email across ALL projects (no project_id filter)
+        // The platform has a single active project; this prevents false negatives from project ID misalignment.
+        if (email) {
+            logger.info(`[registrationService] Levels 1-2 missed. Trying global email lookup for: ${email}`);
+
+            const { data: byGlobal, error: errGlobal } = await supabase
+                .from('growth_experience_registrations')
+                .select('*')
+                .ilike('email', email.trim())
+                .not('status', 'eq', 'cancelled')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (errGlobal) logger.error('[registrationService] Error finding by global email:', errGlobal);
+
+            if (byGlobal) {
+                logger.info(`[registrationService] Found registration ${byGlobal.id} (project ${byGlobal.project_id}) via global email fallback.`);
+
+                // Link user_id if missing or different
+                if (userId && (!byGlobal.user_id || byGlobal.user_id !== userId)) {
+                    logger.info(`[registrationService] Linking user ${userId} to registration ${byGlobal.id} via global email match.`);
+                    const { error: updateErr } = await supabase
+                        .from('growth_experience_registrations')
+                        .update({ user_id: userId, updated_at: new Date().toISOString() })
+                        .eq('id', byGlobal.id);
+
+                    if (updateErr) logger.error('[registrationService] Failed to link userId (global):', updateErr);
+                    else byGlobal.user_id = userId;
+                }
+                return byGlobal;
+            }
+        }
+
         return null;
     }
 };
