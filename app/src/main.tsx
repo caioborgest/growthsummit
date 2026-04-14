@@ -21,6 +21,31 @@ try {
   }
 } catch (_) {}
 
+// Global Error Suppression for known extension noise
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    // Suppress "Could not establish connection. Receiving end does not exist" which is extension noise
+    if (event.reason && 
+        (event.reason.message?.includes('Could not establish connection') || 
+         event.reason.message?.includes('Receiving end does not exist') ||
+         String(event.reason).includes('Could not establish connection'))) {
+      event.preventDefault();
+      console.debug('[Extension Noise Suppressed]:', event.reason.message || event.reason);
+    }
+  });
+
+  // Handle Chrome's runtime.lastError extension errors which are often not "rejections" but "errors"
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    const msg = String(args[0] || '');
+    if (msg.includes('Could not establish connection') || msg.includes('Receiving end does not exist')) {
+      console.debug('[Extension Error Suppressed]:', ...args);
+      return;
+    }
+    originalConsoleError.apply(console, args);
+  };
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryProvider>

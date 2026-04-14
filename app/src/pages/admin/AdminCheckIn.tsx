@@ -296,7 +296,12 @@ const AdminCheckIn = () => {
         registration={resultRegistration}
         onClose={() => {
           setScanResult(null);
-          if (isScanning) setScanKey(prev => prev + 1); // Auto-restart scanner
+          // Pequeno delay para permitir que o hardware da câmera respire antes de reiniciar
+          if (isScanning) {
+            setTimeout(() => {
+              setScanKey(prev => prev + 1);
+            }, 300);
+          }
         }}
       />
 

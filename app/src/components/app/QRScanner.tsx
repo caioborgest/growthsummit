@@ -73,24 +73,40 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
-                    const parsed = parseQRString(decodedText);
-                    if (parsed || decodedText) {
-                        try {
-                            if (!isTransitioning.current) {
-                                isTransitioning.current = true;
-                                await html5QrCode.stop();
+                    try {
+                        const parsed = parseQRString(decodedText);
+                        if (parsed || decodedText) {
+                            try {
+                                if (!isTransitioning.current) {
+                                    isTransitioning.current = true;
+                                    await html5QrCode.stop();
+                                    isTransitioning.current = false;
+                                }
+                            } catch (e) { 
                                 isTransitioning.current = false;
+                                console.warn("Scanner stop warning (already stopped or busy):", e);
                             }
-                        } catch (e) { 
-                            isTransitioning.current = false;
+                            
+                            if (isMounted) {
+                                setIsScanning(false);
+                                // Wrap onSuccess in try-catch to prevent unhandled rejection in the library's context
+                                try {
+                                    onSuccess(parsed, decodedText);
+                                } catch (onSuccessErr) {
+                                    console.error("Error in scanner onSuccess callback:", onSuccessErr);
+                                }
+                            }
+                        } else {
+                            toast.error("QR Code inválido para este evento.");
                         }
-                        setIsScanning(false);
-                        onSuccess(parsed, decodedText);
-                    } else {
-                        toast.error("QR Code inválido para este evento.");
+                    } catch (err) {
+                        console.error("Scanner success handler failed:", err);
+                        isTransitioning.current = false;
                     }
                 },
-                () => { } // silent scan failures
+                (error) => { 
+                    // Silent fail for frame-by-frame decoding errors
+                }
             );
 
             // Try to enable torch/flashlight after camera starts
@@ -209,7 +225,15 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
         return () => {
             isMounted = false;
-            stopScanner();
+            // Immediate flag reset for safety
+            isTransitioning.current = false;
+            
+            // Non-blocking stop with error suppression
+            stopScanner().catch(e => {
+                if (!String(e).includes('not scanning')) {
+                  console.debug("Scanner cleanup notice:", e);
+                }
+            });
         };
     }, []); // Only run once on mount
 
