@@ -188,8 +188,12 @@ const AdminCheckIn = () => {
         entity = partnerTeamMembers.find((m: any) => m.id === effectiveId);
         role = 'partner';
         
-        // Project ID validation for partners
-        if (entity && selectedProject?.id && entity.projectId !== selectedProject.id) {
+        // Project ID validation for partners - Relaxed for Triunfo reconciliation
+        const isSameProject = entity.projectId === selectedProject.id;
+        const isSameName = String(selectedProject.name).toLowerCase().includes('triunfo');
+        
+        if (entity && selectedProject?.id && !isSameProject && !isSameName) {
+            console.warn(`[AdminCheckIn] Partner project mismatch. Entity: ${entity.projectId}, Selected: ${selectedProject.id}`);
             toast.error('Colaborador pertence a outro evento.');
             triggerVibrate('error');
             setScanResult('error');
@@ -225,37 +229,43 @@ const AdminCheckIn = () => {
 
         if (data) {
            const reg = data as any;
-           // Validate project_id if scanner is in general mode or session mode
-           if (selectedProject?.id && reg.project_id !== selectedProject.id) {
-             toast.error('Este ingresso pertence a outro evento.', { id: 'fetch-reg' });
-             triggerVibrate('error');
-             setScanResult('error');
-             return;
-           }
+            // RELAXED VALIDATION: The user reports that even for the same "Triunfo" event, 
+            // IDs might mismatch due to multiple project entries or legacy registration sources.
+            const isSameProject = reg.project_id === selectedProject.id;
+            const isSameName = String(reg.event_name || '').toLowerCase().includes('triunfo') && 
+                               String(selectedProject.name).toLowerCase().includes('triunfo');
+            
+            if (selectedProject?.id && !isSameProject && !isSameName) {
+              console.warn(`[AdminCheckIn] Project mismatch. Reg: ${reg.project_id}, Selected: ${selectedProject.id}`);
+              toast.error('Este ingresso pertence a outro evento.', { id: 'fetch-reg' });
+              triggerVibrate('error');
+              setScanResult('error');
+              return;
+            }
 
-           const mapped: Registration = {
-                ...reg,
-                name: reg.name || reg.nome || reg.profiles?.name || reg.users?.name,
-                email: reg.email || reg.profiles?.email || reg.users?.email,
-                phone: reg.phone || reg.telefone || reg.profiles?.phone,
-                company: reg.empresa || reg.profiles?.company || reg.company,
-                projectId: reg.project_id,
-                userId: reg.user_id || reg.participant_id,
-                ticketNumber: reg.ticket_number,
-                checkedIn: reg.checked_in,
-                checkInAt: reg.check_in_at,
-                registrationType: reg.registration_type || reg.ticket_type
-           } as any;
+            const mapped: Registration = {
+                 ...reg,
+                 name: reg.name || reg.nome || reg.profiles?.name || reg.users?.name,
+                 email: reg.email || reg.profiles?.email || reg.users?.email,
+                 phone: reg.phone || reg.telefone || reg.profiles?.phone,
+                 company: reg.empresa || reg.profiles?.company || reg.company,
+                 projectId: reg.project_id,
+                 userId: reg.user_id || reg.participant_id,
+                 ticketNumber: reg.ticket_number,
+                 checkedIn: reg.checked_in,
+                 checkInAt: reg.check_in_at,
+                 registrationType: reg.registration_type || reg.ticket_type
+            } as any;
 
-           // Auto-toggle based on current state
-           const action = mapped.checkedIn ? 'check-out' : 'check-in';
-           await handleManualCheckIn(mapped, action);
-           toast.dismiss('fetch-reg');
-        } else {
-          setScanResult('error');
-          triggerVibrate('error');
-          toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
-        }
+            // Auto-toggle based on current state
+            const action = mapped.checkedIn ? 'check-out' : 'check-in';
+            await handleManualCheckIn(mapped, action);
+            toast.dismiss('fetch-reg');
+         } else {
+           setScanResult('error');
+           triggerVibrate('error');
+           toast.error('Ingresso não encontrado no sistema.', { id: 'fetch-reg' });
+         }
       } catch (err) {
         console.error('Erro ao buscar registro no scanner:', err);
         toast.error('Erro de conexão ao buscar registro.', { id: 'fetch-reg' });
@@ -265,8 +275,13 @@ const AdminCheckIn = () => {
     }
 
     if (registration) {
-      // Validate project_id
-      if (selectedProject?.id && registration.projectId !== selectedProject.id) {
+      // RELAXED VALIDATION: UUIDs might mismatch if logical events are duplicated.
+      const isSameProject = registration.projectId === selectedProject.id;
+      const isSameName = String(registration.eventName || '').toLowerCase().includes('triunfo') && 
+                         String(selectedProject.name).toLowerCase().includes('triunfo');
+
+      if (selectedProject?.id && !isSameProject && !isSameName) {
+        console.warn(`[AdminCheckIn] Project mismatch in local list. Reg: ${registration.projectId}, Selected: ${selectedProject.id}`);
         toast.error('Ingresso de outro evento.');
         triggerVibrate('error');
         setScanResult('error');
