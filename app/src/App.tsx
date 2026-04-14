@@ -1,10 +1,13 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { FileText, Home as HomeIcon, ArrowLeft } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
 import { getRedirectPathByRole } from '@/lib/auth-helpers';
+import { registrationService } from '@/services/registrationService';
+import { logger } from '@/lib/logger';
 
 // ── Helper para Carregamento Dinâmico com Retry ───────────────────────────
 const lazyWithRetry = (componentImport: () => Promise<{ default: any } | any>, exportName?: string) => {
@@ -209,7 +212,10 @@ function NotFound() {
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const { projectId } = useProject();
   const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState<'checking' | 'found' | 'not_found' | 'skipped'>('checking');
+  const registrationCheckDone = useRef(false);
 
   useEffect(() => {
     if (isLoading) {
@@ -220,6 +226,58 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
+
+  // Registration check for participant roles
+  useEffect(() => {
+    if (!isAuthenticated || !user || isLoading) return;
+
+    const userRole = (user.role || '').toLowerCase().trim();
+    const rolesRequiringRegistration = ['participant', 'participante'];
+
+    // Only check registration for participant-type roles
+    if (!rolesRequiringRegistration.includes(userRole)) {
+      setRegistrationStatus('skipped');
+      return;
+    }
+
+    // If we've already checked for this user/project combo, don't re-check
+    if (registrationCheckDone.current) return;
+
+    // Need projectId to check registration
+    if (!projectId) {
+      // No project context yet — skip check to avoid blocking
+      setRegistrationStatus('skipped');
+      return;
+    }
+
+    const checkRegistration = async () => {
+      try {
+        logger.info('[ProtectedRoute] Checking registration for participant:', user.email);
+        const registration = await registrationService.findAndLinkRegistration(
+          projectId,
+          user.id,
+          user.email
+        );
+
+        registrationCheckDone.current = true;
+
+        if (!registration) {
+          logger.warn('[ProtectedRoute] Participant has no registration. Redirecting to /inscricoes.');
+          setRegistrationStatus('not_found');
+        } else {
+          logger.info('[ProtectedRoute] Registration found:', registration.id);
+          setRegistrationStatus('found');
+        }
+      } catch (err) {
+        logger.error('[ProtectedRoute] Error checking registration:', err);
+        // On error, allow access to avoid blocking the user
+        registrationCheckDone.current = true;
+        setRegistrationStatus('skipped');
+      }
+    };
+
+    checkRegistration();
+  }, [isAuthenticated, user, isLoading, projectId]);
 
   if (isLoading && !hasTimedOut) {
     return <PageLoader />;
@@ -242,6 +300,18 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   if (allowedRoles && !normalizedAllowedRoles.includes(userRole)) {
     console.warn(`[ProtectedRoute] Acesso negado para role: ${userRole}. Permitidos: ${normalizedAllowedRoles}. Redirecionando para Home.`);
     return <Navigate to="/" replace />;
+  }
+
+  // For participant roles, wait for registration check to complete
+  const isParticipantRole = ['participant', 'participante'].includes(userRole);
+  if (isParticipantRole && registrationStatus === 'checking') {
+    return <PageLoader />;
+  }
+
+  // Redirect to registration page if participant has no registration
+  if (isParticipantRole && registrationStatus === 'not_found') {
+    window.location.href = '/inscricoes';
+    return <PageLoader />;
   }
 
   return <>{children}</>;
