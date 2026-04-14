@@ -758,11 +758,3 @@ function StartupView({ user, registration, startupData, logout }: any) {
 }
 
 export default DashboardStartup;
-fil' },
-        ]}
-      />
-    </div>
-  );
-}
-
-export default DashboardStartup;
