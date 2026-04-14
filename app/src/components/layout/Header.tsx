@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { getRedirectPathByRole } from '@/lib/auth-helpers';
 import { ProfileModal } from '@/components/profile/ProfileModal';
 import { useOutdoorTheme } from '@/hooks/useOutdoorTheme';
 import { useNotifications } from '@/hooks/useData';
@@ -76,14 +77,7 @@ export function Header() {
 
   const getDashboardLink = () => {
     if (!user) return '/login';
-    switch (user.role) {
-      case 'admin': return '/admin';
-      case 'mentor': return '/mentor-area';
-      case 'company': return '/empresa-area';
-      case 'startup': return '/startup-area';
-      case 'sponsor': return '/patrocinador-area';
-      default: return '/minha-area';
-    }
+    return getRedirectPathByRole(user.role);
   };
 
   return (

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PageLoader } from './components/ui/PageLoader';
+import { getRedirectPathByRole } from '@/lib/auth-helpers';
 
 // ── Helper para Carregamento Dinâmico com Retry ───────────────────────────
 const lazyWithRetry = (componentImport: () => Promise<{ default: any } | any>, exportName?: string) => {
@@ -249,20 +250,7 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 function Home() {
   const { isAuthenticated, user } = useAuth();
   if (isAuthenticated && user) {
-    const rolesToPaths: Record<string, string> = {
-      'superadmin': '/admin',
-      'admin': '/admin',
-      'staff': '/admin/check-in',
-      'mentor': '/mentor-area',
-      'company': '/empresa-area',
-      'startup': '/startup-area',
-      'sponsor': '/patrocinador-area',
-      'participant': '/minha-area',
-      'participante': '/minha-area',
-      'visitor': '/',
-      'speaker': '/'
-    };
-    const path = rolesToPaths[user.role] || '/';
+    const path = getRedirectPathByRole(user.role);
     if (path !== '/') return <Navigate to={path} replace />;
   }
 

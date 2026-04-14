@@ -232,3 +232,31 @@ export async function createAuthUserWithoutSession({
 
     return data.user;
 }
+
+/**
+ * Retorna o caminho de redirecionamento padrão baseado na role do usuário.
+ * Centraliza a lógica de navegação pós-login e de dashboard.
+ */
+export function getRedirectPathByRole(role?: string): string {
+  const normalizedRole = (role || '').toLowerCase().trim();
+
+  switch (normalizedRole) {
+    case 'admin':
+    case 'superadmin':
+    case 'staff':
+      return '/admin';
+    case 'mentor':
+      return '/mentor-area';
+    case 'company':
+      return '/empresa-area';
+    case 'startup':
+      return '/startup-area';
+    case 'sponsor':
+      return '/patrocinador-area';
+    case 'participant':
+    case 'participante':
+    default:
+      return '/minha-area';
+  }
+}
+

@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { getRedirectPathByRole } from '@/lib/auth-helpers';
 import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -36,12 +37,7 @@ export function Login() {
 
   useEffect(() => {
     if (isAuthenticated && user && !user.requires2FA) {
-      const paths: Record<string, string> = {
-        admin: '/admin', mentor: '/mentor-area', company: '/empresa-area',
-        startup: '/startup-area', sponsor: '/patrocinador-area',
-        participant: '/minha-area', participante: '/minha-area',
-      };
-      navigate(paths[user.role] || '/', { replace: true });
+      navigate(getRedirectPathByRole(user.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -69,12 +65,7 @@ export function Login() {
       if (loginMethod === 'password') {
         const loggedInUser = await login(email, password);
         if (loggedInUser && !loggedInUser.requires2FA) {
-          const paths: Record<string, string> = {
-            admin: '/admin', mentor: '/mentor-area', company: '/empresa-area',
-            startup: '/startup-area', sponsor: '/patrocinador-area',
-            participant: '/minha-area', participante: '/minha-area',
-          };
-          navigate(paths[loggedInUser.role] || '/', { replace: true });
+          navigate(getRedirectPathByRole(loggedInUser.role), { replace: true });
         }
       } else {
         await loginWithOTP(email);
