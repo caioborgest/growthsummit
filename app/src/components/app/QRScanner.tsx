@@ -56,8 +56,6 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
         if (isTransitioning.current) return false;
         
         isTransitioning.current = true;
-        // Don't set global isLoading(true) here as it might UNMOUNT the reader div again
-        // due to our conditional JSX. Instead, just track if the camera is starting.
 
         try {
             // 1. Wait for the DIV to be definitely present in the DOM
@@ -68,26 +66,23 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             const scannerInstance = new Html5Qrcode(readerId.current);
             html5QrCodeRef.current = scannerInstance;
 
-            const videoConstraints: any = {
-                advanced: [
-                    { focusMode: 'continuous' } as any,
-                    { zoom: 1.0 } as any
-                ],
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                aspectRatio: 1.0
+            // Relaxed constraints for maximum compatibility with USB 2.0 cameras
+            const videoConstraints: MediaTrackConstraints = {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: typeof cameraIdOrConfig === 'string' ? undefined : (cameraIdOrConfig.facingMode || 'environment')
             };
 
             const cameraParam = typeof cameraIdOrConfig === 'string' 
                 ? cameraIdOrConfig 
                 : { facingMode: cameraIdOrConfig.facingMode || 'environment' };
 
-            console.debug("[QRScanner] Starting camera with parameter:", cameraParam);
+            console.debug("[QRScanner] Attempting start with:", cameraParam, videoConstraints);
 
             await scannerInstance.start(
                 cameraParam,
                 {
-                    fps: 15,
+                    fps: 20,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
                         const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
                         const qrboxSize = Math.floor(minEdgeSize * 0.75);
@@ -122,33 +117,58 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 () => { /* frame error silent */ }
             );
 
+            // 3. Post-initialization: Apply advanced features ONLY if supported
+            // This prevents the whole scanner from failing if a cheap camera doesn't support focus/zoom
+            try {
+                const track = scannerInstance.getRunningTrack();
+                if (track && track.applyConstraints) {
+                    const capabilities = track.getCapabilities?.() || {};
+                    const advancedProps: any = {};
+                    
+                    if (capabilities.focusMode?.includes('continuous')) {
+                        advancedProps.focusMode = 'continuous';
+                    }
+                    
+                    if (Object.keys(advancedProps).length > 0) {
+                        await track.applyConstraints({ advanced: [advancedProps] } as any).catch(() => {});
+                    }
+                }
+            } catch (pEx) {
+                console.debug("[QRScanner] Advanced constraints ignored:", pEx);
+            }
+
             isTransitioning.current = false;
             return true;
-        } catch (err) {
+        } catch (err: any) {
             console.error("[QRScanner] Failed to start scanner:", err);
             isTransitioning.current = false;
             
-            // Fallback: minimal attempt
+            // Explicit user feedback for hardware locks
+            const errMsg = String(err).toLowerCase();
+            if (errMsg.includes("notreadable") || errMsg.includes("in use") || errMsg.includes("lock")) {
+                toast.error("Câmera em uso por outro aplicativo ou bloqueada pelo sistema.");
+            } else if (errMsg.includes("notfound") || errMsg.includes("device not found")) {
+                toast.error("Dispositivo de câmera não localizado.");
+            } else {
+                toast.error(`Erro ao iniciar câmera: ${err.name || 'Desconhecido'}`);
+            }
+            
+            // Fallback: minimal attempt with absolute defaults
             try {
-                const fallbackConfig = typeof cameraIdOrConfig === 'string' 
-                    ? cameraIdOrConfig 
-                    : { facingMode: 'environment' };
-                
                 if (html5QrCodeRef.current) {
                     await html5QrCodeRef.current.start(
-                        fallbackConfig,
-                        { fps: 15, qrbox: 250 },
+                        { facingMode: 'environment' },
+                        { fps: 10, qrbox: 250 },
                         async (decodedText: string) => {
                             const parsed = parseQRString(decodedText);
                             onSuccess(parsed, decodedText);
                         },
                         () => { }
                     );
+                    return true;
                 }
-                isTransitioning.current = false;
-                return true;
+                return false;
             } catch {
-                isTransitioning.current = false;
                 return false;
             }
         }
