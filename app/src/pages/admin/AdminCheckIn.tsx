@@ -214,7 +214,7 @@ const AdminCheckIn = () => {
     }
 
     // Standard Registration flow - STAY ACTIVE
-    const registration = registrations.find(r => r.id === effectiveId);
+    const registration = registrations.find(r => r.id === effectiveId || (r.ticketNumber || '').toLowerCase() === effectiveId.toLowerCase());
     
     if (!registration) {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });

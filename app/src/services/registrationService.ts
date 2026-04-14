@@ -360,33 +360,44 @@ export const registrationService = {
             if (byUser) return byUser;
         }
 
-        // 2. Fallback: Search by email (case-insensitive ILIKE)
+        // 2. Fallback: Search by email (case-insensitive ILIKE), Ticket Number, or exact ID
         if (email) {
-            const { data: byEmail, error: errEmail } = await supabase
+            const searchTerm = email.trim();
+            const isUUID = this.isValidUUID(searchTerm);
+            
+            let fallbackQuery = supabase
                 .from('growth_experience_registrations')
                 .select('*')
-                .eq('project_id', projectId)
-                .ilike('email', email.trim())
+                .eq('project_id', projectId);
+
+            // Resilient lookup: try ID, Ticket Number, then Email
+            if (isUUID) {
+                fallbackQuery = fallbackQuery.or(`id.eq.${searchTerm},email.ilike.${searchTerm}`);
+            } else {
+                fallbackQuery = fallbackQuery.or(`ticket_number.eq.${searchTerm},email.ilike.${searchTerm}`);
+            }
+
+            const { data: byFallback, error: errFallback } = await fallbackQuery
                 .in('status', ['active', 'pending', 'confirmed', 'pago'])
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
 
-            if (errEmail) logger.error('[registrationService] Error finding by email fallback:', errEmail);
+            if (errFallback) logger.error('[registrationService] Error finding by fallback:', errFallback);
             
-            if (byEmail) {
-                // If found by email but missing user_id (or different), link it now
-                if (userId && (!byEmail.user_id || byEmail.user_id !== userId)) {
-                    logger.info(`[registrationService] Linking user ${userId} to registration ${byEmail.id} via email match.`);
+            if (byFallback) {
+                // If found by fallback but missing user_id (or different), link it now
+                if (userId && (!byFallback.user_id || byFallback.user_id !== userId)) {
+                    logger.info(`[registrationService] Linking user ${userId} to registration ${byFallback.id} via fallback match.`);
                     const { error: updateErr } = await supabase
                         .from('growth_experience_registrations')
                         .update({ user_id: userId, updated_at: new Date().toISOString() })
-                        .eq('id', byEmail.id);
+                        .eq('id', byFallback.id);
                     
                     if (updateErr) logger.error('[registrationService] Failed to link userId:', updateErr);
-                    else byEmail.user_id = userId; // Update local object
+                    else byFallback.user_id = userId; // Update local object
                 }
-                return byEmail;
+                return byFallback;
             }
         }
 
