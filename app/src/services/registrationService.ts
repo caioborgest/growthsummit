@@ -100,32 +100,33 @@ export const registrationService = {
             p_phone: params.phone || '',
             p_cpf: params.cpf || '',
             p_session_ids: cleanSessionIds,
-            p_registration_type: params.registrationType || 'standard',
-            p_paid_amount: Number(params.paidAmount) || 0,
-            p_payment_status: params.paymentStatus || (params.palestrasNoturnas ? 'pending' : 'paid'),
+            p_tipo_inscricao: params.registrationType || 'standard',
+            p_valor_pago: Number(params.paidAmount) || 0,
+            p_status_pagamento: params.paymentStatus || (params.palestrasNoturnas ? 'pending' : 'paid'),
             p_status: params.status || (params.palestrasNoturnas ? 'pending' : 'active'),
-            p_event_name: params.eventName || 'Growth Experience',
-            p_night_lectures: Boolean(params.palestrasNoturnas),
-            p_activity_type: params.tipoAtividade || null,
-            p_activity_room: params.salaAtividade || null,
-            p_activity_schedule: params.horarioAtividade || null,
-            p_activity_level: params.nivelAtividade || null,
-            p_referral_type: inferredReferralType,
-            p_referral_name: inferredReferralName,
+            p_evento: params.eventName || 'Growth Experience',
+            p_palestras_noturnas: Boolean(params.palestrasNoturnas),
+            p_tipo_atividade: params.tipoAtividade || null,
+            p_sala_atividade: params.salaAtividade || null,
+            p_horario_atividade: params.horarioAtividade || null,
+            p_nivel_atividade: params.nivelAtividade || null,
+            p_indicacao_tipo: inferredReferralType,
+            p_indicacao_nome: inferredReferralName,
             p_social_code: params.socialCode || null,
             p_lecture_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
-            p_batch_id: cleanBatchId || null,
-            p_company_voucher: params.companyVoucher || null,
-            p_app_installed: Boolean(params.appInstalled),
+            p_lote_id: cleanBatchId || null,
+            p_voucher_empresa: params.companyVoucher || null,
+            // p_app_installed is handled locally if needed, not supported by this RPC
         };
 
         logger.info('[registrationService] Executing RPC register_participant_with_slots:', {
             project: payload.p_project_id,
             user: payload.p_user_id,
             sessions: payload.p_session_ids.length,
-            batch: payload.p_batch_id,
-            type: payload.p_registration_type
+            lote: payload.p_lote_id,
+            voucher: payload.p_voucher_empresa,
+            status: payload.p_status
         });
 
         console.debug('DEBUG - Registration Payload Keys:', Object.keys(payload));
