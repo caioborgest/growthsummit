@@ -38,14 +38,28 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
 
     const stopScanner = async () => {
         if (isTransitioning.current) return;
-        if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-            console.debug("[QRScanner] Stopping current scanner instance...");
+        
+        const instance = html5QrCodeRef.current;
+        if (instance && instance.isScanning) {
+            console.debug("[QRScanner] Executing aggressive stop sequence...");
             isTransitioning.current = true;
             try {
-                await html5QrCodeRef.current.stop();
-                html5QrCodeRef.current.clear();
+                // 1. Tell the library to stop
+                await instance.stop();
+                instance.clear();
+                
+                // 2. Secondary fail-safe: explicitly stop any remaining tracks on the video element
+                // This forces the OS to release the hardware lock immediately.
+                const videoEl = document.querySelector(`#${readerId.current} video`) as HTMLVideoElement;
+                if (videoEl && videoEl.srcObject instanceof MediaStream) {
+                    videoEl.srcObject.getTracks().forEach(track => {
+                        track.stop();
+                        console.debug(`[QRScanner] Manually stopped track: ${track.label}`);
+                    });
+                    videoEl.srcObject = null;
+                }
             } catch (err) {
-                console.warn("[QRScanner] Stop error (likely already stopped):", err);
+                console.warn("[QRScanner] Stop warning:", err);
             } finally {
                 isTransitioning.current = false;
             }
@@ -58,26 +72,27 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
         isTransitioning.current = true;
 
         try {
-            // 1. Wait for the DIV to be definitely present in the DOM
             await waitForElement(readerId.current);
 
-            // 2. Re-instantiate the scanner for every start to ensure fresh state/hardware access
             const { Html5Qrcode } = await import('html5-qrcode');
             const scannerInstance = new Html5Qrcode(readerId.current);
             html5QrCodeRef.current = scannerInstance;
 
-            // Relaxed constraints for maximum compatibility with USB 2.0 cameras
+            // USE STRICT CONSTRAINTS: Passing 'exact' deviceId forces the browser 
+            // to connect to the specific hardware requested rather than defaulting back.
+            const isIdString = typeof cameraIdOrConfig === 'string';
             const videoConstraints: MediaTrackConstraints = {
+                deviceId: isIdString ? { exact: cameraIdOrConfig } : undefined,
                 width: { ideal: 640 },
                 height: { ideal: 480 },
-                facingMode: typeof cameraIdOrConfig === 'string' ? undefined : (cameraIdOrConfig.facingMode || 'environment')
+                facingMode: isIdString ? undefined : (cameraIdOrConfig.facingMode || 'environment')
             };
 
-            const cameraParam = typeof cameraIdOrConfig === 'string' 
+            const cameraParam = isIdString 
                 ? cameraIdOrConfig 
                 : { facingMode: cameraIdOrConfig.facingMode || 'environment' };
 
-            console.debug("[QRScanner] Attempting start with:", cameraParam, videoConstraints);
+            console.debug("[QRScanner] Directing hardware to:", cameraParam);
 
             await scannerInstance.start(
                 cameraParam,
@@ -88,7 +103,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                         const qrboxSize = Math.floor(minEdgeSize * 0.75);
                         return { width: qrboxSize, height: qrboxSize };
                     },
-                    videoConstraints: videoConstraints,
+                    videoConstraints: videoConstraints, // These now include 'exact' deviceId
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
@@ -105,7 +120,6 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                             } catch (e) { 
                                 isTransitioning.current = false;
                             }
-                            
                             setIsScanning(false);
                             onSuccess(parsed, decodedText);
                         }
@@ -117,20 +131,13 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 () => { /* frame error silent */ }
             );
 
-            // 3. Post-initialization: Apply advanced features ONLY if supported
-            // This prevents the whole scanner from failing if a cheap camera doesn't support focus/zoom
+            // Apply focus constraints after start
             try {
                 const track = scannerInstance.getRunningTrack();
                 if (track && track.applyConstraints) {
                     const capabilities = track.getCapabilities?.() || {};
-                    const advancedProps: any = {};
-                    
                     if (capabilities.focusMode?.includes('continuous')) {
-                        advancedProps.focusMode = 'continuous';
-                    }
-                    
-                    if (Object.keys(advancedProps).length > 0) {
-                        await track.applyConstraints({ advanced: [advancedProps] } as any).catch(() => {});
+                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] } as any).catch(() => {});
                     }
                 }
             } catch (pEx) {
@@ -143,34 +150,17 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             console.error("[QRScanner] Failed to start scanner:", err);
             isTransitioning.current = false;
             
-            // Explicit user feedback for hardware locks
             const errMsg = String(err).toLowerCase();
             if (errMsg.includes("notreadable") || errMsg.includes("in use") || errMsg.includes("lock")) {
-                toast.error("Câmera em uso por outro aplicativo ou bloqueada pelo sistema.");
-            } else if (errMsg.includes("notfound") || errMsg.includes("device not found")) {
-                toast.error("Dispositivo de câmera não localizado.");
+                toast.error("Câmera em uso ou bloqueada pelo sistema. Tente liberar o dispositivo.");
+            } else if (errMsg.includes("constraint") || errMsg.includes("overconstrained")) {
+                // If 'exact' fails, try a final loose fallback to SOMETHING working
+                console.warn("[QRScanner] Strict constraints failed, falling back to loose mode...");
+                return await startScanner({ facingMode: 'environment' });
             } else {
-                toast.error(`Erro ao iniciar câmera: ${err.name || 'Desconhecido'}`);
+                toast.error(`Erro: ${err.name || 'Câmera não responde'}`);
             }
-            
-            // Fallback: minimal attempt with absolute defaults
-            try {
-                if (html5QrCodeRef.current) {
-                    await html5QrCodeRef.current.start(
-                        { facingMode: 'environment' },
-                        { fps: 10, qrbox: 250 },
-                        async (decodedText: string) => {
-                            const parsed = parseQRString(decodedText);
-                            onSuccess(parsed, decodedText);
-                        },
-                        () => { }
-                    );
-                    return true;
-                }
-                return false;
-            } catch {
-                return false;
-            }
+            return false;
         }
     };
 
