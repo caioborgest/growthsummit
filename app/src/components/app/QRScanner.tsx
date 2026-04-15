@@ -335,14 +335,14 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                 </div>
                             )}
 
-                             <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'w-full aspect-[4/3] max-h-[60vh] mx-auto' : 'aspect-[4/3]'}`}>
-                                <div id={readerId.current} className="w-full h-full [&>video]:object-contain [&>video]:w-full [&>video]:h-full [&>video]:bg-black"></div>
+                             <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'w-full aspect-video max-h-[60vh] mx-auto' : 'aspect-video'}`}>
+                                <div id={readerId.current} className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full [&>video]:bg-black"></div>
 
                                 {isScanning && (
                                     <div className="absolute inset-0 pointer-events-none">
-                                        {/* Scanner Frame - Adjusted for 4:3 container */}
-                                        <div className="absolute inset-0 flex items-center justify-center p-2">
-                                            <div className="w-[95%] aspect-square border-4 border-brand-orange-coral/60 rounded-[2.5rem] relative">
+                                        {/* Scanner Frame - Optimized for 16:9 container */}
+                                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                                            <div className="h-[90%] aspect-square border-4 border-brand-orange-coral/40 rounded-[2.5rem] relative">
                                                 {/* Corner markers */}
                                                 <div className="absolute -top-1 -left-1 w-12 h-12 border-t-8 border-l-8 border-white rounded-tl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
                                                 <div className="absolute -top-1 -right-1 w-12 h-12 border-t-8 border-r-8 border-white rounded-tr-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
