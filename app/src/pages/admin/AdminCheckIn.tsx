@@ -12,6 +12,7 @@ import {
   QrCode
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useProject } from '@/contexts/ProjectContext';
 import { useData } from '@/hooks/useData';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCheckInQueue } from '@/hooks/useCheckInQueue';
 import { registrationService } from '@/services/registrationService';
 import type { Registration, Mentor, Company, Startup } from '@/types';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, LogOut as LogOutIcon } from 'lucide-react';
 
 const AdminCheckIn = () => {
   const { selectedProject } = useProject();
@@ -58,11 +59,20 @@ const AdminCheckIn = () => {
   const { data: sessions } = useData<any>([], 'sessions');
   const { data: partnerTeamMembers } = useData<any>([], 'partner_team_members');
 
+  // Handle escape to close totem
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowTotem(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
   // Monitoramento em tempo real de novos check-ins
   useEffect(() => {
     if (checkIns.length > 0) {
       const lastCheckIn = checkIns[0]; // Assumindo ordenação por tempo desc
-      const isRecent = new Date().getTime() - new Date(lastCheckIn.timestamp || lastCheckIn.check_in_at).getTime() < 5000;
+      const isRecent = new Date().getTime() - new Date(lastCheckIn.timestamp || lastCheckIn.check_in_at || lastCheckIn.created_at).getTime() < 5000;
       
       if (isRecent && lastCheckIn.method === 'self_scan') {
         toast.success(`Auto Credenciamento: ${lastCheckIn.user_name || 'Concluído'}`, {
@@ -92,7 +102,7 @@ const AdminCheckIn = () => {
 
   const checkInsToday = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    return checkIns.filter((c: any) => (c.timestamp || c.checkInAt || '').startsWith(today)).length;
+    return checkIns.filter((c: any) => (c.timestamp || c.checkInAt || c.created_at || '').startsWith(today)).length;
   }, [checkIns]);
 
   const triggerVibrate = (type: 'success' | 'warning' | 'error') => {
@@ -237,18 +247,14 @@ const AdminCheckIn = () => {
     if (!registration) {
       toast.loading('Buscando registro no banco...', { id: 'fetch-reg' });
       try {
-        // Use resilient lookup (handles case-insensitive email and auto-linking if userId is known)
-        // Here we don't have a userId if we only have an ID or email, but we pass what we have
         const data = await registrationService.findAndLinkRegistration(
           selectedProject.id,
-          undefined, // No userId known for anonymous terminal check-in
-          effectiveId // Might be email
+          undefined, 
+          effectiveId 
         );
 
         if (data) {
            const reg = data as any;
-            // RELAXED VALIDATION: The user reports that even for the same "Triunfo" event, 
-            // IDs might mismatch due to multiple project entries or legacy registration sources.
             const isSameProject = reg.project_id === selectedProject.id;
             const isSameName = String(reg.event_name || '').toLowerCase().includes('triunfo') && 
                                String(selectedProject.name).toLowerCase().includes('triunfo');
@@ -293,62 +299,26 @@ const AdminCheckIn = () => {
     }
 
     if (registration) {
-      // RELAXED VALIDATION: UUIDs might mismatch if logical events are duplicated.
       const isSameProject = registration.projectId === selectedProject.id;
       const isSameName = String(registration.eventName || '').toLowerCase().includes('triunfo') && 
                          String(selectedProject.name).toLowerCase().includes('triunfo');
 
       if (selectedProject?.id && !isSameProject && !isSameName) {
-        console.warn(`[AdminCheckIn] Project mismatch in local list. Reg: ${registration.projectId}, Selected: ${selectedProject.id}`);
-        toast.error('Ingresso de outro evento.');
-        triggerVibrate('error');
-        setScanResult('error');
-        return;
+         toast.error('Pertence a outro evento.');
+         triggerVibrate('error');
+         setScanResult('error');
+         return;
       }
-      // Auto-toggle based on current state
+
       const action = registration.checkedIn ? 'check-out' : 'check-in';
       await handleManualCheckIn(registration, action);
     }
-  }, [registrations, mentors, companies, startups, partnerTeamMembers, handleManualCheckIn, selectedProject]);
-
-  const handleEntitySelection = (entity: any, role: 'participant' | 'mentor' | 'company' | 'startup' | 'partner') => {
-    setSelectedEntity(entity);
-    setSelectedRole(role);
-    setIsChecklistOpen(true);
-  };
-
-  const selectedSession = useMemo(() => 
-    sessions.find((s: any) => s.id === selectedSessionId), 
-  [sessions, selectedSessionId]);
+  }, [selectedProject, registrations, mentors, companies, startups, partnerTeamMembers, handleManualCheckIn]);
 
   return (
-    <div className="min-h-screen bg-[#0c0e12] p-4 lg:p-12 space-y-8 sm:space-y-12 pb-32">
-      {/* Result Modal */}
-      <CheckInResultModal
-        result={scanResult}
-        registration={resultRegistration}
-        onClose={() => {
-          setScanResult(null);
-          // Pequeno delay para permitir que o hardware da câmera respire antes de reiniciar
-          if (isScanning) {
-            setTimeout(() => {
-              setScanKey(prev => prev + 1);
-            }, 300);
-          }
-        }}
-      />
-
-      {/* Checklist Modal */}
-      <AccreditationChecklistModal
-        isOpen={isChecklistOpen}
-        onClose={() => setIsChecklistOpen(false)}
-        entity={selectedEntity}
-        role={selectedRole}
-        projectId={selectedProject?.id || ''}
-      />
-
+    <div className="min-h-screen bg-[#0c0e12] p-4 sm:p-8 lg:p-12 pb-32">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
         <div className="relative">
           <div className="absolute -top-6 -left-6 w-24 h-24 bg-brand-orange-coral/10 rounded-full blur-3xl" />
           <div className="relative">
@@ -419,7 +389,7 @@ const AdminCheckIn = () => {
       </div>
     </div>
 
-    <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
+    <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-stretch mb-12">
         {/* Search Panel */}
         <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[3rem] relative overflow-hidden flex flex-col">
           <div className="relative mb-8">
@@ -450,103 +420,91 @@ const AdminCheckIn = () => {
                         ? 'bg-emerald-500/20 border-emerald-500/30' 
                         : 'bg-brand-orange-coral/10 border-brand-orange-coral/20'
                       }`}>
-                         {reg.checkedIn ? (
-                           <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-                         ) : (
-                           <Ticket className="h-8 w-8 text-brand-orange-coral" />
-                         )}
+                        {reg.checkedIn ? <CheckCircle2 className="h-7 w-7 text-emerald-500" /> : <Users className="h-7 w-7 text-brand-orange-coral" />}
                       </div>
-                      <div>
-                        <h3 className="text-white font-black italic text-xl uppercase tracking-tighter leading-tight">{reg.name}</h3>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{reg.ticketNumber}</span>
-                          <div className="h-1 w-1 rounded-full bg-gray-700" />
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{reg.registrationType}</span>
-                        </div>
+                      <div className="text-left">
+                        <h3 className="text-white font-black text-lg uppercase italic leading-none mb-1">{reg.name}</h3>
+                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{reg.email}</p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 relative z-10">
-                      {reg.checkedIn ? (
-                        <div className="flex flex-col items-end gap-2">
-                           <Badge className="bg-emerald-500/10 text-emerald-400 border-none px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase">
-                             PRESENTADO
-                           </Badge>
-                           <Button
-                              onClick={() => handleManualCheckIn(reg, 'check-out')}
-                              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-amber-500/20"
-                           >
-                             <LogOut className="h-3 w-3" />
-                             Registrar Saída
-                           </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          disabled={loadingReg}
-                          onClick={() => handleManualCheckIn(reg, 'check-in')}
-                          className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white h-14 px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-brand-orange-coral/20 active:scale-95 transition-transform flex items-center gap-3"
-                        >
-                          Check-in <LogIn className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Gradient background decoration */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange-coral/5 blur-3xl -mr-16 -mt-16 group-hover:bg-brand-orange-coral/10 transition-all" />
+                    
+                    <Button
+                      variant={reg.checkedIn ? "outline" : "default"}
+                      onClick={() => handleManualCheckIn(reg, reg.checkedIn ? 'check-out' : 'check-in')}
+                      className={`h-12 px-8 rounded-2xl font-black text-[10px] tracking-[0.2em] relative z-10 transition-all active:scale-95 ${
+                        reg.checkedIn 
+                        ? 'bg-transparent border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10' 
+                        : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-lg shadow-brand-orange-coral/20'
+                      }`}
+                    >
+                      {reg.checkedIn ? 'CHECK-OUT' : 'CHECK-IN'}
+                    </Button>
                   </div>
                 ))
               ) : (
-                <div className="py-20 text-center opacity-20">
-                  <Search className="h-10 w-10 mx-auto mb-4 text-gray-500" />
-                  <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Nenhum registro encontrado</p>
-                </div>
+                <div className="py-20 text-center opacity-30 italic">Nenhum resultado para "{searchQuery}"</div>
               )
             ) : (
-              <div className="py-20 text-center opacity-10">
-                <Clock className="h-10 w-10 mx-auto mb-4 text-gray-700" />
-                <p className="text-[10px] font-black uppercase text-gray-700 tracking-widest">Aguardando busca para acreditação manual</p>
-              </div>
+               <div className="py-20 text-center opacity-50 space-y-4">
+                  <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                    <Search className="h-8 w-8 text-gray-700" />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Aguardando pesquisa ou leitura...</p>
+               </div>
             )}
           </div>
         </div>
 
-        {/* Scanner Terminal */}
-        <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-6 sm:mb-8 relative z-10">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-brand-orange-coral italic uppercase tracking-tight">Terminal Scanner</h2>
-              <p className="text-[9px] sm:text-[10px] font-black text-gray-700 uppercase tracking-widest">ACREDITAÇÃO POR QR CODE</p>
-            </div>
-            <Camera className="h-6 w-6 text-brand-orange-coral opacity-20" />
-          </div>
-
-          <div className="flex-1 flex flex-col items-center justify-center bg-black/40 rounded-[2rem] border-2 border-dashed border-white/5 relative group overflow-hidden z-10">
-            {!isScanning ? (
-              <div className="text-center p-10">
-                <div className="relative mb-8">
-                  <div className="w-24 h-24 bg-brand-orange-coral/10 rounded-full flex items-center justify-center mx-auto border border-brand-orange-coral/20">
-                    <Camera className="h-12 w-12 text-brand-orange-coral" />
-                  </div>
-                  <div className="absolute -inset-4 border border-brand-orange-coral/20 rounded-full animate-ping opacity-20" />
+        {/* Scanner Panel */}
+        <div className="glass-card p-5 sm:p-10 border-white/5 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br from-[#12141c] to-[#0c0e12] relative overflow-hidden">
+          <div className="relative z-10 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                  <Camera className="h-6 w-6 text-teal-400" />
                 </div>
-                <h3 className="text-white font-black italic uppercase tracking-tighter mb-2 text-xl">Pronto para Digitalizar</h3>
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-8 leading-relaxed max-w-[200px] mx-auto">
-                   Posicione o QR Code do participante em frente à câmera
-                </p>
-                <Button
-                  onClick={() => setIsScanning(true)}
-                  className="bg-brand-orange-coral hover:bg-brand-orange-coral/90 text-white font-black h-14 px-12 rounded-[1.5rem] text-[10px] uppercase tracking-widest shadow-glow-orange animate-bounce-subtle"
-                >
-                  ATIVAR CÂMERA
-                </Button>
+                <div>
+                  <h2 className="text-xl font-black text-white italic uppercase tracking-tight">Leitura QR</h2>
+                  <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest leading-none mt-1">Sincronização Ativa</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() => { setIsScanning(!isScanning); setScanKey(p => p + 1); }}
+                className={`rounded-full px-6 font-black text-[10px] uppercase tracking-widest h-10 border ${isScanning ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}
+              >
+                {isScanning ? 'Parar Câmera' : 'Ativar Scanner'}
+              </Button>
+            </div>
+
+            {isScanning ? (
+              <div className="flex-1 min-h-[400px] rounded-[2rem] overflow-hidden border border-white/5 bg-black relative">
+                 <QRScanner 
+                    key={scanKey}
+                    onResult={handleScannerSuccess}
+                    active={isScanning}
+                 />
+                 <div className="absolute inset-0 pointer-events-none border-[40px] border-black/60 flex items-center justify-center">
+                    <div className="w-64 h-64 border-2 border-teal-400/50 rounded-[3rem] relative">
+                       <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-teal-400 rounded-tl-2xl" />
+                       <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-teal-400 rounded-tr-2xl" />
+                       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-teal-400 rounded-bl-2xl" />
+                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-teal-400 rounded-br-2xl" />
+                       <div className="absolute inset-x-0 h-0.5 bg-teal-500/50 blur-[2px] animate-scan-line" />
+                    </div>
+                 </div>
               </div>
             ) : (
-              <QRScanner
-                key={scanKey}
-                onSuccess={handleScannerSuccess}
-                onClose={() => setIsScanning(false)}
-                isInline={true}
-              />
+              <div 
+                onClick={() => setIsScanning(true)}
+                className="flex-1 min-h-[400px] rounded-[2rem] border-2 border-dashed border-white/5 bg-white/[0.02] flex flex-col items-center justify-center cursor-pointer group hover:bg-white/[0.04] transition-all"
+              >
+                <div className="w-24 h-24 rounded-[2.5rem] bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                   <QrCode className="h-10 w-10 text-gray-700 group-hover:text-teal-400 transition-colors" />
+                </div>
+                <p className="text-[11px] font-black text-white italic uppercase tracking-[0.3em]">Clique para iniciar leitura</p>
+                <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest mt-2">{selectedProject?.name || 'TERMINAL GX'}</p>
+              </div>
             )}
           </div>
         </div>
@@ -566,7 +524,7 @@ const AdminCheckIn = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
           {[...(selectedSessionId === 'all' ? checkIns : sessionAttendance.filter((a: any) => (a.sessionId || a.session_id) === selectedSessionId))]
-            .sort((a, b) => new Date(b.timestamp || b.checkInAt).getTime() - new Date(a.timestamp || a.checkInAt).getTime())
+            .sort((a, b) => new Date(b.timestamp || b.checkInAt || b.created_at).getTime() - new Date(a.timestamp || a.checkInAt || a.created_at).getTime())
             .slice(0, 9)
             .map((item, idx) => {
               const reg = registrations.find(r => r.id === (item.registrationId || item.registration_id));
@@ -574,7 +532,7 @@ const AdminCheckIn = () => {
               const company = companies.find(c => c.id === item.userId || (item.ticketNumber || '').includes(c.id));
               const startup = startups.find(s => s.id === item.userId || (item.ticketNumber || '').includes(s.id));
               
-              const ts = item.timestamp || item.checkInAt || item.check_in_at;
+              const ts = item.timestamp || item.checkInAt || item.check_in_at || item.created_at;
               const name = reg?.nome || reg?.name || mentor?.name || company?.name || startup?.name || item.ticketNumber || 'Visitante';
               const role = reg ? 'PARTICIPANTE' : (mentor) ? 'MENTOR' : (company) ? 'EMPRESA' : (startup) ? 'STARTUP' : 'SESSÃO';
 
@@ -604,6 +562,91 @@ const AdminCheckIn = () => {
           )}
         </div>
       </div>
+
+      <CheckInResultModal 
+        result={scanResult} 
+        registration={resultRegistration} 
+        onClose={() => { setScanResult(null); setResultRegistration(null); }} 
+      />
+
+      <AccreditationChecklistModal
+        isOpen={isChecklistOpen}
+        onClose={() => { setIsChecklistOpen(false); setSelectedEntity(null); }}
+        entity={selectedEntity}
+        role={selectedRole}
+        projectId={selectedProject?.id || ''}
+        onCheckInComplete={() => {
+          refetch();
+          toast.success('Credenciamento concluído!');
+        }}
+      />
+
+      {/* Totem Mode Overlay */}
+      <AnimatePresence>
+        {showTotem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-[#0c0e12] flex flex-col items-center justify-center p-8 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-brand-orange-coral/5" />
+            
+            <button 
+              onClick={() => setShowTotem(false)}
+              className="absolute top-10 right-10 w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all group active:scale-90"
+            >
+              <LogOutIcon className="h-6 w-6 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
+
+            <div className="relative text-center max-w-2xl w-full">
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mb-16"
+              >
+                <h2 className="text-4xl lg:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-6">
+                  Auto <br />
+                  <span className="text-teal-400 text-stroke-white">Acreditação</span>
+                </h2>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="h-px w-12 bg-teal-500/30" />
+                  <p className="text-gray-500 text-xs font-black uppercase tracking-[0.3em]">Aponte seu celular para o código</p>
+                  <div className="h-px w-12 bg-teal-500/30" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4, type: 'spring' }}
+                className="relative inline-block p-12 lg:p-16 rounded-[4rem] bg-white shadow-[0_0_100px_-20px_rgba(45,212,191,0.3)] group"
+              >
+                <QRCode 
+                  value={`GS|E|${selectedProject?.id}`}
+                  size={window.innerWidth < 640 ? 250 : 400}
+                  level="H"
+                />
+                <div className="absolute inset-0 border-8 border-teal-500/10 rounded-[4rem] pointer-events-none group-hover:border-teal-500/20 transition-all duration-700" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="mt-20 flex flex-col items-center gap-6"
+              >
+                <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Terminal Ativo em {selectedProject?.slug?.toUpperCase()}</span>
+                </div>
+                <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">Pressione ESC para sair</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
