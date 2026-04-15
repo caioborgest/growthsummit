@@ -340,7 +340,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
             case 3:
                 return <Step3Confirmacao 
                             dados={dados} 
-                            onConfirmar={(userId, registrationId, paymentStatus) => { updateDados({ userId, registrationId, paymentStatus }); nextStep(true); }} 
+                            onConfirmar={() => { nextStep(); }} 
                             onVoltar={prevStep} 
                             onUpdate={updateDados} 
                         />;

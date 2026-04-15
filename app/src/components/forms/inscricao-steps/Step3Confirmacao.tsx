@@ -1,19 +1,15 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, User, Mail, Phone, BookOpen, AlertCircle, Award, Landmark, Contact, Loader2 } from 'lucide-react';
+import { CheckCircle, User, Mail, Phone, BookOpen, AlertCircle, Award, Landmark, Contact } from 'lucide-react';
 import type { DadosInscricao } from './inscricaoTypes';
 import { getAtividadeById, type TipoAtividade } from '@/data/programacao';
 import { useProject } from '@/contexts/ProjectContext';
 import { useSessions } from '@/hooks/useData';
 import { EVENT_CONFIG } from '@/config/eventConfig';
-import { getOrCreateUser } from '@/lib/auth-helpers';
-import { registrationService } from '@/services/registrationService';
-import { toast } from 'sonner';
 
 interface Step3ConfirmacaoProps {
     dados: DadosInscricao;
-    onConfirmar: (userId: string, registrationId: string, statusPagamento: string) => void;
+    onConfirmar: () => void;
     onVoltar: () => void;
     onUpdate?: (novos: Partial<DadosInscricao>) => void;
 }
@@ -114,82 +110,15 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
         })
         .filter(Boolean);
 
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const handleConfirmar = async () => {
-        if (isSoldOut || isProcessing) return;
+    const handleConfirmar = () => {
+        if (isSoldOut) return;
         
-        // Se já tem registrationId (draft restaurado), pula direto
-        if (dados.registrationId) {
-            onConfirmar(dados.userId || '', dados.registrationId, dados.paymentStatus || 'pending');
-            return;
-        }
+        // Update valorFinal in parent state for downstream steps
+        onUpdate?.({
+            valorFinal: valorFinal,
+        });
 
-        setIsProcessing(true);
-        try {
-            // 1. Cria ou recupera conta no Auth
-            const authResult = await getOrCreateUser({
-                email: dados.email,
-                password: dados.password,
-                name: dados.name,
-                phone: dados.phone,
-                role: 'participant'
-            });
-
-            const userId = authResult.userId;
-
-            // 2. Calcula valor final
-            const hasFullDiscount = descontoEfetivo === 100 || !!dados.companyVoucher;
-            const finalAmount = hasFullDiscount ? 0 : valorFinal;
-            const finalPaymentStatus = finalAmount <= 0 ? 'paid' : 'pending';
-            const finalStatus = finalAmount <= 0 ? 'active' : 'pending';
-
-            // 3. Cria inscrição imediatamente
-            const result = await registrationService.registerWithSlots({
-                projectId: selectedProject?.id || '',
-                userId,
-                name: dados.name,
-                email: dados.email.trim().toLowerCase(),
-                phone: dados.phone,
-                cpf: dados.cpf,
-                sessionIds: dados.cursosSelecionados || [],
-                registrationType: dados.registrationType || 'standard',
-                paidAmount: finalAmount,
-                paymentStatus: finalPaymentStatus as any,
-                batchId: dados.batchId || null,
-                companyVoucher: dados.companyVoucher || null,
-                status: finalStatus as any,
-                eventName: selectedProject?.name || 'Growth Experience',
-                palestrasNoturnas: dados.buyLectures,
-                socialCode: !dados.batchId ? (dados.code || null) : null,
-                palestraCode: dados.lectureCoupon || null,
-                partnerId: dados.partnerId || null,
-                partnerAccessCode: dados.partnerAccessCode || null,
-                referralType: dados.referralType || 'nenhum',
-                referralName: (dados.referralName || dados.code)?.trim() || null,
-                appInstalled: false
-            });
-
-            if (!result || result.error) {
-                throw new Error(result?.error || 'Erro ao processar inscrição.');
-            }
-
-            // 4. Atualiza dados no modal pai via onUpdate
-            onUpdate?.({
-                userId,
-                registrationId: result.registration_id,
-                paymentStatus: finalPaymentStatus,
-                valorFinal: finalAmount,
-                registrationStatus: finalStatus
-            });
-
-            onConfirmar(userId, result.registration_id, finalPaymentStatus);
-
-        } catch (err: any) {
-            toast.error(err.message || 'Erro ao confirmar inscrição. Tente novamente.');
-        } finally {
-            setIsProcessing(false);
-        }
+        onConfirmar();
     };
 
     return (
@@ -413,18 +342,13 @@ export function Step3Confirmacao({ dados, onConfirmar, onVoltar, onUpdate }: Ste
                 <button
                     type="button"
                     onClick={handleConfirmar}
-                    disabled={isSoldOut || isProcessing}
+                    disabled={isSoldOut}
                     className={`btn-form-primary flex-1 ${isSoldOut ? 'opacity-40 grayscale-[0.8] cursor-not-allowed border-red-500/30' : ''}`}
                 >
                     {isSoldOut ? (
                         <div className="flex items-center justify-center gap-2">
                              <AlertCircle className="h-5 w-5 text-red-500 animate-pulse" />
                              <span className="font-black text-red-500 uppercase tracking-widest text-[10px] sm:text-xs">Lote Esgotado</span>
-                        </div>
-                    ) : isProcessing ? (
-                        <div className="flex items-center justify-center gap-2">
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            <span>Garantindo sua vaga...</span>
                         </div>
                     ) : (
                         <><CheckCircle className="h-5 w-5" />Prosseguir</>
