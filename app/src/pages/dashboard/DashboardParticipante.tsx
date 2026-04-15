@@ -1,4 +1,4 @@
-// Force-recompile: 2026-04-05T15:31:30
+// Force-recompile: 2026-04-15T16:55:00
 import { useState, useMemo, useEffect } from 'react';
 import { 
   QrCode, 
@@ -21,7 +21,9 @@ import {
   RefreshCcw,
   AlertCircle,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Camera,
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -44,6 +46,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { CertificateService } from '@/lib/certificateService';
 import { useMyRegistration } from '@/hooks/useMyRegistration';
+import { toggleCheckInRegistrationAtomic } from '@/lib/checkInAtomic';
 
 // UI Components
 import { PremiumHeader } from './components/shared/PremiumHeader';
@@ -94,19 +97,13 @@ export function DashboardParticipante() {
   // Verifica se o usuário é membro da equipe (Staff) de forma síncrona/rápida para o guard
   const isStaffMember = !!(partnerTeamData && user && partnerTeamData.some(m => m.userId === user.id));
 
-  // 1. Guard de Carregamento (Aguarda inscrição e dados de equipe)
+  // 1. Guard de Carregamento
   if (isLoading || isPartnerLoading) {
     return <PageLoader />;
   }
 
-  // 2. Guard de Inscrição (Solicitado pelo usuário)
-  // 2. Guard Obrigatório de Inscrição (Solicitado pelo usuário)
-  // Sem esse guard, o componente tenta acessar registration.X em undefined/null.
-  // IMPORTANTE: Staff também deve ter um registro para acessar visão de participante.
+  // 2. Guard Obrigatório de Inscrição
   if (!registration) {
-    // Mantemos a interface de "Inscrição Não Localizada" aqui ou PageLoader.
-    // O usuário sugeriu LoadingSpinner, então usaremos o visual de loading.
-    // Mas se o carregamento acabou e não achou nada, mostramos o erro amigável.
     return (
       <div className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center p-8 text-center">
         <PremiumBackground />
@@ -147,7 +144,7 @@ export function DashboardParticipante() {
     );
   }
 
-  // 3. Renderiza a View Principal se passou pelos guards
+  // 3. Renderiza a View Principal
   return (
     <DashboardView 
       user={user}
@@ -161,10 +158,6 @@ export function DashboardParticipante() {
   );
 }
 
-/**
- * Visão interna do Dashboard que contém todos os useMemo e lógica de abas.
- * Só é montada quando 'registration' ou 'isStaffMember' estão prontos.
- */
 function DashboardView({ user, registration, selectedProject, partnerTeamData, isStaffMember, logout, refetchReg }: any) {
   const navigate = useNavigate();
   const isActuallyPaid = !!registration?.isPaid;
@@ -179,7 +172,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
   const { data: startups } = useStartups();
   const { refetch: refetchNotifications } = useNotifications();
   
-  // Feedback em tempo real de Check-in
   useEffect(() => {
     if (registration?.checkedIn) {
       const lastCheckIn = localStorage.getItem(`notified_checkin_${registration.id}`);
@@ -194,7 +186,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     }
   }, [registration?.checkedIn, registration?.id]);
 
-  // State
   const [activeTab, setActiveTab] = useState('inicio');
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [isMentoriaModalOpen, setIsMentoriaModalOpen] = useState(false);
@@ -206,62 +197,50 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
 
   const handleMarkAsRead = async (id: string) => {
     if (!id) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any).from('notifications').update({ 
       read: true, 
       read_at: new Date().toISOString() 
     }).eq('id', id);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const myPartnerMembership = useMemo(() => {
+      if (!partnerTeamData || !user) return null;
+      return partnerTeamData.find((m: any) => m.userId === user.id);
+  }, [partnerTeamData, user]);
 
-    // Partner Team Membership
-    const myPartnerMembership = useMemo(() => {
-        if (!partnerTeamData || !user) return null;
-        return partnerTeamData.find((m: any) => m.userId === user.id);
-    }, [partnerTeamData, user]);
+  const isPartner = useMemo(() => {
+      const ticketType = (registration?.ticketType || '').toLowerCase();
+      return !!myPartnerMembership || ticketType.includes('partner') || ticketType.includes('expositor');
+  }, [myPartnerMembership, registration?.ticketType]);
 
-    // Partner logic
-    const isPartner = useMemo(() => {
-        const ticketType = (registration?.ticketType || '').toLowerCase();
-        return !!myPartnerMembership || ticketType.includes('partner') || ticketType.includes('expositor');
-    }, [myPartnerMembership, registration?.ticketType]);
+  const statusFinanceiro = useMemo(() => {
+      if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
+      if (isPartner) return null;
 
-    const statusFinanceiro = useMemo(() => {
-        if (!registration) return { label: '❓ NÃO LOCALIZADO', color: 'bg-gray-500/20 text-gray-400' };
-        
-        // Requirement: Partner should not see payment status
-        if (isPartner) return null;
-
-        // Corporate logic
-        if (registration?.companyRegistrationBatches) {
-          const batchStatus = registration.companyRegistrationBatches.payment_status?.toLowerCase();
-          if (batchStatus === 'paid') {
-            return { 
-              label: `✅ Pago pela empresa · ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
-              color: 'bg-green-500/20 text-green-400' 
-            };
-          }
+      if (registration?.companyRegistrationBatches) {
+        const batchStatus = registration.companyRegistrationBatches.payment_status?.toLowerCase();
+        if (batchStatus === 'paid') {
           return { 
-            label: `⏳ Aguardando Empresa · ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
-            color: 'bg-yellow-500/20 text-yellow-500' 
+            label: `✅ Pago pela empresa \u00b7 ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
+            color: 'bg-green-500/20 text-green-400' 
           };
         }
+        return { 
+          label: `⏳ Aguardando Empresa \u00b7 ${registration.company_name || registration.companyRegistrationBatches.company_name}`, 
+          color: 'bg-yellow-500/20 text-yellow-500' 
+        };
+      }
 
-        if (registration?.isFree) return { label: '✓ GRATUITO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
-        if (registration?.isPaid) return { label: '✓ PAGO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
-        
-        const reg = registration as { status?: string };
-        if (reg.status === 'cancelled' || reg.status === 'cancelado') 
-            return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
-        
-        return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
-    }, [registration, isPartner]);
+      if (registration?.isFree) return { label: '✓ GRATUITO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
+      if (registration?.isPaid) return { label: '✓ PAGO', color: 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]' };
+      
+      const reg = registration as { status?: string };
+      if (reg.status === 'cancelled' || reg.status === 'cancelado') 
+          return { label: '❌ CANCELADO', color: 'bg-red-500/20 text-red-500' };
+      
+      return { label: '⏳ PENDENTE', color: 'bg-yellow-500/20 text-yellow-500' };
+  }, [registration, isPartner]);
 
-  // Mentoring Logic
   const mySessions = useMemo(() => 
     (myMentorships || []).filter((m: any) => m.menteeId === user?.id),
     [myMentorships, user?.id]
@@ -275,7 +254,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     [myMentorships]
   );
 
-  // Next Activity Logic
   const nextActivity = useMemo(() => {
     if (!allSessions || !activityCheckIns) return null;
     const sorted = [...allSessions].sort((a: any, b: any) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
@@ -288,14 +266,12 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     }) || sorted[0];
   }, [allSessions, activityCheckIns, registration?.id]);
 
-  // Gamification Progress
   const standsVisited = useMemo(() => {
     if (!standCheckIns || !registration) return 0;
     return standCheckIns.filter((c: any) => c.registrationId === registration.id).length;
   }, [standCheckIns, registration]);
 
   const totalStands = useMemo(() => stands?.length || 0, [stands]);
-
 
   const navTabs = useMemo(() => {
     const tabs = [
@@ -308,7 +284,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
       { id: 'sorteios', icon: Sparkles, label: 'Sorteios' },
     ];
 
-    // Show Circuito if enabled in project settings
     const settings = selectedProject?.settings as { enableCheckIn?: boolean } | undefined;
     if (settings && settings.enableCheckIn !== false) {
       tabs.push({ id: 'circuito', icon: Trophy, label: 'Circuito' });
@@ -323,13 +298,11 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     return tabs;
   }, [selectedProject]);
 
-  // Sync tab with query param
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab) {
         const validTab = navTabs.find(t => t.id === tab);
         if (validTab) {
-            // Defer to avoid "setState in effect" warning
             const timer = setTimeout(() => {
                 setActiveTab(tab as any);
             }, 0);
@@ -338,13 +311,11 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     }
   }, [searchParams, navTabs]);
 
-  // Notifications filtering
   const notifications = useMemo(() => 
     (notificationsData || []).filter((n: any) => n.userId === user?.id),
     [notificationsData, user?.id]
   );
 
-  // Self Check-in Handler
   const handleScanSuccess = async (decodedText: string) => {
     if (!selectedProject) {
         toast.error('Projeto não identificado.');
@@ -359,22 +330,19 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
 
     const timestamp = new Date().toISOString();
 
-    // 1. Partner Self Check-In Logic
     if (myPartnerMembership && (qrData.type === 'registration' || qrData.type === 'entry' || qrData.type === 'ticket')) {
-        // Update partner table
         await (supabase as any).from('partner_team_members').update({
             checked_in: true,
             check_in_time: timestamp
         }).eq('id', myPartnerMembership.id);
 
-        // Log to unified check_ins
         await (supabase as any).from('check_ins').insert({
             project_id: selectedProject?.id,
             user_id: user?.id,
             ticket_number: myPartnerMembership.qrCode || `PARTNER_${myPartnerMembership.id.slice(0, 8)}`,
             timestamp: timestamp,
             location: 'Self Check-In (PWA)',
-            method: 'qrcode',
+            method: 'self_scan',
             check_in_type: 'partner',
             notes: `Self check-in via PWA - ${myPartnerMembership.name}`
         });
@@ -384,28 +352,19 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         return;
     }
 
-    // 2. Participant Self Check-In Logic
     if (registration && (qrData.type === 'registration' || qrData.type === 'entry')) {
-        const { error: entryErr } = await (supabase as any).from('growth_experience_registrations').update({
-            checked_in: true,
-            check_in_at: timestamp
-        }).eq('id', registration.id);
-
-        if (entryErr) throw entryErr;
-
-        // Log to unified check_ins
-        await (supabase as any).from('check_ins').insert({
-            project_id: selectedProject?.id,
-            registration_id: registration.id,
-            user_id: user?.id,
-            ticket_number: registration.ticketNumber,
-            timestamp: timestamp,
+        const res = await toggleCheckInRegistrationAtomic({
+            registrationId: registration.id,
+            projectId: selectedProject.id,
+            action: 'check-in',
+            userId: user?.id,
+            ticketNumber: registration.ticketNumber,
             location: 'Self Check-In (PWA)',
-            method: 'qrcode',
-            check_in_type: 'registration'
+            method: 'self_scan'
         });
 
-        // Emitir certificado de evento
+        if (!res.ok) throw new Error(res.message);
+
         CertificateService.issueEventCertificate(
             { id: user?.id || '', name: user?.name || '' },
             selectedProject,
@@ -417,21 +376,18 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         return;
     }
 
-    // 3. Activity Check-In (Sessions)
     if (qrData.type === 'session') {
-        const { error: activityError } = await supabase.from('activity_check_ins').insert({
+        const { error: activityError } = await (supabase as any).from('activity_check_ins').insert({
             project_id: selectedProject?.id,
             session_id: qrData.id,
             registration_id: registration?.id || null,
             user_id: user?.id,
             check_in_at: timestamp,
             check_in_type: 'qr'
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        });
 
         if (activityError) throw activityError;
 
-        // Emitir certificado via Service
         if (selectedProject && registration) {
             const sessionObj = (allSessions || []).find((s: any) => s.id === qrData.id);
             if (sessionObj) {
@@ -449,7 +405,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
     }
   };
 
-  // Render Section based on activeTab
   const renderContent = () => {
     switch (activeTab) {
       case 'inicio':
@@ -471,7 +426,32 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
               }}
             />
 
-            {/* Credencial de Parceiro - Aparece se usuário vinculado à equipe */}
+            {!registration?.checkedIn && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="px-4"
+              >
+                <button
+                  onClick={() => setIsCheckInModalOpen(true)}
+                  className="w-full flex items-center justify-between p-6 rounded-[2rem] bg-gradient-to-r from-teal-500/20 to-teal-500/5 border border-teal-500/30 group active:scale-[0.98] transition-all"
+                >
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/40 shrink-0 group-hover:scale-110 transition-transform">
+                      <Camera className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-white font-black text-lg uppercase italic leading-none mb-1">Confirmar Presença</h3>
+                      <p className="text-teal-400 text-[9px] font-black uppercase tracking-widest">Auto-Credenciamento Digital</p>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <ChevronRight className="h-5 w-5 text-teal-400" />
+                  </div>
+                </button>
+              </motion.div>
+            )}
+
             {myPartnerMembership && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -504,7 +484,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
                         onClick={() => setActiveTab('ingresso')}
                         className="text-brand-orange-coral font-black text-[10px] uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all"
                       >
-                        Ver Ticket <span className="text-lg leading-none">→</span>
+                        Ver Ticket <span className="text-lg leading-none">\u2192</span>
                       </button>
                       {!myPartnerMembership.checkedIn && (
                         <button 
@@ -520,7 +500,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
               </motion.div>
             )}
 
-            {/* Regras do Expositor - Aparece se usuário vinculado à equipe */}
             {myPartnerMembership && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -544,16 +523,16 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
 
                 <div className="space-y-4 relative z-10">
                   {[
-                    { t: "Credenciamento obrigatório", d: "Faça seu check-in pelo App do GX antes de montar o stand." },
-                    { t: "Respeite os horários", d: "Montagem e desmontagem somente nos horários definidos pela organização." },
-                    { t: "Fique no seu espaço", d: "Materiais e displays devem estar dentro da área contratada." },
-                    { t: "Postura profissional", d: "Equipe receptiva, cordial e sem abordagens agressivas ao público." },
-                    { t: "Venda presencial com autorização", d: "Comercialização direta no stand só com liberação prévia da organização." },
-                    { t: "Material visual aprovado", d: "Use apenas materiais alinhados à sua marca e adequados ao público." },
-                    { t: "Equipe identificada", d: "Todos os membros do stand devem usar crachá ou uniforme da empresa." },
-                    { t: "Use o app GX", d: "Credenciamento, registro de leads e comunicação são feitos pelo app." },
-                    { t: "Stand ativo o tempo todo", d: "Mantenha equipe presente durante toda a programação da exposição." },
-                    { t: "Siga as normas do local", d: "Respeite as regras do Espaço Parque e as orientações da equipe GX." }
+                    { t: "Credenciamento obrigat\u00f3rio", d: "Fa\u00e7a seu check-in pelo App do GX antes de montar o stand." },
+                    { t: "Respeite os hor\u00e1rios", d: "Montagem e desmontagem somente nos hor\u00e1rios definidos pela organiza\u00e7\u00e3o." },
+                    { t: "Fique no seu espa\u00e7o", d: "Materiais e displays devem estar dentro da \u00e1rea contratada." },
+                    { t: "Postura profissional", d: "Equipe receptiva, cordial e sem abordagens agressivas ao p\u00fablico." },
+                    { t: "Venda presencial com autoriza\u00e7\u00e3o", d: "Comercializa\u00e7\u00e3o direta no stand s\u00f3 com libera\u00e7\u00e3o pr\u00e9via da organiza\u00e7\u00e3o." },
+                    { t: "Material visual aprovado", d: "Use apenas materiais alinhados \u00e0 sua marca e adequados ao p\u00fablico." },
+                    { t: "Equipe identificada", d: "Todos os membros do stand devem usar crach\u00e1 ou uniforme da empresa." },
+                    { t: "Use o app GX", d: "Credenciamento, registro de leads e comunica\u00e7\u00e3o s\u00e3o feitos pelo app." },
+                    { t: "Stand ativo o tempo todo", d: "Mantenha equipe presente durante toda a programa\u00e7\u00e3o da exposi\u00e7\u00e3o." },
+                    { t: "Siga as normas do local", d: "Respeite as regras do Espa\u00e7o Parque e as orienta\u00e7\u00f5es da equipe GX." }
                   ].map((rule, i) => (
                     <div key={i} className="flex gap-4 group/item">
                       <div className="flex flex-col items-center">
@@ -572,12 +551,11 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
               </motion.div>
             )}
 
-            {/* Próxima Atividade */}
             {nextActivity && (
                 <div className="animate-fade-in-up-delayed p-4 sm:p-6 pb-2">
                     <NextActivityCard
                         title={nextActivity.title || nextActivity.titulo}
-                        subtitle={nextActivity.room || nextActivity.local || 'Auditório Principal'}
+                        subtitle={nextActivity.room || nextActivity.local || 'Audit\u00f3rio Principal'}
                         time={nextActivity.startTime || nextActivity.horario_inicio}
                         duration="60 min"
                         isConfirmed={activityCheckIns?.some((c: any) => c.sessionId === nextActivity.id)}
@@ -603,7 +581,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
               showStartup={Boolean(selectedProject?.settings?.enableStartups)}
             />
 
-            {/* Quick Stats Banners */}
             <div className="grid grid-cols-2 gap-3 px-1">
                <div 
                  onClick={() => setActiveTab('circuito')}
@@ -639,7 +616,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
             isPartner={isPartner}
             generateTicketPDF={generateTicketPDF}
             setShowCheckInModal={setIsCheckInModalOpen}
-            setShowUpgradeModal={() => toast.info('Funcionalidade disponível em breve diretamente com a equipe.')}
+            setShowUpgradeModal={() => toast.info('Funcionalidade dispon\u00edvel em breve diretamente com a equipe.')}
             onRefresh={refetchReg}
           />
         );
@@ -654,7 +631,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
             cursosSelecionados={myCursos}
             setIsSelfCheckInOpen={(val) => {
                 if (!registration) {
-                    toast.error('Inscrição não localizada para realizar check-in.');
+                    toast.error('Inscri\u00e7\u00e3o n\u00e3o localizada para realizar check-in.');
                     return;
                 }
                 setIsCheckInModalOpen(val);
@@ -689,8 +666,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
           return (
             <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
               <Sparkles className="h-12 w-12 text-gray-600 mb-4" />
-              <h2 className="text-xl font-black text-white italic uppercase">Mentoria Indisponível</h2>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Mentoria não está ativada para esse evento.</p>
+              <h2 className="text-xl font-black text-white italic uppercase">Mentoria Indispon\u00edvel</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Mentoria n\u00e3o est\u00e1 ativada para esse evento.</p>
             </div>
           );
         }
@@ -714,7 +691,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
                 } as any);
                 toast.success('Mentoria agendada com sucesso!');
             }}
-            handleJoinWaitlist={() => toast.info('Funcionalidade sendo processada pela organização.')}
+            handleJoinWaitlist={() => toast.info('Funcionalidade sendo processada pela organiza\u00e7\u00e3o.')}
             setRatingModal={setRatingModal}
             setIsMentoriaModalOpen={setIsMentoriaModalOpen}
           />
@@ -724,8 +701,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
           return (
             <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
               <Handshake className="h-12 w-12 text-gray-600 mb-4" />
-              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">B2B Indisponível</h2>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Rodada de Negócios não está ativada para esse evento.</p>
+              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">B2B Indispon\u00edvel</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Rodada de Neg\u00f3cios n\u00e3o est\u00e1 ativada para esse evento.</p>
             </div>
           );
         }
@@ -735,8 +712,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
               <Handshake className="h-10 w-10 text-teal-400" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-white italic">Rodada de Negócios</h2>
-              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Conecte-se com outros empresários e gere novas parcerias estratégicas.</p>
+              <h2 className="text-2xl font-black text-white italic">Rodada de Neg\u00f3cios</h2>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Conecte-se com outros empres\u00e1rios e gere novas parcerias estrat\u00e9gicas.</p>
             </div>
             <button 
               onClick={() => setIsB2BModalOpen(true)}
@@ -751,8 +728,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
           return (
             <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
               <Rocket className="h-12 w-12 text-gray-600 mb-4" />
-              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">Startups Indisponível</h2>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Expo StartUp não está ativada para esse evento.</p>
+              <h2 className="text-xl font-black text-white italic uppercase tracking-tighter">Startups Indispon\u00edvel</h2>
+              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">A Expo StartUp n\u00e3o est\u00e1 ativada para esse evento.</p>
             </div>
           );
         }
@@ -763,7 +740,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-black text-white italic">Expo StartUp</h2>
-              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Apresente seu projeto na arena de inovação do Growth Experience.</p>
+              <p className="text-gray-400 text-sm max-w-xs mx-auto text-center font-medium">Apresente seu projeto na arena de inova\u00e7\u00e3o do Growth Experience.</p>
             </div>
             <button 
               onClick={() => setIsStartupModalOpen(true)}
@@ -781,7 +758,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
             fetchCertificados={refetchCerts} 
             onDownload={(cert: any) => {
               toast.info(`Iniciando download do certificado: ${cert.activityName || cert.activity_name}`);
-              // Potential integration with PDF generation or direct URL
               if (cert.code) {
                   window.open(`/api/certificates/download/${cert.code}`, '_blank');
               }
@@ -790,12 +766,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         );
       case 'dados':
         return <ProfileForm />;
-      case 'suporte':
-        return <SupportSection navigate={navigate} />;
       case 'documentos':
         return <DocsSection documentos={[]} loadingDocs={false} />;
-      case 'equipe':
-        return <DashboardEquipe batches={[]} />;
       case 'guia':
         return <GuiaInterno />;
       case 'notificacoes':
@@ -852,7 +824,6 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         setActiveTab={setActiveTab} 
       />
 
-      {/* Global Modals */}
       {registration && isCheckInModalOpen && (
         <SelfCheckInModal 
           onClose={() => setIsCheckInModalOpen(false)}
@@ -875,7 +846,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
                         status: 'completed',
                         ratedAt: new Date().toISOString()
                     } as any);
-                    toast.success('Avaliação enviada!');
+                    toast.success('Avalia\u00e7\u00e3o enviada!');
                 }}
             />
         )}

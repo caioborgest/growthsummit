@@ -8,8 +8,10 @@ import {
   Clock, 
   ChevronRight,
   LogIn,
-  LogOut
+  LogOut,
+  QrCode
 } from 'lucide-react';
+import QRCode from 'react-qr-code';
 import { useProject } from '@/contexts/ProjectContext';
 import { useData } from '@/hooks/useData';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,7 @@ const AdminCheckIn = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('all');
   const [scanResult, setScanResult] = useState<'success' | 'error' | 'duplicate' | 'exit' | null>(null);
   const [resultRegistration, setResultRegistration] = useState<Registration | null>(null);
+  const [showTotem, setShowTotem] = useState(false);
   const [scanKey, setScanKey] = useState(0); 
   const { pendingCount, isSyncing, addToQueue, syncQueue } = useCheckInQueue();
   
@@ -50,10 +53,25 @@ const AdminCheckIn = () => {
   const { data: mentors, isLoading: loadingMentors } = useData<Mentor>([], 'mentors');
   const { data: companies, isLoading: loadingCompanies } = useData<Company>([], 'companies');
   const { data: startups, isLoading: loadingStartups } = useData<Startup>([], 'startups');
-  const { data: checkIns, refetch: refetchCheckIns } = useData<any>([], 'check_ins');
+  const { data: checkIns, refetch: refetchCheckIns } = useData<any>([], 'check_ins', { realtime: true });
   const { data: sessionAttendance, refetch: refetchAttendance } = useData<any>([], 'activity_check_ins');
   const { data: sessions } = useData<any>([], 'sessions');
   const { data: partnerTeamMembers } = useData<any>([], 'partner_team_members');
+
+  // Monitoramento em tempo real de novos check-ins
+  useEffect(() => {
+    if (checkIns.length > 0) {
+      const lastCheckIn = checkIns[0]; // Assumindo ordenação por tempo desc
+      const isRecent = new Date().getTime() - new Date(lastCheckIn.timestamp || lastCheckIn.check_in_at).getTime() < 5000;
+      
+      if (isRecent && lastCheckIn.method === 'self_scan') {
+        toast.success(`Auto Credenciamento: ${lastCheckIn.user_name || 'Concluído'}`, {
+          icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+        });
+        triggerVibrate('success');
+      }
+    }
+  }, [checkIns]);
 
   const refetch = useCallback(() => {
     refetchReg();
@@ -368,6 +386,14 @@ const AdminCheckIn = () => {
               {pendingCount} Pendentes
             </Button>
           )}
+
+          <Button 
+             onClick={() => setShowTotem(true)}
+             className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 rounded-full px-6 h-12 font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
+          >
+            <QrCode className="h-4 w-4" />
+            Modo Totem / Auto
+          </Button>
 
           <div className="flex items-center bg-white/5 p-2 rounded-[2rem] border border-white/5 backdrop-blur-md">
           <Button
