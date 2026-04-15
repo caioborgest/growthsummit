@@ -82,14 +82,14 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             const scannerInstance = new Html5Qrcode(readerId.current);
             html5QrCodeRef.current = scannerInstance;
 
-            // USE STRICT CONSTRAINTS: Passing 'exact' deviceId forces the browser 
-            // to connect to the specific hardware requested rather than defaulting back.
+            // USE RELAXED CONSTRAINTS: html5-qrcode already sets deviceId
+            // internally from the first argument of start(). Do NOT duplicate
+            // deviceId here or it may conflict and cause NotReadableError
+            // on USB cameras.
             const isIdString = typeof cameraIdOrConfig === 'string';
             const videoConstraints: MediaTrackConstraints = {
-                deviceId: isIdString ? { exact: cameraIdOrConfig } : undefined,
-                width: { ideal: 1280, min: 640 },
-                height: { ideal: 720, min: 480 },
-                aspectRatio: { ideal: 1.777778 }, // Favor 16:9 but allow 4:3
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
                 facingMode: isIdString ? undefined : (cameraIdOrConfig.facingMode || 'environment')
             };
 
@@ -97,7 +97,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 ? cameraIdOrConfig 
                 : { facingMode: cameraIdOrConfig.facingMode || 'environment' };
 
-            console.debug("[QRScanner] Directing hardware to:", cameraParam);
+            console.debug("[QRScanner] Directing hardware to:", cameraParam, "| videoConstraints:", videoConstraints);
 
             await scannerInstance.start(
                 cameraParam,
@@ -108,7 +108,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                         const qrboxSize = Math.floor(minEdgeSize * 0.95);
                         return { width: qrboxSize, height: qrboxSize };
                     },
-                    videoConstraints: videoConstraints, // These now include 'exact' deviceId
+                    videoConstraints: videoConstraints,
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
@@ -206,8 +206,13 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             if (errMsg.includes("notreadable") || errMsg.includes("in use") || errMsg.includes("lock")) {
                 toast.error("Câmera em uso ou bloqueada pelo sistema. Tente liberar o dispositivo.");
             } else if (errMsg.includes("constraint") || errMsg.includes("overconstrained")) {
-                // If 'exact' fails, try a final loose fallback to SOMETHING working
+                // If strict constraints failed, retry with ZERO constraints but keep
+                // the same camera ID so USB cameras are not bypassed.
                 console.warn("[QRScanner] Strict constraints failed, falling back to loose mode...");
+                if (isIdString) {
+                    // Retry the same device with no resolution/aspect constraints
+                    return await startScanner({ facingMode: 'user' });
+                }
                 return await startScanner({ facingMode: 'environment' });
             } else {
                 toast.error(`Erro: ${err.name || 'Câmera não responde'}`);
@@ -239,6 +244,15 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     
                     // First set loading false to reveal the reader div in the DOM
                     setIsLoading(false);
+                    
+                    // CRITICAL FOR USB CAMERAS: getCameras() internally opens
+                    // a getUserMedia stream to obtain device labels, then closes it.
+                    // Built-in cameras release the hardware lock near-instantly,
+                    // but USB cameras (especially USB 2.0) need extra time to
+                    // fully release the device. Without this delay, the subsequent
+                    // startScanner() gets NotReadableError because the OS still
+                    // considers the camera "in use" from the enumeration stream.
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     
                     // startScanner will internally wait for the DOM element to appear
                     if (isMounted) {
