@@ -94,24 +94,29 @@ export class ErrorBoundary extends Component<Props, State> {
                             </p>
                         </div>
 
-                        {/* Detalhes do erro (apenas em desenvolvimento) */}
-                        {import.meta.env.DEV && this.state.error && (
-                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                                <p className="text-sm font-mono text-red-400 mb-2">
-                                    {this.state.error.toString()}
+                        {/* Detalhes do erro (Mais elegante) */}
+                        <div className="mb-6 p-6 bg-red-500/5 border border-red-500/10 rounded-2xl text-left">
+                            <p className="text-[10px] font-black text-red-500/50 uppercase tracking-widest mb-2">Referência do Erro</p>
+                            <p className="text-sm font-mono text-red-400 break-all bg-dark/50 p-3 rounded-lg border border-red-500/10 mb-4">
+                                {this.state.error ? this.state.error.message : 'Erro desconhecido'}
+                            </p>
+                            
+                            {import.meta.env.DEV ? (
+                                <details className="text-xs text-gray-500">
+                                    <summary className="cursor-pointer hover:text-gray-400 font-bold uppercase tracking-widest text-[9px]">
+                                        Stack Trace (Dev Only)
+                                    </summary>
+                                    <pre className="mt-4 p-4 bg-black/40 rounded-xl overflow-auto max-h-40 font-mono text-[10px] leading-relaxed">
+                                        {this.state.errorInfo?.componentStack}
+                                    </pre>
+                                </details>
+                            ) : (
+                                <p className="text-[10px] text-gray-600 font-medium italic">
+                                    Os detalhes técnicos foram ocultados por segurança. <br/>
+                                    Informe a mensagem acima ao suporte se o problema persistir.
                                 </p>
-                                {this.state.errorInfo && (
-                                    <details className="text-xs text-gray-500">
-                                        <summary className="cursor-pointer hover:text-gray-400">
-                                            Stack trace
-                                        </summary>
-                                        <pre className="mt-2 overflow-auto max-h-40">
-                                            {this.state.errorInfo.componentStack}
-                                        </pre>
-                                    </details>
-                                )}
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         <div className="flex flex-col gap-3">
                             <div className="flex gap-3">

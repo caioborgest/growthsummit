@@ -342,11 +342,13 @@ export const registrationService = {
      * Resiliently finds a registration by user_id or email (case-insensitive)
      * and links the user_id if it was found via email fallback.
      */
-    async findAndLinkRegistration(projectId: string, userId?: string, email?: string) {
+    async findAndLinkRegistration(projectId: string, userId?: string, email?: string, retryCount = 0): Promise<any> {
         if (!projectId) return null;
 
-        // 1. Try search by user_id first (the strongest link)
-        if (userId) {
+        // Internal helper to perform the actual lookup
+        const performQuery = async () => {
+             // 1. Try search by user_id first (the strongest link)
+             if (userId) {
             const { data: byUser, error: errUser } = await supabase
                 .from('growth_experience_registrations')
                 .select('*')
@@ -436,6 +438,20 @@ export const registrationService = {
             }
         }
 
-        return null;
+        };
+
+        const result = await performQuery();
+
+        // If not found, and we haven't exhausted retries, wait and try again
+        // This handles the race condition immediately after registration
+        const MAX_RETRIES = 2;
+        if (!result && retryCount < MAX_RETRIES) {
+            const delay = 1000 * Math.pow(2, retryCount); // 1s, 2s
+            logger.info(`[registrationService] Registration not found for ${email}. Retrying in ${delay}ms... (Attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return this.findAndLinkRegistration(projectId, userId, email, retryCount + 1);
+        }
+
+        return result;
     }
 };

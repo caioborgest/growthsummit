@@ -133,7 +133,7 @@ export function useMyRegistration() {
     const { user } = useAuth();
     const { projectId } = useProject();
     const [registration, setRegistration] = useState<MyRegistration | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Start true to avoid flash of "not found"
     const [error, setError] = useState<string | null>(null);
 
     const fetchRegistration = useCallback(async () => {

@@ -309,10 +309,14 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   }
 
   // Redirect to registration page if participant has no registration
+  // DEPRECATED: We now let the DashboardParticipante handle the 'not found' state 
+  // to avoid race conditions after registration.
+  /*
   if (isParticipantRole && registrationStatus === 'not_found') {
     window.location.href = '/inscricoes';
     return <PageLoader />;
   }
+  */
 
   return <>{children}</>;
 }

@@ -79,12 +79,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       safeStorage.setItem('selectedProject', JSON.stringify(selectedProject));
     }
 
-    // 3. Fallback: Se nado selecionado, forçar o projeto padrão do GX Triunfo
+    // 3. Fallback: Se nada selecionado, forçar o projeto padrão do GX Triunfo
     if (!selectedProject && !urlProjectId && DEFAULT_PROJECT_ID) {
       (async () => {
         try {
-          // ensureProject já cuida de buscar ou criar o projeto se necessário
-          // Aqui usamos apenas as informações básicas, o fetch cuidará do resto
+          // Check if we already have it in localStorage specifically for Triunfo
+          const saved = safeStorage.getItem('selectedProject');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed?.id === DEFAULT_PROJECT_ID) return;
+          }
+
+          logger.info('ProjectContext: Forçando carregamento do projeto padrão:', DEFAULT_PROJECT_ID);
           const proj = await ensureProject({ 
             id: DEFAULT_PROJECT_ID,
             name: 'Growth Experience Triunfo',
@@ -94,6 +100,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
           });
           if (proj) {
             setSelectedProject(proj);
+            // Instant persistence
+            safeStorage.setItem('selectedProject', JSON.stringify(proj));
           }
         } catch (err) {
           logger.error('ProjectContext: Erro ao garantir projeto padrão:', err);
