@@ -101,7 +101,7 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     fps: 20,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
                         const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                        const qrboxSize = Math.floor(minEdgeSize * 0.75);
+                        const qrboxSize = Math.floor(minEdgeSize * 0.95);
                         return { width: qrboxSize, height: qrboxSize };
                     },
                     videoConstraints: videoConstraints, // These now include 'exact' deviceId
@@ -311,8 +311,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                 {isScanning && (
                                     <div className="absolute inset-0 pointer-events-none">
                                         {/* Scanner Frame - Adjusted for 4:3 container */}
-                                        <div className="absolute inset-0 flex items-center justify-center p-4">
-                                            <div className="w-[85%] aspect-square border-4 border-brand-orange-coral/40 rounded-[2.5rem] relative">
+                                        <div className="absolute inset-0 flex items-center justify-center p-2">
+                                            <div className="w-[95%] aspect-square border-4 border-brand-orange-coral/60 rounded-[2.5rem] relative">
                                                 {/* Corner markers */}
                                                 <div className="absolute -top-1 -left-1 w-12 h-12 border-t-8 border-l-8 border-white rounded-tl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
                                                 <div className="absolute -top-1 -right-1 w-12 h-12 border-t-8 border-r-8 border-white rounded-tr-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
