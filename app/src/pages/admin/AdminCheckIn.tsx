@@ -479,11 +479,13 @@ const AdminCheckIn = () => {
 
             {isScanning ? (
               <div className="flex-1 min-h-[400px] rounded-[2rem] overflow-hidden border border-white/5 bg-black relative">
-                 <QRScanner 
-                    key={scanKey}
-                    onResult={handleScannerSuccess}
-                    active={isScanning}
-                 />
+                  <QRScanner 
+                     key={scanKey}
+                     onSuccess={handleScannerSuccess}
+                     onClose={() => setIsScanning(false)}
+                     isInline={true}
+                     isContinuous={true}
+                  />
                  <div className="absolute inset-0 pointer-events-none border-[40px] border-black/60 flex items-center justify-center">
                     <div className="w-64 h-64 border-2 border-teal-400/50 rounded-[3rem] relative">
                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-teal-400 rounded-tl-2xl" />

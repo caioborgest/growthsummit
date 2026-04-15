@@ -9,9 +9,10 @@ interface QRScannerProps {
     onClose: () => void;
     title?: string;
     isInline?: boolean;
+    isContinuous?: boolean;
 }
 
-export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isInline = false }: QRScannerProps) {
+export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isInline = false, isContinuous = false }: QRScannerProps) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const html5QrCodeRef = useRef<any>(null);
     const [error, setError] = useState<string | null>(null);
@@ -66,6 +67,9 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
         }
     };
 
+    const lastScannedCode = useRef<string>('');
+    const lastScannedTime = useRef<number>(0);
+
     const startScanner = async (cameraIdOrConfig: any) => {
         if (isTransitioning.current) return false;
         
@@ -108,20 +112,37 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     disableFlip: false,
                 },
                 async (decodedText: string) => {
+                    // CONTINUOUS SCAN LOGIC: Preventing rapid-fire duplicates
+                    const now = Date.now();
+                    if (decodedText === lastScannedCode.current && (now - lastScannedTime.current) < 2000) {
+                        return; // Ignore same code within 2 seconds
+                    }
+
                     try {
                         const parsed = parseQRString(decodedText);
                         if (parsed || decodedText) {
-                            try {
-                                if (!isTransitioning.current) {
-                                    isTransitioning.current = true;
-                                    await scannerInstance.stop();
-                                    scannerInstance.clear();
+                            lastScannedCode.current = decodedText;
+                            lastScannedTime.current = now;
+
+                            if (!isContinuous) {
+                                try {
+                                    if (!isTransitioning.current) {
+                                        isTransitioning.current = true;
+                                        await scannerInstance.stop();
+                                        scannerInstance.clear();
+                                        isTransitioning.current = false;
+                                    }
+                                } catch (e) { 
                                     isTransitioning.current = false;
                                 }
-                            } catch (e) { 
-                                isTransitioning.current = false;
+                                setIsScanning(false);
+                            } else {
+                                // Provide visual/haptic feedback if possible
+                                if (window.navigator && window.navigator.vibrate) {
+                                    window.navigator.vibrate(100);
+                                }
                             }
-                            setIsScanning(false);
+                            
                             onSuccess(parsed, decodedText);
                         }
                     } catch (err) {
