@@ -37,33 +37,51 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
         });
     };
 
-    const stopScanner = async () => {
-        if (isTransitioning.current) return;
-        
-        const instance = html5QrCodeRef.current;
-        if (instance && instance.isScanning) {
-            console.debug("[QRScanner] Executing aggressive stop sequence...");
-            isTransitioning.current = true;
-            try {
-                // 1. Tell the library to stop
-                await instance.stop();
-                instance.clear();
-                
-                // 2. Secondary fail-safe: explicitly stop any remaining tracks on the video element
-                // This forces the OS to release the hardware lock immediately.
-                const videoEl = document.querySelector(`#${readerId.current} video`) as HTMLVideoElement;
-                if (videoEl && videoEl.srcObject instanceof MediaStream) {
-                    videoEl.srcObject.getTracks().forEach(track => {
-                        track.stop();
-                        console.debug(`[QRScanner] Manually stopped track: ${track.label}`);
-                    });
-                    videoEl.srcObject = null;
-                }
-            } catch (err) {
-                console.warn("[QRScanner] Stop warning:", err);
-            } finally {
-                isTransitioning.current = false;
+    // Force-kills ALL video tracks inside the scanner container,
+    // regardless of html5-qrcode instance state. This is the nuclear option
+    // that guarantees the OS releases the hardware lock.
+    const killAllVideoTracks = () => {
+        const container = document.getElementById(readerId.current);
+        if (!container) return;
+        const videos = container.querySelectorAll('video');
+        videos.forEach(videoEl => {
+            if (videoEl.srcObject instanceof MediaStream) {
+                videoEl.srcObject.getTracks().forEach(track => {
+                    track.stop();
+                    console.debug(`[QRScanner] Force-killed track: ${track.label}`);
+                });
+                videoEl.srcObject = null;
             }
+        });
+    };
+
+    const stopScanner = async () => {
+        const instance = html5QrCodeRef.current;
+        
+        console.debug("[QRScanner] stopScanner called. Instance exists:", !!instance, "isScanning:", instance?.isScanning);
+        
+        // Step 1: Try the library's own stop if possible
+        if (instance) {
+            try {
+                if (instance.isScanning) {
+                    await instance.stop();
+                }
+                instance.clear();
+            } catch (err) {
+                console.warn("[QRScanner] Library stop/clear warning:", err);
+            }
+            html5QrCodeRef.current = null;
+        }
+
+        // Step 2: ALWAYS force-kill video tracks as a fail-safe.
+        // This handles the case where the library thinks it stopped but the
+        // OS still has the device locked (very common with USB cameras).
+        killAllVideoTracks();
+
+        // Step 3: Clear any leftover HTML the library injected into the container
+        const container = document.getElementById(readerId.current);
+        if (container) {
+            container.innerHTML = '';
         }
     };
 
@@ -78,14 +96,20 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
         try {
             await waitForElement(readerId.current);
 
+            // IMPORTANT: Clean up any previous instance/tracks BEFORE creating a new one.
+            // Without this, switching to a USB camera leaves the old notebook camera's
+            // <video> element in the DOM, showing the wrong feed.
+            killAllVideoTracks();
+            const container = document.getElementById(readerId.current);
+            if (container) container.innerHTML = '';
+
             const { Html5Qrcode } = await import('html5-qrcode');
             const scannerInstance = new Html5Qrcode(readerId.current);
             html5QrCodeRef.current = scannerInstance;
 
-            // USE RELAXED CONSTRAINTS: html5-qrcode already sets deviceId
-            // internally from the first argument of start(). Do NOT duplicate
-            // deviceId here or it may conflict and cause NotReadableError
-            // on USB cameras.
+            // html5-qrcode sets deviceId internally from the first argument of start().
+            // Do NOT duplicate deviceId in videoConstraints or USB cameras may
+            // get a conflicting double-constraint and fail with NotReadableError.
             const isIdString = typeof cameraIdOrConfig === 'string';
             const videoConstraints: MediaTrackConstraints = {
                 width: { ideal: 1280 },
@@ -152,6 +176,17 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 },
                 () => { /* frame error silent */ }
             );
+
+            // Verify the correct camera is actually streaming
+            try {
+                const track = scannerInstance.getRunningTrack();
+                if (track) {
+                    const settings = track.getSettings();
+                    console.debug("[QRScanner] ✅ Active track:", track.label, "| deviceId:", settings.deviceId, "| resolution:", settings.width, "x", settings.height);
+                }
+            } catch (e) {
+                console.debug("[QRScanner] Could not read track settings:", e);
+            }
 
             // AGGRESSIVE FOCUS MANAGEMENT
             // Many modern cameras (and some USB 2.0) support focus control through MediaStreamTrack.
@@ -281,22 +316,33 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
     }, []);
 
     const handleCameraChange = async (cameraId: string) => {
-        if (isChangingCamera || isTransitioning.current) return;
+        if (isChangingCamera) return;
         
-        console.debug("[QRScanner] Changing camera to:", cameraId);
+        console.debug("[QRScanner] === CAMERA SWITCH START ===");
+        console.debug("[QRScanner] Switching to camera:", cameraId);
         setIsChangingCamera(true);
         setSelectedCameraId(cameraId);
         
+        // Force-reset transitioning flag — if it was stuck from a previous
+        // operation, it would permanently block all camera switches.
+        isTransitioning.current = false;
+        
         try {
-            // 1. Force a clean stop
+            // 1. Nuclear stop: kill all tracks, clear container, null the instance
             await stopScanner();
             
-            // 2. Extra delay to let hardware and browser internal streams fully release
-            // USB 2.0 cameras often need more time to reset than built-in ones.
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // 2. Extra delay to let hardware and browser internal streams fully release.
+            // USB cameras need the OS to fully close the device handle before
+            // a new getUserMedia can open it.
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // 3. Restart with new ID (startScanner handles discovery and instantiation)
-            await startScanner(cameraId);
+            // 3. Restart with the new camera ID
+            const success = await startScanner(cameraId);
+            console.debug("[QRScanner] === CAMERA SWITCH", success ? "SUCCESS" : "FAILED", "===");
+            
+            if (!success) {
+                toast.error("Não foi possível ativar esta câmera. Tente novamente.");
+            }
         } catch (err) {
             console.error("[QRScanner] Camera switch failed:", err);
             toast.error("Erro ao trocar de câmera.");
