@@ -132,17 +132,47 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 () => { /* frame error silent */ }
             );
 
-            // Apply focus constraints after start
+            // AGGRESSIVE FOCUS MANAGEMENT
+            // Many modern cameras (and some USB 2.0) support focus control through MediaStreamTrack.
             try {
                 const track = scannerInstance.getRunningTrack();
                 if (track && track.applyConstraints) {
-                    const capabilities = track.getCapabilities?.() || {};
+                    const capabilities = (track as any).getCapabilities?.() || {};
+                    const constraints: any = { advanced: [] };
+
+                    // 1. Try Continuous Focus (Best for scanners)
                     if (capabilities.focusMode?.includes('continuous')) {
-                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] } as any).catch(() => {});
+                        constraints.advanced.push({ focusMode: 'continuous' });
+                        console.debug("[QRScanner] Enabling Continuous Focus");
+                    } 
+                    // 2. Try Manual Focus if supported (some USB cams)
+                    else if (capabilities.focusMode?.includes('manual')) {
+                        constraints.advanced.push({ focusMode: 'manual', focusDistance: 0 }); // Try to focus far or near
                     }
+
+                    // 3. Try Torch (Flashlight) if it's dark and supported
+                    if (capabilities.torch) {
+                        // We don't turn on automatically to avoid blinding, but we could if requested
+                    }
+
+                    if (constraints.advanced.length > 0) {
+                        await track.applyConstraints(constraints).catch(err => {
+                            console.warn("[QRScanner] Could not apply advanced focus constraints:", err);
+                        });
+                    }
+
+                    // 4. PERIODIC FOCUS RESET (Fail-safe for cameras that 'get stuck' blurry)
+                    // Every 5 seconds, we re-apply constraints to 'nudge' the hardware focus
+                    const focusNudgeInterval = setInterval(async () => {
+                        if (track.readyState === 'live') {
+                            await track.applyConstraints(constraints).catch(() => {});
+                        } else {
+                            clearInterval(focusNudgeInterval);
+                        }
+                    }, 5000);
                 }
             } catch (pEx) {
-                console.debug("[QRScanner] Advanced constraints ignored:", pEx);
+                console.debug("[QRScanner] Advanced hardware controls not available on this device:", pEx);
             }
 
             isTransitioning.current = false;
