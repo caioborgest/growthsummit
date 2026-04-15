@@ -796,7 +796,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
             registration?.palestrasNoturnas
           )}
           notifications={notifications}
-          onLogout={handleLogout}
+          onLogout={logout}
           onNotificationRead={async (id: string) => { await handleMarkAsRead(id); }}
           onGuideClick={() => setActiveTab('guia')}
           onSupportClick={() => setActiveTab('suporte')}
