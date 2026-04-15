@@ -83,8 +83,9 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             const isIdString = typeof cameraIdOrConfig === 'string';
             const videoConstraints: MediaTrackConstraints = {
                 deviceId: isIdString ? { exact: cameraIdOrConfig } : undefined,
-                width: { ideal: 640 },
-                height: { ideal: 480 },
+                width: { ideal: 1280, min: 640 },
+                height: { ideal: 720, min: 480 },
+                aspectRatio: { ideal: 1.777778 }, // Favor 16:9 but allow 4:3
                 facingMode: isIdString ? undefined : (cameraIdOrConfig.facingMode || 'environment')
             };
 
@@ -226,7 +227,8 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
             await stopScanner();
             
             // 2. Extra delay to let hardware and browser internal streams fully release
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // USB 2.0 cameras often need more time to reset than built-in ones.
+            await new Promise(resolve => setTimeout(resolve, 1500));
             
             // 3. Restart with new ID (startScanner handles discovery and instantiation)
             await startScanner(cameraId);
@@ -303,19 +305,19 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                                 </div>
                             )}
 
-                            <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'w-full aspect-square max-h-[60vh] mx-auto' : 'aspect-square'}`}>
-                                <div id={readerId.current} className="w-full h-full [&>video]:object-cover [&>video]:w-full [&>video]:h-full"></div>
+                             <div className={`relative overflow-hidden rounded-3xl bg-black border-2 border-brand-orange-coral/20 ${isInline ? 'w-full aspect-[4/3] max-h-[60vh] mx-auto' : 'aspect-[4/3]'}`}>
+                                <div id={readerId.current} className="w-full h-full [&>video]:object-contain [&>video]:w-full [&>video]:h-full [&>video]:bg-black"></div>
 
                                 {isScanning && (
                                     <div className="absolute inset-0 pointer-events-none">
-                                        {/* Scanner Frame */}
-                                        <div className="absolute inset-x-8 inset-y-8 flex items-center justify-center">
-                                            <div className="w-full h-full border-4 border-brand-orange-coral/40 rounded-[2.5rem] relative">
+                                        {/* Scanner Frame - Adjusted for 4:3 container */}
+                                        <div className="absolute inset-0 flex items-center justify-center p-4">
+                                            <div className="w-[85%] aspect-square border-4 border-brand-orange-coral/40 rounded-[2.5rem] relative">
                                                 {/* Corner markers */}
-                                                <div className="absolute top-0 left-0 w-12 h-12 border-t-8 border-l-8 border-white rounded-tl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
-                                                <div className="absolute top-0 right-0 w-12 h-12 border-t-8 border-r-8 border-white rounded-tr-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
-                                                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-8 border-l-8 border-white rounded-bl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
-                                                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-8 border-r-8 border-white rounded-br-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute -top-1 -left-1 w-12 h-12 border-t-8 border-l-8 border-white rounded-tl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute -top-1 -right-1 w-12 h-12 border-t-8 border-r-8 border-white rounded-tr-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-8 border-l-8 border-white rounded-bl-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
+                                                <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-8 border-r-8 border-white rounded-br-2xl shadow-[0_0_20px_rgba(255,112,67,0.4)]"></div>
                                                 
                                                 {/* Animation Beam */}
                                                 <div className="absolute inset-x-0 h-0.5 bg-brand-orange-coral/50 shadow-[0_0_15px_rgba(255,112,67,0.8)] animate-scan-beam" />
