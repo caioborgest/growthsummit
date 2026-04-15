@@ -583,69 +583,254 @@ const AdminCheckIn = () => {
         }}
       />
 
-      {/* Totem Mode Overlay */}
+      {/* Totem Mode Overlay — Premium Full-Screen Self Check-In Display */}
       <AnimatePresence>
         {showTotem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#0c0e12] flex flex-col items-center justify-center p-8 overflow-hidden"
+            transition={{ duration: 0.6 }}
+            className="fixed inset-0 z-[100] bg-[#060810] flex flex-col items-center justify-center overflow-hidden select-none"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-brand-orange-coral/5" />
-            
+            {/* ── Animated Background Layers ────────────────────────────── */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {/* Mesh gradient base */}
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-950/40 via-[#060810] to-[#0c0e12]" />
+              
+              {/* Floating orbs */}
+              <motion.div
+                animate={{ 
+                  x: [0, 80, -40, 0], 
+                  y: [0, -60, 40, 0],
+                  scale: [1, 1.2, 0.9, 1]
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-20 -left-20 w-[500px] h-[500px] rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(20,184,166,0.12) 0%, transparent 70%)' }}
+              />
+              <motion.div
+                animate={{ 
+                  x: [0, -60, 30, 0], 
+                  y: [0, 50, -30, 0],
+                  scale: [1, 0.8, 1.1, 1]
+                }}
+                transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -bottom-32 -right-32 w-[600px] h-[600px] rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(255,112,67,0.08) 0%, transparent 70%)' }}
+              />
+              <motion.div
+                animate={{ 
+                  x: [0, 40, -60, 0], 
+                  y: [0, -40, 20, 0]
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(20,184,166,0.06) 0%, transparent 60%)' }}
+              />
+
+              {/* Subtle grid pattern */}
+              <div 
+                className="absolute inset-0 opacity-[0.03]"
+                style={{ 
+                  backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                  backgroundSize: '60px 60px'
+                }}
+              />
+            </div>
+
+            {/* ── Exit button (hidden-ish, admin only) ──────────────────── */}
             <button 
               onClick={() => setShowTotem(false)}
-              className="absolute top-10 right-10 w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all group active:scale-90"
+              className="absolute top-8 right-8 w-14 h-14 rounded-full bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-all duration-300 group active:scale-90 z-50 backdrop-blur-sm"
             >
-              <LogOutIcon className="h-6 w-6 group-hover:rotate-180 transition-transform duration-500" />
+              <LogOutIcon className="h-5 w-5 group-hover:rotate-180 transition-transform duration-700" />
             </button>
 
-            <div className="relative text-center max-w-2xl w-full">
+            {/* ── Main Content ─────────────────────────────────────────── */}
+            <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-8">
+              
+              {/* Top branding strip */}
+              <motion.div
+                initial={{ y: -40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="flex items-center gap-4 mb-12 lg:mb-16"
+              >
+                <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-md">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.5)]" />
+                  <span className="text-[11px] font-black text-white/70 uppercase tracking-[0.25em] leading-none">
+                    Terminal de Acreditação
+                  </span>
+                  <div className="h-3 w-px bg-white/10" />
+                  <span className="text-[11px] font-black text-teal-400 uppercase tracking-[0.2em] leading-none">
+                    Ativo
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* Headline */}
+              <motion.div
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-center mb-10 lg:mb-14"
+              >
+                <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black text-white italic uppercase tracking-tighter leading-[0.9] mb-5">
+                  Faça seu{' '}
+                  <span className="relative inline-block">
+                    <span className="relative z-10 text-transparent bg-clip-text" style={{
+                      backgroundImage: 'linear-gradient(135deg, #14B8A6, #2DD4BF, #5EEAD4)'
+                    }}>
+                      Check-in
+                    </span>
+                    <motion.span
+                      animate={{ opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute -inset-x-4 -inset-y-2 rounded-2xl -z-0"
+                      style={{ background: 'radial-gradient(ellipse, rgba(20,184,166,0.15) 0%, transparent 70%)' }}
+                    />
+                  </span>
+                </h2>
+                <div className="flex items-center justify-center gap-5 mt-6">
+                  <div className="h-px w-16 bg-gradient-to-r from-transparent to-teal-500/30" />
+                  <p className="text-white/40 text-sm sm:text-base font-bold uppercase tracking-[0.3em]">
+                    Aponte a câmera do celular para o QR Code
+                  </p>
+                  <div className="h-px w-16 bg-gradient-to-l from-transparent to-teal-500/30" />
+                </div>
+              </motion.div>
+
+              {/* QR Code Card — Hero */}
+              <motion.div
+                initial={{ scale: 0.7, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.8, type: 'spring', stiffness: 80, damping: 18 }}
+                className="relative mb-14 lg:mb-16"
+              >
+                {/* Outer breathing glow ring */}
+                <motion.div
+                  animate={{ 
+                    boxShadow: [
+                      '0 0 60px 10px rgba(20,184,166,0.08), 0 0 120px 30px rgba(20,184,166,0.04)',
+                      '0 0 80px 20px rgba(20,184,166,0.15), 0 0 160px 50px rgba(20,184,166,0.06)',
+                      '0 0 60px 10px rgba(20,184,166,0.08), 0 0 120px 30px rgba(20,184,166,0.04)'
+                    ]
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -inset-6 rounded-[3.5rem] pointer-events-none"
+                />
+
+                {/* QR Container */}
+                <div className="relative p-10 sm:p-12 lg:p-16 rounded-[3rem] bg-white overflow-hidden group">
+                  {/* Corner accents */}
+                  <div className="absolute top-0 left-0 w-16 h-16 border-t-[3px] border-l-[3px] border-teal-400/40 rounded-tl-[3rem]" />
+                  <div className="absolute top-0 right-0 w-16 h-16 border-t-[3px] border-r-[3px] border-teal-400/40 rounded-tr-[3rem]" />
+                  <div className="absolute bottom-0 left-0 w-16 h-16 border-b-[3px] border-l-[3px] border-teal-400/40 rounded-bl-[3rem]" />
+                  <div className="absolute bottom-0 right-0 w-16 h-16 border-b-[3px] border-r-[3px] border-teal-400/40 rounded-br-[3rem]" />
+
+                  <QRCode 
+                    value={`GS|E|${selectedProject?.id}`}
+                    size={window.innerWidth < 640 ? 220 : window.innerWidth < 1024 ? 320 : 380}
+                    level="H"
+                    fgColor="#0c0e12"
+                  />
+
+                  {/* Center brand dot */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg border border-gray-100">
+                      <span className="font-black text-[#0c0e12] text-lg sm:text-xl italic tracking-tighter leading-none">GX</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Decorative rings */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-3 rounded-[3.5rem] border border-dashed border-teal-500/10 pointer-events-none"
+                />
+              </motion.div>
+
+              {/* Instructions Steps */}
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="mb-16"
+                transition={{ delay: 0.7, duration: 0.6 }}
+                className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 lg:mb-14"
               >
-                <h2 className="text-4xl lg:text-7xl font-black text-white italic uppercase tracking-tighter leading-none mb-6">
-                  Auto <br />
-                  <span className="text-teal-400 text-stroke-white">Acreditação</span>
-                </h2>
-                <div className="flex items-center justify-center gap-4">
-                  <div className="h-px w-12 bg-teal-500/30" />
-                  <p className="text-gray-500 text-xs font-black uppercase tracking-[0.3em]">Aponte seu celular para o código</p>
-                  <div className="h-px w-12 bg-teal-500/30" />
-                </div>
+                {[
+                  { num: '1', text: 'Abra a câmera do celular', icon: '📱' },
+                  { num: '2', text: 'Aponte para o QR Code', icon: '📸' },
+                  { num: '3', text: 'Acesso liberado!', icon: '✅' },
+                ].map((step, idx) => (
+                  <div key={step.num} className="flex items-center gap-3">
+                    {idx > 0 && <div className="hidden sm:block h-px w-6 bg-white/10" />}
+                    <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
+                      <span className="text-lg">{step.icon}</span>
+                      <div>
+                        <span className="text-[9px] font-black text-teal-400/70 uppercase tracking-[0.2em] block leading-none mb-1">
+                          Passo {step.num}
+                        </span>
+                        <span className="text-white/80 text-xs sm:text-sm font-bold leading-none">{step.text}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </motion.div>
 
+              {/* Live Stats Bar */}
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.4, type: 'spring' }}
-                className="relative inline-block p-12 lg:p-16 rounded-[4rem] bg-white shadow-[0_0_100px_-20px_rgba(45,212,191,0.3)] group"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.9, duration: 0.6 }}
+                className="flex items-center justify-center gap-6 sm:gap-10"
               >
-                <QRCode 
-                  value={`GS|E|${selectedProject?.id}`}
-                  size={window.innerWidth < 640 ? 250 : 400}
-                  level="H"
-                />
-                <div className="absolute inset-0 border-8 border-teal-500/10 rounded-[4rem] pointer-events-none group-hover:border-teal-500/20 transition-all duration-700" />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="mt-20 flex flex-col items-center gap-6"
-              >
-                <div className="flex items-center gap-3 px-6 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Terminal Ativo em {selectedProject?.slug?.toUpperCase()}</span>
+                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/10">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                  <div>
+                    <p className="text-[8px] font-black text-emerald-400/60 uppercase tracking-[0.2em] leading-none mb-1">Credenciados hoje</p>
+                    <p className="text-emerald-400 font-black text-xl tabular-nums leading-none">{checkInsToday}</p>
+                  </div>
                 </div>
-                <p className="text-gray-700 text-[10px] font-bold uppercase tracking-widest">Pressione ESC para sair</p>
+
+                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                  <Users className="h-5 w-5 text-white/40" />
+                  <div>
+                    <p className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em] leading-none mb-1">Total inscritos</p>
+                    <p className="text-white/60 font-black text-xl tabular-nums leading-none">{registrations.length}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-teal-500/[0.06] border border-teal-500/10">
+                  <Clock className="h-5 w-5 text-teal-400/60" />
+                  <div>
+                    <p className="text-[8px] font-black text-teal-400/50 uppercase tracking-[0.2em] leading-none mb-1">Evento</p>
+                    <p className="text-teal-400/70 font-black text-sm uppercase tracking-wider leading-none">
+                      {selectedProject?.name || 'Growth Experience'}
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             </div>
+
+            {/* ── Bottom Branding Bar ─────────────────────────────────────── */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2, duration: 0.8 }}
+              className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-5 z-10"
+            >
+              <div className="flex items-center gap-4 text-white/15">
+                <QrCode className="h-4 w-4" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Growth Eco System</span>
+                <div className="h-1 w-1 rounded-full bg-white/15" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">2k26</span>
+              </div>
+            </motion.div>
+
+            {/* ── Bottom gradient fade ──────────────────────────────────── */}
+            <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#060810] to-transparent pointer-events-none" />
           </motion.div>
         )}
       </AnimatePresence>
