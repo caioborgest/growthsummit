@@ -17,6 +17,7 @@ interface PremiumHeaderProps {
     roleLabel: string;
     isPro?: boolean;
     isActuallyPaid?: boolean;
+    checkedIn?: boolean;
     notifications: any[];
     onLogout: () => void;
     onGuideClick: () => void;
@@ -32,6 +33,7 @@ export function PremiumHeader({
     roleLabel,
     isPro,
     isActuallyPaid,
+    checkedIn,
     notifications,
     onLogout,
     onGuideClick,
@@ -278,6 +280,12 @@ export function PremiumHeader({
                                             : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                     }`}>
                                         {isActuallyPaid ? '✓ Acesso Ativo' : '⏳ Pendente'}
+                                    </Badge>
+                                )}
+
+                                {checkedIn && (
+                                    <Badge className="px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                                        ✓ Presença Confirmada
                                     </Badge>
                                 )}
                             </>

@@ -20,7 +20,8 @@ import {
   LogOut,
   RefreshCcw,
   AlertCircle,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -178,6 +179,21 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
   const { data: startups } = useStartups();
   const { refetch: refetchNotifications } = useNotifications();
   
+  // Feedback em tempo real de Check-in
+  useEffect(() => {
+    if (registration?.checkedIn) {
+      const lastCheckIn = localStorage.getItem(`notified_checkin_${registration.id}`);
+      if (!lastCheckIn) {
+        toast.success("Check-in Confirmado!", {
+          description: "Sua entrada no evento foi registrada com sucesso. Bem-vindo!",
+          duration: 6000,
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />
+        });
+        localStorage.setItem(`notified_checkin_${registration.id}`, 'true');
+      }
+    }
+  }, [registration?.checkedIn, registration?.id]);
+
   // State
   const [activeTab, setActiveTab] = useState('inicio');
   const [isScanOpen, setIsScanOpen] = useState(false);
@@ -798,6 +814,7 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
           userName={user?.name || ''}
           userAvatar={registration?.photo || user?.avatar}
           projectName={selectedProject?.name || 'GX 2026'}
+          checkedIn={registration?.checkedIn}
           roleLabel="PARTICIPANTE"
           isPro={Boolean(
             (registration?.companyRegistrationBatches?.ticket_type?.toLowerCase() === 'pro' || 

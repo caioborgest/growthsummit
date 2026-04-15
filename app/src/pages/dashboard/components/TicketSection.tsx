@@ -152,6 +152,16 @@ export function TicketSection({
                                 <p className="text-brand-orange-coral text-[10px] font-bold">Aguardando confirmação financeira para liberar extras.</p>
                             </div>
                         )}
+
+                        {myRegistration?.checkedIn && (
+                            <div className="flex items-center gap-3 p-3.5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-500" style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                                <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
+                                <div>
+                                    <p className="text-green-400 text-[10px] font-black uppercase tracking-widest">Acreditação Concluída</p>
+                                    <p className="text-green-400/70 text-[9px] font-bold">Sua presença foi confirmada no evento. Bom Growth!</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right: QR Code */}
