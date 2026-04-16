@@ -23,7 +23,7 @@ import {
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProject } from '@/contexts/ProjectContext';
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +46,8 @@ import {
 import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface StatCardProps {
   title: string;
@@ -150,8 +152,39 @@ const StatCard = ({ title, value, target, progress, icon: Icon, trend, trendValu
 }
 
 export function AdminDashboard() {
+  const { user } = useAuth();
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
+  
+  // ── Verificação de Perfil Admin (Harden Security) ────────────────────────
+  const [isAdminConfirmed, setIsAdminConfirmed] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    async function verifyAdminProfile() {
+      if (!user?.id) return;
+      
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', user.id) // ← Usando user_id como solicitado
+          .single();
+        
+        if (error || profile?.role !== 'admin') {
+          console.error('[AdminDashboard] Perfil não autorizado ou erro na query:', error);
+          setIsAdminConfirmed(false);
+        } else {
+          setIsAdminConfirmed(true);
+        }
+      } catch (err) {
+        console.error('[AdminDashboard] Falha crítica na verificação de perfil:', err);
+        setIsAdminConfirmed(false);
+      }
+    }
+    
+    verifyAdminProfile();
+  }, [user?.id]);
+
   const { data: registrations = [] } = useRegistrations();
   const { filter: filterMentors } = useMentors();
   const { data: sessions = [] } = useMentoringSessions();
@@ -273,6 +306,16 @@ export function AdminDashboard() {
         time: new Date(item.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       }));
   }, [registrations, checkIns, transactions]);
+
+  // Se a verificação ainda está em progresso, mostra nada ou um loader sutil
+  if (isAdminConfirmed === null) {
+    return null; 
+  }
+
+  // Se não for admin confirmado pelo banco (profiles), redireciona
+  if (isAdminConfirmed === false) {
+    return <Navigate to="/" replace />;
+  }
 
   // Show project selection prompt if no project is selected
   if (!isProjectSelected) {
