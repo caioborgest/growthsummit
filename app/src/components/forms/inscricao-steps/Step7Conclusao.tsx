@@ -8,6 +8,8 @@ import QRCode from 'react-qr-code';
 import { registrationService } from '@/services/registrationService';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+
 
 interface Step7ConclusaoProps {
     dados: DadosInscricao;
