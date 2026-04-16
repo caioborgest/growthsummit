@@ -36,18 +36,25 @@ export function useAdminRegistrations(projectId: string) {
         return;
       }
 
-      // 2. Busca os registros se autorizado
+      // 2. Busca os registros se autorizado (JOIN com profiles para garantir dados completos)
       const { data: regs, error: fetchError } = await supabase
         .from('growth_experience_registrations')
-        .select('*')
+        .select(`
+          *,
+          profiles:profiles(user_id, name, email, phone, company, role)
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        logger.error('[useAdminRegistrations] Fetch Error:', fetchError);
+        throw fetchError;
+      }
 
+      logger.debug(`[useAdminRegistrations] Fetched ${regs?.length || 0} registrations for project ${projectId}`);
       setData(regs || []);
     } catch (err: any) {
-      logger.error('[useAdminRegistrations] Error:', err);
+      logger.error('[useAdminRegistrations] Critical error:', err);
       setError(err.message || 'Erro ao carregar inscrições');
     } finally {
       setLoading(false);
