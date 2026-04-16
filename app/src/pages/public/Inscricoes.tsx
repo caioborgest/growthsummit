@@ -29,6 +29,7 @@ const trustBadges = [
 
 const editions = [
   {
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
     name: 'Growth Experience Triunfo - Pocket Edition (Noturno)',
     city: 'Triunfo-PE',
     date: '16 de Abril de 2026',

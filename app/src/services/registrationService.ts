@@ -354,7 +354,7 @@ export const registrationService = {
                 .select('*')
                 .eq('project_id', projectId)
                 .eq('user_id', userId)
-                .in('status', ['active', 'pending', 'confirmed', 'pago'])
+                .in('status', ['active', 'pending', 'confirmed', 'pago', 'migrated', 'imported', 'ativo', 'concluida'])
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -381,7 +381,7 @@ export const registrationService = {
             }
 
             const { data: byFallback, error: errFallback } = await fallbackQuery
-                .in('status', ['active', 'pending', 'confirmed', 'pago'])
+                .in('status', ['active', 'pending', 'confirmed', 'pago', 'migrated', 'imported', 'ativo', 'concluida'])
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -435,6 +435,8 @@ export const registrationService = {
                     else byGlobal.user_id = userId;
                 }
                 return byGlobal;
+            } else {
+                logger.warn(`[registrationService] Global search for ${email} returned nothing.`);
             }
         }
 

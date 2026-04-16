@@ -186,7 +186,26 @@ export function useMyRegistration() {
 
             let registrationData = data ? mapRow(data) : null;
 
-            // 3) Fetch profile separately as FK join is not available
+            // 3) FALLBACK CRÍTICO: Se não achou na tabela GE, tenta na tabela genérica 'registrations'
+            // Isso ajuda a identificar se o usuário foi registrado no "fluxo errado".
+            if (!registrationData && isGEProject(targetProjectId)) {
+                logger.warn(`[useMyRegistration] Miss in ${PRIMARY_TABLE}. Trying cross-table fallback in 'registrations'...`);
+                const { data: crossReg } = await supabase
+                    .from('registrations')
+                    .select('*')
+                    .eq('email', user.email)
+                    .not('status', 'eq', 'cancelled')
+                    .maybeSingle();
+
+                if (crossReg) {
+                    logger.info(`[useMyRegistration] FOUND registration in generic table for GE project user! ID: ${crossReg.id}`);
+                    registrationData = mapRow(crossReg);
+                    // Avisamos que foi um "match cruzado" para debugging
+                    (registrationData as any)._crossTableMatch = true;
+                }
+            }
+
+            // 4) Fetch profile separately as FK join is not available
             if (registrationData && user.id) {
                 const { data: profileData } = await supabase
                     .from('profiles')
