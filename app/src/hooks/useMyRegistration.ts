@@ -193,7 +193,7 @@ export function useMyRegistration() {
                 const { data: crossReg } = await supabase
                     .from('registrations')
                     .select('*')
-                    .eq('email', user.email)
+                    .eq('user_id', user.id)
                     .not('status', 'eq', 'cancelled')
                     .maybeSingle();
 

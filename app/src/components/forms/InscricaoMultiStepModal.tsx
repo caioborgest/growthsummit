@@ -70,6 +70,10 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     const nextStep = (force = false) => {
         if ((isProcessing || isRegistering) && !force) return;
+        if (registrationError && (currentStep === 5 || currentStep === 6)) {
+            toast.error('Erro na inscrição. Volte e tente novamente ou recarregue a página.');
+            return;
+        }
         if (currentStep < totalSteps) {
             setCurrentStep(prev => prev + 1);
         }
