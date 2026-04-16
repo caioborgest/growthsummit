@@ -109,10 +109,10 @@ export function SecurityDashboard() {
             let usersData: { id: string; two_factor_enabled: boolean }[] = [];
             try {
                 const { data: users, error: usersErr } = await supabase
-                    .from('users')
-                    .select('id, two_factor_enabled');
+                    .from('profiles')
+                    .select('user_id, two_factor_enabled');
                 if (usersErr) throw usersErr;
-                if (users) usersData = users;
+                if (users) usersData = users.map(u => ({ id: u.user_id, two_factor_enabled: u.two_factor_enabled }));
             } catch { /* ignore */ }
 
             let activeSessionsCount = 0;

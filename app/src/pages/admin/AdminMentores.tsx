@@ -699,10 +699,10 @@ export function AdminMentores() {
             logger.warn('[AdminMentores] Usuário já existe no Auth mas não estava vinculado ao perfil de mentor.');
 
             // Buscar o ID desse usuário existente pelo email
-            const { data: existingUser } = await supabase.from('users').select('id').eq('email', mentor.email).maybeSingle();
+            const { data: existingUser } = await supabase.from('profiles').select('user_id').eq('email', mentor.email).maybeSingle();
             if (existingUser) {
-              await supabase.from('users').update({ role: 'mentor' }).eq('id', existingUser.id);
-              await update(id, { userId: existingUser.id, status: 'approved' } as any);
+              await supabase.from('profiles').update({ role: 'mentor' }).eq('user_id', existingUser.user_id);
+              await update(id, { userId: existingUser.user_id, status: 'approved' } as any);
               toast.success('Mentor aprovado e permissões de acesso atualizadas!');
               return;
             }

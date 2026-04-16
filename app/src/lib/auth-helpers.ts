@@ -113,16 +113,16 @@ export async function getOrCreateUser({
         const userId = authData?.user?.id;
         if (!userId) throw new Error('Não foi possível identificar o usuário criado.');
 
-        // ── STEP 3.5: Fallback Sync (Garantir public.users se o trigger falhar)
+        // ── STEP 3.5: Fallback Sync (Garantir public.profiles se o trigger falhar)
         try {
-            const { error: syncError } = await supabase.from('users').upsert({
-                id: userId,
+            const { error: syncError } = await supabase.from('profiles').upsert({
+                user_id: userId,
                 email: cleanEmail,
                 name: name || cleanEmail,
                 phone: phone,
                 role: role,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'id' });
+            }, { onConflict: 'user_id' });
 
             if (syncError) {
                 logger.warn('[auth-helpers] Manual sync warning (non-blocking)', { error: syncError.message });
@@ -159,8 +159,8 @@ export async function getOrCreateUser({
 }
 
 /**
- * Aguarda a propagação do trigger de sincronização do Supabase Auth → public.users.
- * Verifica se o registro apareceu na tabela users (máximo 5 tentativas × 800ms).
+ * Aguarda a propagação do trigger de sincronização do Supabase Auth → public.profiles.
+ * Verifica se o registro apareceu na tabela profiles (máximo 5 tentativas × 800ms).
  *
  * @returns O userId se sincronizado, ou o userId original se o timeout expirar
  */
@@ -172,12 +172,12 @@ export async function waitForUserSync(userId: string): Promise<string> {
         await new Promise((r) => setTimeout(r, DELAY_MS));
 
         const { data } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', userId)
-            .maybeSingle() as { data: { id: string } | null };
+            .from('profiles')
+            .select('user_id')
+            .eq('user_id', userId)
+            .maybeSingle() as { data: { user_id: string } | null };
 
-        if (data?.id) {
+        if (data?.user_id) {
             logger.debug(`[auth-helpers] Usuário sincronizado após ${attempt} tentativa(s):`, userId);
             return userId;
         }

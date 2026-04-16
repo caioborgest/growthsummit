@@ -206,9 +206,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: userData, error: fetchError } = await withTimeout(
         async (signal) => {
           const { data, error } = await supabase
-            .from('users')
-            .select('id,name,email,role,avatar_url,phone')
-            .eq('id', currentSession.user.id)
+            .from('profiles')
+            .select('user_id,name,email,role,avatar_url,phone')
+            .eq('user_id', currentSession.user.id)
             .maybeSingle()
             .abortSignal(signal);
           return { data, error };
@@ -221,7 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.warn(`DB metadata fetch failed (User: ${currentSession.user.id}):`, { error: fetchError });
       }
 
-      const finalUser = mapSupabaseUserToUser(currentSession.user, (userData as UserDBMetadata) || undefined);
+      const finalUser = mapSupabaseUserToUser(currentSession.user, (userData as unknown as UserDBMetadata) || undefined);
 
       // Atualizar o estado com os dados finais do banco
       if (isMountedRef.current) {
@@ -289,7 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const { data: ud } = await withTimeout(
             async (signal) => {
-              const { data: result } = await supabase.from('users').select('id,name,email,role,avatar_url,phone').eq('id', data.user.id).maybeSingle().abortSignal(signal);
+              const { data: result } = await supabase.from('profiles').select('user_id,name,email,role,avatar_url,phone').eq('user_id', data.user.id).maybeSingle().abortSignal(signal);
               return { data: result };
             },
             3000
@@ -352,7 +352,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
       if (error) throw error;
       if (data.user) {
-        const { data: userData } = await supabase.from('users').select('id,name,email,role,avatar_url,phone,two_factor_enabled').eq('id', data.user.id).single();
+        const { data: userData } = await supabase.from('profiles').select('user_id,name,email,role,avatar_url,phone,two_factor_enabled').eq('user_id', data.user.id).single();
         setSession(data.session);
         setUser(mapSupabaseUserToUser(data.user, (userData as unknown) as UserDBMetadata | undefined));
         logAuditEvent('otp_verified', data.user.id);
@@ -419,9 +419,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (updates.department) dbUpdates.department = updates.department;
 
     if (Object.keys(dbUpdates).length > 0) {
-      const { error: dbError } = await supabase.from('users')
+      const { error: dbError } = await supabase.from('profiles')
         .update(dbUpdates)
-        .eq('id', user.id);
+        .eq('user_id', user.id);
 
       if (dbError) {
         logger.warn('Erro ao atualizar tabela users (ignorado pois Auth funcionou):', { error: dbError.message });
@@ -471,7 +471,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Desabilitar 2FA
   const disable2FA = useCallback(async () => {
     if (!user) throw new Error('Auth required');
-    const { error } = await (supabase.from('users') as any).update({ two_factor_enabled: false }).eq('id', user.id);
+    const { error } = await (supabase.from('profiles') as any).update({ two_factor_enabled: false }).eq('user_id', user.id);
     if (error) throw error;
     setUser({ ...user, twoFactorEnabled: false });
     logAuditEvent('2fa_disabled', user.id);

@@ -1,54 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Registration } from '@/types';
+import { logger } from '@/lib/logger';
 
 export function useAdminRegistrations(projectId: string) {
   const [data, setData] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetch() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setLoading(false);
-          return;
-        }
+  const fetchRegistrations = useCallback(async () => {
+    if (!projectId) return;
 
-        // Verifica se é admin (Usa user_id, não id)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
+    setLoading(true);
+    setError(null);
 
-        if (profile?.role !== 'admin') {
-          console.warn('[useAdminRegistrations] Access denied: user is not admin');
-          setLoading(false);
-          return;
-        }
-
-        // Busca os registros
-        const { data: regs, error } = await supabase
-          .from('growth_experience_registrations')
-          .select('*')
-          .eq('project_id', projectId)
-          .order('name');
-
-        if (error) throw error;
-
-        setData(regs || []);
-      } catch (error) {
-        console.error('[useAdminRegistrations] Error fetching registrations:', error);
-      } finally {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('Não autenticado');
         setLoading(false);
+        return;
       }
-    }
-    
-    if (projectId) {
-      fetch();
+
+      // 1. Verifica se é admin (Usa user_id, não id)
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileErr || profile?.role !== 'admin') {
+        logger.error('[useAdminRegistrations] Access denied or profile error:', profileErr);
+        setError('Acesso negado');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Busca os registros se autorizado
+      const { data: regs, error: fetchError } = await supabase
+        .from('growth_experience_registrations')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      setData(regs || []);
+    } catch (err: any) {
+      logger.error('[useAdminRegistrations] Error:', err);
+      setError(err.message || 'Erro ao carregar inscrições');
+    } finally {
+      setLoading(false);
     }
   }, [projectId]);
 
-  return { data, loading };
+  useEffect(() => {
+    fetchRegistrations();
+  }, [fetchRegistrations]);
+
+  return { data, loading, error, refetch: fetchRegistrations };
 }

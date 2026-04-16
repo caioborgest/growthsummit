@@ -108,16 +108,16 @@ export function EmpresaIncentivadoraModal({ isOpen, onClose, isAdmin = false, ed
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (authUser) {
                 // @ts-expect-error - bypass never type inference issue
-                await supabase.from('users').upsert({
-                    id: authUser.id,
+                await supabase.from('profiles').upsert({
+                    user_id: authUser.id,
                     email: formData.email,
                     name: formData.nomeResponsavel,
                     phone: formData.phone,
                     role: 'company' as const,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'id' }).then(({ error }: { error: unknown }) => {
+                }, { onConflict: 'user_id' }).then(({ error }: { error: unknown }) => {
                     if (error && typeof error === 'object' && 'message' in error) {
-                        logger.warn('Sync users failed in EmpresaForm (expected if RLS):', { msg: (error as { message: string }).message });
+                        logger.warn('Sync profiles failed in EmpresaForm (expected if RLS):', { msg: (error as { message: string }).message });
                     }
                 });
             }

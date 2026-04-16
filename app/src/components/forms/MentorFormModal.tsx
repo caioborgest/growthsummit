@@ -184,7 +184,7 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
 
             if (!userId) throw new Error('Não foi possível identificar o usuário para o registro.');
 
-            // Wait for user record to appear in public.users via DB trigger (with timeout safety)
+            // Wait for user record to appear in public.profiles via DB trigger (with timeout safety)
             await waitForUserSync(userId);
 
             // 2. Photo Upload (Now authenticated)
@@ -220,25 +220,25 @@ export function MentorFormModal({ isOpen, onClose }: MentorFormModalProps) {
                 }
             }
 
-            // 3. Update public.users table EXPLICITLY to ensure consistency
+            // 3. Update public.profiles table EXPLICITLY to ensure consistency
             if (userId) {
                 try {
                     const { error: userUpdateError } = await supabase
-                        .from('users')
+                        .from('profiles')
                         .update({
                             name: formData.nome,
                             phone: formData.phone,
                             avatar_url: fotoUrl || formData.fotoPreview || undefined
                         })
-                        .eq('id', userId);
+                        .eq('user_id', userId);
 
                     if (userUpdateError) logger.warn('Erro ao atualizar tabela users (não crítico):', userUpdateError);
                 } catch (userErr) {
-                    logger.warn('User update error ignored:', userErr);
+                    logger.warn('Profile update error ignored:', userErr);
                 }
             }
 
-            // 3. Sync with public.users (Agora via trigger)
+            // 3. Sync with public.profiles (Agora via trigger)
             if (userId) {
                 logger.info('ID de usuário identificado para mentor:', { userId });
             }

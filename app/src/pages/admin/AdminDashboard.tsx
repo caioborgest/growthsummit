@@ -25,10 +25,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageLoader } from '@/components/ui/PageLoader';
+import { RefreshCcw } from 'lucide-react';
 import { useProject } from '@/contexts/ProjectContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  useRegistrations,
   useMentors,
   useMentoringSessions,
   useB2BMeetings,
@@ -43,6 +44,7 @@ import {
   useRegistrationBatches,
   usePartnerTeam
 } from '@/hooks/useData';
+import { useAdminRegistrations } from '@/hooks/useAdminRegistrations';
 import { SetupWizard } from '@/components/admin/SetupWizard';
 import type { Mentor, Startup } from '@/types';
 import { toast } from 'sonner';
@@ -156,36 +158,20 @@ export function AdminDashboard() {
   const { selectedProject, isProjectSelected } = useProject();
   const navigate = useNavigate();
   
+  const { 
+    data: registrations = [], 
+    loading: isRegLoading, 
+    error: regError, 
+    refetch: refetchRegistrations 
+  } = useAdminRegistrations(selectedProject?.id || '');
+
   // ── Verificação de Perfil Admin (Harden Security) ────────────────────────
-  const [isAdminConfirmed, setIsAdminConfirmed] = React.useState<boolean | null>(null);
-
   React.useEffect(() => {
-    async function verifyAdminProfile() {
-      if (!user?.id) return;
-      
-      try {
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('user_id', user.id) // ← Usando user_id como solicitado
-          .single();
-        
-        if (error || profile?.role !== 'admin') {
-          console.error('[AdminDashboard] Perfil não autorizado ou erro na query:', error);
-          setIsAdminConfirmed(false);
-        } else {
-          setIsAdminConfirmed(true);
-        }
-      } catch (err) {
-        console.error('[AdminDashboard] Falha crítica na verificação de perfil:', err);
-        setIsAdminConfirmed(false);
-      }
+    if (regError === 'Acesso negado') {
+      toast.error('Acesso negado: você não tem permissão de administrador.');
+      navigate('/', { replace: true });
     }
-    
-    verifyAdminProfile();
-  }, [user?.id]);
-
-  const { data: registrations = [] } = useRegistrations();
+  }, [regError, navigate]);
   const { filter: filterMentors } = useMentors();
   const { data: sessions = [] } = useMentoringSessions();
   const { data: b2bMeetings = [] } = useB2BMeetings();
@@ -307,13 +293,13 @@ export function AdminDashboard() {
       }));
   }, [registrations, checkIns, transactions]);
 
-  // Se a verificação ainda está em progresso, mostra nada ou um loader sutil
-  if (isAdminConfirmed === null) {
-    return null; 
+  // Se a verificação ainda está em progresso
+  if (isRegLoading && registrations.length === 0) {
+    return <PageLoader />; 
   }
 
-  // Se não for admin confirmado pelo banco (profiles), redireciona
-  if (isAdminConfirmed === false) {
+  // Se não for admin confirmado pelo hook (Acesso negado redundante)
+  if (regError === 'Acesso negado') {
     return <Navigate to="/" replace />;
   }
 
@@ -395,9 +381,14 @@ export function AdminDashboard() {
           <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic mb-1 uppercase">
             PAINEL DE <span className="text-brand-orange-coral">CONTROLE</span>
           </h1>
-          <p className="text-gray-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
-            Gerenciando o ecossistema <span className="text-white">{selectedProject?.name}</span>
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-gray-500 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
+              Gerenciando o ecossistema <span className="text-white">{selectedProject?.name}</span>
+            </p>
+            <Badge variant="outline" className="border-white/10 text-gray-500 font-black text-[9px] uppercase tracking-widest px-2 py-0.5">
+              Base de Participantes ({registrations.length})
+            </Badge>
+          </div>
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4 p-1 bg-dark-200/50 border border-white/5 rounded-2xl sm:rounded-[2rem] backdrop-blur-xl h-11 sm:h-14 pr-4 sm:pr-6">
@@ -411,17 +402,28 @@ export function AdminDashboard() {
               <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse shadow-glow-emerald" />
             </div>
           </div>
-          <div className="h-6 sm:h-8 w-px bg-white/5 mx-1.5 sm:mx-2" />
-          <Link to={selectedProject?.id ? `/admin/projetos?edit=${selectedProject.id}` : "/admin/projetos"}>
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => {
+                refetchRegistrations();
+                toast.info('Sincronizando dados...');
+              }}
               className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-4 h-8 sm:h-auto"
             >
-              CONFIG
+              <RefreshCcw className="h-3 w-3 mr-1" /> ATUALIZAR
             </Button>
-          </Link>
-        </div>
+            <div className="h-6 sm:h-8 w-px bg-white/5 mx-1" />
+            <Link to={selectedProject?.id ? `/admin/projetos?edit=${selectedProject.id}` : "/admin/projetos"}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-white hover:bg-white/5 rounded-xl font-black text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-4 h-8 sm:h-auto"
+              >
+                CONFIG
+              </Button>
+            </Link>
+          </div>
       </div>
 
       {/* Strategic Actions Grid */}
