@@ -39,4 +39,5 @@ export interface DadosInscricao {
     registrationType?: 'standard' | 'pro' | 'vip' | 'social';
     valorFinal?: number;
     registrationStatus?: string;
+    empresa?: string;
 }

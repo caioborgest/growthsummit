@@ -120,19 +120,36 @@ function DetalhesModal({
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { label: 'Valor Bruto', value: reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00', icon: Ticket },
+                { label: 'Valor Bruto', value: (reg.amount && reg.amount > 0) ? `R$ ${reg.amount.toLocaleString('pt-BR')}` : (reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00'), icon: Ticket },
                 { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR')}` : '—', icon: Star, highlight: !!reg.discountAmount },
-                { label: 'Valor Líquido', value: `R$ ${(reg.amount || 0).toLocaleString('pt-BR')}`, icon: CreditCard, primary: true },
+                { label: 'Valor Líquido', value: `R$ ${(reg.paidAmount || reg.amount || 0).toLocaleString('pt-BR')}`, icon: CreditCard, primary: true },
                 { label: 'Documento', value: (reg as any).cpf || 'Não informado', icon: Contact },
-                { label: 'Cupom', value: reg.couponCode || 'Nenhum', icon: Ticket },
+                { label: 'Empresa', value: reg.empresa || (reg as any).company || 'Não informada', icon: Building2 },
+                { 
+                  label: 'Cupom / Voucher', 
+                  value: reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher || 'Nenhum', 
+                  icon: Ticket,
+                  highlight: !!(reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher)
+                },
+                { 
+                  label: 'Lote / Parceiro', 
+                  value: reg.batchInfo?.companyName || reg.batchInfo?.name || 'Individual', 
+                  icon: Users,
+                  highlight: !!reg.batchInfo 
+                },
+                { 
+                  label: 'Pagamento', 
+                  value: reg.paymentMethod ? `${reg.paymentMethod.toUpperCase()}` : (reg.amount === 0 ? 'CORTESIA / BATCH' : 'PENDENTE'), 
+                  icon: CreditCard 
+                },
                 { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR'), icon: Calendar },
               ].map(({ label, value, icon: Icon, highlight, primary }) => (
                 <div key={label} className={`p-5 rounded-[1.5rem] border border-white/5 transition-all ${primary ? 'bg-teal-500/5 border-teal-500/20' : highlight ? 'bg-brand-orange-coral/5 border-brand-orange-coral/20' : 'bg-white/[0.02]'}`}>
                   <div className="flex items-center gap-2 mb-2 opacity-40">
                     <Icon className={`h-3 w-3 ${primary ? 'text-teal-400' : 'text-gray-400'}`} />
-                    <p className="text-[9px] uppercase font-black tracking-widest">{label}</p>
+                    <p className="text-[9px] uppercase font-black tracking-widest text-ellipsis overflow-hidden whitespace-nowrap">{label}</p>
                   </div>
-                  <p className={`text-sm font-black italic uppercase ${primary ? 'text-teal-400' : 'text-white'}`}>{value}</p>
+                  <p className={`text-sm font-black italic uppercase ${primary ? 'text-teal-400' : 'text-white'} truncate`}>{value}</p>
                 </div>
               ))}
             </div>
@@ -190,7 +207,17 @@ function DetalhesModal({
                   </Button>
 
                   <Button
-                    onClick={() => onUpdateStatus(reg.id, 'paid')}
+                    onClick={() => {
+                      const method = prompt('Informe a forma de pagamento (ex: Dinheiro, Pix, Cartão):', 'Dinheiro');
+                      if (method) {
+                         onUpdateStatus(reg.id, { 
+                           status: 'paid', 
+                           paymentMethod: method,
+                           paymentDate: new Date().toISOString(),
+                           amount: reg.palestrasNoturnas ? 179.90 : (reg.amount || 0)
+                         });
+                      }
+                    }}
                     disabled={['paid', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())}
                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
                   >
@@ -291,14 +318,15 @@ export default function AdminInscricoes() {
 
       const oldStatus = registration.status;
       const updates: any = typeof status === 'object' ? status : { status };
+      const statusValue = typeof status === 'string' ? status : (updates.status || updates.paymentStatus);
 
       // Normalização de status para o padrão Growth Experience (Inglês)
-      if (status === 'paid' || status === 'free' || status === 'active') {
+      if (['paid', 'free', 'active'].includes(statusValue)) {
         updates.payment_status = 'paid';
         updates.status = 'active';
       }
 
-      if (status === 'free') {
+      if (statusValue === 'free') {
         updates.amount = 0;
         updates.paid_amount = 0;
         updates.palestrasNoturnas = false;

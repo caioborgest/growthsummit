@@ -168,7 +168,9 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
                 partnerAccessCode: currentDados.partnerAccessCode || null,
                 referralType: currentDados.referralType || 'nenhum',
                 referralName: (currentDados.referralName || currentDados.code)?.trim() || null,
-                appInstalled: false
+                appInstalled: false,
+                empresa: currentDados.empresa || null,
+                couponCode: currentDados.code || null
             };
 
             logger.info('[Modal] Performing centralized registration...', { amount: finalAmount });

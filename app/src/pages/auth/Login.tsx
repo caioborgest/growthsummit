@@ -298,6 +298,15 @@ export function Login() {
                     </span>
                   )}
                 </Button>
+
+                <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                  <p className="text-gray-400 text-xs">
+                    Ainda não garantiu sua vaga?{' '}
+                    <Link to="/" className="text-brand-orange-coral font-bold hover:underline ml-1">
+                      Fazer Inscrição Automática
+                    </Link>
+                  </p>
+                </div>
               </form>
 
               {/* Footer */}

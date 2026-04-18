@@ -242,11 +242,11 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                 toast.error("Câmera em uso ou bloqueada pelo sistema. Tente liberar o dispositivo.");
             } else if (errMsg.includes("constraint") || errMsg.includes("overconstrained")) {
                 // If strict constraints failed, retry with ZERO constraints but keep
-                // the same camera ID so USB cameras are not bypassed.
+                // the same camera ID or preference.
                 console.warn("[QRScanner] Strict constraints failed, falling back to loose mode...");
                 if (isIdString) {
                     // Retry the same device with no resolution/aspect constraints
-                    return await startScanner({ facingMode: 'user' });
+                    return await startScanner({ facingMode: 'environment' }); 
                 }
                 return await startScanner({ facingMode: 'environment' });
             } else {
@@ -271,9 +271,11 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     const backCamera = devices.find(d => 
                         d.label.toLowerCase().includes('back') || 
                         d.label.toLowerCase().includes('traseira') ||
-                        d.label.toLowerCase().includes('environment')
+                        d.label.toLowerCase().includes('environment') ||
+                        d.label.toLowerCase().includes('rear')
                     );
                     
+                    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
                     const initialId = backCamera ? backCamera.id : devices[0].id;
                     setSelectedCameraId(initialId);
                     
@@ -282,16 +284,12 @@ export function QRScanner({ onSuccess, onClose, title = "Escanear QR Code", isIn
                     
                     // CRITICAL FOR USB CAMERAS: getCameras() internally opens
                     // a getUserMedia stream to obtain device labels, then closes it.
-                    // Built-in cameras release the hardware lock near-instantly,
-                    // but USB cameras (especially USB 2.0) need extra time to
-                    // fully release the device. Without this delay, the subsequent
-                    // startScanner() gets NotReadableError because the OS still
-                    // considers the camera "in use" from the enumeration stream.
                     await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    // startScanner will internally wait for the DOM element to appear
                     if (isMounted) {
-                        await startScanner(initialId);
+                        // On mobile, {facingMode: 'environment'} is MORE reliable than a device ID
+                        // because it tells the browser to pick the "best" back camera (with AF).
+                        await startScanner(isMobile ? { facingMode: 'environment' } : initialId);
                     }
                 } else {
                     setIsLoading(false);

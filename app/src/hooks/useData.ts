@@ -178,6 +178,24 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
       result.registrationType = regType;
       result.ticketType = regType;
     }
+    // Ensure empresa is populated correctly
+    result.empresa = (item.empresa || result.company || (item.profiles as any)?.company || null) as string | null;
+    
+    // Flatten Batch info if joined
+    if (item.batch) {
+      const b = item.batch as any;
+      result.batchInfo = {
+        id: b.id,
+        name: b.name || b.company_name,
+        companyName: b.company_name || b.name,
+        voucherCode: b.voucher_code
+      };
+      // If no coupon code is set but it's a batch, use the voucher code
+      if (!result.couponCode) result.couponCode = b.voucher_code;
+      // If no entreprise is set but it's a batch, use the batch company name
+      if (!result.empresa) result.empresa = b.company_name || b.name;
+    }
+
     // Defensive parsing for selected_courses
     result.selectedCourses = safeParseJsonArray(item.selected_courses);
     result.cursosSelecionados = result.selectedCourses;
@@ -350,9 +368,16 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
   // Registration specific mapping
   if (entity === 'registrations') {
     if (data.userId) result.user_id = data.userId;
-    // Remove email from the payload as per user request (table doesn't have it)
-    // Actually, user audit says table HAS it, so we should NOT delete it if it's there.
-    // However, the previous code had 'delete result.email'. I will remove the delete.
+    if (data.amount !== undefined) result.paid_amount = data.amount;
+    if (data.paidAmount !== undefined) result.paid_amount = data.paidAmount;
+    if (data.paymentMethod) result.payment_method = data.paymentMethod;
+    if (data.paymentStatus) result.payment_status = data.paymentStatus;
+    if (data.paymentDate) result.payment_date = data.paymentDate;
+    if (data.registrationType) result.registration_type = data.registrationType;
+    if (data.ticketType) result.registration_type = data.ticketType;
+    if (data.couponCode) result.coupon_code = data.couponCode;
+    if (data.socialCode) result.social_code = data.socialCode;
+    if (data.voucherCode) result.voucher_code = data.voucherCode;
   }
 
   // Project isolation
@@ -404,7 +429,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
     if (entity === 'registrations') {
-      return 'id,project_id,event_name,status,created_at,amount:paid_amount,paid_amount,payment_status,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,profiles(user_id,name,email,phone,company,city,state,role)';
+      return 'id,project_id,event_name,status,created_at,amount:paid_amount,paid_amount,payment_status,payment_method,payment_date,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,empresa,coupon_code,profiles(user_id,name,email,phone,company,city,state,role),batch:company_registration_batches(id,name,company_name,voucher_code)';
     }
     if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';

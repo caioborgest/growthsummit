@@ -40,6 +40,7 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
     const [referralType, setReferralType] = useState<DadosInscricao['referralType']>(dados.referralType || 'nenhum');
     const [referralName, setReferralName] = useState(dados.referralName || '');
     const [code, setCode] = useState(dados.code || '');
+    const [empresa, setEmpresa] = useState(dados.empresa || '');
     const [batchId, setBatchId] = useState(dados.batchId || '');
     const [companyVoucher, setCompanyVoucher] = useState(dados.companyVoucher || '');
     const [confirmPassword, setConfirmPassword] = useState(dados.password || '');
@@ -231,7 +232,8 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                 code: code.trim().toUpperCase(),
                 socialDiscount: codigoValidado ? socialDiscount : 0,
                 batchId: referralType === 'empresa' ? batchId : '',
-                companyVoucher: referralType === 'empresa' ? companyVoucher : ''
+                companyVoucher: referralType === 'empresa' ? companyVoucher : '',
+                empresa: empresa || (referralType === 'empresa' ? referralName : '')
             });
         }
     };
@@ -301,6 +303,18 @@ export function Step2DadosPessoais(props: Step2DadosPessoaisProps) {
                             className={`form-input${errors.phone ? ' error' : ''}`}
                         />
                         {errors.phone && <p className="form-error"><AlertCircle />{errors.phone}</p>}
+                    </div>
+
+                    <div className="form-field">
+                        <label htmlFor="empresa" className="form-label">
+                            <Contact className="h-4 w-4" />Empresa (Opcional)
+                        </label>
+                        <input
+                            id="empresa" type="text" value={empresa}
+                            onChange={e => setEmpresa(e.target.value)}
+                            placeholder="Nome da sua empresa ou instituição"
+                            className="form-input"
+                        />
                     </div>
 
                     <div className="form-field">

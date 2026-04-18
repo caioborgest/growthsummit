@@ -29,6 +29,8 @@ export interface RegistrationParams {
     partnerAccessCode?: string | null;
     socialCode?: string | null;
     palestraCode?: string | null;
+    couponCode?: string | null;
+    empresa?: string | null;
     extraData?: Record<string, unknown>;
 }
 
@@ -106,14 +108,15 @@ export const registrationService = {
             p_status: params.status || (params.palestrasNoturnas ? 'pending' : 'active'),
             p_evento: params.eventName || 'Growth Experience',
             p_palestras_noturnas: Boolean(params.palestrasNoturnas),
-            p_indicacao_tipo: inferredReferralType,
-            p_indicacao_nome: inferredReferralName,
-            p_codigo_social: params.socialCode || null,
-            p_codigo_palestra: params.palestraCode || null,
+            p_referral_type: inferredReferralType,
+            p_referral_name: inferredReferralName,
+            p_social_code: params.socialCode || null,
+            p_lecture_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
             p_lote_id: cleanBatchId || null,
             p_voucher_empresa: params.companyVoucher || null,
-            // p_app_installed is handled locally if needed, not supported by this RPC
+            p_empresa: params.empresa || null,
+            p_coupon_code: params.couponCode || null
         };
 
         logger.info('[registrationService] Executing RPC register_participant_with_slots:', {

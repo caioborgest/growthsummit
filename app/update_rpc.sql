@@ -72,13 +72,13 @@ BEGIN
 
     IF array_length(v_session_ids, 1) > 0 THEN
         FOREACH v_sess_id IN ARRAY v_session_ids LOOP
-            SELECT id, title, max_vagas, registered_count INTO v_sess
+            SELECT id, title, max_capacity, registered_count INTO v_sess
             FROM public.event_schedule
             WHERE id = v_sess_id
             FOR UPDATE;
             
-            IF FOUND AND v_sess.max_vagas IS NOT NULL AND v_sess.max_vagas > 0 THEN
-                IF COALESCE(v_sess.registered_count, 0) >= v_sess.max_vagas THEN
+            IF FOUND AND v_sess.max_capacity IS NOT NULL AND v_sess.max_capacity > 0 THEN
+                IF COALESCE(v_sess.registered_count, 0) >= v_sess.max_capacity THEN
                     v_full_sess := array_append(v_full_sess, v_sess.title);
                 END IF;
             END IF;

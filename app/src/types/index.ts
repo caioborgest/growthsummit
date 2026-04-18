@@ -170,11 +170,19 @@ export interface Registration {
   cursosSelecionados?: string[];
   palestrasNoturnas?: boolean;
   couponCode?: string;
+  socialCode?: string;
+  voucherCode?: string;
   discountAmount?: number;
   externalPaymentId?: string;
   externalPaymentUrl?: string;
   batchId?: string;
   companyVoucher?: string;
+  batchInfo?: {
+    id: string;
+    name: string;
+    companyName: string;
+    voucherCode: string;
+  };
   registrationType?: string;
   eventName?: string;
   appInstalled?: boolean;
