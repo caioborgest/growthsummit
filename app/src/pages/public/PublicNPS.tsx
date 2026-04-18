@@ -1,210 +1,244 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { npsModuleService } from '@/services/npsModuleService';
+import { NPSForm } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { npsService } from '@/services/npsService';
-import { NPSSurvey } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, Star, Send, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { useInscricoes } from '@/hooks/useData';
+import { supabase } from '@/lib/supabase';
 
 export default function PublicNPS() {
-  const { surveyId } = useParams<{ surveyId: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { data: registrations } = useInscricoes();
+  const { surveyId } = useParams();
+  const formId = surveyId;
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('user') || undefined;
   
-  const [survey, setSurvey] = useState<NPSSurvey | null>(null);
+  const [form, setForm] = useState<NPSForm | null>(null);
   const [loading, setLoading] = useState(true);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [score, setScore] = useState<number | null>(null);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (surveyId) {
-      loadSurvey();
-    }
-  }, [surveyId]);
+    if (formId) loadForm();
+  }, [formId]);
 
-  const loadSurvey = async () => {
-    if (!surveyId) return;
+  const loadForm = async () => {
     setLoading(true);
-    try {
-      const data = await npsService.getSurveyById(surveyId);
-      if (data) {
-        setSurvey(data);
-      } else {
-        toast.error('Pesquisa não encontrada ou já encerrada.');
-        navigate('/');
-      }
-    } catch (error) {
-      logger.error('Erro ao carregar survey NPS:', error);
-    } finally {
-      setLoading(false);
+    // Since Public users aren't logged in to Admin, Supabase RLS is configured to allow selecting ACTIVE forms.
+    const { data, error } = await supabase
+        .from('nps_forms')
+        .select('*')
+        .eq('id', formId)
+        .eq('status', 'active')
+        .single();
+        
+    if (!error && data) {
+       // Manual map reusing the shape
+       setForm({
+          id: data.id,
+          projectId: data.event_id,
+          internalName: data.internal_name,
+          description: data.description,
+          status: data.status,
+          npsQuestion: data.nps_question,
+          minLabel: data.min_label,
+          maxLabel: data.max_label,
+          thanksPromoter: data.thanks_promoter,
+          thanksPassive: data.thanks_passive,
+          thanksDetractor: data.thanks_detractor,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+       } as NPSForm);
     }
+    setLoading(false);
+  };
+
+  const handleScoreSelect = (selectedScore: number) => {
+    setScore(selectedScore);
+    // Auto-advance after short delay
+    setTimeout(() => setStep(2), 500);
   };
 
   const handleSubmit = async () => {
-    if (score === null) return;
+    if (score === null || !form) return;
     setSubmitting(true);
 
-    const registration = registrations?.find(r => r.projectId === survey?.projectId);
+    try {
+      const payload = {
+        form_id: form.id,
+        event_id: form.projectId,
+        participant_user_id: userId,
+        nps_score: score,
+        main_comment: comment,
+        channel: 'public_link'
+      };
 
-    const result = await npsService.submitResponse({
-      surveyId: surveyId!,
-      score,
-      comment,
-      userId: user?.id,
-      registrationId: registration?.id,
-      metadata: { source: 'public_link', timestamp: new Date().toISOString() }
-    });
-
-    if (result.success) {
-      setDone(true);
-      toast.success('Obrigado pelo seu feedback!');
-    } else {
-      toast.error(result.error || 'Erro ao enviar resposta.');
+      const { error } = await supabase.from('nps_responses').insert([payload]);
+      
+      if (error && error.code !== '23505') { // Ignore unique violation if user refreshed
+         throw error;
+      }
+      
+      setStep(3);
+    } catch (error) {
+      toast.error('Erro ao enviar sua avaliação. Tente novamente.');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
+  };
+
+  const getThankYouMessage = () => {
+    if (!form || score === null) return '';
+    if (score >= 9) return form.thanksPromoter;
+    if (score >= 7) return form.thanksPassive;
+    return form.thanksDetractor;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange-coral" />
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-t-2 border-brand-orange-coral animate-spin" />
       </div>
     );
   }
 
-  if (done) {
+  if (!form) {
     return (
-      <div className="min-h-screen bg-dark flex items-center justify-center p-6 text-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-card p-10 max-w-md w-full border-emerald-500/20"
-        >
-          <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
-          </div>
-          <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-4">Feedback Recebido!</h1>
-          <p className="text-gray-400 mb-8 leading-relaxed">
-            Sua opinião é o combustível para transformarmos o ecossistema Growth Experience. Nos vemos no topo!
-          </p>
-          <Button 
-            onClick={() => navigate('/')}
-            className="w-full bg-white/5 hover:bg-white/10 text-white font-black h-14 rounded-2xl border border-white/5"
-          >
-            VOLTAR AO INÍCIO
-          </Button>
-        </motion.div>
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+          <Heart className="w-8 h-8 text-gray-400 opacity-50" />
+        </div>
+        <h1 className="text-xl font-black text-white italic uppercase tracking-widest">Pesquisa não encontrada</h1>
+        <p className="text-gray-500 mt-2 text-sm max-w-xs">Este formulário Pós-Evento pode ter sido desativado ou o link está incorreto.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-orange-coral/5 rounded-full blur-[100px] -z-10" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/5 rounded-full blur-[100px] -z-10" />
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#0A0A0A] flex flex-col pt-12 sm:justify-center p-4 sm:p-6 text-white font-sans overflow-hidden">
+      
+      {/* Visual background details */}
+      <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-brand-orange-coral/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#14B8A6]/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-xl w-full"
-      >
-        <div className="text-center mb-10">
-          <img 
-            src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/favicon.png" 
-            alt="Logo" 
-            className="h-12 w-auto mx-auto mb-6 opacity-30" 
-          />
-          <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest mb-4">
-            PESQUISA DE SATISFAÇÃO
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl font-black text-white italic uppercase tracking-tighter leading-tight">
-            Conte-nos sua <span className="text-brand-orange-coral">Experiência</span>
-          </h1>
-          <p className="text-gray-500 mt-4 text-sm font-medium px-4">
-            Em uma escala de 0 a 10, o quanto você recomendaria este evento para um amigo ou colega?
-          </p>
+      <div className="w-full max-w-2xl mx-auto relative z-10">
+        
+        {/* Header / Brand */}
+        <div className="text-center mb-12">
+           <h2 className="text-sm font-black uppercase tracking-[0.2em] text-brand-orange-coral italic">Growth Experience</h2>
+           <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mt-1">Feedback do Participante</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-10 border-white/5 space-y-10">
-          {/* NPS Scale */}
-          <div className="space-y-6">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-600 px-1">
-              <span>Nada Provável</span>
-              <span>Muito Provável</span>
-            </div>
-            <div className="grid grid-cols-5 sm:grid-cols-11 gap-2">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                <button
-                  key={num}
-                  onClick={() => setScore(num)}
-                  className={`h-11 sm:h-14 rounded-xl sm:rounded-2xl font-black text-sm sm:text-lg transition-all border ${
-                    score === num 
-                      ? 'bg-brand-orange-coral border-brand-orange-coral text-white shadow-lg shadow-orange-500/30 scale-110' 
-                      : 'bg-white/5 border-white/5 text-gray-500 hover:border-white/20'
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Comment */}
-          <AnimatePresence>
-            {score !== null && (
+        <div className="bg-dark-200/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 sm:p-12 shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
+          
+          <AnimatePresence mode="wait">
+            {step === 1 && (
               <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="space-y-4 pt-4 border-t border-white/5"
+                key="step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col h-full"
               >
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-brand-orange-coral" />
-                  <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest">O que mais você tem a dizer? (Opcional)</p>
+                <div className="text-center mb-8">
+                   <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">{form.npsQuestion}</h1>
                 </div>
+
+                <div className="grid grid-cols-11 gap-1 sm:gap-2 mb-4 w-full">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                     const isSelected = score === num;
+                     
+                     // Color coding logic
+                     let colorClass = "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
+                     if (num <= 6) colorClass = isSelected ? "bg-red-500 text-white border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]" : "bg-red-500/10 border-red-500/20 hover:bg-red-500/20 text-red-400";
+                     if (num >= 7 && num <= 8) colorClass = isSelected ? "bg-amber-500 text-white border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-400";
+                     if (num >= 9) colorClass = isSelected ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" : "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400";
+
+                     return (
+                        <button
+                          key={num}
+                          onClick={() => handleScoreSelect(num)}
+                          className={`aspect-square sm:aspect-auto sm:h-16 flex items-center justify-center rounded-xl text-lg sm:text-xl font-black transition-all border ${colorClass} ${isSelected ? 'scale-110 z-10' : 'scale-100 hover:scale-105'}`}
+                        >
+                          {num}
+                        </button>
+                     );
+                  })}
+                </div>
+                
+                <div className="flex justify-between w-full px-2 mt-2">
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.minLabel}</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.maxLabel}</span>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 2 && (
+              <motion.div 
+                key="step2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col h-full"
+              >
+                <div className="text-center mb-6">
+                   <h1 className="text-2xl font-black tracking-tight">Tem algo mais que queira compartilhar?</h1>
+                   <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mt-2">Seu feedback é opcional, mas nos ajuda imensamente.</p>
+                </div>
+
                 <Textarea 
-                  placeholder="Compartilhe sua percepção sobre as palestras, networking ou organização..."
                   value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  className="bg-white/5 border-white/10 rounded-2xl min-h-[120px] focus:border-brand-orange-coral text-white p-4"
+                  onChange={e => setComment(e.target.value)}
+                  placeholder="Deixe seu comentário aqui..."
+                  className="bg-white/5 border border-white/10 rounded-2xl min-h-[150px] text-base p-4 resize-none focus:border-brand-orange-coral focus:ring-0 transition-colors"
                 />
+
+                <div className="mt-8 flex gap-4">
+                   <Button variant="ghost" onClick={() => setStep(1)} className="text-gray-400 hover:text-white uppercase tracking-widest text-xs font-bold h-14 px-6">
+                     VOLTAR
+                   </Button>
+                   <Button 
+                     onClick={handleSubmit} 
+                     disabled={submitting}
+                     className="flex-1 bg-brand-orange-coral hover:bg-orange-600 text-white font-black uppercase tracking-widest h-14 rounded-2xl text-sm shadow-[0_0_30px_rgba(255,87,34,0.3)]"
+                   >
+                     {submitting ? 'ENVIANDO...' : 'ENVIAR AVALIAÇÃO'}
+                   </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div 
+                key="step3"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="flex flex-col items-center justify-center text-center h-full py-10"
+              >
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                </div>
+                <h1 className="text-2xl font-black italic uppercase tracking-widest text-white mb-4">MUITO OBRIGADO!</h1>
+                <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                  {getThankYouMessage()}
+                </p>
+                
+                <div className="mt-12 opacity-50 flex items-center text-[10px] uppercase tracking-widest font-bold text-gray-500">
+                  <Heart className="w-3 h-3 mr-1 text-brand-orange-coral" /> Feito para melhorar sua experiência.
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          <Button 
-            disabled={score === null || submitting}
-            onClick={handleSubmit}
-            className={`w-full h-14 sm:h-16 rounded-2xl sm:rounded-3xl font-black text-sm sm:text-base uppercase tracking-widest transition-all ${
-              score !== null 
-                ? 'bg-brand-orange-coral text-white shadow-xl shadow-orange-500/20' 
-                : 'bg-white/5 text-gray-700 cursor-not-allowed'
-            }`}
-          >
-            {submitting ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            ) : (
-              <>ENVIAR FEEDBACK AGORA <Send className="ml-3 h-5 w-5" /></>
-            )}
-          </Button>
+          
         </div>
-
-        <div className="mt-8 text-center">
-           <button 
-            onClick={() => navigate('/')}
-            className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em] hover:text-gray-500 transition-colors flex items-center justify-center mx-auto"
-           >
-              <ArrowLeft className="h-3 w-3 mr-2" /> Voltar para o Ecossistema
-           </button>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
