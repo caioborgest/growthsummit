@@ -36,7 +36,13 @@ export default function AdminSorteio() {
     name: '',
     description: '',
     type: 'realtime_qr' as 'stand_checkin' | 'realtime_qr',
-    standId: ''
+    standId: '',
+    winnersCount: 1,
+    prizeImageUrl: '',
+    rules: {
+      mustBeCheckedIn: false,
+      ticketTypes: [] as string[]
+    }
   });
 
   const filteredRaffles = useMemo(() => {
@@ -54,12 +60,19 @@ export default function AdminSorteio() {
         description: formData.description,
         type: formData.type,
         standId: formData.type === 'stand_checkin' ? formData.standId : undefined,
-        status: 'draft'
+        status: 'draft',
+        winnersCount: formData.winnersCount,
+        prizeImageUrl: formData.prizeImageUrl,
+        eligibilityRules: formData.rules
       });
-      toast.success('Sorteio criado com sucesso!');
+      toast.success('Sorteio profissional criado!');
       setIsCreateModalOpen(false);
+      setFormData({ 
+        name: '', description: '', type: 'realtime_qr', standId: '', 
+        winnersCount: 1, prizeImageUrl: '', 
+        rules: { mustBeCheckedIn: false, ticketTypes: [] } 
+      });
       refetchRaffles();
-      setFormData({ name: '', description: '', type: 'realtime_qr', standId: '' });
     } catch (error) {
       toast.error('Erro ao criar sorteio');
       logger.error('Raffle creation error', error);
@@ -233,9 +246,19 @@ export default function AdminSorteio() {
                   </>
                 )}
                 {raffle.status === 'completed' && (
-                    <div className="flex-1 bg-teal-500/10 rounded-xl p-3 border border-teal-500/20">
-                        <p className="text-[8px] font-black text-teal-500 uppercase tracking-widest mb-1">🏅 GANHADOR</p>
-                        <p className="text-white font-bold text-xs truncate">{(inscricoes.find(i => i.id === raffle.winnerRegistrationId) as any)?.name || 'ID: ' + raffle.winnerRegistrationId?.slice(0,8)}</p>
+                    <div className="flex-1 bg-teal-500/10 rounded-xl p-4 border border-teal-500/20 space-y-2">
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-[8px] font-black text-teal-500 uppercase tracking-widest">🏅 GANHADORES ({raffle.winners_count})</p>
+                          <Trophy className="h-3 w-3 text-teal-500" />
+                        </div>
+                        {raffle.winnersCount > 1 ? (
+                          <div className="space-y-1 max-h-20 overflow-y-auto custom-scrollbar pr-2">
+                             <p className="text-white font-bold text-[10px] italic">Ver detalhes no modo display ou relatório.</p>
+                             {/* Note: Para ver a lista aqui precisaríamos de um fetch secundário ou join */}
+                          </div>
+                        ) : (
+                          <p className="text-white font-bold text-xs truncate">{(inscricoes.find(i => i.id === raffle.winnerRegistrationId) as any)?.name || 'Sorteio Concluído'}</p>
+                        )}
                     </div>
                 )}
                 <Button 
@@ -373,6 +396,62 @@ export default function AdminSorteio() {
                     </div>
                 )}
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Quantidade de Ganhadores</Label>
+                    <Input 
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={formData.winnersCount}
+                      onChange={e => setFormData({ ...formData, winnersCount: parseInt(e.target.value) })}
+                      className="bg-white/5 border-white/10 h-14 rounded-2xl focus:border-brand-orange-coral" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Regras de Elegibilidade</Label>
+                    <div className="flex flex-col gap-2 p-2 bg-white/5 rounded-2xl border border-white/5">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.rules.mustBeCheckedIn} 
+                          onChange={e => setFormData({ ...formData, rules: { ...formData.rules, mustBeCheckedIn: e.target.checked } })}
+                          className="w-4 h-4 rounded border-white/10 bg-dark-300 text-brand-orange-coral focus:ring-brand-orange-coral"
+                        />
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Apenas Presentes</span>
+                      </label>
+                      <div className="flex gap-2">
+                        {['VIP', 'PRO'].map(type => (
+                          <label key={type} className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={formData.rules.ticketTypes.includes(type)} 
+                              onChange={e => {
+                                const newTypes = e.target.checked 
+                                  ? [...formData.rules.ticketTypes, type]
+                                  : formData.rules.ticketTypes.filter(t => t !== type);
+                                setFormData({ ...formData, rules: { ...formData.rules, ticketTypes: newTypes } });
+                              }}
+                              className="w-4 h-4 rounded border-white/10 bg-dark-300 text-brand-orange-coral focus:ring-brand-orange-coral"
+                            />
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">{type}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">URL da Imagem do Prêmio (Opcional)</Label>
+                    <Input 
+                        placeholder="https://..." 
+                        value={formData.prizeImageUrl}
+                        onChange={e => setFormData({ ...formData, prizeImageUrl: e.target.value })}
+                        className="bg-white/5 border-white/10 h-12 rounded-2xl focus:border-brand-orange-coral" 
+                    />
+                </div>
+
                 <div className="space-y-2">
                     <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Descrição</Label>
                     <textarea 
@@ -383,7 +462,9 @@ export default function AdminSorteio() {
                     />
                 </div>
 
-                <Button type="submit" className="w-full bg-brand-orange-coral hover:bg-orange-600 text-white font-black h-14 rounded-2xl">CRIAR AGORA</Button>
+                <Button type="submit" className="w-full bg-brand-orange-coral hover:bg-orange-600 text-white font-black h-14 rounded-2xl shadow-xl shadow-orange-500/20 active:scale-95 transition-all">
+                  CRIAR SORTEIO PROFISSIONAL
+                </Button>
             </form>
         </DialogContent>
       </Dialog>

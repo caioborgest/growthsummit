@@ -10,13 +10,16 @@ export const raffleService = {
       description: data.description,
       type: data.type,
       stand_id: data.standId,
-      status: data.status || 'draft'
+      status: data.status || 'draft',
+      winners_count: data.winnersCount || 1,
+      prize_image_url: data.prizeImageUrl,
+      eligibility_rules: data.eligibilityRules || {}
     };
 
     const { data: raffle, error } = await supabase
       .from('raffles')
       .insert([dbData as any])
-      .select('id, project_id, name, description, type, status, stand_id, winner_registration_id, drawn_at, created_at, updated_at')
+      .select('*')
       .single();
     
     if (error) {
@@ -60,9 +63,21 @@ export const raffleService = {
     return data;
   },
 
-  async drawWinner(raffleId: string) {
+  async drawWinners(raffleId: string, count: number = 1) {
     const { data, error } = await supabase
-      .rpc('draw_raffle_winner', { p_raffle_id: raffleId });
+      .rpc('draw_raffle_winner_v2', { 
+        p_raffle_id: raffleId,
+        p_count: count
+      });
+    if (error) throw error;
+    return data;
+  },
+
+  async getWinners(raffleId: string) {
+    const { data, error } = await supabase
+      .from('raffle_winners')
+      .select('*, registration:growth_experience_registrations(id, name, email, registration_type)')
+      .eq('raffle_id', raffleId);
     if (error) throw error;
     return data;
   },
@@ -70,7 +85,7 @@ export const raffleService = {
   async getRaffles(projectId: string) {
     const { data, error } = await supabase
       .from('raffles')
-      .select('id, project_id, name, description, type, status, stand_id, winner_registration_id, drawn_at, created_at, updated_at')
+      .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
     
