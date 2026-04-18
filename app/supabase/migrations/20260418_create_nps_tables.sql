@@ -38,9 +38,11 @@ ALTER TABLE event_nps_surveys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_nps_responses ENABLE ROW LEVEL SECURITY;
 
 -- Políticas para Surveys (Leitura pública se ativa, escrita admin)
+DROP POLICY IF EXISTS "Surveys são visíveis por todos" ON event_nps_surveys;
 CREATE POLICY "Surveys são visíveis por todos" ON event_nps_surveys
     FOR SELECT USING (active = true);
 
+DROP POLICY IF EXISTS "Admin gerencia surveys" ON event_nps_surveys;
 CREATE POLICY "Admin gerencia surveys" ON event_nps_surveys
     FOR ALL USING (
         EXISTS (
@@ -51,12 +53,15 @@ CREATE POLICY "Admin gerencia surveys" ON event_nps_surveys
     );
 
 -- Políticas para Respostas (Inserção autenticada, leitura admin)
+DROP POLICY IF EXISTS "Qualquer participante logado pode responder" ON event_nps_responses;
 CREATE POLICY "Qualquer participante logado pode responder" ON event_nps_responses
     FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Participante vê sua própria resposta" ON event_nps_responses;
 CREATE POLICY "Participante vê sua própria resposta" ON event_nps_responses
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admin vê todas as respostas" ON event_nps_responses;
 CREATE POLICY "Admin vê todas as respostas" ON event_nps_responses
     FOR SELECT USING (
         EXISTS (
@@ -75,7 +80,12 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_event_nps_surveys_updated_at ON event_nps_surveys;
 CREATE TRIGGER update_event_nps_surveys_updated_at
     BEFORE UPDATE ON event_nps_surveys
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- 6. Permissões de Acesso (Grants)
+GRANT ALL ON TABLE event_nps_surveys TO anon, authenticated, service_role;
+GRANT ALL ON TABLE event_nps_responses TO anon, authenticated, service_role;
