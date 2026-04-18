@@ -17,7 +17,7 @@ export const npsModuleService = {
       const { data, error } = await supabase
         .from('nps_forms')
         .select('*')
-        .eq('project_id', projectId)
+        .eq('event_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -57,10 +57,9 @@ export const npsModuleService = {
     try {
       const payload = {
         id: form.id,
-        project_id: form.projectId,
+        event_id: form.projectId,
         internal_name: form.internalName,
         description: form.description,
-        objective: form.objective,
         status: form.status,
         default_channel: form.defaultChannel,
         language: form.language,
@@ -100,8 +99,8 @@ export const npsModuleService = {
       // Get all responses for the project
       const { data: responses, error } = await supabase
         .from('nps_responses')
-        .select('score, classification, created_at, session_id')
-        .eq('project_id', projectId);
+        .select('nps_score, classification, created_at, session_id')
+        .eq('event_id', projectId);
 
       if (error) throw error;
 
@@ -138,12 +137,12 @@ export const npsModuleService = {
   async getLoopCases(projectId: string): Promise<NPSLoopCase[]> {
     try {
       const { data, error } = await supabase
-        .from('nps_loop_cases')
+        .from('nps_cases')
         .select(`
           *,
           response:nps_responses(*)
         `)
-        .eq('project_id', projectId)
+        .eq('event_id', projectId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -166,7 +165,7 @@ export const npsModuleService = {
       if (status === 'in_progress') payload.first_response_at = new Date().toISOString();
 
       const { error } = await supabase
-        .from('nps_loop_cases')
+        .from('nps_cases')
         .update(payload)
         .eq('id', caseId);
 
@@ -186,13 +185,11 @@ export const npsModuleService = {
       // Classification is handled by DB Trigger, but we can pass it if we want
       const payload = {
         form_id: response.formId,
-        project_id: response.projectId,
-        registration_id: response.registrationId,
-        user_id: response.userId,
+        event_id: response.projectId,
+        participant_user_id: response.userId,
         session_id: response.sessionId,
-        score: response.score,
+        nps_score: response.score,
         main_comment: response.mainComment,
-        answers: response.answers || {},
         channel: response.channel || 'in_app'
       };
 
@@ -212,10 +209,9 @@ export const npsModuleService = {
   _mapForm(db: any): NPSForm {
     return {
       id: db.id,
-      projectId: db.project_id,
+      projectId: db.event_id,
       internalName: db.internal_name,
       description: db.description,
-      objective: db.objective,
       status: db.status,
       defaultChannel: db.default_channel,
       language: db.language,
@@ -256,15 +252,13 @@ export const npsModuleService = {
     return {
       id: db.id,
       formId: db.form_id,
-      projectId: db.project_id,
-      registrationId: db.registration_id,
-      userId: db.user_id,
-      dispatchId: db.dispatch_id,
+      projectId: db.event_id,
+      userId: db.participant_user_id,
+      dispatchId: db.send_log_id,
       sessionId: db.session_id,
-      score: db.score,
+      score: db.nps_score,
       classification: db.classification,
       mainComment: db.main_comment,
-      answers: db.answers,
       channel: db.channel,
       metadata: db.metadata,
       createdAt: db.created_at
@@ -274,7 +268,7 @@ export const npsModuleService = {
   _mapLoopCase(db: any): NPSLoopCase {
     return {
       id: db.id,
-      projectId: db.project_id,
+      projectId: db.event_id,
       responseId: db.response_id,
       ownerId: db.owner_id,
       status: db.status,
