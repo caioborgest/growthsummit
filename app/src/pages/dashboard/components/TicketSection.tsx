@@ -88,6 +88,8 @@ export function TicketSection({
                         <div className="space-y-3">
                             {[
                                 { label: 'Participante', value: myRegistration?.nome || user?.name || '—' },
+                                { label: 'E-mail', value: myRegistration?.email || user?.email || '—' },
+                                { label: 'Telefone', value: myRegistration?.phone || (myRegistration as any)?.telefone || '—' },
                                 { label: 'Evento', value: selectedProject?.name || 'Growth Experience 2026' },
                                 { label: 'Papel', value: isPartner ? 'Parceiro / Expositor' : ticketTypeLabel },
                             ].map(({ label, value }) => (

@@ -125,6 +125,8 @@ function DetalhesModal({
                 { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR')}` : '—', icon: Star, highlight: !!reg.discountAmount },
                 { label: 'Valor Líquido', value: `R$ ${(reg.paidAmount || reg.amount || 0).toLocaleString('pt-BR')}`, icon: CreditCard, primary: true },
                 { label: 'Documento', value: (reg as any).cpf || 'Não informado', icon: Contact },
+                { label: 'E-mail', value: reg.email || 'Não informado', icon: Star },
+                { label: 'Telefone', value: reg.phone || (reg as any).telefone || 'Não informado', icon: Contact },
                 { label: 'Empresa', value: reg.empresa || (reg as any).company || 'Não informada', icon: Building2 },
                 { 
                   label: 'Cupom / Voucher', 
@@ -747,6 +749,7 @@ export default function AdminInscricoes() {
                               </div>
                               <div className="flex flex-col gap-1">
                                 <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest leading-none truncate max-w-[150px]">{reg.email}</p>
+                                <p className="text-gray-800 text-[8px] font-black uppercase tracking-wider mt-1">{reg.phone || (reg as any).telefone}</p>
                                 
                                 <div className="flex flex-wrap gap-2 mt-1">
                                   {reg.empresa && (
