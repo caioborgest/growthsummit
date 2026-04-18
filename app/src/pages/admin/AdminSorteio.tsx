@@ -4,7 +4,8 @@ import {
   QrCode,
   Trophy,
   Zap,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -212,6 +213,13 @@ export default function AdminSorteio() {
                       className="flex-1 bg-brand-orange-coral text-white font-black text-[10px] rounded-xl h-9 shadow-lg shadow-orange-500/20"
                     >
                       SORTEAR AGORA
+                    </Button>
+                    <Button 
+                      onClick={() => window.open(`/admin/sorteio/display/${raffle.id}`, '_blank')}
+                      className="w-9 h-9 p-0 bg-white/5 text-teal-400 rounded-xl border border-white/5"
+                      title="Modo Projeção (Tela Cheia)"
+                    >
+                      <ExternalLink className="h-4 w-4" />
                     </Button>
                     {raffle.type === 'realtime_qr' && (
                       <Button 

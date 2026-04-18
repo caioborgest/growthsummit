@@ -112,6 +112,7 @@ const AdminCertificados = lazyWithRetry(() => import('./pages/admin/AdminCertifi
 const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
 const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
+const AdminRaffleDisplay = lazyWithRetry(() => import('./pages/admin/AdminRaffleDisplay'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
 const AdminNPS = lazyWithRetry(() => import('./pages/admin/AdminNPS'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
@@ -460,6 +461,7 @@ function AppRoutes() {
           <Route path="integracoes" element={<AdminIntegracoes />} />
           <Route path="stands" element={<AdminStands />} />
           <Route path="sorteio" element={<AdminSorteio />} />
+          <Route path="sorteio/display/:raffleId" element={<AdminRaffleDisplay />} />
           <Route path="suporte" element={<AdminSupport />} />
           <Route path="nps" element={<AdminNPS />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
