@@ -745,25 +745,126 @@ export interface PartnerTeamMember {
   createdAt: string;
 }
 
-export interface NPSSurvey {
+export type NPSFormStatus = 'draft' | 'active' | 'archived';
+export type NPSQuestionType = 'nps_score' | 'textarea' | 'short_text' | 'single_choice' | 'multi_choice' | 'csat' | 'ces' | 'yes_no' | 'hidden_metadata';
+export type NPSClassification = 'detractor' | 'passive' | 'promoter';
+export type NPSAutomationTrigger = 'manual' | 'post_event' | 'post_session' | 'check_in' | 'check_out' | 'session_attendance';
+export type NPSChannel = 'email' | 'whatsapp' | 'sms' | 'push' | 'in_app' | 'qr';
+export type NPSCaseStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type NPSCasePriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface NPSForm {
   id: string;
   projectId: string;
-  title: string;
+  internalName: string;
   description?: string;
-  active: boolean;
-  targetAudience?: 'all' | 'pro' | 'vip';
-  settings?: Record<string, any>;
+  objective?: string;
+  status: NPSFormStatus;
+  defaultChannel: NPSChannel;
+  language: string;
+  visualSettings?: {
+    primaryColor?: string;
+    logo?: string | null;
+  };
+  npsQuestion?: string;
+  minScore?: number;
+  maxScore?: number;
+  minLabel?: string;
+  maxLabel?: string;
+  thanksPromoter?: string;
+  thanksPassive?: string;
+  thanksDetractor?: string;
+  createdBy?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface NPSQuestion {
+  id: string;
+  formId: string;
+  type: NPSQuestionType;
+  label: string;
+  helpText?: string;
+  placeholder?: string;
+  isRequired: boolean;
+  orderIndex: number;
+  options?: any[];
+  conditionalRules?: any;
+  tags?: string[];
+  slug: string;
+  createdAt: string;
+}
+
+export interface NPSAutomation {
+  id: string;
+  projectId: string;
+  formId: string;
+  name: string;
+  isActive: boolean;
+  triggerType: NPSAutomationTrigger;
+  channel: NPSChannel;
+  delayAmount: number;
+  delayUnit: string;
+  audienceRules?: any;
+  quietHours?: any;
+  dedupWindowHours: number;
+  activeFrom?: string;
+  activeUntil?: string;
+  messageTemplate: string;
+  subjectTemplate?: string;
+  senderName?: string;
+  utmParams?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NPSDispatch {
+  id: string;
+  automationId: string;
+  registrationId: string;
+  userId?: string;
+  channel: NPSChannel;
+  status: string;
+  failureReason?: string;
+  sentAt?: string;
+  openedAt?: string;
+  clickedAt?: string;
+  createdAt: string;
+}
+
 export interface NPSResponse {
   id: string;
-  surveyId: string;
+  formId: string;
+  projectId: string;
   registrationId?: string;
   userId?: string;
+  dispatchId?: string;
+  sessionId?: string;
+  speakerId?: string;
+  sponsorId?: string;
   score: number;
-  comment?: string;
+  classification: NPSClassification;
+  mainComment?: string;
+  answers?: Record<string, any>;
+  channel: NPSChannel;
   metadata?: Record<string, any>;
   createdAt: string;
+}
+
+export interface NPSLoopCase {
+  id: string;
+  projectId: string;
+  responseId: string;
+  ownerId?: string;
+  status: NPSCaseStatus;
+  priority: NPSCasePriority;
+  slaDueAt?: string;
+  firstResponseAt?: string;
+  resolvedAt?: string;
+  rootCause?: string;
+  actionTaken?: string;
+  recoveryOutcome?: string;
+  createdAt: string;
+  updatedAt: string;
+  response?: NPSResponse; // For joined queries
 }

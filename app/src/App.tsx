@@ -114,7 +114,11 @@ const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
 const AdminRaffleDisplay = lazyWithRetry(() => import('./pages/admin/AdminRaffleDisplay'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
-const AdminNPS = lazyWithRetry(() => import('./pages/admin/AdminNPS'));
+const AdminNPSLayout = lazyWithRetry(() => import('./pages/admin/nps/AdminNPSLayout'), 'default');
+const NPSDashboard = lazyWithRetry(() => import('./pages/admin/nps/NPSDashboard'), 'default');
+const NPSForms = lazyWithRetry(() => import('./pages/admin/nps/NPSForms'), 'default');
+const NPSInbox = lazyWithRetry(() => import('./pages/admin/nps/NPSInbox'), 'default');
+const NPSAutomations = lazyWithRetry(() => import('./pages/admin/nps/NPSAutomations'), 'default');
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
 const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
 const AdminPopups = lazyWithRetry(() => import('./pages/admin/AdminPopups'), 'AdminPopups');
@@ -463,7 +467,13 @@ function AppRoutes() {
           <Route path="sorteio" element={<AdminSorteio />} />
           <Route path="sorteio/display/:raffleId" element={<AdminRaffleDisplay />} />
           <Route path="suporte" element={<AdminSupport />} />
-          <Route path="nps" element={<AdminNPS />} />
+          <Route path="nps" element={<AdminNPSLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<NPSDashboard />} />
+            <Route path="forms" element={<NPSForms />} />
+            <Route path="inbox" element={<NPSInbox />} />
+            <Route path="automations" element={<NPSAutomations />} />
+          </Route>
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="popups" element={<AdminPopups />} />
           <Route path="partners" element={<AdminParceiros />} />
