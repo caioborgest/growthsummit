@@ -101,6 +101,7 @@ const navigationGroups: SidebarGroup[] = [
     items: [
       { id: 'check-in', name: 'Check-in Digital (QR)', icon: QrCode, path: '/admin/check-in' },
       { id: 'sorteio', name: 'Central de Sorteios', icon: Gift, path: '/admin/sorteio' },
+      { id: 'nps', name: 'Pesquisas NPS', icon: BarChart3, path: '/admin/nps', badge: 'RECOMENDADO' },
       { id: 'certificados', name: 'Certificados Digitais', icon: Award, path: '/admin/certificados' },
       { id: 'relatorios', name: 'Relatórios de ROI', icon: BarChart3, path: '/admin/relatorios' },
     ]

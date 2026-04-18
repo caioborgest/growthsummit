@@ -744,3 +744,26 @@ export interface PartnerTeamMember {
   checkInTime?: string;
   createdAt: string;
 }
+
+export interface NPSSurvey {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  active: boolean;
+  targetAudience?: 'all' | 'pro' | 'vip';
+  settings?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NPSResponse {
+  id: string;
+  surveyId: string;
+  registrationId?: string;
+  userId?: string;
+  score: number;
+  comment?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}

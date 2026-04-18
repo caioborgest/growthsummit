@@ -72,6 +72,7 @@ const Contato = lazyWithRetry(() => import('./pages/public/Contato'), 'Contato')
 const SejaMentor = lazyWithRetry(() => import('./pages/public/SejaMentor'), 'SejaMentor');
 const LocalViagem = lazyWithRetry(() => import('./pages/public/LocalViagem'), 'LocalViagem');
 const ValidarCertificado = lazyWithRetry(() => import('./pages/public/ValidarCertificado'), 'ValidarCertificado');
+const PublicNPS = lazyWithRetry(() => import('./pages/public/PublicNPS'));
 
 // ── Auth (lazy)
 const Login = lazyWithRetry(() => import('./pages/auth/Login'), 'Login');
@@ -112,6 +113,7 @@ const AdminBatches = lazyWithRetry(() => import('./pages/admin/AdminBatches'));
 const AdminStands = lazyWithRetry(() => import('./pages/admin/AdminStands'));
 const AdminSorteio = lazyWithRetry(() => import('./pages/admin/AdminSorteio'));
 const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
+const AdminNPS = lazyWithRetry(() => import('./pages/admin/AdminNPS'));
 const AdminIntegracoes = lazyWithRetry(() => import('./pages/admin/AdminIntegracoes'), 'AdminIntegracoes');
 const AdminNewsletter = lazyWithRetry(() => import('./pages/admin/AdminNewsletter'));
 const AdminPopups = lazyWithRetry(() => import('./pages/admin/AdminPopups'), 'AdminPopups');
@@ -367,6 +369,7 @@ function AppRoutes() {
           } />
           <Route path="em-breve" element={<ComingSoon />} />
           <Route path="em-breve/:feature" element={<ComingSoon />} />
+          <Route path="nps/:surveyId" element={<PublicNPS />} />
         </Route>
 
 
@@ -458,6 +461,7 @@ function AppRoutes() {
           <Route path="stands" element={<AdminStands />} />
           <Route path="sorteio" element={<AdminSorteio />} />
           <Route path="suporte" element={<AdminSupport />} />
+          <Route path="nps" element={<AdminNPS />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="popups" element={<AdminPopups />} />
           <Route path="partners" element={<AdminParceiros />} />

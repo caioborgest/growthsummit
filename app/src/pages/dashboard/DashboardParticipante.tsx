@@ -71,6 +71,7 @@ import { DashboardEquipe } from './components/DashboardEquipe';
 import { SelfCheckInModal } from './components/SelfCheckInModal';
 import { NotificationsSection } from './components/NotificationsSection';
 import { GuiaInterno } from '@/components/app/GuiaInterno';
+import { NPSPopup } from '@/components/app/NPSPopup';
 
 // Modals & Utils
 import { MentorRatingModal } from '@/components/mentoring/MentorRatingModal';
@@ -823,6 +824,8 @@ function DashboardView({ user, registration, selectedProject, partnerTeamData, i
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
       />
+
+      <NPSPopup />
 
       {registration && isCheckInModalOpen && (
         <SelfCheckInModal 
