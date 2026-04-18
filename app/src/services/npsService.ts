@@ -15,7 +15,7 @@ export const npsService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data.map(this.mapSurvey);
+      return data.map(d => this._mapSurvey(d));
     } catch (error) {
       logger.error('Erro ao buscar surveys NPS:', error);
       return [];
@@ -37,7 +37,7 @@ export const npsService = {
         if (error.code === 'PGRST116') return null;
         throw error;
       }
-      return this.mapSurvey(data);
+      return this._mapSurvey(data);
     } catch (error) {
       logger.error('Erro ao buscar survey por ID:', error);
       return null;
@@ -61,7 +61,7 @@ export const npsService = {
         if (error.code === 'PGRST116') return null; // No rows found
         throw error;
       }
-      return this.mapSurvey(data);
+      return this._mapSurvey(data);
     } catch (error) {
       logger.error('Erro ao buscar survey ativa:', error);
       return null;
@@ -96,7 +96,7 @@ export const npsService = {
         detractors,
         passives,
         total,
-        responses: responses.map(this.mapResponse)
+        responses: responses.map(r => this._mapResponse(r))
       };
     } catch (error) {
       logger.error('Erro ao buscar resultados NPS:', error);
@@ -152,7 +152,7 @@ export const npsService = {
         .single();
 
       if (error) throw error;
-      return this.mapSurvey(data);
+      return this._mapSurvey(data);
     } catch (error) {
       logger.error('Erro ao salvar survey NPS:', error);
       return null;
@@ -178,9 +178,9 @@ export const npsService = {
   },
 
   /**
-   * Mapeadores
+   * Mapeadores (Internos)
    */
-  private mapSurvey(db: any): NPSSurvey {
+  _mapSurvey(db: any): NPSSurvey {
     return {
       id: db.id,
       projectId: db.project_id,
@@ -194,7 +194,7 @@ export const npsService = {
     };
   },
 
-  private mapResponse(db: any): NPSResponse {
+  _mapResponse(db: any): NPSResponse {
     return {
       id: db.id,
       surveyId: db.survey_id,
