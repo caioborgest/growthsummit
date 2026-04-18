@@ -374,6 +374,8 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     if (data.paymentMethod) result.payment_method = data.paymentMethod;
     if (data.paymentStatus) result.payment_status = data.paymentStatus;
     if (data.paymentDate) result.payment_date = data.paymentDate;
+    if (data.checkInTime) result.check_in_at = data.checkInTime;
+    if (data.check_in_time) result.check_in_at = data.check_in_time;
     if (data.registrationType) result.registration_type = data.registrationType;
     if (data.ticketType) result.registration_type = data.ticketType;
     if (data.couponCode) result.coupon_code = data.couponCode;
@@ -430,7 +432,7 @@ function getSelectFields(entity: string, projectId?: string, slug?: string): str
   // If it's a Growth Experience project, use the specific table schema
   if (isGEProject(projectId, slug)) {
     if (entity === 'registrations') {
-      return 'id,project_id,event_name,status,created_at,amount:paid_amount,paid_amount,payment_status,payment_method,payment_date,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,empresa,coupon_code,profiles(user_id,name,email,phone,company,city,state,role),batch:company_registration_batches!growth_experience_registrations_batch_id_fkey(id,name,company_name,voucher_code)';
+      return 'id,project_id,event_name,status,created_at,amount:paid_amount,paid_amount,payment_status,payment_method,payment_date,user_id,name,email,phone,ticket_number,registration_type,checked_in,check_in_at,qr_code,night_lectures,selected_courses,batch_id,voucher_code,social_code,empresa,coupon_code,profiles(user_id,phone,company,city,state,country),batch:company_registration_batches!growth_experience_registrations_batch_id_fkey(id,name,company_name,voucher_code)';
     }
     if (entity === 'sessions' || entity === 'companies' || entity === 'startups') {
       return '*';

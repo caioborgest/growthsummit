@@ -99,7 +99,12 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, pro
             });
 
             if (!res.ok) {
-                throw new Error(res.message);
+                // If already in target state, we can treat it as success for the UI
+                if (res.error === 'ALREADY_CHECKED_IN' || res.error === 'ALREADY_CHECKED_OUT') {
+                    toast.info(res.message);
+                } else {
+                    throw new Error(res.message);
+                }
             }
 
             // 2. Role-specific additional updates
@@ -108,7 +113,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, pro
                     .from('partner_team_members')
                     .update({ 
                         checked_in: true, 
-                        check_in_time: timestamp 
+                        check_in_at: timestamp 
                     })
                     .eq('id', entity.id);
             }

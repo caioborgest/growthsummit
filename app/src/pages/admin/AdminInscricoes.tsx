@@ -142,7 +142,11 @@ function DetalhesModal({
                 },
                 { 
                   label: 'Pagamento', 
-                  value: reg.paymentMethod ? `${reg.paymentMethod.toUpperCase()}` : (reg.amount === 0 ? 'CORTESIA / BATCH' : 'PENDENTE'), 
+                  value: reg.paymentMethod 
+                    ? `${reg.paymentMethod.toUpperCase()}` 
+                    : (['paid', 'active', 'confirmado'].includes((reg.paymentStatus || reg.status || '').toLowerCase()) 
+                        ? 'CONFIRMADO' 
+                        : (reg.amount === 0 ? 'CORTESIA / BATCH' : 'PENDENTE')), 
                   icon: CreditCard 
                 },
                 { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR'), icon: Calendar },
@@ -221,10 +225,12 @@ function DetalhesModal({
                          });
                       }
                     }}
-                    disabled={['paid', 'active', 'confirmado'].includes((reg.payment_status || reg.status || '').toLowerCase())}
+                    disabled={['paid', 'active', 'confirmado'].includes((reg.paymentStatus || reg.status || '').toLowerCase()) && !!reg.paymentMethod}
                     className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 font-black h-14 rounded-2xl text-[9px] uppercase tracking-widest transition-all"
                   >
-                    {['paid', 'active'].includes((reg.payment_status || reg.status || '').toLowerCase()) ? 'PAGAMENTO CONFIRMADO' : 'CONFIRMAR PAGO'}
+                    {['paid', 'active', 'confirmado'].includes((reg.paymentStatus || reg.status || '').toLowerCase()) 
+                      ? (reg.paymentMethod ? 'PAGAMENTO CONFIRMADO' : 'COMPLETAR MÉTODO') 
+                      : 'CONFIRMAR PAGO'}
                   </Button>
 
                   <Button
