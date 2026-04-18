@@ -64,7 +64,7 @@ function DetalhesModal({
 }) {
   return (
     <Dialog open={!!reg} onOpenChange={onClose}>
-      <DialogContent className="admin-modal-content max-w-2xl bg-dark-200 border-none p-0 overflow-hidden shadow-2xl">
+      <DialogContent className="admin-modal-content max-w-2xl border-none p-0 shadow-2xl">
         <div className="admin-modal-header p-8 pb-4">
            <div className="flex items-center gap-5">
               <div className="w-16 h-16 rounded-2xl bg-brand-orange-coral/10 flex items-center justify-center border border-brand-orange-coral/20 group-hover:scale-110 transition-transform">

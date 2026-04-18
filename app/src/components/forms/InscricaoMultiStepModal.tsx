@@ -376,7 +376,7 @@ export function InscricaoMultiStepModal({ isOpen, onClose }: InscricaoMultiStepM
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="admin-modal-content max-w-4xl bg-dark-100 border-none p-0 overflow-hidden shadow-2xl">
+            <DialogContent className="admin-modal-content max-w-4xl border-none p-0 shadow-2xl">
                 <div className="admin-modal-header flex-col items-stretch gap-6 py-8">
                     <div className="flex items-center justify-between">
                         <div>
