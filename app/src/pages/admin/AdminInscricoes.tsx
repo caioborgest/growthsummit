@@ -267,9 +267,9 @@ export default function AdminInscricoes() {
   const checkInHookReference = useCheckIns();
   (window as any).checkInsHook = checkInHookReference;
 
-  const { data: registrations, update, remove } = useRegistrations();
-  const { data: checkIns } = useCheckIns();
-  const { data: transactions, create: createTransaction, update: updateTransaction } = useTransactions();
+  const { data: registrations, update, remove, refetch: refetchRegistrations } = useRegistrations();
+  const { data: checkIns, refetch: refetchCheckIns } = useCheckIns();
+  const { data: transactions, create: createTransaction, update: updateTransaction, refetch: refetchTransactions } = useTransactions();
   const { data: allSessions } = useSessions();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _unused = allSessions;
@@ -884,6 +884,10 @@ export default function AdminInscricoes() {
                 checkedIn: true,
                 checkInTime: new Date().toISOString()
               } as any);
+              await Promise.all([
+                refetchCheckIns(),
+                refetchRegistrations()
+              ]);
               toast.success('Inscrição marcada como concluída no sistema.');
             }
           }}
