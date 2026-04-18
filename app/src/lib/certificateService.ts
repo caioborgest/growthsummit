@@ -59,7 +59,7 @@ export class CertificateService {
                     type: 'lecture',
                     code: certData.certificateCode,
                     issue_date: new Date().toISOString(),
-                    status: 'validado',
+                    status: 'issued',
                     metadata: {
                         session_title: session.title,
                         room: session.room,
@@ -139,7 +139,7 @@ export class CertificateService {
                     type: 'event',
                     code: certData.certificateCode,
                     issue_date: new Date().toISOString(),
-                    status: 'validado',
+                    status: 'issued',
                     metadata: {
                         event_name: project.name,
                         total_hours: (project.metadata as any)?.certificate_template?.total_hours || 12

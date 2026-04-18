@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useCheckIns } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/lib/supabase';
+import { toggleCheckInRegistrationAtomic } from '@/lib/checkInAtomic';
 import type { Registration, Mentor, Company, Startup, PartnerTeamMember } from '@/types';
 import { CertificateService } from '@/lib/certificateService';
 
@@ -84,21 +85,24 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, pro
         try {
             const timestamp = new Date().toISOString();
             
-            // 1. Unified Check-In Log
-            await createCheckIn({
+            // 1. Atomic Check-In
+            // Using the RPC function to ensure atomic update and valid user mapping
+            const res = await toggleCheckInRegistrationAtomic({
+                registrationId: entity.id, // Direct ID from entity
                 projectId: entity.projectId || projectId,
-                registrationId: getRegistrationId() as string, 
+                action: 'check-in',
                 userId: getUserId(),
                 ticketNumber: (entity as Registration).ticketNumber || (entity as any).qrCode || `ROLE_${role.toUpperCase()}`,
-                timestamp: timestamp,
+                operatorId: user?.id,
                 location: `Credenciamento - Kit: ${kitDelivered ? 'Sim' : 'Nao'}, Crachá: ${badgeDelivered ? 'Sim' : 'Nao'}`,
-                method: 'manual',
-                checkInType: role,
-                notes: `Accreditation for ${role}: ${entity.name || (entity as any).nome}`,
-                operatorId: user?.id
-            } as any);
+                method: 'manual'
+            });
 
-            // 2. Role-specific updates
+            if (!res.ok) {
+                throw new Error(res.message);
+            }
+
+            // 2. Role-specific additional updates
             if (role === 'partner') {
                 await supabase
                     .from('partner_team_members')
@@ -109,7 +113,7 @@ export function AccreditationChecklistModal({ isOpen, onClose, entity, role, pro
                     .eq('id', entity.id);
             }
 
-            // Emitir certificado se for participante e for entrada geral
+            // Emit certificate if participant
             if (role === 'participant' && selectedProject) {
                 CertificateService.issueEventCertificate(
                     { id: getUserId(), name: (entity as Registration).nome || (entity as Registration).name || 'Participante' },
