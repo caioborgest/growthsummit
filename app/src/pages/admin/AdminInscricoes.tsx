@@ -23,6 +23,7 @@ import {
   Filter,
   Users,
   Handshake,
+  Building2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
