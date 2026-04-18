@@ -230,9 +230,26 @@ export default function PublicNPS() {
                   {getThankYouMessage()}
                 </p>
                 
-                <div className="mt-12 opacity-50 flex items-center text-[10px] uppercase tracking-widest font-bold text-gray-500">
-                  <Heart className="w-3 h-3 mr-1 text-brand-orange-coral" /> Feito para melhorar sua experiência.
-                </div>
+                {score !== null && score >= 9 ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ delay: 0.5 }}
+                    className="mt-10"
+                  >
+                    <p className="text-[10px] uppercase font-black tracking-widest text-brand-orange-coral mb-3">Já que você curtiu tanto...</p>
+                    <Button 
+                      onClick={() => window.open('https://g.page/r/growth-experience/review', '_blank')}
+                      className="bg-brand-orange-coral hover:bg-orange-600 text-white font-black uppercase tracking-widest h-14 px-8 rounded-2xl text-sm shadow-[0_0_30px_rgba(255,87,34,0.3)] animate-pulse"
+                    >
+                      <Heart className="w-4 h-4 mr-2" /> Deixe um Depoimento
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <div className="mt-12 opacity-50 flex items-center text-[10px] uppercase tracking-widest font-bold text-gray-500">
+                    <Heart className="w-3 h-3 mr-1 text-brand-orange-coral" /> Feito com carinho para melhorar sua experiência.
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
