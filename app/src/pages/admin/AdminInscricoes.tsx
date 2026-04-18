@@ -738,15 +738,33 @@ export default function AdminInscricoes() {
                           <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform hidden sm:flex">
                             <User className="h-5 w-5 text-gray-500" />
                           </div>
-                           <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="text-white text-sm font-black italic uppercase leading-none">{reg.name || '---'}</p>
-                              {((reg as any).indicacaoTipo === 'parceiro' || (reg as any).referral_type === 'parceiro') && (
-                                <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[8px] font-black uppercase px-2 py-0 h-4">EQUIPE</Badge>
-                              )}
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="text-white text-sm font-black italic uppercase leading-none">{reg.name || '---'}</p>
+                                {((reg as any).indicacaoTipo === 'parceiro' || (reg as any).referral_type === 'parceiro') && (
+                                  <Badge className="bg-brand-orange-coral/10 text-brand-orange-coral border-none text-[8px] font-black uppercase px-2 py-0 h-4">EQUIPE</Badge>
+                                )}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest leading-none truncate max-w-[150px]">{reg.email}</p>
+                                
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {reg.empresa && (
+                                    <div className="flex items-center gap-1 text-teal-400 text-[8px] font-black uppercase tracking-widest bg-teal-500/5 px-1.5 py-0.5 rounded border border-teal-500/10">
+                                      <Building2 className="w-2.5 h-2.5" />
+                                      {reg.empresa}
+                                    </div>
+                                  )}
+                                  
+                                  {(reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher) && (
+                                    <div className="flex items-center gap-1 text-brand-orange-coral text-[8px] font-black uppercase tracking-widest bg-brand-orange-coral/5 px-1.5 py-0.5 rounded border border-brand-orange-coral/10">
+                                      <Ticket className="w-2.5 h-2.5" />
+                                      {reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-gray-700 text-[9px] font-black uppercase tracking-widest leading-none truncate max-w-[150px]">{reg.email}</p>
-                          </div>
                        </div>
                     </td>
                     <td className="p-6" data-label="Acreditação">

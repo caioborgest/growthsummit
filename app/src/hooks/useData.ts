@@ -180,6 +180,7 @@ const mapFromSupabase = (item: Record<string, unknown>, entityName?: string): Re
     }
     // Ensure empresa is populated correctly
     result.empresa = (item.empresa || result.company || (item.profiles as any)?.company || null) as string | null;
+    if (!result.couponCode) result.couponCode = (item.coupon_code || item.social_code || item.voucher_code || null) as string | null;
     
     // Flatten Batch info if joined
     if (item.batch) {
@@ -377,7 +378,7 @@ const mapToSupabase = (projectId: string | undefined, entity: string, data: Reco
     if (data.ticketType) result.registration_type = data.ticketType;
     if (data.couponCode) result.coupon_code = data.couponCode;
     if (data.socialCode) result.social_code = data.socialCode;
-    if (data.voucherCode) result.voucher_code = data.voucherCode;
+    if (data.voucherCode || data.companyVoucher) result.voucher_code = data.voucherCode || data.companyVoucher;
   }
 
   // Project isolation

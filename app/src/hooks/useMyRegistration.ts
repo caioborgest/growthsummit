@@ -122,10 +122,10 @@ function mapRow(row: Record<string, any>, profile: Record<string, any> = {}): My
         photo: (row.photo_url as string) || undefined,
         checkedIn: Boolean(row.checked_in),
         checkInTime: (row.check_in_at as string) || undefined,
-        couponCode: row.coupon_code || undefined,
+        couponCode: row.coupon_code || row.social_code || row.voucher_code || row.company_registration_batches?.voucher_code || (row.extra_data as any)?.coupon || undefined,
         companyRegistrationBatches: row.company_registration_batches || undefined,
-        empresa: row.empresa || undefined,
-        company: row.empresa || undefined,
+        empresa: row.empresa || row.company_registration_batches?.company_name || profile.company || undefined,
+        company: row.empresa || row.company_registration_batches?.company_name || profile.company || undefined,
     };
 }
 

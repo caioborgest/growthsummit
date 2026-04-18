@@ -97,20 +97,20 @@ export function TicketSection({
                                 </div>
                             ))}
 
-                            {isCorporate && (
+                            {(isCorporate || myRegistration?.empresa) && (
                                 <div className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                                     <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Empresa</span>
                                     <span className="text-foreground font-black text-xs text-right max-w-[60%] truncate">
-                                        {corporateData?.company_name}
+                                        {myRegistration?.empresa || corporateData?.company_name}
                                     </span>
                                 </div>
                             )}
-
-                            {!isCorporate && myRegistration?.couponCode && (
+                            
+                            {(myRegistration?.couponCode || myRegistration?.socialCode || myRegistration?.voucherCode) && (
                                 <div className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
                                     <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Cupom / Promo</span>
                                     <span className="text-brand-orange-coral font-black text-xs text-right uppercase italic">
-                                        {myRegistration.couponCode}
+                                        {myRegistration.couponCode || myRegistration.socialCode || myRegistration.voucherCode}
                                     </span>
                                 </div>
                             )}

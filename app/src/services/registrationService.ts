@@ -114,7 +114,7 @@ export const registrationService = {
             p_lecture_code: params.palestraCode || null,
             p_extra_data: params.extraData || {},
             p_lote_id: cleanBatchId || null,
-            p_voucher_empresa: params.companyVoucher || null,
+            p_company_voucher: params.companyVoucher || null,
             p_empresa: params.empresa || null,
             p_coupon_code: params.couponCode || null
         };
