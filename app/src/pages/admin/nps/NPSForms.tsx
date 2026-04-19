@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { npsModuleService } from '@/services/npsModuleService';
 import { NPSForm } from '@/types';
-import { Plus, Trash2, Edit, Save, ArrowRight, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Save, ArrowRight, X, Link } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { NPSFormBuilder } from './NPSFormBuilder';
 
 export default function NPSForms() {
   const { projectId } = useProject();
   const [forms, setForms] = useState<NPSForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'builder'>('info');
   const [editingForm, setEditingForm] = useState<Partial<NPSForm>>({});
 
   useEffect(() => {
@@ -34,18 +36,15 @@ export default function NPSForms() {
     setEditingForm({
       internalName: '',
       description: '',
-      npsQuestion: 'Em uma escala de 0 a 10, o quanto você recomendaria o nosso evento?',
-      minLabel: 'Pouco provável',
-      maxLabel: 'Muito provável',
-      thanksPromoter: 'Ficamos incrivelmente felizes em saber disso! Obrigado pelo apoio constante, esperamos vê-lo no próximo ano.',
-      thanksPassive: 'Obrigado pela honestidade! Nossos times irão atuar sobre seu feedback.',
-      thanksDetractor: 'Sentimos muito por isso. Recebemos seus comentários e um de nossos gerentes de sucesso pode entrar em contato para entender como melhorar.'
+      objective: ''
     });
+    setActiveTab('info');
     setIsModalOpen(true);
   };
 
   const openEditModal = (form: NPSForm) => {
     setEditingForm(form);
+    setActiveTab('info');
     setIsModalOpen(true);
   };
 
@@ -69,6 +68,18 @@ export default function NPSForms() {
       loadForms();
     } else {
       toast.error('Erro ao salvar pesquisa.');
+    }
+  };
+
+  const handleGenerateLink = async (form: NPSForm) => {
+    if (!projectId) return;
+    const token = await npsModuleService.generatePublicToken(form.id, projectId);
+    if (token) {
+       const url = `${window.location.origin}/survey/${form.id}?token=${token}`;
+       navigator.clipboard.writeText(url);
+       toast.success('Link de pesquisa copiado para a área de transferência!');
+    } else {
+       toast.error('Erro ao gerar link da pesquisa.');
     }
   };
 
@@ -127,16 +138,19 @@ export default function NPSForms() {
               <p className="text-gray-400 text-xs mt-2 line-clamp-2 leading-relaxed">{form.description || 'Sem descrição'}</p>
               
               <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5 border-l-2 border-l-brand-orange-coral">
-                 <p className="text-[10px] text-gray-500 italic line-clamp-1">"{form.npsQuestion}"</p>
+                 <p className="text-[10px] text-gray-500 italic line-clamp-1">"{form.objective || 'Nenhum objetivo definido'}"</p>
               </div>
             </div>
             
-            <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-              <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+            <div className="mt-6 pt-4 border-t border-white/5 flex gap-2 items-center">
+              <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex-1">
                 Mod: {new Date(form.updatedAt || form.createdAt).toLocaleDateString('pt-BR')}
               </span>
-              <Button variant="ghost" size="sm" className="h-8 px-4 text-white hover:text-white bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold" onClick={() => openEditModal(form)}>
-                <Edit className="h-3.5 w-3.5 mr-2 text-brand-orange-coral" /> Editar Regras
+              <Button variant="ghost" size="sm" className="h-8 px-3 text-white hover:text-white bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold" onClick={() => handleGenerateLink(form)}>
+                <Link className="h-3 w-3 mr-1.5" /> Link Único
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 px-3 text-white hover:text-white bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold" onClick={() => openEditModal(form)}>
+                <Edit className="h-3 w-3 mr-1.5 text-brand-orange-coral" /> Editar
               </Button>
             </div>
           </motion.div>
@@ -144,125 +158,94 @@ export default function NPSForms() {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-dark-200 border-white/10 text-white rounded-[2.5rem] p-0 max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-           <div className="p-8 border-b border-white/5 bg-gradient-to-r from-dark-200 to-black">
+        <DialogContent className="bg-dark-200 border-white/10 text-white rounded-[2.5rem] p-0 max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+           <div className="p-8 pb-0 border-b border-white/5 bg-gradient-to-r from-dark-200 to-black">
               <DialogTitle className="text-2xl font-black italic uppercase text-brand-orange-coral flex items-center">
                 {editingForm.id ? 'Modificar Pesquisa' : 'Nova Pesquisa Base'}
               </DialogTitle>
-              <DialogDescription className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-2">
+              <DialogDescription className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-2 mb-6">
                 Personalize os textos apresentados ao usuário no Front-end.
               </DialogDescription>
+
+              {/* TABS */}
+              {editingForm.id && (
+                <div className="flex gap-6 mt-4">
+                  <button 
+                    onClick={() => setActiveTab('info')}
+                    className={`pb-4 uppercase text-[10px] font-black tracking-widest border-b-2 transition-all ${activeTab === 'info' ? 'border-brand-orange-coral text-brand-orange-coral' : 'border-transparent text-gray-500'}`}
+                  >
+                    1. Configuração Pai
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('builder')}
+                    className={`pb-4 uppercase text-[10px] font-black tracking-widest border-b-2 transition-all ${activeTab === 'builder' ? 'border-brand-orange-coral text-brand-orange-coral' : 'border-transparent text-gray-500'}`}
+                  >
+                    2. Construtor de Blocos (UI)
+                  </button>
+                </div>
+              )}
            </div>
           
-          <form onSubmit={handleSave} className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-            <div className="space-y-4">
-              <h4 className="text-xs uppercase font-black tracking-widest text-[#14B8A6] flex items-center mb-4">
-                1. IDENTIFICAÇÃO INTERNA <div className="h-px bg-white/5 flex-1 ml-4" />
-              </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2 col-span-2">
-                  <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Nome Interno</Label>
-                  <Input 
-                    required 
-                    placeholder="Ex: NPS Pós-Evento VIP" 
-                    value={editingForm.internalName || ''}
-                    onChange={e => setEditingForm({ ...editingForm, internalName: e.target.value })}
-                    className="bg-white/5 border-white/10 h-12 rounded-2xl focus:border-brand-orange-coral focus:ring-0 text-white font-bold" 
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Descrição</Label>
-                  <Input 
-                    placeholder="Ex: Enviado apenas para lote VIP..." 
-                    value={editingForm.description || ''}
-                    onChange={e => setEditingForm({ ...editingForm, description: e.target.value })}
-                    className="bg-white/5 border-white/10 h-10 rounded-2xl focus:border-brand-orange-coral focus:ring-0" 
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Tipo de Escala (UX do Participante)</Label>
-                  <select 
-                     value={editingForm.visualSettings?.surveyType || 'nps_0_10'} 
-                     onChange={(e) => setEditingForm({...editingForm, visualSettings: { ...editingForm.visualSettings, surveyType: e.target.value as any }})}
-                     className="w-full bg-white/5 border border-white/10 h-10 rounded-2xl px-4 text-white font-medium focus:border-brand-orange-coral focus:ring-0 appearance-none"
-                  >
-                     <option value="nps_0_10" className="bg-dark-100 text-white">NPS Clássico (0 a 10)</option>
-                     <option value="csat_stars_1_5" className="bg-dark-100 text-white">CSAT Estrelas (1 a 5 Estrelas)</option>
-                     <option value="csat_emoji_1_5" className="bg-dark-100 text-white">CSAT Emocional (5 Emojis - Triste a Feliz)</option>
-                  </select>
-                </div>
-                {editingForm.id && (
-                   <div className="space-y-2 col-span-2 mt-2">
-                     <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Status da Pesquisa</Label>
-                     <select 
-                        value={editingForm.status} 
-                        onChange={(e) => setEditingForm({...editingForm, status: e.target.value as any})}
-                        className="w-full bg-white/5 border border-white/10 h-12 rounded-2xl px-4 text-white font-bold focus:border-brand-orange-coral focus:ring-0"
-                     >
-                        <option value="draft">Rascunho (Não Dispara)</option>
-                        <option value="active">Ativo (Permite Receber Repostas)</option>
-                        <option value="archived">Arquivado (Inativo/Histórico)</option>
-                     </select>
-                   </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-4">
-              <h4 className="text-xs uppercase font-black tracking-widest text-[#14B8A6] flex items-center mb-4">
-                2. TEXTOS PÚBLICOS<div className="h-px bg-white/5 flex-1 ml-4" />
-              </h4>
-              <div className="space-y-2">
-                 <Label className="uppercase text-[10px] font-black text-brand-orange-coral tracking-widest ml-1">Pergunta Principal</Label>
-                 <Input 
-                  required 
-                  value={editingForm.npsQuestion || ''}
-                  onChange={e => setEditingForm({ ...editingForm, npsQuestion: e.target.value })}
-                  className="bg-brand-orange-coral/5 border-brand-orange-coral/20 h-12 rounded-2xl text-white font-medium" 
-                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                 <div className="space-y-2">
-                   <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Label (Nota Mínima - 0)</Label>
-                   <Input value={editingForm.minLabel || ''} onChange={e => setEditingForm({ ...editingForm, minLabel: e.target.value })} className="bg-white/5 border-white/10 h-10 rounded-xl" />
-                 </div>
-                 <div className="space-y-2">
-                   <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Label (Nota Máxima - 10)</Label>
-                   <Input value={editingForm.maxLabel || ''} onChange={e => setEditingForm({ ...editingForm, maxLabel: e.target.value })} className="bg-white/5 border-white/10 h-10 rounded-xl" />
-                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 pt-4">
-              <h4 className="text-xs uppercase font-black tracking-widest text-[#14B8A6] flex items-center mb-4">
-                3. FECHAMENTO & AGRADECIMENTO<div className="h-px bg-white/5 flex-1 ml-4" />
-              </h4>
+          {activeTab === 'info' && (
+            <form onSubmit={handleSave} className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
               <div className="space-y-4">
-                 <div className="space-y-2">
-                   <Label className="uppercase text-[10px] font-black text-emerald-500 tracking-widest ml-1">Para Promotores (9 a 10)</Label>
-                   <Textarea value={editingForm.thanksPromoter || ''} onChange={e => setEditingForm({ ...editingForm, thanksPromoter: e.target.value })} className="bg-white/5 border-white/10 rounded-xl min-h-[80px]" />
-                 </div>
-                 <div className="space-y-2">
-                   <Label className="uppercase text-[10px] font-black text-amber-500 tracking-widest ml-1">Para Neutros (7 e 8)</Label>
-                   <Textarea value={editingForm.thanksPassive || ''} onChange={e => setEditingForm({ ...editingForm, thanksPassive: e.target.value })} className="bg-white/5 border-white/10 rounded-xl min-h-[80px]" />
-                 </div>
-                 <div className="space-y-2">
-                   <Label className="uppercase text-[10px] font-black text-red-500 tracking-widest ml-1">Para Detratores (0 a 6)</Label>
-                   <Textarea value={editingForm.thanksDetractor || ''} onChange={e => setEditingForm({ ...editingForm, thanksDetractor: e.target.value })} className="bg-white/5 border-white/10 rounded-xl min-h-[80px]" />
-                 </div>
+                <h4 className="text-xs uppercase font-black tracking-widest text-[#14B8A6] flex items-center mb-4">
+                  IDENTIFICAÇÃO INTERNA <div className="h-px bg-white/5 flex-1 ml-4" />
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 col-span-2">
+                    <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Nome Interno</Label>
+                    <Input 
+                      required 
+                      placeholder="Ex: NPS Pós-Evento VIP" 
+                      value={editingForm.internalName || ''}
+                      onChange={e => setEditingForm({ ...editingForm, internalName: e.target.value })}
+                      className="bg-white/5 border-white/10 h-12 rounded-2xl focus:border-brand-orange-coral focus:ring-0 text-white font-bold" 
+                    />
+                  </div>
+                  <div className="space-y-2 col-span-2">
+                    <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Descrição</Label>
+                    <Input 
+                      placeholder="Ex: Enviado apenas para lote VIP..." 
+                      value={editingForm.description || ''}
+                      onChange={e => setEditingForm({ ...editingForm, description: e.target.value })}
+                      className="bg-white/5 border-white/10 h-10 rounded-2xl focus:border-brand-orange-coral focus:ring-0" 
+                    />
+                  </div>
+                  {editingForm.id && (
+                     <div className="space-y-2 col-span-2 mt-2">
+                       <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Status da Pesquisa</Label>
+                       <select 
+                          value={editingForm.status} 
+                          onChange={(e) => setEditingForm({...editingForm, status: e.target.value as any})}
+                          className="w-full bg-white/5 border border-white/10 h-12 rounded-2xl px-4 text-white font-bold focus:border-brand-orange-coral focus:ring-0"
+                       >
+                          <option value="draft">Rascunho (Não Dispara)</option>
+                          <option value="active">Ativo (Permite Receber Repostas)</option>
+                          <option value="archived">Arquivado (Inativo/Histórico)</option>
+                       </select>
+                     </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="pt-6 mt-4 flex gap-4 sticky bottom-0 bg-dark-200 pb-2">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 border-white/10 hover:bg-white/5 text-gray-400 h-12 rounded-2xl text-xs font-bold uppercase tracking-widest">
-                CANCELAR
-              </Button>
-              <Button type="submit" className="flex-[2] bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 rounded-2xl text-sm uppercase tracking-widest">
-                <Save className="w-4 h-4 mr-2" />
-                {editingForm.id ? 'SALVAR ALTERAÇÕES' : 'CRIAR FORMULÁRIO'}
-              </Button>
-            </div>
-          </form>
+              <div className="pt-6 mt-4 flex gap-4 sticky bottom-0 bg-dark-200 pb-2">
+                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 border-white/10 hover:bg-white/5 text-gray-400 h-12 rounded-2xl text-xs font-bold uppercase tracking-widest">
+                  CANCELAR
+                </Button>
+                <Button type="submit" className="flex-[2] bg-brand-orange-coral hover:bg-brand-orange-intense text-white font-black h-12 rounded-2xl text-sm uppercase tracking-widest">
+                  <Save className="w-4 h-4 mr-2" />
+                  {editingForm.id ? 'SALVAR ALTERAÇÕES' : 'CRIAR PARA LIBERAR BUILDER'}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {activeTab === 'builder' && editingForm.id && (
+             <div className="flex-1 overflow-hidden">
+                <NPSFormBuilder formId={editingForm.id} />
+             </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

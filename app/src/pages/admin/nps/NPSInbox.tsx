@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { npsModuleService } from '@/services/npsModuleService';
-import { NPSLoopCase } from '@/types';
+import { NPSCase, NPSCaseActivity } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle2, Clock, Inbox as InboxIcon, ArrowRight, User, Hash, MessagesSquare } from 'lucide-react';
+import { CheckCircle2, Clock, Inbox as InboxIcon, ArrowRight, User, Hash, MessagesSquare, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function NPSInbox() {
   const { projectId } = useProject();
-  const [cases, setCases] = useState<NPSLoopCase[]>([]);
+  const { user } = useAuth();
+  
+  const [cases, setCases] = useState<NPSCase[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCase, setSelectedCase] = useState<NPSLoopCase | null>(null);
+  const [selectedCase, setSelectedCase] = useState<NPSCase | null>(null);
+  const [activities, setActivities] = useState<NPSCaseActivity[]>([]);
   
   // Resolution state
   const [isResolving, setIsResolving] = useState(false);
@@ -22,6 +26,12 @@ export default function NPSInbox() {
   useEffect(() => {
     if (projectId) loadCases();
   }, [projectId]);
+
+  useEffect(() => {
+    if (selectedCase) {
+      loadActivities(selectedCase.id);
+    }
+  }, [selectedCase]);
 
   const loadCases = async () => {
     setLoading(true);
@@ -33,6 +43,11 @@ export default function NPSInbox() {
     setLoading(false);
   };
 
+  const loadActivities = async (caseId: string) => {
+    const data = await npsModuleService.getCaseActivities(caseId);
+    setActivities(data);
+  };
+
   const handleResolve = async () => {
     if (!selectedCase) return;
     if (!actionTaken.trim()) {
@@ -40,16 +55,42 @@ export default function NPSInbox() {
       return;
     }
 
-    const success = await npsModuleService.updateCaseStatus(selectedCase.id, 'resolved', actionTaken);
+    const success = await npsModuleService.updateCaseStatus(selectedCase.id, 'resolved', actionTaken, user?.id);
     if (success) {
       toast.success('Ticket marcardo como resolvido!');
       setIsResolving(false);
       setActionTaken('');
       
-      // Update local state smoothly
-      const updatedCase = { ...selectedCase, status: 'resolved' as const, actionTaken };
+      const updatedCase = { ...selectedCase, status: 'resolved' as const };
       setSelectedCase(updatedCase);
       setCases(cases.map(c => c.id === selectedCase.id ? updatedCase : c));
+      
+      // Reload activities to get the new log
+      loadActivities(selectedCase.id);
+    }
+  };
+
+  const handleUpdateProperty = async (property: 'priority' | 'status', value: string) => {
+    if (!selectedCase) return;
+    
+    // Optimistic UI
+    const updatedCase = { ...selectedCase, [property]: value };
+    setSelectedCase(updatedCase as NPSCase);
+    setCases(cases.map(c => c.id === selectedCase.id ? (updatedCase as NPSCase) : c));
+
+    let success = false;
+    if (property === 'priority') {
+       success = await npsModuleService.updateCaseStatus(selectedCase.id, '', undefined, user?.id, undefined, value);
+    } else if (property === 'status') {
+       success = await npsModuleService.updateCaseStatus(selectedCase.id, value, undefined, user?.id);
+    }
+    
+    if (success) {
+      toast.success('Ticket atualizado com sucesso!');
+      loadActivities(selectedCase.id); // reload history log
+    } else {
+      toast.error('Erro ao atualizar ticket.');
+      // Revert in real app, but for now we just show error
     }
   };
 
@@ -88,7 +129,7 @@ export default function NPSInbox() {
             cases.map(c => (
               <button
                 key={c.id}
-                onClick={() => { setSelectedCase(c); setIsResolving(false); setActionTaken(''); }}
+                onClick={() => { setSelectedCase(c); setIsResolving(false); setActionTaken(''); setActivities([]); }}
                 className={`w-full text-left p-4 rounded-2xl transition-all border ${
                   selectedCase?.id === c.id 
                     ? 'bg-white/10 border-white/10 shadow-lg' 
@@ -139,15 +180,45 @@ export default function NPSInbox() {
                   </div>
                   <p className="text-gray-400 text-xs flex items-center">
                     <User className="w-3 h-3 mr-1" />
-                    Participante ID: {selectedCase.response?.userId || 'Anônimo'}
+                    Participante Session: {selectedCase.response?.sessionId?.split('-')[0] || 'Anônimo'}
                   </p>
                 </div>
-                {selectedCase.status !== 'resolved' && !isResolving && (
+                
+                <div className="flex flex-col gap-2 opacity-80 hover:opacity-100 transition-opacity">
+                   <div className="flex items-center gap-2">
+                     <span className="text-[9px] uppercase font-bold text-gray-500 w-16">Prioridade:</span>
+                     <select 
+                       value={selectedCase.priority} 
+                       onChange={(e) => handleUpdateProperty('priority', e.target.value)}
+                       className="bg-dark-100 border border-white/10 text-white text-xs font-bold rounded px-2 py-1 focus:ring-0 focus:border-brand-orange-coral outline-none appearance-none"
+                     >
+                       <option value="low">Baixa</option>
+                       <option value="medium">Média</option>
+                       <option value="high">Alta</option>
+                       <option value="urgent">Urgente</option>
+                     </select>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <span className="text-[9px] uppercase font-bold text-gray-500 w-16">Status:</span>
+                     <select 
+                       value={selectedCase.status} 
+                       onChange={(e) => handleUpdateProperty('status', e.target.value)}
+                       className="bg-dark-100 border border-white/10 text-white text-xs font-bold rounded px-2 py-1 focus:ring-0 focus:border-brand-orange-coral outline-none appearance-none"
+                     >
+                       <option value="open">Aberto</option>
+                       <option value="in_progress">Em Andamento</option>
+                       <option value="resolved">Resolvido</option>
+                       <option value="closed">Fechado</option>
+                     </select>
+                   </div>
+                </div>
+
+                {selectedCase.status !== 'resolved' && selectedCase.status !== 'closed' && !isResolving && (
                   <Button 
                     onClick={() => setIsResolving(true)}
                     className="bg-brand-orange-coral hover:bg-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-widest h-10 px-6 shadow-lg shadow-orange-500/20"
                   >
-                    RESOLVER TICKET <ArrowRight className="w-4 h-4 ml-2" />
+                    FINALIZAR AÇÃO <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 )}
               </div>
@@ -168,8 +239,7 @@ export default function NPSInbox() {
                       </div>
                       <div>
                         <p className="text-white font-bold text-lg">Insatisfação Crítica</p>
-                        <p className="text-[11px] text-gray-500 tracking-widest uppercase mt-1">Formulário: {selectedCase.response?.formId.split('-')[0]}</p>
-                        <p className="text-[10px] text-gray-600 mt-1">Canal de Coleta: {selectedCase.response?.channel}</p>
+                        <p className="text-[11px] text-gray-500 tracking-widest uppercase mt-1">Formulário ID: {selectedCase.response?.formId.split('-')[0]}</p>
                       </div>
                     </div>
                     <p className="text-gray-300 text-sm leading-relaxed italic">
@@ -179,8 +249,33 @@ export default function NPSInbox() {
                 </div>
               </div>
 
+              {/* History / Activities Feed */}
+              {activities.length > 0 && (
+                <div className="relative">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full" />
+                  <div className="pl-6">
+                    <Label className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center mb-4">
+                      <History className="w-3 h-3 mr-2" /> Log de Atividades (Histórico Rápido)
+                    </Label>
+                    <div className="space-y-3">
+                       {activities.map((act) => (
+                          <div key={act.id} className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                             <div className="flex justify-between items-center mb-2">
+                                <Badge className="bg-blue-500/20 text-blue-400 font-black text-[9px] uppercase tracking-widest">{act.actionType}</Badge>
+                                <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold font-sans">
+                                   {new Date(act.createdAt).toLocaleString('pt-BR')}
+                                </span>
+                             </div>
+                             <p className="text-sm text-gray-300">{act.content}</p>
+                          </div>
+                       ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Action Resolution Area */}
-              {isResolving ? (
+              {isResolving && (
                 <div className="relative animate-in slide-in-from-bottom-4 duration-300">
                   <div className="absolute top-0 left-0 w-1 h-full bg-brand-orange-coral rounded-full" />
                   <div className="pl-6">
@@ -203,29 +298,6 @@ export default function NPSInbox() {
                      </div>
                   </div>
                 </div>
-              ) : selectedCase.status === 'resolved' ? (
-                <div className="relative">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-full" />
-                  <div className="pl-6">
-                    <Label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center mb-3">
-                      <CheckCircle2 className="w-3 h-3 mr-2" /> Tratativa Registrada
-                    </Label>
-                    <div className="p-5 border border-emerald-500/20 bg-emerald-500/5 rounded-2xl">
-                      <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-2">Ação Tomada:</p>
-                      <p className="text-gray-300 text-sm leading-relaxed">
-                        {selectedCase.actionTaken || 'Resolvido sem nota de tratativa explícita no sistema antigo.'}
-                      </p>
-                      <div className="mt-4 pt-3 border-t border-emerald-500/10 flex justify-between items-center text-[10px] text-emerald-500/60 font-bold uppercase tracking-widest">
-                        <span>Encerrado em: {new Date(selectedCase.resolvedAt || selectedCase.updatedAt).toLocaleString('pt-BR')}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 p-6 bg-white/[0.02] border border-white/5 rounded-2xl border-dashed">
-                   <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Pronto para ação CX</p>
-                   <p className="text-xs text-gray-400 mt-2 max-w-sm mx-auto">Clique em "Resolver Ticket" no canto superior direito para registrar a recuperação do cliente.</p>
-                </div>
               )}
             </div>
           </div>
@@ -242,4 +314,3 @@ export default function NPSInbox() {
     </div>
   );
 }
-

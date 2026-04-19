@@ -746,16 +746,18 @@ export interface PartnerTeamMember {
 }
 
 export type NPSFormStatus = 'draft' | 'active' | 'archived';
-export type NPSQuestionType = 'nps_score' | 'textarea' | 'short_text' | 'single_choice' | 'multi_choice' | 'csat' | 'ces' | 'yes_no' | 'hidden_metadata';
+export type NPSQuestionType = 'nps_score' | 'textarea' | 'short_text' | 'single_choice' | 'multi_choice' | 'csat_stars' | 'csat_emoji' | 'ces' | 'yes_no' | 'hidden_metadata' | 'welcome_screen' | 'thank_you_screen';
 export type NPSClassification = 'detractor' | 'passive' | 'promoter';
-export type NPSAutomationTrigger = 'manual' | 'post_event' | 'post_session' | 'check_in' | 'check_out' | 'session_attendance';
+export type NPSAutomationTrigger = 'manual' | 'post_event' | 'post_session' | 'check_in' | 'check_out' | 'session_attendance' | 'abandoned_cart';
 export type NPSChannel = 'email' | 'whatsapp' | 'sms' | 'push' | 'in_app' | 'qr';
 export type NPSCaseStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type NPSCasePriority = 'low' | 'medium' | 'high' | 'urgent';
+export type NPSLogStatus = 'pending' | 'processing' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed' | 'complained';
+export type NPSSessionStatus = 'started' | 'in_progress' | 'completed' | 'abandoned';
 
 export interface NPSForm {
   id: string;
-  projectId: string;
+  projectId: string; // event_id
   internalName: string;
   description?: string;
   objective?: string;
@@ -765,22 +767,15 @@ export interface NPSForm {
   visualSettings?: {
     primaryColor?: string;
     logo?: string | null;
+    theme?: 'light' | 'dark';
     surveyType?: 'nps_0_10' | 'csat_stars_1_5' | 'csat_emoji_1_5';
   };
-  npsQuestion?: string;
-  minScore?: number;
-  maxScore?: number;
-  minLabel?: string;
-  maxLabel?: string;
-  thanksPromoter?: string;
-  thanksPassive?: string;
-  thanksDetractor?: string;
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface NPSQuestion {
+export interface NPSFormQuestion {
   id: string;
   formId: string;
   type: NPSQuestionType;
@@ -789,83 +784,113 @@ export interface NPSQuestion {
   placeholder?: string;
   isRequired: boolean;
   orderIndex: number;
-  options?: any[];
-  conditionalRules?: any;
-  tags?: string[];
-  slug: string;
+  options?: any[]; // [{label: string, value: string}]
+  conditionalRules?: any; // {depends_on?: string, condition?: string, value?: any}
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface NPSAutomation {
   id: string;
-  projectId: string;
+  projectId: string; // event_id
   formId: string;
   name: string;
   isActive: boolean;
   triggerType: NPSAutomationTrigger;
+  delayMinutes: number;
   channel: NPSChannel;
-  delayAmount: number;
-  delayUnit: string;
-  audienceRules?: any;
-  quietHours?: any;
-  dedupWindowHours: number;
-  activeFrom?: string;
-  activeUntil?: string;
   messageTemplate: string;
   subjectTemplate?: string;
-  senderName?: string;
-  utmParams?: any;
+  audienceRules?: any;
+  quietHours?: any;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface NPSDispatch {
+export interface NPSSendLog {
   id: string;
+  projectId: string; // event_id
   automationId: string;
-  registrationId: string;
-  userId?: string;
-  channel: NPSChannel;
-  status: string;
-  failureReason?: string;
-  sentAt?: string;
+  participantUserId?: string;
+  contactAddress: string;
+  status: NPSLogStatus;
+  externalProviderId?: string;
+  errorMessage?: string;
+  dispatchedAt?: string;
+  deliveredAt?: string;
   openedAt?: string;
-  clickedAt?: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface NPSPublicToken {
+  id: string;
+  tokenHash: string;
+  formId: string;
+  participantUserId: string;
+  projectId: string; // event_id
+  metadata?: any;
+  expiresAt: string;
+  usedAt?: string;
+  createdAt: string;
+}
+
+export interface NPSSession {
+  id: string;
+  projectId: string; // event_id
+  formId: string;
+  participantUserId?: string;
+  publicTokenId?: string;
+  deviceInfo?: any;
+  status: NPSSessionStatus;
+  startedAt: string;
+  completedAt?: string;
+  updatedAt: string;
 }
 
 export interface NPSResponse {
   id: string;
+  projectId: string; // event_id
+  sessionId: string;
   formId: string;
-  projectId: string;
-  registrationId?: string;
-  userId?: string;
-  dispatchId?: string;
-  sessionId?: string;
-  speakerId?: string;
-  sponsorId?: string;
-  score: number;
-  classification: NPSClassification;
+  score?: number;
+  classification?: NPSClassification;
   mainComment?: string;
-  answers?: Record<string, any>;
-  channel: NPSChannel;
-  metadata?: Record<string, any>;
+  createdAt: string;
+  session?: NPSSession;
+}
+
+export interface NPSAnswer {
+  id: string;
+  sessionId: string;
+  questionId: string;
+  valueText?: string;
+  valueNumeric?: number;
+  valueJson?: any;
+  timeSpentSeconds?: number;
   createdAt: string;
 }
 
-export interface NPSLoopCase {
+export interface NPSCase {
   id: string;
-  projectId: string;
+  projectId: string; // event_id
   responseId: string;
   ownerId?: string;
   status: NPSCaseStatus;
   priority: NPSCasePriority;
-  slaDueAt?: string;
-  firstResponseAt?: string;
+  slaDueAt: string;
   resolvedAt?: string;
-  rootCause?: string;
-  actionTaken?: string;
-  recoveryOutcome?: string;
   createdAt: string;
   updatedAt: string;
-  response?: NPSResponse; // For joined queries
+  response?: NPSResponse; // joined
+}
+
+export interface NPSCaseActivity {
+  id: string;
+  caseId: string;
+  userId?: string;
+  actionType: string;
+  content?: string;
+  internalOnly: boolean;
+  createdAt: string;
 }
