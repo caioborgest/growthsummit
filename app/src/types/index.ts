@@ -765,6 +765,7 @@ export interface NPSForm {
   visualSettings?: {
     primaryColor?: string;
     logo?: string | null;
+    surveyType?: 'nps_0_10' | 'csat_stars_1_5' | 'csat_emoji_1_5';
   };
   npsQuestion?: string;
   minScore?: number;

@@ -5,7 +5,7 @@ import { NPSForm } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, Heart } from 'lucide-react';
+import { CheckCircle2, Heart, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
@@ -149,32 +149,88 @@ export default function PublicNPS() {
                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">{form.npsQuestion}</h1>
                 </div>
 
-                <div className="grid grid-cols-11 gap-1 sm:gap-2 mb-4 w-full">
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
-                     const isSelected = score === num;
-                     
-                     // Color coding logic
-                     let colorClass = "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
-                     if (num <= 6) colorClass = isSelected ? "bg-red-500 text-white border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]" : "bg-red-500/10 border-red-500/20 hover:bg-red-500/20 text-red-400";
-                     if (num >= 7 && num <= 8) colorClass = isSelected ? "bg-amber-500 text-white border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-400";
-                     if (num >= 9) colorClass = isSelected ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" : "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400";
+                {(!form.visualSettings?.surveyType || form.visualSettings.surveyType === 'nps_0_10') && (
+                  <>
+                    <div className="grid grid-cols-11 gap-1 sm:gap-2 mb-4 w-full">
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                         const isSelected = score === num;
+                         
+                         // Color coding logic
+                         let colorClass = "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
+                         if (num <= 6) colorClass = isSelected ? "bg-red-500 text-white border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]" : "bg-red-500/10 border-red-500/20 hover:bg-red-500/20 text-red-400";
+                         if (num >= 7 && num <= 8) colorClass = isSelected ? "bg-amber-500 text-white border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-400";
+                         if (num >= 9) colorClass = isSelected ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" : "bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-400";
 
-                     return (
+                         return (
+                            <button
+                              key={num}
+                              onClick={() => handleScoreSelect(num)}
+                              className={`aspect-square sm:aspect-auto sm:h-16 flex items-center justify-center rounded-xl text-lg sm:text-xl font-black transition-all border ${colorClass} ${isSelected ? 'scale-110 z-10' : 'scale-100 hover:scale-105'}`}
+                            >
+                              {num}
+                            </button>
+                         );
+                      })}
+                    </div>
+                    
+                    <div className="flex justify-between w-full px-2 mt-2">
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.minLabel}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.maxLabel}</span>
+                    </div>
+                  </>
+                )}
+
+                {form.visualSettings?.surveyType === 'csat_stars_1_5' && (
+                  <div className="flex justify-center gap-2 sm:gap-6 mb-4 mt-6">
+                    {[1, 2, 3, 4, 5].map((num) => {
+                      // Map 1-5 to 0-10 for unified DB storage
+                      const scoreMap: Record<number, number> = { 1: 0, 2: 3, 3: 6, 4: 8, 5: 10 };
+                      const mappedScore = scoreMap[num];
+                      
+                      // Highlight stars up to the selected one
+                      const isSelected = score !== null && mappedScore <= score;
+                      const isExact = score === mappedScore;
+                      
+                      return (
                         <button
                           key={num}
-                          onClick={() => handleScoreSelect(num)}
-                          className={`aspect-square sm:aspect-auto sm:h-16 flex items-center justify-center rounded-xl text-lg sm:text-xl font-black transition-all border ${colorClass} ${isSelected ? 'scale-110 z-10' : 'scale-100 hover:scale-105'}`}
+                          onClick={() => handleScoreSelect(mappedScore)}
+                          className={`p-3 sm:p-4 rounded-2xl transition-all ${isExact ? 'scale-125 z-10' : 'hover:scale-110 hover:bg-white/5'}`}
                         >
-                          {num}
+                          <Star className={`w-10 h-10 sm:w-14 sm:h-14 transition-all ${isSelected ? 'fill-amber-400 text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]' : 'text-gray-600'}`} />
                         </button>
-                     );
-                  })}
-                </div>
-                
-                <div className="flex justify-between w-full px-2 mt-2">
-                  <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.minLabel}</span>
-                  <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest">{form.maxLabel}</span>
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {form.visualSettings?.surveyType === 'csat_emoji_1_5' && (
+                  <div className="flex justify-center gap-2 sm:gap-4 mb-4 mt-8">
+                    {[
+                      { val: 1, emoji: '😢', label: 'Triste', mapped: 0 },
+                      { val: 2, emoji: '😕', label: 'Indiferente', mapped: 3 },
+                      { val: 3, emoji: '😐', label: 'Razoável', mapped: 6 },
+                      { val: 4, emoji: '🙂', label: 'Alegre', mapped: 8 },
+                      { val: 5, emoji: '😍', label: 'Muito Feliz', mapped: 10 }
+                    ].map((item) => {
+                      const isSelected = score === item.mapped;
+                      return (
+                        <button
+                          key={item.val}
+                          onClick={() => handleScoreSelect(item.mapped)}
+                          className={`flex flex-col items-center gap-3 p-2 sm:p-4 rounded-3xl transition-all ${isSelected ? 'bg-white/10 scale-125 border border-white/20 shadow-2xl z-10' : 'hover:bg-white/5 hover:scale-110 border border-transparent'}`}
+                        >
+                          <span className={`text-4xl sm:text-5xl transition-all ${!isSelected && score !== null ? 'opacity-30 grayscale' : ''}`}>
+                            {item.emoji}
+                          </span>
+                          <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${isSelected ? 'text-white' : 'text-gray-500'}`}>
+                            {item.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </motion.div>
             )}
 

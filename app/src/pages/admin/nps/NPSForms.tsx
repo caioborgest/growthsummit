@@ -144,7 +144,7 @@ export default function NPSForms() {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-dark-200 border-white/10 text-white rounded-[2.5rem] p-0 max-w-2xl overflow-hidden">
+        <DialogContent className="bg-dark-200 border-white/10 text-white rounded-[2.5rem] p-0 max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
            <div className="p-8 border-b border-white/5 bg-gradient-to-r from-dark-200 to-black">
               <DialogTitle className="text-2xl font-black italic uppercase text-brand-orange-coral flex items-center">
                 {editingForm.id ? 'Modificar Pesquisa' : 'Nova Pesquisa Base'}
@@ -154,7 +154,7 @@ export default function NPSForms() {
               </DialogDescription>
            </div>
           
-          <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar">
+          <form onSubmit={handleSave} className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
             <div className="space-y-4">
               <h4 className="text-xs uppercase font-black tracking-widest text-[#14B8A6] flex items-center mb-4">
                 1. IDENTIFICAÇÃO INTERNA <div className="h-px bg-white/5 flex-1 ml-4" />
@@ -178,6 +178,18 @@ export default function NPSForms() {
                     onChange={e => setEditingForm({ ...editingForm, description: e.target.value })}
                     className="bg-white/5 border-white/10 h-10 rounded-2xl focus:border-brand-orange-coral focus:ring-0" 
                   />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label className="uppercase text-[10px] font-black text-gray-500 tracking-widest ml-1">Tipo de Escala (UX do Participante)</Label>
+                  <select 
+                     value={editingForm.visualSettings?.surveyType || 'nps_0_10'} 
+                     onChange={(e) => setEditingForm({...editingForm, visualSettings: { ...editingForm.visualSettings, surveyType: e.target.value as any }})}
+                     className="w-full bg-white/5 border border-white/10 h-10 rounded-2xl px-4 text-white font-medium focus:border-brand-orange-coral focus:ring-0 appearance-none"
+                  >
+                     <option value="nps_0_10" className="bg-dark-100 text-white">NPS Clássico (0 a 10)</option>
+                     <option value="csat_stars_1_5" className="bg-dark-100 text-white">CSAT Estrelas (1 a 5 Estrelas)</option>
+                     <option value="csat_emoji_1_5" className="bg-dark-100 text-white">CSAT Emocional (5 Emojis - Triste a Feliz)</option>
+                  </select>
                 </div>
                 {editingForm.id && (
                    <div className="space-y-2 col-span-2 mt-2">
