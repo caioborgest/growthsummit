@@ -19,7 +19,7 @@ export function useRegistrationsQuery(filters?: Record<string, any>) {
   return useQuery({
     queryKey: registrationKeys.list(filters),
     queryFn: async () => {
-      let query: any = supabase.from('registrations' as any).select('*');
+      let query: any = supabase.from('registrations' as any).select('*, coupon_code, discount_type, discount_amount, final_price');
       
       if (filters?.email) query = query.eq('email', filters.email);
       if (filters?.status) query = query.eq('status', filters.status);
@@ -42,7 +42,7 @@ export function useMyRegistrationsQuery() {
 
       const { data, error } = await (supabase
         .from('registrations' as any)
-        .select('*')
+        .select('*, coupon_code, discount_type, discount_amount, final_price')
         .eq('user_id', user.id));
 
       if (error) throw error;
@@ -58,7 +58,7 @@ export function useRegistrationQuery(id: string) {
     queryFn: async () => {
       const { data, error } = await (supabase
         .from('registrations' as any)
-        .select('*')
+        .select('*, coupon_code, discount_type, discount_amount, final_price')
         .eq('id', id)
         .single());
 

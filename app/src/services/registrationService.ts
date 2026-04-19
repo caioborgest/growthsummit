@@ -204,6 +204,10 @@ export const registrationService = {
             created_at,
             registration_type,
             qr_code,
+            coupon_code,
+            discount_type,
+            discount_amount,
+            final_price,
             profiles(user_id, name, email, phone, company, city, state, role)
         `);
         
@@ -247,6 +251,10 @@ export const registrationService = {
                 created_at,
                 registration_type,
                 qr_code,
+                coupon_code,
+                discount_type,
+                discount_amount,
+                final_price,
                 profiles(user_id, name, email, phone, company, city, state, role)
             `)
             .eq('id', id)

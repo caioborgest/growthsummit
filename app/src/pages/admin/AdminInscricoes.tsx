@@ -122,17 +122,28 @@ function DetalhesModal({
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 { label: 'Valor Bruto', value: (reg.amount && reg.amount > 0) ? `R$ ${reg.amount.toLocaleString('pt-BR')}` : (reg.palestrasNoturnas ? 'R$ 179,90' : 'R$ 0,00'), icon: Ticket },
-                { label: 'Desconto', value: reg.discountAmount ? `R$ ${reg.discountAmount.toLocaleString('pt-BR')}` : '—', icon: Star, highlight: !!reg.discountAmount },
-                { label: 'Valor Líquido', value: `R$ ${(reg.paidAmount || reg.amount || 0).toLocaleString('pt-BR')}`, icon: CreditCard, primary: true },
+                { 
+                  label: 'Desconto', 
+                  value: reg.discountAmount 
+                    ? (reg.discountType === 'percent' ? `${reg.discountAmount}%` : `R$ ${reg.discountAmount.toLocaleString('pt-BR')}`) 
+                    : '—', 
+                  icon: Star, 
+                  highlight: !!reg.discountAmount 
+                },
+                { 
+                  label: 'Valor Final', 
+                  value: `R$ ${(reg.finalPrice || reg.paidAmount || reg.amount || 0).toLocaleString('pt-BR')}`, 
+                  icon: CreditCard, 
+                  primary: true 
+                },
                 { label: 'Documento', value: (reg as any).cpf || 'Não informado', icon: Contact },
-                { label: 'E-mail', value: reg.email || 'Não informado', icon: Star },
                 { label: 'Telefone', value: reg.phone || (reg as any).telefone || 'Não informado', icon: Contact },
                 { label: 'Empresa', value: reg.empresa || (reg as any).company || 'Não informada', icon: Building2 },
                 { 
-                  label: 'Cupom / Voucher', 
-                  value: reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher || 'Nenhum', 
+                  label: 'Cupom Utilizado', 
+                  value: reg.couponCode || 'Nenhum', 
                   icon: Ticket,
-                  highlight: !!(reg.couponCode || reg.socialCode || reg.voucherCode || reg.companyVoucher)
+                  highlight: !!reg.couponCode
                 },
                 { 
                   label: 'Lote / Parceiro', 
@@ -141,7 +152,7 @@ function DetalhesModal({
                   highlight: !!reg.batchInfo 
                 },
                 { 
-                  label: 'Pagamento', 
+                  label: 'Método de Pagto', 
                   value: reg.paymentMethod 
                     ? `${reg.paymentMethod.toUpperCase()}` 
                     : (['paid', 'active', 'confirmado'].includes((reg.paymentStatus || reg.status || '').toLowerCase()) 
@@ -149,7 +160,6 @@ function DetalhesModal({
                         : (reg.amount === 0 ? 'CORTESIA / BATCH' : 'PENDENTE')), 
                   icon: CreditCard 
                 },
-                { label: 'Data Registro', value: new Date(reg.createdAt).toLocaleDateString('pt-BR'), icon: Calendar },
               ].map(({ label, value, icon: Icon, highlight, primary }) => (
                 <div key={label} className={`p-5 rounded-[1.5rem] border border-white/5 transition-all ${primary ? 'bg-teal-500/5 border-teal-500/20' : highlight ? 'bg-brand-orange-coral/5 border-brand-orange-coral/20' : 'bg-white/[0.02]'}`}>
                   <div className="flex items-center gap-2 mb-2 opacity-40">

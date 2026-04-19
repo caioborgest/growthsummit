@@ -408,37 +408,62 @@ const AdminCheckIn = () => {
                 filteredRegistrations.map(reg => (
                   <div 
                     key={reg.id} 
-                    className={`p-6 rounded-[2rem] border transition-all flex items-center justify-between group relative overflow-hidden ${
+                    className={`p-6 rounded-[2rem] border transition-all group relative overflow-hidden ${
                       reg.checkedIn 
                         ? 'bg-emerald-500/5 border-emerald-500/20' 
                         : 'bg-white/5 border-white/5 hover:border-brand-orange-coral/30 hover:bg-white/10'
                     }`}
                   >
-                    <div className="flex items-center gap-6 relative z-10">
-                      <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0 border transition-transform group-hover:scale-110 ${
-                        reg.checkedIn 
-                        ? 'bg-emerald-500/20 border-emerald-500/30' 
-                        : 'bg-brand-orange-coral/10 border-brand-orange-coral/20'
-                      }`}>
-                        {reg.checkedIn ? <CheckCircle2 className="h-7 w-7 text-emerald-500" /> : <Users className="h-7 w-7 text-brand-orange-coral" />}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                      <div className="flex items-center gap-6">
+                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center shrink-0 border transition-transform group-hover:scale-110 ${
+                          reg.checkedIn 
+                          ? 'bg-emerald-500/20 border-emerald-500/30' 
+                          : 'bg-brand-orange-coral/10 border-brand-orange-coral/20'
+                        }`}>
+                          {reg.checkedIn ? <CheckCircle2 className="h-7 w-7 text-emerald-500" /> : <Users className="h-7 w-7 text-brand-orange-coral" />}
+                        </div>
+                        <div className="text-left">
+                          <h3 className="text-white font-black text-lg uppercase italic leading-none mb-1">{reg.name}</h3>
+                          <div className="flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                            <span>{reg.email}</span>
+                            <span>·</span>
+                            <span>{reg.phone || (reg as any).telefone || 'S/ Telefone'}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <h3 className="text-white font-black text-lg uppercase italic leading-none mb-1">{reg.name}</h3>
-                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">{reg.email}</p>
+                      
+                      <Button
+                        variant={reg.checkedIn ? "outline" : "default"}
+                        onClick={() => handleManualCheckIn(reg, reg.checkedIn ? 'check-out' : 'check-in')}
+                        className={`h-12 px-8 rounded-2xl font-black text-[10px] tracking-[0.2em] relative z-10 transition-all active:scale-95 ${
+                          reg.checkedIn 
+                          ? 'bg-transparent border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10' 
+                          : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-lg shadow-brand-orange-coral/20'
+                        }`}
+                      >
+                        {reg.checkedIn ? 'CHECK-OUT' : 'CHECK-IN'}
+                      </Button>
+                    </div>
+
+                    <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
+                      <div className="flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                        <Ticket className="h-3 w-3" />
+                        <span>{reg.batchInfo?.name || 'Inscrição Individual'} — R$ {reg.amount?.toLocaleString('pt-BR') || '0,00'}</span>
+                      </div>
+                      
+                      {reg.couponCode && (
+                        <div className="flex items-center gap-2 text-brand-orange-coral text-[10px] font-black uppercase tracking-widest">
+                          <Ticket className="h-3 w-3" />
+                          <span>Cupom: {reg.couponCode} → -{reg.discountType === 'percent' ? `${reg.discountAmount}%` : `R$ ${reg.discountAmount?.toLocaleString('pt-BR')}`}</span>
+                        </div>
+                      )}
+
+                      <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${['paid', 'active', 'confirmado'].includes((reg.status || '').toLowerCase()) ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>{['paid', 'active', 'confirmado'].includes((reg.status || '').toLowerCase()) ? 'Pago' : 'Pendente'}: R$ {(reg.finalPrice || reg.paidAmount || reg.amount || 0).toLocaleString('pt-BR')}</span>
                       </div>
                     </div>
-                    
-                    <Button
-                      variant={reg.checkedIn ? "outline" : "default"}
-                      onClick={() => handleManualCheckIn(reg, reg.checkedIn ? 'check-out' : 'check-in')}
-                      className={`h-12 px-8 rounded-2xl font-black text-[10px] tracking-[0.2em] relative z-10 transition-all active:scale-95 ${
-                        reg.checkedIn 
-                        ? 'bg-transparent border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10' 
-                        : 'bg-brand-orange-coral hover:bg-brand-orange-intense text-white shadow-lg shadow-brand-orange-coral/20'
-                      }`}
-                    >
-                      {reg.checkedIn ? 'CHECK-OUT' : 'CHECK-IN'}
-                    </Button>
                   </div>
                 ))
               ) : (

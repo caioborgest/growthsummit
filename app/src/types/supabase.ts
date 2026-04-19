@@ -1084,6 +1084,10 @@ export type Database = {
           updated_at: string | null
           user_id: string
           website: string | null
+          role: string
+          name: string | null
+          email: string | null
+          avatar_url: string | null
         }
         Insert: {
           bio?: string | null
@@ -1104,6 +1108,10 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           website?: string | null
+          role?: string
+          name?: string | null
+          email?: string | null
+          avatar_url?: string | null
         }
         Update: {
           bio?: string | null
@@ -1124,6 +1132,10 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           website?: string | null
+          role?: string
+          name?: string | null
+          email?: string | null
+          avatar_url?: string | null
         }
         Relationships: [
           {
@@ -2044,6 +2056,428 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_experience_registrations: {
+        Row: {
+          id: string
+          project_id: string
+          user_id: string | null
+          name: string
+          email: string
+          phone: string | null
+          cpf: string | null
+          ticket_type: string
+          status: string
+          payment_status: string
+          paid_amount: number
+          social_code: string | null
+          company_voucher: string | null
+          batch_id: string | null
+          lecture_coupon: string | null
+          coupon_code: string | null
+          discount_type: string | null
+          discount_amount: number
+          final_price: number
+          event_name: string
+          app_installed: boolean
+          checked_in: boolean
+          check_in_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          user_id?: string | null
+          name: string
+          email: string
+          phone?: string | null
+          cpf?: string | null
+          ticket_type?: string
+          status?: string
+          payment_status?: string
+          paid_amount?: number
+          social_code?: string | null
+          company_voucher?: string | null
+          batch_id?: string | null
+          lecture_coupon?: string | null
+          coupon_code?: string | null
+          discount_type?: string | null
+          discount_amount?: number
+          final_price?: number
+          event_name?: string
+          app_installed?: boolean
+          checked_in?: boolean
+          check_in_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          user_id?: string | null
+          name?: string
+          email?: string
+          phone?: string | null
+          cpf?: string | null
+          ticket_type?: string
+          status?: string
+          payment_status?: string
+          paid_amount?: number
+          social_code?: string | null
+          company_voucher?: string | null
+          batch_id?: string | null
+          lecture_coupon?: string | null
+          coupon_code?: string | null
+          discount_type?: string | null
+          discount_amount?: number
+          final_price?: number
+          event_name?: string
+          app_installed?: boolean
+          checked_in?: boolean
+          check_in_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_experience_registrations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "growth_experience_registrations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      company_registration_batches: {
+        Row: {
+          id: string
+          project_id: string
+          name: string
+          company_name: string | null
+          voucher_code: string
+          total_slots: number
+          used_slots: number
+          status: string
+          payment_status: string
+          cnpj: string | null
+          contact_email: string | null
+          responsible_name: string | null
+          responsible_email: string | null
+          expires_at: string | null
+          is_active: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          name: string
+          company_name?: string | null
+          voucher_code: string
+          total_slots?: number
+          used_slots?: number
+          status?: string
+          payment_status?: string
+          cnpj?: string | null
+          contact_email?: string | null
+          responsible_name?: string | null
+          responsible_email?: string | null
+          expires_at?: string | null
+          is_active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          name?: string
+          company_name?: string | null
+          voucher_code?: string
+          total_slots?: number
+          used_slots?: number
+          status?: string
+          payment_status?: string
+          cnpj?: string | null
+          contact_email?: string | null
+          responsible_name?: string | null
+          responsible_email?: string | null
+          expires_at?: string | null
+          is_active?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_registration_batches_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      social_partnership_coupons: {
+        Row: {
+          id: string
+          project_id: string
+          code: string
+          referral_type: string | null
+          referral_name: string | null
+          discount_percentage: number
+          is_active: boolean
+          usage_limit: number | null
+          current_usage: number
+          description: string | null
+          expires_at: string | null
+          is_batch: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          code: string
+          referral_type?: string | null
+          referral_name?: string | null
+          discount_percentage?: number
+          is_active?: boolean
+          usage_limit?: number | null
+          current_usage?: number
+          description?: string | null
+          expires_at?: string | null
+          is_batch?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          code?: string
+          referral_type?: string | null
+          referral_name?: string | null
+          discount_percentage?: number
+          is_active?: boolean
+          usage_limit?: number | null
+          current_usage?: number
+          description?: string | null
+          expires_at?: string | null
+          is_batch?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_partnership_coupons_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      nps_forms: {
+        Row: {
+          id: string
+          event_id: string
+          internal_name: string
+          description: string | null
+          objective: string | null
+          status: string
+          default_channel: string
+          language: string
+          visual_settings: Json
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          internal_name: string
+          description?: string | null
+          objective?: string | null
+          status?: string
+          default_channel?: string
+          language?: string
+          visual_settings?: Json
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          internal_name?: string
+          description?: string | null
+          objective?: string | null
+          status?: string
+          default_channel?: string
+          language?: string
+          visual_settings?: Json
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_forms_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      nps_responses: {
+        Row: {
+          id: string
+          event_id: string
+          form_id: string | null
+          session_id: string | null
+          nps_score: number
+          classification: string | null
+          main_comment: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          form_id?: string | null
+          session_id?: string | null
+          nps_score: number
+          classification?: string | null
+          main_comment?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          form_id?: string | null
+          session_id?: string | null
+          nps_score?: number
+          classification?: string | null
+          main_comment?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_responses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nps_responses_form_id_fkey"
+            columns: ["nps_responses_form_id_fkey"]
+            isOneToOne: false
+            referencedRelation: "nps_forms"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      nps_cases: {
+        Row: {
+          id: string
+          event_id: string
+          response_id: string | null
+          owner_id: string | null
+          status: string
+          priority: string
+          sla_due_at: string | null
+          resolved_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          response_id?: string | null
+          owner_id?: string | null
+          status?: string
+          priority?: string
+          sla_due_at?: string | null
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          response_id?: string | null
+          owner_id?: string | null
+          status?: string
+          priority?: string
+          sla_due_at?: string | null
+          resolved_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_cases_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nps_cases_response_id_fkey"
+            columns: ["nps_cases_response_id_fkey"]
+            isOneToOne: false
+            referencedRelation: "nps_responses"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      stripe_payments: {
+        Row: {
+          id: string
+          registration_id: string | null
+          stripe_session_id: string | null
+          stripe_payment_intent_id: string | null
+          amount: number
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          registration_id?: string | null
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          amount: number
+          status: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          registration_id?: string | null
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          amount?: number
+          status?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_payments_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "growth_experience_registrations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2053,31 +2487,28 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       register_participant_with_slots: {
         Args: {
-          p_lecture_code?: string
-          p_social_code?: string
-          p_email: string
-          p_event_name?: string
-          p_extra_data?: Json
-          p_activity_schedule?: string
-          p_referral_name?: string
-          p_referral_type?: string
-          p_activity_level?: string
-          p_name: string
-          p_night_lectures?: boolean
           p_project_id: string
-          p_activity_room?: string
-          p_session_ids: string[]
-          p_status?: string
-          p_payment_status?: string
+          p_user_id: string | null
+          p_name: string
+          p_email: string
           p_phone: string
-          p_activity_type?: string
-          p_registration_type?: string
-          p_user_id: string
-          p_paid_amount?: number
-          p_batch_id?: string
-          p_company_voucher?: string
-          p_partner_id?: string
-          p_app_installed?: boolean
+          p_cpf: string
+          p_session_ids: string[]
+          p_tipo_inscricao: string
+          p_valor_pago: number
+          p_status_pagamento: string
+          p_status: string
+          p_evento: string
+          p_palestras_noturnas: boolean
+          p_referral_type: string
+          p_referral_name: string
+          p_social_code: string | null
+          p_lecture_code: string | null
+          p_extra_data: Json
+          p_lote_id: string | null
+          p_company_voucher: string | null
+          p_empresa: string | null
+          p_coupon_code: string | null
         }
         Returns: Json
       }

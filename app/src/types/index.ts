@@ -173,6 +173,8 @@ export interface Registration {
   socialCode?: string;
   voucherCode?: string;
   discountAmount?: number;
+  discountType?: 'percent' | 'fixed';
+  finalPrice?: number;
   externalPaymentId?: string;
   externalPaymentUrl?: string;
   batchId?: string;
