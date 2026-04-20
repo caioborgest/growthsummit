@@ -38,16 +38,6 @@ import { useProjects, useSponsors } from '@/hooks/useData';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export function HomePage() {
-  const { data: projects } = useProjects();
-  const { data: sponsors } = useSponsors();
-
-  // Filtrar apenas edições futuras de 2026 para a Home
-  const upcomingEvents = (projects || [])
-    .filter(p => (p.status === 'active' || p.status === 'published') && p.startDate?.includes('2026'))
-    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))
-    .slice(0, 2); // Apenas os 2 próximos para manter o layout
-
 const OFFICIAL_SPONSORS = [
   { id: 'sp1', name: "CBX Growth", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png" },
   { id: 'sp2', name: "Grupo Núcleo", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png" }, // Using speaker image as placeholder if logo missing
@@ -58,6 +48,12 @@ const OFFICIAL_SPONSORS = [
 export function HomePage() {
   const { data: projects } = useProjects();
   const { data: sponsorsData } = useSponsors();
+
+  // Filtrar apenas edições futuras de 2026 para a Home
+  const upcomingEvents = (projects || [])
+    .filter(p => (p.status === 'active' || p.status === 'published') && p.startDate?.includes('2026'))
+    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))
+    .slice(0, 2); // Apenas os 2 próximos para manter o layout
 
   // Filtrar patrocinadores de destaque para a grid de logos (com fallback)
   const featuredSponsors = (sponsorsData && sponsorsData.length > 0)
@@ -178,8 +174,6 @@ export function HomePage() {
                   </div>
                 ))}
               </div>
-            </motion.div>
-
             </motion.div>
           </div>
         </div>
