@@ -48,10 +48,21 @@ export function HomePage() {
     .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))
     .slice(0, 2); // Apenas os 2 próximos para manter o layout
 
-  // Filtrar patrocinadores de destaque para a grid de logos
-  const featuredSponsors = (sponsors || [])
-    .filter(s => s.featured || s.isPublic)
-    .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+const OFFICIAL_SPONSORS = [
+  { id: 'sp1', name: "CBX Growth", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png" },
+  { id: 'sp2', name: "Grupo Núcleo", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png" }, // Using speaker image as placeholder if logo missing
+  { id: 'sp3', name: "Cedan Rações", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png" },
+  { id: 'sp4', name: "Fitness Exclusive", logo: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg" }
+];
+
+export function HomePage() {
+  const { data: projects } = useProjects();
+  const { data: sponsorsData } = useSponsors();
+
+  // Filtrar patrocinadores de destaque para a grid de logos (com fallback)
+  const featuredSponsors = (sponsorsData && sponsorsData.length > 0)
+    ? sponsorsData.filter(s => s.featured || s.isPublic).sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+    : OFFICIAL_SPONSORS;
 
   const getEventData = (slug: string) => {
     const isTriunfo = slug.includes('triunfo');
@@ -169,19 +180,37 @@ export function HomePage() {
               </div>
             </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative aspect-video rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl"
-            >
-              <img 
-                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-talk.png" 
-                alt="GX Experience"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite/80 to-transparent" />
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 VIDEO DE PROVA SOCIAL (Restaurado) */}
+      <section className="py-20 bg-dark-200/50 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/5 rounded-[4rem] p-8 lg:p-16 border border-white/10 relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-1/3 h-full bg-brand-orange/5 blur-[100px]" />
+             <div className="grid lg:grid-cols-2 gap-12 items-center">
+                <div className="space-y-6">
+                   <Badge className="bg-brand-orange/10 text-brand-orange border-brand-orange/20">EDICAO 2025</Badge>
+                   <h2 className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tighter leading-tight">
+                     O IMPACTO QUE <br />
+                     <span className="text-brand-orange">GERAMOS</span> NO ÚLTIMO ANO
+                   </h2>
+                   <p className="text-gray-400 font-medium leading-relaxed">
+                     Assista ao teaser da nossa última edição e sinta a energia do movimento que está 
+                     transformando o interior do Nordeste. Networking, estratégia e escala em um só lugar.
+                   </p>
+                </div>
+                <div className="relative aspect-video rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl group">
+                   <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png" className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" alt="Video Thumb" />
+                   <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-20 h-20 bg-brand-orange rounded-full flex items-center justify-center text-white scale-90 group-hover:scale-100 transition-transform shadow-2xl">
+                         <Rocket className="h-8 w-8 ml-1" />
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
         </div>
       </section>

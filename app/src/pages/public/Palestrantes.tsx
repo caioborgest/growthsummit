@@ -7,9 +7,62 @@ import { Badge } from '@/components/ui/badge';
 import { useSpeakers } from '@/hooks/useData';
 import { useProject } from '@/contexts/ProjectContext';
 
+const OFFICIAL_SPEAKERS = [
+  {
+    id: 's1',
+    name: "Jerônimo Freire",
+    role: "Consultor e Mentor de Negócios",
+    company: "Jerônimo Freire Consulting",
+    bio: "Especialista em reestruturação empresarial e escala de negócios tradicionais.",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/jeronimo-freire.jpeg",
+    track: "Business Strategy",
+    isFeatured: true
+  },
+  {
+    id: 's2',
+    name: "Vanylton Matias",
+    role: "CEO do Grupo Núcleo",
+    company: "Grupo Núcleo",
+    bio: "Líder em estratégias de marketing e expansão de mercado no interior.",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png",
+    track: "Growth & Sales",
+    isFeatured: true
+  },
+  {
+    id: 's3',
+    name: "Caio Borges",
+    role: "Especialista em Growth e IA",
+    company: "CBX Growth",
+    bio: "Pioneiro na aplicação de IA Generativa para ganho de produtividade em vendas.",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/profiles/caio-borges.png",
+    track: "AI & Technology",
+    isFeatured: true
+  },
+  {
+    id: 's4',
+    name: "João Daniel",
+    role: "CEO Cedan Rações",
+    company: "Cedan Rações",
+    bio: "Referência em gestão e inovação no setor de agronegócios e indústria regional.",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png",
+    track: "Industrial Growth"
+  },
+  {
+    id: 's5',
+    name: "Leandro Batista",
+    role: "CEO Rede Fitness Exclusive",
+    company: "Fitness Exclusive",
+    bio: "Especialista em expansão de redes de varejo e serviços através de cultura e processos.",
+    image: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg",
+    track: "Leadership"
+  }
+];
+
 export function Palestrantes() {
   const { projectId } = useProject();
-  const { data: speakers, isLoading } = useSpeakers();
+  const { data: speakersData, isLoading } = useSpeakers();
+  
+  const speakers = (speakersData && speakersData.length > 0) ? speakersData : OFFICIAL_SPEAKERS;
 
   return (
     <div className="bg-dark min-h-screen">

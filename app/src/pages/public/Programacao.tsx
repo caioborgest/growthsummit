@@ -89,9 +89,19 @@ function EventItem({ time, title, type, description, speaker }: EventItemProps) 
   );
 }
 
+const OFFICIAL_SESSIONS = [
+  { id: 'sess1', day: '1', startTime: '17:00:00', endTime: '18:00:00', title: "Credenciamento e Exposição de Marcas", type: 'networking', description: "Check-in e abertura da área de parceiros e negócios." },
+  { id: 'sess2', day: '1', startTime: '18:00:00', endTime: '19:00:00', title: "Palestra Magna: Jerônimo Freire", type: 'keynote', speakers: ["Jerônimo Freire"], description: "Estratégias de Growth para o interior." },
+  { id: 'sess3', day: '1', startTime: '19:00:00', endTime: '20:30:00', title: "Talk Show: Bastidores de Negócios", type: 'panel', speakers: ["Caio Borges", "Leandro Batista"], description: "Unindo IA e Vendas na prática." },
+  { id: 'sess4', day: '1', startTime: '20:30:00', endTime: '21:10:00', title: "Networking VIP & Coffee Break", type: 'break', description: "Momento de conexão entre palestrantes e participantes VIP." },
+  { id: 'sess5', day: '1', startTime: '21:10:00', endTime: '22:30:00', title: "Palestra Magna: Vanylton Matias", type: 'keynote', speakers: ["Vanylton Matias"], description: "A nova era do marketing regional." },
+  { id: 'sess6', day: '1', startTime: '22:30:00', endTime: '23:00:00', title: "Encerramento e Networking Final", type: 'social', description: "Conclusão das atividades do dia e conexões finais." }
+];
+
 export function Programacao() {
   const { projectId } = useProject();
-  const { data: sessions, isLoading } = useSessions();
+  const { data: sessionsData, isLoading } = useSessions();
+  const sessions = (sessionsData && sessionsData.length > 0) ? sessionsData : OFFICIAL_SESSIONS;
   const [activeTab, setActiveTab] = useState('1');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
@@ -263,7 +273,7 @@ export function Programacao() {
               <MapPin className="h-8 w-8 text-teal-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-white mb-2">Local</h3>
               <p className="text-gray-400 text-sm">
-                Boulevard Hotel, Juazeiro do Norte - CE. Estacionamento disponível para participantes.
+                Circuito 2026: Triunfo (Sertão do Pajeú) e Petrolina (Vale do São Francisco). Confira seu ingresso.
               </p>
             </div>
 

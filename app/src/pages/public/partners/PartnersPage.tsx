@@ -63,14 +63,23 @@ const quotasStatic = [
   }
 ];
 
+const OFFICIAL_PARTNERS = [
+  { id: 'p1', name: "CBX Growth", logoUrl: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png", tier: "diamond" },
+  { id: 'p2', name: "Fitness Exclusive", logoUrl: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/leandro-batista.jpeg", tier: "platinum" },
+  { id: 'p3', name: "Cedan Rações", logoUrl: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/joao-daniel.png", tier: "gold" },
+  { id: 'p4', name: "Grupo Núcleo", logoUrl: "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/palestrantes/vanylton-matias.png", tier: "gold" }
+];
+
 export function PartnersPage() {
-  const { data: partners, isLoading } = useData<Partner>([], 'partners', { 
+  const { data: partnersData, isLoading } = useData<Partner>([], 'partners', { 
     projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', // Triunfo como pivot ou global
     filters: { active: true } 
   });
 
-  const featuredPartners = partners.filter(p => (p as any).featured || p.tier === 'platinum');
-  const regionalPartners = partners.filter(p => !(p as any).featured && p.tier !== 'platinum');
+  const partners = (partnersData && partnersData.length > 0) ? partnersData : OFFICIAL_PARTNERS;
+
+  const featuredPartners = partners.filter(p => (p as any).featured || p.tier === 'platinum' || p.tier === 'diamond');
+  const regionalPartners = partners.filter(p => !(p as any).featured && p.tier !== 'platinum' && p.tier !== 'diamond');
   return (
     <div className="bg-brand-grafite min-h-screen pt-24 pb-20">
       {/* Hero Section */}
