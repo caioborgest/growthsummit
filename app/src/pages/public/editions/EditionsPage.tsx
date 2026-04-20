@@ -29,6 +29,8 @@ export function EditionsPage() {
     title: p.name,
     desc: p.shortDescription || p.description,
     image: (p.settings as any)?.banner || 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png',
+    slug: p.slug
+  }));
   const upcoming = editions.filter(e => e.status === 'upcoming');
   const past = editions.filter(e => e.status === 'concluded' || e.status === 'planned');
 
