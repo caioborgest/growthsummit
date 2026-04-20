@@ -49,17 +49,17 @@ export function GrowthExperiencePetrolina() {
         // Garantir dados atualizados do projeto
 
         const project = await ensureProject({
-            id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+            id: 'b2c3d4e5-f678-9012-bcde-f01234567890',
             name: 'Growth Experience Petrolina-PE 2026',
-            slug: 'ge-petrolina-2026',
+            slug: 'ge-petrolina-pocket-edition-2026',
             type: 'growth_experience',
-            description: 'A Maior Imersão de Growth e IA do Vale do São Francisco. Networking, mentorias e capacitação gratuita em 30 de abril de 2026.',
+            description: 'A Maior Imersão de Growth e IA do Vale do São Francisco. Networking, mentorias e capacitação gratuita em 20 de junho de 2026.',
             shortDescription: 'Edição Petrolina-PE',
             location: 'Em breve',
             city: 'Petrolina',
             state: 'PE',
-            startDate: '2026-04-30',
-            endDate: '2026-04-30',
+            startDate: '2026-06-20',
+            endDate: '2026-06-20',
             status: 'active',
             primaryColor: '#0D9488',
             secondaryColor: '#10B981',
@@ -100,7 +100,7 @@ export function GrowthExperiencePetrolina() {
         <div className="flex flex-col overflow-x-hidden">
             <SEOHead
                 title="Growth Experience Petrolina-PE 2026 | 30 de Abril"
-                description="A Maior Imersão de Growth e IA do Vale do São Francisco. 30/04/2026 em Petrolina-PE. Inscreva-se para a lista VIP."
+                description="A Maior Imersão de Growth e IA do Vale do São Francisco. 20/06/2026 em Petrolina-PE. Inscreva-se para a lista VIP."
                 keywords="growth experience, petrolina, evento negócios, vale do são francisco, sebrae"
                 url={pageUrl}
             />
@@ -146,7 +146,7 @@ export function GrowthExperiencePetrolina() {
                                 alt="Petrolina-PE"
                             />
                             <div className="absolute -bottom-6 -right-6 glass-card p-6 border-teal-500/30 animate-float">
-                                <p className="text-teal-400 font-black text-4xl">30/04</p>
+                                <p className="text-teal-400 font-black text-4xl">20/06</p>
                                 <p className="text-white font-bold">Petrolina-PE</p>
                             </div>
                         </div>

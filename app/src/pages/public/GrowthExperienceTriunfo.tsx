@@ -213,37 +213,32 @@ export function GrowthExperienceTriunfo() {
     if (initialized.current) return;
     initialized.current = true;
 
+      <SEOHead
+        title="GX Growth Experience Triunfo | Noite de Palestras e Negócios"
+        description="Uma noite inteira dedicada a palestras, talk shows e exposição de marcas para quem movimenta a economia do Sertão do Pajeú. 15 de maio, 17h às 23h."
+        keywords="gx growth experience, triunfo pe, evento negócios, palestrantes, talk show, networking"
+        url={pageUrl}
+      />
+...
     try {
       const project = await ensureProject({
         id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         name: 'Growth Experience Triunfo - Pocket Edition (Noturno)',
         slug: 'growth-experience-triunfo',
         type: 'growth_experience',
-        description: 'Uma edição exclusiva focada em conexões de alto nível no Sertão do Pajeú. Programação especial das 17h às 23h em 16 de abril de 2026 no Espaço Parque. Palestras magnas, talk shows e networking estratégico.',
+        description: 'Uma edição exclusiva focada em conexões de alto nível no Sertão do Pajeú. Programação especial das 17h às 23h em 15 de maio de 2026 no Espaço Parque. Palestras magnas, talk shows e networking estratégico.',
         shortDescription: 'Edição Noturna | Triunfo-PE',
         location: 'Espaço Parque',
         city: 'Triunfo',
         state: 'PE',
-        startDate: '2026-04-16',
-        endDate: '2026-04-16',
+        startDate: '2026-05-15',
+        endDate: '2026-05-15',
         status: 'active',
         primaryColor: '#FE4C38',
         secondaryColor: '#FF6B35',
         settings: {
-          maxRegistrations: 300,
-          maxMentors: 30,
-          maxStartups: 20,
-          maxCompanies: 6,
-          enableB2B: false,
-          enableMentoring: false,
-          enableStartups: false,
-          enableCheckIn: true,
-          ticketPrices: {
-            standard: 0,
-            pro: 179.99,
-            vip: 0,
-          },
-        },
+          maxRegistrations: 300
+        }
       });
 
       if (project) {
@@ -252,8 +247,8 @@ export function GrowthExperienceTriunfo() {
         // Canonical project object with override values if needed
         const canonicalProject = {
           ...project,
-          startDate: '2026-04-16',
-          endDate: '2026-04-16',
+          startDate: '2026-05-15',
+          endDate: '2026-05-15',
           settings: {
             ...project.settings,
             maxRegistrations: 300
@@ -316,7 +311,7 @@ export function GrowthExperienceTriunfo() {
     <div className="flex flex-col overflow-x-hidden">
       <SEOHead
         title="GX Growth Experience Triunfo | Noite de Palestras e Negócios"
-        description="Uma noite inteira dedicada a palestras, talk shows e exposição de marcas para quem movimenta a economia do Sertão do Pajeú. 16 de abril, 17h às 23h."
+        description="Uma noite inteira dedicada a palestras, talk shows e exposição de marcas para quem movimenta a economia do Sertão do Pajeú. 15 de maio, 17h às 23h."
         keywords="gx growth experience, triunfo pe, evento negócios, palestrantes, talk show, networking"
         url={pageUrl}
       />
