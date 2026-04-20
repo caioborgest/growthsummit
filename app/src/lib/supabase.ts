@@ -18,6 +18,10 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      flowType: 'pkce', // Usar PKCE para maior compatibilidade e segurança
+    },
+    global: {
+      headers: { 'x-application-name': 'GX-Experience-Institutional' },
     },
     realtime: {
       params: { eventsPerSecond: 10 }
