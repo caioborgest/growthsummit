@@ -212,14 +212,6 @@ export function GrowthExperienceTriunfo() {
   const initProject = useCallback(async () => {
     if (initialized.current) return;
     initialized.current = true;
-
-      <SEOHead
-        title="GX Growth Experience Triunfo | Noite de Palestras e Negócios"
-        description="Uma noite inteira dedicada a palestras, talk shows e exposição de marcas para quem movimenta a economia do Sertão do Pajeú. 15 de maio, 17h às 23h."
-        keywords="gx growth experience, triunfo pe, evento negócios, palestrantes, talk show, networking"
-        url={pageUrl}
-      />
-...
     try {
       const project = await ensureProject({
         id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
