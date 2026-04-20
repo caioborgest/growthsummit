@@ -34,7 +34,31 @@ const itemVariants = {
   },
 };
 
+import { useProjects, useSponsors } from '@/hooks/useData';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 export function HomePage() {
+  const { data: projects } = useProjects();
+  const { data: sponsors } = useSponsors();
+
+  // Filtrar apenas edições futuras de 2026 para a Home
+  const upcomingEvents = (projects || [])
+    .filter(p => (p.status === 'active' || p.status === 'published') && p.startDate?.includes('2026'))
+    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''))
+    .slice(0, 2); // Apenas os 2 próximos para manter o layout
+
+  // Filtrar patrocinadores de destaque para a grid de logos
+  const featuredSponsors = (sponsors || [])
+    .filter(s => s.featured || s.isPublic)
+    .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+  const getEventLink = (slug: string) => {
+    if (slug.includes('triunfo')) return '/triunfo';
+    if (slug.includes('petrolina')) return '/petrolina';
+    return `/evento/${slug}`;
+  };
+
   return (
     <div className="bg-brand-grafite min-h-screen overflow-x-hidden">
       {/* 1. HERO SECTION */}
@@ -214,39 +238,38 @@ export function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Edição 1 */}
-            <motion.div 
-              whileHover={{ y: -10 }}
-              className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10"
-            >
-              <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite via-brand-grafite/40 to-transparent" />
-              <div className="absolute bottom-10 left-10 right-10">
-                <Badge className="bg-brand-orange mb-4">TRIUNFO - PE</Badge>
-                <h3 className="text-3xl font-black text-white mb-2 uppercase">16 DE ABRIL</h3>
-                <p className="text-gray-300 font-medium mb-6">A Maior Exposição de Negócios do Sertão do Pajeú.</p>
-                <Button asChild className="w-full bg-white text-dark hover:bg-brand-orange hover:text-white font-black py-6 rounded-2xl shadow-2xl">
-                  <Link to="/inscricoes">GARANTIR VAGA</Link>
-                </Button>
-              </div>
-            </motion.div>
+            {upcomingEvents.map((event) => (
+              <motion.div 
+                key={event.id}
+                whileHover={{ y: -10 }}
+                className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10"
+              >
+                <img 
+                  src={(event.settings as any)?.banner || "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png"} 
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  alt={event.name} 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite via-brand-grafite/40 to-transparent" />
+                <div className="absolute bottom-10 left-10 right-10">
+                  <Badge className="bg-brand-orange mb-4 uppercase">{event.city} - {event.state}</Badge>
+                  <h3 className="text-3xl font-black text-white mb-2 uppercase">
+                    {event.startDate ? format(new Date(event.startDate), "dd 'DE' MMMM", { locale: ptBR }) : 'EM BREVE'}
+                  </h3>
+                  <p className="text-gray-300 font-medium mb-6 line-clamp-2">{event.shortDescription || event.description}</p>
+                  <Button asChild className="w-full bg-white text-dark hover:bg-brand-orange hover:text-white font-black py-6 rounded-2xl shadow-2xl">
+                    <Link to={getEventLink(event.slug)}>GARANTIR VAGA</Link>
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
 
-            {/* Edição 2 */}
-            <motion.div 
-              whileHover={{ y: -10 }}
-              className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10"
-            >
-              <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png" className="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-110" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite via-brand-grafite/40 to-transparent" />
-              <div className="absolute bottom-10 left-10 right-10">
-                <Badge className="bg-white/10 border-white/20 text-white mb-4">PETROLINA - PE</Badge>
-                <h3 className="text-3xl font-black text-white mb-2 uppercase">30 DE ABRIL</h3>
-                <p className="text-gray-300 font-medium mb-6">Imersão Intensiva de Growth no Vale do São Francisco.</p>
-                <Button asChild className="w-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-brand-orange hover:border-brand-orange hover:text-white font-black py-6 rounded-2xl transition-all">
-                  <Link to="/inscricoes">GARANTIR VAGA</Link>
-                </Button>
+            {upcomingEvents.length === 0 && (
+              <div className="md:col-span-2 py-20 text-center glass-card border-dashed border-white/10 rounded-[3rem]">
+                <Calendar className="h-12 w-12 text-gray-700 mx-auto mb-4" />
+                <p className="text-gray-500 font-bold uppercase tracking-widest">Nenhuma edição confirmada para o momento</p>
+                <p className="text-gray-600 text-xs mt-1">Inscreva-se em nossa newsletter para receber novidades.</p>
               </div>
-            </motion.div>
+            )}
           </div>
         </div>
       </section>
@@ -293,12 +316,22 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 text-center">
           <p className="text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px] mb-12">EMPRESAS QUE CONFIAM NO MOVIMENTO</p>
           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
-             {/* Logo placeholders - based on current partners */}
-             <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png" className="h-10 w-auto" alt="CBX Growth" />
-             <div className="h-8 w-24 bg-white/20 rounded" />
-             <div className="h-8 w-32 bg-white/20 rounded" />
-             <div className="h-8 w-20 bg-white/20 rounded" />
-             <div className="h-8 w-28 bg-white/20 rounded" />
+             {featuredSponsors.length > 0 ? (
+               featuredSponsors.map((sponsor) => (
+                 <img 
+                    key={sponsor.id}
+                    src={sponsor.logoUrl || sponsor.logo} 
+                    className="h-10 md:h-12 w-auto object-contain max-w-[150px]" 
+                    alt={sponsor.name} 
+                 />
+               ))
+             ) : (
+               <>
+                 <img src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png" className="h-10 w-auto" alt="CBX Growth" />
+                 <div className="h-8 w-24 bg-white/10 rounded-lg animate-pulse" />
+                 <div className="h-8 w-32 bg-white/10 rounded-lg animate-pulse" />
+               </>
+             )}
           </div>
         </div>
       </section>

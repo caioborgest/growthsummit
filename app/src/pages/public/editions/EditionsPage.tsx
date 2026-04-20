@@ -13,50 +13,25 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 
-const editions = [
-  {
-    id: 'e1',
-    status: 'upcoming',
-    city: 'Triunfo-PE',
-    date: '16 de Abril de 2026',
-    title: 'Growth Experience Triunfo - Pocket Edition',
-    desc: 'O ponto de encontro crucial para empresários do Sertão do Pajeú.',
-    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png',
-    slug: 'triunfo-2026'
-  },
-  {
-    id: 'e2',
-    status: 'upcoming',
-    city: 'Petrolina-PE',
-    date: '30 de Abril de 2026',
-    title: 'Growth Experience Petrolina - Vale Edition',
-    desc: 'Imersão profunda em estratégias de escala no Vale do São Francisco.',
-    image: 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png',
-    slug: 'petrolina-2026'
-  },
-  {
-    id: 'e3',
-    status: 'planned',
-    city: 'Juazeiro do Norte-CE',
-    date: 'Junho de 2026',
-    title: 'GX Cariri Summit',
-    desc: 'O maior encontro de executivos do Ceará.',
-    image: '',
-    slug: 'cariri-2026'
-  },
-  {
-    id: 'e4',
-    status: 'concluded',
-    city: 'Triunfo-PE',
-    date: '2025',
-    title: 'Growth Talk Triunfo',
-    desc: 'Edição de lançamento que validou o ecossistema local.',
-    image: '',
-    slug: 'triunfo-2025'
-  }
-];
+import { useProjects } from '@/hooks/useData';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function EditionsPage() {
+  const { data: projects, isLoading } = useProjects();
+
+  const editions = (projects || []).map(p => ({
+    id: p.id,
+    status: p.status === 'completed' || p.status === 'concluded' ? 'concluded' : 
+            p.status === 'planned' ? 'planned' : 'upcoming',
+    city: `${p.city || ''}-${p.state || ''}`,
+    date: p.startDate ? format(new Date(p.startDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'A definir',
+    title: p.name,
+    desc: p.shortDescription || p.description,
+    image: (p.settings as any)?.banner || 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png',
+    slug: p.slug
+  }));
+
   const upcoming = editions.filter(e => e.status === 'upcoming');
   const past = editions.filter(e => e.status === 'concluded' || e.status === 'planned');
 
@@ -138,7 +113,7 @@ export function EditionsPage() {
                     </div>
 
                     <Button asChild className="w-full bg-[image:var(--brand-gradient)] hover:brightness-110 text-white font-black py-8 rounded-2xl text-lg shadow-xl shadow-brand-orange/10 group/btn mt-auto">
-                      <Link to="/inscricoes">
+                      <Link to={getEventLink(edition.slug)}>
                         GARANTIR INGRESSO
                         <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                       </Link>
