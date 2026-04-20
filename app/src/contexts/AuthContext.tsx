@@ -488,24 +488,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
-        if (error) {
-          // AbortError is triggered by React StrictMode double-mount or HMR — not a real error
-          if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-            logger.debug('[Auth] getSession aborted (StrictMode/HMR) — ignorando');
-            if (isMountedRef.current) setIsLoading(false);
-            return;
-          }
-
-          // Se for erro de refresh token, é apenas uma sessão expirada/inválida. 
-          // Não é um erro "fatal", apenas significa que o usuário deve logar novamente.
+          // Se for erro de refresh token ou Lock roubado, é apenas uma sessão expirada ou conflito de concorrência.
+          // Não é um erro "fatal", apenas significa que o usuário deve logar novamente ou aguardar a sincronização.
           const isRefreshTokenError = error.message?.toLowerCase().includes('refresh_token') || 
-                                    error.message?.toLowerCase().includes('refresh token');
+                                     error.message?.toLowerCase().includes('refresh token');
           
-          if (isRefreshTokenError) {
-            logger.info('Sessão anterior expirada ou inválida. Limpando estado local.');
-            // Forçamos a limpeza local para evitar loops de refresh em background
-            supabase.auth.signOut({ scope: 'local' }).catch(() => {});
-            safeStorage.removeItem(LAST_ACTIVITY_KEY);
+          const isLockError = error.message?.toLowerCase().includes('lock') || 
+                             error.name === 'AbortError';
+
+          if (isRefreshTokenError || isLockError) {
+            logger.debug(`[Auth] Problema de sessão não-fatal (${isLockError ? 'Lock/Abort' : 'Refresh'}):`, error.message);
+            
+            if (isRefreshTokenError) {
+               // Forçamos a limpeza local para evitar loops de refresh em background
+               supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+               safeStorage.removeItem(LAST_ACTIVITY_KEY);
+            }
           } else {
             logger.error('Erro inicial getSession:', error.message);
           }
@@ -522,13 +520,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isMountedRef.current) setIsLoading(false);
         }
       } catch (error: any) {
-        // AbortError can also surface as a thrown exception
-        if (error?.name === 'AbortError' || error?.message?.includes('aborted without reason')) {
-          logger.debug('[Auth] Init aborted (React lifecycle) — ignorando AbortError');
+        // Lock broken ou AbortError podem surgir como exceções lançadas
+        const isLockOrAbort = error?.name === 'AbortError' || 
+                             error?.message?.includes('aborted') ||
+                             error?.message?.includes('Lock') ||
+                             error?.message?.includes('lock');
+
+        if (isLockOrAbort) {
+          logger.debug('[Auth] Init interrompido ou trava capturada (React lifecycle) — aguardando próximo evento...');
         } else {
-          logger.error('Fatal auth init error:', error);
-          if (isMountedRef.current) setIsLoading(false);
+          logger.warn('Auth init note (non-critical):', error.message || error);
         }
+        if (isMountedRef.current) setIsLoading(false);
       } finally {
         if (isMountedRef.current) {
           // Garante que o loading seja liberado mesmo se der erro ou fechar prematuro

@@ -702,6 +702,12 @@ export function useData<T extends WithId>(initialData: T[] = [], entityName: str
         return;
       }
 
+      // Handle network errors (CORS/Failed to fetch) gracefully
+      if (errStr.includes('failed to fetch') || errStr.includes('net::err_failed')) {
+        logger.warn(`[CORS/Network] Falha ao buscar ${entityName}. Verifique a configuração de 'Site URL' e 'Redirect URLs' no dashboard da Supabase.`);
+        return;
+      }
+
       logger.error(`Erro ao buscar ${entityName}: ${errorMsg}`, err);
     } finally {
       setIsLoading(false);
