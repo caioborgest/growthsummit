@@ -488,6 +488,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
+        if (error) {
           // Se for erro de refresh token ou Lock roubado, é apenas uma sessão expirada ou conflito de concorrência.
           // Não é um erro "fatal", apenas significa que o usuário deve logar novamente ou aguardar a sincronização.
           const isRefreshTokenError = error.message?.toLowerCase().includes('refresh_token') || 
