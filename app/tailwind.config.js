@@ -54,53 +54,48 @@ export default {
           DEFAULT: "var(--header-background)",
         },
         "border-theme": "var(--border-theme)",
-        // Growth Experience Brand Colors - Paleta Oficial
+        // GX Growth Experience 2026 - Nova Paleta Oficial
         brand: {
-          // Cores Primárias
-          'orange-coral': '#ff7043',      // Laranja Coral - Cor principal da marca
-          'orange-gradient': '#ff8549',   // Laranja Gradiente - Para degradês
-          'orange-intense': '#ff4035',    // Laranja Intenso - Destaques e CTAs
-
-          // Cores Neutras
-          'gray-light': '#E6E6E6',        // Cinza Claro - "EXPERIENCE" e elementos suaves
-          'gray-medium': '#999999',       // Cinza Médio - Texto secundário
-          'gray-dark': '#333333',         // Cinza Escuro - Versão alternativa "EXPERIENCE"
-          'black': '#0c0e12',             // Preto - Fundos escuros e texto principal
-          'white': '#FFFFFF',             // Branco - Fundo e contraste
-          'blue': '#1e3a8a',              // Azul - Para compatibilidade e contraste
+          'orange': '#FF8A4C',      // Primária 1
+          'coral': '#FF6A45',       // Primária 2
+          'red': '#FF3B30',         // Primária 3
+          'gray-light': '#D9D9D9',  // Neutro Claro
+          'grafite': '#1A1A1A',     // Fundo Escuro
+          'white': '#FFFFFF',
+          'orange-coral': '#FF8A4C', // Alias para compatibilidade legada
         },
-        // Aliases for compatibility with existing code
+        // Aliases para compatibilidade e facilidade de uso
         teal: {
-          DEFAULT: '#ff7043',
+          DEFAULT: '#FF6A45',       // Mapeando para Coral
           50: '#fff5f2',
           100: '#ffe9e3',
           200: '#ffd3c7',
           300: '#ffbdab',
           400: '#ffa78f',
-          500: '#ff7043',
+          500: '#FF6A45',
           600: '#ff5a27',
           700: '#e64420',
           800: '#b3341a',
           900: '#802413',
         },
         orange: {
-          DEFAULT: '#ff4035',
+          DEFAULT: '#FF8A4C',
           50: '#fff2f1',
           100: '#ffe5e3',
           200: '#ffcbc7',
           300: '#ffb1ab',
           400: '#ff978f',
-          500: '#ff4035',
+          500: '#FF8A4C',
           600: '#ff2a1d',
           700: '#e61f14',
           800: '#b31810',
           900: '#80110b',
         },
         dark: {
-          DEFAULT: '#0c0e12',
-          100: '#1F2937',
-          200: '#1a1c20',
-          300: '#2A2A2A',
+          DEFAULT: '#1A1A1A',
+          100: '#242424',
+          200: '#2A2A2A',
+          300: '#333333',
           400: '#3A3A3A',
         },
         success: '#22C55E',

@@ -20,14 +20,11 @@ import { ptBR } from 'date-fns/locale';
 
 const navLinks = [
   { name: 'Início', href: '/' },
-  { name: 'Triunfo 2026', href: '/triunfo' },
-  { name: 'Petrolina 2026', href: '/petrolina' },
+  { name: 'O GX', href: '/sobre' },
+  { name: 'Edições', href: '/edicoes' },
+  { name: 'Parceiros', href: '/parceiros' },
+  { name: 'Galeria', href: '/galeria' },
   { name: 'Inscrições', href: '/inscricoes' },
-];
-
-const moreLinks = [
-  { name: 'FAQ', href: '/faq' },
-  { name: 'Contato', href: '/contato' },
 ];
 
 export function Header() {
@@ -110,7 +107,7 @@ export function Header() {
                   key={link.name}
                   to={link.href}
                   className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${active
-                    ? 'text-white bg-brand-orange-coral shadow-lg shadow-brand-orange-coral/20'
+                    ? 'text-white bg-brand-orange shadow-lg shadow-brand-orange/20'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
                 >
@@ -118,31 +115,6 @@ export function Header() {
                 </Link>
               );
             })}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-300">
-                  Explorar <ChevronDown className="ml-1.5 h-3.5 w-3.5 text-brand-orange-coral" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-64 bg-[#161920]/95 backdrop-blur-xl border border-white/10 p-2 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200"
-                align="end"
-              >
-                <div className="px-3 py-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">Ecosystem</div>
-                {moreLinks.map((link) => (
-                  <DropdownMenuItem key={link.name} asChild>
-                    <Link
-                      to={link.href}
-                      className="flex items-center px-3 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-brand-orange-coral/10 cursor-pointer transition-all gap-3"
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-orange-coral opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {link.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </nav>
 
           {/* CTA Buttons Premium */}
@@ -340,23 +312,9 @@ export function Header() {
                 key={link.name}
                 to={link.href}
                 className={`flex items-center px-4 py-4 rounded-2xl text-lg font-black tracking-tight transition-all ${isActive(link.href)
-                  ? 'text-white bg-brand-orange-coral shadow-lg shadow-brand-orange-coral/20'
+                  ? 'text-white bg-brand-orange shadow-lg shadow-brand-orange/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 pt-6 border-t border-white/5">
-            <p className="px-4 text-[10px] font-black text-gray-600 uppercase tracking-widest mb-2">Ecosistema GS</p>
-            {moreLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                className="flex items-center px-4 py-3 rounded-2xl text-base font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.name}

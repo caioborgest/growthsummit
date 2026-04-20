@@ -747,6 +747,22 @@ export interface PartnerTeamMember {
   createdAt: string;
 }
 
+export interface GalleryItem {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  mediaUrl: string;
+  thumbnailUrl?: string;
+  type: 'photo' | 'video';
+  category: string;
+  featured: boolean;
+  orderIndex: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type NPSFormStatus = 'draft' | 'active' | 'archived';
 export type NPSQuestionType = 'nps_score' | 'textarea' | 'short_text' | 'single_choice' | 'multi_choice' | 'csat_stars' | 'csat_emoji' | 'ces' | 'yes_no' | 'hidden_metadata' | 'welcome_screen' | 'thank_you_screen';
 export type NPSClassification = 'detractor' | 'passive' | 'promoter';

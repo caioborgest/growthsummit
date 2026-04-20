@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,74 +8,68 @@
   /* ── DARK THEME (padrão) ──────────────────────────────────────────────── */
   :root,
   [data-theme='dark'] {
-    /* Growth Experience 2026 – Paleta Oficial */
-    --background: 217 19% 4%;            /* Deep Onyx #08090d */
+    /* GX Growth Experience 2026 – Paleta Oficial */
+    --background: 0 0% 10%;              /* #1A1A1A (Grafite) */
     --foreground: 0 0% 98%;
-    --card: 217 19% 6%;                  /* #0c0e12 */
+    --card: 0 0% 12%;                    /* #1F1F1F */
     --card-foreground: 0 0% 98%;
-    --popover: 217 19% 7%;
+    --popover: 0 0% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 14 100% 63%;             /* Laranja Coral #ff7043 */
+    --primary: 20 100% 65%;             /* #FF8A4C */
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 19% 12%;
+    --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 217 19% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 11 100% 60%;              /* Laranja Intenso #ff4035 */
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 12 100% 64%;              /* #FF6A45 (Coral) */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 3 100% 60%;          /* #FF3B30 */
     --destructive-foreground: 0 0% 100%;
-    --border: 217 19% 14%;
-    --input: 217 19% 10%;
-    --ring: 14 100% 63%;
-    --radius: 1rem;
+    --border: 0 0% 18%;
+    --input: 0 0% 14%;
+    --ring: 20 100% 65%;
+    --radius: 1.25rem;
 
     /* Sidebar & Layout Elements */
-    --sidebar-background: 217 19% 4%;
+    --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 14 100% 63%;
+    --sidebar-primary: 20 100% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 19% 12%;
+    --sidebar-accent: 0 0% 16%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 217 19% 10%;
-    --sidebar-ring: 14 100% 63%;
-    --header-background: rgba(8, 9, 13, 0.85);
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 20 100% 65%;
+    --header-background: rgba(26, 26, 26, 0.85);
     --border-theme: rgba(255, 255, 255, 0.05);
 
-    /* Brand */
-    --brand-orange-coral: 14 100% 63%;
-    --brand-orange-gradient: 19 100% 68%;
-    --brand-orange-intense: 11 100% 60%;
-    --brand-gray-light: 0 0% 90%;
-    --brand-gray-medium: 0 0% 60%;
-    --brand-gray-dark: 0 0% 20%;
-    --brand-black: 217 33% 5%;
+    /* Brand Tokens - UX-Friendly */
+    --brand-orange: 20 100% 65%;        /* #FF8A4C */
+    --brand-coral: 12 100% 64%;         /* #FF6A45 */
+    --brand-red: 3 100% 60%;           /* #FF3B30 */
+    --brand-gray: 0 0% 85%;            /* #D9D9D9 */
+    --brand-dark: 0 0% 10%;            /* #1A1A1A */
     --brand-white: 0 0% 100%;
+
+    /* Brand Gradient Utility */
+    --brand-gradient: linear-gradient(135deg, #FF8A4C 0%, #FF6A45 50%, #FF3B30 100%);
 
     /* Utility */
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
     --info: 217 91% 60%;
 
-    /* Premium Dark tokens */
-    --surface-1: rgba(255,255,255,0.03);
-    --surface-2: rgba(255,255,255,0.06);
-    --surface-3: rgba(255,255,255,0.1);
-    --border-subtle: rgba(255,255,255,0.05);
-    --border-medium: rgba(255,255,255,0.09);
-    --border-strong: rgba(255,255,255,0.18);
-    --glow-primary: rgba(255,112,67,0.3);
-    --glow-secondary: rgba(255,64,53,0.22);
-    --text-muted: rgba(255,255,255,0.4);
-    --text-secondary: rgba(255,255,255,0.6);
+    /* Premium Effects */
+    --surface-1: rgba(255,255,255,0.02);
+    --surface-2: rgba(255,255,255,0.05);
+    --surface-3: rgba(255,255,255,0.08);
+    --border-subtle: rgba(255,255,255,0.04);
+    --border-medium: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --glow-primary: rgba(255,138,76,0.3);
+    --text-muted: rgba(255,255,255,0.45);
+    --text-secondary: rgba(255,255,255,0.7);
 
-    /* Brand Teal */
-    --brand-teal: 172 66% 50%;          /* #14B8A6 */
-
-    /* Shadow effects */
-    --shadow-premium: 0 20px 60px -15px rgba(0,0,0,0.7);
-
-    /* Safe Area Insets (Browser default fallback) */
+    /* Safe Area Insets */
     --sat: env(safe-area-inset-top);
     --sar: env(safe-area-inset-right);
     --sab: env(safe-area-inset-bottom);

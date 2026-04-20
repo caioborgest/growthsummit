@@ -40,131 +40,122 @@ const socialLinks = [
 export function Footer() {
 
   return (
-    <footer className="bg-dark-200 border-t border-dark-300">
+    <footer className="bg-brand-grafite border-t border-white/5">
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-24">
+          
           {/* Brand Column */}
-          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
-            <Link to="/" className="flex items-center space-x-2 mb-4 group">
+          <div className="space-y-8">
+            <Link to="/" className="inline-block group transition-transform hover:scale-105">
               <img
                 src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/LOGO-growthexperience-fundoescuro.v2.png"
                 alt="Growth Experience"
-                className="h-12 w-auto drop-shadow-[0_0_8px_rgba(255,112,67,0.3)] transition-all group-hover:drop-shadow-[0_0_12px_rgba(255,112,67,0.5)]"
+                className="h-12 w-auto drop-shadow-[0_0_8px_rgba(255,138,76,0.3)]"
               />
             </Link>
             
-            <div className="flex flex-col gap-2 mt-6">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">Realização</p>
+            <p className="text-gray-400 text-base leading-relaxed max-w-sm">
+              O movimento que está transformando o interior do Nordeste através de Growth, 
+              Liderança e Inteligência Artificial. Junte-se à elite empresarial da região.
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] leading-none">Realização</p>
               <img
                 src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/logos/logomarca-cbx-growth-ia.png"
                 alt="CBX Growth"
-                className="h-10 w-auto opacity-80 hover:opacity-100 transition-opacity object-contain self-start"
+                className="h-9 w-auto opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all object-contain self-start"
               />
             </div>
-
-            <p className="text-gray-400 text-sm mt-6 mb-6 max-w-xs">
-              A maior imersão de Growth e Inteligência Artificial do interior do Nordeste.
-              Edições em Triunfo e Petrolina.
-            </p>
           </div>
 
-          {/* Contact Info */}
-          <div className="sm:col-span-2 md:col-span-1 lg:col-span-1 space-y-4">
-            <h4 className="text-white font-semibold mb-2">Contato</h4>
-            <div className="space-y-3">
-              <a
-                href={`mailto:${EVENT_CONFIG.email}`}
-                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-hover:bg-teal-500/10 transition-colors">
-                  <Mail className="h-4 w-4 text-teal-500" />
-                </div>
-                {EVENT_CONFIG.email}
-              </a>
-              <a
-                href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}?text=${encodeURIComponent(EVENT_CONFIG.whatsapp.message)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-gray-400 hover:text-teal-400 text-sm transition-colors group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-hover:bg-teal-500/10 transition-colors">
-                  <Phone className="h-4 w-4 text-teal-500" />
-                </div>
-                {EVENT_CONFIG.whatsapp.display}
-              </a>
-              <div className="flex items-start text-gray-400 text-sm group">
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-teal-500/10 transition-colors">
-                  <MapPin className="h-4 w-4 text-teal-500" />
-                </div>
-                <span>Boulevard Hotel, Juazeiro do Norte - CE</span>
-              </div>
+          {/* Links Column */}
+          <div className="grid grid-cols-2 gap-8 md:gap-4">
+            <div className="space-y-6">
+              <h4 className="text-white font-black text-sm uppercase tracking-widest">Navegação</h4>
+              <ul className="space-y-4">
+                {[
+                  { name: 'O GX', href: '/sobre' },
+                  { name: 'Edições', href: '/edicoes' },
+                  { name: 'Parceiros', href: '/parceiros' },
+                  { name: 'Galeria', href: '/galeria' },
+                ].map((link) => (
+                  <li key={link.name}>
+                    <Link to={link.href} className="text-gray-500 hover:text-brand-orange transition-colors font-medium">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="space-y-6">
+              <h4 className="text-white font-black text-sm uppercase tracking-widest">Participar</h4>
+              <ul className="space-y-4">
+                {[
+                  { name: 'Inscrições', href: '/inscricoes' },
+                  { name: 'Contato', href: '/contato' },
+                  { name: 'FAQ', href: '/faq' },
+                  { name: 'Termos', href: '/termos' },
+                ].map((link) => (
+                  <li key={link.name}>
+                    <Link to={link.href} className="text-gray-500 hover:text-brand-orange transition-colors font-medium">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          {/* Links Columns */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Evento</h4>
-            <ul className="space-y-2">
-              {footerLinks.evento.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-brand-yellow text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Contact & Social Column */}
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <h4 className="text-white font-black text-sm uppercase tracking-widest">Conecte-se</h4>
+              <div className="space-y-4">
+                <a
+                  href={`https://wa.me/${EVENT_CONFIG.whatsapp.number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-brand-orange/10 transition-colors">
+                    <Phone className="h-5 w-5 text-brand-orange" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-wider">WhatsApp</p>
+                    <p className="text-gray-300 font-bold group-hover:text-white transition-colors">{EVENT_CONFIG.whatsapp.display}</p>
+                  </div>
+                </a>
+                <a
+                  href={`mailto:${EVENT_CONFIG.email}`}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-brand-orange/10 transition-colors">
+                    <Mail className="h-5 w-5 text-brand-orange" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-wider">Email</p>
+                    <p className="text-gray-300 font-bold group-hover:text-white transition-colors text-sm">{EVENT_CONFIG.email}</p>
+                  </div>
+                </a>
+              </div>
+            </div>
 
-          <div>
-            <h4 className="text-white font-semibold mb-4">Participar</h4>
-            <ul className="space-y-2">
-              {footerLinks.participar.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-brand-yellow text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-brand-orange transition-all hover:-translate-y-1 shadow-lg"
+                  aria-label={social.name}
+                >
+                  <social.icon className="h-6 w-6" />
+                </a>
               ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-4">Parcerias</h4>
-            <ul className="space-y-2">
-              {footerLinks.parcerias.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-teal-400 text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2">
-              {footerLinks.legal.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-gray-400 hover:text-teal-400 text-sm transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            </div>
           </div>
         </div>
       </div>

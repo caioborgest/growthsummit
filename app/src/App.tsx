@@ -55,7 +55,13 @@ const lazyWithRetry = (componentImport: () => Promise<{ default: any } | any>, e
 import { Layout } from './components/layout/Layout';
 
 // ── Public Pages (lazy)
-const Sobre = lazyWithRetry(() => import('./pages/public/Sobre'), 'Sobre');
+const HomePage = lazyWithRetry(() => import('./pages/public/home/HomePage'), 'HomePage');
+const AboutPage = lazyWithRetry(() => import('./pages/public/about/AboutPage'), 'AboutPage');
+const EditionsPage = lazyWithRetry(() => import('./pages/public/editions/EditionsPage'), 'EditionsPage');
+const PartnersPage = lazyWithRetry(() => import('./pages/public/partners/PartnersPage'), 'PartnersPage');
+const GalleryPage = lazyWithRetry(() => import('./pages/public/gallery/GalleryPage'), 'GalleryPage');
+const ContactPage = lazyWithRetry(() => import('./pages/public/contact/ContactPage'), 'ContactPage');
+
 const Programacao = lazyWithRetry(() => import('./pages/public/Programacao'), 'Programacao');
 const Palestrantes = lazyWithRetry(() => import('./pages/public/Palestrantes'), 'Palestrantes');
 const Inscricoes = lazyWithRetry(() => import('./pages/public/Inscricoes'), 'Inscricoes');
@@ -68,7 +74,6 @@ const GrowthExperienceTriunfo = lazyWithRetry(() => import('./pages/public/Growt
 const GrowthExperiencePetrolina = lazyWithRetry(() => import('./pages/public/GrowthExperiencePetrolina'));
 const DynamicEventPage = lazyWithRetry(() => import('./pages/public/DynamicEventPage'));
 const FAQ = lazyWithRetry(() => import('./pages/public/FAQ'), 'FAQ');
-const Contato = lazyWithRetry(() => import('./pages/public/Contato'), 'Contato');
 const SejaMentor = lazyWithRetry(() => import('./pages/public/SejaMentor'), 'SejaMentor');
 const LocalViagem = lazyWithRetry(() => import('./pages/public/LocalViagem'), 'LocalViagem');
 const ValidarCertificado = lazyWithRetry(() => import('./pages/public/ValidarCertificado'), 'ValidarCertificado');
@@ -335,7 +340,7 @@ function Home() {
     if (path !== '/') return <Navigate to={path} replace />;
   }
 
-  return <GrowthExperience />;
+  return <HomePage />;
 }
 
 function AppRoutes() {
@@ -345,25 +350,29 @@ function AppRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="sobre" element={<Sobre />} />
+          <Route path="sobre" element={<AboutPage />} />
+          <Route path="edicoes" element={<EditionsPage />} />
+          <Route path="parceiros" element={<PartnersPage />} />
+          <Route path="galeria" element={<GalleryPage />} />
+          <Route path="inscricoes" element={<Inscricoes />} />
+          <Route path="contato" element={<ContactPage />} />
+          
           <Route path="programacao" element={<Programacao />} />
           <Route path="palestrantes" element={<Palestrantes />} />
-          <Route path="inscricoes" element={<Inscricoes />} />
           <Route path="mentorias" element={<Mentorias />} />
           <Route path="rodada-negocios" element={<RodadaB2B />} />
           <Route path="startups" element={<Startups />} />
           <Route path="seja-patrocinador" element={<Patrocinio />} />
           <Route path="growth-experience" element={<Navigate to="/" replace />} />
           <Route path="faq" element={<FAQ />} />
-          <Route path="contato" element={<Contato />} />
           <Route path="seja-mentor" element={<SejaMentor />} />
           <Route path="local-e-viagem" element={<LocalViagem />} />
           <Route path="termos" element={<LegalPage title="Termos de Uso" />} />
           <Route path="privacidade" element={<LegalPage title="Política de Privacidade" />} />
-          <Route path="growth-experience-triunfo" element={<Navigate to="/triunfo" replace />} />
-          <Route path="growth-experience-petrolina" element={<Navigate to="/petrolina" replace />} />
-          <Route path="triunfo" element={<GrowthExperienceTriunfo />} />
-          <Route path="petrolina" element={<GrowthExperiencePetrolina />} />
+          <Route path="growth-experience-triunfo" element={<Navigate to="/inscricoes" replace />} />
+          <Route path="growth-experience-petrolina" element={<Navigate to="/inscricoes" replace />} />
+          <Route path="triunfo" element={<Navigate to="/inscricoes" replace />} />
+          <Route path="petrolina" element={<Navigate to="/inscricoes" replace />} />
           <Route path="evento/:slug" element={<DynamicEventPage />} />
           <Route path="validar" element={<ValidarCertificado />} />
           <Route path="validar/:code" element={<ValidarCertificado />} />

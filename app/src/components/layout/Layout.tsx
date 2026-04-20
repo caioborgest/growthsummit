@@ -1,5 +1,6 @@
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { WhatsAppButton } from './WhatsAppButton';
 import { ExitIntentPopup } from '../app/ExitIntentPopup';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,11 +23,15 @@ export function Layout() {
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get('embed') === 'true';
 
-  const isLandingPage = location.pathname === '/' || 
-                        location.pathname.includes('triunfo') || 
-                        location.pathname.includes('petrolina') ||
-                        location.pathname.includes('sobre') ||
-                        isEmbed;
+  const isLandingPage = [
+    '/', 
+    '/sobre', 
+    '/edicoes', 
+    '/parceiros', 
+    '/galeria', 
+    '/inscricoes', 
+    '/contato'
+  ].some(p => location.pathname === p) || isEmbed;
 
   // Pages where we want the NewsletterSection (Global Public Pages)
   const showNewsletter = !isEmbed && 
@@ -146,6 +151,7 @@ export function Layout() {
       {showNewsletter && <NewsletterSection />}
       {!isEmbed && <Footer />}
       {!isEmbed && <MobileQuickActions />}
+      {!isEmbed && <WhatsAppButton />}
       {!isEmbed && <ExitIntentPopup />}
     </div>
   );
