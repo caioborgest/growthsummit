@@ -53,10 +53,23 @@ export function HomePage() {
     .filter(s => s.featured || s.isPublic)
     .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
 
-  const getEventLink = (slug: string) => {
-    if (slug.includes('triunfo')) return '/triunfo';
-    if (slug.includes('petrolina')) return '/petrolina';
-    return `/evento/${slug}`;
+  const getEventData = (slug: string) => {
+    const isTriunfo = slug.includes('triunfo');
+    const isPetrolina = slug.includes('petrolina');
+
+    return {
+      link: isTriunfo ? '/triunfo' : isPetrolina ? '/petrolina' : `/evento/${slug}`,
+      banner: isTriunfo 
+        ? "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png"
+        : isPetrolina
+        ? "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png"
+        : "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png",
+      fallbackDesc: isTriunfo 
+        ? "A Maior Exposição de Negócios do Sertão do Pajeú. Imersão exclusiva focada em conexões de alto nível."
+        : isPetrolina
+        ? "Imersão Intensiva de Growth no Vale do São Francisco. Inovação e Tech além das fronteiras."
+        : "Uma jornada épica de Growth, Inteligência Artificial e Liderança."
+    };
   };
 
   return (
@@ -238,30 +251,35 @@ export function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {upcomingEvents.map((event) => (
-              <motion.div 
-                key={event.id}
-                whileHover={{ y: -10 }}
-                className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10"
-              >
-                <img 
-                  src={(event.settings as any)?.banner || "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png"} 
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                  alt={event.name} 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite via-brand-grafite/40 to-transparent" />
-                <div className="absolute bottom-10 left-10 right-10">
-                  <Badge className="bg-brand-orange mb-4 uppercase">{event.city} - {event.state}</Badge>
-                  <h3 className="text-3xl font-black text-white mb-2 uppercase">
-                    {event.startDate ? format(new Date(event.startDate), "dd 'DE' MMMM", { locale: ptBR }) : 'EM BREVE'}
-                  </h3>
-                  <p className="text-gray-300 font-medium mb-6 line-clamp-2">{event.shortDescription || event.description}</p>
-                  <Button asChild className="w-full bg-white text-dark hover:bg-brand-orange hover:text-white font-black py-6 rounded-2xl shadow-2xl">
-                    <Link to={getEventLink(event.slug)}>GARANTIR VAGA</Link>
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
+            {upcomingEvents.map((event) => {
+              const eventData = getEventData(event.slug);
+              return (
+                <motion.div 
+                  key={event.id}
+                  whileHover={{ y: -10 }}
+                  className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10"
+                >
+                  <img 
+                    src={(event.settings as any)?.banner || eventData.banner} 
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    alt={event.name} 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-grafite via-brand-grafite/40 to-transparent" />
+                  <div className="absolute bottom-10 left-10 right-10">
+                    <Badge className="bg-brand-orange mb-4 uppercase">{event.city} - {event.state}</Badge>
+                    <h3 className="text-3xl font-black text-white mb-2 uppercase">
+                      {event.startDate ? format(new Date(event.startDate), "dd 'DE' MMMM", { locale: ptBR }) : 'EM BREVE'}
+                    </h3>
+                    <p className="text-gray-300 font-medium mb-6 line-clamp-2">
+                      {event.shortDescription || event.description || eventData.fallbackDesc}
+                    </p>
+                    <Button asChild className="w-full bg-white text-dark hover:bg-brand-orange hover:text-white font-black py-6 rounded-2xl shadow-2xl">
+                      <Link to={eventData.link}>GARANTIR VAGA</Link>
+                    </Button>
+                  </div>
+                </motion.div>
+              );
+            })}
 
             {upcomingEvents.length === 0 && (
               <div className="md:col-span-2 py-20 text-center glass-card border-dashed border-white/10 rounded-[3rem]">

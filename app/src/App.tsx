@@ -363,7 +363,7 @@ function AppRoutes() {
           <Route path="rodada-negocios" element={<RodadaB2B />} />
           <Route path="startups" element={<Startups />} />
           <Route path="seja-patrocinador" element={<Patrocinio />} />
-          <Route path="growth-experience" element={<Navigate to="/" replace />} />
+          <Route path="growth-experience" element={<GrowthExperience />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="seja-mentor" element={<SejaMentor />} />
           <Route path="local-e-viagem" element={<LocalViagem />} />

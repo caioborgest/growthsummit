@@ -206,7 +206,7 @@ export function GrowthExperience() {
                 <div className="flex flex-wrap gap-4 mb-8">
                   <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
                     <Calendar className="h-4 w-4 text-orange-400" />
-                    <span className="font-bold">16 de Abril, 2026</span>
+                    <span className="font-bold">15 de Maio, 2026</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
                     <MapPin className="h-4 w-4 text-orange-400" />
@@ -313,7 +313,7 @@ export function GrowthExperience() {
                 <div className="flex flex-wrap gap-4 mb-8">
                   <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
                     <Calendar className="h-4 w-4 text-teal-400" />
-                    <span className="font-bold">30 de Abril, 2026</span>
+                    <span className="font-bold">20 de Junho, 2026</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-300 bg-dark-100 px-4 py-2 rounded-xl border border-dark-300">
                     <MapPin className="h-4 w-4 text-teal-400" />
@@ -712,7 +712,7 @@ export function GrowthExperience() {
               </div>
               <div>
                 <h4 className="font-bold text-white text-sm sm:text-base">Triunfo-PE</h4>
-                <p className="text-xs text-gray-400">16 de Abril - Edição Flagship</p>
+                <p className="text-xs text-gray-400">15 de Maio - Edição Flagship</p>
               </div>
               <ArrowRight className="ml-auto h-5 w-5 text-orange-500 opacity-0 group-hover:opacity-100 transition-all" />
             </button>
@@ -726,7 +726,7 @@ export function GrowthExperience() {
               </div>
               <div>
                 <h4 className="font-bold text-white text-sm sm:text-base">Petrolina-PE</h4>
-                <p className="text-xs text-gray-400">30 de Abril - Edição Vale</p>
+                <p className="text-xs text-gray-400">20 de Junho - Edição Vale</p>
               </div>
               <ArrowRight className="ml-auto h-5 w-5 text-teal-500 opacity-0 group-hover:opacity-100 transition-all" />
             </button>

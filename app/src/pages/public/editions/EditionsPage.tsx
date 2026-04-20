@@ -29,11 +29,14 @@ export function EditionsPage() {
     title: p.name,
     desc: p.shortDescription || p.description,
     image: (p.settings as any)?.banner || 'https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png',
-    slug: p.slug
-  }));
-
   const upcoming = editions.filter(e => e.status === 'upcoming');
   const past = editions.filter(e => e.status === 'concluded' || e.status === 'planned');
+
+  const getPremiumImage = (slug: string, currentImg: string) => {
+    if (slug.includes('triunfo')) return "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png";
+    if (slug.includes('petrolina')) return "https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png";
+    return currentImg;
+  };
 
   return (
     <div className="bg-brand-grafite min-h-screen pt-24 pb-20">
@@ -77,7 +80,7 @@ export function EditionsPage() {
                 >
                   <div className="h-72 relative overflow-hidden">
                     <img 
-                      src={edition.image} 
+                      src={getPremiumImage(edition.slug, edition.image)} 
                       alt={edition.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
