@@ -256,6 +256,70 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* 4.5 EDIÇÕES DE SUCESSO (Links Regionais) */}
+      <section className="py-24 bg-dark-200/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="bg-brand-orange/10 text-brand-orange border-brand-orange/20 px-4 py-1.5 rounded-full mb-4 font-black tracking-widest uppercase text-[10px]">
+              ONDE O IMPACTO JÁ ACONTECEU
+            </Badge>
+            <h2 className="text-4xl sm:text-5xl font-black text-white uppercase tracking-tighter">
+              EDIÇÕES QUE <span className="text-brand-orange">FIZERAM HISTÓRIA</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Petrolina */}
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="group relative h-[400px] rounded-[3rem] overflow-hidden border border-white/5 bg-dark-200"
+            >
+              <img 
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/growth-experience-capa.png" 
+                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-all duration-700" 
+                alt="Petrolina" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-90" />
+              <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                <Badge className="w-fit bg-teal-500 mb-4 uppercase text-[10px] text-white border-none">Vale do São Francisco</Badge>
+                <h3 className="text-3xl font-black text-white mb-2 uppercase">PETROLINA</h3>
+                <p className="text-gray-400 text-sm mb-6 line-clamp-2">
+                  Imersão intensiva focada em agronegócio e inovação. A edição que conectou o Vale do São Francisco à nova era do Growth.
+                </p>
+                <Link to="/petrolina" className="inline-flex items-center text-teal-400 font-black uppercase text-xs tracking-widest group/link">
+                  Ver Detalhes do Evento
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Triunfo */}
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="group relative h-[400px] rounded-[3rem] overflow-hidden border border-white/5 bg-dark-200"
+            >
+              <img 
+                src="https://xeuqtxxhncvechrxerqw.supabase.co/storage/v1/object/public/event-images/espaco/gxexperience-noite.png" 
+                className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-all duration-700" 
+                alt="Triunfo" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-90" />
+              <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                <Badge className="w-fit bg-brand-orange-coral mb-4 uppercase text-[10px] text-white border-none">Sertão do Pajeú</Badge>
+                <h3 className="text-3xl font-black text-white mb-2 uppercase">TRIUNFO</h3>
+                <p className="text-gray-400 text-sm mb-6 line-clamp-2">
+                  Uma noite exclusiva de conexões de alto nível e exposição de marcas no coração do sertão pernambucano.
+                </p>
+                <Link to="/triunfo" className="inline-flex items-center text-brand-orange-coral font-black uppercase text-xs tracking-widest group/link">
+                  Ver Detalhes do Evento
+                  <ChevronRight className="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* 5. PRÓXIMAS EDIÇÕES (Cards) */}
       <section className="py-24 lg:py-32 relative overflow-hidden" id="edicoes">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
